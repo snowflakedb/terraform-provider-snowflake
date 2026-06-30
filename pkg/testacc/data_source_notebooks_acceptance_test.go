@@ -56,7 +56,8 @@ func TestAcc_Notebooks(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel, notebooksModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.#", "1")),
 
 					resourceshowoutputassert.NotebooksDatasourceShowOutput(t, "snowflake_notebooks.test").
@@ -81,7 +82,8 @@ func TestAcc_Notebooks(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, completeModel, notebooksModelWithoutOptionals),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(notebooksModelWithoutOptionals.DatasourceReference(), "notebooks.#", "1")),
 					resourceshowoutputassert.NotebooksDatasourceShowOutput(t, "snowflake_notebooks.test").
 						HasCreatedOnNotEmpty().

@@ -15,5 +15,6 @@ func SecurityIntegrationDoesNotExist(t *testing.T, id sdk.AccountObjectIdentifie
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.SecurityIntegration, sdk.AccountObjectIdentifier] {
 			return testClient.SecurityIntegration.Show
-		})
+		},
+	)
 }

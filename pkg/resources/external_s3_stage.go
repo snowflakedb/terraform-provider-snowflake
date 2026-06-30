@@ -378,12 +378,14 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			if stage.StorageIntegration != nil {
 				storageIntegrationName = stage.StorageIntegration.Name()
 			}
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"storage_integration", "storage_integration", storageIntegrationName, storageIntegrationName, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
+				d,
 				directoryTableOutputMapping(*details.DirectoryTable),
 				outputMapping{"location.0.aws_access_point_arn", "aws_access_point_arn", details.Location.AwsAccessPointArn, details.Location.AwsAccessPointArn, nil},
 			); err != nil {
@@ -396,7 +398,8 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			if details.PrivateLink != nil {
 				usePrivatelinkEndpoint = details.PrivateLink.UsePrivatelinkEndpoint
 			}
-			if err = handleExternalChangesToObject(d,
+			if err = handleExternalChangesToObject(
+				d,
 				"describe_output.0.privatelink",
 				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", usePrivatelinkEndpoint, booleanStringFromBool(usePrivatelinkEndpoint), nil},
 			); err != nil {

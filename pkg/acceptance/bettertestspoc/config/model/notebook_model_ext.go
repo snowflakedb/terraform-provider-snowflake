@@ -12,7 +12,8 @@ func (n *NotebookModel) WithFrom(path string, stageId sdk.SchemaObjectIdentifier
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"stage": tfconfig.StringVariable(stageId.FullyQualifiedName()),
 			"path":  tfconfig.StringVariable(path),
-		}))
+		}),
+	)
 	return n
 }
 

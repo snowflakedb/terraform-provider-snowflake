@@ -50,6 +50,7 @@ type CurrentAccountModel struct {
 	EnableEgressCostOptimizer                        tfconfig.Variable `json:"enable_egress_cost_optimizer,omitempty"`
 	EnableIdentifierFirstLogin                       tfconfig.Variable `json:"enable_identifier_first_login,omitempty"`
 	EnableInternalStagesPrivatelink                  tfconfig.Variable `json:"enable_internal_stages_privatelink,omitempty"`
+	EnablePerAccountAppServicePrivatelinkUrl         tfconfig.Variable `json:"enable_per_account_app_service_privatelink_url,omitempty"`
 	EnableTriSecretAndRekeyOptOutForImageRepository  tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_image_repository,omitempty"`
 	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage,omitempty"`
 	EnableUnhandledExceptionsReporting               tfconfig.Variable `json:"enable_unhandled_exceptions_reporting,omitempty"`
@@ -384,6 +385,11 @@ func (c *CurrentAccountModel) WithEnableIdentifierFirstLogin(enableIdentifierFir
 
 func (c *CurrentAccountModel) WithEnableInternalStagesPrivatelink(enableInternalStagesPrivatelink bool) *CurrentAccountModel {
 	c.EnableInternalStagesPrivatelink = tfconfig.BoolVariable(enableInternalStagesPrivatelink)
+	return c
+}
+
+func (c *CurrentAccountModel) WithEnablePerAccountAppServicePrivatelinkUrl(enablePerAccountAppServicePrivatelinkUrl bool) *CurrentAccountModel {
+	c.EnablePerAccountAppServicePrivatelinkUrl = tfconfig.BoolVariable(enablePerAccountAppServicePrivatelinkUrl)
 	return c
 }
 
@@ -1003,6 +1009,11 @@ func (c *CurrentAccountModel) WithEnableIdentifierFirstLoginValue(value tfconfig
 
 func (c *CurrentAccountModel) WithEnableInternalStagesPrivatelinkValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.EnableInternalStagesPrivatelink = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithEnablePerAccountAppServicePrivatelinkUrlValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.EnablePerAccountAppServicePrivatelinkUrl = value
 	return c
 }
 

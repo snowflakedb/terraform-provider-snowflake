@@ -73,7 +73,7 @@ func (s *SchemaParametersAssert) HasDefaultParameterValueOnLevel(parameterName s
 // - have an expected level
 func (s *SchemaParametersAssert) HasAllDefaults() *SchemaParametersAssert {
 	return s.
-		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultDDLCollation, sdk.ParameterTypeSnowflakeDefault) // modified manually
+		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault) // modified manually
 }
 
 func (s *SchemaParametersAssert) HasAllDefaultsExplicit() *SchemaParametersAssert {
@@ -86,7 +86,7 @@ func (s *SchemaParametersAssert) HasAllDefaultsExplicit() *SchemaParametersAsser
 ////////////////////////////
 
 func (s *SchemaParametersAssert) HasDefaultDdlCollation(expected string) *SchemaParametersAssert {
-	s.AddAssertion(assert.SnowflakeParameterValueSet(sdk.ObjectParameterDefaultDDLCollation, expected)) // modified manually
+	s.AddAssertion(assert.SnowflakeParameterValueSet(sdk.ObjectParameterDefaultDdlCollation, expected)) // modified manually
 	return s
 }
 
@@ -95,7 +95,7 @@ func (s *SchemaParametersAssert) HasDefaultDdlCollation(expected string) *Schema
 ////////////////////////////
 
 func (s *SchemaParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *SchemaParametersAssert {
-	s.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDefaultDDLCollation, expected)) // modified manually
+	s.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDefaultDdlCollation, expected)) // modified manually
 	return s
 }
 
@@ -104,7 +104,7 @@ func (s *SchemaParametersAssert) HasDefaultDdlCollationLevel(expected sdk.Parame
 ////////////////////////////////////
 
 func (s *SchemaParametersAssert) HasDefaultDefaultDdlCollationValue() *SchemaParametersAssert {
-	return s.HasDefaultParameterValue(sdk.ObjectParameterDefaultDDLCollation) // modified manually
+	return s.HasDefaultParameterValue(sdk.ObjectParameterDefaultDdlCollation) // modified manually
 }
 
 /////////////////////////////////////////////

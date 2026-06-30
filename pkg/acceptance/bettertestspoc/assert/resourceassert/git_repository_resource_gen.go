@@ -16,7 +16,7 @@ func GitRepositoryResource(t *testing.T, name string) *GitRepositoryResourceAsse
 	t.Helper()
 
 	return &GitRepositoryResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGitRepositoryResource(t *testing.T, id string) *GitRepositoryResour
 	t.Helper()
 
 	return &GitRepositoryResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -77,42 +77,42 @@ func (g *GitRepositoryResourceAssert) HasOrigin(expected string) *GitRepositoryR
 ///////////////////////////////////
 
 func (g *GitRepositoryResourceAssert) HasDatabaseString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("database", expected))
+	g.ValueSet("database", expected)
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasSchemaString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("schema", expected))
+	g.ValueSet("schema", expected)
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNameString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("name", expected))
+	g.ValueSet("name", expected)
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasApiIntegrationString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("api_integration", expected))
+	g.ValueSet("api_integration", expected)
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasCommentString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("comment", expected))
+	g.ValueSet("comment", expected)
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasFullyQualifiedNameString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	g.ValueSet("fully_qualified_name", expected)
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasGitCredentialsString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("git_credentials", expected))
+	g.ValueSet("git_credentials", expected)
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasOriginString(expected string) *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("origin", expected))
+	g.ValueSet("origin", expected)
 	return g
 }
 
@@ -121,42 +121,42 @@ func (g *GitRepositoryResourceAssert) HasOriginString(expected string) *GitRepos
 ///////////////////////////////
 
 func (g *GitRepositoryResourceAssert) HasNoDatabase() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("database"))
+	g.ValueNotSet("database")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNoSchema() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("schema"))
+	g.ValueNotSet("schema")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNoName() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("name"))
+	g.ValueNotSet("name")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNoApiIntegration() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("api_integration"))
+	g.ValueNotSet("api_integration")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNoComment() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("comment"))
+	g.ValueNotSet("comment")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNoFullyQualifiedName() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	g.ValueNotSet("fully_qualified_name")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNoGitCredentials() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("git_credentials"))
+	g.ValueNotSet("git_credentials")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNoOrigin() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("origin"))
+	g.ValueNotSet("origin")
 	return g
 }
 
@@ -165,17 +165,17 @@ func (g *GitRepositoryResourceAssert) HasNoOrigin() *GitRepositoryResourceAssert
 ////////////////////////////
 
 func (g *GitRepositoryResourceAssert) HasCommentEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("comment", ""))
+	g.ValueSet("comment", "")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasFullyQualifiedNameEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	g.ValueSet("fully_qualified_name", "")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasGitCredentialsEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValueSet("git_credentials", ""))
+	g.ValueSet("git_credentials", "")
 	return g
 }
 
@@ -184,41 +184,41 @@ func (g *GitRepositoryResourceAssert) HasGitCredentialsEmpty() *GitRepositoryRes
 ///////////////////////////////
 
 func (g *GitRepositoryResourceAssert) HasDatabaseNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("database"))
+	g.ValuePresent("database")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasSchemaNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("schema"))
+	g.ValuePresent("schema")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasNameNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("name"))
+	g.ValuePresent("name")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasApiIntegrationNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("api_integration"))
+	g.ValuePresent("api_integration")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasCommentNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("comment"))
+	g.ValuePresent("comment")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasFullyQualifiedNameNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	g.ValuePresent("fully_qualified_name")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasGitCredentialsNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("git_credentials"))
+	g.ValuePresent("git_credentials")
 	return g
 }
 
 func (g *GitRepositoryResourceAssert) HasOriginNotEmpty() *GitRepositoryResourceAssert {
-	g.AddAssertion(assert.ValuePresent("origin"))
+	g.ValuePresent("origin")
 	return g
 }

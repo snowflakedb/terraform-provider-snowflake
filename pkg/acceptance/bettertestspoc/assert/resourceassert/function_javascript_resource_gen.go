@@ -16,7 +16,7 @@ func FunctionJavascriptResource(t *testing.T, name string) *FunctionJavascriptRe
 	t.Helper()
 
 	return &FunctionJavascriptResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedFunctionJavascriptResource(t *testing.T, id string) *FunctionJavasc
 	t.Helper()
 
 	return &FunctionJavascriptResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -119,82 +119,82 @@ func (f *FunctionJavascriptResourceAssert) HasTraceLevel(expected string) *Funct
 ///////////////////////////////////
 
 func (f *FunctionJavascriptResourceAssert) HasDatabaseString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("database", expected))
+	f.ValueSet("database", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasSchemaString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("schema", expected))
+	f.ValueSet("schema", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNameString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("name", expected))
+	f.ValueSet("name", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasCommentString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("comment", expected))
+	f.ValueSet("comment", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasEnableConsoleOutputString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("enable_console_output", expected))
+	f.ValueSet("enable_console_output", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFullyQualifiedNameString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	f.ValueSet("fully_qualified_name", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFunctionDefinitionString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_definition", expected))
+	f.ValueSet("function_definition", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFunctionLanguageString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_language", expected))
+	f.ValueSet("function_language", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasIsSecureString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("is_secure", expected))
+	f.ValueSet("is_secure", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasLogEventLevelString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_event_level", expected))
+	f.ValueSet("log_event_level", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasLogLevelString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_level", expected))
+	f.ValueSet("log_level", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasMetricLevelString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("metric_level", expected))
+	f.ValueSet("metric_level", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNullInputBehaviorString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("null_input_behavior", expected))
+	f.ValueSet("null_input_behavior", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
+	f.ValueSet("return_results_behavior", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasReturnTypeString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_type", expected))
+	f.ValueSet("return_type", expected)
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasTraceLevelString(expected string) *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("trace_level", expected))
+	f.ValueSet("trace_level", expected)
 	return f
 }
 
@@ -203,82 +203,82 @@ func (f *FunctionJavascriptResourceAssert) HasTraceLevelString(expected string) 
 ///////////////////////////////
 
 func (f *FunctionJavascriptResourceAssert) HasNoDatabase() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("database"))
+	f.ValueNotSet("database")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoSchema() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("schema"))
+	f.ValueNotSet("schema")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoName() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("name"))
+	f.ValueNotSet("name")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoComment() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("comment"))
+	f.ValueNotSet("comment")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoEnableConsoleOutput() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("enable_console_output"))
+	f.ValueNotSet("enable_console_output")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoFullyQualifiedName() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	f.ValueNotSet("fully_qualified_name")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoFunctionDefinition() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("function_definition"))
+	f.ValueNotSet("function_definition")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoFunctionLanguage() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("function_language"))
+	f.ValueNotSet("function_language")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoIsSecure() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("is_secure"))
+	f.ValueNotSet("is_secure")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoLogEventLevel() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("log_event_level"))
+	f.ValueNotSet("log_event_level")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoLogLevel() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("log_level"))
+	f.ValueNotSet("log_level")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoMetricLevel() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("metric_level"))
+	f.ValueNotSet("metric_level")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoNullInputBehavior() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("null_input_behavior"))
+	f.ValueNotSet("null_input_behavior")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoReturnResultsBehavior() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("return_results_behavior"))
+	f.ValueNotSet("return_results_behavior")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoReturnType() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("return_type"))
+	f.ValueNotSet("return_type")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNoTraceLevel() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("trace_level"))
+	f.ValueNotSet("trace_level")
 	return f
 }
 
@@ -287,62 +287,62 @@ func (f *FunctionJavascriptResourceAssert) HasNoTraceLevel() *FunctionJavascript
 ////////////////////////////
 
 func (f *FunctionJavascriptResourceAssert) HasArgumentsEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	f.ValueSet("arguments.#", "0")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasCommentEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("comment", ""))
+	f.ValueSet("comment", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasEnableConsoleOutputEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	f.ValueSet("enable_console_output", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFullyQualifiedNameEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	f.ValueSet("fully_qualified_name", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFunctionLanguageEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_language", ""))
+	f.ValueSet("function_language", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasIsSecureEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	f.ValueSet("is_secure", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasLogEventLevelEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_event_level", ""))
+	f.ValueSet("log_event_level", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasLogLevelEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_level", ""))
+	f.ValueSet("log_level", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasMetricLevelEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("metric_level", ""))
+	f.ValueSet("metric_level", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNullInputBehaviorEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("null_input_behavior", ""))
+	f.ValueSet("null_input_behavior", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasReturnResultsBehaviorEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_results_behavior", ""))
+	f.ValueSet("return_results_behavior", "")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasTraceLevelEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValueSet("trace_level", ""))
+	f.ValueSet("trace_level", "")
 	return f
 }
 
@@ -351,81 +351,81 @@ func (f *FunctionJavascriptResourceAssert) HasTraceLevelEmpty() *FunctionJavascr
 ///////////////////////////////
 
 func (f *FunctionJavascriptResourceAssert) HasDatabaseNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("database"))
+	f.ValuePresent("database")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasSchemaNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("schema"))
+	f.ValuePresent("schema")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNameNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("name"))
+	f.ValuePresent("name")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasCommentNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("comment"))
+	f.ValuePresent("comment")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasEnableConsoleOutputNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("enable_console_output"))
+	f.ValuePresent("enable_console_output")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFullyQualifiedNameNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	f.ValuePresent("fully_qualified_name")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFunctionDefinitionNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("function_definition"))
+	f.ValuePresent("function_definition")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasFunctionLanguageNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("function_language"))
+	f.ValuePresent("function_language")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasIsSecureNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("is_secure"))
+	f.ValuePresent("is_secure")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasLogEventLevelNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("log_event_level"))
+	f.ValuePresent("log_event_level")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasLogLevelNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("log_level"))
+	f.ValuePresent("log_level")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasMetricLevelNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("metric_level"))
+	f.ValuePresent("metric_level")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasNullInputBehaviorNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("null_input_behavior"))
+	f.ValuePresent("null_input_behavior")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasReturnResultsBehaviorNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("return_results_behavior"))
+	f.ValuePresent("return_results_behavior")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasReturnTypeNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("return_type"))
+	f.ValuePresent("return_type")
 	return f
 }
 
 func (f *FunctionJavascriptResourceAssert) HasTraceLevelNotEmpty() *FunctionJavascriptResourceAssert {
-	f.AddAssertion(assert.ValuePresent("trace_level"))
+	f.ValuePresent("trace_level")
 	return f
 }

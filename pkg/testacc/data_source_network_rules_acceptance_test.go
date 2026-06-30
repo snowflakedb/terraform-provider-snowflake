@@ -98,7 +98,8 @@ func TestAcc_NetworkRules_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
-	nr, nrCleanup := testClient().NetworkRule.CreateWithRequest(t,
+	nr, nrCleanup := testClient().NetworkRule.CreateWithRequest(
+		t,
 		sdk.NewCreateNetworkRuleRequest(id, sdk.NetworkRuleTypeIpv4, []sdk.NetworkRuleValue{{Value: "1.2.3.4"}, {Value: "5.6.7.8"}}, sdk.NetworkRuleModeIngress).
 			WithComment(comment),
 	)
@@ -123,7 +124,8 @@ func TestAcc_NetworkRules_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.DatasourceFromModel(t, withoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.NetworkRulesDatasourceShowOutput(t, withoutDescribe.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(nr.Name).
@@ -142,7 +144,8 @@ func TestAcc_NetworkRules_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.DatasourceFromModel(t, withDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(withDescribe.DatasourceReference(), "network_rules.#", "1")),
 					resourceshowoutputassert.NetworkRulesDatasourceShowOutput(t, withDescribe.DatasourceReference()).
 						HasCreatedOnNotEmpty().

@@ -20,6 +20,12 @@ var (
 		"PostgresInstanceResetAccessRole", "PostgresInstanceResetAccessRoles",
 		"snowflake_admin", "application",
 	)
+	PostgresInstanceComputeFamilyEnumDef = g.NewEnum(
+		"PostgresInstanceComputeFamily", "PostgresInstanceComputeFamilies",
+		"STANDARD_M", "STANDARD_L", "STANDARD_XL", "STANDARD_2XL", "STANDARD_4XL", "STANDARD_8XL", "STANDARD_12XL", "STANDARD_24XL",
+		"HIGHMEM_L", "HIGHMEM_XL", "HIGHMEM_2XL", "HIGHMEM_4XL", "HIGHMEM_8XL", "HIGHMEM_12XL", "HIGHMEM_16XL", "HIGHMEM_24XL", "HIGHMEM_32XL", "HIGHMEM_48XL",
+		"BURST_XS", "BURST_S", "BURST_M",
+	)
 )
 
 var postgresInstancesPairs = g.StructPair("postgresInstancesRow", "PostgresInstance").
@@ -37,7 +43,7 @@ var postgresInstancesPairs = g.StructPair("postgresInstancesRow", "PostgresInsta
 	Number("storage_size").
 	Text("postgres_version").
 	OptionalText("postgres_settings").
-	BoolFromText("is_ha", g.WithBoolTrueValue("true")).
+	BoolFromText("is_ha", g.WithBoolTrueValue("true"), g.WithPlainFieldName("IsHighlyAvailable")).
 	Number("retention_time").
 	Enum("state", PostgresInstanceStateEnumDef).
 	OptionalText("comment")
@@ -63,9 +69,9 @@ var postgresInstancesDef = g.NewInterface(
 			g.ParameterOptions().NoQuotes().Required(),
 		).
 		OptionalNumberAssignment("POSTGRES_VERSION", g.ParameterOptions()).
-		OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().SingleQuotes()).
+		OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("NETWORK_POLICY")).
 		OptionalBooleanAssignment("HIGH_AVAILABILITY", g.ParameterOptions()).
-		OptionalTextAssignment("STORAGE_INTEGRATION", g.ParameterOptions().SingleQuotes()).
+		OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 		OptionalTextAssignment("POSTGRES_SETTINGS", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalTags().
@@ -114,16 +120,17 @@ var postgresInstancesDef = g.NewInterface(
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("PostgresInstanceSet").
-				OptionalTextAssignment("NETWORK_POLICY", g.ParameterOptions().SingleQuotes()).
-				OptionalEnumAssignment(
-					"AUTHENTICATION_AUTHORITY", PostgresInstanceAuthenticationAuthorityEnumDef,
+				OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("NETWORK_POLICY")).
+				OptionalAssignment(
+					"AUTHENTICATION_AUTHORITY",
+					PostgresInstanceAuthenticationAuthorityEnumDef.Kind(),
 					g.ParameterOptions().NoQuotes(),
 				).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				OptionalBooleanAssignment("HIGH_AVAILABILITY", g.ParameterOptions()).
 				OptionalTextAssignment("COMPUTE_FAMILY", g.ParameterOptions().SingleQuotes()).
 				OptionalNumberAssignment("STORAGE_SIZE_GB", g.ParameterOptions()).
-				OptionalTextAssignment("STORAGE_INTEGRATION", g.ParameterOptions().SingleQuotes()).
+				OptionalIdentifier("StorageIntegration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("STORAGE_INTEGRATION")).
 				OptionalNumberAssignment("POSTGRES_VERSION", g.ParameterOptions()).
 				OptionalNumberAssignment("MAINTENANCE_WINDOW_START", g.ParameterOptions()).
 				OptionalTextAssignment("POSTGRES_SETTINGS", g.ParameterOptions().SingleQuotes()).
@@ -191,4 +198,15 @@ var postgresInstancesDef = g.NewInterface(
 	PostgresInstanceStateEnumDef,
 	PostgresInstanceAuthenticationAuthorityEnumDef,
 	PostgresInstanceResetAccessRoleEnumDef,
+	PostgresInstanceComputeFamilyEnumDef,
+).WithCustomInterfaceMethod(
+	"DescribeDetails",
+	"",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+	"*PostgresInstanceDetails", "error",
+).WithCustomInterfaceMethod(
+	"CreateSafely",
+	"CreateSafely creates the instance and polls until it reaches READY state.\nThe caller should set a deadline on ctx via context.WithTimeout.\nImplemented in postgres_instances_ext.go.",
+	[]*g.MethodParameter{g.NewMethodParameter("request", "*CreatePostgresInstanceRequest")},
+	"*PostgresInstance", "error",
 )

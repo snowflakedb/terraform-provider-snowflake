@@ -187,10 +187,12 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_BasicUseCase(t *t
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().SecurityIntegration.AlterApiAuthenticationWithClientCredentialsFlow(t, sdk.NewAlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(id).
-						WithSet(*sdk.NewApiAuthenticationWithClientCredentialsFlowIntegrationSetRequest().
-							WithComment(comment),
-						),
+					testClient().SecurityIntegration.AlterApiAuthenticationWithClientCredentialsFlow(
+						t, sdk.NewAlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(id).
+							WithSet(
+								*sdk.NewApiAuthenticationWithClientCredentialsFlowIntegrationSetRequest().
+									WithComment(comment),
+							),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -248,7 +250,8 @@ func TestAcc_ApiAuthenticationIntegrationWithClientCredentials_CompleteUseCase(t
 			// Create - with all optionals (including force-new fields)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SecurityIntegration(t, id).
 						HasName(id.Name()).
 						HasIntegrationType("API_AUTHENTICATION").

@@ -27,15 +27,16 @@ func TestInt_Notebooks(t *testing.T) {
 		notebook, err := client.Notebooks.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.NotebookFromObject(t, notebook).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasNoComment().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoQueryWarehouse().
-			HasOwnerRoleType("ROLE"),
+		assertThatObject(
+			t, objectassert.NotebookFromObject(t, notebook).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasNoComment().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasNoQueryWarehouse().
+				HasOwnerRoleType("ROLE"),
 		)
 	})
 
@@ -76,47 +77,49 @@ func TestInt_Notebooks(t *testing.T) {
 		notebook, err := client.Notebooks.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.NotebookFromObject(t, notebook).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("comment").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasQueryWarehouse(queryWarehouse.ID()).
-			HasOwnerRoleType("ROLE").
-			HasCodeWarehouse(warehouse.ID()),
+		assertThatObject(
+			t, objectassert.NotebookFromObject(t, notebook).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("comment").
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasQueryWarehouse(queryWarehouse.ID()).
+				HasOwnerRoleType("ROLE").
+				HasCodeWarehouse(warehouse.ID()),
 		)
 
-		assertThatObject(t, objectassert.NotebookDetails(t, notebook.ID()).
-			HasTitle("title").
-			HasMainFile("example.ipynb").
-			HasQueryWarehouse(queryWarehouse.ID()).
-			HasUrlId().
-			HasNonEmptyDefaultPackages().
-			HasUserPackages("").
-			HasComputePool(computePool.ID()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasImportUrls("[]").
-			HasExternalAccessIntegrations("[]").
-			HasExternalAccessSecrets("{}").
-			HasCodeWarehouse(warehouse.ID().Name()).
-			HasIdleAutoShutdownTimeSeconds(3600).
-			HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
-			HasName(id.Name()).
-			HasComment("comment").
-			HasDefaultVersion("FIRST").
-			HasDefaultVersionName("VERSION$1").
-			HasNoDefaultVersionAlias().
-			HasNonEmptyDefaultVersionLocationUri().
-			HasDefaultVersionSourceLocationUri(stage.Location()).
-			HasNoDefaultVersionGitCommitHash().
-			HasLastVersionName("VERSION$1").
-			HasNoLastVersionAlias().
-			HasNonEmptyLastVersionLocationUri().
-			HasLastVersionSourceLocationUri(stage.Location()).
-			HasNoLastVersionGitCommitHash().
-			HasNoLiveVersionLocationUri(),
+		assertThatObject(
+			t, objectassert.NotebookDetails(t, notebook.ID()).
+				HasTitle("title").
+				HasMainFile("example.ipynb").
+				HasQueryWarehouse(queryWarehouse.ID()).
+				HasUrlId().
+				HasNonEmptyDefaultPackages().
+				HasUserPackages("").
+				HasComputePool(computePool.ID()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasImportUrls("[]").
+				HasExternalAccessIntegrations("[]").
+				HasExternalAccessSecrets("{}").
+				HasCodeWarehouse(warehouse.ID().Name()).
+				HasIdleAutoShutdownTimeSeconds(3600).
+				HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
+				HasName(id.Name()).
+				HasComment("comment").
+				HasDefaultVersion("FIRST").
+				HasDefaultVersionName("VERSION$1").
+				HasNoDefaultVersionAlias().
+				HasNonEmptyDefaultVersionLocationUri().
+				HasDefaultVersionSourceLocationUri(stage.Location()).
+				HasNoDefaultVersionGitCommitHash().
+				HasLastVersionName("VERSION$1").
+				HasNoLastVersionAlias().
+				HasNonEmptyLastVersionLocationUri().
+				HasLastVersionSourceLocationUri(stage.Location()).
+				HasNoLastVersionGitCommitHash().
+				HasNoLiveVersionLocationUri(),
 		)
 	})
 
@@ -153,47 +156,49 @@ func TestInt_Notebooks(t *testing.T) {
 		updatedNotebook, err := client.Notebooks.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.NotebookFromObject(t, updatedNotebook).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("comment").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasQueryWarehouse(queryWarehouse.ID()).
-			HasOwnerRoleType("ROLE").
-			HasCodeWarehouse(warehouse.ID()),
+		assertThatObject(
+			t, objectassert.NotebookFromObject(t, updatedNotebook).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("comment").
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasQueryWarehouse(queryWarehouse.ID()).
+				HasOwnerRoleType("ROLE").
+				HasCodeWarehouse(warehouse.ID()),
 		)
 
-		assertThatObject(t, objectassert.NotebookDetails(t, updatedNotebook.ID()).
-			HasNoTitle().
-			HasMainFile("example.ipynb").
-			HasQueryWarehouse(queryWarehouse.ID()).
-			HasUrlId().
-			HasNonEmptyDefaultPackages().
-			HasUserPackages("").
-			HasComputePool(computePool.ID()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasImportUrls("[]").
-			HasExternalAccessIntegrations("[]").
-			HasExternalAccessSecrets("{}").
-			HasCodeWarehouse(warehouse.ID().Name()).
-			HasIdleAutoShutdownTimeSeconds(3600).
-			HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
-			HasName(id.Name()).
-			HasComment("comment").
-			HasDefaultVersion("LAST").
-			HasDefaultVersionName("VERSION$1").
-			HasNoDefaultVersionAlias().
-			HasNonEmptyDefaultVersionLocationUri().
-			HasNoDefaultVersionSourceLocationUri().
-			HasNoDefaultVersionGitCommitHash().
-			HasLastVersionName("VERSION$1").
-			HasNoLastVersionAlias().
-			HasNonEmptyLastVersionLocationUri().
-			HasNoDefaultVersionSourceLocationUri().
-			HasNoLastVersionGitCommitHash().
-			HasNoLiveVersionLocationUri(),
+		assertThatObject(
+			t, objectassert.NotebookDetails(t, updatedNotebook.ID()).
+				HasNoTitle().
+				HasMainFile("example.ipynb").
+				HasQueryWarehouse(queryWarehouse.ID()).
+				HasUrlId().
+				HasNonEmptyDefaultPackages().
+				HasUserPackages("").
+				HasComputePool(computePool.ID()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasImportUrls("[]").
+				HasExternalAccessIntegrations("[]").
+				HasExternalAccessSecrets("{}").
+				HasCodeWarehouse(warehouse.ID().Name()).
+				HasIdleAutoShutdownTimeSeconds(3600).
+				HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
+				HasName(id.Name()).
+				HasComment("comment").
+				HasDefaultVersion("LAST").
+				HasDefaultVersionName("VERSION$1").
+				HasNoDefaultVersionAlias().
+				HasNonEmptyDefaultVersionLocationUri().
+				HasNoDefaultVersionSourceLocationUri().
+				HasNoDefaultVersionGitCommitHash().
+				HasLastVersionName("VERSION$1").
+				HasNoLastVersionAlias().
+				HasNonEmptyLastVersionLocationUri().
+				HasNoDefaultVersionSourceLocationUri().
+				HasNoLastVersionGitCommitHash().
+				HasNoLiveVersionLocationUri(),
 		)
 	})
 
@@ -265,47 +270,49 @@ func TestInt_Notebooks(t *testing.T) {
 		updatedNotebook, err := testClientHelper().Notebook.Show(t, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.NotebookFromObject(t, updatedNotebook).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasNoComment().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoQueryWarehouse().
-			HasOwnerRoleType("ROLE").
-			HasCodeWarehouse(warehouse.ID()),
+		assertThatObject(
+			t, objectassert.NotebookFromObject(t, updatedNotebook).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasNoComment().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasNoQueryWarehouse().
+				HasOwnerRoleType("ROLE").
+				HasCodeWarehouse(warehouse.ID()),
 		)
 
-		assertThatObject(t, objectassert.NotebookDetails(t, updatedNotebook.ID()).
-			HasTitle("title").
-			HasMainFile("example.ipynb").
-			HasNoQueryWarehouse().
-			HasUrlId().
-			HasNonEmptyDefaultPackages().
-			HasUserPackages("").
-			HasNoComputePool().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasImportUrls("[]").
-			HasExternalAccessIntegrations("[]").
-			HasExternalAccessSecrets("{}").
-			HasCodeWarehouse(warehouse.ID().Name()).
-			HasIdleAutoShutdownTimeSeconds(3600).
-			HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
-			HasName(id.Name()).
-			HasNoComment().
-			HasDefaultVersion("FIRST").
-			HasDefaultVersionName("VERSION$1").
-			HasNoDefaultVersionAlias().
-			HasNonEmptyDefaultVersionLocationUri().
-			HasDefaultVersionSourceLocationUri(stage.Location()).
-			HasNoDefaultVersionGitCommitHash().
-			HasLastVersionName("VERSION$1").
-			HasNoLastVersionAlias().
-			HasNonEmptyLastVersionLocationUri().
-			HasDefaultVersionSourceLocationUri(stage.Location()).
-			HasNoLastVersionGitCommitHash().
-			HasNoLiveVersionLocationUri(),
+		assertThatObject(
+			t, objectassert.NotebookDetails(t, updatedNotebook.ID()).
+				HasTitle("title").
+				HasMainFile("example.ipynb").
+				HasNoQueryWarehouse().
+				HasUrlId().
+				HasNonEmptyDefaultPackages().
+				HasUserPackages("").
+				HasNoComputePool().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasImportUrls("[]").
+				HasExternalAccessIntegrations("[]").
+				HasExternalAccessSecrets("{}").
+				HasCodeWarehouse(warehouse.ID().Name()).
+				HasIdleAutoShutdownTimeSeconds(3600).
+				HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
+				HasName(id.Name()).
+				HasNoComment().
+				HasDefaultVersion("FIRST").
+				HasDefaultVersionName("VERSION$1").
+				HasNoDefaultVersionAlias().
+				HasNonEmptyDefaultVersionLocationUri().
+				HasDefaultVersionSourceLocationUri(stage.Location()).
+				HasNoDefaultVersionGitCommitHash().
+				HasLastVersionName("VERSION$1").
+				HasNoLastVersionAlias().
+				HasNonEmptyLastVersionLocationUri().
+				HasDefaultVersionSourceLocationUri(stage.Location()).
+				HasNoLastVersionGitCommitHash().
+				HasNoLiveVersionLocationUri(),
 		)
 	})
 
@@ -334,34 +341,35 @@ func TestInt_Notebooks(t *testing.T) {
 		notebook, notebookCleanup := testClientHelper().Notebook.Create(t)
 		t.Cleanup(notebookCleanup)
 
-		assertThatObject(t, objectassert.NotebookDetails(t, notebook.ID()).
-			HasMainFile("notebook_app.ipynb").
-			HasNoQueryWarehouse().
-			HasUrlId().
-			HasNonEmptyDefaultPackages().
-			HasUserPackages("").
-			HasNoComputePool().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasImportUrls("[]").
-			HasExternalAccessIntegrations("[]").
-			HasExternalAccessSecrets("{}").
-			HasCodeWarehouse("SYSTEM$STREAMLIT_NOTEBOOK_WH").
-			HasIdleAutoShutdownTimeSeconds(1800).
-			HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
-			HasName(notebook.ID().Name()).
-			HasNoComment().
-			HasDefaultVersion("LAST").
-			HasDefaultVersionName("VERSION$1").
-			HasNoDefaultVersionAlias().
-			HasNonEmptyDefaultVersionLocationUri().
-			HasNoDefaultVersionSourceLocationUri().
-			HasNoDefaultVersionGitCommitHash().
-			HasLastVersionName("VERSION$1").
-			HasNoLastVersionAlias().
-			HasNonEmptyLastVersionLocationUri().
-			HasNoLastVersionSourceLocationUri().
-			HasNoLastVersionGitCommitHash().
-			HasNoLiveVersionLocationUri(),
+		assertThatObject(
+			t, objectassert.NotebookDetails(t, notebook.ID()).
+				HasMainFile("notebook_app.ipynb").
+				HasNoQueryWarehouse().
+				HasUrlId().
+				HasNonEmptyDefaultPackages().
+				HasUserPackages("").
+				HasNoComputePool().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasImportUrls("[]").
+				HasExternalAccessIntegrations("[]").
+				HasExternalAccessSecrets("{}").
+				HasCodeWarehouse("SYSTEM$STREAMLIT_NOTEBOOK_WH").
+				HasIdleAutoShutdownTimeSeconds(1800).
+				HasRuntimeEnvironmentVersion("WH-RUNTIME-2.0").
+				HasName(notebook.ID().Name()).
+				HasNoComment().
+				HasDefaultVersion("LAST").
+				HasDefaultVersionName("VERSION$1").
+				HasNoDefaultVersionAlias().
+				HasNonEmptyDefaultVersionLocationUri().
+				HasNoDefaultVersionSourceLocationUri().
+				HasNoDefaultVersionGitCommitHash().
+				HasLastVersionName("VERSION$1").
+				HasNoLastVersionAlias().
+				HasNonEmptyLastVersionLocationUri().
+				HasNoLastVersionSourceLocationUri().
+				HasNoLastVersionGitCommitHash().
+				HasNoLiveVersionLocationUri(),
 		)
 	})
 

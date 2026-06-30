@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -32,16 +33,16 @@ var tableSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "The schema in which to create the table.",
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The schema in which to create the table.",
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "The database in which to create the table.",
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      "The database in which to create the table.",
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"cluster_by": {
 		Type:        schema.TypeList,
@@ -222,7 +223,9 @@ func Table() *schema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.TableResource), TrackingDeleteWrapper(resources.Table, deleteFunc)),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Table, customdiff.All(
-			ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "name"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 		)),
 
 		Schema: tableSchema,
@@ -722,9 +725,28 @@ func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 // UpdateTable implements schema.UpdateFunc.
 func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
+
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && (d.HasChange("database") || d.HasChange("schema")) {
+		tableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithNewName(&targetId))
+			}
+		}
+
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			tableRenameFn,
+			client.Tables.ShowByID,
+			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(id) },
+			"table",
+		); diags != nil {
+			return diags
+		}
+	}
 
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))

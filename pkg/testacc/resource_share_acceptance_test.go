@@ -231,7 +231,8 @@ func TestAcc_Share_withGrantedDatabase(t *testing.T) {
 			// Step 1: Share with no accounts + grant DB to share (no accounts yet).
 			{
 				Config: accconfig.FromModels(t, shareModel, grantModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ShareResource(t, shareModel.ResourceReference()).
 						HasName(id.Name()).
 						HasAccountsEmpty(),
@@ -242,7 +243,8 @@ func TestAcc_Share_withGrantedDatabase(t *testing.T) {
 			// (skipping the temp DB workaround) when share.DatabaseName is set.
 			{
 				Config: accconfig.FromModels(t, shareModelWithAccount, grantModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ShareResource(t, shareModelWithAccount.ResourceReference()).
 						HasName(id.Name()).
 						HasAccounts(account2.Name()),
@@ -251,7 +253,8 @@ func TestAcc_Share_withGrantedDatabase(t *testing.T) {
 			// Step 3: Remove account (DB still granted).
 			{
 				Config: accconfig.FromModels(t, shareModel, grantModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ShareResource(t, shareModel.ResourceReference()).
 						HasName(id.Name()).
 						HasAccountsEmpty(),

@@ -194,6 +194,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.NetworkRule{},
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.NetworkRuleDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Pipe{},
 	},
@@ -229,6 +234,21 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationAzureDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationExternalMcpDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationExternalMcpDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationGitHttpsApiDetails{},
 		IsDataSourceOutput: true,
 	},
 	{
@@ -328,6 +348,15 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.TagReference{},
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.PostgresInstanceDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.PolicyReference{},
 	},
 }
 

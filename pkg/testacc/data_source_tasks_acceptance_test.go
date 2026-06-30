@@ -156,16 +156,18 @@ func TestAcc_Tasks_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, datasourceModelWithoutParameters),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowOutputAsserts,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutParameters.DatasourceReference(), "tasks.0.parameters.#", "0")),
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, datasourceModelWithParameters),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowOutputAsserts,
-					resourceparametersassert.TaskDatasourceParameters(t, "snowflake_tasks.test").
+					resourceparametersassert.TasksDatasourceParameters(t, datasourceModelWithParameters.DatasourceReference()).
 						HasAllDefaults(),
 				),
 			},

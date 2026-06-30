@@ -77,7 +77,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		t.Helper()
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		issuer := random.String()
-		req := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeOptionCustom,
+		req := sdk.NewCreateExternalOauthSecurityIntegrationRequest(
+			id, false, sdk.ExternalOauthSecurityIntegrationTypeOptionCustom,
 			issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName,
 		)
 		if with != nil {

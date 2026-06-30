@@ -9,7 +9,8 @@ import (
 )
 
 func init() {
-	gen.AllSdkObjectDefinitions = append(gen.AllSdkObjectDefinitions,
+	gen.AllSdkObjectDefinitions = append(
+		gen.AllSdkObjectDefinitions,
 		apiIntegrationsDef,
 		applicationPackagesDef,
 		applicationRolesDef,
@@ -47,8 +48,11 @@ func init() {
 		passwordPoliciesDef,
 		postgresInstancesDef,
 		proceduresDef,
+		resourceMonitorsDef,
+		rolesDef,
 		rowAccessPoliciesDef,
 		secretsDef,
+		schemasDef,
 		securityIntegrationsDef,
 		semanticViewsDef,
 		sequencesDef,
@@ -60,6 +64,7 @@ func init() {
 		streamlitsDef,
 		streamsDef,
 		tagReferencesDef,
+		tagsDef,
 		tasksDef,
 		userProgrammaticAccessTokensDef,
 		viewsDef,

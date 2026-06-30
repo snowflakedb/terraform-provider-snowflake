@@ -16,7 +16,7 @@ func NetworkRuleResource(t *testing.T, name string) *NetworkRuleResourceAssert {
 	t.Helper()
 
 	return &NetworkRuleResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedNetworkRuleResource(t *testing.T, id string) *NetworkRuleResourceAs
 	t.Helper()
 
 	return &NetworkRuleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -77,37 +77,37 @@ func (n *NetworkRuleResourceAssert) HasValueList(expected ...string) *NetworkRul
 ///////////////////////////////////
 
 func (n *NetworkRuleResourceAssert) HasDatabaseString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("database", expected))
+	n.ValueSet("database", expected)
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasSchemaString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("schema", expected))
+	n.ValueSet("schema", expected)
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNameString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("name", expected))
+	n.ValueSet("name", expected)
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasCommentString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("comment", expected))
+	n.ValueSet("comment", expected)
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasFullyQualifiedNameString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	n.ValueSet("fully_qualified_name", expected)
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasModeString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("mode", expected))
+	n.ValueSet("mode", expected)
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasTypeString(expected string) *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("type", expected))
+	n.ValueSet("type", expected)
 	return n
 }
 
@@ -116,37 +116,37 @@ func (n *NetworkRuleResourceAssert) HasTypeString(expected string) *NetworkRuleR
 ///////////////////////////////
 
 func (n *NetworkRuleResourceAssert) HasNoDatabase() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("database"))
+	n.ValueNotSet("database")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNoSchema() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("schema"))
+	n.ValueNotSet("schema")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNoName() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("name"))
+	n.ValueNotSet("name")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNoComment() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("comment"))
+	n.ValueNotSet("comment")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNoFullyQualifiedName() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	n.ValueNotSet("fully_qualified_name")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNoMode() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("mode"))
+	n.ValueNotSet("mode")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNoType() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("type"))
+	n.ValueNotSet("type")
 	return n
 }
 
@@ -155,12 +155,12 @@ func (n *NetworkRuleResourceAssert) HasNoType() *NetworkRuleResourceAssert {
 ////////////////////////////
 
 func (n *NetworkRuleResourceAssert) HasCommentEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("comment", ""))
+	n.ValueSet("comment", "")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasFullyQualifiedNameEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	n.ValueSet("fully_qualified_name", "")
 	return n
 }
 
@@ -169,36 +169,36 @@ func (n *NetworkRuleResourceAssert) HasFullyQualifiedNameEmpty() *NetworkRuleRes
 ///////////////////////////////
 
 func (n *NetworkRuleResourceAssert) HasDatabaseNotEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValuePresent("database"))
+	n.ValuePresent("database")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasSchemaNotEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValuePresent("schema"))
+	n.ValuePresent("schema")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasNameNotEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValuePresent("name"))
+	n.ValuePresent("name")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasCommentNotEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValuePresent("comment"))
+	n.ValuePresent("comment")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasFullyQualifiedNameNotEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	n.ValuePresent("fully_qualified_name")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasModeNotEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValuePresent("mode"))
+	n.ValuePresent("mode")
 	return n
 }
 
 func (n *NetworkRuleResourceAssert) HasTypeNotEmpty() *NetworkRuleResourceAssert {
-	n.AddAssertion(assert.ValuePresent("type"))
+	n.ValuePresent("type")
 	return n
 }

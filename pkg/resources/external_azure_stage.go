@@ -320,12 +320,14 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			if stage.StorageIntegration != nil {
 				storageIntegrationName = stage.StorageIntegration.Name()
 			}
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"storage_integration", "storage_integration", storageIntegrationName, storageIntegrationName, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
+				d,
 				directoryTableOutputMapping(*details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)

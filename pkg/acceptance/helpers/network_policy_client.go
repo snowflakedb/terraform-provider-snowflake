@@ -32,8 +32,9 @@ func (c *NetworkPolicyClient) CreateNetworkPolicy(t *testing.T) (*sdk.NetworkPol
 // CreateNetworkPolicyNotEmpty tackles SF Error: 098519 (22023): Empty network policy [id] cannot be active.
 func (c *NetworkPolicyClient) CreateNetworkPolicyNotEmpty(t *testing.T) (*sdk.NetworkPolicy, func()) {
 	t.Helper()
-	return c.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(c.ids.RandomAccountObjectIdentifier()).
-		WithBlockedIpList([]sdk.IPRequest{*sdk.NewIPRequest("1.1.1.1")}),
+	return c.CreateNetworkPolicyWithRequest(
+		t, sdk.NewCreateNetworkPolicyRequest(c.ids.RandomAccountObjectIdentifier()).
+			WithBlockedIpList([]sdk.IPRequest{*sdk.NewIPRequest("1.1.1.1")}),
 	)
 }
 

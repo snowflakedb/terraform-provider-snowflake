@@ -144,7 +144,8 @@ func TestAcc_ExternalVolumes_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, externalVolumesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.ExternalVolumesDatasourceShowOutput(t, externalVolumesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasAllowWrites(true).

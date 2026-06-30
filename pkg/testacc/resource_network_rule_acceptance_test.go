@@ -66,7 +66,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasEntriesInValueList(2).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"),
-		resourceshowoutputassert.NetworkRuleDescOutput(t, ref).
+		resourceshowoutputassert.NetworkRuleDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
@@ -98,7 +98,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasEntriesInValueList(0).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"),
-		resourceshowoutputassert.NetworkRuleDescOutput(t, ref).
+		resourceshowoutputassert.NetworkRuleDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
@@ -130,7 +130,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasEntriesInValueList(2).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"),
-		resourceshowoutputassert.NetworkRuleDescOutput(t, ref).
+		resourceshowoutputassert.NetworkRuleDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
@@ -162,7 +162,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasEntriesInValueList(3).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"),
-		resourceshowoutputassert.NetworkRuleDescOutput(t, ref).
+		resourceshowoutputassert.NetworkRuleDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
@@ -194,7 +194,7 @@ func TestAcc_NetworkRule_BasicUseCase(t *testing.T) {
 			HasEntriesInValueList(len(hostPortValues)).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE"),
-		resourceshowoutputassert.NetworkRuleDescOutput(t, ref).
+		resourceshowoutputassert.NetworkRuleDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
@@ -305,7 +305,8 @@ func TestAcc_NetworkRule_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NetworkRuleResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -325,7 +326,7 @@ func TestAcc_NetworkRule_CompleteUseCase(t *testing.T) {
 						HasEntriesInValueList(2).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE"),
-					resourceshowoutputassert.NetworkRuleDescOutput(t, modelComplete.ResourceReference()).
+					resourceshowoutputassert.NetworkRuleDescribeOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).

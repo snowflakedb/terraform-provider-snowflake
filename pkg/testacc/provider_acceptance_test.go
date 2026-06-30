@@ -844,11 +844,12 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 func TestAcc_Provider_testFixedDefaultAuthenticatorForToken(t *testing.T) {
 	accountId := testClient().Context.CurrentAccountId(t)
 	// TODO(SNOW-1791729): Use a proper user.
-	providerConfig := config.FromModels(t, providermodel.SnowflakeProvider().
-		WithAccountName(accountId.AccountName()).
-		WithOrganizationName(accountId.OrganizationName()).
-		WithUser(random.String()).
-		WithToken(random.String()),
+	providerConfig := config.FromModels(
+		t, providermodel.SnowflakeProvider().
+			WithAccountName(accountId.AccountName()).
+			WithOrganizationName(accountId.OrganizationName()).
+			WithUser(random.String()).
+			WithToken(random.String()),
 		datasourceModel(),
 	)
 

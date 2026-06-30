@@ -7,6 +7,30 @@ import (
 	"strings"
 )
 
+type ApiIntegrationAllowedAuthenticationSecretsValue string
+
+const (
+	ApiIntegrationAllowedAuthenticationSecretsValueAll  ApiIntegrationAllowedAuthenticationSecretsValue = "ALL"
+	ApiIntegrationAllowedAuthenticationSecretsValueNone ApiIntegrationAllowedAuthenticationSecretsValue = "NONE"
+)
+
+var AllApiIntegrationAllowedAuthenticationSecretsValues = []ApiIntegrationAllowedAuthenticationSecretsValue{
+	ApiIntegrationAllowedAuthenticationSecretsValueAll,
+	ApiIntegrationAllowedAuthenticationSecretsValueNone,
+}
+
+func ToApiIntegrationAllowedAuthenticationSecretsValue(s string) (ApiIntegrationAllowedAuthenticationSecretsValue, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(ApiIntegrationAllowedAuthenticationSecretsValueAll):
+		return ApiIntegrationAllowedAuthenticationSecretsValueAll, nil
+	case string(ApiIntegrationAllowedAuthenticationSecretsValueNone):
+		return ApiIntegrationAllowedAuthenticationSecretsValueNone, nil
+	default:
+		return "", fmt.Errorf("invalid api integration allowed authentication secrets value: %s", s)
+	}
+}
+
 type ApiIntegrationAwsApiProviderType string
 
 const (

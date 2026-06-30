@@ -288,7 +288,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import_WrongProviderType(t *testing.
 	t.Cleanup(azureCleanup)
 
 	awsId := testClient().Ids.RandomAccountObjectIdentifier()
-	awsModel := model.ApiIntegrationAmazonApiGateway("t", awsId.Name(),
+	awsModel := model.ApiIntegrationAmazonApiGateway(
+		"t", awsId.Name(),
 		[]string{awsAllowedPrefix},
 		awsRoleArn,
 		string(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway),
@@ -335,7 +336,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}}, true).
 							WithComment(comment).
@@ -387,7 +389,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_Import_WithApiKey(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: awsAllowedPrefix}}, true).
 							WithAwsApiProviderParams(*sdk.NewAwsApiParamsRequest(
@@ -442,7 +445,8 @@ func TestAcc_ApiIntegrationAmazonApiGateway_ExternalProviderTypeMismatch(t *test
 			{
 				PreConfig: func() {
 					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
 							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId)),

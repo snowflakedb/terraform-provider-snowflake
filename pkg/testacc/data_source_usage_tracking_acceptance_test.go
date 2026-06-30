@@ -55,7 +55,8 @@ func TestAcc_CompleteUsageTracking_Datasource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, schemaModel, schemasModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModel.ResourceReference()).HasNameString(schemaId.Name()),
 					assert.Check(func(state *terraform.State) error {
 						queryHistory := testClient().InformationSchema.GetQueryHistory(t, 100)

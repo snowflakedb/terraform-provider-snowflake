@@ -15,6 +15,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+const (
+	describeOutputPath       = "describe_output.0."
+	describeOutputCollection = "describe_output.#"
+	showOutputPath           = "show_output.0."
+	showOutputCollection     = "show_output.#"
+	parametersPath           = "parameters.0."
+	parametersCollection     = "parameters.#"
+)
+
 var (
 	_ TestCheckFuncProvider        = (*ResourceAssert)(nil)
 	_ ImportStateCheckFuncProvider = (*ResourceAssert)(nil)
@@ -28,6 +37,8 @@ type ResourceAssert struct {
 	prefix           string
 	assertions       []ResourceAssertion
 	additionalPrefix string
+
+	assertionPath string
 }
 
 // NewResourceAssert creates a ResourceAssert where the resource name should be used as a key for assertions.
@@ -36,6 +47,48 @@ func NewResourceAssert(name string, prefix string) *ResourceAssert {
 		name:       name,
 		prefix:     prefix,
 		assertions: make([]ResourceAssertion, 0),
+	}
+}
+
+// NewResourceAssertTmp creates a ResourceAssert where the resource name should be used as a key for assertions.
+// TODO [next PRs]: rename to NewResourceAssert, remove the old NewResourceAssert when all objects are migrated
+func NewResourceAssertTmp(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name:       name,
+		assertions: make([]ResourceAssertion, 0),
+	}
+}
+
+// NewResourceShowOutputAssert creates a ResourceAssert for show output assertions with the resource name as a key.
+func NewResourceShowOutputAssert(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(showOutputCollection, "1"),
+		},
+		assertionPath: showOutputPath,
+	}
+}
+
+// NewResourceDescribeOutputAssert creates a ResourceAssert for describe output assertions with the resource name as a key.
+func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(describeOutputCollection, "1"),
+		},
+		assertionPath: describeOutputPath,
+	}
+}
+
+// NewResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource name as a key.
+func NewResourceParametersAssert(name string) *ResourceAssert {
+	return &ResourceAssert{
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(parametersCollection, "1"),
+		},
+		assertionPath: parametersPath,
 	}
 }
 
@@ -48,13 +101,89 @@ func NewImportedResourceAssert(id string, prefix string) *ResourceAssert {
 	}
 }
 
+// NewImportedResourceAssertTmp creates a ResourceAssert where the resource id should be used as a key for assertions.
+// TODO [next PR]: rename to NewImportedResourceAssert, remove the old NewImportedResourceAssert when all objects are migrated
+func NewImportedResourceAssertTmp(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id:         id,
+		assertions: make([]ResourceAssertion, 0),
+	}
+}
+
+// NewImportedResourceShowOutputAssert creates a ResourceAssert for show output assertions with the resource id as a key.
+func NewImportedResourceShowOutputAssert(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id: id,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(showOutputCollection, "1"),
+		},
+		assertionPath: showOutputPath,
+	}
+}
+
+// NewImportedResourceDescribeOutputAssert creates a ResourceAssert for describe output assertions with the resource id as a key.
+func NewImportedResourceDescribeOutputAssert(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id: id,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(describeOutputCollection, "1"),
+		},
+		assertionPath: describeOutputPath,
+	}
+}
+
+// NewImportedResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource id as a key.
+func NewImportedResourceParametersAssert(id string) *ResourceAssert {
+	return &ResourceAssert{
+		id: id,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(parametersCollection, "1"),
+		},
+		assertionPath: parametersPath,
+	}
+}
+
 // NewDatasourceAssert creates a ResourceAssert for data sources.
+// TODO [next PRs]: remove this method entirely when all invocations replaced with NewDatasourceShowOutputAssert, NewDatasourceDescribeOutputAssert, and NewDatasourceParametersAssert
 func NewDatasourceAssert(name string, prefix string, additionalPrefix string) *ResourceAssert {
 	return &ResourceAssert{
 		name:             name,
 		prefix:           prefix,
 		assertions:       make([]ResourceAssertion, 0),
 		additionalPrefix: additionalPrefix,
+	}
+}
+
+// NewDatasourceShowOutputAssert creates a ResourceAssert for show output assertions on a datasource at the given index.
+func NewDatasourceShowOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
+	return &ResourceAssert{
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputCollection), "1"),
+		},
+		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, showOutputPath),
+	}
+}
+
+// NewDatasourceDescribeOutputAssert creates a ResourceAssert for describe output assertions on a datasource at the given index.
+func NewDatasourceDescribeOutputAssert(name string, objectsPath string, idx int) *ResourceAssert {
+	return &ResourceAssert{
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputCollection), "1"),
+		},
+		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, describeOutputPath),
+	}
+}
+
+// NewDatasourceParametersAssert creates a ResourceAssert for parameters assertions on a datasource at the given index.
+func NewDatasourceParametersAssert(name string, objectsPath string, idx int) *ResourceAssert {
+	return &ResourceAssert{
+		name: name,
+		assertions: []ResourceAssertion{
+			ValueSetFullPath(fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersCollection), "1"),
+		},
+		assertionPath: fmt.Sprintf("%s.%d.%s", objectsPath, idx, parametersPath),
 	}
 }
 
@@ -71,15 +200,17 @@ type ResourceAssertion struct {
 	fieldName             string
 	expectedValue         string
 	resourceAssertionType resourceAssertionType
+
+	fullPath string
 }
 
-// TODO [SNOW-3113138]: improve prefixing logic (so it works with resource, show_output, describe_output, and data sources)
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
+	// TODO [next PRs]: remove additionalPrefix logic when all the objects are migrated
 	assertion.fieldName = r.additionalPrefix + assertion.fieldName
+	assertion.fullPath = r.assertionPath + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
 
-// TODO [SNOW-3113138]: what if we made these functions ResourceAssert methods?
 func SetElem(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName + ".*", expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
 }
@@ -90,6 +221,14 @@ func ValuePresent(fieldName string) ResourceAssertion {
 
 func ValueSet(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
+}
+
+func ValueSetFullPath(fieldName string, expected string) ResourceAssertion {
+	return ResourceAssertion{fieldName: fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet, fullPath: fieldName}
+}
+
+func ValueNotSet(fieldName string) ResourceAssertion {
+	return ResourceAssertion{fieldName: fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
 }
 
 func (r *ResourceAssert) BoolValueSet(fieldName string, expected bool) {
@@ -106,6 +245,18 @@ func (r *ResourceAssert) FloatValueSet(fieldName string, expected float64) {
 
 func (r *ResourceAssert) StringValueSet(fieldName string, expected string) {
 	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
+func (r *ResourceAssert) ValueSet(fieldName string, expected string) {
+	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
+func (r *ResourceAssert) ValueNotSet(fieldName string) {
+	r.AddAssertion(ValueNotSet(fieldName))
+}
+
+func (r *ResourceAssert) ValuePresent(fieldName string) {
+	r.AddAssertion(ValuePresent(fieldName))
 }
 
 // TODO [SNOW-3113138]: do we want to generate assertions for the length only?
@@ -165,12 +316,7 @@ func (r *ResourceAssert) ListContainsExactlyStringValuesInOrder(fieldName string
 	}
 }
 
-func ValueNotSet(fieldName string) ResourceAssertion {
-	return ResourceAssertion{fieldName: fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
-}
-
 const (
-	parametersPrefix            = "parameters.0."
 	parametersValueSuffix       = ".0.value"
 	parametersLevelSuffix       = ".0.level"
 	parametersKeySuffix         = ".0.key"
@@ -178,40 +324,36 @@ const (
 	parametersDescriptionSuffix = ".0.description"
 )
 
-func ResourceParameterBoolValueSet[T ~string](parameterName T, expected bool) ResourceAssertion {
-	return ResourceParameterValueSet(parameterName, strconv.FormatBool(expected))
-}
-
-func ResourceParameterIntValueSet[T ~string](parameterName T, expected int) ResourceAssertion {
-	return ResourceParameterValueSet(parameterName, strconv.Itoa(expected))
-}
-
-func ResourceParameterStringUnderlyingValueSet[T ~string, U ~string](parameterName T, expected U) ResourceAssertion {
-	return ResourceParameterValueSet(parameterName, string(expected))
-}
-
-func ResourceParameterValueSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: parametersPrefix + strings.ToLower(string(parameterName)) + parametersValueSuffix, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
-}
-
-func ResourceParameterLevelSet[T ~string](parameterName T, parameterType sdk.ParameterType) ResourceAssertion {
-	return ResourceAssertion{fieldName: parametersPrefix + strings.ToLower(string(parameterName)) + parametersLevelSuffix, expectedValue: string(parameterType), resourceAssertionType: resourceAssertionTypeValueSet}
-}
-
 func ResourceParameterKeySet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPrefix+strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
+	return ValueSet(strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
 }
 
 func ResourceParameterDefaultSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPrefix+strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
+	return ValueSet(strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
 }
 
 func ResourceParameterDescriptionSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(parametersPrefix+strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
+	return ValueSet(strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
 }
 
 func ResourceParameterDescriptionPresent[T ~string](parameterName T) ResourceAssertion {
-	return ValuePresent(parametersPrefix + strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
+	return ValuePresent(strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
+}
+
+func (r *ResourceAssert) ParameterValueSet(parameterName string, expected string) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, expected)
+}
+
+func (r *ResourceAssert) ParameterBoolValueSet(parameterName string, expected bool) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.FormatBool(expected))
+}
+
+func (r *ResourceAssert) ParameterIntValueSet(parameterName string, expected int) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, strconv.Itoa(expected))
+}
+
+func (r *ResourceAssert) ParameterLevelSet(parameterName string, expected sdk.ParameterType) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersLevelSuffix, string(expected))
 }
 
 // ToTerraformTestCheckFunc implements TestCheckFuncProvider to allow easier creation of new resource assertions.
@@ -224,24 +366,24 @@ func (r *ResourceAssert) ToTerraformTestCheckFunc(t *testing.T, _ *helpers.TestC
 		for i, a := range r.assertions {
 			switch a.resourceAssertionType {
 			case resourceAssertionTypeSetElem:
-				if err := resource.TestCheckTypeSetElemAttr(r.name, a.fieldName, a.expectedValue)(s); err != nil {
+				if err := resource.TestCheckTypeSetElemAttr(r.name, a.fullPath, a.expectedValue)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			case resourceAssertionTypeValueSet:
-				if err := resource.TestCheckResourceAttr(r.name, a.fieldName, a.expectedValue)(s); err != nil {
+				if err := resource.TestCheckResourceAttr(r.name, a.fullPath, a.expectedValue)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			case resourceAssertionTypeValueNotSet:
-				if err := resource.TestCheckNoResourceAttr(r.name, a.fieldName)(s); err != nil {
+				if err := resource.TestCheckNoResourceAttr(r.name, a.fullPath)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			case resourceAssertionTypeValuePresent:
-				if err := resource.TestCheckResourceAttrSet(r.name, a.fieldName)(s); err != nil {
+				if err := resource.TestCheckResourceAttrSet(r.name, a.fullPath)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, r.prefix, i+1, len(r.assertions), errCut))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}
 			}
 		}
@@ -260,16 +402,16 @@ func (r *ResourceAssert) ToTerraformImportStateCheckFunc(t *testing.T, _ *helper
 		for i, a := range r.assertions {
 			switch a.resourceAssertionType {
 			case resourceAssertionTypeValueSet:
-				if err := importchecks.TestCheckResourceAttrInstanceState(r.id, a.fieldName, a.expectedValue)(s); err != nil {
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %w", r.id, r.prefix, i+1, len(r.assertions), err))
+				if err := importchecks.TestCheckResourceAttrInstanceState(r.id, a.fullPath, a.expectedValue)(s); err != nil {
+					result = append(result, fmt.Errorf("imported %s assertion (path: %s) [%d/%d]: failed with error: %w", r.id, a.fullPath, i+1, len(r.assertions), err))
 				}
 			case resourceAssertionTypeValueNotSet:
-				if err := importchecks.TestCheckResourceAttrNotInInstanceState(r.id, a.fieldName)(s); err != nil {
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %w", r.id, r.prefix, i+1, len(r.assertions), err))
+				if err := importchecks.TestCheckResourceAttrNotInInstanceState(r.id, a.fullPath)(s); err != nil {
+					result = append(result, fmt.Errorf("imported %s assertion (path: %s) [%d/%d]: failed with error: %w", r.id, a.fullPath, i+1, len(r.assertions), err))
 				}
 			case resourceAssertionTypeValuePresent:
-				if err := importchecks.TestCheckResourceAttrInstanceStateSet(r.id, a.fieldName)(s); err != nil {
-					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %w", r.id, r.prefix, i+1, len(r.assertions), err))
+				if err := importchecks.TestCheckResourceAttrInstanceStateSet(r.id, a.fullPath)(s); err != nil {
+					result = append(result, fmt.Errorf("imported %s assertion (path: %s) [%d/%d]: failed with error: %w", r.id, a.fullPath, i+1, len(r.assertions), err))
 				}
 			}
 		}

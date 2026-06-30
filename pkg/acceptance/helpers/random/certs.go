@@ -128,7 +128,8 @@ func hash(t *testing.T, b []byte) string {
 func encode(t *testing.T, pemType string, b []byte) string {
 	t.Helper()
 	buffer := new(bytes.Buffer)
-	err := pem.Encode(buffer,
+	err := pem.Encode(
+		buffer,
 		&pem.Block{
 			Type:  pemType,
 			Bytes: b,

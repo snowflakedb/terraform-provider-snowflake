@@ -185,7 +185,8 @@ func TestAcc_Notebook_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().Notebook.Alter(t, sdk.NewAlterNotebookRequest(id).WithSet(
 						*sdk.NewNotebookSetRequest().
-							WithComment(comment)))
+							WithComment(comment),
+					))
 				},
 				Config: accconfig.FromModels(t, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -199,7 +200,8 @@ func TestAcc_Notebook_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.NotebookDoesNotExist(t, id),
 				),
 			},
@@ -267,7 +269,8 @@ func TestAcc_Notebook_CompleteUseCase(t *testing.T) {
 			// Create - with all attributes
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -314,7 +317,8 @@ func TestAcc_Notebook_CompleteUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -390,7 +394,8 @@ func TestAcc_Notebook_SimultaneousWarehousesChange(t *testing.T) {
 			// create object
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -429,7 +434,8 @@ func TestAcc_Notebook_SimultaneousWarehousesChange(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithChangedWarehouses.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelCompleteWithChangedWarehouses.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -478,7 +484,8 @@ func TestAcc_Notebook_Rename(t *testing.T) {
 			// create object
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelBasic.ResourceReference()).
 						HasNameString("name").
 						HasDatabaseString(id.DatabaseName()).
@@ -516,7 +523,8 @@ func TestAcc_Notebook_Rename(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithChangedName.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelWithChangedName.ResourceReference()).
 						HasNameString("new_name").
 						HasDatabaseString(id.DatabaseName()).
@@ -568,7 +576,8 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 			// create object
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -603,7 +612,8 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 				PreConfig: func() {
 					testClient().Notebook.Alter(t, sdk.NewAlterNotebookRequest(id).WithSet(
 						*sdk.NewNotebookSetRequest().
-							WithWarehouse(warehouse.ID())))
+							WithWarehouse(warehouse.ID()),
+					))
 				},
 				Config: accconfig.FromModels(t, modelBasic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -613,7 +623,8 @@ func TestAcc_Notebook_ExternalWarehouseChange(t *testing.T) {
 						planchecks.ExpectChange("snowflake_notebook.test", "warehouse", tfjson.ActionUpdate, sdk.String(warehouse.ID().Name()), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.NotebookResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).

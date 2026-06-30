@@ -254,7 +254,8 @@ func ReadInternalStageFunc(withExternalChangesMarking bool) schema.ReadContextFu
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
+				d,
 				directoryTableOutputMapping(*details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)

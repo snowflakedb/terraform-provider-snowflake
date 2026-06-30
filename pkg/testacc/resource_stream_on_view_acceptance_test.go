@@ -204,7 +204,8 @@ func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.StreamDoesNotExist(t, id),
 				),
 			},
@@ -246,8 +247,9 @@ func TestAcc_StreamOnView_CopyGrants(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, streamModelWithoutCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, streamModelWithoutCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, streamModelWithoutCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModelWithoutCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						createdOn = value
 						return nil
@@ -256,8 +258,9 @@ func TestAcc_StreamOnView_CopyGrants(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, streamModelWithCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, streamModelWithCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, streamModelWithCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModelWithCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
 							return fmt.Errorf("view was recreated")
@@ -268,8 +271,9 @@ func TestAcc_StreamOnView_CopyGrants(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, streamModelWithoutCopyGrants),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, streamModelWithoutCopyGrants.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, streamModelWithoutCopyGrants.ResourceReference()).
+						HasNameString(id.Name()),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModelWithoutCopyGrants.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
 							return fmt.Errorf("view was recreated")
@@ -343,13 +347,8 @@ func TestAcc_StreamOnView_CheckGrantsAfterRecreation(t *testing.T) {
 }
 
 func TestAcc_StreamOnView_PermadiffWhenIsStaleAndHasNoRetentionTime(t *testing.T) {
-	schema, cleanupSchema := testClient().Schema.CreateSchemaWithOpts(t,
-		testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId()),
-		&sdk.CreateSchemaOptions{
-			DataRetentionTimeInDays:    sdk.Pointer(0),
-			MaxDataExtensionTimeInDays: sdk.Pointer(0),
-		},
-	)
+	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId())
+	schema, cleanupSchema := testClient().Schema.CreateSchemaWithRequest(t, schemaId, sdk.NewCreateSchemaRequest(schemaId).WithDataRetentionTimeInDays(0).WithMaxDataExtensionTimeInDays(0))
 	t.Cleanup(cleanupSchema)
 
 	table, cleanupTable := testClient().Table.CreateWithChangeTrackingInSchema(t, schema.ID())
@@ -382,9 +381,10 @@ func TestAcc_StreamOnView_PermadiffWhenIsStaleAndHasNoRetentionTime(t *testing.T
 					},
 				},
 				ExpectNonEmptyPlan: true,
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanTrue),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanTrue),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "true")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						createdOn = value
@@ -403,9 +403,10 @@ func TestAcc_StreamOnView_PermadiffWhenIsStaleAndHasNoRetentionTime(t *testing.T
 					},
 				},
 				ExpectNonEmptyPlan: true,
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanTrue),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanTrue),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "true")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value == createdOn {
@@ -420,13 +421,8 @@ func TestAcc_StreamOnView_PermadiffWhenIsStaleAndHasNoRetentionTime(t *testing.T
 }
 
 func TestAcc_StreamOnView_StaleWithExternalChanges(t *testing.T) {
-	schema, cleanupSchema := testClient().Schema.CreateSchemaWithOpts(t,
-		testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId()),
-		&sdk.CreateSchemaOptions{
-			DataRetentionTimeInDays:    sdk.Pointer(1),
-			MaxDataExtensionTimeInDays: sdk.Pointer(1),
-		},
-	)
+	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(testClient().Ids.DatabaseId())
+	schema, cleanupSchema := testClient().Schema.CreateSchemaWithRequest(t, schemaId, sdk.NewCreateSchemaRequest(schemaId).WithDataRetentionTimeInDays(1).WithMaxDataExtensionTimeInDays(1))
 	t.Cleanup(cleanupSchema)
 
 	table, cleanupTable := testClient().Table.CreateWithChangeTrackingInSchema(t, schema.ID())
@@ -452,9 +448,10 @@ func TestAcc_StreamOnView_StaleWithExternalChanges(t *testing.T) {
 			// initial creation does not lead to stale stream
 			{
 				Config: config.FromModels(t, streamModel),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanFalse),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanFalse),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "false")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						createdOn = value
@@ -465,32 +462,25 @@ func TestAcc_StreamOnView_StaleWithExternalChanges(t *testing.T) {
 			// changing the value externally on schema
 			{
 				PreConfig: func() {
-					testClient().Schema.Alter(t, schema.ID(), &sdk.AlterSchemaOptions{
-						Set: &sdk.SchemaSet{
-							DataRetentionTimeInDays:    sdk.Int(0),
-							MaxDataExtensionTimeInDays: sdk.Int(0),
-						},
-					})
-					assertThatObject(t, objectassert.Stream(t, id).
-						HasName(id.Name()).
-						HasStale(true),
+					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithSet(sdk.SchemaSetRequest{DataRetentionTimeInDays: sdk.Int(0), MaxDataExtensionTimeInDays: sdk.Int(0)}))
+					assertThatObject(
+						t, objectassert.Stream(t, id).
+							HasName(id.Name()).
+							HasStale(true),
 					)
 
-					testClient().Schema.Alter(t, schema.ID(), &sdk.AlterSchemaOptions{
-						Set: &sdk.SchemaSet{
-							DataRetentionTimeInDays:    sdk.Int(1),
-							MaxDataExtensionTimeInDays: sdk.Int(1),
-						},
-					})
-					assertThatObject(t, objectassert.Stream(t, id).
-						HasName(id.Name()).
-						HasStale(false),
+					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithSet(sdk.SchemaSetRequest{DataRetentionTimeInDays: sdk.Int(1), MaxDataExtensionTimeInDays: sdk.Int(1)}))
+					assertThatObject(
+						t, objectassert.Stream(t, id).
+							HasName(id.Name()).
+							HasStale(false),
 					)
 				},
 				Config: config.FromModels(t, streamModel),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasStaleString(r.BooleanFalse),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasStaleString(r.BooleanFalse),
 					assert.Check(resource.TestCheckResourceAttr(streamModel.ResourceReference(), "show_output.0.stale", "false")),
 					assert.Check(resource.TestCheckResourceAttrWith(streamModel.ResourceReference(), "show_output.0.created_on", func(value string) error {
 						if value != createdOn {
@@ -546,15 +536,16 @@ func TestAcc_StreamOnView_At(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/at"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithOffset),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithOffset.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasViewString(view.ID().FullyQualifiedName()).
-					HasAppendOnlyString(r.BooleanTrue).
-					HasShowInitialRowsString(r.BooleanTrue).
-					HasCommentString("foo"),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, modelWithOffset.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasViewString(view.ID().FullyQualifiedName()).
+						HasAppendOnlyString(r.BooleanTrue).
+						HasShowInitialRowsString(r.BooleanTrue).
+						HasCommentString("foo"),
 					resourceshowoutputassert.StreamShowOutput(t, modelWithOffset.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -591,15 +582,17 @@ func TestAcc_StreamOnView_At(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/at"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithStream),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithStream.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, modelWithStream.ResourceReference()).
+						HasNameString(id.Name()),
 				),
 			},
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/at"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithStatement),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithStatement.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, modelWithStatement.ResourceReference()).
+						HasNameString(id.Name()),
 				),
 			},
 			// TODO(SNOW-1689111): test timestamps
@@ -608,7 +601,8 @@ func TestAcc_StreamOnView_At(t *testing.T) {
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithOffset),
 				ResourceName:    modelWithOffset.ResourceReference(),
 				ImportState:     true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedStreamOnViewResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -664,15 +658,16 @@ func TestAcc_StreamOnView_Before(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/before"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithOffset),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithOffset.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasViewString(view.ID().FullyQualifiedName()).
-					HasAppendOnlyString(r.BooleanTrue).
-					HasShowInitialRowsString(r.BooleanTrue).
-					HasCommentString("foo"),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, modelWithOffset.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasViewString(view.ID().FullyQualifiedName()).
+						HasAppendOnlyString(r.BooleanTrue).
+						HasShowInitialRowsString(r.BooleanTrue).
+						HasCommentString("foo"),
 					resourceshowoutputassert.StreamShowOutput(t, modelWithOffset.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -709,15 +704,17 @@ func TestAcc_StreamOnView_Before(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/before"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithStream),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithStream.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, modelWithStream.ResourceReference()).
+						HasNameString(id.Name()),
 				),
 			},
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_StreamOnView/before"),
 				ConfigVariables: tfconfig.ConfigVariablesFromModel(t, modelWithStatement),
-				Check: assertThat(t, resourceassert.StreamOnViewResource(t, modelWithStatement.ResourceReference()).
-					HasNameString(id.Name()),
+				Check: assertThat(
+					t, resourceassert.StreamOnViewResource(t, modelWithStatement.ResourceReference()).
+						HasNameString(id.Name()),
 				),
 			},
 			// TODO(SNOW-1689111): test timestamps
@@ -803,7 +800,8 @@ func TestAcc_StreamOnView_ExternalStreamTypeChange(t *testing.T) {
 			{
 				Config: config.FromModels(t, streamModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
 							HasStreamTypeString(string(sdk.StreamSourceTypeView)),
 						resourceshowoutputassert.StreamShowOutput(t, streamModel.ResourceReference()).
@@ -831,7 +829,8 @@ func TestAcc_StreamOnView_ExternalStreamTypeChange(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.StreamOnViewResource(t, streamModel.ResourceReference()).
 							HasStreamTypeString(string(sdk.StreamSourceTypeView)),
 						resourceshowoutputassert.StreamShowOutput(t, streamModel.ResourceReference()).

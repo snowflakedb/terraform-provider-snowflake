@@ -162,7 +162,8 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 			// resource with unset parameters
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, unsetParametersModel.ResourceReference()).HasAllDefaultParameters(),
 				),
 			},
@@ -171,14 +172,16 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 				Config:       config.FromModels(t, provider, unsetParametersModel),
 				ResourceName: unsetParametersModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").HasAllDefaultParameters(),
 				),
 			},
 			// set all parameters
 			{
 				Config: config.FromModels(t, provider, setParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, setParametersModel.ResourceReference()).
 						HasAbortDetachedQueryString("true").
 						HasAllowClientMfaCachingString("true").
@@ -298,7 +301,8 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 				Config:       config.FromModels(t, provider, setParametersModel),
 				ResourceName: setParametersModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasAbortDetachedQueryString("true").
 						HasAllowClientMfaCachingString("true").
@@ -416,7 +420,8 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 			// unset parameters
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, unsetParametersModel.ResourceReference()).HasAllDefaultParameters(),
 				),
 			},
@@ -431,7 +436,8 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, provider, unsetParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, setParametersModel.ResourceReference()).HasAllDefaultParameters(),
 				),
 			},
@@ -507,7 +513,8 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 			// create with unset values
 			{
 				Config: config.FromModels(t, provider, unsetModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, unsetModel.ResourceReference()).
 						HasNoResourceMonitor().
 						HasAuthenticationPolicyEmpty().
@@ -522,7 +529,8 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				Config:       config.FromModels(t, provider, unsetModel),
 				ResourceName: unsetModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasNoResourceMonitor().
 						HasAuthenticationPolicyEmpty().
@@ -535,7 +543,8 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 			// set policies and resource monitor
 			{
 				Config: config.FromModels(t, provider, setModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, setModel.ResourceReference()).
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
 						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
@@ -550,7 +559,8 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 				Config:       config.FromModels(t, provider, setModel),
 				ResourceName: setModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasNoResourceMonitor().
 						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
@@ -563,7 +573,8 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 			// set new policies
 			{
 				Config: config.FromModels(t, provider, setModelWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, setModelWithDifferentValues.ResourceReference()).
 						HasResourceMonitorString(newResourceMonitor.ID().Name()).
 						HasAuthenticationPolicyString(newAuthenticationPolicy.ID().FullyQualifiedName()).
@@ -576,7 +587,8 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 			// unset policies and resource monitor
 			{
 				Config: config.FromModels(t, provider, unsetModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, unsetModel.ResourceReference()).
 						HasResourceMonitorEmpty().
 						HasAuthenticationPolicyEmpty().
@@ -597,7 +609,8 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
 				},
 				Config: config.FromModels(t, provider, unsetModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, unsetModel.ResourceReference()).
 						HasResourceMonitorEmpty().
 						HasAuthenticationPolicyEmpty().
@@ -776,7 +789,8 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, provider, completeConfigModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentAccountResource(t, completeConfigModel.ResourceReference()).
 						HasResourceMonitorString(resourceMonitor.ID().Name()).
 						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
@@ -901,7 +915,8 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 				Config:       config.FromModels(t, provider, completeConfigModel),
 				ResourceName: completeConfigModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentAccountResource(t, "current_account").
 						HasNoResourceMonitor().
 						HasAuthenticationPolicyString(authenticationPolicy.ID().FullyQualifiedName()).
@@ -1043,7 +1058,8 @@ func TestAcc_CurrentAccount_migrateFromV2_10_0(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
 				Config:            config.FromModels(t, provider, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(configModel.ResourceReference(), "saml_identity_provider", "")),
 				),
 			},
@@ -1055,7 +1071,8 @@ func TestAcc_CurrentAccount_migrateFromV2_10_0(t *testing.T) {
 				},
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, provider, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(configModel.ResourceReference(), "saml_identity_provider")),
 				),
 			},

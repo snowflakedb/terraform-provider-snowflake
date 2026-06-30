@@ -221,28 +221,26 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().Schema.Alter(t, id, &sdk.AlterSchemaOptions{
-						Set: &sdk.SchemaSet{
-							DataRetentionTimeInDays:                 sdk.Int(2),
-							MaxDataExtensionTimeInDays:              sdk.Int(15),
-							ExternalVolume:                          sdk.Pointer(externalVolumeId),
-							Catalog:                                 sdk.Pointer(catalogId),
-							ReplaceInvalidCharacters:                sdk.Bool(true),
-							DefaultDDLCollation:                     &sdk.StringAllowEmpty{Value: "en_US"},
-							StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
-							LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-							TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
-							SuspendTaskAfterNumFailures:             sdk.Int(11),
-							TaskAutoRetryAttempts:                   sdk.Int(1),
-							UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeSmall),
-							UserTaskTimeoutMs:                       sdk.Int(3600001),
-							UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(31),
-							EnableConsoleOutput:                     sdk.Bool(true),
-							PipeExecutionPaused:                     sdk.Bool(true),
-							QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-							Comment:                                 sdk.String(random.Comment()),
-						},
-					})
+					testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(id).WithSet(sdk.SchemaSetRequest{
+						DataRetentionTimeInDays:                 sdk.Int(2),
+						MaxDataExtensionTimeInDays:              sdk.Int(15),
+						ExternalVolume:                          sdk.Pointer(externalVolumeId),
+						Catalog:                                 sdk.Pointer(catalogId),
+						ReplaceInvalidCharacters:                sdk.Bool(true),
+						DefaultDdlCollation:                     &sdk.StringAllowEmpty{Value: "en_US"},
+						StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
+						LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
+						TraceLevel:                              sdk.Pointer(sdk.TraceLevelAlways),
+						SuspendTaskAfterNumFailures:             sdk.Int(11),
+						TaskAutoRetryAttempts:                   sdk.Int(1),
+						UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeSmall),
+						UserTaskTimeoutMs:                       sdk.Int(3600001),
+						UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(31),
+						EnableConsoleOutput:                     sdk.Bool(true),
+						PipeExecutionPaused:                     sdk.Bool(true),
+						QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
+						Comment:                                 sdk.String(random.Comment()),
+					}))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -255,7 +253,8 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			// Empty config - ensure schema is destroyed
 			{
 				Config: " ",
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SchemaIsMissing(t, id),
 				),
 			},
@@ -319,7 +318,8 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 			// Create - with all optionals (including optional force-new fields)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Schema(t, id).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -466,12 +466,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_0(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.0"),
 				PreConfig: func() {
 					// In v0.94 `CREATE OR REPLACE` was called, so we should see a DROP event.
-					schemas := testClient().Schema.ShowWithOptions(t, &sdk.ShowSchemaOptions{
-						History: sdk.Pointer(true),
-						Like: &sdk.Like{
-							Pattern: sdk.String(schemaId.Name()),
-						},
-					})
+					schemas := testClient().Schema.ShowWithOptions(t, sdk.NewShowSchemaRequest().WithHistory(true).WithLike(sdk.Like{Pattern: sdk.String(schemaId.Name())}))
 					require.Len(t, schemas, 2)
 					slices.SortFunc(schemas, func(x, y sdk.Schema) int {
 						return cmp.Compare(x.DroppedOn.Unix(), y.DroppedOn.Unix())
@@ -530,12 +525,7 @@ func TestAcc_Schema_ManagePublicVersion_0_94_1(t *testing.T) {
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					// In newer versions, ALTER was called, so we should not see a DROP event.
-					schemas := testClient().Schema.ShowWithOptions(t, &sdk.ShowSchemaOptions{
-						History: sdk.Pointer(true),
-						Like: &sdk.Like{
-							Pattern: sdk.String(schemaId.Name()),
-						},
-					})
+					schemas := testClient().Schema.ShowWithOptions(t, sdk.NewShowSchemaRequest().WithHistory(true).WithLike(sdk.Like{Pattern: sdk.String(schemaId.Name())}))
 					require.Len(t, schemas, 1)
 					require.Zero(t, schemas[0].DroppedOn)
 				},
@@ -813,7 +803,8 @@ func TestAcc_Schema_RemoveDatabaseOutsideOfTerraform_dbInConfig(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, databaseModel, schemaModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(databaseModel.ResourceReference(), "name", databaseId.Name())),
 					assert.Check(resource.TestCheckResourceAttr(schemaModel.ResourceReference(), "name", schemaId.Name())),
 				),
@@ -830,7 +821,8 @@ func TestAcc_Schema_RemoveDatabaseOutsideOfTerraform_dbInConfig(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, databaseModel, schemaModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "name", databaseId.Name())),
 					assert.Check(resource.TestCheckResourceAttr("snowflake_schema.test", "name", schemaId.Name())),
 				),
@@ -1122,7 +1114,8 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue(t *testing.T) {
 						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
@@ -1201,7 +1194,8 @@ func TestAcc_Schema_EmptyParameterAsDefaultValue_WithDatabaseLevel(t *testing.T)
 						planchecks.PrintPlanDetails(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation"),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "database", id.DatabaseName())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(parameterSetToEmptyString.ResourceReference(), "default_ddl_collation", "")),
@@ -1254,7 +1248,8 @@ func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: basicConfig,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Schema(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -1274,7 +1269,8 @@ func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
 			// we need to do this in a separate step.
 			{
 				RefreshState: true,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, "snowflake_schema.test").
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -1291,7 +1287,8 @@ func TestAcc_Schema_FailedUpdateStoresCorrectState(t *testing.T) {
 					},
 				},
 				Config: basicConfig,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, "snowflake_schema.test").
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).

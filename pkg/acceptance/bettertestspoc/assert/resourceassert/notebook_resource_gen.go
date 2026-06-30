@@ -16,7 +16,7 @@ func NotebookResource(t *testing.T, name string) *NotebookResourceAssert {
 	t.Helper()
 
 	return &NotebookResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedNotebookResource(t *testing.T, id string) *NotebookResourceAssert {
 	t.Helper()
 
 	return &NotebookResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -84,47 +84,47 @@ func (n *NotebookResourceAssert) HasWarehouse(expected string) *NotebookResource
 ///////////////////////////////////
 
 func (n *NotebookResourceAssert) HasDatabaseString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("database", expected))
+	n.ValueSet("database", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasSchemaString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("schema", expected))
+	n.ValueSet("schema", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNameString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("name", expected))
+	n.ValueSet("name", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasCommentString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("comment", expected))
+	n.ValueSet("comment", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasFullyQualifiedNameString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	n.ValueSet("fully_qualified_name", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasIdleAutoShutdownTimeSecondsString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("idle_auto_shutdown_time_seconds", expected))
+	n.ValueSet("idle_auto_shutdown_time_seconds", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasMainFileString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("main_file", expected))
+	n.ValueSet("main_file", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasQueryWarehouseString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("query_warehouse", expected))
+	n.ValueSet("query_warehouse", expected)
 	return n
 }
 
 func (n *NotebookResourceAssert) HasWarehouseString(expected string) *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("warehouse", expected))
+	n.ValueSet("warehouse", expected)
 	return n
 }
 
@@ -133,47 +133,47 @@ func (n *NotebookResourceAssert) HasWarehouseString(expected string) *NotebookRe
 ///////////////////////////////
 
 func (n *NotebookResourceAssert) HasNoDatabase() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("database"))
+	n.ValueNotSet("database")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoSchema() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("schema"))
+	n.ValueNotSet("schema")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoName() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("name"))
+	n.ValueNotSet("name")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoComment() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("comment"))
+	n.ValueNotSet("comment")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoFullyQualifiedName() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	n.ValueNotSet("fully_qualified_name")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoIdleAutoShutdownTimeSeconds() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("idle_auto_shutdown_time_seconds"))
+	n.ValueNotSet("idle_auto_shutdown_time_seconds")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoMainFile() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("main_file"))
+	n.ValueNotSet("main_file")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoQueryWarehouse() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("query_warehouse"))
+	n.ValueNotSet("query_warehouse")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNoWarehouse() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("warehouse"))
+	n.ValueNotSet("warehouse")
 	return n
 }
 
@@ -182,37 +182,37 @@ func (n *NotebookResourceAssert) HasNoWarehouse() *NotebookResourceAssert {
 ////////////////////////////
 
 func (n *NotebookResourceAssert) HasCommentEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("comment", ""))
+	n.ValueSet("comment", "")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasFromEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("from.#", "0"))
+	n.ValueSet("from.#", "0")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasFullyQualifiedNameEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	n.ValueSet("fully_qualified_name", "")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasIdleAutoShutdownTimeSecondsEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("idle_auto_shutdown_time_seconds", ""))
+	n.ValueSet("idle_auto_shutdown_time_seconds", "")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasMainFileEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("main_file", ""))
+	n.ValueSet("main_file", "")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasQueryWarehouseEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	n.ValueSet("query_warehouse", "")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasWarehouseEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValueSet("warehouse", ""))
+	n.ValueSet("warehouse", "")
 	return n
 }
 
@@ -221,46 +221,46 @@ func (n *NotebookResourceAssert) HasWarehouseEmpty() *NotebookResourceAssert {
 ///////////////////////////////
 
 func (n *NotebookResourceAssert) HasDatabaseNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("database"))
+	n.ValuePresent("database")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasSchemaNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("schema"))
+	n.ValuePresent("schema")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasNameNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("name"))
+	n.ValuePresent("name")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasCommentNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("comment"))
+	n.ValuePresent("comment")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasFullyQualifiedNameNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	n.ValuePresent("fully_qualified_name")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasIdleAutoShutdownTimeSecondsNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("idle_auto_shutdown_time_seconds"))
+	n.ValuePresent("idle_auto_shutdown_time_seconds")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasMainFileNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("main_file"))
+	n.ValuePresent("main_file")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasQueryWarehouseNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("query_warehouse"))
+	n.ValuePresent("query_warehouse")
 	return n
 }
 
 func (n *NotebookResourceAssert) HasWarehouseNotEmpty() *NotebookResourceAssert {
-	n.AddAssertion(assert.ValuePresent("warehouse"))
+	n.ValuePresent("warehouse")
 	return n
 }

@@ -81,7 +81,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 			// create with only required attributes
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GitRepositoryResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -119,7 +120,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelBasic),
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedGitRepositoryResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -155,7 +157,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 			// add optional attributes
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GitRepositoryResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -193,7 +196,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GitRepositoryResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -223,7 +227,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						*sdk.NewGitRepositorySetRequest().
 							WithApiIntegration(apiIntegrationId).
 							WithGitCredentials(secretId).
-							WithComment(comment)))
+							WithComment(comment),
+					))
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -231,7 +236,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GitRepositoryResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -269,7 +275,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GitRepositoryResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -300,7 +307,8 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GitRepositoryResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -353,7 +361,8 @@ func TestAcc_GitRepository_complete(t *testing.T) {
 			// create with all attributes set
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GitRepositoryResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).

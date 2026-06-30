@@ -83,7 +83,8 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					return false
 				}
 				return old == sdk.MfaEnrollmentReadOptionRequiredPasswordOnly && new == sdk.MfaEnrollmentOptionOptional
-			}),
+			},
+		),
 	},
 	"client_types": {
 		Type: schema.TypeSet,

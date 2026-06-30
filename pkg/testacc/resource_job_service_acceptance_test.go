@@ -73,7 +73,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 			// create without optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -228,7 +229,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -315,7 +317,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -400,7 +403,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -480,7 +484,8 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -573,7 +578,8 @@ func TestAcc_JobService_changeServiceTypeExternally(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)),
@@ -601,7 +607,8 @@ func TestAcc_JobService_changeServiceTypeExternally(t *testing.T) {
 						planchecks.ExpectChange(modelBasic.ResourceReference(), "service_type", tfjson.ActionCreate, sdk.Pointer(string(sdk.ServiceTypeService)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasServiceTypeString(string(sdk.ServiceTypeJobService)),
@@ -643,7 +650,8 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 			// create without optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -736,7 +744,8 @@ func TestAcc_JobService_fromSpecificationTemplate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -835,7 +844,8 @@ func TestAcc_JobService_fromSpecificationTemplateOnStage(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -935,7 +945,8 @@ func TestAcc_JobService_changingSpec(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -955,7 +966,8 @@ func TestAcc_JobService_changingSpec(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelBasicOnStage),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasicOnStage.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -980,7 +992,8 @@ func TestAcc_JobService_changingSpec(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelBasicOnStage),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelBasicOnStage.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -1024,7 +1037,8 @@ func TestAcc_JobService_complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.JobServiceResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).

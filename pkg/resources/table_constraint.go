@@ -322,9 +322,10 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		foreignKeyRequest.WithOn(sdk.NewForeignKeyOnAction().
-			WithOnDelete(&onDelete).
-			WithOnUpdate(&onUpdate),
+		foreignKeyRequest.WithOn(
+			sdk.NewForeignKeyOnAction().
+				WithOnDelete(&onDelete).
+				WithOnUpdate(&onUpdate),
 		)
 		constraintRequest.WithForeignKey(foreignKeyRequest)
 	}

@@ -143,7 +143,8 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("set / unset parameters",
+	t.Run(
+		"set / unset parameters",
 		setAndUnsetAccountParametersTest(
 			func(ctx context.Context, parameters sdk.AccountParameters) error {
 				return client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithParameters(parameters)))

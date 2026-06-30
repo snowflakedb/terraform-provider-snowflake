@@ -552,7 +552,8 @@ func ReadContextSAML2Integration(withExternalChangesMarking bool) schema.ReadCon
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"enabled", "enabled", integration.Enabled, booleanStringFromBool(integration.Enabled), nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -607,7 +608,8 @@ func ReadContextSAML2Integration(withExternalChangesMarking bool) schema.ReadCon
 				return diag.FromErr(fmt.Errorf("failed to find saml2 sp initiated login page label, err = %w", err))
 			}
 
-			if err = handleExternalChangesToObjectInDescribe(d,
+			if err = handleExternalChangesToObjectInDescribe(
+				d,
 				describeMapping{"saml2_enable_sp_initiated", "saml2_enable_sp_initiated", enableSpInitiated.Value, enableSpInitiated.Value, nil},
 				describeMapping{"saml2_sign_request", "saml2_sign_request", signRequest.Value, signRequest.Value, nil},
 				describeMapping{"saml2_requested_nameid_format", "saml2_requested_nameid_format", requestedNameIdFormat.Value, requestedNameIdFormat.Value, nil},

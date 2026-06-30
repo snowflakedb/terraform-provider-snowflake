@@ -16,7 +16,7 @@ func SharedDatabaseResource(t *testing.T, name string) *SharedDatabaseResourceAs
 	t.Helper()
 
 	return &SharedDatabaseResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSharedDatabaseResource(t *testing.T, id string) *SharedDatabaseReso
 	t.Helper()
 
 	return &SharedDatabaseResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -132,97 +132,97 @@ func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMs(expected int) *Share
 ///////////////////////////////////
 
 func (s *SharedDatabaseResourceAssert) HasNameString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasCatalogString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("catalog", expected))
+	s.ValueSet("catalog", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasCommentString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("default_ddl_collation", expected))
+	s.ValueSet("default_ddl_collation", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasEnableConsoleOutputString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("enable_console_output", expected))
+	s.ValueSet("enable_console_output", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasExternalVolumeString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_volume", expected))
+	s.ValueSet("external_volume", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasFromShareString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("from_share", expected))
+	s.ValueSet("from_share", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasLogEventLevelString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("log_event_level", expected))
+	s.ValueSet("log_event_level", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasLogLevelString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("log_level", expected))
+	s.ValueSet("log_level", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", expected))
+	s.ValueSet("quoted_identifiers_ignore_case", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharactersString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("replace_invalid_characters", expected))
+	s.ValueSet("replace_invalid_characters", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasStorageSerializationPolicyString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_serialization_policy", expected))
+	s.ValueSet("storage_serialization_policy", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasSuspendTaskAfterNumFailuresString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", expected))
+	s.ValueSet("suspend_task_after_num_failures", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasTaskAutoRetryAttemptsString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("task_auto_retry_attempts", expected))
+	s.ValueSet("task_auto_retry_attempts", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasTraceLevelString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("trace_level", expected))
+	s.ValueSet("trace_level", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", expected))
+	s.ValueSet("user_task_managed_initial_warehouse_size", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", expected))
+	s.ValueSet("user_task_minimum_trigger_interval_in_seconds", expected)
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMsString(expected string) *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("user_task_timeout_ms", expected))
+	s.ValueSet("user_task_timeout_ms", expected)
 	return s
 }
 
@@ -231,97 +231,97 @@ func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMsString(expected strin
 ///////////////////////////////
 
 func (s *SharedDatabaseResourceAssert) HasNoName() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoCatalog() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("catalog"))
+	s.ValueNotSet("catalog")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoComment() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoDefaultDdlCollation() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("default_ddl_collation"))
+	s.ValueNotSet("default_ddl_collation")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoEnableConsoleOutput() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("enable_console_output"))
+	s.ValueNotSet("enable_console_output")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoExternalVolume() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("external_volume"))
+	s.ValueNotSet("external_volume")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoFromShare() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("from_share"))
+	s.ValueNotSet("from_share")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoFullyQualifiedName() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoLogEventLevel() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("log_event_level"))
+	s.ValueNotSet("log_event_level")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoLogLevel() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("log_level"))
+	s.ValueNotSet("log_level")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("quoted_identifiers_ignore_case"))
+	s.ValueNotSet("quoted_identifiers_ignore_case")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoReplaceInvalidCharacters() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("replace_invalid_characters"))
+	s.ValueNotSet("replace_invalid_characters")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoStorageSerializationPolicy() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("storage_serialization_policy"))
+	s.ValueNotSet("storage_serialization_policy")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoSuspendTaskAfterNumFailures() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("suspend_task_after_num_failures"))
+	s.ValueNotSet("suspend_task_after_num_failures")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoTaskAutoRetryAttempts() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("task_auto_retry_attempts"))
+	s.ValueNotSet("task_auto_retry_attempts")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoTraceLevel() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("trace_level"))
+	s.ValueNotSet("trace_level")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoUserTaskManagedInitialWarehouseSize() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("user_task_managed_initial_warehouse_size"))
+	s.ValueNotSet("user_task_managed_initial_warehouse_size")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoUserTaskMinimumTriggerIntervalInSeconds() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("user_task_minimum_trigger_interval_in_seconds"))
+	s.ValueNotSet("user_task_minimum_trigger_interval_in_seconds")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasNoUserTaskTimeoutMs() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("user_task_timeout_ms"))
+	s.ValueNotSet("user_task_timeout_ms")
 	return s
 }
 
@@ -330,87 +330,87 @@ func (s *SharedDatabaseResourceAssert) HasNoUserTaskTimeoutMs() *SharedDatabaseR
 ////////////////////////////
 
 func (s *SharedDatabaseResourceAssert) HasCatalogEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("catalog", ""))
+	s.ValueSet("catalog", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasCommentEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("default_ddl_collation", ""))
+	s.ValueSet("default_ddl_collation", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasEnableConsoleOutputEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	s.ValueSet("enable_console_output", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasExternalVolumeEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_volume", ""))
+	s.ValueSet("external_volume", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasLogEventLevelEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("log_event_level", ""))
+	s.ValueSet("log_event_level", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasLogLevelEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("log_level", ""))
+	s.ValueSet("log_level", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", ""))
+	s.ValueSet("quoted_identifiers_ignore_case", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharactersEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("replace_invalid_characters", ""))
+	s.ValueSet("replace_invalid_characters", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasStorageSerializationPolicyEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_serialization_policy", ""))
+	s.ValueSet("storage_serialization_policy", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasSuspendTaskAfterNumFailuresEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("suspend_task_after_num_failures", ""))
+	s.ValueSet("suspend_task_after_num_failures", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasTaskAutoRetryAttemptsEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("task_auto_retry_attempts", ""))
+	s.ValueSet("task_auto_retry_attempts", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasTraceLevelEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("trace_level", ""))
+	s.ValueSet("trace_level", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("user_task_managed_initial_warehouse_size", ""))
+	s.ValueSet("user_task_managed_initial_warehouse_size", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("user_task_minimum_trigger_interval_in_seconds", ""))
+	s.ValueSet("user_task_minimum_trigger_interval_in_seconds", "")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMsEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValueSet("user_task_timeout_ms", ""))
+	s.ValueSet("user_task_timeout_ms", "")
 	return s
 }
 
@@ -419,96 +419,96 @@ func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMsEmpty() *SharedDataba
 ///////////////////////////////
 
 func (s *SharedDatabaseResourceAssert) HasNameNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasCatalogNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("catalog"))
+	s.ValuePresent("catalog")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasCommentNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("default_ddl_collation"))
+	s.ValuePresent("default_ddl_collation")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasEnableConsoleOutputNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("enable_console_output"))
+	s.ValuePresent("enable_console_output")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasExternalVolumeNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("external_volume"))
+	s.ValuePresent("external_volume")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasFromShareNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("from_share"))
+	s.ValuePresent("from_share")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasFullyQualifiedNameNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasLogEventLevelNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("log_event_level"))
+	s.ValuePresent("log_event_level")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasLogLevelNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("log_level"))
+	s.ValuePresent("log_level")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("quoted_identifiers_ignore_case"))
+	s.ValuePresent("quoted_identifiers_ignore_case")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharactersNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("replace_invalid_characters"))
+	s.ValuePresent("replace_invalid_characters")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasStorageSerializationPolicyNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("storage_serialization_policy"))
+	s.ValuePresent("storage_serialization_policy")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasSuspendTaskAfterNumFailuresNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("suspend_task_after_num_failures"))
+	s.ValuePresent("suspend_task_after_num_failures")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasTaskAutoRetryAttemptsNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("task_auto_retry_attempts"))
+	s.ValuePresent("task_auto_retry_attempts")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasTraceLevelNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("trace_level"))
+	s.ValuePresent("trace_level")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskManagedInitialWarehouseSizeNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("user_task_managed_initial_warehouse_size"))
+	s.ValuePresent("user_task_managed_initial_warehouse_size")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskMinimumTriggerIntervalInSecondsNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("user_task_minimum_trigger_interval_in_seconds"))
+	s.ValuePresent("user_task_minimum_trigger_interval_in_seconds")
 	return s
 }
 
 func (s *SharedDatabaseResourceAssert) HasUserTaskTimeoutMsNotEmpty() *SharedDatabaseResourceAssert {
-	s.AddAssertion(assert.ValuePresent("user_task_timeout_ms"))
+	s.ValuePresent("user_task_timeout_ms")
 	return s
 }

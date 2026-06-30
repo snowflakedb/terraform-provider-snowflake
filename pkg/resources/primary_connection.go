@@ -213,8 +213,9 @@ func UpdateContextPrimaryConnection(ctx context.Context, d *schema.ResourceData,
 		addedFailovers, removedFailovers := ListDiff(beforeFailover, afterFailover)
 
 		if len(addedFailovers) > 0 {
-			err := client.Connections.Alter(ctx, sdk.NewAlterConnectionRequest(id).
-				WithEnableConnectionFailover(*sdk.NewEnableConnectionFailoverRequest(addedFailovers)),
+			err := client.Connections.Alter(
+				ctx, sdk.NewAlterConnectionRequest(id).
+					WithEnableConnectionFailover(*sdk.NewEnableConnectionFailoverRequest(addedFailovers)),
 			)
 			if err != nil {
 				return diag.FromErr(err)
@@ -222,10 +223,12 @@ func UpdateContextPrimaryConnection(ctx context.Context, d *schema.ResourceData,
 		}
 
 		if len(removedFailovers) > 0 {
-			err := client.Connections.Alter(ctx, sdk.NewAlterConnectionRequest(id).
-				WithDisableConnectionFailover(*sdk.NewDisableConnectionFailoverRequest().
-					WithToAccounts(*sdk.NewToAccountsRequest(removedFailovers)),
-				),
+			err := client.Connections.Alter(
+				ctx, sdk.NewAlterConnectionRequest(id).
+					WithDisableConnectionFailover(
+						*sdk.NewDisableConnectionFailoverRequest().
+							WithToAccounts(*sdk.NewToAccountsRequest(removedFailovers)),
+					),
 			)
 			if err != nil {
 				return diag.FromErr(err)

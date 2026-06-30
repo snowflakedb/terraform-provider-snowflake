@@ -41,14 +41,14 @@ func setUpProvider() error {
 }
 
 var (
-	functionsAndProceduresProviderFactory            = providerFactoryUsingCache("FunctionsAndProcedures")
-	viewsProviderFactory                             = providerFactoryUsingCache("Views")
-	tagsProviderFactory                              = providerFactoryUsingCache("Tags")
-	tagsWithExperimentFlagProviderFactory            = providerFactoryUsingCache("TagsWithExperimentFlag")
-	servicesProviderFactory                          = providerFactoryUsingCache("Services")
-	userPasswordPoliciesProviderFactory              = providerFactoryUsingCache("UserPasswordPolicies")
-	userAuthenticationPoliciesProviderFactory        = providerFactoryUsingCache("UserAuthenticationPolicies")
-	sessionPoliciesProviderFactory                   = providerFactoryUsingCache("SessionPolicies")
+	functionsAndProceduresProviderFactory = providerFactoryUsingCache("FunctionsAndProcedures")
+	viewsProviderFactory                  = providerFactoryUsingCache("Views")
+	tagsProviderFactory                   = providerFactoryUsingCache("Tags")
+	tagsWithExperimentFlagProviderFactory = providerFactoryUsingCache("TagsWithExperimentFlag")
+	servicesProviderFactory               = providerFactoryUsingCache("Services")
+	// warehouseRequiredProviderFactory should be used whenever tests require a warehouse but do not modify the current
+	// session by, e.g., creating new warehouses.
+	warehouseRequiredProviderFactory                 = providerFactoryUsingCache("WarehouseRequired")
 	explicitAccountAdminRoleProviderFactory          = providerFactoryUsingCache("ExplicitAccountAdminRole")
 	strictPrivilegeManagementGrantProviderFactory    = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
 	grantsImportValidationProviderFactory            = providerFactoryUsingCache("GrantsImportValidationProvider")
@@ -58,6 +58,7 @@ var (
 	grantsSafeDestroyProviderFactory                 = providerFactoryUsingCache("GrantsSafeDestroy")
 	tagAssociationSafeDestroyProviderFactory         = providerFactoryUsingCache("TagAssociationSafeDestroy")
 	grantAccountRoleSafePublicRoleProviderFactory    = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
+	grantAccountRoleShowCachingProviderFactory       = providerFactoryUsingCache("GrantAccountRoleShowCaching")
 	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
 	experimentalHierarchyRenamesProviderFactory      = providerFactoryUsingCache("ExperimentalHierarchyRenames")
 	activeWarehouseSetOnUserProviderFactory          = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
@@ -71,10 +72,9 @@ func acceptanceTestsProvider() *schema.Provider {
 	// add resources and data sources that are not ready here like:
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	p.ResourcesMap["snowflake_hybrid_table"] = resources.HybridTable()
-	p.ResourcesMap["snowflake_api_integration_amazon_api_gateway"] = resources.ApiIntegrationAmazonApiGateway()
-	p.ResourcesMap["snowflake_api_integration_azure_api_management"] = resources.ApiIntegrationAzureApiManagement()
-	p.ResourcesMap["snowflake_api_integration_git_repository_github_app"] = resources.ApiIntegrationGitRepositoryGithubApp()
-	p.ResourcesMap["snowflake_api_integration_google_cloud_api_gateway"] = resources.ApiIntegrationGoogleCloudApiGateway()
+	// TODO(next postgres prs): Remove postgres resources from here
+	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
+	p.ResourcesMap["snowflake_postgres_instance"] = resources.PostgresInstance()
 	return p
 }
 

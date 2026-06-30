@@ -485,17 +485,17 @@ func TestInt_SafeRevokeAccountRole(t *testing.T) {
 	t.Cleanup(parentRoleCleanup)
 
 	t.Run("revoke non-existing role", func(t *testing.T) {
-		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(NonExistingAccountObjectIdentifier, sdk.RevokeRole{Role: sdk.Pointer(parentRole.ID())}))
+		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(NonExistingAccountObjectIdentifier, *sdk.NewRevokeRoleFromRequest().WithRole(parentRole.ID())))
 		assert.NoError(t, err)
 	})
 
 	t.Run("revoke from non-existing grantee role", func(t *testing.T) {
-		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(role.ID(), sdk.RevokeRole{Role: &NonExistingAccountObjectIdentifier}))
+		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(role.ID(), *sdk.NewRevokeRoleFromRequest().WithRole(NonExistingAccountObjectIdentifier)))
 		assert.NoError(t, err)
 	})
 
 	t.Run("revoke role that was never granted", func(t *testing.T) {
-		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(NonExistingAccountObjectIdentifier, sdk.RevokeRole{Role: sdk.Pointer(NonExistingAccountObjectIdentifier)}))
+		err := client.Roles.RevokeSafely(ctx, sdk.NewRevokeRoleRequest(NonExistingAccountObjectIdentifier, *sdk.NewRevokeRoleFromRequest().WithRole(NonExistingAccountObjectIdentifier)))
 		assert.NoError(t, err)
 	})
 }

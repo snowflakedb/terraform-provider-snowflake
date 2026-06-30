@@ -67,35 +67,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(id.Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 1).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(id.Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 1).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -111,35 +112,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(id.Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 1).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(id.Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 1).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -155,35 +157,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(id.Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 1).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(id.Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 1).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -218,35 +221,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(id.Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstances(1).
-			HasTargetInstances(1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(id.Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstances(1).
+				HasTargetInstances(1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -271,35 +275,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(id.Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstances(1).
-			HasTargetInstances(1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasExternalAccessIntegrations(externalAccessIntegrationId).
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(3600).
-			HasComment(comment).
-			HasOwnerRoleType("ROLE").
-			HasQueryWarehouse(testClientHelper().Ids.WarehouseId()).
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(id.Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstances(1).
+				HasTargetInstances(1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasExternalAccessIntegrations(externalAccessIntegrationId).
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(3600).
+				HasComment(comment).
+				HasOwnerRoleType("ROLE").
+				HasQueryWarehouse(testClientHelper().Ids.WarehouseId()).
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -314,9 +319,10 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
-			HasName(service.ID().Name()).
-			HasSpecThatContains("text-example-changed"),
+		assertThatObject(
+			t, objectassert.ServiceDetails(t, service.ID()).
+				HasName(service.ID().Name()).
+				HasSpecThatContains("text-example-changed"),
 		)
 
 		// specification on stage
@@ -326,9 +332,10 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
-			HasName(service.ID().Name()).
-			HasSpecThatContains("text-example-original"),
+		assertThatObject(
+			t, objectassert.ServiceDetails(t, service.ID()).
+				HasName(service.ID().Name()).
+				HasSpecThatContains("text-example-original"),
 		)
 
 		// specification template
@@ -338,9 +345,10 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
-			HasName(service.ID().Name()).
-			HasSpecThatContains("template-example-original"),
+		assertThatObject(
+			t, objectassert.ServiceDetails(t, service.ID()).
+				HasName(service.ID().Name()).
+				HasSpecThatContains("template-example-original"),
 		)
 
 		// specification template on stage
@@ -350,9 +358,10 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
-			HasName(service.ID().Name()).
-			HasSpecThatContains("template-example-changed"),
+		assertThatObject(
+			t, objectassert.ServiceDetails(t, service.ID()).
+				HasName(service.ID().Name()).
+				HasSpecThatContains("template-example-changed"),
 		)
 	})
 
@@ -376,15 +385,16 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasMinReadyInstances(1).
-			HasMinInstances(2).
-			HasMaxInstances(3).
-			HasAutoResume(true).
-			HasQueryWarehouse(testClientHelper().Ids.WarehouseId()).
-			HasExternalAccessIntegrations(externalAccessIntegrationId).
-			HasComment(comment).
-			HasAutoSuspendSecs(3600),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasMinReadyInstances(1).
+				HasMinInstances(2).
+				HasMaxInstances(3).
+				HasAutoResume(true).
+				HasQueryWarehouse(testClientHelper().Ids.WarehouseId()).
+				HasExternalAccessIntegrations(externalAccessIntegrationId).
+				HasComment(comment).
+				HasAutoSuspendSecs(3600),
 		)
 	})
 
@@ -420,15 +430,16 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasAutoResume(true).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasNoQueryWarehouse().
-			HasNoExternalAccessIntegrations().
-			HasNoComment().
-			HasAutoSuspendSecs(0).
-			HasMinReadyInstances(1),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasAutoResume(true).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasNoQueryWarehouse().
+				HasNoExternalAccessIntegrations().
+				HasNoComment().
+				HasAutoSuspendSecs(0).
+				HasMinReadyInstances(1),
 		)
 	})
 
@@ -436,10 +447,11 @@ func TestInt_Services(t *testing.T) {
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
 		t.Cleanup(serviceCleanup)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasStatus(sdk.ServiceStatusPending).
-			HasNoResumedOn().
-			HasNoSuspendedOn(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasStatus(sdk.ServiceStatusPending).
+				HasNoResumedOn().
+				HasNoSuspendedOn(),
 		)
 
 		err := client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithSuspend(true))
@@ -448,10 +460,11 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasStatus(sdk.ServiceStatusSuspending).
-			HasNoResumedOn().
-			HasSuspendedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasStatus(sdk.ServiceStatusSuspending).
+				HasNoResumedOn().
+				HasSuspendedOnNotEmpty(),
 		)
 
 		err = client.Services.Alter(ctx, sdk.NewAlterServiceRequest(service.ID()).WithResume(true))
@@ -460,10 +473,11 @@ func TestInt_Services(t *testing.T) {
 		service, err = client.Services.ShowByID(ctx, service.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasStatus(sdk.ServiceStatusPending).
-			HasResumedOnNotEmpty().
-			HasSuspendedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasStatus(sdk.ServiceStatusPending).
+				HasResumedOnNotEmpty().
+				HasSuspendedOnNotEmpty(),
 		)
 	})
 
@@ -481,35 +495,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(id.Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 0).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(true).
-			HasIsAsyncJob(true).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(id.Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 0).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(true).
+				HasIsAsyncJob(true).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -526,35 +541,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(service.ID().Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(service.ID().DatabaseName()).
-			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 1).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(true).
-			HasIsAsyncJob(true).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(service.ID().Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(service.ID().DatabaseName()).
+				HasSchemaName(service.ID().SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 1).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(true).
+				HasIsAsyncJob(true).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -575,35 +591,36 @@ func TestInt_Services(t *testing.T) {
 		service, err := client.Services.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, service).
-			HasName(service.ID().Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(service.ID().DatabaseName()).
-			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 1).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasExternalAccessIntegrations(externalAccessIntegrationId).
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasComment(comment).
-			HasOwnerRoleType("ROLE").
-			HasQueryWarehouse(testClientHelper().Ids.WarehouseId()).
-			HasIsJob(true).
-			HasIsAsyncJob(true).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, service).
+				HasName(service.ID().Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(service.ID().DatabaseName()).
+				HasSchemaName(service.ID().SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 1).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasExternalAccessIntegrations(externalAccessIntegrationId).
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasComment(comment).
+				HasOwnerRoleType("ROLE").
+				HasQueryWarehouse(testClientHelper().Ids.WarehouseId()).
+				HasIsJob(true).
+				HasIsAsyncJob(true).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -615,36 +632,37 @@ func TestInt_Services(t *testing.T) {
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
 		t.Cleanup(serviceCleanup)
 
-		assertThatObject(t, objectassert.ServiceDetails(t, service.ID()).
-			HasName(service.ID().Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(service.ID().DatabaseName()).
-			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasSpecThatContains("snowflake/images/snowflake_images/exampleimage:latest").
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 1).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceDetails(t, service.ID()).
+				HasName(service.ID().Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(service.ID().DatabaseName()).
+				HasSchemaName(service.ID().SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasSpecThatContains("snowflake/images/snowflake_images/exampleimage:latest").
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 1).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -652,42 +670,44 @@ func TestInt_Services(t *testing.T) {
 		service, serviceCleanup := testClientHelper().Service.CreateWithId(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
 		t.Cleanup(serviceCleanup)
 
-		services, err := client.Services.Show(ctx, sdk.NewShowServiceRequest().
-			WithLike(sdk.Like{Pattern: sdk.Pointer(service.ID().Name())}).
-			WithExcludeJobs(true),
+		services, err := client.Services.Show(
+			ctx, sdk.NewShowServiceRequest().
+				WithLike(sdk.Like{Pattern: sdk.Pointer(service.ID().Name())}).
+				WithExcludeJobs(true),
 		)
 		require.NoError(t, err)
 		require.Equal(t, 1, len(services))
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, &services[0]).
-			HasName(service.ID().Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(service.ID().DatabaseName()).
-			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstances(1).
-			HasTargetInstances(1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, &services[0]).
+				HasName(service.ID().Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(service.ID().DatabaseName()).
+				HasSchemaName(service.ID().SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstances(1).
+				HasTargetInstances(1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -695,42 +715,44 @@ func TestInt_Services(t *testing.T) {
 		service, serviceCleanup := testClientHelper().Service.ExecuteJobService(t, computePool.ID(), testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()))
 		t.Cleanup(serviceCleanup)
 
-		services, err := client.Services.Show(ctx, sdk.NewShowServiceRequest().
-			WithLike(sdk.Like{Pattern: sdk.Pointer(service.ID().Name())}).
-			WithJob(true),
+		services, err := client.Services.Show(
+			ctx, sdk.NewShowServiceRequest().
+				WithLike(sdk.Like{Pattern: sdk.Pointer(service.ID().Name())}).
+				WithJob(true),
 		)
 		require.NoError(t, err)
 		require.Equal(t, 1, len(services))
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, &services[0]).
-			HasName(service.ID().Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(service.ID().DatabaseName()).
-			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstances(0).
-			HasTargetInstances(1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(true).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, &services[0]).
+				HasName(service.ID().Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(service.ID().DatabaseName()).
+				HasSchemaName(service.ID().SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstances(0).
+				HasTargetInstances(1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(true).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 
@@ -743,35 +765,36 @@ func TestInt_Services(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, 1, len(services))
 
-		assertThatObject(t, objectassert.ServiceFromObject(t, &services[0]).
-			HasName(service.ID().Name()).
-			HasStatus(sdk.ServiceStatusPending).
-			HasDatabaseName(service.ID().DatabaseName()).
-			HasSchemaName(service.ID().SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComputePool(computePool.ID()).
-			HasDnsNameNotEmpty().
-			HasCurrentInstancesBetween(0, 1).
-			HasTargetInstancesBetween(0, 1).
-			HasMinReadyInstances(1).
-			HasMinInstances(1).
-			HasMaxInstances(1).
-			HasAutoResume(true).
-			HasNoExternalAccessIntegrations().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasNoResumedOn().
-			HasNoSuspendedOn().
-			HasAutoSuspendSecs(0).
-			HasNoComment().
-			HasOwnerRoleType("ROLE").
-			HasNoQueryWarehouse().
-			HasIsJob(false).
-			HasIsAsyncJob(false).
-			HasSpecDigestNotEmpty().
-			HasIsUpgrading(false).
-			HasNoManagingObjectDomain().
-			HasNoManagingObjectName(),
+		assertThatObject(
+			t, objectassert.ServiceFromObject(t, &services[0]).
+				HasName(service.ID().Name()).
+				HasStatus(sdk.ServiceStatusPending).
+				HasDatabaseName(service.ID().DatabaseName()).
+				HasSchemaName(service.ID().SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComputePool(computePool.ID()).
+				HasDnsNameNotEmpty().
+				HasCurrentInstancesBetween(0, 1).
+				HasTargetInstancesBetween(0, 1).
+				HasMinReadyInstances(1).
+				HasMinInstances(1).
+				HasMaxInstances(1).
+				HasAutoResume(true).
+				HasNoExternalAccessIntegrations().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasNoResumedOn().
+				HasNoSuspendedOn().
+				HasAutoSuspendSecs(0).
+				HasNoComment().
+				HasOwnerRoleType("ROLE").
+				HasNoQueryWarehouse().
+				HasIsJob(false).
+				HasIsAsyncJob(false).
+				HasSpecDigestNotEmpty().
+				HasIsUpgrading(false).
+				HasNoManagingObjectDomain().
+				HasNoManagingObjectName(),
 		)
 	})
 }

@@ -230,3 +230,13 @@ type IcebergTablePartitionSpecField struct {
 	SourceId  int    `json:"source-id"`
 	FieldId   int    `json:"field-id"`
 }
+
+// IcebergTableAutoRefreshStatus is the parsed form of the auto_refresh_status JSON column returned by
+// SHOW ICEBERG TABLES. It is empty (the column is "") for tables without auto-refresh configured.
+type IcebergTableAutoRefreshStatus struct {
+	CurrentSnapshotId    int     `json:"currentSnapshotId"`
+	LastSnapshotTime     *string `json:"lastSnapshotTime"`
+	PendingSnapshotCount int     `json:"pendingSnapshotCount"`
+	ExecutionState       string  `json:"executionState"`
+	LastUpdatedTime      string  `json:"lastUpdatedTime"`
+}

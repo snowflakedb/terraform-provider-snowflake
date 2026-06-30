@@ -254,7 +254,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_Import_WrongProviderType(t *tes
 	t.Cleanup(awsCleanup)
 
 	googleId := testClient().Ids.RandomAccountObjectIdentifier()
-	googleModel := model.ApiIntegrationGoogleCloudApiGateway("t", googleId.Name(),
+	googleModel := model.ApiIntegrationGoogleCloudApiGateway(
+		"t", googleId.Name(),
 		[]string{googleAllowedPrefix},
 		true,
 		googleAudience,
@@ -299,7 +300,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: googleAllowedPrefix}}, true).
 							WithComment(comment).
@@ -347,7 +349,8 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_ExternalProviderTypeMismatch(t 
 			{
 				PreConfig: func() {
 					testClient().ApiIntegration.DropApiIntegrationFunc(t, id)()
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
 							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(azureTenantId, azureAdApplicationId)),

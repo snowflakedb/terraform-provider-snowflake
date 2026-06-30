@@ -64,7 +64,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 			// Create with empty optionals (basic)
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -103,7 +104,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -142,7 +144,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -172,7 +175,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 						WithComment(sdk.StringAllowEmpty{Value: changedComment}))
 				},
 				Config: accconfig.FromModels(t, modelUpdated),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -203,7 +207,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelSseEncryptionWithDirectoryTableAndComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelSseEncryptionWithDirectoryTableAndComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -234,7 +239,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelSseEncryptionWithComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelSseEncryptionWithComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -265,7 +271,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelSseEncryption.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelSseEncryption.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -300,7 +307,8 @@ func TestAcc_InternalStage_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelSseEncryption),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelSseEncryption.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -345,7 +353,8 @@ func TestAcc_InternalStage_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -434,7 +443,8 @@ func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 			// Start with inline CSV
 			{
 				Config: accconfig.FromModels(t, modelWithCsvFormat),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -450,7 +460,8 @@ func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -477,7 +488,8 @@ func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -493,7 +505,8 @@ func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithCsvFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -509,7 +522,8 @@ func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelBasic.ResourceReference()).
 						HasFileFormatEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -736,7 +750,8 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCompleteCsv),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -759,14 +774,16 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithoutFileFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					defaultAssertions...,
 				),
 			},
 			// Set all fields
 			{
 				Config: accconfig.FromModels(t, modelCompleteCsv),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -778,7 +795,8 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredCsv.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -819,13 +837,15 @@ func TestAcc_InternalStage_FileFormat_AllCsvOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredCsv.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, modelWithSkipHeader),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelWithSkipHeader.ResourceReference()).
 						HasFileFormatCsv().
 						HasFileFormatCsvSkipHeader(1),
@@ -1011,7 +1031,8 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCompleteJson),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1030,14 +1051,16 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasicJson.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					defaultAssertions...,
 				),
 			},
 			// Set all fields
 			{
 				Config: accconfig.FromModels(t, modelCompleteJson),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1049,7 +1072,8 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredJson.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -1084,13 +1108,15 @@ func TestAcc_InternalStage_FileFormat_AllJsonOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredJson.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, modelJsonWithReplaceInvalidCharacters),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelJsonWithReplaceInvalidCharacters.ResourceReference()).
 						HasFileFormatJson().
 						HasFileFormatJsonReplaceInvalidCharacters(true),
@@ -1181,7 +1207,8 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCompleteAvro),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1200,14 +1227,16 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasicAvro.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					defaultAssertions...,
 				),
 			},
 			// Set all fields
 			{
 				Config: accconfig.FromModels(t, modelCompleteAvro),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1219,7 +1248,8 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredAvro.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -1243,7 +1273,8 @@ func TestAcc_InternalStage_FileFormat_AllAvroOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredAvro.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -1324,7 +1355,8 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCompleteOrc),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1343,14 +1375,16 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasicOrc.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					defaultAssertions...,
 				),
 			},
 			// Set all fields
 			{
 				Config: accconfig.FromModels(t, modelCompleteOrc),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1362,7 +1396,8 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredOrc.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -1385,7 +1420,8 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredOrc.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -1503,7 +1539,8 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCompleteParquet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1522,14 +1559,16 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasicParquet.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					defaultAssertions...,
 				),
 			},
 			// Set all fields
 			{
 				Config: accconfig.FromModels(t, modelCompleteParquet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1556,7 +1595,8 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredParquet.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -1667,7 +1707,8 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCompleteXml),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1686,14 +1727,16 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasicXml.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					defaultAssertions...,
 				),
 			},
 			// Set all fields
 			{
 				Config: accconfig.FromModels(t, modelCompleteXml),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					completeAssertions...,
 				),
 			},
@@ -1705,7 +1748,8 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredXml.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
@@ -1731,13 +1775,15 @@ func TestAcc_InternalStage_FileFormat_AllXmlOptions(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlteredXml.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					alteredAssertions...,
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, modelXmlWithReplaceInvalidCharacters),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.InternalStageResource(t, modelXmlWithReplaceInvalidCharacters.ResourceReference()).
 						HasFileFormatXml().
 						HasFileFormatXmlReplaceInvalidCharacters(true),

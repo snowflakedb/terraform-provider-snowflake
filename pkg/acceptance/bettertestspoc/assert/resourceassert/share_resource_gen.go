@@ -16,7 +16,7 @@ func ShareResource(t *testing.T, name string) *ShareResourceAssert {
 	t.Helper()
 
 	return &ShareResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedShareResource(t *testing.T, id string) *ShareResourceAssert {
 	t.Helper()
 
 	return &ShareResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -57,17 +57,17 @@ func (s *ShareResourceAssert) HasFullyQualifiedName(expected string) *ShareResou
 ///////////////////////////////////
 
 func (s *ShareResourceAssert) HasNameString(expected string) *ShareResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *ShareResourceAssert) HasCommentString(expected string) *ShareResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *ShareResourceAssert) HasFullyQualifiedNameString(expected string) *ShareResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
@@ -76,17 +76,17 @@ func (s *ShareResourceAssert) HasFullyQualifiedNameString(expected string) *Shar
 ///////////////////////////////
 
 func (s *ShareResourceAssert) HasNoName() *ShareResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *ShareResourceAssert) HasNoComment() *ShareResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *ShareResourceAssert) HasNoFullyQualifiedName() *ShareResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
@@ -95,17 +95,17 @@ func (s *ShareResourceAssert) HasNoFullyQualifiedName() *ShareResourceAssert {
 ////////////////////////////
 
 func (s *ShareResourceAssert) HasAccountsEmpty() *ShareResourceAssert {
-	s.AddAssertion(assert.ValueSet("accounts.#", "0"))
+	s.ValueSet("accounts.#", "0")
 	return s
 }
 
 func (s *ShareResourceAssert) HasCommentEmpty() *ShareResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *ShareResourceAssert) HasFullyQualifiedNameEmpty() *ShareResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
@@ -114,16 +114,16 @@ func (s *ShareResourceAssert) HasFullyQualifiedNameEmpty() *ShareResourceAssert 
 ///////////////////////////////
 
 func (s *ShareResourceAssert) HasNameNotEmpty() *ShareResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *ShareResourceAssert) HasCommentNotEmpty() *ShareResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *ShareResourceAssert) HasFullyQualifiedNameNotEmpty() *ShareResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }

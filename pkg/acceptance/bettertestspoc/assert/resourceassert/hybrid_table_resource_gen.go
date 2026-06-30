@@ -16,7 +16,7 @@ func HybridTableResource(t *testing.T, name string) *HybridTableResourceAssert {
 	t.Helper()
 
 	return &HybridTableResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedHybridTableResource(t *testing.T, id string) *HybridTableResourceAs
 	t.Helper()
 
 	return &HybridTableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -80,37 +80,37 @@ func (h *HybridTableResourceAssert) HasMaxDataExtensionTimeInDays(expected int) 
 ///////////////////////////////////
 
 func (h *HybridTableResourceAssert) HasDatabaseString(expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("database", expected))
+	h.ValueSet("database", expected)
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasSchemaString(expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("schema", expected))
+	h.ValueSet("schema", expected)
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNameString(expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("name", expected))
+	h.ValueSet("name", expected)
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasCommentString(expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("comment", expected))
+	h.ValueSet("comment", expected)
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasDataRetentionTimeInDaysString(expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("data_retention_time_in_days", expected))
+	h.ValueSet("data_retention_time_in_days", expected)
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasFullyQualifiedNameString(expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	h.ValueSet("fully_qualified_name", expected)
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasMaxDataExtensionTimeInDaysString(expected string) *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", expected))
+	h.ValueSet("max_data_extension_time_in_days", expected)
 	return h
 }
 
@@ -119,37 +119,37 @@ func (h *HybridTableResourceAssert) HasMaxDataExtensionTimeInDaysString(expected
 ///////////////////////////////
 
 func (h *HybridTableResourceAssert) HasNoDatabase() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueNotSet("database"))
+	h.ValueNotSet("database")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNoSchema() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueNotSet("schema"))
+	h.ValueNotSet("schema")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNoName() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueNotSet("name"))
+	h.ValueNotSet("name")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNoComment() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueNotSet("comment"))
+	h.ValueNotSet("comment")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNoDataRetentionTimeInDays() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueNotSet("data_retention_time_in_days"))
+	h.ValueNotSet("data_retention_time_in_days")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNoFullyQualifiedName() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	h.ValueNotSet("fully_qualified_name")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNoMaxDataExtensionTimeInDays() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueNotSet("max_data_extension_time_in_days"))
+	h.ValueNotSet("max_data_extension_time_in_days")
 	return h
 }
 
@@ -158,32 +158,32 @@ func (h *HybridTableResourceAssert) HasNoMaxDataExtensionTimeInDays() *HybridTab
 ////////////////////////////
 
 func (h *HybridTableResourceAssert) HasCommentEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("comment", ""))
+	h.ValueSet("comment", "")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasDataRetentionTimeInDaysEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("data_retention_time_in_days", ""))
+	h.ValueSet("data_retention_time_in_days", "")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasForeignKeyEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("foreign_key.#", "0"))
+	h.ValueSet("foreign_key.#", "0")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasFullyQualifiedNameEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	h.ValueSet("fully_qualified_name", "")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("max_data_extension_time_in_days", ""))
+	h.ValueSet("max_data_extension_time_in_days", "")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasUniqueConstraintEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValueSet("unique_constraint.#", "0"))
+	h.ValueSet("unique_constraint.#", "0")
 	return h
 }
 
@@ -192,36 +192,36 @@ func (h *HybridTableResourceAssert) HasUniqueConstraintEmpty() *HybridTableResou
 ///////////////////////////////
 
 func (h *HybridTableResourceAssert) HasDatabaseNotEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValuePresent("database"))
+	h.ValuePresent("database")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasSchemaNotEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValuePresent("schema"))
+	h.ValuePresent("schema")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasNameNotEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValuePresent("name"))
+	h.ValuePresent("name")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasCommentNotEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValuePresent("comment"))
+	h.ValuePresent("comment")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValuePresent("data_retention_time_in_days"))
+	h.ValuePresent("data_retention_time_in_days")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasFullyQualifiedNameNotEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	h.ValuePresent("fully_qualified_name")
 	return h
 }
 
 func (h *HybridTableResourceAssert) HasMaxDataExtensionTimeInDaysNotEmpty() *HybridTableResourceAssert {
-	h.AddAssertion(assert.ValuePresent("max_data_extension_time_in_days"))
+	h.ValuePresent("max_data_extension_time_in_days")
 	return h
 }

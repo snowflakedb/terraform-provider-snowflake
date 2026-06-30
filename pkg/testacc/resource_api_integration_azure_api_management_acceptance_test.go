@@ -271,7 +271,8 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import_WrongApiProvider(t *testing
 	awsIntegration, awsCleanup := testClient().ApiIntegration.CreateAws(t)
 	t.Cleanup(awsCleanup)
 
-	azureModel := model.ApiIntegrationAzureApiManagement("t", azureId.Name(),
+	azureModel := model.ApiIntegrationAzureApiManagement(
+		"t", azureId.Name(),
 		[]string{azureAllowedPrefix},
 		azureAdApplicationId,
 		azureTenantId,
@@ -320,7 +321,8 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
 							WithComment(comment).
@@ -370,7 +372,8 @@ func TestAcc_ApiIntegrationAzureApiManagement_Import_WithApiKey(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: azureAllowedPrefix}}, true).
 							WithAzureApiProviderParams(*sdk.NewAzureApiParamsRequest(

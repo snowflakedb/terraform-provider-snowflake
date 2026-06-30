@@ -65,7 +65,8 @@ func (c *SecurityIntegrationClient) CreateExternalOauth(t *testing.T) (*sdk.Secu
 	t.Helper()
 	id := c.ids.RandomAccountObjectIdentifier()
 	issuer := random.String()
-	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(id, false, sdk.ExternalOauthSecurityIntegrationTypeOptionCustom,
+	request := sdk.NewCreateExternalOauthSecurityIntegrationRequest(
+		id, false, sdk.ExternalOauthSecurityIntegrationTypeOptionCustom,
 		issuer, []sdk.TokenUserMappingClaim{{Claim: "foo"}}, sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName,
 	).WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}})
 	return c.CreateExternalOauthWithRequest(t, request)

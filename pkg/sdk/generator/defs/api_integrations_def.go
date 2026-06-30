@@ -7,6 +7,11 @@ import (
 )
 
 var (
+	ApiIntegrationAllowedAuthenticationSecretsValueEnum = g.NewEnum(
+		"ApiIntegrationAllowedAuthenticationSecretsValue", "ApiIntegrationAllowedAuthenticationSecretsValues",
+		"ALL",
+		"NONE",
+	)
 	ApiIntegrationAwsApiProviderTypeEnum = g.NewEnum(
 		"ApiIntegrationAwsApiProviderType", "ApiIntegrationAwsApiProviderTypes",
 		"aws_api_gateway",
@@ -95,6 +100,7 @@ var apiIntegrationsDef = g.NewInterface(
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
 	WithEnums(
+		ApiIntegrationAllowedAuthenticationSecretsValueEnum,
 		ApiIntegrationAwsApiProviderTypeEnum,
 		ApiIntegrationOauthClientAuthMethodEnum,
 		ApiIntegrationOauthAllowedScopeEnum,
@@ -165,7 +171,7 @@ var apiIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"ApiUserAuthentication",
 						apiIntegrationOauth2GitAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 					),
 				g.KeywordOptions(),
 			).
@@ -189,7 +195,7 @@ var apiIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"ApiUserAuthentication",
 						apiIntegrationOauth2McpAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 					),
 				g.KeywordOptions(),
 			).
@@ -200,7 +206,7 @@ var apiIntegrationsDef = g.NewInterface(
 					QueryStructField(
 						"ApiUserAuthentication",
 						apiIntegrationDynamicClientMcpAuthDef,
-						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+						g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 					),
 				g.KeywordOptions(),
 			).
@@ -296,7 +302,7 @@ var apiIntegrationsDef = g.NewInterface(
 							QueryStructField(
 								"ApiUserAuthentication",
 								apiIntegrationOauth2McpAuthDef,
-								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma(),
+								g.ListOptions().SQL("API_USER_AUTHENTICATION =").Parentheses().NoComma().Required(),
 							),
 						g.KeywordOptions(),
 					).
@@ -445,4 +451,10 @@ var apiIntegrationsDef = g.NewInterface(
 		"DescribeExternalMcpDetails returns converted describe output for external MCP API integrations.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 		"*ApiIntegrationExternalMcpDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAllDetails",
+		"DescribeAllDetails returns parsed describe output for any API integration type.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+		"*ApiIntegrationAllDetails", "error",
 	)

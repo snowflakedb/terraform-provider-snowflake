@@ -102,9 +102,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		parentRoleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parentRoleName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleIdentifier.FullyQualifiedName())
 		if !safePublicRole {
-			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-				Role: &parentRoleIdentifier,
-			})
+			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithRole(parentRoleIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
@@ -113,9 +111,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		userIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(userName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), userIdentifier.FullyQualifiedName())
 		if !safePublicRole {
-			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-				User: &userIdentifier,
-			})
+			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithUser(userIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
@@ -126,6 +122,15 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	d.SetId(snowflakeResourceID)
 	if safePublicRole {
 		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleSafePublicRole)
+		return nil
+	}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		// The trailing Read only re-confirms the grant we just created; this resource has no
+		// computed/server-default fields to populate, so the Read is redundant here. With caching
+		// enabled we skip it to avoid an extra SHOW GRANTS during apply. We still invalidate so any
+		// later Read for this role in the same plan observes the new grant.
+		providerCtx.GrantShowOfRoleCache.Invalidate(roleIdentifier.FullyQualifiedName())
+		log.Printf("[DEBUG] skipping trailing SHOW GRANTS read after create (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleShowCaching)
 		return nil
 	}
 	return ReadGrantAccountRole(ctx, d, meta)
@@ -150,11 +155,21 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 
 	objectType := parts[1]
 	targetIdentifier := parts[2]
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		Of: &sdk.ShowGrantsOf{
-			Role: roleIdentifier,
-		},
-	})
+
+	var grants []sdk.Grant
+	var err error
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		cacheKey := roleIdentifier.FullyQualifiedName()
+		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func() ([]sdk.Grant, error) {
+			return client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+				Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+			})
+		})
+	} else {
+		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+		})
+	}
 	if err != nil {
 		log.Printf("[DEBUG] role (%s) not found", roleIdentifier.FullyQualifiedName())
 		d.SetId("")
@@ -205,14 +220,17 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	var err error
 	switch objectType {
 	case "ROLE":
-		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{Role: &granteeIdentifier}))
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, *sdk.NewRevokeRoleFromRequest().WithRole(granteeIdentifier)))
 	case "USER":
-		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{User: &granteeIdentifier}))
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, *sdk.NewRevokeRoleFromRequest().WithUser(granteeIdentifier)))
 	default:
 		return diag.FromErr(fmt.Errorf("invalid object type specified: %v, expected ROLE or USER", objectType))
 	}
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		providerCtx.GrantShowOfRoleCache.Invalidate(id.FullyQualifiedName())
 	}
 	d.SetId("")
 	return nil

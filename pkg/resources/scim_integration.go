@@ -322,7 +322,8 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 				return diag.FromErr(err)
 			}
 
-			if err = handleExternalChangesToObjectInDescribe(d,
+			if err = handleExternalChangesToObjectInDescribe(
+				d,
 				describeMapping{"network_policy", "network_policy", networkPolicyProperty.Value, networkPolicyProperty.Value, nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -333,7 +334,8 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				if err = handleExternalChangesToObjectInDescribe(d,
+				if err = handleExternalChangesToObjectInDescribe(
+					d,
 					describeMapping{"sync_password", "sync_password", syncPasswordProperty.Value, syncPasswordProperty.Value, nil},
 				); err != nil {
 					return diag.FromErr(err)

@@ -320,7 +320,8 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"allow_writes", "allow_writes", externalVolume.AllowWrites, booleanStringFromBool(externalVolume.AllowWrites), nil},
 			); err != nil {
 				return diag.FromErr(err)

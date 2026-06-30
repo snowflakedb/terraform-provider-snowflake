@@ -8,6 +8,7 @@ import (
 
 type ResourceShowOutputAssertionsModel struct {
 	Name             string
+	DataSourceName   string
 	IsDescribeOutput bool
 	Attributes       []ResourceShowOutputAssertionModel
 
@@ -21,15 +22,20 @@ type ResourceShowOutputAssertionModel struct {
 	Mapper           genhelpers.Mapper
 }
 
-func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
+func ModelFromSdkObjectDetails(sdkObject SdkObjectShowOutputDetails, preamble *genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
 	attributes := make([]ResourceShowOutputAssertionModel, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
 		attributes[idx] = MapToResourceShowOutputAssertion(field)
 	}
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
+	var dataSourceName string
+	if sdkObject.dataSourceDef != nil {
+		dataSourceName = sdkObject.dataSourceDef.pluralName
+	}
 	return ResourceShowOutputAssertionsModel{
 		Name:             name,
+		DataSourceName:   dataSourceName,
 		IsDescribeOutput: sdkObject.IsDataSourceOutput,
 		Attributes:       attributes,
 		PreambleModel:    preamble,
@@ -38,27 +44,28 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 
 func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutputAssertionModel {
 	concreteTypeWithoutPtr, _ := strings.CutPrefix(field.ConcreteType, "*")
+	mapper := genhelpers.Identity
 	// TODO [SNOW-1501905]: get a runtime name for the assertion creator
 	var assertionCreator string
 	switch {
 	case concreteTypeWithoutPtr == "bool":
-		assertionCreator = "ResourceShowOutputBoolValue"
+		assertionCreator = "BoolValueSet"
 	case concreteTypeWithoutPtr == "int":
-		assertionCreator = "ResourceShowOutputIntValue"
+		assertionCreator = "IntValueSet"
 	case concreteTypeWithoutPtr == "float64":
-		assertionCreator = "ResourceShowOutputFloatValue"
+		assertionCreator = "FloatValueSet"
 	case concreteTypeWithoutPtr == "string":
-		assertionCreator = "ResourceShowOutputValue"
+		assertionCreator = "StringValueSet"
 	// TODO [SNOW-1501905]: distinguish between different enum types
 	// TODO [SNOW-1501905]: currently, it also generates this assertion type for sdk structs
 	case strings.HasPrefix(concreteTypeWithoutPtr, "sdk."):
-		assertionCreator = "ResourceShowOutputStringUnderlyingValue"
+		assertionCreator = "StringValueSet"
+		mapper = genhelpers.CastToString
 	default:
-		assertionCreator = "ResourceShowOutputValue"
+		assertionCreator = "StringValueSet"
 	}
 
 	// TODO [SNOW-1501905]: handle other mappings if needed
-	mapper := genhelpers.Identity
 	switch concreteTypeWithoutPtr {
 	case "sdk.AccountObjectIdentifier":
 		mapper = genhelpers.Name

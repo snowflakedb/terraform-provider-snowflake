@@ -16,7 +16,7 @@ func UserResource(t *testing.T, name string) *UserResourceAssert {
 	t.Helper()
 
 	return &UserResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedUserResource(t *testing.T, id string) *UserResourceAssert {
 	t.Helper()
 
 	return &UserResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -447,412 +447,412 @@ func (u *UserResourceAssert) HasWeekStart(expected int) *UserResourceAssert {
 ///////////////////////////////////
 
 func (u *UserResourceAssert) HasNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("name", expected))
+	u.ValueSet("name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasAbortDetachedQueryString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("abort_detached_query", expected))
+	u.ValueSet("abort_detached_query", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasAutocommitString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("autocommit", expected))
+	u.ValueSet("autocommit", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasBinaryInputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("binary_input_format", expected))
+	u.ValueSet("binary_input_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasBinaryOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("binary_output_format", expected))
+	u.ValueSet("binary_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientMemoryLimitString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_memory_limit", expected))
+	u.ValueSet("client_memory_limit", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientMetadataRequestUseConnectionCtxString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_metadata_request_use_connection_ctx", expected))
+	u.ValueSet("client_metadata_request_use_connection_ctx", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientPrefetchThreadsString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_prefetch_threads", expected))
+	u.ValueSet("client_prefetch_threads", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientResultChunkSizeString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_result_chunk_size", expected))
+	u.ValueSet("client_result_chunk_size", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientResultColumnCaseInsensitiveString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_result_column_case_insensitive", expected))
+	u.ValueSet("client_result_column_case_insensitive", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientSessionKeepAliveString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_session_keep_alive", expected))
+	u.ValueSet("client_session_keep_alive", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientSessionKeepAliveHeartbeatFrequencyString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_session_keep_alive_heartbeat_frequency", expected))
+	u.ValueSet("client_session_keep_alive_heartbeat_frequency", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasClientTimestampTypeMappingString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", expected))
+	u.ValueSet("client_timestamp_type_mapping", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasCommentString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("comment", expected))
+	u.ValueSet("comment", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDateInputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("date_input_format", expected))
+	u.ValueSet("date_input_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDateOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("date_output_format", expected))
+	u.ValueSet("date_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDaysToExpiryString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("days_to_expiry", expected))
+	u.ValueSet("days_to_expiry", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultNamespaceString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_namespace", expected))
+	u.ValueSet("default_namespace", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultRoleString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_role", expected))
+	u.ValueSet("default_role", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultSecondaryRolesOptionString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_secondary_roles_option", expected))
+	u.ValueSet("default_secondary_roles_option", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultWarehouseString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_warehouse", expected))
+	u.ValueSet("default_warehouse", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDisableMfaString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("disable_mfa", expected))
+	u.ValueSet("disable_mfa", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDisabledString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("disabled", expected))
+	u.ValueSet("disabled", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasDisplayNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("display_name", expected))
+	u.ValueSet("display_name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasEmailString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("email", expected))
+	u.ValueSet("email", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("enable_unload_physical_type_optimization", expected))
+	u.ValueSet("enable_unload_physical_type_optimization", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasEnableUnredactedQuerySyntaxErrorString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("enable_unredacted_query_syntax_error", expected))
+	u.ValueSet("enable_unredacted_query_syntax_error", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasErrorOnNondeterministicMergeString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("error_on_nondeterministic_merge", expected))
+	u.ValueSet("error_on_nondeterministic_merge", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasErrorOnNondeterministicUpdateString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("error_on_nondeterministic_update", expected))
+	u.ValueSet("error_on_nondeterministic_update", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasFirstNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("first_name", expected))
+	u.ValueSet("first_name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasFullyQualifiedNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	u.ValueSet("fully_qualified_name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasGeographyOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("geography_output_format", expected))
+	u.ValueSet("geography_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasGeometryOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("geometry_output_format", expected))
+	u.ValueSet("geometry_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcTreatDecimalAsIntString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("jdbc_treat_decimal_as_int", expected))
+	u.ValueSet("jdbc_treat_decimal_as_int", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcTreatTimestampNtzAsUtcString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("jdbc_treat_timestamp_ntz_as_utc", expected))
+	u.ValueSet("jdbc_treat_timestamp_ntz_as_utc", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcUseSessionTimezoneString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("jdbc_use_session_timezone", expected))
+	u.ValueSet("jdbc_use_session_timezone", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasJsonIndentString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("json_indent", expected))
+	u.ValueSet("json_indent", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasLastNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("last_name", expected))
+	u.ValueSet("last_name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasLockTimeoutString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("lock_timeout", expected))
+	u.ValueSet("lock_timeout", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasLogEventLevelString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("log_event_level", expected))
+	u.ValueSet("log_event_level", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasLogLevelString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("log_level", expected))
+	u.ValueSet("log_level", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasLoginNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("login_name", expected))
+	u.ValueSet("login_name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasMiddleNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("middle_name", expected))
+	u.ValueSet("middle_name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasMinsToBypassMfaString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("mins_to_bypass_mfa", expected))
+	u.ValueSet("mins_to_bypass_mfa", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasMinsToUnlockString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("mins_to_unlock", expected))
+	u.ValueSet("mins_to_unlock", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasMultiStatementCountString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("multi_statement_count", expected))
+	u.ValueSet("multi_statement_count", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasMustChangePasswordString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("must_change_password", expected))
+	u.ValueSet("must_change_password", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasNetworkPolicyString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("network_policy", expected))
+	u.ValueSet("network_policy", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasNoorderSequenceAsDefaultString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("noorder_sequence_as_default", expected))
+	u.ValueSet("noorder_sequence_as_default", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasOdbcTreatDecimalAsIntString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("odbc_treat_decimal_as_int", expected))
+	u.ValueSet("odbc_treat_decimal_as_int", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasPasswordString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("password", expected))
+	u.ValueSet("password", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasPreventUnloadToInternalStagesString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("prevent_unload_to_internal_stages", expected))
+	u.ValueSet("prevent_unload_to_internal_stages", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasQueryTagString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("query_tag", expected))
+	u.ValueSet("query_tag", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", expected))
+	u.ValueSet("quoted_identifiers_ignore_case", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasRowsPerResultsetString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("rows_per_resultset", expected))
+	u.ValueSet("rows_per_resultset", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasRsaPublicKeyString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("rsa_public_key", expected))
+	u.ValueSet("rsa_public_key", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasRsaPublicKey2String(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("rsa_public_key_2", expected))
+	u.ValueSet("rsa_public_key_2", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasS3StageVpceDnsNameString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("s3_stage_vpce_dns_name", expected))
+	u.ValueSet("s3_stage_vpce_dns_name", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasSearchPathString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("search_path", expected))
+	u.ValueSet("search_path", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasSimulatedDataSharingConsumerString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("simulated_data_sharing_consumer", expected))
+	u.ValueSet("simulated_data_sharing_consumer", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasStatementQueuedTimeoutInSecondsString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", expected))
+	u.ValueSet("statement_queued_timeout_in_seconds", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasStatementTimeoutInSecondsString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", expected))
+	u.ValueSet("statement_timeout_in_seconds", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasStrictJsonOutputString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("strict_json_output", expected))
+	u.ValueSet("strict_json_output", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimeInputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("time_input_format", expected))
+	u.ValueSet("time_input_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimeOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("time_output_format", expected))
+	u.ValueSet("time_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampDayIsAlways24hString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_day_is_always_24h", expected))
+	u.ValueSet("timestamp_day_is_always_24h", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampInputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_input_format", expected))
+	u.ValueSet("timestamp_input_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampLtzOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_ltz_output_format", expected))
+	u.ValueSet("timestamp_ltz_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampNtzOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_ntz_output_format", expected))
+	u.ValueSet("timestamp_ntz_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_output_format", expected))
+	u.ValueSet("timestamp_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampTypeMappingString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_type_mapping", expected))
+	u.ValueSet("timestamp_type_mapping", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampTzOutputFormatString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_tz_output_format", expected))
+	u.ValueSet("timestamp_tz_output_format", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTimezoneString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timezone", expected))
+	u.ValueSet("timezone", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTraceLevelString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("trace_level", expected))
+	u.ValueSet("trace_level", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTransactionAbortOnErrorString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("transaction_abort_on_error", expected))
+	u.ValueSet("transaction_abort_on_error", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTransactionDefaultIsolationLevelString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("transaction_default_isolation_level", expected))
+	u.ValueSet("transaction_default_isolation_level", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasTwoDigitCenturyStartString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("two_digit_century_start", expected))
+	u.ValueSet("two_digit_century_start", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasUnsupportedDdlActionString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("unsupported_ddl_action", expected))
+	u.ValueSet("unsupported_ddl_action", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasUseCachedResultString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("use_cached_result", expected))
+	u.ValueSet("use_cached_result", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasUserTypeString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("user_type", expected))
+	u.ValueSet("user_type", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasWeekOfYearPolicyString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("week_of_year_policy", expected))
+	u.ValueSet("week_of_year_policy", expected)
 	return u
 }
 
 func (u *UserResourceAssert) HasWeekStartString(expected string) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("week_start", expected))
+	u.ValueSet("week_start", expected)
 	return u
 }
 
@@ -861,412 +861,412 @@ func (u *UserResourceAssert) HasWeekStartString(expected string) *UserResourceAs
 ///////////////////////////////
 
 func (u *UserResourceAssert) HasNoName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("name"))
+	u.ValueNotSet("name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoAbortDetachedQuery() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("abort_detached_query"))
+	u.ValueNotSet("abort_detached_query")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoAutocommit() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("autocommit"))
+	u.ValueNotSet("autocommit")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoBinaryInputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("binary_input_format"))
+	u.ValueNotSet("binary_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoBinaryOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("binary_output_format"))
+	u.ValueNotSet("binary_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientMemoryLimit() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_memory_limit"))
+	u.ValueNotSet("client_memory_limit")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientMetadataRequestUseConnectionCtx() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_metadata_request_use_connection_ctx"))
+	u.ValueNotSet("client_metadata_request_use_connection_ctx")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientPrefetchThreads() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_prefetch_threads"))
+	u.ValueNotSet("client_prefetch_threads")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientResultChunkSize() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_result_chunk_size"))
+	u.ValueNotSet("client_result_chunk_size")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientResultColumnCaseInsensitive() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_result_column_case_insensitive"))
+	u.ValueNotSet("client_result_column_case_insensitive")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientSessionKeepAlive() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_session_keep_alive"))
+	u.ValueNotSet("client_session_keep_alive")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientSessionKeepAliveHeartbeatFrequency() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_session_keep_alive_heartbeat_frequency"))
+	u.ValueNotSet("client_session_keep_alive_heartbeat_frequency")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoClientTimestampTypeMapping() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("client_timestamp_type_mapping"))
+	u.ValueNotSet("client_timestamp_type_mapping")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoComment() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("comment"))
+	u.ValueNotSet("comment")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDateInputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("date_input_format"))
+	u.ValueNotSet("date_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDateOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("date_output_format"))
+	u.ValueNotSet("date_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDaysToExpiry() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("days_to_expiry"))
+	u.ValueNotSet("days_to_expiry")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDefaultNamespace() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("default_namespace"))
+	u.ValueNotSet("default_namespace")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDefaultRole() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("default_role"))
+	u.ValueNotSet("default_role")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDefaultSecondaryRolesOption() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("default_secondary_roles_option"))
+	u.ValueNotSet("default_secondary_roles_option")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDefaultWarehouse() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("default_warehouse"))
+	u.ValueNotSet("default_warehouse")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDisableMfa() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("disable_mfa"))
+	u.ValueNotSet("disable_mfa")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDisabled() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("disabled"))
+	u.ValueNotSet("disabled")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoDisplayName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("display_name"))
+	u.ValueNotSet("display_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoEmail() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("email"))
+	u.ValueNotSet("email")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoEnableUnloadPhysicalTypeOptimization() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("enable_unload_physical_type_optimization"))
+	u.ValueNotSet("enable_unload_physical_type_optimization")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoEnableUnredactedQuerySyntaxError() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("enable_unredacted_query_syntax_error"))
+	u.ValueNotSet("enable_unredacted_query_syntax_error")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoErrorOnNondeterministicMerge() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("error_on_nondeterministic_merge"))
+	u.ValueNotSet("error_on_nondeterministic_merge")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoErrorOnNondeterministicUpdate() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("error_on_nondeterministic_update"))
+	u.ValueNotSet("error_on_nondeterministic_update")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoFirstName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("first_name"))
+	u.ValueNotSet("first_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoFullyQualifiedName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	u.ValueNotSet("fully_qualified_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoGeographyOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("geography_output_format"))
+	u.ValueNotSet("geography_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoGeometryOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("geometry_output_format"))
+	u.ValueNotSet("geometry_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoJdbcTreatDecimalAsInt() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("jdbc_treat_decimal_as_int"))
+	u.ValueNotSet("jdbc_treat_decimal_as_int")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoJdbcTreatTimestampNtzAsUtc() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("jdbc_treat_timestamp_ntz_as_utc"))
+	u.ValueNotSet("jdbc_treat_timestamp_ntz_as_utc")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoJdbcUseSessionTimezone() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("jdbc_use_session_timezone"))
+	u.ValueNotSet("jdbc_use_session_timezone")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoJsonIndent() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("json_indent"))
+	u.ValueNotSet("json_indent")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoLastName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("last_name"))
+	u.ValueNotSet("last_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoLockTimeout() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("lock_timeout"))
+	u.ValueNotSet("lock_timeout")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoLogEventLevel() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("log_event_level"))
+	u.ValueNotSet("log_event_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoLogLevel() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("log_level"))
+	u.ValueNotSet("log_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoLoginName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("login_name"))
+	u.ValueNotSet("login_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoMiddleName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("middle_name"))
+	u.ValueNotSet("middle_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoMinsToBypassMfa() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("mins_to_bypass_mfa"))
+	u.ValueNotSet("mins_to_bypass_mfa")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoMinsToUnlock() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("mins_to_unlock"))
+	u.ValueNotSet("mins_to_unlock")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoMultiStatementCount() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("multi_statement_count"))
+	u.ValueNotSet("multi_statement_count")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoMustChangePassword() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("must_change_password"))
+	u.ValueNotSet("must_change_password")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoNetworkPolicy() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("network_policy"))
+	u.ValueNotSet("network_policy")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoNoorderSequenceAsDefault() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("noorder_sequence_as_default"))
+	u.ValueNotSet("noorder_sequence_as_default")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoOdbcTreatDecimalAsInt() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("odbc_treat_decimal_as_int"))
+	u.ValueNotSet("odbc_treat_decimal_as_int")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoPassword() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("password"))
+	u.ValueNotSet("password")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoPreventUnloadToInternalStages() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("prevent_unload_to_internal_stages"))
+	u.ValueNotSet("prevent_unload_to_internal_stages")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoQueryTag() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("query_tag"))
+	u.ValueNotSet("query_tag")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("quoted_identifiers_ignore_case"))
+	u.ValueNotSet("quoted_identifiers_ignore_case")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoRowsPerResultset() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("rows_per_resultset"))
+	u.ValueNotSet("rows_per_resultset")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoRsaPublicKey() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("rsa_public_key"))
+	u.ValueNotSet("rsa_public_key")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoRsaPublicKey2() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("rsa_public_key_2"))
+	u.ValueNotSet("rsa_public_key_2")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoS3StageVpceDnsName() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("s3_stage_vpce_dns_name"))
+	u.ValueNotSet("s3_stage_vpce_dns_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoSearchPath() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("search_path"))
+	u.ValueNotSet("search_path")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoSimulatedDataSharingConsumer() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("simulated_data_sharing_consumer"))
+	u.ValueNotSet("simulated_data_sharing_consumer")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoStatementQueuedTimeoutInSeconds() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("statement_queued_timeout_in_seconds"))
+	u.ValueNotSet("statement_queued_timeout_in_seconds")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoStatementTimeoutInSeconds() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("statement_timeout_in_seconds"))
+	u.ValueNotSet("statement_timeout_in_seconds")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoStrictJsonOutput() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("strict_json_output"))
+	u.ValueNotSet("strict_json_output")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimeInputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("time_input_format"))
+	u.ValueNotSet("time_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimeOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("time_output_format"))
+	u.ValueNotSet("time_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimestampDayIsAlways24h() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timestamp_day_is_always_24h"))
+	u.ValueNotSet("timestamp_day_is_always_24h")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimestampInputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timestamp_input_format"))
+	u.ValueNotSet("timestamp_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimestampLtzOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timestamp_ltz_output_format"))
+	u.ValueNotSet("timestamp_ltz_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimestampNtzOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timestamp_ntz_output_format"))
+	u.ValueNotSet("timestamp_ntz_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimestampOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timestamp_output_format"))
+	u.ValueNotSet("timestamp_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimestampTypeMapping() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timestamp_type_mapping"))
+	u.ValueNotSet("timestamp_type_mapping")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimestampTzOutputFormat() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timestamp_tz_output_format"))
+	u.ValueNotSet("timestamp_tz_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTimezone() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("timezone"))
+	u.ValueNotSet("timezone")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTraceLevel() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("trace_level"))
+	u.ValueNotSet("trace_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTransactionAbortOnError() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("transaction_abort_on_error"))
+	u.ValueNotSet("transaction_abort_on_error")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTransactionDefaultIsolationLevel() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("transaction_default_isolation_level"))
+	u.ValueNotSet("transaction_default_isolation_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoTwoDigitCenturyStart() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("two_digit_century_start"))
+	u.ValueNotSet("two_digit_century_start")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoUnsupportedDdlAction() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("unsupported_ddl_action"))
+	u.ValueNotSet("unsupported_ddl_action")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoUseCachedResult() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("use_cached_result"))
+	u.ValueNotSet("use_cached_result")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoUserType() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("user_type"))
+	u.ValueNotSet("user_type")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoWeekOfYearPolicy() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("week_of_year_policy"))
+	u.ValueNotSet("week_of_year_policy")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoWeekStart() *UserResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("week_start"))
+	u.ValueNotSet("week_start")
 	return u
 }
 
@@ -1275,407 +1275,407 @@ func (u *UserResourceAssert) HasNoWeekStart() *UserResourceAssert {
 ////////////////////////////
 
 func (u *UserResourceAssert) HasAbortDetachedQueryEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("abort_detached_query", ""))
+	u.ValueSet("abort_detached_query", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasAutocommitEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("autocommit", ""))
+	u.ValueSet("autocommit", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasBinaryInputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("binary_input_format", ""))
+	u.ValueSet("binary_input_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasBinaryOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("binary_output_format", ""))
+	u.ValueSet("binary_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientMemoryLimitEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_memory_limit", ""))
+	u.ValueSet("client_memory_limit", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientMetadataRequestUseConnectionCtxEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_metadata_request_use_connection_ctx", ""))
+	u.ValueSet("client_metadata_request_use_connection_ctx", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientPrefetchThreadsEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_prefetch_threads", ""))
+	u.ValueSet("client_prefetch_threads", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientResultChunkSizeEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_result_chunk_size", ""))
+	u.ValueSet("client_result_chunk_size", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientResultColumnCaseInsensitiveEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_result_column_case_insensitive", ""))
+	u.ValueSet("client_result_column_case_insensitive", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientSessionKeepAliveEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_session_keep_alive", ""))
+	u.ValueSet("client_session_keep_alive", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientSessionKeepAliveHeartbeatFrequencyEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_session_keep_alive_heartbeat_frequency", ""))
+	u.ValueSet("client_session_keep_alive_heartbeat_frequency", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientTimestampTypeMappingEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("client_timestamp_type_mapping", ""))
+	u.ValueSet("client_timestamp_type_mapping", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasCommentEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("comment", ""))
+	u.ValueSet("comment", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDateInputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("date_input_format", ""))
+	u.ValueSet("date_input_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDateOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("date_output_format", ""))
+	u.ValueSet("date_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDaysToExpiryEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("days_to_expiry", ""))
+	u.ValueSet("days_to_expiry", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultNamespaceEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_namespace", ""))
+	u.ValueSet("default_namespace", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultRoleEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_role", ""))
+	u.ValueSet("default_role", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultSecondaryRolesOptionEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_secondary_roles_option", ""))
+	u.ValueSet("default_secondary_roles_option", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultWarehouseEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("default_warehouse", ""))
+	u.ValueSet("default_warehouse", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDisableMfaEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("disable_mfa", ""))
+	u.ValueSet("disable_mfa", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDisabledEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("disabled", ""))
+	u.ValueSet("disabled", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasDisplayNameEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("display_name", ""))
+	u.ValueSet("display_name", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasEmailEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("email", ""))
+	u.ValueSet("email", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("enable_unload_physical_type_optimization", ""))
+	u.ValueSet("enable_unload_physical_type_optimization", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasEnableUnredactedQuerySyntaxErrorEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("enable_unredacted_query_syntax_error", ""))
+	u.ValueSet("enable_unredacted_query_syntax_error", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasErrorOnNondeterministicMergeEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("error_on_nondeterministic_merge", ""))
+	u.ValueSet("error_on_nondeterministic_merge", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasErrorOnNondeterministicUpdateEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("error_on_nondeterministic_update", ""))
+	u.ValueSet("error_on_nondeterministic_update", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasFirstNameEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("first_name", ""))
+	u.ValueSet("first_name", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasFullyQualifiedNameEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	u.ValueSet("fully_qualified_name", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasGeographyOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("geography_output_format", ""))
+	u.ValueSet("geography_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasGeometryOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("geometry_output_format", ""))
+	u.ValueSet("geometry_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcTreatDecimalAsIntEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("jdbc_treat_decimal_as_int", ""))
+	u.ValueSet("jdbc_treat_decimal_as_int", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcTreatTimestampNtzAsUtcEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("jdbc_treat_timestamp_ntz_as_utc", ""))
+	u.ValueSet("jdbc_treat_timestamp_ntz_as_utc", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcUseSessionTimezoneEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("jdbc_use_session_timezone", ""))
+	u.ValueSet("jdbc_use_session_timezone", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasJsonIndentEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("json_indent", ""))
+	u.ValueSet("json_indent", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasLastNameEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("last_name", ""))
+	u.ValueSet("last_name", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasLockTimeoutEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("lock_timeout", ""))
+	u.ValueSet("lock_timeout", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasLogEventLevelEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("log_event_level", ""))
+	u.ValueSet("log_event_level", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasLogLevelEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("log_level", ""))
+	u.ValueSet("log_level", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasLoginNameEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("login_name", ""))
+	u.ValueSet("login_name", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasMiddleNameEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("middle_name", ""))
+	u.ValueSet("middle_name", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasMinsToBypassMfaEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("mins_to_bypass_mfa", ""))
+	u.ValueSet("mins_to_bypass_mfa", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasMinsToUnlockEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("mins_to_unlock", ""))
+	u.ValueSet("mins_to_unlock", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasMultiStatementCountEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("multi_statement_count", ""))
+	u.ValueSet("multi_statement_count", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasMustChangePasswordEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("must_change_password", ""))
+	u.ValueSet("must_change_password", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasNetworkPolicyEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("network_policy", ""))
+	u.ValueSet("network_policy", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoorderSequenceAsDefaultEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("noorder_sequence_as_default", ""))
+	u.ValueSet("noorder_sequence_as_default", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasOdbcTreatDecimalAsIntEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("odbc_treat_decimal_as_int", ""))
+	u.ValueSet("odbc_treat_decimal_as_int", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasPasswordEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("password", ""))
+	u.ValueSet("password", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasPreventUnloadToInternalStagesEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("prevent_unload_to_internal_stages", ""))
+	u.ValueSet("prevent_unload_to_internal_stages", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasQueryTagEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("query_tag", ""))
+	u.ValueSet("query_tag", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("quoted_identifiers_ignore_case", ""))
+	u.ValueSet("quoted_identifiers_ignore_case", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasRowsPerResultsetEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("rows_per_resultset", ""))
+	u.ValueSet("rows_per_resultset", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasRsaPublicKeyEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("rsa_public_key", ""))
+	u.ValueSet("rsa_public_key", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasRsaPublicKey2Empty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("rsa_public_key_2", ""))
+	u.ValueSet("rsa_public_key_2", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasS3StageVpceDnsNameEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("s3_stage_vpce_dns_name", ""))
+	u.ValueSet("s3_stage_vpce_dns_name", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasSearchPathEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("search_path", ""))
+	u.ValueSet("search_path", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasSimulatedDataSharingConsumerEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("simulated_data_sharing_consumer", ""))
+	u.ValueSet("simulated_data_sharing_consumer", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasStatementQueuedTimeoutInSecondsEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", ""))
+	u.ValueSet("statement_queued_timeout_in_seconds", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasStatementTimeoutInSecondsEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", ""))
+	u.ValueSet("statement_timeout_in_seconds", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasStrictJsonOutputEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("strict_json_output", ""))
+	u.ValueSet("strict_json_output", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimeInputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("time_input_format", ""))
+	u.ValueSet("time_input_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimeOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("time_output_format", ""))
+	u.ValueSet("time_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampDayIsAlways24hEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_day_is_always_24h", ""))
+	u.ValueSet("timestamp_day_is_always_24h", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampInputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_input_format", ""))
+	u.ValueSet("timestamp_input_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampLtzOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_ltz_output_format", ""))
+	u.ValueSet("timestamp_ltz_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampNtzOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_ntz_output_format", ""))
+	u.ValueSet("timestamp_ntz_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_output_format", ""))
+	u.ValueSet("timestamp_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampTypeMappingEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_type_mapping", ""))
+	u.ValueSet("timestamp_type_mapping", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampTzOutputFormatEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timestamp_tz_output_format", ""))
+	u.ValueSet("timestamp_tz_output_format", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimezoneEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("timezone", ""))
+	u.ValueSet("timezone", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTraceLevelEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("trace_level", ""))
+	u.ValueSet("trace_level", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTransactionAbortOnErrorEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("transaction_abort_on_error", ""))
+	u.ValueSet("transaction_abort_on_error", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTransactionDefaultIsolationLevelEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("transaction_default_isolation_level", ""))
+	u.ValueSet("transaction_default_isolation_level", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasTwoDigitCenturyStartEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("two_digit_century_start", ""))
+	u.ValueSet("two_digit_century_start", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasUnsupportedDdlActionEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("unsupported_ddl_action", ""))
+	u.ValueSet("unsupported_ddl_action", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasUseCachedResultEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("use_cached_result", ""))
+	u.ValueSet("use_cached_result", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasUserTypeEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("user_type", ""))
+	u.ValueSet("user_type", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasWeekOfYearPolicyEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("week_of_year_policy", ""))
+	u.ValueSet("week_of_year_policy", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasWeekStartEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("week_start", ""))
+	u.ValueSet("week_start", "")
 	return u
 }
 
@@ -1684,411 +1684,411 @@ func (u *UserResourceAssert) HasWeekStartEmpty() *UserResourceAssert {
 ///////////////////////////////
 
 func (u *UserResourceAssert) HasNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("name"))
+	u.ValuePresent("name")
 	return u
 }
 
 func (u *UserResourceAssert) HasAbortDetachedQueryNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("abort_detached_query"))
+	u.ValuePresent("abort_detached_query")
 	return u
 }
 
 func (u *UserResourceAssert) HasAutocommitNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("autocommit"))
+	u.ValuePresent("autocommit")
 	return u
 }
 
 func (u *UserResourceAssert) HasBinaryInputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("binary_input_format"))
+	u.ValuePresent("binary_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasBinaryOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("binary_output_format"))
+	u.ValuePresent("binary_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientMemoryLimitNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_memory_limit"))
+	u.ValuePresent("client_memory_limit")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientMetadataRequestUseConnectionCtxNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_metadata_request_use_connection_ctx"))
+	u.ValuePresent("client_metadata_request_use_connection_ctx")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientPrefetchThreadsNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_prefetch_threads"))
+	u.ValuePresent("client_prefetch_threads")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientResultChunkSizeNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_result_chunk_size"))
+	u.ValuePresent("client_result_chunk_size")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientResultColumnCaseInsensitiveNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_result_column_case_insensitive"))
+	u.ValuePresent("client_result_column_case_insensitive")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientSessionKeepAliveNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_session_keep_alive"))
+	u.ValuePresent("client_session_keep_alive")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientSessionKeepAliveHeartbeatFrequencyNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_session_keep_alive_heartbeat_frequency"))
+	u.ValuePresent("client_session_keep_alive_heartbeat_frequency")
 	return u
 }
 
 func (u *UserResourceAssert) HasClientTimestampTypeMappingNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("client_timestamp_type_mapping"))
+	u.ValuePresent("client_timestamp_type_mapping")
 	return u
 }
 
 func (u *UserResourceAssert) HasCommentNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("comment"))
+	u.ValuePresent("comment")
 	return u
 }
 
 func (u *UserResourceAssert) HasDateInputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("date_input_format"))
+	u.ValuePresent("date_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasDateOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("date_output_format"))
+	u.ValuePresent("date_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasDaysToExpiryNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("days_to_expiry"))
+	u.ValuePresent("days_to_expiry")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultNamespaceNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("default_namespace"))
+	u.ValuePresent("default_namespace")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultRoleNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("default_role"))
+	u.ValuePresent("default_role")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultSecondaryRolesOptionNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("default_secondary_roles_option"))
+	u.ValuePresent("default_secondary_roles_option")
 	return u
 }
 
 func (u *UserResourceAssert) HasDefaultWarehouseNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("default_warehouse"))
+	u.ValuePresent("default_warehouse")
 	return u
 }
 
 func (u *UserResourceAssert) HasDisableMfaNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("disable_mfa"))
+	u.ValuePresent("disable_mfa")
 	return u
 }
 
 func (u *UserResourceAssert) HasDisabledNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("disabled"))
+	u.ValuePresent("disabled")
 	return u
 }
 
 func (u *UserResourceAssert) HasDisplayNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("display_name"))
+	u.ValuePresent("display_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasEmailNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("email"))
+	u.ValuePresent("email")
 	return u
 }
 
 func (u *UserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("enable_unload_physical_type_optimization"))
+	u.ValuePresent("enable_unload_physical_type_optimization")
 	return u
 }
 
 func (u *UserResourceAssert) HasEnableUnredactedQuerySyntaxErrorNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("enable_unredacted_query_syntax_error"))
+	u.ValuePresent("enable_unredacted_query_syntax_error")
 	return u
 }
 
 func (u *UserResourceAssert) HasErrorOnNondeterministicMergeNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("error_on_nondeterministic_merge"))
+	u.ValuePresent("error_on_nondeterministic_merge")
 	return u
 }
 
 func (u *UserResourceAssert) HasErrorOnNondeterministicUpdateNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("error_on_nondeterministic_update"))
+	u.ValuePresent("error_on_nondeterministic_update")
 	return u
 }
 
 func (u *UserResourceAssert) HasFirstNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("first_name"))
+	u.ValuePresent("first_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasFullyQualifiedNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	u.ValuePresent("fully_qualified_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasGeographyOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("geography_output_format"))
+	u.ValuePresent("geography_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasGeometryOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("geometry_output_format"))
+	u.ValuePresent("geometry_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcTreatDecimalAsIntNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("jdbc_treat_decimal_as_int"))
+	u.ValuePresent("jdbc_treat_decimal_as_int")
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcTreatTimestampNtzAsUtcNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("jdbc_treat_timestamp_ntz_as_utc"))
+	u.ValuePresent("jdbc_treat_timestamp_ntz_as_utc")
 	return u
 }
 
 func (u *UserResourceAssert) HasJdbcUseSessionTimezoneNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("jdbc_use_session_timezone"))
+	u.ValuePresent("jdbc_use_session_timezone")
 	return u
 }
 
 func (u *UserResourceAssert) HasJsonIndentNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("json_indent"))
+	u.ValuePresent("json_indent")
 	return u
 }
 
 func (u *UserResourceAssert) HasLastNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("last_name"))
+	u.ValuePresent("last_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasLockTimeoutNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("lock_timeout"))
+	u.ValuePresent("lock_timeout")
 	return u
 }
 
 func (u *UserResourceAssert) HasLogEventLevelNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("log_event_level"))
+	u.ValuePresent("log_event_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasLogLevelNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("log_level"))
+	u.ValuePresent("log_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasLoginNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("login_name"))
+	u.ValuePresent("login_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasMiddleNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("middle_name"))
+	u.ValuePresent("middle_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasMinsToBypassMfaNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("mins_to_bypass_mfa"))
+	u.ValuePresent("mins_to_bypass_mfa")
 	return u
 }
 
 func (u *UserResourceAssert) HasMinsToUnlockNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("mins_to_unlock"))
+	u.ValuePresent("mins_to_unlock")
 	return u
 }
 
 func (u *UserResourceAssert) HasMultiStatementCountNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("multi_statement_count"))
+	u.ValuePresent("multi_statement_count")
 	return u
 }
 
 func (u *UserResourceAssert) HasMustChangePasswordNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("must_change_password"))
+	u.ValuePresent("must_change_password")
 	return u
 }
 
 func (u *UserResourceAssert) HasNetworkPolicyNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("network_policy"))
+	u.ValuePresent("network_policy")
 	return u
 }
 
 func (u *UserResourceAssert) HasNoorderSequenceAsDefaultNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("noorder_sequence_as_default"))
+	u.ValuePresent("noorder_sequence_as_default")
 	return u
 }
 
 func (u *UserResourceAssert) HasOdbcTreatDecimalAsIntNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("odbc_treat_decimal_as_int"))
+	u.ValuePresent("odbc_treat_decimal_as_int")
 	return u
 }
 
 func (u *UserResourceAssert) HasPasswordNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("password"))
+	u.ValuePresent("password")
 	return u
 }
 
 func (u *UserResourceAssert) HasPreventUnloadToInternalStagesNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("prevent_unload_to_internal_stages"))
+	u.ValuePresent("prevent_unload_to_internal_stages")
 	return u
 }
 
 func (u *UserResourceAssert) HasQueryTagNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("query_tag"))
+	u.ValuePresent("query_tag")
 	return u
 }
 
 func (u *UserResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("quoted_identifiers_ignore_case"))
+	u.ValuePresent("quoted_identifiers_ignore_case")
 	return u
 }
 
 func (u *UserResourceAssert) HasRowsPerResultsetNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("rows_per_resultset"))
+	u.ValuePresent("rows_per_resultset")
 	return u
 }
 
 func (u *UserResourceAssert) HasRsaPublicKeyNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("rsa_public_key"))
+	u.ValuePresent("rsa_public_key")
 	return u
 }
 
 func (u *UserResourceAssert) HasRsaPublicKey2NotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("rsa_public_key_2"))
+	u.ValuePresent("rsa_public_key_2")
 	return u
 }
 
 func (u *UserResourceAssert) HasS3StageVpceDnsNameNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("s3_stage_vpce_dns_name"))
+	u.ValuePresent("s3_stage_vpce_dns_name")
 	return u
 }
 
 func (u *UserResourceAssert) HasSearchPathNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("search_path"))
+	u.ValuePresent("search_path")
 	return u
 }
 
 func (u *UserResourceAssert) HasSimulatedDataSharingConsumerNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("simulated_data_sharing_consumer"))
+	u.ValuePresent("simulated_data_sharing_consumer")
 	return u
 }
 
 func (u *UserResourceAssert) HasStatementQueuedTimeoutInSecondsNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("statement_queued_timeout_in_seconds"))
+	u.ValuePresent("statement_queued_timeout_in_seconds")
 	return u
 }
 
 func (u *UserResourceAssert) HasStatementTimeoutInSecondsNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("statement_timeout_in_seconds"))
+	u.ValuePresent("statement_timeout_in_seconds")
 	return u
 }
 
 func (u *UserResourceAssert) HasStrictJsonOutputNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("strict_json_output"))
+	u.ValuePresent("strict_json_output")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimeInputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("time_input_format"))
+	u.ValuePresent("time_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimeOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("time_output_format"))
+	u.ValuePresent("time_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampDayIsAlways24hNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timestamp_day_is_always_24h"))
+	u.ValuePresent("timestamp_day_is_always_24h")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampInputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timestamp_input_format"))
+	u.ValuePresent("timestamp_input_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampLtzOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timestamp_ltz_output_format"))
+	u.ValuePresent("timestamp_ltz_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampNtzOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timestamp_ntz_output_format"))
+	u.ValuePresent("timestamp_ntz_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timestamp_output_format"))
+	u.ValuePresent("timestamp_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampTypeMappingNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timestamp_type_mapping"))
+	u.ValuePresent("timestamp_type_mapping")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimestampTzOutputFormatNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timestamp_tz_output_format"))
+	u.ValuePresent("timestamp_tz_output_format")
 	return u
 }
 
 func (u *UserResourceAssert) HasTimezoneNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("timezone"))
+	u.ValuePresent("timezone")
 	return u
 }
 
 func (u *UserResourceAssert) HasTraceLevelNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("trace_level"))
+	u.ValuePresent("trace_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasTransactionAbortOnErrorNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("transaction_abort_on_error"))
+	u.ValuePresent("transaction_abort_on_error")
 	return u
 }
 
 func (u *UserResourceAssert) HasTransactionDefaultIsolationLevelNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("transaction_default_isolation_level"))
+	u.ValuePresent("transaction_default_isolation_level")
 	return u
 }
 
 func (u *UserResourceAssert) HasTwoDigitCenturyStartNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("two_digit_century_start"))
+	u.ValuePresent("two_digit_century_start")
 	return u
 }
 
 func (u *UserResourceAssert) HasUnsupportedDdlActionNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("unsupported_ddl_action"))
+	u.ValuePresent("unsupported_ddl_action")
 	return u
 }
 
 func (u *UserResourceAssert) HasUseCachedResultNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("use_cached_result"))
+	u.ValuePresent("use_cached_result")
 	return u
 }
 
 func (u *UserResourceAssert) HasUserTypeNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("user_type"))
+	u.ValuePresent("user_type")
 	return u
 }
 
 func (u *UserResourceAssert) HasWeekOfYearPolicyNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("week_of_year_policy"))
+	u.ValuePresent("week_of_year_policy")
 	return u
 }
 
 func (u *UserResourceAssert) HasWeekStartNotEmpty() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("week_start"))
+	u.ValuePresent("week_start")
 	return u
 }

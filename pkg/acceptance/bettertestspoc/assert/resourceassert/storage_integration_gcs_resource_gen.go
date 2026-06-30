@@ -16,7 +16,7 @@ func StorageIntegrationGcsResource(t *testing.T, name string) *StorageIntegratio
 	t.Helper()
 
 	return &StorageIntegrationGcsResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStorageIntegrationGcsResource(t *testing.T, id string) *StorageInte
 	t.Helper()
 
 	return &StorageIntegrationGcsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -67,22 +67,22 @@ func (s *StorageIntegrationGcsResourceAssert) HasStorageBlockedLocations(expecte
 ///////////////////////////////////
 
 func (s *StorageIntegrationGcsResourceAssert) HasNameString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasCommentString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasEnabledString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("enabled", expected))
+	s.ValueSet("enabled", expected)
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedNameString(expected string) *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
@@ -91,22 +91,22 @@ func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedNameString(expect
 ///////////////////////////////
 
 func (s *StorageIntegrationGcsResourceAssert) HasNoName() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasNoComment() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasNoEnabled() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("enabled"))
+	s.ValueNotSet("enabled")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasNoFullyQualifiedName() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
@@ -115,17 +115,17 @@ func (s *StorageIntegrationGcsResourceAssert) HasNoFullyQualifiedName() *Storage
 ////////////////////////////
 
 func (s *StorageIntegrationGcsResourceAssert) HasCommentEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedNameEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasStorageBlockedLocationsEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_blocked_locations.#", "0"))
+	s.ValueSet("storage_blocked_locations.#", "0")
 	return s
 }
 
@@ -134,21 +134,21 @@ func (s *StorageIntegrationGcsResourceAssert) HasStorageBlockedLocationsEmpty() 
 ///////////////////////////////
 
 func (s *StorageIntegrationGcsResourceAssert) HasNameNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasCommentNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasEnabledNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("enabled"))
+	s.ValuePresent("enabled")
 	return s
 }
 
 func (s *StorageIntegrationGcsResourceAssert) HasFullyQualifiedNameNotEmpty() *StorageIntegrationGcsResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }

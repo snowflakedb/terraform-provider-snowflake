@@ -50,15 +50,15 @@ func ResourceMonitors() *schema.Resource {
 func ReadResourceMonitors(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	opts := new(sdk.ShowResourceMonitorOptions)
+	req := sdk.NewShowResourceMonitorRequest()
 
 	if likePattern, ok := d.GetOk("like"); ok {
-		opts.Like = &sdk.Like{
+		req.WithLike(sdk.Like{
 			Pattern: sdk.String(likePattern.(string)),
-		}
+		})
 	}
 
-	resourceMonitors, err := client.ResourceMonitors.Show(ctx, opts)
+	resourceMonitors, err := client.ResourceMonitors.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}

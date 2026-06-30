@@ -194,7 +194,8 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 			// Empty config - ensure network policy is destroyed
 			{
 				Config: " ",
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.NetworkPolicyIsMissing(t, id),
 				),
 			},

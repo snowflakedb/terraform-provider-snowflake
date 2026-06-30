@@ -16,7 +16,7 @@ func PrimaryConnectionResource(t *testing.T, name string) *PrimaryConnectionReso
 	t.Helper()
 
 	return &PrimaryConnectionResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssertTmp(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPrimaryConnectionResource(t *testing.T, id string) *PrimaryConnecti
 	t.Helper()
 
 	return &PrimaryConnectionResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
 	}
 }
 
@@ -62,22 +62,22 @@ func (p *PrimaryConnectionResourceAssert) HasIsPrimary(expected bool) *PrimaryCo
 ///////////////////////////////////
 
 func (p *PrimaryConnectionResourceAssert) HasNameString(expected string) *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
+	p.ValueSet("name", expected)
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasCommentString(expected string) *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", expected))
+	p.ValueSet("comment", expected)
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasFullyQualifiedNameString(expected string) *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	p.ValueSet("fully_qualified_name", expected)
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasIsPrimaryString(expected string) *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("is_primary", expected))
+	p.ValueSet("is_primary", expected)
 	return p
 }
 
@@ -86,22 +86,22 @@ func (p *PrimaryConnectionResourceAssert) HasIsPrimaryString(expected string) *P
 ///////////////////////////////
 
 func (p *PrimaryConnectionResourceAssert) HasNoName() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasNoComment() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasNoFullyQualifiedName() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	p.ValueNotSet("fully_qualified_name")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasNoIsPrimary() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("is_primary"))
+	p.ValueNotSet("is_primary")
 	return p
 }
 
@@ -110,22 +110,22 @@ func (p *PrimaryConnectionResourceAssert) HasNoIsPrimary() *PrimaryConnectionRes
 ////////////////////////////
 
 func (p *PrimaryConnectionResourceAssert) HasCommentEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", ""))
+	p.ValueSet("comment", "")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasEnableFailoverToAccountsEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("enable_failover_to_accounts.#", "0"))
+	p.ValueSet("enable_failover_to_accounts.#", "0")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasFullyQualifiedNameEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	p.ValueSet("fully_qualified_name", "")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasIsPrimaryEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValueSet("is_primary", ""))
+	p.ValueSet("is_primary", "")
 	return p
 }
 
@@ -134,21 +134,21 @@ func (p *PrimaryConnectionResourceAssert) HasIsPrimaryEmpty() *PrimaryConnection
 ///////////////////////////////
 
 func (p *PrimaryConnectionResourceAssert) HasNameNotEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValuePresent("name"))
+	p.ValuePresent("name")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasCommentNotEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValuePresent("comment"))
+	p.ValuePresent("comment")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasFullyQualifiedNameNotEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	p.ValuePresent("fully_qualified_name")
 	return p
 }
 
 func (p *PrimaryConnectionResourceAssert) HasIsPrimaryNotEmpty() *PrimaryConnectionResourceAssert {
-	p.AddAssertion(assert.ValuePresent("is_primary"))
+	p.ValuePresent("is_primary")
 	return p
 }

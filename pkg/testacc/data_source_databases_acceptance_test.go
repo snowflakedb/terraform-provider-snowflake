@@ -98,7 +98,8 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, databaseModel, databasesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.DatabasesDatasourceShowOutput(t, databasesModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(databaseName).
@@ -130,7 +131,8 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, databaseModel, databasesWithoutOptionalsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.DatabasesDatasourceShowOutput(t, databasesModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(databaseName).

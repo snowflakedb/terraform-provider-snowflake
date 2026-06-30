@@ -46,7 +46,7 @@ func Tags() *schema.Resource {
 
 func ReadTags(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	req := sdk.ShowTagRequest{}
+	req := sdk.NewShowTagRequest()
 
 	handleLike(d, &req.Like)
 	err := handleExtendedIn(d, &req.In)
@@ -54,7 +54,7 @@ func ReadTags(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 		return diag.FromErr(err)
 	}
 
-	tags, err := client.Tags.Show(ctx, &req)
+	tags, err := client.Tags.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}

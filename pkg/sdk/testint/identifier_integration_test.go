@@ -68,7 +68,7 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 			ctx := context.Background()
 
 			id := sdk.NewAccountObjectIdentifier(testCase.Name)
-			err := testClient(t).ResourceMonitors.Create(ctx, id, new(sdk.CreateResourceMonitorOptions))
+			err := testClient(t).ResourceMonitors.Create(ctx, sdk.NewCreateResourceMonitorRequest(id))
 			if err == nil {
 				t.Cleanup(testClientHelper().ResourceMonitor.DropResourceMonitorFunc(t, id))
 			}
@@ -78,8 +78,9 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = testClient(t).Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).
-				WithResourceMonitor(id),
+			err = testClient(t).Warehouses.Create(
+				ctx, sdk.NewCreateWarehouseRequest(id).
+					WithResourceMonitor(id),
 			)
 			if err == nil {
 				t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
@@ -173,7 +174,7 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = testClient(t).Schemas.Create(ctx, id, new(sdk.CreateSchemaOptions))
+			err = testClient(t).Schemas.Create(ctx, sdk.NewCreateSchemaRequest(id))
 			if err == nil {
 				t.Cleanup(testClientHelper().Schema.DropSchemaFunc(t, id))
 			}

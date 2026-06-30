@@ -14,6 +14,7 @@ var (
 	DefinitionTemplate, _     = template.New("definitionTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
 		genhelpers.FirstLetterLowercase,
 		genhelpers.FirstLetter,
+		genhelpers.SnakeCase,
 	)).Parse(definitionTemplateContent)
 
 	//go:embed templates/specific_checks.tmpl

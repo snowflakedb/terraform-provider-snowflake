@@ -76,6 +76,17 @@ This prevents errors when, for example, a table or schema is deleted externally 
 
 Without this experiment, destroying such resources fails with `does not exist or not authorized`.
 
+#### GRANT_ACCOUNT_ROLE_SHOW_CACHING
+Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.
+
+Without caching, every resource instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same role, this results in N identical round-trips returning the same full result set — only 1 is needed.
+
+When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain visible to subsequent Reads.
+
+Additionally, the trailing Read at the end of Create is skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.
+
+Intended for large configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
+
 #### GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE
 When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.
 
@@ -86,9 +97,9 @@ With this experiment, Create, Read, and Delete all treat PUBLIC role grants as p
 #### HIERARCHY_RENAMES
 When enabled, allows in-place handling of hierarchy renames and moves for supported resources.
 
-Currently supported by: `snowflake_schema`.
+Currently supported by: `snowflake_schema`, `snowflake_table`.
 
-Without this experiment, changing the `database` field on `snowflake_schema` forces resource recreation. With this experiment, the provider detects whether the parent database was renamed or the schema should be moved to a different database, and handles it without recreation.
+Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on `snowflake_table` forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.
 
 For more information, see the [object renaming guide](./guides/object_renaming_guide).
 
