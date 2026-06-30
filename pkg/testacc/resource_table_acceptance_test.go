@@ -2294,7 +2294,7 @@ func TestAcc_Table_AddColumnWithConstantDefault_issue4730(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "COLUMN_2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.default.0.constant", "false"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.default.0.constant", "FALSE"),
 				),
 			},
 		},
@@ -2331,7 +2331,7 @@ resource "snowflake_table" "test_table" {
 		name = "COLUMN_2"
 		type = "BOOLEAN"
 		default {
-			constant = "false"
+			constant = "FALSE"
 		}
 	}
 }
