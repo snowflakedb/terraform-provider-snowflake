@@ -17,9 +17,8 @@ func RoleShowOutput(t *testing.T, name string) *RoleShowOutputAssert {
 	t.Helper()
 
 	roleAssert := RoleShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	roleAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &roleAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedRoleShowOutput(t *testing.T, id string) *RoleShowOutputAssert {
 	t.Helper()
 
 	roleAssert := RoleShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	roleAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &roleAssert
 }
 
@@ -38,52 +36,52 @@ func ImportedRoleShowOutput(t *testing.T, id string) *RoleShowOutputAssert {
 ////////////////////////////
 
 func (r *RoleShowOutputAssert) HasCreatedOn(expected time.Time) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	r.StringValueSet("created_on", expected.String())
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasName(expected string) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	r.StringValueSet("name", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasIsDefault(expected bool) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_default", expected))
+	r.BoolValueSet("is_default", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasIsCurrent(expected bool) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_current", expected))
+	r.BoolValueSet("is_current", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasIsInherited(expected bool) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_inherited", expected))
+	r.BoolValueSet("is_inherited", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasAssignedToUsers(expected int) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueSet("assigned_to_users", expected))
+	r.IntValueSet("assigned_to_users", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasGrantedToRoles(expected int) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueSet("granted_to_roles", expected))
+	r.IntValueSet("granted_to_roles", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasGrantedRoles(expected int) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueSet("granted_roles", expected))
+	r.IntValueSet("granted_roles", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasOwner(expected string) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	r.StringValueSet("owner", expected)
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasComment(expected string) *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	r.StringValueSet("comment", expected)
 	return r
 }
 
@@ -92,51 +90,51 @@ func (r *RoleShowOutputAssert) HasComment(expected string) *RoleShowOutputAssert
 ///////////////////////////////
 
 func (r *RoleShowOutputAssert) HasNoCreatedOn() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	r.ValueNotSet("created_on")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoName() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	r.ValueNotSet("name")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoIsDefault() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_default"))
+	r.ValueNotSet("is_default")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoIsCurrent() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_current"))
+	r.ValueNotSet("is_current")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoIsInherited() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_inherited"))
+	r.ValueNotSet("is_inherited")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoAssignedToUsers() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueNotSet("assigned_to_users"))
+	r.ValueNotSet("assigned_to_users")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoGrantedToRoles() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueNotSet("granted_to_roles"))
+	r.ValueNotSet("granted_to_roles")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoGrantedRoles() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueNotSet("granted_roles"))
+	r.ValueNotSet("granted_roles")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoOwner() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	r.ValueNotSet("owner")
 	return r
 }
 
 func (r *RoleShowOutputAssert) HasNoComment() *RoleShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	r.ValueNotSet("comment")
 	return r
 }
