@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput, and rest_config.0. prefix added to field names
-
 type IcebergRestRestConfigDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func IcebergRestRestConfigDescribeOutput(t *testing.T, name string) *IcebergRest
 	t.Helper()
 
 	icebergRestRestConfigAssert := IcebergRestRestConfigDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output.0.rest_config"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	icebergRestRestConfigAssert.AddAssertion(assert.ValueSet("describe_output.0.rest_config.#", "1"))
 	return &icebergRestRestConfigAssert
 }
 
@@ -29,9 +26,8 @@ func ImportedIcebergRestRestConfigDescribeOutput(t *testing.T, id string) *Icebe
 	t.Helper()
 
 	icebergRestRestConfigAssert := IcebergRestRestConfigDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output.0.rest_config"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	icebergRestRestConfigAssert.AddAssertion(assert.ValueSet("describe_output.0.rest_config.#", "1"))
 	return &icebergRestRestConfigAssert
 }
 
@@ -40,27 +36,27 @@ func ImportedIcebergRestRestConfigDescribeOutput(t *testing.T, id string) *Icebe
 ////////////////////////////
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasCatalogUri(expected string) *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputValueSet("rest_config.0.catalog_uri", expected))
+	i.StringValueSet("catalog_uri", expected)
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasPrefix(expected string) *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputValueSet("rest_config.0.prefix", expected))
+	i.StringValueSet("prefix", expected)
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasCatalogName(expected string) *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputValueSet("rest_config.0.catalog_name", expected))
+	i.StringValueSet("catalog_name", expected)
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasCatalogApiType(expected sdk.CatalogIntegrationCatalogApiType) *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("rest_config.0.catalog_api_type", expected))
+	i.StringValueSet("catalog_api_type", string(expected))
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasAccessDelegationMode(expected sdk.CatalogIntegrationAccessDelegationMode) *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("rest_config.0.access_delegation_mode", expected))
+	i.StringValueSet("access_delegation_mode", string(expected))
 	return i
 }
 
@@ -69,26 +65,26 @@ func (i *IcebergRestRestConfigDescribeOutputAssert) HasAccessDelegationMode(expe
 ///////////////////////////////
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasNoCatalogUri() *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputValueNotSet("rest_config.0.catalog_uri"))
+	i.ValueNotSet("catalog_uri")
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasNoPrefix() *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputValueNotSet("rest_config.0.prefix"))
+	i.ValueNotSet("prefix")
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasNoCatalogName() *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputValueNotSet("rest_config.0.catalog_name"))
+	i.ValueNotSet("catalog_name")
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasNoCatalogApiType() *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("rest_config.0.catalog_api_type"))
+	i.ValueNotSet("catalog_api_type")
 	return i
 }
 
 func (i *IcebergRestRestConfigDescribeOutputAssert) HasNoAccessDelegationMode() *IcebergRestRestConfigDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("rest_config.0.access_delegation_mode"))
+	i.ValueNotSet("access_delegation_mode")
 	return i
 }
