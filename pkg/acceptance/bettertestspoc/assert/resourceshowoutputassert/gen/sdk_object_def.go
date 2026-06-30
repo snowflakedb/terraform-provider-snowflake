@@ -32,6 +32,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Listing{}):                {"Listings"},
 	normalized(sdk.MaskingPolicy{}):          {"MaskingPolicies"},
 	normalized(sdk.NetworkPolicy{}):          {"NetworkPolicies"},
+	normalized(sdk.NetworkRule{}):            {"NetworkRules"},
 	normalized(sdk.NetworkRuleDetails{}):     {"NetworkRules"},
 	normalized(sdk.Notebook{}):               {"Notebooks"},
 	normalized(sdk.PasswordPolicy{}):         {"PasswordPolicies"},
