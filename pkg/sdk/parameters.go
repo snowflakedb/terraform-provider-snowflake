@@ -195,8 +195,7 @@ func (v *parameters) SetSessionParameterOnUser(ctx context.Context, userId Accou
 	if err != nil {
 		return err
 	}
-	opts := AlterUserOptions{Set: &UserSet{SessionParameters: sp}}
-	err = v.client.Users.Alter(ctx, userId, &opts)
+	err = v.client.Users.Alter(ctx, NewAlterUserRequest(userId).WithSet(*NewUserSetRequest().WithSessionParameters(*sp)))
 	if err != nil {
 		return err
 	}

@@ -75,7 +75,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeOIDC).
+						HasType(sdk.WIFTypeOidc).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -116,7 +116,7 @@ func TestAcc_LegacyServiceUser_WIF_OIDC(t *testing.T) {
 						HasDefaultWorkloadIdentityOidc(testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/auth"),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeOIDC).
+						HasType(sdk.WIFTypeOidc).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -198,7 +198,7 @@ func TestAcc_LegacyServiceUser_WIF_AWS(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeAWS).
+						HasType(sdk.WIFTypeAws).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty(),
@@ -259,7 +259,7 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeGCP).
+						HasType(sdk.WIFTypeGcp).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -300,7 +300,7 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeGCP).
+						HasType(sdk.WIFTypeGcp).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -329,7 +329,7 @@ func TestAcc_LegacyServiceUser_WIF_GCP(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeGCP).
+						HasType(sdk.WIFTypeGcp).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -514,7 +514,7 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeOIDC).
+						HasType(sdk.WIFTypeOidc).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -537,7 +537,7 @@ func TestAcc_LegacyServiceUser_WIF_SwitchProvider(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeAWS).
+						HasType(sdk.WIFTypeAws).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty(),
@@ -580,7 +580,7 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeOIDC).
+						HasType(sdk.WIFTypeOidc).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -594,13 +594,7 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 			// External change - unset WIF outside of Terraform
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
-						Unset: &sdk.UserUnset{
-							ObjectProperties: &sdk.UserObjectPropertiesUnset{
-								WorkloadIdentity: sdk.Bool(true),
-							},
-						},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().WithWorkloadIdentity(true))))
 				},
 				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -618,7 +612,7 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeOIDC).
+						HasType(sdk.WIFTypeOidc).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -650,7 +644,7 @@ func TestAcc_LegacyServiceUser_WIF_ExternalChange(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeOIDC).
+						HasType(sdk.WIFTypeOidc).
 						HasNoComment().
 						HasLastUsedNotEmpty().
 						HasCreatedOnNotEmpty().
@@ -782,7 +776,7 @@ func TestAcc_LegacyServiceUser_WIF_MigrateFrom_v2_12_0(t *testing.T) {
 						HasHasWorkloadIdentity(true),
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
 						HasName("DEFAULT").
-						HasType(sdk.WIFTypeOIDC).
+						HasType(sdk.WIFTypeOidc).
 						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
 							Issuer:       testvars.OidcIssuer,
 							Subject:      subject,

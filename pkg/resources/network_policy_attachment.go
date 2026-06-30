@@ -247,7 +247,7 @@ func setOnUser(ctx context.Context, user string, data *schema.ResourceData, meta
 
 	policyName := data.Get("network_policy_name").(string)
 
-	err := client.Users.Alter(ctx, sdk.NewAccountObjectIdentifier(user), &sdk.AlterUserOptions{Set: &sdk.UserSet{ObjectParameters: &sdk.UserObjectParameters{NetworkPolicy: sdk.Pointer(sdk.NewAccountObjectIdentifier(policyName))}}})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(sdk.NewAccountObjectIdentifier(user)).WithSet(*sdk.NewUserSetRequest().WithObjectParameters(*sdk.NewUserObjectParametersRequest().WithNetworkPolicy(sdk.NewAccountObjectIdentifier(policyName)))))
 	if err != nil {
 		return fmt.Errorf("error setting network policy %v on user %v err = %w", policyName, user, err)
 	}
@@ -273,7 +273,7 @@ func unsetOnUser(ctx context.Context, user string, data *schema.ResourceData, me
 
 	policyName := data.Get("network_policy_name").(string)
 
-	err := client.Users.Alter(ctx, sdk.NewAccountObjectIdentifier(user), &sdk.AlterUserOptions{Unset: &sdk.UserUnset{ObjectParameters: &sdk.UserObjectParametersUnset{NetworkPolicy: sdk.Bool(true)}}})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(sdk.NewAccountObjectIdentifier(user)).WithUnset(*sdk.NewUserUnsetRequest().WithObjectParameters(*sdk.NewUserObjectParametersUnsetRequest().WithNetworkPolicy(true))))
 	if err != nil {
 		return fmt.Errorf("error unsetting network policy %v on user %v err = %w", policyName, user, err)
 	}
@@ -286,7 +286,7 @@ func ensureUserAlterPrivileges(ctx context.Context, users []string, meta interfa
 	client := meta.(*provider.Context).Client
 
 	for _, user := range users {
-		_, err := client.Users.Describe(ctx, sdk.NewAccountObjectIdentifier(user))
+		_, err := client.Users.DescribeDetails(ctx, sdk.NewAccountObjectIdentifier(user))
 		if err != nil {
 			return fmt.Errorf("error describing user %v err = %w", user, err)
 		}

@@ -188,9 +188,7 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, testUser.ID(), &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{PasswordPolicy: sdk.Pointer(id3)},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(testUser.ID()).WithSet(*sdk.NewUserSetRequest().WithPasswordPolicy(id3)))
 				},
 				Config: accconfig.FromModels(t, model1, model2, model3, passwordPoliciesModelOnUser),
 				Check: resource.ComposeTestCheckFunc(
@@ -200,9 +198,7 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						planchecks.Execute(func() {
-							testClient().User.Alter(t, testUser.ID(), &sdk.AlterUserOptions{
-								Unset: &sdk.UserUnset{PasswordPolicy: sdk.Bool(true)},
-							})
+							testClient().User.Alter(t, sdk.NewAlterUserRequest(testUser.ID()).WithUnset(*sdk.NewUserUnsetRequest().WithPasswordPolicy(true)))
 						}),
 					},
 				},

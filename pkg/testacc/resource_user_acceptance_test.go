@@ -1392,14 +1392,7 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Unset externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, newId, &sdk.AlterUserOptions{
-						Unset: &sdk.UserUnset{
-							ObjectProperties: &sdk.UserObjectPropertiesUnset{
-								LoginName:   sdk.Bool(true),
-								DisplayName: sdk.Bool(true),
-							},
-						},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(newId).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().WithLoginName(true).WithDisplayName(true))))
 				},
 				Config: config.FromModels(t, userModelWithBoth),
 				Check: assertThat(
@@ -1428,16 +1421,7 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Set externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, newId, &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{
-							ObjectProperties: &sdk.UserAlterObjectProperties{
-								UserObjectProperties: sdk.UserObjectProperties{
-									LoginName:   sdk.String("external_" + loginName),
-									DisplayName: sdk.String("external_display_name"),
-								},
-							},
-						},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(newId).WithSet(*sdk.NewUserSetRequest().WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().WithLoginName("external_" + loginName).WithDisplayName("external_display_name"))))
 				},
 				Config: config.FromModels(t, userModelWithNewId),
 				Check: assertThat(
@@ -1591,10 +1575,8 @@ func TestAcc_User_importPassword(t *testing.T) {
 	pass := random.Password()
 	firstName := random.AlphaN(6)
 
-	_, userCleanup := testClient().User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-		Password:  sdk.String(pass),
-		FirstName: sdk.String(firstName),
-	}})
+	_, userCleanup := testClient().User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(userId).
+		WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithPassword(pass).WithFirstName(firstName)))
 	t.Cleanup(userCleanup)
 
 	userModel := model.User("w", userId.Name()).WithPassword(pass).WithFirstName(firstName)
@@ -1868,21 +1850,18 @@ func TestAcc_User_DetectingExternalChangesToStringValues_NotHandledWithShowOutpu
 			},
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
-						Unset: &sdk.UserUnset{
-							ObjectProperties: &sdk.UserObjectPropertiesUnset{
-								FirstName:        sdk.Bool(true),
-								MiddleName:       sdk.Bool(true),
-								LastName:         sdk.Bool(true),
-								Email:            sdk.Bool(true),
-								DefaultWarehouse: sdk.Bool(true),
-								DefaultRole:      sdk.Bool(true),
-								RSAPublicKey:     sdk.Bool(true),
-								RSAPublicKey2:    sdk.Bool(true),
-								Comment:          sdk.Bool(true),
-							},
-						},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(
+						*sdk.NewUserObjectPropertiesUnsetRequest().
+							WithFirstName(true).
+							WithMiddleName(true).
+							WithLastName(true).
+							WithEmail(true).
+							WithDefaultWarehouse(true).
+							WithDefaultRole(true).
+							WithRsaPublicKey(true).
+							WithRsaPublicKey2(true).
+							WithComment(true),
+					)))
 				},
 				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
 				Config:            config.FromModels(t, userModel),

@@ -28,11 +28,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		user, userCleanup := testClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)
 
-		err = client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				PasswordPolicy: &passwordPolicyId,
-			},
-		})
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithSet(*sdk.NewUserSetRequest().WithPasswordPolicy(passwordPolicyId)))
 		require.NoError(t, err)
 
 		policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(user.ID(), sdk.PolicyEntityDomainUser))

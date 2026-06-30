@@ -667,14 +667,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return testClientHelper().User.CreateUser(t)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Users.Alter(ctx, id, &sdk.AlterUserOptions{
-					SetTag: tags,
-				})
+				return client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Users.Alter(ctx, id, &sdk.AlterUserOptions{
-					UnsetTag: tags,
-				})
+				return client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
