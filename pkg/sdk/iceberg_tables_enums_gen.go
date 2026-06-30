@@ -218,3 +218,31 @@ func ToStorageSerializationPolicy(s string) (StorageSerializationPolicy, error) 
 		return "", fmt.Errorf("invalid storage serialization policy: %s", s)
 	}
 }
+
+type IcebergTableIcebergMergeOnReadBehavior string
+
+const (
+	IcebergTableIcebergMergeOnReadBehaviorAuto     IcebergTableIcebergMergeOnReadBehavior = "AUTO"
+	IcebergTableIcebergMergeOnReadBehaviorEnabled  IcebergTableIcebergMergeOnReadBehavior = "ENABLED"
+	IcebergTableIcebergMergeOnReadBehaviorDisabled IcebergTableIcebergMergeOnReadBehavior = "DISABLED"
+)
+
+var AllIcebergTableIcebergMergeOnReadBehaviors = []IcebergTableIcebergMergeOnReadBehavior{
+	IcebergTableIcebergMergeOnReadBehaviorAuto,
+	IcebergTableIcebergMergeOnReadBehaviorEnabled,
+	IcebergTableIcebergMergeOnReadBehaviorDisabled,
+}
+
+func ToIcebergTableIcebergMergeOnReadBehavior(s string) (IcebergTableIcebergMergeOnReadBehavior, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(IcebergTableIcebergMergeOnReadBehaviorAuto):
+		return IcebergTableIcebergMergeOnReadBehaviorAuto, nil
+	case string(IcebergTableIcebergMergeOnReadBehaviorEnabled):
+		return IcebergTableIcebergMergeOnReadBehaviorEnabled, nil
+	case string(IcebergTableIcebergMergeOnReadBehaviorDisabled):
+		return IcebergTableIcebergMergeOnReadBehaviorDisabled, nil
+	default:
+		return "", fmt.Errorf("invalid iceberg table iceberg merge on read behavior: %s", s)
+	}
+}

@@ -6,6 +6,7 @@ var (
 	_ validatable = new(CreateIcebergTableOptions)
 	_ validatable = new(CreateFromIcebergFilesIcebergTableOptions)
 	_ validatable = new(CreateFromDeltaLakeIcebergTableOptions)
+	_ validatable = new(CreateFromIcebergRestIcebergTableOptions)
 	_ validatable = new(AlterIcebergTableOptions)
 	_ validatable = new(DropIcebergTableOptions)
 	_ validatable = new(ShowIcebergTableOptions)
@@ -68,6 +69,20 @@ func (opts *CreateFromDeltaLakeIcebergTableOptions) validate() error {
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateFromDeltaLakeIcebergTableOptions", "OrReplace", "IfNotExists"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateFromIcebergRestIcebergTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateFromIcebergRestIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
 	return JoinErrors(errs...)
 }
