@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -50,7 +49,7 @@ var catalogIntegrationsSchema = map[string]*schema.Schema{
 
 func CatalogIntegrations() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.CatalogIntegrationsDatasource), TrackingReadWrapper(datasources.CatalogIntegrations, ReadCatalogIntegrations)),
+		ReadContext: TrackingReadWrapper(datasources.CatalogIntegrations, ReadCatalogIntegrations),
 		Schema:      catalogIntegrationsSchema,
 		Description: "Data source used to get details of filtered catalog integrations. Filtering is aligned with the current possibilities for [SHOW CATALOG INTEGRATIONS](https://docs.snowflake.com/en/sql-reference/sql/show-catalog-integrations) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `catalog_integrations`.",
 	}

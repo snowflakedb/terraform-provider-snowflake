@@ -8,7 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -35,10 +34,10 @@ var catalogIntegrationObjectStorageSchema = func() map[string]*schema.Schema {
 
 func CatalogIntegrationObjectStorage() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CatalogIntegrationObjectStorageResource), TrackingCreateWrapper(resources.CatalogIntegrationObjectStorage, CreateCatalogIntegrationObjectStorage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CatalogIntegrationObjectStorageResource), TrackingReadWrapper(resources.CatalogIntegrationObjectStorage, ReadCatalogIntegrationObjectStorageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CatalogIntegrationObjectStorageResource), TrackingUpdateWrapper(resources.CatalogIntegrationObjectStorage, UpdateCatalogIntegrationObjectStorage)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CatalogIntegrationObjectStorageResource), TrackingDeleteWrapper(resources.CatalogIntegrationObjectStorage, deleteCatalogIntegrationFunc())),
+		CreateContext: TrackingCreateWrapper(resources.CatalogIntegrationObjectStorage, CreateCatalogIntegrationObjectStorage),
+		ReadContext:   TrackingReadWrapper(resources.CatalogIntegrationObjectStorage, ReadCatalogIntegrationObjectStorageFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.CatalogIntegrationObjectStorage, UpdateCatalogIntegrationObjectStorage),
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationObjectStorage, deleteCatalogIntegrationFunc()),
 		Description:   "Resource used to manage catalog integration objects for Apache Iceberg™ table files or Delta table files in object storage. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-object-storage).",
 
 		Schema: catalogIntegrationObjectStorageSchema,

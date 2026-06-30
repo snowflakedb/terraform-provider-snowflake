@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -195,10 +194,10 @@ func ExternalS3Stage() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingCreateWrapper(resources.ExternalS3Stage, CreateExternalS3Stage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingReadWrapper(resources.ExternalS3Stage, ReadExternalS3StageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingUpdateWrapper(resources.ExternalS3Stage, UpdateExternalS3Stage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalS3StageResource, resources.ExternalS3Stage),
+		CreateContext: TrackingCreateWrapper(resources.ExternalS3Stage, CreateExternalS3Stage),
+		ReadContext:   TrackingReadWrapper(resources.ExternalS3Stage, ReadExternalS3StageFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.ExternalS3Stage, UpdateExternalS3Stage),
+		DeleteContext: DeleteStage(resources.ExternalS3Stage),
 		Description:   "Resource used to manage external S3 stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3Stage, customdiff.All(

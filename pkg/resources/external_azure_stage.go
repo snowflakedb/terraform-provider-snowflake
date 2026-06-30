@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -150,10 +149,10 @@ func ExternalAzureStage() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingCreateWrapper(resources.ExternalAzureStage, CreateExternalAzureStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingReadWrapper(resources.ExternalAzureStage, ReadExternalAzureStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalAzureStageResource), TrackingUpdateWrapper(resources.ExternalAzureStage, UpdateExternalAzureStage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalAzureStageResource, resources.ExternalAzureStage),
+		CreateContext: TrackingCreateWrapper(resources.ExternalAzureStage, CreateExternalAzureStage),
+		ReadContext:   TrackingReadWrapper(resources.ExternalAzureStage, ReadExternalAzureStageFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.ExternalAzureStage, UpdateExternalAzureStage),
+		DeleteContext: DeleteStage(resources.ExternalAzureStage),
 		Description:   "Resource used to manage external Azure stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalAzureStage, customdiff.All(
