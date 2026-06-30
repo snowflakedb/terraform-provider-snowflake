@@ -52,7 +52,7 @@ func (v *roles) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Role
 	if err != nil {
 		return nil, err
 	}
-	return collections.FindFirst(roles, func(r Role) bool { return r.Name == id.Name() })
+	return collections.FindFirst(roles, func(r Role) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
 }
 
 func (v *roles) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Role, error) {
