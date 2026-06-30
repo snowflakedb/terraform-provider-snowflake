@@ -84,10 +84,18 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 
 var (
 	objectsNotBeingResources = []any{
-		sdk.UserWorkloadIdentityAuthenticationMethod{},
-		sdk.OpenCatalogRestConfigDetails{},
+		sdk.ExternalVolumeStorageLocationDetails{},
 		sdk.IcebergRestRestConfigDetails{},
+		sdk.OAuthRestAuthenticationDetails{},
+		sdk.OpenCatalogRestConfigDetails{},
+		sdk.PolicyReference{},
 		sdk.SigV4RestAuthenticationDetails{},
+		sdk.StorageLocationAzureDetails{},
+		sdk.StorageLocationGcsDetails{},
+		sdk.StorageLocationS3CompatDetails{},
+		sdk.StorageLocationS3Details{},
+		sdk.TagReference{},
+		sdk.UserWorkloadIdentityAuthenticationMethod{},
 	}
 	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {
 		return reflect.ValueOf(o).Type().String()
