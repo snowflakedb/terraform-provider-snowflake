@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -52,7 +53,11 @@ func (v *roles) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Role
 	if err != nil {
 		return nil, err
 	}
-	return collections.FindFirst(roles, func(r Role) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
+	r, err := collections.FindFirst(roles, func(r Role) bool { return r.ID().FullyQualifiedName() == id.FullyQualifiedName() })
+	if err != nil {
+		log.Printf("[WARN] Role names returned when searching for %s: %v", id.Name(), collections.Map(roles, func(r Role) string { return r.Name }))
+	}
+	return r, err
 }
 
 func (v *roles) ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Role, error) {
