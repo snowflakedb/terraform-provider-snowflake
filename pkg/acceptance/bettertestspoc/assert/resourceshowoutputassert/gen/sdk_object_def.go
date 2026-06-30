@@ -55,6 +55,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Warehouse{}):               {"Warehouses"},
 
 	// Describe output:
+	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
 	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
@@ -79,7 +80,12 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 }
 
 var (
-	objectsNotBeingResources     = []any{sdk.UserWorkloadIdentityAuthenticationMethod{}}
+	objectsNotBeingResources = []any{
+		sdk.UserWorkloadIdentityAuthenticationMethod{},
+		sdk.OpenCatalogRestConfigDetails{},
+		sdk.IcebergRestRestConfigDetails{},
+		sdk.SigV4RestAuthenticationDetails{},
+	}
 	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {
 		return reflect.ValueOf(o).Type().String()
 	})

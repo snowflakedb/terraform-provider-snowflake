@@ -163,7 +163,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceAwsGlueDescribeOutput(t, glueWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, glueWithDescribe.DatasourceReference()).
 						HasId(glueId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -189,7 +189,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasCategory("CATALOG").
 						HasEnabled(true).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceObjectStorageDescribeOutput(t, objectStorageWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, objectStorageWithDescribe.DatasourceReference()).
 						HasId(objectStorageId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -210,23 +210,21 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(comment),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceOpenCatalogDescribeOutput(t, openCatalogWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, openCatalogWithDescribe.DatasourceReference()).
 						HasId(openCatalogId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypePolaris).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 						HasEnabled(false).
 						HasRefreshIntervalSeconds(30).
 						HasComment(comment).
-						HasCatalogNamespace(""),
-					resourceshowoutputassert.OpenCatalogRestConfigDatasourceDescribeOutput(t, openCatalogWithDescribe.DatasourceReference()).
-						HasCatalogUri(catalogUri).
-						HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-						HasCatalogName(catalogName).
-						HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-					resourceshowoutputassert.OAuthRestAuthenticationDatasourceDescribeOutput(t, openCatalogWithDescribe.DatasourceReference(), "oauth_rest_authentication").
-						HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
-						HasOauthClientId(oAuthClientId).
-						HasOauthAllowedScopes(oAuthAllowedScope),
+						HasCatalogNamespace("").
+						HasRestConfigCatalogUri(catalogUri).
+						HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+						HasRestConfigCatalogName(catalogName).
+						HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+						HasOAuthRestAuthenticationOauthTokenUri(catalogUri+"/v1/oauth/tokens").
+						HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
+						HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 				),
 			},
 			// Iceberg REST Bearer with describe
@@ -241,23 +239,21 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceIcebergRestDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
 						HasId(icebergId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 						HasEnabled(false).
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).
 						HasComment("").
-						HasCatalogNamespace(""),
-					resourceshowoutputassert.IcebergRestRestConfigDatasourceDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
-						HasCatalogUri(icebergCatalogUri).
-						HasPrefix("").
-						HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
-						HasCatalogName("").
-						HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-					resourceshowoutputassert.SigV4RestAuthenticationDatasourceDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
+						HasCatalogNamespace("").
+						HasRestConfigCatalogUri(icebergCatalogUri).
+						HasRestConfigPrefix("").
+						HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
+						HasRestConfigCatalogName("").
+						HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
 						// Don't check sigv4_signing_region, as its default value depends on the current region name
-						HasSigv4IamRole(sigV4IamRole),
+						HasSigv4RestAuthenticationSigv4IamRole(sigV4IamRole),
 				),
 			},
 		},

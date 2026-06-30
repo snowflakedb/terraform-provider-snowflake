@@ -292,6 +292,11 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationAllDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
 		IsDataSourceOutput: true,
 	},
