@@ -34,6 +34,9 @@ type CurrentOrganizationAccountModel struct {
 	ClientSessionKeepAliveHeartbeatFrequency         tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping                       tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
 	Comment                                          tfconfig.Variable `json:"comment,omitempty"`
+	CortexCodeCliDailyEstCreditLimitPerUser          tfconfig.Variable `json:"cortex_code_cli_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser      tfconfig.Variable `json:"cortex_code_desktop_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser    tfconfig.Variable `json:"cortex_code_snowsight_daily_est_credit_limit_per_user,omitempty"`
 	CortexEnabledCrossRegion                         tfconfig.Variable `json:"cortex_enabled_cross_region,omitempty"`
 	CortexModelsAllowlist                            tfconfig.Variable `json:"cortex_models_allowlist,omitempty"`
 	CsvTimestampFormat                               tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
@@ -309,6 +312,21 @@ func (c *CurrentOrganizationAccountModel) WithClientTimestampTypeMapping(clientT
 
 func (c *CurrentOrganizationAccountModel) WithComment(comment string) *CurrentOrganizationAccountModel {
 	c.Comment = tfconfig.StringVariable(comment)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCortexCodeCliDailyEstCreditLimitPerUser(cortexCodeCliDailyEstCreditLimitPerUser int) *CurrentOrganizationAccountModel {
+	c.CortexCodeCliDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeCliDailyEstCreditLimitPerUser)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCortexCodeDesktopDailyEstCreditLimitPerUser(cortexCodeDesktopDailyEstCreditLimitPerUser int) *CurrentOrganizationAccountModel {
+	c.CortexCodeDesktopDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeDesktopDailyEstCreditLimitPerUser)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCortexCodeSnowsightDailyEstCreditLimitPerUser(cortexCodeSnowsightDailyEstCreditLimitPerUser int) *CurrentOrganizationAccountModel {
+	c.CortexCodeSnowsightDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeSnowsightDailyEstCreditLimitPerUser)
 	return c
 }
 
@@ -928,6 +946,21 @@ func (c *CurrentOrganizationAccountModel) WithClientTimestampTypeMappingValue(va
 
 func (c *CurrentOrganizationAccountModel) WithCommentValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.Comment = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCortexCodeCliDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.CortexCodeCliDailyEstCreditLimitPerUser = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCortexCodeDesktopDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.CortexCodeDesktopDailyEstCreditLimitPerUser = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithCortexCodeSnowsightDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.CortexCodeSnowsightDailyEstCreditLimitPerUser = value
 	return c
 }
 
