@@ -28,8 +28,11 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ### *(new feature)* Cortex Code daily credit limit account parameters
 
-Added support for three new account parameters in the `snowflake_account_parameter` resource. They set the [Cortex Code per-user daily estimated credit usage limits](https://docs.snowflake.com/en/user-guide/cortex-code/credit-usage-limit) and are integer-valued (`-1` for the default/unlimited, `0` to block usage, or a positive cap on a user's estimated credit usage over a rolling 24-hour window):
-
+Added support for three new account parameters in the following resources:
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+These parameters set the [Cortex Code per-user daily estimated credit usage limits](https://docs.snowflake.com/en/user-guide/cortex-code/credit-usage-limit) and are integer-valued (`-1` for the default/unlimited, `0` to block usage, or a positive cap on a user's estimated credit usage over a rolling 24-hour window):
 - `CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER`
 - `CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER`
 - `CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER`
