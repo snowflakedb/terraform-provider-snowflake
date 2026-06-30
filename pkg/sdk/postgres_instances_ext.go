@@ -108,13 +108,17 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 				}
 			}
 		case "comment":
-			details.Comment = String(prop.Value)
+			if prop.Value != "" {
+				details.Comment = String(prop.Value)
+			}
 		case "network_policy":
 			if prop.Value != "" {
 				details.NetworkPolicy = Pointer(NewAccountObjectIdentifier(prop.Value))
 			}
 		case "postgres_settings":
-			details.PostgresSettings = String(prop.Value)
+			if prop.Value != "" {
+				details.PostgresSettings = String(prop.Value)
+			}
 		case "storage_integration":
 			if prop.Value != "" {
 				details.StorageIntegration = Pointer(NewAccountObjectIdentifier(prop.Value))
@@ -182,18 +186,38 @@ func updateSafelyPolling(ctx context.Context, doUpdate func() error, doShowByID 
 		}
 		instance, err := doShowByID()
 		if err != nil {
+			return err
+		}
+		if instance.State != PostgresInstanceStateReady {
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		if err := doUpdate(); err != nil {
 			if strings.Contains(err.Error(), "must be complete before issuing ALTER") {
 				time.Sleep(3 * time.Second)
 				continue
 			}
 			return err
 		}
-		if instance.State == PostgresInstanceStateReady {
-			break // success
+		// ALTER accepted; wait for READY to ensure the backend has committed the
+		// change before the caller issues a read (Snowflake applies some mutations
+		// asynchronously even after returning success from ALTER).
+		for {
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("postgres instance did not settle after alter: %w", ctx.Err())
+			default:
+			}
+			time.Sleep(3 * time.Second)
+			instance, err = doShowByID()
+			if err != nil {
+				return err
+			}
+			if instance.State == PostgresInstanceStateReady {
+				return nil
+			}
 		}
-		time.Sleep(3 * time.Second)
 	}
-	return doUpdate()
 }
 
 // NormalizePostgresSettings parses a postgres_settings JSON string into a canonical

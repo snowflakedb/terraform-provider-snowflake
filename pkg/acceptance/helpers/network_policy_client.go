@@ -38,6 +38,28 @@ func (c *NetworkPolicyClient) CreateNetworkPolicyNotEmpty(t *testing.T) (*sdk.Ne
 	)
 }
 
+// CreateNetworkPolicyForPostgres creates a network policy that satisfies the Snowflake requirement
+// for Postgres instances: the policy must contain at least one network rule with mode POSTGRES_INGRESS.
+func (c *NetworkPolicyClient) CreateNetworkPolicyForPostgres(t *testing.T, networkRuleClient *NetworkRuleClient) (*sdk.NetworkPolicy, func()) {
+	t.Helper()
+	networkRule, networkRuleCleanup := networkRuleClient.CreateWithRequest(t,
+		sdk.NewCreateNetworkRuleRequest(
+			c.ids.RandomSchemaObjectIdentifier(),
+			sdk.NetworkRuleTypeIpv4,
+			[]sdk.NetworkRuleValue{},
+			sdk.NetworkRuleModePostgresIngress,
+		),
+	)
+	policy, policyCleanup := c.CreateNetworkPolicyWithRequest(t,
+		sdk.NewCreateNetworkPolicyRequest(c.ids.RandomAccountObjectIdentifier()).
+			WithAllowedNetworkRuleList([]sdk.SchemaObjectIdentifier{networkRule.ID()}),
+	)
+	return policy, func() {
+		policyCleanup()
+		networkRuleCleanup()
+	}
+}
+
 func (c *NetworkPolicyClient) CreateNetworkPolicyWithRequest(t *testing.T, request *sdk.CreateNetworkPolicyRequest) (*sdk.NetworkPolicy, func()) {
 	t.Helper()
 	ctx := context.Background()
