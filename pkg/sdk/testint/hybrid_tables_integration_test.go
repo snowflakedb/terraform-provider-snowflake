@@ -927,7 +927,8 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 	ctx := testContext(t)
 
 	// Create a parent hybrid table: PK on id.
-	parentId, parentCleanup := testClientHelper().HybridTable.CreateWithRequest(t,
+	parentId, parentCleanup := testClientHelper().HybridTable.CreateWithRequest(
+		t,
 		testClientHelper().Ids.RandomSchemaObjectIdentifier(),
 		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 			Columns: []sdk.HybridTableColumnRequest{
@@ -950,7 +951,8 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 
 	// Create the child table via SDK, controlling exact constraint names,
 	// including an anonymous UNIQUE which Snowflake will assign a SYS_CONSTRAINT_* name.
-	childId, childCleanup := testClientHelper().HybridTable.CreateWithRequest(t,
+	childId, childCleanup := testClientHelper().HybridTable.CreateWithRequest(
+		t,
 		testClientHelper().Ids.RandomSchemaObjectIdentifier(),
 		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 			Columns: []sdk.HybridTableColumnRequest{
@@ -1040,7 +1042,8 @@ func TestInt_HybridTableShowIndexes(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	id, cleanup := testClientHelper().HybridTable.CreateWithRequest(t,
+	id, cleanup := testClientHelper().HybridTable.CreateWithRequest(
+		t,
 		testClientHelper().Ids.RandomSchemaObjectIdentifier(),
 		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 			Columns: []sdk.HybridTableColumnRequest{
