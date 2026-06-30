@@ -59,7 +59,7 @@ func TestAcc_Streams(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(table.ID().FullyQualifiedName()).
+						HasTableName(table.ID()).
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
@@ -98,7 +98,7 @@ func TestAcc_Streams(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(table.ID().FullyQualifiedName()).
+						HasTableName(table.ID()).
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
@@ -146,7 +146,7 @@ func TestAcc_StreamOnTable(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(table.ID().FullyQualifiedName()).
+						HasTableName(table.ID()).
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
@@ -211,7 +211,7 @@ func TestAcc_StreamOnExternalTable(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(externalTable.ID().FullyQualifiedName()).
+						HasTableName(externalTable.ID()).
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
@@ -272,7 +272,7 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(stage.ID().FullyQualifiedName()).
+						HasTableName(stage.ID()).
 						HasSourceType(sdk.StreamSourceTypeStage).
 						HasBaseTables(stage.ID()).
 						HasType("DELTA").
@@ -338,7 +338,7 @@ func TestAcc_StreamOnView(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(view.ID().FullyQualifiedName()).
+						HasTableName(view.ID()).
 						HasSourceType(sdk.StreamSourceTypeView).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").

@@ -62,7 +62,7 @@ func TestAcc_StreamOnExternalTable_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(externalTable.ID().FullyQualifiedName()).
+			HasTableName(externalTable.ID()).
 			HasMode(sdk.StreamModeInsertOnly).
 			HasComment("").
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
@@ -106,7 +106,7 @@ func TestAcc_StreamOnExternalTable_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(externalTable.ID().FullyQualifiedName()).
+			HasTableName(externalTable.ID()).
 			HasMode(sdk.StreamModeInsertOnly).
 			HasComment(comment).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
@@ -542,7 +542,7 @@ func TestAcc_StreamOnExternalTable_At(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("foo").
-						HasTableName(externalTable.ID().FullyQualifiedName()).
+						HasTableName(externalTable.ID()).
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
@@ -631,7 +631,7 @@ func TestAcc_StreamOnExternalTable_Before(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("foo").
-						HasTableName(externalTable.ID().FullyQualifiedName()).
+						HasTableName(externalTable.ID()).
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
