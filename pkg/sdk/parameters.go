@@ -464,8 +464,8 @@ const (
 	AccountParameterClientSessionKeepAlive                                   AccountParameter = "CLIENT_SESSION_KEEP_ALIVE"
 	AccountParameterClientSessionKeepAliveHeartbeatFrequency                 AccountParameter = "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY"
 	AccountParameterClientTimestampTypeMapping                               AccountParameter = "CLIENT_TIMESTAMP_TYPE_MAPPING"
-	AccountParameterCortexCodeCliDailyEstCreditLimitPerUser                  AccountParameter = "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER"
-	AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser              AccountParameter = "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER"
+	AccountParameterCortexCodeCliDailyEstCreditLimitPerUser                  AccountParameter = "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER"     //nolint:gosec
+	AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser              AccountParameter = "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER" //nolint:gosec
 	AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser            AccountParameter = "CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER"
 	AccountParameterCortexEnabledCrossRegion                                 AccountParameter = "CORTEX_ENABLED_CROSS_REGION"
 	AccountParameterCortexModelsAllowlist                                    AccountParameter = "CORTEX_MODELS_ALLOWLIST"
