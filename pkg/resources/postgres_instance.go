@@ -397,9 +397,9 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(errs)
 	}
 
-	// No UNSET for postgres_version; SET the Snowflake default (18) when config removes it.
-	// Skip when the effective new value equals the old state value: a no-op SET POSTGRES_VERSION
-	// triggers a multi-minute async Snowflake operation that blocks the subsequent HIGH_AVAILABILITY ALTER.
+	// Snowflake treats SET POSTGRES_VERSION as an async provisioning operation even when
+	// the version hasn't changed. A no-op SET blocks subsequent HIGH_AVAILABILITY alters
+	// for 60+ minutes, so we skip the ALTER when the effective new value equals old state.
 	if d.HasChange("postgres_version") {
 		old, _ := d.GetChange("postgres_version")
 		effectiveNew := d.Get("postgres_version").(int)
@@ -418,31 +418,13 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		}
 	}
 
-	// Group 3: HIGH_AVAILABILITY (no UNSET; setting Snowflake default false when config removes it).
-	// Skip when the effective new value equals the old state value: a no-op SET HIGH_AVAILABILITY
-	// triggered after a POSTGRES_VERSION/COMPUTE_FAMILY/STORAGE_SIZE_GB ALTER will fail with
-	// "must be complete before issuing ALTER SET HIGH_AVAILABILITY".
+	// Group 3: HIGH_AVAILABILITY (no UNSET; setting Snowflake default false when config removes it)
 	highAvailabilitySet := sdk.NewPostgresInstanceSetRequest()
-	if d.HasChange("high_availability") {
-		var effectiveNew bool
-		if v := d.Get("high_availability").(string); v != BooleanDefault {
-			parsed, err := booleanStringToBool(v)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			effectiveNew = parsed
-		}
-		oldRaw, _ := d.GetChange("high_availability")
-		var oldBool bool
-		if s := oldRaw.(string); s != BooleanDefault {
-			parsed, err := booleanStringToBool(s)
-			if err == nil {
-				oldBool = parsed
-			}
-		}
-		if oldBool != effectiveNew {
-			highAvailabilitySet.HighAvailability = sdk.Bool(effectiveNew)
-		}
+	errs = errors.Join(
+		booleanStringAttributeUnsetFallbackUpdate(d, "high_availability", &highAvailabilitySet.HighAvailability, false),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
 
 	if !reflect.DeepEqual(highAvailabilitySet, &sdk.PostgresInstanceSetRequest{}) {

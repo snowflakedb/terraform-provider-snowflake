@@ -157,7 +157,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"high_availability",            // mismatching because of default value
 					"maintenance_window_start",     // mismatching because of default value
-					"postgres_version",             // TODO: To address, I think the diff should be skipped
+					"postgres_version",             // mismatching because of default value
 					"describe_output.0.updated_on", // TODO: To address, I think the diff should be skipped
 					"show_output.0.updated_on",     // TODO: To address, I think the diff should be skipped
 				},
