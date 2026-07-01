@@ -53,7 +53,7 @@ func TestAcc_Streams(t *testing.T) {
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
 
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -92,7 +92,7 @@ func TestAcc_Streams(t *testing.T) {
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
 
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -140,7 +140,7 @@ func TestAcc_StreamOnTable(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -205,7 +205,7 @@ func TestAcc_StreamOnExternalTable(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -266,7 +266,7 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -332,7 +332,7 @@ func TestAcc_StreamOnView(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).

@@ -69,7 +69,7 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
 						HasOptions(""),
-					resourceshowoutputassert.SessionPoliciesDatasourceDescribeOutput(t, "snowflake_session_policies.test").
+					resourceshowoutputassert.SessionPoliciesDatasourceDescribeOutput(t, sessionPoliciesModel.DatasourceReference()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(comment).

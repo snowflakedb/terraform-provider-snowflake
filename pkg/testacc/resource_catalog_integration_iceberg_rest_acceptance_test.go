@@ -417,7 +417,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasCatalogNamespace(newCatalogNamespace),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasRestConfig(newCatalogUri, newPrefix, newCatalogName, sdk.CatalogIntegrationCatalogApiTypePrivate, sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
+			HasRestConfig(newCatalogUri, newPrefix, newCatalogName, sdk.CatalogIntegrationCatalogApiTypePrivate, sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
+		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasOAuthRestAuthentication(newOAuthTokenUri, newOAuthClientId, oAuthAllowedScope, additionalOAuthAllowedScope),
 	}
 
@@ -1087,14 +1088,17 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Sigv4ExternalId:    "",
 			}),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasSigV4RestAuthentication(sigV4IamRole, sigV4SigningRegion, "").
+			HasSigv4RestAuthenticationSigv4IamRole(sigV4IamRole).
+			HasSigv4RestAuthenticationSigv4SigningRegion(sigV4SigningRegion),
+		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
-			HasCatalogNamespace("").
+			HasCatalogNamespace(""),
+		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasRestConfig(catalogUri, "", "", sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway, sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
 
@@ -1121,7 +1125,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Sigv4ExternalId:    newSigV4ExternalId,
 			}),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-			HasSigV4RestAuthentication(newSigV4IamRole, newSigV4SigningRegion, newSigV4ExternalId),
+			HasSigv4RestAuthenticationSigv4IamRole(newSigV4IamRole).
+			HasSigv4RestAuthenticationSigv4SigningRegion(newSigV4SigningRegion),
 	}, basicAssertions[2:]...)
 
 	withBearerTokenAssertions := append([]assert.TestCheckFuncProvider{
