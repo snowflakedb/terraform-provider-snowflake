@@ -264,8 +264,8 @@ func (opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) validate
 		errs = append(errs, errExactlyOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRedirectUri, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.BlockedRolesList, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set", "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "BlockedRolesList", "Comment"))
+		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRedirectUri, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.AllowedRolesList, opts.Set.BlockedRolesList, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set", "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "AllowedRolesList", "BlockedRolesList", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
@@ -288,8 +288,8 @@ func (opts *AlterOauthForCustomClientsSecurityIntegrationOptions) validate() err
 		errs = append(errs, errExactlyOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthRedirectUri, opts.Set.OauthAllowNonTlsRedirectUri, opts.Set.OauthEnforcePkce, opts.Set.PreAuthorizedRolesList, opts.Set.BlockedRolesList, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.NetworkPolicy, opts.Set.OauthClientRsaPublicKey, opts.Set.OauthClientRsaPublicKey2, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set", "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "Comment"))
+		if !anyValueSet(opts.Set.Enabled, opts.Set.OauthRedirectUri, opts.Set.OauthAllowNonTlsRedirectUri, opts.Set.OauthEnforcePkce, opts.Set.PreAuthorizedRolesList, opts.Set.AllowedRolesList, opts.Set.BlockedRolesList, opts.Set.OauthIssueRefreshTokens, opts.Set.OauthRefreshTokenValidity, opts.Set.OauthUseSecondaryRoles, opts.Set.NetworkPolicy, opts.Set.OauthClientRsaPublicKey, opts.Set.OauthClientRsaPublicKey2, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set", "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList", "AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
