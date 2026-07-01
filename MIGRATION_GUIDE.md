@@ -26,6 +26,10 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* `resource_monitor` property in `snowflake_warehouse_adaptive`
+
+Added `resource_monitor` to the [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive) resource so that an adaptive warehouse can be associated with a resource monitor (mirroring the same field on `snowflake_warehouse`). The value is an account object identifier and can be added or removed with a plain `terraform apply` — no re-import needed. This is a non-breaking, additive change; existing configs continue to work unchanged.
+
 ### *(new feature)* Cortex Code daily credit limit account parameters
 
 Added support for three new account parameters in the following resources:

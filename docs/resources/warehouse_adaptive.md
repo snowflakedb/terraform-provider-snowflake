@@ -25,6 +25,7 @@ resource "snowflake_warehouse_adaptive" "complete" {
   comment                             = "My adaptive warehouse with all options set"
   max_query_performance_level         = "MEDIUM"
   query_throughput_multiplier         = 1
+  resource_monitor                    = "my_resource_monitor"
   statement_queued_timeout_in_seconds = 30
   statement_timeout_in_seconds        = 3600
 }
@@ -46,6 +47,7 @@ resource "snowflake_warehouse_adaptive" "complete" {
 - `comment` (String) Specifies a comment for the adaptive warehouse.
 - `max_query_performance_level` (String) Specifies the maximum query performance level for the adaptive warehouse. Determines the initial compute capacity. Valid values are (case-insensitive): `XSMALL` | `SMALL` | `MEDIUM` | `LARGE` | `XLARGE` | `XXLARGE` | `XXXLARGE` | `X4LARGE`.
 - `query_throughput_multiplier` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the query throughput multiplier for the adaptive warehouse.
+- `resource_monitor` (String) Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse. For more information about this resource, see [docs](./resource_monitor).
 - `statement_queued_timeout_in_seconds` (Number) Object parameter that specifies the time, in seconds, a SQL statement (query, DDL, DML, etc.) can be queued on a warehouse before it is canceled by the system.
 - `statement_timeout_in_seconds` (Number) Specifies the time, in seconds, after which a running SQL statement (query, DDL, DML, etc.) is canceled by the system.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
