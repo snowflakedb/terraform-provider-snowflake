@@ -221,6 +221,8 @@ Adding a new column with a constant (or expression) default to an existing `snow
 
 No changes in the configuration are required.
 
+References: [#4730](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730)
+
 ### *(bugfix)* Fixed MODEL MONITOR object type in grant resources (non-empty plan)
 
 Grants on future `MODEL MONITORS` in privilege grant resources (e.g. `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`)
