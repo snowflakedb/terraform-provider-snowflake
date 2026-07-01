@@ -60,7 +60,7 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(passwordPoliciesModel.DatasourceReference(), "password_policies.#", "1")),
-					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, "snowflake_password_policies.test").
+					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, passwordPoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -70,7 +70,7 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
 						HasOptions(""),
-					resourceshowoutputassert.PasswordPoliciesDatasourceDescribeOutput(t, "snowflake_password_policies.test").
+					resourceshowoutputassert.PasswordPoliciesDatasourceDescribeOutput(t, passwordPoliciesModel.DatasourceReference()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasPasswordMinLength(10).
@@ -91,7 +91,7 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(passwordPoliciesModelWithoutDescribe.DatasourceReference(), "password_policies.#", "1")),
-					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, "snowflake_password_policies.test").
+					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, passwordPoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).

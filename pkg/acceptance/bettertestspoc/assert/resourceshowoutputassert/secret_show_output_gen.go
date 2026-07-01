@@ -17,9 +17,8 @@ func SecretShowOutput(t *testing.T, name string) *SecretShowOutputAssert {
 	t.Helper()
 
 	secretAssert := SecretShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	secretAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &secretAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedSecretShowOutput(t *testing.T, id string) *SecretShowOutputAssert {
 	t.Helper()
 
 	secretAssert := SecretShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	secretAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &secretAssert
+}
+
+func SecretsDatasourceShowOutput(t *testing.T, name string) *SecretShowOutputAssert {
+	t.Helper()
+
+	return SecretsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func SecretsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *SecretShowOutputAssert {
+	t.Helper()
+
+	secretAssert := SecretShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "secrets", idx),
+	}
 	return &secretAssert
 }
 
@@ -38,42 +51,42 @@ func ImportedSecretShowOutput(t *testing.T, id string) *SecretShowOutputAssert {
 ////////////////////////////
 
 func (s *SecretShowOutputAssert) HasCreatedOn(expected time.Time) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasName(expected string) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasSchemaName(expected string) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasDatabaseName(expected string) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasOwner(expected string) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasComment(expected string) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasSecretType(expected string) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("secret_type", expected))
+	s.StringValueSet("secret_type", expected)
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasOwnerRoleType(expected string) *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
@@ -82,46 +95,46 @@ func (s *SecretShowOutputAssert) HasOwnerRoleType(expected string) *SecretShowOu
 ///////////////////////////////
 
 func (s *SecretShowOutputAssert) HasNoCreatedOn() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoName() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoSchemaName() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoDatabaseName() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoOwner() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoComment() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoSecretType() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("secret_type"))
+	s.ValueNotSet("secret_type")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoOauthScopes() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("oauth_scopes.#", "0"))
+	s.ValueSet("oauth_scopes.#", "0")
 	return s
 }
 
 func (s *SecretShowOutputAssert) HasNoOwnerRoleType() *SecretShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }

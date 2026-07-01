@@ -16,9 +16,8 @@ func DatabaseRoleShowOutput(t *testing.T, name string) *DatabaseRoleShowOutputAs
 	t.Helper()
 
 	databaseRoleAssert := DatabaseRoleShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	databaseRoleAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &databaseRoleAssert
 }
 
@@ -26,9 +25,23 @@ func ImportedDatabaseRoleShowOutput(t *testing.T, id string) *DatabaseRoleShowOu
 	t.Helper()
 
 	databaseRoleAssert := DatabaseRoleShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	databaseRoleAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &databaseRoleAssert
+}
+
+func DatabaseRolesDatasourceShowOutput(t *testing.T, name string) *DatabaseRoleShowOutputAssert {
+	t.Helper()
+
+	return DatabaseRolesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func DatabaseRolesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *DatabaseRoleShowOutputAssert {
+	t.Helper()
+
+	databaseRoleAssert := DatabaseRoleShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "database_roles", idx),
+	}
 	return &databaseRoleAssert
 }
 
@@ -37,62 +50,62 @@ func ImportedDatabaseRoleShowOutput(t *testing.T, id string) *DatabaseRoleShowOu
 ////////////////////////////
 
 func (d *DatabaseRoleShowOutputAssert) HasCreatedOn(expected string) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	d.StringValueSet("created_on", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasName(expected string) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	d.StringValueSet("name", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasDatabaseName(expected string) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	d.StringValueSet("database_name", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasIsDefault(expected bool) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_default", expected))
+	d.BoolValueSet("is_default", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasIsCurrent(expected bool) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_current", expected))
+	d.BoolValueSet("is_current", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasIsInherited(expected bool) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_inherited", expected))
+	d.BoolValueSet("is_inherited", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasGrantedToRoles(expected int) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueSet("granted_to_roles", expected))
+	d.IntValueSet("granted_to_roles", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasGrantedToDatabaseRoles(expected int) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueSet("granted_to_database_roles", expected))
+	d.IntValueSet("granted_to_database_roles", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasGrantedDatabaseRoles(expected int) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueSet("granted_database_roles", expected))
+	d.IntValueSet("granted_database_roles", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasOwner(expected string) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	d.StringValueSet("owner", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasComment(expected string) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	d.StringValueSet("comment", expected)
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasOwnerRoleType(expected string) *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	d.StringValueSet("owner_role_type", expected)
 	return d
 }
 
@@ -101,61 +114,61 @@ func (d *DatabaseRoleShowOutputAssert) HasOwnerRoleType(expected string) *Databa
 ///////////////////////////////
 
 func (d *DatabaseRoleShowOutputAssert) HasNoCreatedOn() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	d.ValueNotSet("created_on")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoName() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	d.ValueNotSet("name")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoDatabaseName() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	d.ValueNotSet("database_name")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoIsDefault() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_default"))
+	d.ValueNotSet("is_default")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoIsCurrent() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_current"))
+	d.ValueNotSet("is_current")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoIsInherited() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_inherited"))
+	d.ValueNotSet("is_inherited")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoGrantedToRoles() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueNotSet("granted_to_roles"))
+	d.ValueNotSet("granted_to_roles")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoGrantedToDatabaseRoles() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueNotSet("granted_to_database_roles"))
+	d.ValueNotSet("granted_to_database_roles")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoGrantedDatabaseRoles() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputIntValueNotSet("granted_database_roles"))
+	d.ValueNotSet("granted_database_roles")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoOwner() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	d.ValueNotSet("owner")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoComment() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	d.ValueNotSet("comment")
 	return d
 }
 
 func (d *DatabaseRoleShowOutputAssert) HasNoOwnerRoleType() *DatabaseRoleShowOutputAssert {
-	d.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	d.ValueNotSet("owner_role_type")
 	return d
 }

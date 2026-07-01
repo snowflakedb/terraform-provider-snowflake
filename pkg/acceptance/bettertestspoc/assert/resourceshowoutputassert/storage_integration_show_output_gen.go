@@ -17,9 +17,8 @@ func StorageIntegrationShowOutput(t *testing.T, name string) *StorageIntegration
 	t.Helper()
 
 	storageIntegrationAssert := StorageIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	storageIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &storageIntegrationAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedStorageIntegrationShowOutput(t *testing.T, id string) *StorageInteg
 	t.Helper()
 
 	storageIntegrationAssert := StorageIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	storageIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &storageIntegrationAssert
+}
+
+func StorageIntegrationsDatasourceShowOutput(t *testing.T, name string) *StorageIntegrationShowOutputAssert {
+	t.Helper()
+
+	return StorageIntegrationsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func StorageIntegrationsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *StorageIntegrationShowOutputAssert {
+	t.Helper()
+
+	storageIntegrationAssert := StorageIntegrationShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "storage_integrations", idx),
+	}
 	return &storageIntegrationAssert
 }
 
@@ -38,32 +51,32 @@ func ImportedStorageIntegrationShowOutput(t *testing.T, id string) *StorageInteg
 ////////////////////////////
 
 func (s *StorageIntegrationShowOutputAssert) HasName(expected string) *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasStorageType(expected string) *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("storage_type", expected))
+	s.StringValueSet("storage_type", expected)
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasCategory(expected string) *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("category", expected))
+	s.StringValueSet("category", expected)
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasEnabled(expected bool) *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("enabled", expected))
+	s.BoolValueSet("enabled", expected)
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasComment(expected string) *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
@@ -72,31 +85,31 @@ func (s *StorageIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *S
 ///////////////////////////////
 
 func (s *StorageIntegrationShowOutputAssert) HasNoName() *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasNoStorageType() *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("storage_type"))
+	s.ValueNotSet("storage_type")
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasNoCategory() *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("category"))
+	s.ValueNotSet("category")
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasNoEnabled() *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("enabled"))
+	s.ValueNotSet("enabled")
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasNoComment() *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StorageIntegrationShowOutputAssert) HasNoCreatedOn() *StorageIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }

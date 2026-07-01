@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type PostgresInstanceDescribeOutputAssert struct {
@@ -16,9 +17,8 @@ func PostgresInstanceDescribeOutput(t *testing.T, name string) *PostgresInstance
 	t.Helper()
 
 	postgresInstanceAssert := PostgresInstanceDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	postgresInstanceAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &postgresInstanceAssert
 }
 
@@ -26,9 +26,8 @@ func ImportedPostgresInstanceDescribeOutput(t *testing.T, id string) *PostgresIn
 	t.Helper()
 
 	postgresInstanceAssert := PostgresInstanceDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	postgresInstanceAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &postgresInstanceAssert
 }
 
@@ -37,107 +36,107 @@ func ImportedPostgresInstanceDescribeOutput(t *testing.T, id string) *PostgresIn
 ////////////////////////////
 
 func (p *PostgresInstanceDescribeOutputAssert) HasName(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	p.StringValueSet("name", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasOwner(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	p.StringValueSet("owner", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasOwnerRoleType(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	p.StringValueSet("owner_role_type", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasCreatedOn(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	p.StringValueSet("created_on", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasUpdatedOn(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("updated_on", expected))
+	p.StringValueSet("updated_on", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasType(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("type", expected))
+	p.StringValueSet("type", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasHost(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("host", expected))
+	p.StringValueSet("host", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasOrigin(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("origin", expected))
+	p.StringValueSet("origin", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasPrivatelinkServiceIdentifier(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("privatelink_service_identifier", expected))
+	p.StringValueSet("privatelink_service_identifier", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasComputeFamily(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("compute_family", expected))
+	p.StringValueSet("compute_family", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasStorageSizeGb(expected int) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueSet("storage_size_gb", expected))
+	p.IntValueSet("storage_size_gb", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasPostgresVersion(expected int) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueSet("postgres_version", expected))
+	p.IntValueSet("postgres_version", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasHighAvailability(expected bool) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("high_availability", expected))
+	p.BoolValueSet("high_availability", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasAuthenticationAuthority(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("authentication_authority", expected))
+	p.StringValueSet("authentication_authority", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasState(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("state", expected))
+	p.StringValueSet("state", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasRetentionTime(expected int) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueSet("retention_time", expected))
+	p.IntValueSet("retention_time", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasMaintenanceWindowStart(expected int) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueSet("maintenance_window_start", expected))
+	p.IntValueSet("maintenance_window_start", expected)
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasComment(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	p.StringValueSet("comment", expected)
 	return p
 }
 
-func (p *PostgresInstanceDescribeOutputAssert) HasNetworkPolicy(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("network_policy", expected))
+func (p *PostgresInstanceDescribeOutputAssert) HasNetworkPolicy(expected sdk.AccountObjectIdentifier) *PostgresInstanceDescribeOutputAssert {
+	p.StringValueSet("network_policy", expected.Name())
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasPostgresSettings(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("postgres_settings", expected))
+	p.StringValueSet("postgres_settings", expected)
 	return p
 }
 
-func (p *PostgresInstanceDescribeOutputAssert) HasStorageIntegration(expected string) *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("storage_integration", expected))
+func (p *PostgresInstanceDescribeOutputAssert) HasStorageIntegration(expected sdk.AccountObjectIdentifier) *PostgresInstanceDescribeOutputAssert {
+	p.StringValueSet("storage_integration", expected.Name())
 	return p
 }
 
@@ -146,106 +145,106 @@ func (p *PostgresInstanceDescribeOutputAssert) HasStorageIntegration(expected st
 ///////////////////////////////
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoName() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoOwner() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	p.ValueNotSet("owner")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoOwnerRoleType() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	p.ValueNotSet("owner_role_type")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoCreatedOn() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	p.ValueNotSet("created_on")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoUpdatedOn() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	p.ValueNotSet("updated_on")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoType() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("type"))
+	p.ValueNotSet("type")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoHost() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("host"))
+	p.ValueNotSet("host")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoOrigin() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("origin"))
+	p.ValueNotSet("origin")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoPrivatelinkServiceIdentifier() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("privatelink_service_identifier"))
+	p.ValueNotSet("privatelink_service_identifier")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoComputeFamily() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("compute_family"))
+	p.ValueNotSet("compute_family")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoStorageSizeGb() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("storage_size_gb"))
+	p.ValueNotSet("storage_size_gb")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoPostgresVersion() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("postgres_version"))
+	p.ValueNotSet("postgres_version")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoHighAvailability() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("high_availability"))
+	p.ValueNotSet("high_availability")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoAuthenticationAuthority() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("authentication_authority"))
+	p.ValueNotSet("authentication_authority")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoState() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("state"))
+	p.ValueNotSet("state")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoRetentionTime() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("retention_time"))
+	p.ValueNotSet("retention_time")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoMaintenanceWindowStart() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("maintenance_window_start"))
+	p.ValueNotSet("maintenance_window_start")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoComment() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoNetworkPolicy() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("network_policy"))
+	p.ValueNotSet("network_policy")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoPostgresSettings() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("postgres_settings"))
+	p.ValueNotSet("postgres_settings")
 	return p
 }
 
 func (p *PostgresInstanceDescribeOutputAssert) HasNoStorageIntegration() *PostgresInstanceDescribeOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("storage_integration"))
+	p.ValueNotSet("storage_integration")
 	return p
 }

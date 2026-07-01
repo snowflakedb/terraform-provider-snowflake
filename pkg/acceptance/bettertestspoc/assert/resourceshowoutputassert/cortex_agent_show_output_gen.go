@@ -17,9 +17,8 @@ func CortexAgentShowOutput(t *testing.T, name string) *CortexAgentShowOutputAsse
 	t.Helper()
 
 	cortexAgentAssert := CortexAgentShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	cortexAgentAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &cortexAgentAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedCortexAgentShowOutput(t *testing.T, id string) *CortexAgentShowOutp
 	t.Helper()
 
 	cortexAgentAssert := CortexAgentShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	cortexAgentAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &cortexAgentAssert
+}
+
+func CortexAgentsDatasourceShowOutput(t *testing.T, name string) *CortexAgentShowOutputAssert {
+	t.Helper()
+
+	return CortexAgentsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func CortexAgentsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *CortexAgentShowOutputAssert {
+	t.Helper()
+
+	cortexAgentAssert := CortexAgentShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "cortex_agents", idx),
+	}
 	return &cortexAgentAssert
 }
 
@@ -38,72 +51,70 @@ func ImportedCortexAgentShowOutput(t *testing.T, id string) *CortexAgentShowOutp
 ////////////////////////////
 
 func (c *CortexAgentShowOutputAssert) HasCreatedOn(expected time.Time) *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	c.StringValueSet("created_on", expected.String())
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasName(expected string) *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	c.StringValueSet("name", expected)
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasDatabaseName(expected string) *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	c.StringValueSet("database_name", expected)
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasSchemaName(expected string) *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	c.StringValueSet("schema_name", expected)
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasOwner(expected string) *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	c.StringValueSet("owner", expected)
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasComment(expected string) *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
-
-// HasProfile removed manually
 
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
 
 func (c *CortexAgentShowOutputAssert) HasNoCreatedOn() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	c.ValueNotSet("created_on")
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasNoName() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasNoDatabaseName() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	c.ValueNotSet("database_name")
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasNoSchemaName() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	c.ValueNotSet("schema_name")
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasNoOwner() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	c.ValueNotSet("owner")
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasNoComment() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CortexAgentShowOutputAssert) HasNoProfile() *CortexAgentShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("profile"))
+	c.ValueNotSet("profile")
 	return c
 }

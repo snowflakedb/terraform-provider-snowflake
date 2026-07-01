@@ -17,9 +17,8 @@ func SecurityIntegrationShowOutput(t *testing.T, name string) *SecurityIntegrati
 	t.Helper()
 
 	securityIntegrationAssert := SecurityIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	securityIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &securityIntegrationAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedSecurityIntegrationShowOutput(t *testing.T, id string) *SecurityInt
 	t.Helper()
 
 	securityIntegrationAssert := SecurityIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	securityIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &securityIntegrationAssert
+}
+
+func SecurityIntegrationsDatasourceShowOutput(t *testing.T, name string) *SecurityIntegrationShowOutputAssert {
+	t.Helper()
+
+	return SecurityIntegrationsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func SecurityIntegrationsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *SecurityIntegrationShowOutputAssert {
+	t.Helper()
+
+	securityIntegrationAssert := SecurityIntegrationShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "security_integrations", idx),
+	}
 	return &securityIntegrationAssert
 }
 
@@ -38,32 +51,32 @@ func ImportedSecurityIntegrationShowOutput(t *testing.T, id string) *SecurityInt
 ////////////////////////////
 
 func (s *SecurityIntegrationShowOutputAssert) HasName(expected string) *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasIntegrationType(expected string) *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("integration_type", expected))
+	s.StringValueSet("integration_type", expected)
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasCategory(expected string) *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("category", expected))
+	s.StringValueSet("category", expected)
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasEnabled(expected bool) *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("enabled", expected))
+	s.BoolValueSet("enabled", expected)
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasComment(expected string) *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
@@ -72,31 +85,31 @@ func (s *SecurityIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *
 ///////////////////////////////
 
 func (s *SecurityIntegrationShowOutputAssert) HasNoName() *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasNoIntegrationType() *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("integration_type"))
+	s.ValueNotSet("integration_type")
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasNoCategory() *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("category"))
+	s.ValueNotSet("category")
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasNoEnabled() *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("enabled"))
+	s.ValueNotSet("enabled")
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasNoComment() *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SecurityIntegrationShowOutputAssert) HasNoCreatedOn() *SecurityIntegrationShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }

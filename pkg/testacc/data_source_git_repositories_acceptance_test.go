@@ -59,7 +59,7 @@ func TestAcc_GitRepositories(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "git_repositories.#", "1")),
-					resourceshowoutputassert.GitRepositoriesDatasourceShowOutput(t, "snowflake_git_repositories.test").
+					resourceshowoutputassert.GitRepositoriesDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -86,7 +86,7 @@ func TestAcc_GitRepositories(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceWithoutOptionals.DatasourceReference(), "git_repositories.#", "1")),
-					resourceshowoutputassert.GitRepositoriesDatasourceShowOutput(t, "snowflake_git_repositories.test").
+					resourceshowoutputassert.GitRepositoriesDatasourceShowOutput(t, dataSourceWithoutOptionals.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).

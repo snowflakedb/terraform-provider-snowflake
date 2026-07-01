@@ -17,9 +17,8 @@ func PasswordPolicyShowOutput(t *testing.T, name string) *PasswordPolicyShowOutp
 	t.Helper()
 
 	passwordPolicyAssert := PasswordPolicyShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	passwordPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &passwordPolicyAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedPasswordPolicyShowOutput(t *testing.T, id string) *PasswordPolicySh
 	t.Helper()
 
 	passwordPolicyAssert := PasswordPolicyShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	passwordPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &passwordPolicyAssert
+}
+
+func PasswordPoliciesDatasourceShowOutput(t *testing.T, name string) *PasswordPolicyShowOutputAssert {
+	t.Helper()
+
+	return PasswordPoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func PasswordPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *PasswordPolicyShowOutputAssert {
+	t.Helper()
+
+	passwordPolicyAssert := PasswordPolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "password_policies", idx),
+	}
 	return &passwordPolicyAssert
 }
 
@@ -38,47 +51,47 @@ func ImportedPasswordPolicyShowOutput(t *testing.T, id string) *PasswordPolicySh
 ////////////////////////////
 
 func (p *PasswordPolicyShowOutputAssert) HasCreatedOn(expected time.Time) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	p.StringValueSet("created_on", expected.String())
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasName(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	p.StringValueSet("name", expected)
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasDatabaseName(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	p.StringValueSet("database_name", expected)
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasSchemaName(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	p.StringValueSet("schema_name", expected)
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasKind(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	p.StringValueSet("kind", expected)
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasOwner(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	p.StringValueSet("owner", expected)
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasComment(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	p.StringValueSet("comment", expected)
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasOwnerRoleType(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	p.StringValueSet("owner_role_type", expected)
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasOptions(expected string) *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	p.StringValueSet("options", expected)
 	return p
 }
 
@@ -87,46 +100,46 @@ func (p *PasswordPolicyShowOutputAssert) HasOptions(expected string) *PasswordPo
 ///////////////////////////////
 
 func (p *PasswordPolicyShowOutputAssert) HasNoCreatedOn() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	p.ValueNotSet("created_on")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoName() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoDatabaseName() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	p.ValueNotSet("database_name")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoSchemaName() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	p.ValueNotSet("schema_name")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoKind() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	p.ValueNotSet("kind")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoOwner() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	p.ValueNotSet("owner")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoComment() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoOwnerRoleType() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	p.ValueNotSet("owner_role_type")
 	return p
 }
 
 func (p *PasswordPolicyShowOutputAssert) HasNoOptions() *PasswordPolicyShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
+	p.ValueNotSet("options")
 	return p
 }

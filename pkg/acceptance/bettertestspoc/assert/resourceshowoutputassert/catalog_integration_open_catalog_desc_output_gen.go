@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput
-
 type CatalogIntegrationOpenCatalogDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func CatalogIntegrationOpenCatalogDescribeOutput(t *testing.T, name string) *Cat
 	t.Helper()
 
 	catalogIntegrationOpenCatalogAssert := CatalogIntegrationOpenCatalogDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	catalogIntegrationOpenCatalogAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationOpenCatalogAssert
 }
 
@@ -29,9 +26,8 @@ func ImportedCatalogIntegrationOpenCatalogDescribeOutput(t *testing.T, id string
 	t.Helper()
 
 	catalogIntegrationOpenCatalogAssert := CatalogIntegrationOpenCatalogDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	catalogIntegrationOpenCatalogAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationOpenCatalogAssert
 }
 
@@ -40,87 +36,85 @@ func ImportedCatalogIntegrationOpenCatalogDescribeOutput(t *testing.T, id string
 ////////////////////////////
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.Name()))
+	c.StringValueSet("id", expected.Name())
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasCatalogSource(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("catalog_source", expected))
+	c.StringValueSet("catalog_source", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasTableFormat(expected sdk.CatalogIntegrationTableFormat) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("table_format", expected))
+	c.StringValueSet("table_format", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasEnabled(expected bool) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("enabled", expected))
+	c.BoolValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasRefreshIntervalSeconds(expected int) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueSet("refresh_interval_seconds", expected))
+	c.IntValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasComment(expected string) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasCatalogNamespace(expected string) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("catalog_namespace", expected))
+	c.StringValueSet("catalog_namespace", expected)
 	return c
 }
-
-// HasRestConfig and HasRestAuthentication removed manually
 
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoId() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
+	c.ValueNotSet("id")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoCatalogSource() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoTableFormat() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("table_format"))
+	c.ValueNotSet("table_format")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoEnabled() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoComment() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoCatalogNamespace() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("catalog_namespace"))
+	c.ValueNotSet("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoRestConfig() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("rest_config"))
+	c.ValueNotSet("rest_config")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoRestAuthentication() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("rest_authentication"))
+	c.ValueNotSet("rest_authentication")
 	return c
 }
