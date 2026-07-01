@@ -16,7 +16,7 @@ func SequenceResource(t *testing.T, name string) *SequenceResourceAssert {
 	t.Helper()
 
 	return &SequenceResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSequenceResource(t *testing.T, id string) *SequenceResourceAssert {
 	t.Helper()
 
 	return &SequenceResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

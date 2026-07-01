@@ -16,7 +16,7 @@ func ApiIntegrationGitRepositoryTokenResource(t *testing.T, name string) *ApiInt
 	t.Helper()
 
 	return &ApiIntegrationGitRepositoryTokenResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationGitRepositoryTokenResource(t *testing.T, id string) *
 	t.Helper()
 
 	return &ApiIntegrationGitRepositoryTokenResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

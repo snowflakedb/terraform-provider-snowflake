@@ -16,7 +16,7 @@ func StreamlitResource(t *testing.T, name string) *StreamlitResourceAssert {
 	t.Helper()
 
 	return &StreamlitResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStreamlitResource(t *testing.T, id string) *StreamlitResourceAssert
 	t.Helper()
 
 	return &StreamlitResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

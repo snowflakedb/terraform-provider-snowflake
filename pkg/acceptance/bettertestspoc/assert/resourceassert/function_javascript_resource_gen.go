@@ -16,7 +16,7 @@ func FunctionJavascriptResource(t *testing.T, name string) *FunctionJavascriptRe
 	t.Helper()
 
 	return &FunctionJavascriptResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedFunctionJavascriptResource(t *testing.T, id string) *FunctionJavasc
 	t.Helper()
 
 	return &FunctionJavascriptResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

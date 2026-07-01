@@ -16,7 +16,7 @@ func DynamicTableResource(t *testing.T, name string) *DynamicTableResourceAssert
 	t.Helper()
 
 	return &DynamicTableResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedDynamicTableResource(t *testing.T, id string) *DynamicTableResource
 	t.Helper()
 
 	return &DynamicTableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

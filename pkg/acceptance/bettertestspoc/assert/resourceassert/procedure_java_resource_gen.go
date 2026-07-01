@@ -16,7 +16,7 @@ func ProcedureJavaResource(t *testing.T, name string) *ProcedureJavaResourceAsse
 	t.Helper()
 
 	return &ProcedureJavaResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedProcedureJavaResource(t *testing.T, id string) *ProcedureJavaResour
 	t.Helper()
 
 	return &ProcedureJavaResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

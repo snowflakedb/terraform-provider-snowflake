@@ -28,3 +28,8 @@ func (a *ApiIntegrationGitHttpsApiDescribeOutputAssert) HasBlockedPrefixes(expec
 	}
 	return a
 }
+
+func (a *ApiIntegrationGitHttpsApiDescribeOutputAssert) HasTlsTrustedCertificates(expected string) *ApiIntegrationGitHttpsApiDescribeOutputAssert {
+	a.StringValueSet("tls_trusted_certificates", expected)
+	return a
+}

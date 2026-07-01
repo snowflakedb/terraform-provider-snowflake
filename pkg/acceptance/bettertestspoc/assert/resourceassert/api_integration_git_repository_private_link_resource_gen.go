@@ -16,7 +16,7 @@ func ApiIntegrationGitRepositoryPrivateLinkResource(t *testing.T, name string) *
 	t.Helper()
 
 	return &ApiIntegrationGitRepositoryPrivateLinkResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationGitRepositoryPrivateLinkResource(t *testing.T, id str
 	t.Helper()
 
 	return &ApiIntegrationGitRepositoryPrivateLinkResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

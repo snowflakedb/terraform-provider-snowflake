@@ -16,7 +16,7 @@ func ShareResource(t *testing.T, name string) *ShareResourceAssert {
 	t.Helper()
 
 	return &ShareResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedShareResource(t *testing.T, id string) *ShareResourceAssert {
 	t.Helper()
 
 	return &ShareResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

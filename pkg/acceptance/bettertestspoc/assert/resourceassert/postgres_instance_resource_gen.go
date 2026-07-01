@@ -16,7 +16,7 @@ func PostgresInstanceResource(t *testing.T, name string) *PostgresInstanceResour
 	t.Helper()
 
 	return &PostgresInstanceResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPostgresInstanceResource(t *testing.T, id string) *PostgresInstance
 	t.Helper()
 
 	return &PostgresInstanceResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func ProcedurePythonResource(t *testing.T, name string) *ProcedurePythonResource
 	t.Helper()
 
 	return &ProcedurePythonResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedProcedurePythonResource(t *testing.T, id string) *ProcedurePythonRe
 	t.Helper()
 
 	return &ProcedurePythonResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

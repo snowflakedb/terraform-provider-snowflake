@@ -16,7 +16,7 @@ func AccountSessionPolicyAttachmentResource(t *testing.T, name string) *AccountS
 	t.Helper()
 
 	return &AccountSessionPolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedAccountSessionPolicyAttachmentResource(t *testing.T, id string) *Ac
 	t.Helper()
 
 	return &AccountSessionPolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

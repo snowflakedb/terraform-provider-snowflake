@@ -16,7 +16,7 @@ func SessionPolicyResource(t *testing.T, name string) *SessionPolicyResourceAsse
 	t.Helper()
 
 	return &SessionPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSessionPolicyResource(t *testing.T, id string) *SessionPolicyResour
 	t.Helper()
 
 	return &SessionPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

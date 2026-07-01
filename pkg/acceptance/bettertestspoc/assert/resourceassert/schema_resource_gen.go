@@ -16,7 +16,7 @@ func SchemaResource(t *testing.T, name string) *SchemaResourceAssert {
 	t.Helper()
 
 	return &SchemaResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSchemaResource(t *testing.T, id string) *SchemaResourceAssert {
 	t.Helper()
 
 	return &SchemaResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

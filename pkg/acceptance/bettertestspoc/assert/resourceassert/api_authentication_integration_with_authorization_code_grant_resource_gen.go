@@ -16,7 +16,7 @@ func ApiAuthenticationIntegrationWithAuthorizationCodeGrantResource(t *testing.T
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiAuthenticationIntegrationWithAuthorizationCodeGrantResource(t *t
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithAuthorizationCodeGrantResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

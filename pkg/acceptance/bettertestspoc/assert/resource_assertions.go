@@ -32,27 +32,16 @@ var (
 // ResourceAssert is an embeddable struct that should be used to construct new resource assertions (for resource, show output, parameters, etc.).
 // It implements both TestCheckFuncProvider and ImportStateCheckFuncProvider which makes it easy to create new resource assertions.
 type ResourceAssert struct {
-	name             string
-	id               string
-	prefix           string
-	assertions       []ResourceAssertion
-	additionalPrefix string
+	name       string
+	id         string
+	prefix     string
+	assertions []ResourceAssertion
 
 	assertionPath string
 }
 
 // NewResourceAssert creates a ResourceAssert where the resource name should be used as a key for assertions.
-func NewResourceAssert(name string, prefix string) *ResourceAssert {
-	return &ResourceAssert{
-		name:       name,
-		prefix:     prefix,
-		assertions: make([]ResourceAssertion, 0),
-	}
-}
-
-// NewResourceAssertTmp creates a ResourceAssert where the resource name should be used as a key for assertions.
-// TODO [next PRs]: rename to NewResourceAssert, remove the old NewResourceAssert when all objects are migrated
-func NewResourceAssertTmp(name string) *ResourceAssert {
+func NewResourceAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name:       name,
 		assertions: make([]ResourceAssertion, 0),
@@ -81,6 +70,15 @@ func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
 	}
 }
 
+// NewResourceDescribeOutputAssertAtRow creates a ResourceAssert for describe output assertions at a specific row index.
+func NewResourceDescribeOutputAssertAtRow(name string, rowIndex int) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: fmt.Sprintf("describe_output.%d.", rowIndex),
+	}
+}
+
 // NewResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource name as a key.
 func NewResourceParametersAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
@@ -93,17 +91,7 @@ func NewResourceParametersAssert(name string) *ResourceAssert {
 }
 
 // NewImportedResourceAssert creates a ResourceAssert where the resource id should be used as a key for assertions.
-func NewImportedResourceAssert(id string, prefix string) *ResourceAssert {
-	return &ResourceAssert{
-		id:         id,
-		prefix:     prefix,
-		assertions: make([]ResourceAssertion, 0),
-	}
-}
-
-// NewImportedResourceAssertTmp creates a ResourceAssert where the resource id should be used as a key for assertions.
-// TODO [next PR]: rename to NewImportedResourceAssert, remove the old NewImportedResourceAssert when all objects are migrated
-func NewImportedResourceAssertTmp(id string) *ResourceAssert {
+func NewImportedResourceAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id:         id,
 		assertions: make([]ResourceAssertion, 0),
@@ -140,17 +128,6 @@ func NewImportedResourceParametersAssert(id string) *ResourceAssert {
 			ValueSetFullPath(parametersCollection, "1"),
 		},
 		assertionPath: parametersPath,
-	}
-}
-
-// NewDatasourceAssert creates a ResourceAssert for data sources.
-// TODO [next PRs]: remove this method entirely when all invocations replaced with NewDatasourceShowOutputAssert, NewDatasourceDescribeOutputAssert, and NewDatasourceParametersAssert
-func NewDatasourceAssert(name string, prefix string, additionalPrefix string) *ResourceAssert {
-	return &ResourceAssert{
-		name:             name,
-		prefix:           prefix,
-		assertions:       make([]ResourceAssertion, 0),
-		additionalPrefix: additionalPrefix,
 	}
 }
 
@@ -205,8 +182,6 @@ type ResourceAssertion struct {
 }
 
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
-	// TODO [next PRs]: remove additionalPrefix logic when all the objects are migrated
-	assertion.fieldName = r.additionalPrefix + assertion.fieldName
 	assertion.fullPath = r.assertionPath + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
@@ -324,22 +299,6 @@ const (
 	parametersDescriptionSuffix = ".0.description"
 )
 
-func ResourceParameterKeySet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
-}
-
-func ResourceParameterDefaultSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
-}
-
-func ResourceParameterDescriptionSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
-}
-
-func ResourceParameterDescriptionPresent[T ~string](parameterName T) ResourceAssertion {
-	return ValuePresent(strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
-}
-
 func (r *ResourceAssert) ParameterValueSet(parameterName string, expected string) {
 	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, expected)
 }
@@ -354,6 +313,22 @@ func (r *ResourceAssert) ParameterIntValueSet(parameterName string, expected int
 
 func (r *ResourceAssert) ParameterLevelSet(parameterName string, expected sdk.ParameterType) {
 	r.ValueSet(strings.ToLower(parameterName)+parametersLevelSuffix, string(expected))
+}
+
+func (r *ResourceAssert) ParameterKeySet(parameterName string, expected string) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersKeySuffix, expected)
+}
+
+func (r *ResourceAssert) ParameterDefaultSet(parameterName string, expected string) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersDefaultSuffix, expected)
+}
+
+func (r *ResourceAssert) ParameterDescriptionSet(parameterName string, expected string) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersDescriptionSuffix, expected)
+}
+
+func (r *ResourceAssert) ParameterDescriptionPresent(parameterName string) {
+	r.ValuePresent(strings.ToLower(parameterName) + parametersDescriptionSuffix)
 }
 
 // ToTerraformTestCheckFunc implements TestCheckFuncProvider to allow easier creation of new resource assertions.

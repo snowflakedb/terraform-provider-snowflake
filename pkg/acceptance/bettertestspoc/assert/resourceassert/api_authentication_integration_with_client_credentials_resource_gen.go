@@ -16,7 +16,7 @@ func ApiAuthenticationIntegrationWithClientCredentialsResource(t *testing.T, nam
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithClientCredentialsResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiAuthenticationIntegrationWithClientCredentialsResource(t *testin
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithClientCredentialsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
