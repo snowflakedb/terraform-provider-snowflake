@@ -365,6 +365,22 @@ func (r *ResourceAssert) ParameterLevelSet(parameterName string, expected sdk.Pa
 	r.ValueSet(strings.ToLower(parameterName)+parametersLevelSuffix, string(expected))
 }
 
+func (r *ResourceAssert) ParameterKeySet(parameterName string, expected string) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersKeySuffix, expected)
+}
+
+func (r *ResourceAssert) ParameterDefaultSet(parameterName string, expected string) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersDefaultSuffix, expected)
+}
+
+func (r *ResourceAssert) ParameterDescriptionSet(parameterName string, expected string) {
+	r.ValueSet(strings.ToLower(parameterName)+parametersDescriptionSuffix, expected)
+}
+
+func (r *ResourceAssert) ParameterDescriptionPresent(parameterName string) {
+	r.ValuePresent(strings.ToLower(parameterName) + parametersDescriptionSuffix)
+}
+
 // ToTerraformTestCheckFunc implements TestCheckFuncProvider to allow easier creation of new resource assertions.
 // It goes through all the assertion accumulated earlier and gathers the results of the checks.
 func (r *ResourceAssert) ToTerraformTestCheckFunc(t *testing.T, _ *helpers.TestClient) resource.TestCheckFunc {
