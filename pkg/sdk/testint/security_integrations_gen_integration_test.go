@@ -249,6 +249,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		refreshTokenValidity    string
 		useSecondaryRoles       string
 		preAuthorizedRolesList  string
+		allowedRolesList        string
 		blockedRolesList        string
 		networkPolicy           string
 		comment                 string
@@ -260,6 +261,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_REFRESH_TOKEN_VALIDITY", Type: "Long", Value: d.refreshTokenValidity, Default: "7776000"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_USE_SECONDARY_ROLES", Type: "String", Value: d.useSecondaryRoles, Default: "NONE"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "PRE_AUTHORIZED_ROLES_LIST", Type: "List", Value: d.preAuthorizedRolesList, Default: "[]"})
+		assertFieldContainsList(details, "ALLOWED_ROLES_LIST", d.allowedRolesList, ",")
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "NETWORK_POLICY", Type: "String", Value: d.networkPolicy, Default: ""})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "COMMENT", Type: "String", Value: d.comment, Default: ""})
 		assertFieldContainsList(details, "BLOCKED_ROLES_LIST", d.blockedRolesList, ",")
@@ -465,14 +467,19 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 	t.Run("CreateOauthPartner", func(t *testing.T) {
 		role1, role1Cleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(role1Cleanup)
+		role2, role2Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role2Cleanup)
+		role3, role3Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role3Cleanup)
 
 		integration, id := createOauthPartner(t, func(r *sdk.CreateOauthForPartnerApplicationsSecurityIntegrationRequest) {
-			r.WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
+			r.WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{role2.ID(), role3.ID()}}).
+				WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
 				WithComment("a").
 				WithEnabled(true).
 				WithOauthIssueRefreshTokens(true).
 				WithOauthRefreshTokenValidity(12345).
-				WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)
+				WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)
 		})
 		details, err := client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
@@ -481,7 +488,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			enabled:                 "true",
 			oauthIssueRefreshTokens: "true",
 			refreshTokenValidity:    "12345",
-			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit),
+			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone),
+			allowedRolesList:        fmt.Sprintf("%s,%s", role2.Name, role3.Name),
 			blockedRolesList:        role1.Name,
 			comment:                 "a",
 		})
@@ -496,9 +504,12 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		t.Cleanup(role1Cleanup)
 		role2, role2Cleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(role2Cleanup)
+		role3, role3Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role3Cleanup)
 
 		integration, id := createOauthCustom(t, func(r *sdk.CreateOauthForCustomClientsSecurityIntegrationRequest) {
-			r.WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
+			r.WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{role3.ID()}}).
+				WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
 				WithComment("a").
 				WithEnabled(true).
 				WithNetworkPolicy(networkPolicy.ID()).
@@ -508,7 +519,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 				WithOauthEnforcePkce(true).
 				WithOauthIssueRefreshTokens(true).
 				WithOauthRefreshTokenValidity(12345).
-				WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit).
+				WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone).
 				WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: []sdk.AccountObjectIdentifier{role2.ID()}})
 		})
 		details, err := client.SecurityIntegrations.Describe(ctx, id)
@@ -518,8 +529,9 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			enabled:                 "true",
 			oauthIssueRefreshTokens: "true",
 			refreshTokenValidity:    "12345",
-			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit),
+			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone),
 			preAuthorizedRolesList:  role2.Name,
+			allowedRolesList:        role3.Name,
 			blockedRolesList:        role1.Name,
 			networkPolicy:           networkPolicy.Name,
 			comment:                 "a",
@@ -844,17 +856,20 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		})
 		role1, role1Cleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(role1Cleanup)
+		role2, role2Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role2Cleanup)
 
 		setRequest := sdk.NewAlterOauthForPartnerApplicationsSecurityIntegrationRequest(id).
 			WithSet(
 				*sdk.NewOauthForPartnerApplicationsIntegrationSetRequest().
+					WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{role2.ID()}}).
 					WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
 					WithComment(sdk.StringAllowEmpty{Value: "a"}).
 					WithEnabled(true).
 					WithOauthIssueRefreshTokens(true).
 					WithOauthRedirectUri("http://example2.com").
 					WithOauthRefreshTokenValidity(22222).
-					WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit),
+					WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone),
 			)
 		err := client.SecurityIntegrations.AlterOauthForPartnerApplications(ctx, setRequest)
 		require.NoError(t, err)
@@ -866,8 +881,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			enabled:                 "true",
 			oauthIssueRefreshTokens: "true",
 			refreshTokenValidity:    "22222",
-			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit),
-			preAuthorizedRolesList:  "",
+			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone),
+			allowedRolesList:        role2.Name,
 			blockedRolesList:        "ACCOUNTADMIN,SECURITYADMIN",
 			networkPolicy:           "",
 			comment:                 "a",
@@ -898,10 +913,13 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		t.Cleanup(role1Cleanup)
 		role2, role2Cleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(role2Cleanup)
+		role3, role3Cleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(role3Cleanup)
 
 		setRequest := sdk.NewAlterOauthForCustomClientsSecurityIntegrationRequest(id).
 			WithSet(
 				*sdk.NewOauthForCustomClientsIntegrationSetRequest().
+					WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: []sdk.AccountObjectIdentifier{role3.ID()}}).
 					WithEnabled(true).
 					WithBlockedRolesList(sdk.BlockedRolesListRequest{BlockedRolesList: []sdk.AccountObjectIdentifier{role1.ID()}}).
 					WithComment("a").
@@ -913,7 +931,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 					WithOauthIssueRefreshTokens(true).
 					WithOauthRedirectUri("http://example2.com").
 					WithOauthRefreshTokenValidity(22222).
-					WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit).
+					WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone).
 					WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: []sdk.AccountObjectIdentifier{role2.ID()}}),
 			)
 		err := client.SecurityIntegrations.AlterOauthForCustomClients(ctx, setRequest)
@@ -926,8 +944,9 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			enabled:                 "true",
 			oauthIssueRefreshTokens: "true",
 			refreshTokenValidity:    "22222",
-			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit),
+			useSecondaryRoles:       string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone),
 			preAuthorizedRolesList:  role2.Name,
+			allowedRolesList:        role3.Name,
 			blockedRolesList:        role1.Name,
 			networkPolicy:           networkPolicy.Name,
 			comment:                 "a",
