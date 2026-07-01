@@ -81,6 +81,15 @@ func NewResourceDescribeOutputAssert(name string) *ResourceAssert {
 	}
 }
 
+// NewResourceDescribeOutputAssertAtRow creates a ResourceAssert for describe output assertions at a specific row index.
+func NewResourceDescribeOutputAssertAtRow(name string, rowIndex int) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: fmt.Sprintf("describe_output.%d.", rowIndex),
+	}
+}
+
 // NewResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource name as a key.
 func NewResourceParametersAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
