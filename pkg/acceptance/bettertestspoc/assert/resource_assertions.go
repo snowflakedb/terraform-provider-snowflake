@@ -40,9 +40,8 @@ type ResourceAssert struct {
 	assertionPath string
 }
 
-// NewResourceAssertTmp creates a ResourceAssert where the resource name should be used as a key for assertions.
-// TODO [next PRs]: rename to NewResourceAssert, remove the old NewResourceAssert when all objects are migrated
-func NewResourceAssertTmp(name string) *ResourceAssert {
+// NewResourceAssert creates a ResourceAssert where the resource name should be used as a key for assertions.
+func NewResourceAssert(name string) *ResourceAssert {
 	return &ResourceAssert{
 		name:       name,
 		assertions: make([]ResourceAssertion, 0),
@@ -91,9 +90,8 @@ func NewResourceParametersAssert(name string) *ResourceAssert {
 	}
 }
 
-// NewImportedResourceAssertTmp creates a ResourceAssert where the resource id should be used as a key for assertions.
-// TODO [next PR]: rename to NewImportedResourceAssert, remove the old NewImportedResourceAssert when all objects are migrated
-func NewImportedResourceAssertTmp(id string) *ResourceAssert {
+// NewImportedResourceAssert creates a ResourceAssert where the resource id should be used as a key for assertions.
+func NewImportedResourceAssert(id string) *ResourceAssert {
 	return &ResourceAssert{
 		id:         id,
 		assertions: make([]ResourceAssertion, 0),

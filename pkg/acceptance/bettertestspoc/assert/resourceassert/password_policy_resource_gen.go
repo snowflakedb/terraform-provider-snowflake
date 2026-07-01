@@ -16,7 +16,7 @@ func PasswordPolicyResource(t *testing.T, name string) *PasswordPolicyResourceAs
 	t.Helper()
 
 	return &PasswordPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPasswordPolicyResource(t *testing.T, id string) *PasswordPolicyReso
 	t.Helper()
 
 	return &PasswordPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

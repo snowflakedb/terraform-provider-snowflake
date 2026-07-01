@@ -16,7 +16,7 @@ func ExternalGcsStageResource(t *testing.T, name string) *ExternalGcsStageResour
 	t.Helper()
 
 	return &ExternalGcsStageResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalGcsStageResource(t *testing.T, id string) *ExternalGcsStage
 	t.Helper()
 
 	return &ExternalGcsStageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

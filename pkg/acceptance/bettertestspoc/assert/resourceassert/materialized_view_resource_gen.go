@@ -16,7 +16,7 @@ func MaterializedViewResource(t *testing.T, name string) *MaterializedViewResour
 	t.Helper()
 
 	return &MaterializedViewResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedMaterializedViewResource(t *testing.T, id string) *MaterializedView
 	t.Helper()
 
 	return &MaterializedViewResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func TableStorageLifecyclePolicyAttachmentResource(t *testing.T, name string) *T
 	t.Helper()
 
 	return &TableStorageLifecyclePolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedTableStorageLifecyclePolicyAttachmentResource(t *testing.T, id stri
 	t.Helper()
 
 	return &TableStorageLifecyclePolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

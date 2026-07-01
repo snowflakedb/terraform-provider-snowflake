@@ -16,7 +16,7 @@ func ProcedureSqlResource(t *testing.T, name string) *ProcedureSqlResourceAssert
 	t.Helper()
 
 	return &ProcedureSqlResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedProcedureSqlResource(t *testing.T, id string) *ProcedureSqlResource
 	t.Helper()
 
 	return &ProcedureSqlResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func SecretWithAuthorizationCodeGrantResource(t *testing.T, name string) *Secret
 	t.Helper()
 
 	return &SecretWithAuthorizationCodeGrantResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSecretWithAuthorizationCodeGrantResource(t *testing.T, id string) *
 	t.Helper()
 
 	return &SecretWithAuthorizationCodeGrantResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
