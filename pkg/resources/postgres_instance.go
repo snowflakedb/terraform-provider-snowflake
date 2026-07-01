@@ -77,10 +77,12 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"postgres_settings": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		DiffSuppressFunc: NormalizeAndCompare(sdk.NormalizePostgresSettings),
-		Description:      "Specifies custom Postgres settings as a JSON string.",
+		Type:     schema.TypeString,
+		Optional: true,
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.NormalizePostgresSettings), schema.SchemaDiffSuppressFunc(func(k, old, new string, d *schema.ResourceData) bool {
+			return old == "{}" && new == ""
+		})),
+		Description: "Specifies custom Postgres settings as a JSON string.",
 	},
 	"maintenance_window_start": {
 		Type:             schema.TypeInt,
@@ -165,29 +167,33 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		return nil, err
 	}
 
-	var networkPolicy, storageIntegration *string
-	if details.NetworkPolicy != nil {
-		name := details.NetworkPolicy.Name()
-		networkPolicy = &name
-	}
-	if details.StorageIntegration != nil {
-		name := details.StorageIntegration.Name()
-		storageIntegration = &name
-	}
-
 	errs := errors.Join(
 		d.Set("name", pi.Name),
 		d.Set("compute_family", pi.ComputeFamily),
 		d.Set("storage_size_gb", pi.StorageSize),
 		d.Set("authentication_authority", pi.AuthenticationAuthority),
 		d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
-		d.Set("network_policy", networkPolicy),
-		d.Set("storage_integration", storageIntegration),
 		d.Set("postgres_version", details.PostgresVersion),
 		d.Set("maintenance_window_start", details.MaintenanceWindowStart),
 	)
 	if errs != nil {
 		return nil, errs
+	}
+
+	if pi.Comment != nil && *pi.Comment != "" {
+		if err := d.Set("comment", *pi.Comment); err != nil {
+			return nil, err
+		}
+	}
+	if details.NetworkPolicy != nil {
+		if err := d.Set("network_policy", details.NetworkPolicy.Name()); err != nil {
+			return nil, err
+		}
+	}
+	if details.StorageIntegration != nil {
+		if err := d.Set("storage_integration", details.StorageIntegration.Name()); err != nil {
+			return nil, err
+		}
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -279,30 +285,42 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			return diag.FromErr(err)
 		}
 
-		if err = handleExternalChangesToObjectInShow(
+		if withExternalChangesMarking {
+			var comment string
+			if pi.Comment != nil {
+				comment = *pi.Comment
+			}
+			if err = handleExternalChangesToObjectInShow(
 				d,
 				outputMapping{"compute_family", "compute_family", pi.ComputeFamily, pi.ComputeFamily, nil},
 				outputMapping{"storage_size", "storage_size_gb", pi.StorageSize, pi.StorageSize, nil},
 				outputMapping{"authentication_authority", "authentication_authority", pi.AuthenticationAuthority, pi.AuthenticationAuthority, nil},
 				outputMapping{"is_ha", "high_availability", pi.IsHighlyAvailable, booleanStringFromBool(pi.IsHighlyAvailable), nil},
+				outputMapping{"comment", "comment", comment, comment, nil},
 			); err != nil {
-			return diag.FromErr(err)
-		}
-		var networkPolicy, storageIntegration string
-		if details.NetworkPolicy != nil {
-			networkPolicy = details.NetworkPolicy.Name()
-		}
-		if details.StorageIntegration != nil {
-			storageIntegration = details.StorageIntegration.Name()
-		}
-		if err = handleExternalChangesToObjectInFlatDescribe(
-			d,
-			outputMapping{"network_policy", "network_policy", networkPolicy, networkPolicy, nil},
-			outputMapping{"storage_integration", "storage_integration", storageIntegration, storageIntegration, nil},
-			outputMapping{"postgres_version", "postgres_version", details.PostgresVersion, details.PostgresVersion, nil},
-			outputMapping{"maintenance_window_start", "maintenance_window_start", details.MaintenanceWindowStart, details.MaintenanceWindowStart, nil},
-		); err != nil {
-			return diag.FromErr(err)
+				return diag.FromErr(err)
+			}
+
+			var networkPolicy, storageIntegration, postgresSettings string
+			if details.NetworkPolicy != nil {
+				networkPolicy = details.NetworkPolicy.Name()
+			}
+			if details.StorageIntegration != nil {
+				storageIntegration = details.StorageIntegration.Name()
+			}
+			if details.PostgresSettings != nil {
+				postgresSettings = *details.PostgresSettings
+			}
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
+				outputMapping{"network_policy", "network_policy", networkPolicy, networkPolicy, nil},
+				outputMapping{"storage_integration", "storage_integration", storageIntegration, storageIntegration, nil},
+				outputMapping{"postgres_version", "postgres_version", details.PostgresVersion, details.PostgresVersion, nil},
+				outputMapping{"postgres_settings", "postgres_settings", postgresSettings, postgresSettings, nil},
+				outputMapping{"maintenance_window_start", "maintenance_window_start", details.MaintenanceWindowStart, details.MaintenanceWindowStart, nil},
+			); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		if err = setStateToValuesFromConfig(d, postgresInstanceSchema, []string{
@@ -311,65 +329,20 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			"high_availability",
 			"storage_size_gb",
 			"postgres_version",
+			"postgres_settings",
 			"network_policy",
 			"storage_integration",
 			"maintenance_window_start",
+			"comment",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
 
-		errs := errors.Join(
-			d.Set("name", pi.Name),
-			// Always set network_policy and storage_integration explicitly from DESCRIBE so
-			// state is "" (not absent) on all read paths, including import. The handler above
-			// detects external changes when old describe_output exists; this explicit set
-			// ensures a consistent "" when no prior describe_output is present (fresh create,
-			// import).
-			d.Set("network_policy", networkPolicy),
-			d.Set("storage_integration", storageIntegration),
+		if errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PostgresInstanceToSchema(pi)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresInstanceDetailsToSchema(details)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-		)
-		if !withExternalChangesMarking {
-			// Post-create/update: setStateToValuesFromConfig skips fields whose raw HCL config
-			// is null (schema Default values). d.Get() returns the effective config value
-			// including the Default, so this keeps state consistent with what the config expresses.
-			errs = errors.Join(errs,
-				d.Set("high_availability", d.Get("high_availability").(string)),
-				d.Set("postgres_version", d.Get("postgres_version").(int)),
-			)
-		}
-
-		commentVal := ""
-		if withExternalChangesMarking {
-			if pi.Comment != nil {
-				commentVal = *pi.Comment
-			}
-		} else {
-			// Post-create/update: SHOW/DESCRIBE have multi-minute propagation lag after
-			// UNSET. Use the plan's desired value (from diff reader) instead of SHOW.
-			commentVal = d.Get("comment").(string)
-		}
-		errs = errors.Join(errs, d.Set("comment", commentVal))
-
-		pgSettingsRaw := ""
-		if withExternalChangesMarking {
-			// After SET, DESCRIBE returns "{}" (empty object) for several minutes before
-			// propagating the new value. Treat both nil and "{}" as "not yet propagated"
-			// and preserve the current state to avoid a perpetual diff during the lag window.
-			normalized := sdk.NormalizePostgresSettingsPtr(details.PostgresSettings)
-			if normalized != nil && *normalized != "{}" {
-				pgSettingsRaw = *normalized
-			} else {
-				pgSettingsRaw = d.Get("postgres_settings").(string)
-			}
-		} else {
-			pgSettingsRaw = d.Get("postgres_settings").(string)
-		}
-		normalizedPgSettings, normalizeErr := sdk.NormalizePostgresSettings(pgSettingsRaw)
-		errs = errors.Join(errs, d.Set("postgres_settings", normalizedPgSettings), normalizeErr)
-		if errs != nil {
+		); errs != nil {
 			return diag.FromErr(errs)
 		}
 
@@ -416,14 +389,26 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		accountObjectIdentifierAttributeUpdate(d, "network_policy", &set.NetworkPolicy, &unset.NetworkPolicy),
 		accountObjectIdentifierAttributeUpdate(d, "storage_integration", &set.StorageIntegration, &unset.StorageIntegration),
 		intAttributeUpdateSetOnly(d, "storage_size_gb", &set.StorageSizeGb),
-		// No UNSET for postgres_version (setting Snowflake default when config removes it)
-		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "postgres_version", &set.PostgresVersion, 18),
 		intAttributeWithSpecialDefaultUpdate(d, "maintenance_window_start", &set.MaintenanceWindowStart, &unset.MaintenanceWindowStart),
 		attributeMappedValueUpdateSetOnly(d, "authentication_authority", &set.AuthenticationAuthority, sdk.ToPostgresInstanceAuthenticationAuthority),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "compute_family", &set.ComputeFamily),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
+	}
+
+	// No UNSET for postgres_version; SET the Snowflake default (18) when config removes it.
+	// Skip when the effective new value equals the old state value: a no-op SET POSTGRES_VERSION
+	// triggers a multi-minute async Snowflake operation that blocks the subsequent HIGH_AVAILABILITY ALTER.
+	if d.HasChange("postgres_version") {
+		old, _ := d.GetChange("postgres_version")
+		effectiveNew := d.Get("postgres_version").(int)
+		if effectiveNew == 0 {
+			effectiveNew = 18
+		}
+		if old.(int) != effectiveNew {
+			set.PostgresVersion = sdk.Int(effectiveNew)
+		}
 	}
 
 	if !reflect.DeepEqual(set, &sdk.PostgresInstanceSetRequest{}) {
@@ -433,13 +418,31 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		}
 	}
 
-	// Group 3: HIGH_AVAILABILITY (no UNSET; setting Snowflake default false when config removes it)
+	// Group 3: HIGH_AVAILABILITY (no UNSET; setting Snowflake default false when config removes it).
+	// Skip when the effective new value equals the old state value: a no-op SET HIGH_AVAILABILITY
+	// triggered after a POSTGRES_VERSION/COMPUTE_FAMILY/STORAGE_SIZE_GB ALTER will fail with
+	// "must be complete before issuing ALTER SET HIGH_AVAILABILITY".
 	highAvailabilitySet := sdk.NewPostgresInstanceSetRequest()
-	errs = errors.Join(
-		booleanStringAttributeUnsetFallbackUpdate(d, "high_availability", &highAvailabilitySet.HighAvailability, false),
-	)
-	if errs != nil {
-		return diag.FromErr(errs)
+	if d.HasChange("high_availability") {
+		var effectiveNew bool
+		if v := d.Get("high_availability").(string); v != BooleanDefault {
+			parsed, err := booleanStringToBool(v)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			effectiveNew = parsed
+		}
+		oldRaw, _ := d.GetChange("high_availability")
+		var oldBool bool
+		if s := oldRaw.(string); s != BooleanDefault {
+			parsed, err := booleanStringToBool(s)
+			if err == nil {
+				oldBool = parsed
+			}
+		}
+		if oldBool != effectiveNew {
+			highAvailabilitySet.HighAvailability = sdk.Bool(effectiveNew)
+		}
 	}
 
 	if !reflect.DeepEqual(highAvailabilitySet, &sdk.PostgresInstanceSetRequest{}) {
