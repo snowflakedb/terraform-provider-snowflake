@@ -51,7 +51,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabled(true).
 			HasComment(""),
-		resourceshowoutputassert.ApiIntegrationGitRepositoryTokenDescribeOutput(t, ref).
+		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasAllowedAuthenticationSecrets("").
 			HasComment(""),
@@ -78,7 +78,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabled(true).
 			HasComment(comment),
-		resourceshowoutputassert.ApiIntegrationGitRepositoryTokenDescribeOutput(t, ref).
+		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasAllowedAuthenticationSecrets("").
 			HasComment(comment),
