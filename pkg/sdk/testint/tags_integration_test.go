@@ -872,14 +872,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return createPipe(t)
 			},
 			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Pipes.Alter(ctx, id, &sdk.AlterPipeOptions{
-					SetTag: tags,
-				})
+				return client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Pipes.Alter(ctx, id, &sdk.AlterPipeOptions{
-					UnsetTag: tags,
-				})
+				return client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{

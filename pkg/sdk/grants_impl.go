@@ -384,11 +384,7 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 		originalPipeExecutionState = &pipeExecutionState
 
 		if pipeExecutionState == RunningPipeExecutionState {
-			if err := v.client.Pipes.Alter(ctx, pipeId, &AlterPipeOptions{
-				Set: &PipeSet{
-					PipeExecutionPaused: Bool(true),
-				},
-			}); err != nil {
+			if err := v.client.Pipes.Alter(ctx, NewAlterPipeRequest(pipeId).WithSet(*NewPipeSetRequest().WithPipeExecutionPaused(true))); err != nil {
 				return err
 			}
 		}
@@ -548,7 +544,11 @@ func (v *grants) runOnAllPipes(ctx context.Context, inDatabase *AccountObjectIde
 		}
 	}
 
-	pipes, err := v.client.Pipes.Show(ctx, &ShowPipeOptions{In: in})
+	showReq := NewShowPipeRequest()
+	if in != nil {
+		showReq.WithIn(*in)
+	}
+	pipes, err := v.client.Pipes.Show(ctx, showReq)
 	if err != nil {
 		return err
 	}
