@@ -50,6 +50,13 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 		Description:      "Specifies the query throughput multiplier for the adaptive warehouse.",
 	},
+	"resource_monitor": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor")),
+		Description:      relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.", resources.ResourceMonitor),
+	},
 	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): {
 		Type:             schema.TypeInt,
 		Optional:         true,
@@ -104,7 +111,7 @@ func WarehouseAdaptive() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseAdaptive, customdiff.All(
-			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier"),
+			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier", "resource_monitor"),
 			ComputedIfAnyAttributeChanged(
 				warehouseAdaptiveSchema, ParametersAttributeName,
 				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
@@ -142,6 +149,7 @@ func ImportWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		d.Set("comment", w.Comment),
 		setOptionalFromPtr(d, "max_query_performance_level", w.MaxQueryPerformanceLevel),
 		setOptionalFromPtr(d, "query_throughput_multiplier", w.QueryThroughputMultiplier),
+		d.Set("resource_monitor", w.ResourceMonitor.Name()),
 	)
 	if err = errs; err != nil {
 		return nil, err
@@ -177,6 +185,10 @@ func CreateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 
 	opts.StatementQueuedTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_queued_timeout_in_seconds")
 	opts.StatementTimeoutInSeconds = GetConfigPropertyAsPointerAllowingZeroValue[int](d, "statement_timeout_in_seconds")
+
+	if v, ok := d.GetOk("resource_monitor"); ok {
+		opts.ResourceMonitor = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+	}
 
 	if err := client.Warehouses.CreateAdaptive(ctx, opts); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating adaptive warehouse %s: %w", id.FullyQualifiedName(), err))
@@ -290,6 +302,14 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		attributeMappedValueUpdate(d, "max_query_performance_level", &set.MaxQueryPerformanceLevel, &unset.MaxQueryPerformanceLevel, sdk.ToMaxQueryPerformanceLevel),
 	); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("resource_monitor") {
+		if v, ok := d.GetOk("resource_monitor"); ok {
+			set.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
+		} else {
+			unset.WithResourceMonitor(true)
+		}
 	}
 
 	if diags := JoinDiags(
