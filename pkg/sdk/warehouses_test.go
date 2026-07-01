@@ -87,6 +87,7 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 			Comment:                         String("adaptive warehouse"),
 			MaxQueryPerformanceLevel:        Pointer(MaxQueryPerformanceLevelMedium),
 			QueryThroughputMultiplier:       Int(22),
+			ResourceMonitor:                 Pointer(NewAccountObjectIdentifier("resmon")),
 			StatementQueuedTimeoutInSeconds: Int(30),
 			StatementTimeoutInSeconds:       Int(60),
 			Tag: []TagAssociation{
@@ -100,7 +101,7 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_QUERY_PERFORMANCE_LEVEL = 'MEDIUM' QUERY_THROUGHPUT_MULTIPLIER = 22 TAG (%s = 'v1', %s = 'v2') STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60`,
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE WAREHOUSE "myadaptivewh" WAREHOUSE_TYPE = 'ADAPTIVE' COMMENT = 'adaptive warehouse' MAX_QUERY_PERFORMANCE_LEVEL = 'MEDIUM' QUERY_THROUGHPUT_MULTIPLIER = 22 RESOURCE_MONITOR = "resmon" TAG (%s = 'v1', %s = 'v2') STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 60`,
 			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 

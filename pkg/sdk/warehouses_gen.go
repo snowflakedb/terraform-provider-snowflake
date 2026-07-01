@@ -64,6 +64,7 @@ type CreateAdaptiveWarehouseOptions struct {
 	Comment                         *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 	QueryThroughputMultiplier       *int                      `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
+	ResourceMonitor                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	Tag                             []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
 	StatementQueuedTimeoutInSeconds *int                      `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                      `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`

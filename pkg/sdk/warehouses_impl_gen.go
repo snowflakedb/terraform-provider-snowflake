@@ -112,6 +112,7 @@ func (r *CreateAdaptiveWarehouseRequest) toOpts() *CreateAdaptiveWarehouseOption
 		Comment:                         r.Comment,
 		MaxQueryPerformanceLevel:        r.MaxQueryPerformanceLevel,
 		QueryThroughputMultiplier:       r.QueryThroughputMultiplier,
+		ResourceMonitor:                 r.ResourceMonitor,
 		Tag:                             r.Tag,
 		StatementQueuedTimeoutInSeconds: r.StatementQueuedTimeoutInSeconds,
 		StatementTimeoutInSeconds:       r.StatementTimeoutInSeconds,

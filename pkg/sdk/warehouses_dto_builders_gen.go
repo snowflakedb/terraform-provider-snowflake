@@ -143,6 +143,11 @@ func (s *CreateAdaptiveWarehouseRequest) WithQueryThroughputMultiplier(queryThro
 	return s
 }
 
+func (s *CreateAdaptiveWarehouseRequest) WithResourceMonitor(resourceMonitor AccountObjectIdentifier) *CreateAdaptiveWarehouseRequest {
+	s.ResourceMonitor = &resourceMonitor
+	return s
+}
+
 func (s *CreateAdaptiveWarehouseRequest) WithTag(tag []TagAssociation) *CreateAdaptiveWarehouseRequest {
 	s.Tag = tag
 	return s
