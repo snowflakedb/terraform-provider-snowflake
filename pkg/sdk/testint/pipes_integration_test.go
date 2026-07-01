@@ -40,9 +40,7 @@ func TestInt_CreatePipeWithStrangeSchemaName(t *testing.T) {
 	t.Run("if we have special characters in db or schema name, create pipe succeeds", func(t *testing.T) {
 		err := itc.client.Pipes.Create(
 			itc.ctx,
-			testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()),
-			createPipeCopyStatement(t, table, stage),
-			&sdk.CreatePipeOptions{},
+			sdk.NewCreatePipeRequest(testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), createPipeCopyStatement(t, table, stage)),
 		)
 
 		require.NoError(t, err)
@@ -58,9 +56,7 @@ func TestInt_CreatePipeWithStrangeSchemaName(t *testing.T) {
 
 		err := itc.client.Pipes.Create(
 			itc.ctx,
-			testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()),
-			createCopyStatementWithoutQualifiersForStage(t, table, stage),
-			&sdk.CreatePipeOptions{},
+			sdk.NewCreatePipeRequest(testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), createCopyStatementWithoutQualifiersForStage(t, table, stage)),
 		)
 
 		require.Error(t, err)
@@ -87,7 +83,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 	t.Cleanup(pipe2Cleanup)
 
 	t.Run("show: without options", func(t *testing.T) {
-		pipes, err := itc.client.Pipes.Show(itc.ctx, &sdk.ShowPipeOptions{})
+		pipes, err := itc.client.Pipes.Show(itc.ctx, sdk.NewShowPipeRequest())
 
 		require.NoError(t, err)
 		assert.Len(t, pipes, 2)
@@ -96,12 +92,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 	})
 
 	t.Run("show: in schema", func(t *testing.T) {
-		showOptions := &sdk.ShowPipeOptions{
-			In: &sdk.In{
-				Schema: testClientHelper().Ids.SchemaId(),
-			},
-		}
-		pipes, err := itc.client.Pipes.Show(itc.ctx, showOptions)
+		pipes, err := itc.client.Pipes.Show(itc.ctx, sdk.NewShowPipeRequest().WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
 
 		require.NoError(t, err)
 		assert.Len(t, pipes, 2)
@@ -110,12 +101,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 	})
 
 	t.Run("show: like", func(t *testing.T) {
-		showOptions := &sdk.ShowPipeOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(pipe1.Name),
-			},
-		}
-		pipes, err := itc.client.Pipes.Show(itc.ctx, showOptions)
+		pipes, err := itc.client.Pipes.Show(itc.ctx, sdk.NewShowPipeRequest().WithLike(sdk.Like{Pattern: sdk.String(pipe1.Name)}))
 
 		require.NoError(t, err)
 		assert.Len(t, pipes, 1)
@@ -123,19 +109,14 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 	})
 
 	t.Run("show: non-existent pipe", func(t *testing.T) {
-		showOptions := &sdk.ShowPipeOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String("non-existent"),
-			},
-		}
-		pipes, err := itc.client.Pipes.Show(itc.ctx, showOptions)
+		pipes, err := itc.client.Pipes.Show(itc.ctx, sdk.NewShowPipeRequest().WithLike(sdk.Like{Pattern: sdk.String("non-existent")}))
 
 		require.NoError(t, err)
 		assert.Empty(t, pipes)
 	})
 
 	t.Run("describe: existing pipe", func(t *testing.T) {
-		pipe, err := itc.client.Pipes.Describe(itc.ctx, pipe1.ID())
+		pipe, err := itc.client.Pipes.ShowByID(itc.ctx, pipe1.ID())
 
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.PipeFromObject(t, pipe).
@@ -180,15 +161,12 @@ func TestInt_PipeCreate(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
 
-		err := itc.client.Pipes.Create(itc.ctx, id, copyStatement, &sdk.CreatePipeOptions{
-			OrReplace:   sdk.Bool(false),
-			IfNotExists: sdk.Bool(true),
-			AutoIngest:  sdk.Bool(false),
-			Comment:     sdk.String(comment),
-		})
+		err := itc.client.Pipes.Create(itc.ctx, sdk.NewCreatePipeRequest(id, copyStatement).
+			WithIfNotExists(true).
+			WithComment(comment))
 		require.NoError(t, err)
 
-		pipe, err := itc.client.Pipes.Describe(itc.ctx, id)
+		pipe, err := itc.client.Pipes.ShowByID(itc.ctx, id)
 
 		require.NoError(t, err)
 		assertPipe(t, pipe, id.Name(), comment)
@@ -197,20 +175,19 @@ func TestInt_PipeCreate(t *testing.T) {
 	t.Run("test if not exists and or replace are incompatible", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := itc.client.Pipes.Create(itc.ctx, id, copyStatement, &sdk.CreatePipeOptions{
-			OrReplace:   sdk.Bool(true),
-			IfNotExists: sdk.Bool(true),
-		})
+		err := itc.client.Pipes.Create(itc.ctx, sdk.NewCreatePipeRequest(id, copyStatement).
+			WithOrReplace(true).
+			WithIfNotExists(true))
 		require.ErrorContains(t, err, "(0A000): SQL compilation error:\noptions IF NOT EXISTS and OR REPLACE are incompatible")
 	})
 
 	t.Run("test no options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := itc.client.Pipes.Create(itc.ctx, id, copyStatement, nil)
+		err := itc.client.Pipes.Create(itc.ctx, sdk.NewCreatePipeRequest(id, copyStatement))
 		require.NoError(t, err)
 
-		pipe, err := itc.client.Pipes.Describe(itc.ctx, id)
+		pipe, err := itc.client.Pipes.ShowByID(itc.ctx, id)
 
 		require.NoError(t, err)
 		assertPipe(t, pipe, id.Name(), "")
@@ -228,7 +205,7 @@ func TestInt_PipeDrop(t *testing.T) {
 		pipeCopyStatement := createPipeCopyStatement(t, table, stage)
 		pipe, _ := testClientHelper().Pipe.CreatePipe(t, pipeCopyStatement)
 
-		err := itc.client.Pipes.Drop(itc.ctx, pipe.ID(), nil)
+		err := itc.client.Pipes.Drop(itc.ctx, sdk.NewDropPipeRequest(pipe.ID()))
 
 		require.NoError(t, err)
 		_, err = itc.client.Pipes.Describe(itc.ctx, pipe.ID())
@@ -236,7 +213,7 @@ func TestInt_PipeDrop(t *testing.T) {
 	})
 
 	t.Run("pipe does not exist", func(t *testing.T) {
-		err := itc.client.Pipes.Drop(itc.ctx, NonExistingSchemaObjectIdentifier, &sdk.DropPipeOptions{})
+		err := itc.client.Pipes.Drop(itc.ctx, sdk.NewDropPipeRequest(NonExistingSchemaObjectIdentifier))
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }
@@ -255,27 +232,17 @@ func TestInt_PipeAlter(t *testing.T) {
 		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, pipeCopyStatement)
 		t.Cleanup(pipeCleanup)
 
-		alterOptions := &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				Comment:             sdk.String("new comment"),
-				PipeExecutionPaused: sdk.Bool(true),
-			},
-		}
-
-		err := itc.client.Pipes.Alter(itc.ctx, pipe.ID(), alterOptions)
+		err := itc.client.Pipes.Alter(itc.ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().
+			WithComment("new comment").
+			WithPipeExecutionPaused(true)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Pipe(t, pipe.ID()).
 			HasComment("new comment"))
 
-		alterOptions = &sdk.AlterPipeOptions{
-			Unset: &sdk.PipeUnset{
-				Comment:             sdk.Bool(true),
-				PipeExecutionPaused: sdk.Bool(true),
-			},
-		}
-
-		err = itc.client.Pipes.Alter(itc.ctx, pipe.ID(), alterOptions)
+		err = itc.client.Pipes.Alter(itc.ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithUnset(*sdk.NewPipeUnsetRequest().
+			WithComment(true).
+			WithPipeExecutionPaused(true)))
 		require.NoError(t, err)
 
 		assertThatObject(t, objectassert.Pipe(t, pipe.ID()).
@@ -286,14 +253,9 @@ func TestInt_PipeAlter(t *testing.T) {
 		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, pipeCopyStatement)
 		t.Cleanup(pipeCleanup)
 
-		alterOptions := &sdk.AlterPipeOptions{
-			Refresh: &sdk.PipeRefresh{
-				Prefix:        sdk.String("/d1"),
-				ModifiedAfter: sdk.String("2018-07-30T13:56:46-07:00"),
-			},
-		}
-
-		err := itc.client.Pipes.Alter(itc.ctx, pipe.ID(), alterOptions)
+		err := itc.client.Pipes.Alter(itc.ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithRefresh(*sdk.NewPipeRefreshRequest().
+			WithPrefix("/d1").
+			WithModifiedAfter("2018-07-30T13:56:46-07:00")))
 		require.NoError(t, err)
 	})
 }
@@ -310,7 +272,7 @@ func TestInt_PipesShowByID(t *testing.T) {
 	cleanupPipeHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 		t.Helper()
 		return func() {
-			err := client.Pipes.Drop(ctx, id, nil)
+			err := client.Pipes.Drop(ctx, sdk.NewDropPipeRequest(id))
 			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				return
 			}
@@ -322,7 +284,7 @@ func TestInt_PipesShowByID(t *testing.T) {
 		t.Helper()
 
 		statement := createPipeCopyStatement(t, table, stage)
-		err := client.Pipes.Create(ctx, id, statement, &sdk.CreatePipeOptions{})
+		err := client.Pipes.Create(ctx, sdk.NewCreatePipeRequest(id, statement))
 		require.NoError(t, err)
 		t.Cleanup(cleanupPipeHandle(t, id))
 	}
