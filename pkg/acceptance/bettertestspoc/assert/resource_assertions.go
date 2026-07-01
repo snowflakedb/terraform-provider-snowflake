@@ -32,22 +32,12 @@ var (
 // ResourceAssert is an embeddable struct that should be used to construct new resource assertions (for resource, show output, parameters, etc.).
 // It implements both TestCheckFuncProvider and ImportStateCheckFuncProvider which makes it easy to create new resource assertions.
 type ResourceAssert struct {
-	name             string
-	id               string
-	prefix           string
-	assertions       []ResourceAssertion
-	additionalPrefix string
+	name       string
+	id         string
+	prefix     string
+	assertions []ResourceAssertion
 
 	assertionPath string
-}
-
-// NewResourceAssert creates a ResourceAssert where the resource name should be used as a key for assertions.
-func NewResourceAssert(name string, prefix string) *ResourceAssert {
-	return &ResourceAssert{
-		name:       name,
-		prefix:     prefix,
-		assertions: make([]ResourceAssertion, 0),
-	}
 }
 
 // NewResourceAssertTmp creates a ResourceAssert where the resource name should be used as a key for assertions.
@@ -101,15 +91,6 @@ func NewResourceParametersAssert(name string) *ResourceAssert {
 	}
 }
 
-// NewImportedResourceAssert creates a ResourceAssert where the resource id should be used as a key for assertions.
-func NewImportedResourceAssert(id string, prefix string) *ResourceAssert {
-	return &ResourceAssert{
-		id:         id,
-		prefix:     prefix,
-		assertions: make([]ResourceAssertion, 0),
-	}
-}
-
 // NewImportedResourceAssertTmp creates a ResourceAssert where the resource id should be used as a key for assertions.
 // TODO [next PR]: rename to NewImportedResourceAssert, remove the old NewImportedResourceAssert when all objects are migrated
 func NewImportedResourceAssertTmp(id string) *ResourceAssert {
@@ -149,17 +130,6 @@ func NewImportedResourceParametersAssert(id string) *ResourceAssert {
 			ValueSetFullPath(parametersCollection, "1"),
 		},
 		assertionPath: parametersPath,
-	}
-}
-
-// NewDatasourceAssert creates a ResourceAssert for data sources.
-// TODO [next PRs]: remove this method entirely when all invocations replaced with NewDatasourceShowOutputAssert, NewDatasourceDescribeOutputAssert, and NewDatasourceParametersAssert
-func NewDatasourceAssert(name string, prefix string, additionalPrefix string) *ResourceAssert {
-	return &ResourceAssert{
-		name:             name,
-		prefix:           prefix,
-		assertions:       make([]ResourceAssertion, 0),
-		additionalPrefix: additionalPrefix,
 	}
 }
 
@@ -214,8 +184,6 @@ type ResourceAssertion struct {
 }
 
 func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
-	// TODO [next PRs]: remove additionalPrefix logic when all the objects are migrated
-	assertion.fieldName = r.additionalPrefix + assertion.fieldName
 	assertion.fullPath = r.assertionPath + assertion.fieldName
 	r.assertions = append(r.assertions, assertion)
 }
@@ -332,22 +300,6 @@ const (
 	parametersDefaultSuffix     = ".0.default"
 	parametersDescriptionSuffix = ".0.description"
 )
-
-func ResourceParameterKeySet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(strings.ToLower(string(parameterName))+parametersKeySuffix, expected)
-}
-
-func ResourceParameterDefaultSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(strings.ToLower(string(parameterName))+parametersDefaultSuffix, expected)
-}
-
-func ResourceParameterDescriptionSet[T ~string](parameterName T, expected string) ResourceAssertion {
-	return ValueSet(strings.ToLower(string(parameterName))+parametersDescriptionSuffix, expected)
-}
-
-func ResourceParameterDescriptionPresent[T ~string](parameterName T) ResourceAssertion {
-	return ValuePresent(strings.ToLower(string(parameterName)) + parametersDescriptionSuffix)
-}
 
 func (r *ResourceAssert) ParameterValueSet(parameterName string, expected string) {
 	r.ValueSet(strings.ToLower(parameterName)+parametersValueSuffix, expected)
