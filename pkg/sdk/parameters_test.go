@@ -70,6 +70,46 @@ func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 	})
 }
 
+func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
+	set := func(params *LegacyAccountParameters) *AlterAccountOptions {
+		return &AlterAccountOptions{
+			Set: &AccountSet{
+				LegacyParameters: &AccountLevelParameters{
+					AccountParameters: params,
+				},
+			},
+		}
+	}
+
+	t.Run("CLI: set to -1 (unlimited)", func(t *testing.T) {
+		opts := set(&LegacyAccountParameters{CortexCodeCliDailyEstCreditLimitPerUser: Pointer(-1)})
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER = -1")
+	})
+
+	t.Run("Desktop: set to 0 (blocked)", func(t *testing.T) {
+		opts := set(&LegacyAccountParameters{CortexCodeDesktopDailyEstCreditLimitPerUser: Pointer(0)})
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER = 0")
+	})
+
+	t.Run("Snowsight: set to a positive cap", func(t *testing.T) {
+		opts := set(&LegacyAccountParameters{CortexCodeSnowsightDailyEstCreditLimitPerUser: Pointer(10)})
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 10")
+	})
+
+	t.Run("Unset CLI limit", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				LegacyParameters: &AccountLevelParametersUnset{
+					AccountParameters: &LegacyAccountParametersUnset{
+						CortexCodeCliDailyEstCreditLimitPerUser: Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT UNSET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER")
+	})
+}
+
 func TestToAccountParameter(t *testing.T) {
 	type test struct {
 		input string
@@ -84,6 +124,9 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "ALLOW_CLIENT_MFA_CACHING", want: AccountParameterAllowClientMfaCaching},
 		{input: "ALLOW_ID_TOKEN", want: AccountParameterAllowIdToken},
 		{input: "CLIENT_ENCRYPTION_KEY_SIZE", want: AccountParameterClientEncryptionKeySize},
+		{input: "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeCliDailyEstCreditLimitPerUser},
+		{input: "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser},
+		{input: "CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser},
 		{input: "CORTEX_ENABLED_CROSS_REGION", want: AccountParameterCortexEnabledCrossRegion},
 		{input: "DISABLE_USER_PRIVILEGE_GRANTS", want: AccountParameterDisableUserPrivilegeGrants},
 		{input: "ENABLE_IDENTIFIER_FIRST_LOGIN", want: AccountParameterEnableIdentifierFirstLogin},
