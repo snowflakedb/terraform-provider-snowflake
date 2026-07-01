@@ -38,7 +38,7 @@ func TestAcc_AccountParameter(t *testing.T) {
 		{sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableCortexAnalyst, "true", sdk.ParameterTypeSystem},
 		{sdk.AccountParameterEnableDataCompaction, "true", sdk.ParameterTypeSnowflakeDefault},
-		{sdk.AccountParameterEnablePerAccountAppServicePrivatelinkUrl, "true", sdk.ParameterTypeSystem},
+		{sdk.AccountParameterEnablePerAccountAppServicePrivatelinkUrl, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableGetDdlUseDataTypeAlias, "false", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableIcebergMergeOnRead, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableNotebookCreationInPersonalDb, "false", sdk.ParameterTypeSystem},
