@@ -51,7 +51,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				HasName(id.Name()).
 				HasEnabled(true).
 				HasComment(""),
-			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasEnabled(true).
 				HasApiProvider(apiProvider).
 				HasAllowedAuthenticationSecrets("").
@@ -111,7 +111,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabled(true).
 			HasComment(comment),
-		resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 			HasEnabled(true).
 			HasApiProvider(apiProvider).
 			HasAllowedAuthenticationSecrets("").
@@ -241,7 +241,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllAllowedAuthenticationSecrets().
 				HasNoNoAllowedAuthenticationSecrets().
 				HasAllowedAuthenticationSecretsEmpty(),
-			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasAllowedAuthenticationSecrets(""),
 		}
 	}
@@ -251,7 +251,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasAllAllowedAuthenticationSecrets(false).
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecretsEmpty(),
-			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasAllowedAuthenticationSecrets(""),
 		}
 	}
@@ -261,7 +261,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasAllAllowedAuthenticationSecrets(true).
 				HasNoNoAllowedAuthenticationSecrets().
 				HasAllowedAuthenticationSecretsEmpty(),
-			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasAllowedAuthenticationSecrets(""),
 		}
 	}
@@ -271,7 +271,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasAllAllowedAuthenticationSecrets(true).
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecretsEmpty(),
-			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasAllowedAuthenticationSecrets(""),
 		}
 	}
@@ -281,7 +281,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasAllAllowedAuthenticationSecrets(false).
 				HasNoAllowedAuthenticationSecrets(true).
 				HasAllowedAuthenticationSecretsEmpty(),
-			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasAllowedAuthenticationSecrets(""),
 		}
 	}
@@ -291,7 +291,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasAllAllowedAuthenticationSecrets(false).
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
-			resourceshowoutputassert.ApiIntegrationGitRepositoryPrivateLinkDescribeOutput(t, ref).
+			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasAllowedAuthenticationSecrets(""),
 		}
 	}

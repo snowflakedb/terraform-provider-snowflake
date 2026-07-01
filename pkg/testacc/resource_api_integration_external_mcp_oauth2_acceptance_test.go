@@ -59,7 +59,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabled(true).
 			HasComment(""),
-		resourceshowoutputassert.ApiIntegrationExternalMcpOAuth2DescribeOutput(t, ref).
+		resourceshowoutputassert.ApiIntegrationExternalMcpDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthGrant("AUTHORIZATION_CODE").
@@ -99,7 +99,7 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabled(true).
 			HasComment(comment),
-		resourceshowoutputassert.ApiIntegrationExternalMcpOAuth2DescribeOutput(t, ref).
+		resourceshowoutputassert.ApiIntegrationExternalMcpDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauth2)).
 			HasOauthGrant("AUTHORIZATION_CODE").
