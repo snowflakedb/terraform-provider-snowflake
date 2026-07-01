@@ -16,7 +16,7 @@ func StreamOnTableResource(t *testing.T, name string) *StreamOnTableResourceAsse
 	t.Helper()
 
 	return &StreamOnTableResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStreamOnTableResource(t *testing.T, id string) *StreamOnTableResour
 	t.Helper()
 
 	return &StreamOnTableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

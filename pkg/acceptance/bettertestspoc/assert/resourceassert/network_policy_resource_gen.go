@@ -16,7 +16,7 @@ func NetworkPolicyResource(t *testing.T, name string) *NetworkPolicyResourceAsse
 	t.Helper()
 
 	return &NetworkPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedNetworkPolicyResource(t *testing.T, id string) *NetworkPolicyResour
 	t.Helper()
 
 	return &NetworkPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

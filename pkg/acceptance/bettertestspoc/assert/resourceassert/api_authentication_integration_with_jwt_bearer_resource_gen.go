@@ -16,7 +16,7 @@ func ApiAuthenticationIntegrationWithJwtBearerResource(t *testing.T, name string
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithJwtBearerResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiAuthenticationIntegrationWithJwtBearerResource(t *testing.T, id 
 	t.Helper()
 
 	return &ApiAuthenticationIntegrationWithJwtBearerResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

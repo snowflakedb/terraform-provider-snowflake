@@ -16,7 +16,7 @@ func CatalogIntegrationOpenCatalogResource(t *testing.T, name string) *CatalogIn
 	t.Helper()
 
 	return &CatalogIntegrationOpenCatalogResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCatalogIntegrationOpenCatalogResource(t *testing.T, id string) *Cat
 	t.Helper()
 
 	return &CatalogIntegrationOpenCatalogResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

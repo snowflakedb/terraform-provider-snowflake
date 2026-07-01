@@ -16,7 +16,7 @@ func PrimaryConnectionResource(t *testing.T, name string) *PrimaryConnectionReso
 	t.Helper()
 
 	return &PrimaryConnectionResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPrimaryConnectionResource(t *testing.T, id string) *PrimaryConnecti
 	t.Helper()
 
 	return &PrimaryConnectionResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

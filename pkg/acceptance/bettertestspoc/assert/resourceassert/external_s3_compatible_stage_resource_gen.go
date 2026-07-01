@@ -16,7 +16,7 @@ func ExternalS3CompatibleStageResource(t *testing.T, name string) *ExternalS3Com
 	t.Helper()
 
 	return &ExternalS3CompatibleStageResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalS3CompatibleStageResource(t *testing.T, id string) *Externa
 	t.Helper()
 
 	return &ExternalS3CompatibleStageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func StorageIntegrationGcsResource(t *testing.T, name string) *StorageIntegratio
 	t.Helper()
 
 	return &StorageIntegrationGcsResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStorageIntegrationGcsResource(t *testing.T, id string) *StorageInte
 	t.Helper()
 
 	return &StorageIntegrationGcsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

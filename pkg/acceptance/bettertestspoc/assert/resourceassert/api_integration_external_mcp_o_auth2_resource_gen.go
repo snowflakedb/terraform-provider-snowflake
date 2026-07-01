@@ -16,7 +16,7 @@ func ApiIntegrationExternalMcpOAuth2Resource(t *testing.T, name string) *ApiInte
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpOAuth2ResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationExternalMcpOAuth2Resource(t *testing.T, id string) *A
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpOAuth2ResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func NotebookResource(t *testing.T, name string) *NotebookResourceAssert {
 	t.Helper()
 
 	return &NotebookResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedNotebookResource(t *testing.T, id string) *NotebookResourceAssert {
 	t.Helper()
 
 	return &NotebookResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

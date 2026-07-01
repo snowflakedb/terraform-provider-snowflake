@@ -16,7 +16,7 @@ func ListingResource(t *testing.T, name string) *ListingResourceAssert {
 	t.Helper()
 
 	return &ListingResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedListingResource(t *testing.T, id string) *ListingResourceAssert {
 	t.Helper()
 
 	return &ListingResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

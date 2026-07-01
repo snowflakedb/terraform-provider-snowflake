@@ -16,7 +16,7 @@ func UserProgrammaticAccessTokenResource(t *testing.T, name string) *UserProgram
 	t.Helper()
 
 	return &UserProgrammaticAccessTokenResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedUserProgrammaticAccessTokenResource(t *testing.T, id string) *UserP
 	t.Helper()
 
 	return &UserProgrammaticAccessTokenResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

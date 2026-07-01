@@ -16,7 +16,7 @@ func ExternalOauthSecurityIntegrationResource(t *testing.T, name string) *Extern
 	t.Helper()
 
 	return &ExternalOauthSecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalOauthSecurityIntegrationResource(t *testing.T, id string) *
 	t.Helper()
 
 	return &ExternalOauthSecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
