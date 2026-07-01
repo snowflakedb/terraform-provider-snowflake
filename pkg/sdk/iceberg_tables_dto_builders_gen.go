@@ -1003,6 +1003,66 @@ func (s *CreateFromIcebergRestIcebergTableRequest) WithContact(contact []TableCo
 	return s
 }
 
+func NewCreateFromAwsGlueIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	catalogTableName string,
+) *CreateFromAwsGlueIcebergTableRequest {
+	s := CreateFromAwsGlueIcebergTableRequest{}
+	s.name = name
+	s.CatalogTableName = catalogTableName
+	return &s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromAwsGlueIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromAwsGlueIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithCatalogNamespace(catalogNamespace string) *CreateFromAwsGlueIcebergTableRequest {
+	s.CatalogNamespace = &catalogNamespace
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithAutoRefresh(autoRefresh bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.AutoRefresh = &autoRefresh
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithComment(comment string) *CreateFromAwsGlueIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromAwsGlueIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithContact(contact []TableContact) *CreateFromAwsGlueIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func NewAlterIcebergTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterIcebergTableRequest {

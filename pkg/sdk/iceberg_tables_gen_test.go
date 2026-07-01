@@ -1166,6 +1166,86 @@ func TestIcebergTables_CreateFromIcebergRest(t *testing.T) {
 	})
 }
 
+func TestIcebergTables_CreateFromAwsGlue(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	externalVolumeId := NewAccountObjectIdentifier("vol1")
+	catalogId := NewAccountObjectIdentifier("cat1")
+	tagId1 := randomSchemaObjectIdentifier()
+	tagId2 := randomSchemaObjectIdentifier()
+
+	defaultOpts := func() *CreateFromAwsGlueIcebergTableOptions {
+		return &CreateFromAwsGlueIcebergTableOptions{
+			name:             id,
+			CatalogTableName: "my_remote_table",
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateFromAwsGlueIcebergTableOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFromAwsGlueIcebergTableOptions", "OrReplace", "IfNotExists"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE %s CATALOG_TABLE_NAME = 'my_remote_table'`, id.FullyQualifiedName())
+	})
+
+	t.Run("if not exists", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = new(true)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s CATALOG_TABLE_NAME = 'my_remote_table'`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		contactId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.OrReplace = new(true)
+		opts.ExternalVolume = &externalVolumeId
+		opts.Catalog = &catalogId
+		opts.CatalogNamespace = new("my_namespace")
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.AutoRefresh = new(true)
+		opts.Comment = new("some comment")
+		opts.Tag = []TagAssociation{
+			{Name: tagId1, Value: "v1"},
+			{Name: tagId2, Value: "v2"},
+		}
+		opts.Contact = []TableContact{
+			{Purpose: "SUPPORT", Contact: contactId},
+		}
+		assertOptsValidAndSQLEquals(t, opts,
+			`CREATE OR REPLACE ICEBERG TABLE %s `+
+				`EXTERNAL_VOLUME = '\"%s\"' `+
+				`CATALOG = '\"%s\"' `+
+				`CATALOG_TABLE_NAME = 'my_remote_table' `+
+				`CATALOG_NAMESPACE = 'my_namespace' `+
+				`REPLACE_INVALID_CHARACTERS = true `+
+				`AUTO_REFRESH = true `+
+				`COMMENT = 'some comment' `+
+				`TAG (%s = 'v1', %s = 'v2') `+
+				`WITH CONTACT (SUPPORT = %s)`,
+			id.FullyQualifiedName(),
+			externalVolumeId.Name(),
+			catalogId.Name(),
+			tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
+		)
+	})
+}
+
 func TestIcebergTables_Alter(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	aggregationPolicyId := randomSchemaObjectIdentifier()
