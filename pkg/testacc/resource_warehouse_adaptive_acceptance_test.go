@@ -329,6 +329,83 @@ func TestAcc_WarehouseAdaptive_Validations(t *testing.T) {
 	})
 }
 
+func TestAcc_WarehouseAdaptive_ResourceMonitor(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(resourceMonitorCleanup)
+	otherResourceMonitor, otherResourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(otherResourceMonitorCleanup)
+
+	warehouseModelMinimal := model.WarehouseAdaptiveWithId(warehouseId)
+	warehouseModelWithMonitor := model.WarehouseAdaptiveWithId(warehouseId).
+		WithResourceMonitor(resourceMonitor.ID().Name())
+	warehouseModelWithOtherMonitor := model.WarehouseAdaptiveWithId(warehouseId).
+		WithResourceMonitor(otherResourceMonitor.ID().Name())
+
+	ref := warehouseModelMinimal.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseAdaptive),
+		Steps: []resource.TestStep{
+			// create with resource_monitor
+			{
+				Config: accconfig.FromModels(t, warehouseModelWithMonitor),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseAdaptiveResource(t, ref).
+						HasNameString(warehouseId.Name()).
+						HasResourceMonitorString(resourceMonitor.ID().Name()),
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+						HasResourceMonitor(resourceMonitor.ID()),
+				),
+			},
+			// import
+			{
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// switch to another resource_monitor
+			{
+				Config: accconfig.FromModels(t, warehouseModelWithOtherMonitor),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "resource_monitor", tfjson.ActionUpdate, sdk.String(resourceMonitor.ID().Name()), sdk.String(otherResourceMonitor.ID().Name())),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseAdaptiveResource(t, ref).
+						HasResourceMonitorString(otherResourceMonitor.ID().Name()),
+					resourceshowoutputassert.WarehouseAdaptiveShowOutput(t, ref).
+						HasResourceMonitor(otherResourceMonitor.ID()),
+				),
+			},
+			// unset resource_monitor (drop from config → back to minimal)
+			{
+				Config: accconfig.FromModels(t, warehouseModelMinimal),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "resource_monitor", tfjson.ActionUpdate, sdk.String(otherResourceMonitor.ID().Name()), nil),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseAdaptiveResource(t, ref).
+						HasResourceMonitorEmpty(),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	warehouseModel := model.WarehouseAdaptiveWithId(id)

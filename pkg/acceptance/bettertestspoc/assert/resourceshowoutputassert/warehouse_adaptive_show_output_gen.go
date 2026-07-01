@@ -82,6 +82,11 @@ func (w *WarehouseAdaptiveShowOutputAssert) HasQueryThroughputMultiplier(expecte
 	return w
 }
 
+func (w *WarehouseAdaptiveShowOutputAssert) HasResourceMonitor(expected sdk.AccountObjectIdentifier) *WarehouseAdaptiveShowOutputAssert {
+	w.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("resource_monitor", expected.Name()))
+	return w
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
