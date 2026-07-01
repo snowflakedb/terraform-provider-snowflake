@@ -46,6 +46,7 @@ func init() {
 		openflowRuntimesDef,
 		organizationAccountsDef,
 		passwordPoliciesDef,
+		pipesDef,
 		postgresInstancesDef,
 		proceduresDef,
 		resourceMonitorsDef,
