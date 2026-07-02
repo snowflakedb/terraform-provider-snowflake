@@ -49,7 +49,7 @@ func TestAcc_ImageRepositories(t *testing.T) {
 					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "image_repositories.#", "1")),
 
-					resourceshowoutputassert.ImageRepositoriesDatasourceShowOutput(t, "snowflake_image_repositories.test").
+					resourceshowoutputassert.ImageRepositoriesDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).

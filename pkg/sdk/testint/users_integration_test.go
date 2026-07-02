@@ -421,7 +421,7 @@ func TestInt_Users(t *testing.T) {
 				HasHasRsaPublicKey(true),
 		)
 
-		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(id))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
@@ -531,7 +531,7 @@ func TestInt_Users(t *testing.T) {
 				HasHasRsaPublicKey(true),
 		)
 
-		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(id))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
@@ -727,7 +727,7 @@ func TestInt_Users(t *testing.T) {
 					HasOwner(currentRole.Name()),
 			)
 
-			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id)
+			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(id))
 			require.NoError(t, err)
 			assert.Equal(t, 1, len(methods))
 			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
@@ -862,14 +862,14 @@ func TestInt_Users(t *testing.T) {
 		user, userCleanup := testClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)
 
-		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithRsaPublicKey(key).
 					WithRsaPublicKeyFp(hash))))
 		require.ErrorContains(t, err, "invalid property 'RSA_PUBLIC_KEY_FP' for 'USER'")
 
-		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithRsaPublicKey2(key2).
@@ -1073,7 +1073,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(userCleanup)
 
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).WithNewName(newID))
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithNewName(newID))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, newID))
 
@@ -1095,7 +1095,7 @@ func TestInt_Users(t *testing.T) {
 				HasOwner(currentRole.Name()),
 		)
 
-		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithPassword(password).
@@ -1154,7 +1154,7 @@ func TestInt_Users(t *testing.T) {
 				HasType(string(sdk.UserTypePerson)),
 		)
 
-		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 					WithPassword(true).
@@ -1204,7 +1204,7 @@ func TestInt_Users(t *testing.T) {
 
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, Password, MustChangePassword, MinsToBypassMFA, and DisableMfa
-		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithLoginName(newValue).
@@ -1261,7 +1261,7 @@ func TestInt_Users(t *testing.T) {
 				HasHasRsaPublicKey(true),
 		)
 
-		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(user.ID()))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
@@ -1278,7 +1278,7 @@ func TestInt_Users(t *testing.T) {
 				}),
 		)
 
-		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 					WithLoginName(true).
@@ -1304,7 +1304,7 @@ func TestInt_Users(t *testing.T) {
 				HasOwner(currentRole.Name()),
 		)
 
-		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(user.ID()))
 		require.NoError(t, err)
 		assert.Equal(t, 0, len(methods))
 	})
@@ -1324,7 +1324,7 @@ func TestInt_Users(t *testing.T) {
 
 		subject := fmt.Sprintf("system:serviceaccount:service_account_namespace:%s", random.AlphaN(10))
 		// omitting FirstName, MiddleName, LastName, MinsToBypassMFA, and DisableMfa
-		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithPassword(password).
@@ -1383,7 +1383,7 @@ func TestInt_Users(t *testing.T) {
 				HasHasRsaPublicKey(true),
 		)
 
-		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(user.ID()))
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
@@ -1400,7 +1400,7 @@ func TestInt_Users(t *testing.T) {
 				}),
 		)
 
-		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 					WithPassword(true).
@@ -1428,7 +1428,7 @@ func TestInt_Users(t *testing.T) {
 				HasOwner(currentRole.Name()),
 		)
 
-		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+		methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(user.ID()))
 		require.NoError(t, err)
 		assert.Equal(t, 0, len(methods))
 	})
@@ -1559,7 +1559,7 @@ func TestInt_Users(t *testing.T) {
 			)
 
 			// Set WIF
-			err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 				WithSet(*sdk.NewUserSetRequest().
 					WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 						WithWorkloadIdentity(*tt.wifConfig(data)))))
@@ -1570,7 +1570,7 @@ func TestInt_Users(t *testing.T) {
 					HasHasWorkloadIdentity(true),
 			)
 
-			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(user.ID()))
 			require.NoError(t, err)
 			assert.Equal(t, 1, len(methods))
 			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
@@ -1583,7 +1583,7 @@ func TestInt_Users(t *testing.T) {
 			assertThatObject(t, assertion)
 
 			// Unset WIF
-			err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+			err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 				WithUnset(*sdk.NewUserUnsetRequest().
 					WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 						WithWorkloadIdentity(true))))
@@ -1594,7 +1594,7 @@ func TestInt_Users(t *testing.T) {
 					HasHasWorkloadIdentity(false),
 			)
 
-			methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, user.ID())
+			methods, err = client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(user.ID()))
 			require.NoError(t, err)
 			assert.Equal(t, 0, len(methods))
 		})
@@ -1687,11 +1687,11 @@ func TestInt_Users(t *testing.T) {
 			serviceUser, serviceUserCleanup := testClientHelper().User.CreateServiceUser(t)
 			t.Cleanup(serviceUserCleanup)
 
-			err := client.Users.Alter(ctx, serviceUser.ID(), sdk.NewAlterUserRequest(serviceUser.ID()).
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(serviceUser.ID()).
 				WithSet(*sdk.NewUserSetRequest().WithObjectProperties(*tt.alterSet())))
 			require.ErrorContains(t, err, fmt.Sprintf("Cannot set %s on users with TYPE=SERVICE.", tt.property))
 
-			err = client.Users.Alter(ctx, serviceUser.ID(), sdk.NewAlterUserRequest(serviceUser.ID()).
+			err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(serviceUser.ID()).
 				WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*tt.alterUnset())))
 			if tt.expectNoUnsetError {
 				require.Nil(t, err)
@@ -1768,11 +1768,11 @@ func TestInt_Users(t *testing.T) {
 			legacyServiceUser, legacyServiceUserCleanup := testClientHelper().User.CreateLegacyServiceUser(t)
 			t.Cleanup(legacyServiceUserCleanup)
 
-			err := client.Users.Alter(ctx, legacyServiceUser.ID(), sdk.NewAlterUserRequest(legacyServiceUser.ID()).
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(legacyServiceUser.ID()).
 				WithSet(*sdk.NewUserSetRequest().WithObjectProperties(*tt.alterSet())))
 			require.ErrorContains(t, err, fmt.Sprintf("Cannot set %s on users with TYPE=LEGACY_SERVICE.", tt.property))
 
-			err = client.Users.Alter(ctx, legacyServiceUser.ID(), sdk.NewAlterUserRequest(legacyServiceUser.ID()).
+			err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(legacyServiceUser.ID()).
 				WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*tt.alterUnset())))
 			if tt.expectNoUnsetError {
 				require.Nil(t, err)
@@ -1786,7 +1786,7 @@ func TestInt_Users(t *testing.T) {
 		authenticationPolicyTest, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
 		t.Cleanup(authenticationPolicyCleanup)
 
-		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithSet(*sdk.NewUserSetRequest().
 				WithAuthenticationPolicy(authenticationPolicyTest.ID())))
 		require.NoError(t, err)
@@ -1799,7 +1799,7 @@ func TestInt_Users(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithAuthenticationPolicy(true)))
 		require.NoError(t, err)
@@ -1824,7 +1824,7 @@ func TestInt_Users(t *testing.T) {
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
-			err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 				WithSet(*sdk.NewUserSetRequest().
 					WithSessionParameters(sdk.SessionParameters{
 						AbortDetachedQuery:                       sdk.Bool(true),
@@ -1897,7 +1897,7 @@ func TestInt_Users(t *testing.T) {
 			require.NoError(t, err)
 			assertParametersSet(objectparametersassert.UserParametersPrefetched(t, id, parameters))
 
-			err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+			err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 				WithUnset(*sdk.NewUserUnsetRequest().
 					WithSessionParameters(sdk.SessionParametersUnset{
 						AbortDetachedQuery:                       sdk.Bool(true),
@@ -1984,7 +1984,7 @@ func TestInt_Users(t *testing.T) {
 		user, userCleanup := testClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)
 
-		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithSet(*sdk.NewUserSetRequest().
 				WithSessionParameters(sdk.SessionParameters{
 					Autocommit: sdk.Bool(false),
@@ -1995,7 +1995,7 @@ func TestInt_Users(t *testing.T) {
 					WithComment("some comment"))))
 		require.NoError(t, err)
 
-		err = client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithSessionParameters(sdk.SessionParametersUnset{
 					Autocommit: sdk.Bool(true),
@@ -2016,7 +2016,7 @@ func TestInt_Users(t *testing.T) {
 				HasType(string(sdk.UserTypeService)),
 		)
 
-		err := client.Users.Alter(ctx, user.ID(), sdk.NewAlterUserRequest(user.ID()).
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 					WithUserType(true))))
@@ -2058,11 +2058,7 @@ func TestInt_Users(t *testing.T) {
 	})
 
 	t.Run("show: with like options", func(t *testing.T) {
-		showOptions := &sdk.ShowUserOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(user.Name),
-			},
-		}
+		showOptions := sdk.NewShowUserRequest().WithLike(sdk.Like{Pattern: sdk.String(user.Name)})
 		users, err := client.Users.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Contains(t, users, *user)
@@ -2070,9 +2066,7 @@ func TestInt_Users(t *testing.T) {
 	})
 
 	t.Run("show: with starts with options", func(t *testing.T) {
-		showOptions := &sdk.ShowUserOptions{
-			StartsWith: sdk.String(randomPrefix),
-		}
+		showOptions := sdk.NewShowUserRequest().WithStartsWith(randomPrefix)
 		users, err := client.Users.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Contains(t, users, *user)
@@ -2081,11 +2075,7 @@ func TestInt_Users(t *testing.T) {
 	})
 
 	t.Run("show: with starts with, limit and from options", func(t *testing.T) {
-		showOptions := &sdk.ShowUserOptions{
-			Limit:      sdk.Int(10),
-			From:       sdk.String(randomPrefix + "_"),
-			StartsWith: sdk.String(randomPrefix),
-		}
+		showOptions := sdk.NewShowUserRequest().WithStartsWith(randomPrefix).WithLimit(sdk.LimitFrom{Rows: sdk.Int(10), From: sdk.String(randomPrefix + "_")})
 
 		users, err := client.Users.Show(ctx, showOptions)
 		require.NoError(t, err)
@@ -2094,20 +2084,14 @@ func TestInt_Users(t *testing.T) {
 	})
 
 	t.Run("show: search for a non-existent user", func(t *testing.T) {
-		showOptions := &sdk.ShowUserOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(NonExistingAccountObjectIdentifier.Name()),
-			},
-		}
+		showOptions := sdk.NewShowUserRequest().WithLike(sdk.Like{Pattern: sdk.String(NonExistingAccountObjectIdentifier.Name())})
 		users, err := client.Users.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Equal(t, 0, len(users))
 	})
 
 	t.Run("show: limit the number of results", func(t *testing.T) {
-		showOptions := &sdk.ShowUserOptions{
-			Limit: sdk.Int(1),
-		}
+		showOptions := sdk.NewShowUserRequest().WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)})
 		users, err := client.Users.Show(ctx, showOptions)
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(users))
@@ -2308,7 +2292,7 @@ func TestInt_Users(t *testing.T) {
 				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 					WithLoginName(true).
 					WithDisplayName(true)))
-		err = client.Users.Alter(ctx, id, unsetBoth)
+		err = client.Users.Alter(ctx, unsetBoth)
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2323,7 +2307,7 @@ func TestInt_Users(t *testing.T) {
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithLoginName(strings.ToLower(newValue)).
 					WithDisplayName(strings.ToLower(newValue))))
-		err = client.Users.Alter(ctx, id, setBoth)
+		err = client.Users.Alter(ctx, setBoth)
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2332,7 +2316,7 @@ func TestInt_Users(t *testing.T) {
 		assert.Equal(t, strings.ToLower(newValue), userDetails.DisplayName.Value)
 
 		// we unset both again
-		err = client.Users.Alter(ctx, id, unsetBoth)
+		err = client.Users.Alter(ctx, unsetBoth)
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, id)
 		require.NoError(t, err)
@@ -2356,7 +2340,7 @@ func TestInt_Users(t *testing.T) {
 
 		// we rename user
 		newId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).WithNewName(newId))
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithNewName(newId))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, newId)
 		require.NoError(t, err)
@@ -2365,7 +2349,7 @@ func TestInt_Users(t *testing.T) {
 		assert.Equal(t, id.Name(), userDetails.DisplayName.Value)
 
 		// we unset both login_name and display_name
-		err = client.Users.Alter(ctx, newId, sdk.NewAlterUserRequest(newId).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(newId).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 					WithLoginName(true).
@@ -2395,7 +2379,7 @@ func TestInt_Users(t *testing.T) {
 		assert.Equal(t, strings.ToUpper(email), userShowOutput.Email)
 
 		// we change it to lowercase
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithEmail(strings.ToLower(email)))))
@@ -2417,7 +2401,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// try to set manually the negative value
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithDaysToExpiry(-1))))
@@ -2449,7 +2433,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// setting manually to zero
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithDaysToExpiry(0))))
@@ -2473,7 +2457,7 @@ func TestInt_Users(t *testing.T) {
 		assert.Nil(t, userDetails.MinsToUnlock.Value)
 
 		// try to set manually the negative value
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithMinsToUnlock(-1))))
@@ -2504,7 +2488,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// setting manually to zero value
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithMinsToUnlock(0))))
@@ -2538,7 +2522,7 @@ func TestInt_Users(t *testing.T) {
 		assert.Nil(t, userDetails.MinsToBypassMfa.Value)
 
 		// try to set manually the negative value
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithMinsToBypassMfa(-1))))
@@ -2557,7 +2541,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, id))
 
 		// setting manually to zero value
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithMinsToBypassMfa(0))))
@@ -2581,7 +2565,7 @@ func TestInt_Users(t *testing.T) {
 		require.Equal(t, `["ALL"]`, userDetails.DefaultSecondaryRoles.Value)
 
 		// set to empty, expecting empty list
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithSet(*sdk.NewUserSetRequest().
 				WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 					WithDefaultSecondaryRoles(*sdk.NewSecondaryRolesRequest().WithNone(true)))))
@@ -2592,7 +2576,7 @@ func TestInt_Users(t *testing.T) {
 		require.Equal(t, "[]", userDetails.DefaultSecondaryRoles.Value)
 
 		// unset, expecting ALL
-		err = client.Users.Alter(ctx, id, sdk.NewAlterUserRequest(id).
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).
 			WithUnset(*sdk.NewUserUnsetRequest().
 				WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().
 					WithDefaultSecondaryRoles(true))))

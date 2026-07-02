@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput
-
 type StorageIntegrationAwsDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func StorageIntegrationAwsDescribeOutput(t *testing.T, name string) *StorageInte
 	t.Helper()
 
 	storageIntegrationAwsAssert := StorageIntegrationAwsDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	storageIntegrationAwsAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &storageIntegrationAwsAssert
 }
 
@@ -29,9 +26,8 @@ func ImportedStorageIntegrationAwsDescribeOutput(t *testing.T, id string) *Stora
 	t.Helper()
 
 	storageIntegrationAwsAssert := StorageIntegrationAwsDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	storageIntegrationAwsAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &storageIntegrationAwsAssert
 }
 
@@ -40,47 +36,47 @@ func ImportedStorageIntegrationAwsDescribeOutput(t *testing.T, id string) *Stora
 ////////////////////////////
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.Name()))
+	s.StringValueSet("id", expected.Name())
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasEnabled(expected bool) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("enabled", expected))
+	s.BoolValueSet("enabled", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasProvider(expected string) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("provider", expected))
+	s.StringValueSet("provider", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasComment(expected string) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("use_privatelink_endpoint", expected))
+	s.BoolValueSet("use_privatelink_endpoint", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasIamUserArn(expected string) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("iam_user_arn", expected))
+	s.StringValueSet("iam_user_arn", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasRoleArn(expected string) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("role_arn", expected))
+	s.StringValueSet("role_arn", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasObjectAcl(expected string) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("object_acl", expected))
+	s.StringValueSet("object_acl", expected)
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasExternalId(expected string) *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("external_id", expected))
+	s.StringValueSet("external_id", expected)
 	return s
 }
 
@@ -89,56 +85,56 @@ func (s *StorageIntegrationAwsDescribeOutputAssert) HasExternalId(expected strin
 ///////////////////////////////
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoId() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
+	s.ValueNotSet("id")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoEnabled() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("enabled"))
+	s.ValueNotSet("enabled")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoProvider() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("provider"))
+	s.ValueNotSet("provider")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoAllowedLocations() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_locations.#", "0"))
+	s.ValueSet("allowed_locations.#", "0")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoBlockedLocations() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_locations.#", "0"))
+	s.ValueSet("blocked_locations.#", "0")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoComment() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoUsePrivatelinkEndpoint() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("use_privatelink_endpoint"))
+	s.ValueNotSet("use_privatelink_endpoint")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoIamUserArn() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("iam_user_arn"))
+	s.ValueNotSet("iam_user_arn")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoRoleArn() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("role_arn"))
+	s.ValueNotSet("role_arn")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoObjectAcl() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("object_acl"))
+	s.ValueNotSet("object_acl")
 	return s
 }
 
 func (s *StorageIntegrationAwsDescribeOutputAssert) HasNoExternalId() *StorageIntegrationAwsDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("external_id"))
+	s.ValueNotSet("external_id")
 	return s
 }

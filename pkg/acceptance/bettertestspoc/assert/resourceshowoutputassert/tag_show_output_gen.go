@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type TagShowOutputAssert struct {
@@ -17,9 +18,8 @@ func TagShowOutput(t *testing.T, name string) *TagShowOutputAssert {
 	t.Helper()
 
 	tagAssert := TagShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	tagAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &tagAssert
 }
 
@@ -27,9 +27,23 @@ func ImportedTagShowOutput(t *testing.T, id string) *TagShowOutputAssert {
 	t.Helper()
 
 	tagAssert := TagShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	tagAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &tagAssert
+}
+
+func TagsDatasourceShowOutput(t *testing.T, name string) *TagShowOutputAssert {
+	t.Helper()
+
+	return TagsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func TagsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *TagShowOutputAssert {
+	t.Helper()
+
+	tagAssert := TagShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "tags", idx),
+	}
 	return &tagAssert
 }
 
@@ -38,37 +52,47 @@ func ImportedTagShowOutput(t *testing.T, id string) *TagShowOutputAssert {
 ////////////////////////////
 
 func (t *TagShowOutputAssert) HasCreatedOn(expected time.Time) *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	t.StringValueSet("created_on", expected.String())
 	return t
 }
 
 func (t *TagShowOutputAssert) HasName(expected string) *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	t.StringValueSet("name", expected)
 	return t
 }
 
 func (t *TagShowOutputAssert) HasDatabaseName(expected string) *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	t.StringValueSet("database_name", expected)
 	return t
 }
 
 func (t *TagShowOutputAssert) HasSchemaName(expected string) *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	t.StringValueSet("schema_name", expected)
 	return t
 }
 
 func (t *TagShowOutputAssert) HasOwner(expected string) *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	t.StringValueSet("owner", expected)
 	return t
 }
 
 func (t *TagShowOutputAssert) HasComment(expected string) *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	t.StringValueSet("comment", expected)
 	return t
 }
 
 func (t *TagShowOutputAssert) HasOwnerRoleType(expected string) *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	t.StringValueSet("owner_role_type", expected)
+	return t
+}
+
+func (t *TagShowOutputAssert) HasPropagate(expected sdk.TagPropagation) *TagShowOutputAssert {
+	t.StringValueSet("propagate", string(expected))
+	return t
+}
+
+func (t *TagShowOutputAssert) HasOnConflict(expected string) *TagShowOutputAssert {
+	t.StringValueSet("on_conflict", expected)
 	return t
 }
 
@@ -77,41 +101,51 @@ func (t *TagShowOutputAssert) HasOwnerRoleType(expected string) *TagShowOutputAs
 ///////////////////////////////
 
 func (t *TagShowOutputAssert) HasNoCreatedOn() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	t.ValueNotSet("created_on")
 	return t
 }
 
 func (t *TagShowOutputAssert) HasNoName() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	t.ValueNotSet("name")
 	return t
 }
 
 func (t *TagShowOutputAssert) HasNoDatabaseName() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	t.ValueNotSet("database_name")
 	return t
 }
 
 func (t *TagShowOutputAssert) HasNoSchemaName() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	t.ValueNotSet("schema_name")
 	return t
 }
 
 func (t *TagShowOutputAssert) HasNoOwner() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	t.ValueNotSet("owner")
 	return t
 }
 
 func (t *TagShowOutputAssert) HasNoComment() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	t.ValueNotSet("comment")
 	return t
 }
 
 func (t *TagShowOutputAssert) HasNoAllowedValues() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("allowed_values.#", "0"))
+	t.ValueSet("allowed_values.#", "0")
 	return t
 }
 
 func (t *TagShowOutputAssert) HasNoOwnerRoleType() *TagShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	t.ValueNotSet("owner_role_type")
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoPropagate() *TagShowOutputAssert {
+	t.ValueNotSet("propagate")
+	return t
+}
+
+func (t *TagShowOutputAssert) HasNoOnConflict() *TagShowOutputAssert {
+	t.ValueNotSet("on_conflict")
 	return t
 }

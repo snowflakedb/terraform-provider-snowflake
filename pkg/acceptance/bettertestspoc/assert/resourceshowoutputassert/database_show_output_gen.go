@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type DatabaseShowOutputAssert struct {
@@ -68,11 +67,6 @@ func (d *DatabaseShowOutputAssert) HasIsDefault(expected bool) *DatabaseShowOutp
 
 func (d *DatabaseShowOutputAssert) HasIsCurrent(expected bool) *DatabaseShowOutputAssert {
 	d.BoolValueSet("is_current", expected)
-	return d
-}
-
-func (d *DatabaseShowOutputAssert) HasOrigin(expected sdk.ObjectIdentifier) *DatabaseShowOutputAssert {
-	d.StringValueSet("origin", expected.FullyQualifiedName())
 	return d
 }
 

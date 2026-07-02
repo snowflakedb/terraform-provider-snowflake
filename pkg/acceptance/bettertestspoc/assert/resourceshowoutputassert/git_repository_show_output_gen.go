@@ -18,9 +18,8 @@ func GitRepositoryShowOutput(t *testing.T, name string) *GitRepositoryShowOutput
 	t.Helper()
 
 	gitRepositoryAssert := GitRepositoryShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	gitRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &gitRepositoryAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedGitRepositoryShowOutput(t *testing.T, id string) *GitRepositoryShow
 	t.Helper()
 
 	gitRepositoryAssert := GitRepositoryShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	gitRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &gitRepositoryAssert
+}
+
+func GitRepositoriesDatasourceShowOutput(t *testing.T, name string) *GitRepositoryShowOutputAssert {
+	t.Helper()
+
+	return GitRepositoriesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func GitRepositoriesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *GitRepositoryShowOutputAssert {
+	t.Helper()
+
+	gitRepositoryAssert := GitRepositoryShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "git_repositories", idx),
+	}
 	return &gitRepositoryAssert
 }
 
@@ -39,57 +52,57 @@ func ImportedGitRepositoryShowOutput(t *testing.T, id string) *GitRepositoryShow
 ////////////////////////////
 
 func (g *GitRepositoryShowOutputAssert) HasCreatedOn(expected time.Time) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	g.StringValueSet("created_on", expected.String())
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasName(expected string) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	g.StringValueSet("name", expected)
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasDatabaseName(expected string) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	g.StringValueSet("database_name", expected)
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasSchemaName(expected string) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	g.StringValueSet("schema_name", expected)
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasOrigin(expected string) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("origin", expected))
+	g.StringValueSet("origin", expected)
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasApiIntegration(expected sdk.AccountObjectIdentifier) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("api_integration", expected.Name()))
+	g.StringValueSet("api_integration", expected.Name())
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasGitCredentials(expected sdk.SchemaObjectIdentifier) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("git_credentials", expected.FullyQualifiedName()))
+	g.StringValueSet("git_credentials", expected.FullyQualifiedName())
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasOwner(expected string) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	g.StringValueSet("owner", expected)
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasOwnerRoleType(expected string) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	g.StringValueSet("owner_role_type", expected)
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasComment(expected string) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	g.StringValueSet("comment", expected)
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasLastFetchedAt(expected time.Time) *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueSet("last_fetched_at", expected.String()))
+	g.StringValueSet("last_fetched_at", expected.String())
 	return g
 }
 
@@ -98,56 +111,56 @@ func (g *GitRepositoryShowOutputAssert) HasLastFetchedAt(expected time.Time) *Gi
 ///////////////////////////////
 
 func (g *GitRepositoryShowOutputAssert) HasNoCreatedOn() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	g.ValueNotSet("created_on")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoName() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	g.ValueNotSet("name")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoDatabaseName() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	g.ValueNotSet("database_name")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoSchemaName() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	g.ValueNotSet("schema_name")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoOrigin() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("origin"))
+	g.ValueNotSet("origin")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoApiIntegration() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("api_integration"))
+	g.ValueNotSet("api_integration")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoGitCredentials() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("git_credentials"))
+	g.ValueNotSet("git_credentials")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoOwner() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	g.ValueNotSet("owner")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoOwnerRoleType() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	g.ValueNotSet("owner_role_type")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoComment() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	g.ValueNotSet("comment")
 	return g
 }
 
 func (g *GitRepositoryShowOutputAssert) HasNoLastFetchedAt() *GitRepositoryShowOutputAssert {
-	g.AddAssertion(assert.ResourceShowOutputValueNotSet("last_fetched_at"))
+	g.ValueNotSet("last_fetched_at")
 	return g
 }

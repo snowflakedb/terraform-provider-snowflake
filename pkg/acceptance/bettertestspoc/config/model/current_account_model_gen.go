@@ -33,6 +33,9 @@ type CurrentAccountModel struct {
 	ClientSessionKeepAlive                           tfconfig.Variable `json:"client_session_keep_alive,omitempty"`
 	ClientSessionKeepAliveHeartbeatFrequency         tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping                       tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
+	CortexCodeCliDailyEstCreditLimitPerUser          tfconfig.Variable `json:"cortex_code_cli_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser      tfconfig.Variable `json:"cortex_code_desktop_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser    tfconfig.Variable `json:"cortex_code_snowsight_daily_est_credit_limit_per_user,omitempty"`
 	CortexEnabledCrossRegion                         tfconfig.Variable `json:"cortex_enabled_cross_region,omitempty"`
 	CortexModelsAllowlist                            tfconfig.Variable `json:"cortex_models_allowlist,omitempty"`
 	CsvTimestampFormat                               tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
@@ -300,6 +303,21 @@ func (c *CurrentAccountModel) WithClientSessionKeepAliveHeartbeatFrequency(clien
 
 func (c *CurrentAccountModel) WithClientTimestampTypeMapping(clientTimestampTypeMapping string) *CurrentAccountModel {
 	c.ClientTimestampTypeMapping = tfconfig.StringVariable(clientTimestampTypeMapping)
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeCliDailyEstCreditLimitPerUser(cortexCodeCliDailyEstCreditLimitPerUser int) *CurrentAccountModel {
+	c.CortexCodeCliDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeCliDailyEstCreditLimitPerUser)
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeDesktopDailyEstCreditLimitPerUser(cortexCodeDesktopDailyEstCreditLimitPerUser int) *CurrentAccountModel {
+	c.CortexCodeDesktopDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeDesktopDailyEstCreditLimitPerUser)
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeSnowsightDailyEstCreditLimitPerUser(cortexCodeSnowsightDailyEstCreditLimitPerUser int) *CurrentAccountModel {
+	c.CortexCodeSnowsightDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeSnowsightDailyEstCreditLimitPerUser)
 	return c
 }
 
@@ -924,6 +942,21 @@ func (c *CurrentAccountModel) WithClientSessionKeepAliveHeartbeatFrequencyValue(
 
 func (c *CurrentAccountModel) WithClientTimestampTypeMappingValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.ClientTimestampTypeMapping = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeCliDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.CortexCodeCliDailyEstCreditLimitPerUser = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeDesktopDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.CortexCodeDesktopDailyEstCreditLimitPerUser = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeSnowsightDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.CortexCodeSnowsightDailyEstCreditLimitPerUser = value
 	return c
 }
 

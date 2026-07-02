@@ -16,9 +16,8 @@ func StreamlitShowOutput(t *testing.T, name string) *StreamlitShowOutputAssert {
 	t.Helper()
 
 	streamlitAssert := StreamlitShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	streamlitAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &streamlitAssert
 }
 
@@ -26,9 +25,23 @@ func ImportedStreamlitShowOutput(t *testing.T, id string) *StreamlitShowOutputAs
 	t.Helper()
 
 	streamlitAssert := StreamlitShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	streamlitAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &streamlitAssert
+}
+
+func StreamlitsDatasourceShowOutput(t *testing.T, name string) *StreamlitShowOutputAssert {
+	t.Helper()
+
+	return StreamlitsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func StreamlitsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *StreamlitShowOutputAssert {
+	t.Helper()
+
+	streamlitAssert := StreamlitShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "streamlits", idx),
+	}
 	return &streamlitAssert
 }
 
@@ -37,52 +50,52 @@ func ImportedStreamlitShowOutput(t *testing.T, id string) *StreamlitShowOutputAs
 ////////////////////////////
 
 func (s *StreamlitShowOutputAssert) HasCreatedOn(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	s.StringValueSet("created_on", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasName(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasDatabaseName(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasSchemaName(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasTitle(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("title", expected))
+	s.StringValueSet("title", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasOwner(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasComment(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasQueryWarehouse(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("query_warehouse", expected))
+	s.StringValueSet("query_warehouse", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasUrlId(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("url_id", expected))
+	s.StringValueSet("url_id", expected)
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasOwnerRoleType(expected string) *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
@@ -91,51 +104,51 @@ func (s *StreamlitShowOutputAssert) HasOwnerRoleType(expected string) *Streamlit
 ///////////////////////////////
 
 func (s *StreamlitShowOutputAssert) HasNoCreatedOn() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoName() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoDatabaseName() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoSchemaName() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoTitle() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("title"))
+	s.ValueNotSet("title")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoOwner() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoComment() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoQueryWarehouse() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("query_warehouse"))
+	s.ValueNotSet("query_warehouse")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoUrlId() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("url_id"))
+	s.ValueNotSet("url_id")
 	return s
 }
 
 func (s *StreamlitShowOutputAssert) HasNoOwnerRoleType() *StreamlitShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }

@@ -16,9 +16,8 @@ func NetworkPolicyShowOutput(t *testing.T, name string) *NetworkPolicyShowOutput
 	t.Helper()
 
 	networkPolicyAssert := NetworkPolicyShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	networkPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &networkPolicyAssert
 }
 
@@ -26,9 +25,23 @@ func ImportedNetworkPolicyShowOutput(t *testing.T, id string) *NetworkPolicyShow
 	t.Helper()
 
 	networkPolicyAssert := NetworkPolicyShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	networkPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &networkPolicyAssert
+}
+
+func NetworkPoliciesDatasourceShowOutput(t *testing.T, name string) *NetworkPolicyShowOutputAssert {
+	t.Helper()
+
+	return NetworkPoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func NetworkPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *NetworkPolicyShowOutputAssert {
+	t.Helper()
+
+	networkPolicyAssert := NetworkPolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "network_policies", idx),
+	}
 	return &networkPolicyAssert
 }
 
@@ -37,37 +50,37 @@ func ImportedNetworkPolicyShowOutput(t *testing.T, id string) *NetworkPolicyShow
 ////////////////////////////
 
 func (n *NetworkPolicyShowOutputAssert) HasCreatedOn(expected string) *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	n.StringValueSet("created_on", expected)
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasName(expected string) *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	n.StringValueSet("name", expected)
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasComment(expected string) *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	n.StringValueSet("comment", expected)
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasEntriesInAllowedIpList(expected int) *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueSet("entries_in_allowed_ip_list", expected))
+	n.IntValueSet("entries_in_allowed_ip_list", expected)
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasEntriesInBlockedIpList(expected int) *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueSet("entries_in_blocked_ip_list", expected))
+	n.IntValueSet("entries_in_blocked_ip_list", expected)
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasEntriesInAllowedNetworkRules(expected int) *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueSet("entries_in_allowed_network_rules", expected))
+	n.IntValueSet("entries_in_allowed_network_rules", expected)
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasEntriesInBlockedNetworkRules(expected int) *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueSet("entries_in_blocked_network_rules", expected))
+	n.IntValueSet("entries_in_blocked_network_rules", expected)
 	return n
 }
 
@@ -76,36 +89,36 @@ func (n *NetworkPolicyShowOutputAssert) HasEntriesInBlockedNetworkRules(expected
 ///////////////////////////////
 
 func (n *NetworkPolicyShowOutputAssert) HasNoCreatedOn() *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	n.ValueNotSet("created_on")
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasNoName() *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	n.ValueNotSet("name")
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasNoComment() *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	n.ValueNotSet("comment")
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasNoEntriesInAllowedIpList() *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueNotSet("entries_in_allowed_ip_list"))
+	n.ValueNotSet("entries_in_allowed_ip_list")
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasNoEntriesInBlockedIpList() *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueNotSet("entries_in_blocked_ip_list"))
+	n.ValueNotSet("entries_in_blocked_ip_list")
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasNoEntriesInAllowedNetworkRules() *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueNotSet("entries_in_allowed_network_rules"))
+	n.ValueNotSet("entries_in_allowed_network_rules")
 	return n
 }
 
 func (n *NetworkPolicyShowOutputAssert) HasNoEntriesInBlockedNetworkRules() *NetworkPolicyShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueNotSet("entries_in_blocked_network_rules"))
+	n.ValueNotSet("entries_in_blocked_network_rules")
 	return n
 }

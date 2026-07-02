@@ -16,9 +16,8 @@ func SessionPolicyShowOutput(t *testing.T, name string) *SessionPolicyShowOutput
 	t.Helper()
 
 	sessionPolicyAssert := SessionPolicyShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	sessionPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &sessionPolicyAssert
 }
 
@@ -26,9 +25,23 @@ func ImportedSessionPolicyShowOutput(t *testing.T, id string) *SessionPolicyShow
 	t.Helper()
 
 	sessionPolicyAssert := SessionPolicyShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	sessionPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &sessionPolicyAssert
+}
+
+func SessionPoliciesDatasourceShowOutput(t *testing.T, name string) *SessionPolicyShowOutputAssert {
+	t.Helper()
+
+	return SessionPoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func SessionPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *SessionPolicyShowOutputAssert {
+	t.Helper()
+
+	sessionPolicyAssert := SessionPolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "session_policies", idx),
+	}
 	return &sessionPolicyAssert
 }
 
@@ -37,47 +50,47 @@ func ImportedSessionPolicyShowOutput(t *testing.T, id string) *SessionPolicyShow
 ////////////////////////////
 
 func (s *SessionPolicyShowOutputAssert) HasCreatedOn(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	s.StringValueSet("created_on", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasName(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasDatabaseName(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasSchemaName(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasKind(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	s.StringValueSet("kind", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasOwner(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasComment(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasOwnerRoleType(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasOptions(expected string) *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	s.StringValueSet("options", expected)
 	return s
 }
 
@@ -86,46 +99,46 @@ func (s *SessionPolicyShowOutputAssert) HasOptions(expected string) *SessionPoli
 ///////////////////////////////
 
 func (s *SessionPolicyShowOutputAssert) HasNoCreatedOn() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoName() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoDatabaseName() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoSchemaName() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoKind() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	s.ValueNotSet("kind")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoOwner() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoComment() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoOwnerRoleType() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }
 
 func (s *SessionPolicyShowOutputAssert) HasNoOptions() *SessionPolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
+	s.ValueNotSet("options")
 	return s
 }

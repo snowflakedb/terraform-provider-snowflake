@@ -18,9 +18,8 @@ func ResourceMonitorShowOutput(t *testing.T, name string) *ResourceMonitorShowOu
 	t.Helper()
 
 	resourceMonitorAssert := ResourceMonitorShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	resourceMonitorAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &resourceMonitorAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedResourceMonitorShowOutput(t *testing.T, id string) *ResourceMonitor
 	t.Helper()
 
 	resourceMonitorAssert := ResourceMonitorShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	resourceMonitorAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &resourceMonitorAssert
+}
+
+func ResourceMonitorsDatasourceShowOutput(t *testing.T, name string) *ResourceMonitorShowOutputAssert {
+	t.Helper()
+
+	return ResourceMonitorsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ResourceMonitorsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ResourceMonitorShowOutputAssert {
+	t.Helper()
+
+	resourceMonitorAssert := ResourceMonitorShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "resource_monitors", idx),
+	}
 	return &resourceMonitorAssert
 }
 
@@ -39,67 +52,67 @@ func ImportedResourceMonitorShowOutput(t *testing.T, id string) *ResourceMonitor
 ////////////////////////////
 
 func (r *ResourceMonitorShowOutputAssert) HasName(expected string) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	r.StringValueSet("name", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasCreditQuota(expected float64) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputFloatValueSet("credit_quota", expected))
+	r.FloatValueSet("credit_quota", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasUsedCredits(expected float64) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputFloatValueSet("used_credits", expected))
+	r.FloatValueSet("used_credits", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasRemainingCredits(expected float64) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputFloatValueSet("remaining_credits", expected))
+	r.FloatValueSet("remaining_credits", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasLevel(expected sdk.ResourceMonitorLevel) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("level", expected))
+	r.StringValueSet("level", string(expected))
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasFrequency(expected sdk.Frequency) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("frequency", expected))
+	r.StringValueSet("frequency", string(expected))
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasStartTime(expected string) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("start_time", expected))
+	r.StringValueSet("start_time", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasEndTime(expected string) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("end_time", expected))
+	r.StringValueSet("end_time", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasSuspendAt(expected int) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueSet("suspend_at", expected))
+	r.IntValueSet("suspend_at", expected)
 	return r
 }
 
-func (r *ResourceMonitorShowOutputAssert) HasSuspendImmediateAt(expected int) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueSet("suspend_immediate_at", expected))
+func (r *ResourceMonitorShowOutputAssert) HasSuspendImmediatelyAt(expected int) *ResourceMonitorShowOutputAssert {
+	r.IntValueSet("suspend_immediately_at", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasCreatedOn(expected time.Time) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	r.StringValueSet("created_on", expected.String())
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasOwner(expected string) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	r.StringValueSet("owner", expected)
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasComment(expected string) *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	r.StringValueSet("comment", expected)
 	return r
 }
 
@@ -108,76 +121,76 @@ func (r *ResourceMonitorShowOutputAssert) HasComment(expected string) *ResourceM
 ///////////////////////////////
 
 func (r *ResourceMonitorShowOutputAssert) HasNoName() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	r.ValueNotSet("name")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoCreditQuota() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("credit_quota"))
+	r.ValueNotSet("credit_quota")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoUsedCredits() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("used_credits"))
+	r.ValueNotSet("used_credits")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoRemainingCredits() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputFloatValueNotSet("remaining_credits"))
+	r.ValueNotSet("remaining_credits")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoLevel() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("level"))
+	r.ValueNotSet("level")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoFrequency() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("frequency"))
+	r.ValueNotSet("frequency")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoStartTime() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("start_time"))
+	r.ValueNotSet("start_time")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoEndTime() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("end_time"))
+	r.ValueNotSet("end_time")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoNotifyAt() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("notify_at.#", "0"))
+	r.ValueSet("notify_at.#", "0")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoSuspendAt() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueNotSet("suspend_at"))
+	r.ValueNotSet("suspend_at")
 	return r
 }
 
-func (r *ResourceMonitorShowOutputAssert) HasNoSuspendImmediateAt() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputIntValueNotSet("suspend_immediate_at"))
+func (r *ResourceMonitorShowOutputAssert) HasNoSuspendImmediatelyAt() *ResourceMonitorShowOutputAssert {
+	r.ValueNotSet("suspend_immediately_at")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoCreatedOn() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	r.ValueNotSet("created_on")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoOwner() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	r.ValueNotSet("owner")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoComment() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	r.ValueNotSet("comment")
 	return r
 }
 
 func (r *ResourceMonitorShowOutputAssert) HasNoNotifyUsers() *ResourceMonitorShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("notify_users.#", "0"))
+	r.ValueSet("notify_users.#", "0")
 	return r
 }

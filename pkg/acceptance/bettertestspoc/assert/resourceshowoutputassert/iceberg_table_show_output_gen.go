@@ -18,9 +18,8 @@ func IcebergTableShowOutput(t *testing.T, name string) *IcebergTableShowOutputAs
 	t.Helper()
 
 	icebergTableAssert := IcebergTableShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	icebergTableAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &icebergTableAssert
 }
 
@@ -28,9 +27,8 @@ func ImportedIcebergTableShowOutput(t *testing.T, id string) *IcebergTableShowOu
 	t.Helper()
 
 	icebergTableAssert := IcebergTableShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	icebergTableAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &icebergTableAssert
 }
 
@@ -39,97 +37,97 @@ func ImportedIcebergTableShowOutput(t *testing.T, id string) *IcebergTableShowOu
 ////////////////////////////
 
 func (i *IcebergTableShowOutputAssert) HasCreatedOn(expected time.Time) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	i.StringValueSet("created_on", expected.String())
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasName(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	i.StringValueSet("name", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasDatabaseName(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	i.StringValueSet("database_name", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasSchemaName(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	i.StringValueSet("schema_name", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasOwner(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	i.StringValueSet("owner", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasExternalVolumeName(expected sdk.AccountObjectIdentifier) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("external_volume_name", expected.Name()))
+	i.StringValueSet("external_volume_name", expected.Name())
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasCatalogName(expected sdk.AccountObjectIdentifier) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("catalog_name", expected.Name()))
+	i.StringValueSet("catalog_name", expected.Name())
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasIcebergTableType(expected sdk.IcebergTableType) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("iceberg_table_type", expected))
+	i.StringValueSet("iceberg_table_type", string(expected))
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasCatalogTableName(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("catalog_table_name", expected))
+	i.StringValueSet("catalog_table_name", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasCatalogNamespace(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("catalog_namespace", expected))
+	i.StringValueSet("catalog_namespace", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasBaseLocation(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("base_location", expected))
+	i.StringValueSet("base_location", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasCanWriteMetadata(expected bool) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueSet("can_write_metadata", expected))
+	i.BoolValueSet("can_write_metadata", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasComment(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	i.StringValueSet("comment", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNameMapping(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("name_mapping", expected))
+	i.StringValueSet("name_mapping", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasOwnerRoleType(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	i.StringValueSet("owner_role_type", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasCatalogSyncName(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("catalog_sync_name", expected))
+	i.StringValueSet("catalog_sync_name", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasPartitionSpecs(expected string) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("partition_specs", expected))
+	i.StringValueSet("partition_specs", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasCurrentPartitionSpecId(expected int) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputIntValueSet("current_partition_spec_id", expected))
+	i.IntValueSet("current_partition_spec_id", expected)
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasIcebergTableFormatVersion(expected int) *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputIntValueSet("iceberg_table_format_version", expected))
+	i.IntValueSet("iceberg_table_format_version", expected)
 	return i
 }
 
@@ -138,101 +136,101 @@ func (i *IcebergTableShowOutputAssert) HasIcebergTableFormatVersion(expected int
 ///////////////////////////////
 
 func (i *IcebergTableShowOutputAssert) HasNoCreatedOn() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	i.ValueNotSet("created_on")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoName() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	i.ValueNotSet("name")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoDatabaseName() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	i.ValueNotSet("database_name")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoSchemaName() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	i.ValueNotSet("schema_name")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoOwner() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	i.ValueNotSet("owner")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoExternalVolumeName() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("external_volume_name"))
+	i.ValueNotSet("external_volume_name")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoCatalogName() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("catalog_name"))
+	i.ValueNotSet("catalog_name")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoIcebergTableType() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("iceberg_table_type"))
+	i.ValueNotSet("iceberg_table_type")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoCatalogTableName() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("catalog_table_name"))
+	i.ValueNotSet("catalog_table_name")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoCatalogNamespace() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("catalog_namespace"))
+	i.ValueNotSet("catalog_namespace")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoBaseLocation() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("base_location"))
+	i.ValueNotSet("base_location")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoCanWriteMetadata() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("can_write_metadata"))
+	i.ValueNotSet("can_write_metadata")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoComment() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	i.ValueNotSet("comment")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoNameMapping() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("name_mapping"))
+	i.ValueNotSet("name_mapping")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoOwnerRoleType() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	i.ValueNotSet("owner_role_type")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoCatalogSyncName() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("catalog_sync_name"))
+	i.ValueNotSet("catalog_sync_name")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoAutoRefreshStatus() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("auto_refresh_status"))
+	i.ValueNotSet("auto_refresh_status")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoPartitionSpecs() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("partition_specs"))
+	i.ValueNotSet("partition_specs")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoCurrentPartitionSpecId() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputIntValueNotSet("current_partition_spec_id"))
+	i.ValueNotSet("current_partition_spec_id")
 	return i
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoIcebergTableFormatVersion() *IcebergTableShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputIntValueNotSet("iceberg_table_format_version"))
+	i.ValueNotSet("iceberg_table_format_version")
 	return i
 }

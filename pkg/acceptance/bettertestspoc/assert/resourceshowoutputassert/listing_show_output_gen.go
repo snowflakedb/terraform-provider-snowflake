@@ -17,9 +17,8 @@ func ListingShowOutput(t *testing.T, name string) *ListingShowOutputAssert {
 	t.Helper()
 
 	listingAssert := ListingShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	listingAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &listingAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedListingShowOutput(t *testing.T, id string) *ListingShowOutputAssert
 	t.Helper()
 
 	listingAssert := ListingShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	listingAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &listingAssert
+}
+
+func ListingsDatasourceShowOutput(t *testing.T, name string) *ListingShowOutputAssert {
+	t.Helper()
+
+	return ListingsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ListingsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ListingShowOutputAssert {
+	t.Helper()
+
+	listingAssert := ListingShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "listings", idx),
+	}
 	return &listingAssert
 }
 
@@ -38,132 +51,132 @@ func ImportedListingShowOutput(t *testing.T, id string) *ListingShowOutputAssert
 ////////////////////////////
 
 func (l *ListingShowOutputAssert) HasGlobalName(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("global_name", expected))
+	l.StringValueSet("global_name", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasName(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	l.StringValueSet("name", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasTitle(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("title", expected))
+	l.StringValueSet("title", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasSubtitle(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("subtitle", expected))
+	l.StringValueSet("subtitle", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasProfile(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("profile", expected))
+	l.StringValueSet("profile", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasCreatedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	l.StringValueSet("created_on", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasUpdatedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("updated_on", expected))
+	l.StringValueSet("updated_on", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasPublishedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("published_on", expected))
+	l.StringValueSet("published_on", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasState(expected sdk.ListingState) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("state", expected))
+	l.StringValueSet("state", string(expected))
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasReviewState(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("review_state", expected))
+	l.StringValueSet("review_state", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasComment(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	l.StringValueSet("comment", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasOwner(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	l.StringValueSet("owner", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasOwnerRoleType(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	l.StringValueSet("owner_role_type", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasRegions(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("regions", expected))
+	l.StringValueSet("regions", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasTargetAccounts(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("target_accounts", expected))
+	l.StringValueSet("target_accounts", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasIsMonetized(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_monetized", expected))
+	l.BoolValueSet("is_monetized", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasIsApplication(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_application", expected))
+	l.BoolValueSet("is_application", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasIsTargeted(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_targeted", expected))
+	l.BoolValueSet("is_targeted", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasIsLimitedTrial(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_limited_trial", expected))
+	l.BoolValueSet("is_limited_trial", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasIsByRequest(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_by_request", expected))
+	l.BoolValueSet("is_by_request", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasDistribution(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("distribution", expected))
+	l.StringValueSet("distribution", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasIsMountlessQueryable(expected bool) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_mountless_queryable", expected))
+	l.BoolValueSet("is_mountless_queryable", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasRejectedOn(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("rejected_on", expected))
+	l.StringValueSet("rejected_on", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasOrganizationProfileName(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("organization_profile_name", expected))
+	l.StringValueSet("organization_profile_name", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasUniformListingLocator(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("uniform_listing_locator", expected))
+	l.StringValueSet("uniform_listing_locator", expected)
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasDetailedTargetAccounts(expected string) *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueSet("detailed_target_accounts", expected))
+	l.StringValueSet("detailed_target_accounts", expected)
 	return l
 }
 
@@ -172,131 +185,131 @@ func (l *ListingShowOutputAssert) HasDetailedTargetAccounts(expected string) *Li
 ///////////////////////////////
 
 func (l *ListingShowOutputAssert) HasNoGlobalName() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("global_name"))
+	l.ValueNotSet("global_name")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoName() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	l.ValueNotSet("name")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoTitle() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("title"))
+	l.ValueNotSet("title")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoSubtitle() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("subtitle"))
+	l.ValueNotSet("subtitle")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoProfile() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("profile"))
+	l.ValueNotSet("profile")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoCreatedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	l.ValueNotSet("created_on")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoUpdatedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	l.ValueNotSet("updated_on")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoPublishedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("published_on"))
+	l.ValueNotSet("published_on")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoState() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
+	l.ValueNotSet("state")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoReviewState() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("review_state"))
+	l.ValueNotSet("review_state")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoComment() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	l.ValueNotSet("comment")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoOwner() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	l.ValueNotSet("owner")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoOwnerRoleType() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	l.ValueNotSet("owner_role_type")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoRegions() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("regions"))
+	l.ValueNotSet("regions")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoTargetAccounts() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("target_accounts"))
+	l.ValueNotSet("target_accounts")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoIsMonetized() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_monetized"))
+	l.ValueNotSet("is_monetized")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoIsApplication() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_application"))
+	l.ValueNotSet("is_application")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoIsTargeted() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_targeted"))
+	l.ValueNotSet("is_targeted")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoIsLimitedTrial() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_limited_trial"))
+	l.ValueNotSet("is_limited_trial")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoIsByRequest() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_by_request"))
+	l.ValueNotSet("is_by_request")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoDistribution() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("distribution"))
+	l.ValueNotSet("distribution")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoIsMountlessQueryable() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_mountless_queryable"))
+	l.ValueNotSet("is_mountless_queryable")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoRejectedOn() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("rejected_on"))
+	l.ValueNotSet("rejected_on")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoOrganizationProfileName() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("organization_profile_name"))
+	l.ValueNotSet("organization_profile_name")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoUniformListingLocator() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("uniform_listing_locator"))
+	l.ValueNotSet("uniform_listing_locator")
 	return l
 }
 
 func (l *ListingShowOutputAssert) HasNoDetailedTargetAccounts() *ListingShowOutputAssert {
-	l.AddAssertion(assert.ResourceShowOutputValueNotSet("detailed_target_accounts"))
+	l.ValueNotSet("detailed_target_accounts")
 	return l
 }

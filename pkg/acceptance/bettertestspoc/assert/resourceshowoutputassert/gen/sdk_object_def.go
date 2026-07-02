@@ -17,8 +17,53 @@ type SdkObjectShowOutputDetails struct {
 }
 
 var dataSourceMappingNormalized = map[string]dataSourceDef{
-	normalized(sdk.Database{}):           {"Databases"},
-	normalized(sdk.NetworkRuleDetails{}): {"NetworkRules"},
+	// Show output - standard:
+	normalized(sdk.Account{}):                 {"Accounts"},
+	normalized(sdk.ApiIntegration{}):          {"ApiIntegrations"},
+	normalized(sdk.AuthenticationPolicy{}):    {"AuthenticationPolicies"},
+	normalized(sdk.CatalogIntegration{}):      {"CatalogIntegrations"},
+	normalized(sdk.ComputePool{}):             {"ComputePools"},
+	normalized(sdk.CortexAgent{}):             {"CortexAgents"},
+	normalized(sdk.Database{}):                {"Databases"},
+	normalized(sdk.DatabaseRole{}):            {"DatabaseRoles"},
+	normalized(sdk.ExternalVolume{}):          {"ExternalVolumes"},
+	normalized(sdk.GitRepository{}):           {"GitRepositories"},
+	normalized(sdk.ImageRepository{}):         {"ImageRepositories"},
+	normalized(sdk.Listing{}):                 {"Listings"},
+	normalized(sdk.MaskingPolicy{}):           {"MaskingPolicies"},
+	normalized(sdk.NetworkPolicy{}):           {"NetworkPolicies"},
+	normalized(sdk.NetworkRule{}):             {"NetworkRules"},
+	normalized(sdk.NetworkRuleDetails{}):      {"NetworkRules"},
+	normalized(sdk.Notebook{}):                {"Notebooks"},
+	normalized(sdk.PasswordPolicy{}):          {"PasswordPolicies"},
+	normalized(sdk.ProgrammaticAccessToken{}): {"UserProgrammaticAccessTokens"},
+	normalized(sdk.ResourceMonitor{}):         {"ResourceMonitors"},
+	normalized(sdk.Role{}):                    {"AccountRoles"},
+	normalized(sdk.RowAccessPolicy{}):         {"RowAccessPolicies"},
+	normalized(sdk.Schema{}):                  {"Schemas"},
+	normalized(sdk.Secret{}):                  {"Secrets"},
+	normalized(sdk.SecurityIntegration{}):     {"SecurityIntegrations"},
+	normalized(sdk.SemanticView{}):            {"SemanticViews"},
+	normalized(sdk.Service{}):                 {"Services"},
+	normalized(sdk.SessionPolicy{}):           {"SessionPolicies"},
+	normalized(sdk.Stage{}):                   {"Stages"},
+	normalized(sdk.StorageIntegration{}):      {"StorageIntegrations"},
+	normalized(sdk.StorageLifecyclePolicy{}):  {"StorageLifecyclePolicies"},
+	normalized(sdk.Stream{}):                  {"Streams"},
+	normalized(sdk.Streamlit{}):               {"Streamlits"},
+	normalized(sdk.Tag{}):                     {"Tags"},
+	normalized(sdk.Task{}):                    {"Tasks"},
+	normalized(sdk.User{}):                    {"Users"},
+	normalized(sdk.Warehouse{}):               {"Warehouses"},
+
+	// Describe output:
+	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
+	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
+	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
+	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
+	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
+	normalized(sdk.SessionPolicyDetails{}):          {"SessionPolicies"},
+	normalized(sdk.StorageLifecyclePolicyDetails{}): {"StorageLifecyclePolicies"},
 }
 
 type dataSourceDef struct {
@@ -38,7 +83,20 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 }
 
 var (
-	objectsNotBeingResources     = []any{sdk.UserWorkloadIdentityAuthenticationMethod{}}
+	objectsNotBeingResources = []any{
+		sdk.ExternalVolumeStorageLocationDetails{},
+		sdk.IcebergRestRestConfigDetails{},
+		sdk.OAuthRestAuthenticationDetails{},
+		sdk.OpenCatalogRestConfigDetails{},
+		sdk.PolicyReference{},
+		sdk.SigV4RestAuthenticationDetails{},
+		sdk.StorageLocationAzureDetails{},
+		sdk.StorageLocationGcsDetails{},
+		sdk.StorageLocationS3CompatDetails{},
+		sdk.StorageLocationS3Details{},
+		sdk.TagReference{},
+		sdk.UserWorkloadIdentityAuthenticationMethod{},
+	}
 	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {
 		return reflect.ValueOf(o).Type().String()
 	})

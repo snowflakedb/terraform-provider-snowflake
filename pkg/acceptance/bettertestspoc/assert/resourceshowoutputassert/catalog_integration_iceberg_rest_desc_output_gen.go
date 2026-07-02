@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput
-
 type CatalogIntegrationIcebergRestDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func CatalogIntegrationIcebergRestDescribeOutput(t *testing.T, name string) *Cat
 	t.Helper()
 
 	catalogIntegrationIcebergRestAssert := CatalogIntegrationIcebergRestDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	catalogIntegrationIcebergRestAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationIcebergRestAssert
 }
 
@@ -29,9 +26,8 @@ func ImportedCatalogIntegrationIcebergRestDescribeOutput(t *testing.T, id string
 	t.Helper()
 
 	catalogIntegrationIcebergRestAssert := CatalogIntegrationIcebergRestDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	catalogIntegrationIcebergRestAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationIcebergRestAssert
 }
 
@@ -40,97 +36,95 @@ func ImportedCatalogIntegrationIcebergRestDescribeOutput(t *testing.T, id string
 ////////////////////////////
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.Name()))
+	c.StringValueSet("id", expected.Name())
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasCatalogSource(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("catalog_source", expected))
+	c.StringValueSet("catalog_source", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasTableFormat(expected sdk.CatalogIntegrationTableFormat) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("table_format", expected))
+	c.StringValueSet("table_format", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasEnabled(expected bool) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("enabled", expected))
+	c.BoolValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasRefreshIntervalSeconds(expected int) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueSet("refresh_interval_seconds", expected))
+	c.IntValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasComment(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasCatalogNamespace(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("catalog_namespace", expected))
+	c.StringValueSet("catalog_namespace", expected)
 	return c
 }
-
-// HasRestConfig, HasOAuthRestAuthentication, HasBearerRestAuthentication and HasSigV4RestAuthentication removed manually
 
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoId() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
+	c.ValueNotSet("id")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoCatalogSource() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoTableFormat() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("table_format"))
+	c.ValueNotSet("table_format")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoEnabled() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoComment() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoCatalogNamespace() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("catalog_namespace"))
+	c.ValueNotSet("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoRestConfig() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("rest_config"))
+	c.ValueNotSet("rest_config")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoOAuthRestAuthentication() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("oauth_rest_authentication"))
+	c.ValueNotSet("o_auth_rest_authentication")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoBearerRestAuthentication() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("bearer_rest_authentication"))
+	c.ValueNotSet("bearer_rest_authentication")
 	return c
 }
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoSigV4RestAuthentication() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("sigv4_rest_authentication"))
+	c.ValueNotSet("sig_v4_rest_authentication")
 	return c
 }

@@ -26,6 +26,25 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* New Postgres instance resource
+
+We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_postgres_instance_resource` to the `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Cortex Code daily credit limit account parameters
+
+Added support for three new account parameters in the following resources:
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+These parameters set the [Cortex Code per-user daily estimated credit usage limits](https://docs.snowflake.com/en/user-guide/cortex-code/credit-usage-limit) and are integer-valued (`-1` for the default/unlimited, `0` to block usage, or a positive cap on a user's estimated credit usage over a rolling 24-hour window):
+- `CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER`
+- `CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER`
+- `CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER`
+
+No action is required; this is a non-breaking addition.
+
 ### Multiple resources and data sources promoted to stable
 
 The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration if present.
@@ -214,6 +233,14 @@ We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-r
 The `parameters` output of the related data sources (`snowflake_databases`, `snowflake_schemas`, `snowflake_functions`, `snowflake_procedures`, `snowflake_tasks`, and `snowflake_users`) now also exposes `log_event_level`. Additionally, the [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) resource now accepts `LOG_EVENT_LEVEL` as a parameter name.
 
 No changes are required for existing configurations.
+
+### *(bugfix)* Fixed panic when adding a column with a constant default to a `snowflake_table`
+
+Adding a new column with a constant (or expression) default to an existing `snowflake_table` (e.g. `default { constant = "false" }`) caused a nil-pointer panic, because the ALTER TABLE ... ADD COLUMN path assumed the default was always an identity. This has been fixed: constant and expression defaults are now handled correctly when adding columns.
+
+No changes in the configuration are required.
+
+References: [#4730](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730)
 
 ### *(bugfix)* Fixed MODEL MONITOR object type in grant resources (non-empty plan)
 

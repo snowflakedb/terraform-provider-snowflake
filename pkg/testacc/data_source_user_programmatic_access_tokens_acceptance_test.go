@@ -67,7 +67,7 @@ func TestAcc_UserProgrammaticAccessTokens(t *testing.T) {
 					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithOneToken.DatasourceReference(), "user_programmatic_access_tokens.#", "1")),
 
-					resourceshowoutputassert.ProgrammaticAccessTokensDatasourceShowOutput(t, datasourceModelWithOneToken.DatasourceReference()).
+					resourceshowoutputassert.UserProgrammaticAccessTokensDatasourceShowOutput(t, datasourceModelWithOneToken.DatasourceReference()).
 						HasName(id1.Name()).
 						HasUserName(user.ID()).
 						HasRoleRestriction(snowflakeroles.Public).
