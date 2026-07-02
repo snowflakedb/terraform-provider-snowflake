@@ -23,6 +23,10 @@ type PostgresInstances interface {
 	// The caller should set a deadline on ctx via context.WithTimeout.
 	// Implemented in postgres_instances_ext.go.
 	CreateSafely(ctx context.Context, request *CreatePostgresInstanceRequest) (*PostgresInstance, error)
+	// AlterSafely alters the instance and polls until it reaches READY state.
+	// The caller should set a deadline on ctx via context.WithTimeout.
+	// Implemented in postgres_instances_ext.go.
+	AlterSafely(ctx context.Context, request *AlterPostgresInstanceRequest) error
 }
 
 // CreatePostgresInstanceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance.

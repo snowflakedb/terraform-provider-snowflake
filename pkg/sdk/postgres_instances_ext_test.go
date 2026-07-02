@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -11,6 +12,58 @@ import (
 )
 
 func TestPostgresInstances_ParseDetails(t *testing.T) {
+	t.Run("optional string fields: empty becomes nil, non-empty becomes pointer", func(t *testing.T) {
+		tests := []struct {
+			name      string
+			property  string
+			value     string
+			wantNil   bool
+			wantValue string
+			getField  func(*PostgresInstanceDetails) *string
+		}{
+			{
+				name:     "empty comment yields nil",
+				property: "comment", value: "",
+				wantNil:  true,
+				getField: func(d *PostgresInstanceDetails) *string { return d.Comment },
+			},
+			{
+				name:     "non-empty comment yields pointer to value",
+				property: "comment", value: "my comment",
+				wantValue: "my comment",
+				getField:  func(d *PostgresInstanceDetails) *string { return d.Comment },
+			},
+			{
+				name:     "empty postgres_settings yields nil",
+				property: "postgres_settings", value: "",
+				wantNil:  true,
+				getField: func(d *PostgresInstanceDetails) *string { return d.PostgresSettings },
+			},
+			{
+				name:     "non-empty postgres_settings yields pointer to value",
+				property: "postgres_settings", value: `{"work_mem":"64KB"}`,
+				wantValue: `{"work_mem":"64KB"}`,
+				getField:  func(d *PostgresInstanceDetails) *string { return d.PostgresSettings },
+			},
+		}
+		for _, tc := range tests {
+			t.Run(tc.name, func(t *testing.T) {
+				properties := []PostgresInstanceProperty{
+					{Property: "name", Value: "test_instance"},
+					{Property: tc.property, Value: tc.value},
+				}
+				details, err := ParsePostgresInstanceDetails(properties)
+				require.NoError(t, err)
+				if tc.wantNil {
+					require.Nil(t, tc.getField(details))
+				} else {
+					require.NotNil(t, tc.getField(details))
+					assert.Equal(t, tc.wantValue, *tc.getField(details))
+				}
+			})
+		}
+	})
+
 	t.Run("parse network policy into AccountObjectIdentifier", func(t *testing.T) {
 		properties := []PostgresInstanceProperty{
 			{Property: "name", Value: "test_instance"},
@@ -123,13 +176,17 @@ func TestNormalizePostgresSettingsPtr(t *testing.T) {
 	})
 }
 
-// stubPostgresInstances is a minimal test double for testing CreateSafely polling logic
-// without a live SDK client. It reimplements the same polling contract.
+// stubPostgresInstances is a minimal test double for testing CreateSafely / updateSafely
+// polling logic without a live SDK client.
 type stubPostgresInstances struct {
 	createErr  error
 	showStates []PostgresInstanceState // sequence of states returned by successive ShowByID calls
 	showIdx    int
 	showErr    error
+
+	// For updateSafelyPolling tests
+	updateErr    error
+	updateCalled int
 }
 
 func (s *stubPostgresInstances) showByID() (*PostgresInstance, error) {
@@ -142,6 +199,11 @@ func (s *stubPostgresInstances) showByID() (*PostgresInstance, error) {
 	state := s.showStates[s.showIdx]
 	s.showIdx++
 	return &PostgresInstance{Name: "test", State: state}, nil
+}
+
+func (s *stubPostgresInstances) update() error {
+	s.updateCalled++
+	return s.updateErr
 }
 
 func TestCreateSafely(t *testing.T) {
@@ -191,5 +253,61 @@ func TestCreateSafely(t *testing.T) {
 		stub := &stubPostgresInstances{showErr: showErr}
 		_, err := createSafelyPolling(context.Background(), func() error { return nil }, stub.showByID)
 		require.ErrorIs(t, err, showErr)
+	})
+}
+
+func TestUpdateSafely(t *testing.T) {
+	t.Run("calls update when instance is immediately READY", func(t *testing.T) {
+		stub := &stubPostgresInstances{}
+		err := updateSafelyPolling(context.Background(), stub.update, stub.showByID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, stub.updateCalled)
+	})
+
+	t.Run("waits for READY state before calling update", func(t *testing.T) {
+		stub := &stubPostgresInstances{
+			showStates: []PostgresInstanceState{
+				PostgresInstanceStateCreating,
+				PostgresInstanceStateCreating,
+				PostgresInstanceStateReady,
+			},
+		}
+		err := updateSafelyPolling(context.Background(), stub.update, stub.showByID)
+		require.NoError(t, err)
+		assert.Equal(t, 1, stub.updateCalled)
+	})
+
+	t.Run("retries update on must-be-complete error", func(t *testing.T) {
+		calls := 0
+		doUpdate := func() error {
+			calls++
+			if calls < 3 {
+				return fmt.Errorf("604009 (03000): Running operation CREATE POSTGRES SERVICE on X %w SET POSTGRES_SETTINGS", ErrPostgresOperationMustBeComplete)
+			}
+			return nil
+		}
+		stub := &stubPostgresInstances{}
+		err := updateSafelyPolling(context.Background(), doUpdate, stub.showByID)
+		require.NoError(t, err)
+		assert.Equal(t, 3, calls)
+	})
+
+	t.Run("returns non-retryable update error", func(t *testing.T) {
+		updateErr := errors.New("unexpected error")
+		stub := &stubPostgresInstances{updateErr: updateErr}
+		err := updateSafelyPolling(context.Background(), stub.update, stub.showByID)
+		require.ErrorIs(t, err, updateErr)
+	})
+
+	t.Run("returns error when context is canceled before READY", func(t *testing.T) {
+		stub := &stubPostgresInstances{
+			showStates: []PostgresInstanceState{PostgresInstanceStateCreating},
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+		defer cancel()
+		time.Sleep(5 * time.Millisecond)
+		err := updateSafelyPolling(ctx, stub.update, stub.showByID)
+		require.Error(t, err)
+		assert.Equal(t, 0, stub.updateCalled)
 	})
 }

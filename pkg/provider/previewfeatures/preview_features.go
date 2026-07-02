@@ -198,9 +198,8 @@ var allPreviewFeatures = []feature{
 	ObjectParameterResource,
 	PipeResource,
 	PipesDatasource,
-	// These resources are added to the test provider.
 	// PostgresForkResource,
-	// PostgresInstanceResource,
+	PostgresInstanceResource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,

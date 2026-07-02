@@ -5,6 +5,11 @@ import (
 )
 
 func (p *PostgresInstanceShowOutputAssert) HasCreatedOnNotEmpty() *PostgresInstanceShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValuePresent("created_on"))
+	p.AddAssertion(assert.ValuePresent("created_on"))
+	return p
+}
+
+func (p *PostgresInstanceShowOutputAssert) HasIsHa(expected bool) *PostgresInstanceShowOutputAssert {
+	p.BoolValueSet("is_ha", expected)
 	return p
 }
