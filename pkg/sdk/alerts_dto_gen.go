@@ -31,7 +31,7 @@ type AlterAlertRequest struct {
 	Action          *AlertAction
 	Set             *AlertSetRequest
 	Unset           *AlertUnsetRequest
-	ModifyCondition *[]string
+	ModifyCondition []string
 	ModifyAction    *string
 }
 

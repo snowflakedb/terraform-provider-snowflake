@@ -83,7 +83,7 @@ var alertsDef = g.NewInterface(
 		OptionalEnum("Action", alertActionDef, g.KeywordOptions()).
 		OptionalQueryStructField("Set", alertSet(), g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", alertUnset(), g.KeywordOptions().SQL("UNSET")).
-		WithField(g.NewField("ModifyCondition", "*[]string", g.Tags().Keyword().Parentheses().SQL("MODIFY CONDITION EXISTS"), g.KeywordOptions().NoComma())).
+		UnnamedList("ModifyCondition", "string", g.KeywordOptions().SQL("MODIFY CONDITION EXISTS").Parentheses().NoComma()).
 		PredefinedQueryStructField("ModifyAction", "*string", g.ParameterOptions().NoEquals().SQL("MODIFY ACTION")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "Action", "Set", "Unset", "ModifyCondition", "ModifyAction"),

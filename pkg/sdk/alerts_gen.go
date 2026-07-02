@@ -46,7 +46,7 @@ type AlterAlertOptions struct {
 	Action          *AlertAction           `ddl:"keyword"`
 	Set             *AlertSet              `ddl:"keyword" sql:"SET"`
 	Unset           *AlertUnset            `ddl:"keyword" sql:"UNSET"`
-	ModifyCondition *[]string              `ddl:"keyword,parentheses,no_comma" sql:"MODIFY CONDITION EXISTS"`
+	ModifyCondition []string               `ddl:"keyword,parentheses,no_comma" sql:"MODIFY CONDITION EXISTS"`
 	ModifyAction    *string                `ddl:"parameter,no_equals" sql:"MODIFY ACTION"`
 }
 

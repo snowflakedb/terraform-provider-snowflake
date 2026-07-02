@@ -72,7 +72,7 @@ func (s *AlterAlertRequest) WithUnset(unset AlertUnsetRequest) *AlterAlertReques
 }
 
 func (s *AlterAlertRequest) WithModifyCondition(modifyCondition []string) *AlterAlertRequest {
-	s.ModifyCondition = &modifyCondition
+	s.ModifyCondition = modifyCondition
 	return s
 }
 

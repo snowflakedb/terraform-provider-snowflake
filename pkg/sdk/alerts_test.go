@@ -97,7 +97,7 @@ func TestAlertAlter(t *testing.T) {
 		modifyCondition := "SELECT * FROM FOO"
 		opts := &AlterAlertOptions{
 			name:            id,
-			ModifyCondition: &[]string{modifyCondition},
+			ModifyCondition: []string{modifyCondition},
 		}
 
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ALERT %s MODIFY CONDITION EXISTS (%s)", id.FullyQualifiedName(), modifyCondition)
