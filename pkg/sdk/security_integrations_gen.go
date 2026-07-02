@@ -165,6 +165,7 @@ type CreateOauthForPartnerApplicationsSecurityIntegrationOptions struct {
 	OauthIssueRefreshTokens   *bool                                            `ddl:"parameter" sql:"OAUTH_ISSUE_REFRESH_TOKENS"`
 	OauthRefreshTokenValidity *int                                             `ddl:"parameter" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
 	OauthUseSecondaryRoles    *OauthSecurityIntegrationUseSecondaryRolesOption `ddl:"parameter" sql:"OAUTH_USE_SECONDARY_ROLES"`
+	AllowedRolesList          *AllowedRolesList                                `ddl:"parameter,parentheses" sql:"ALLOWED_ROLES_LIST"`
 	BlockedRolesList          *BlockedRolesList                                `ddl:"parameter,parentheses" sql:"BLOCKED_ROLES_LIST"`
 	Comment                   *string                                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -189,6 +190,7 @@ type CreateOauthForCustomClientsSecurityIntegrationOptions struct {
 	OauthEnforcePkce            *bool                                            `ddl:"parameter" sql:"OAUTH_ENFORCE_PKCE"`
 	OauthUseSecondaryRoles      *OauthSecurityIntegrationUseSecondaryRolesOption `ddl:"parameter" sql:"OAUTH_USE_SECONDARY_ROLES"`
 	PreAuthorizedRolesList      *PreAuthorizedRolesList                          `ddl:"parameter,parentheses" sql:"PRE_AUTHORIZED_ROLES_LIST"`
+	AllowedRolesList            *AllowedRolesList                                `ddl:"parameter,parentheses" sql:"ALLOWED_ROLES_LIST"`
 	BlockedRolesList            *BlockedRolesList                                `ddl:"parameter,parentheses" sql:"BLOCKED_ROLES_LIST"`
 	OauthIssueRefreshTokens     *bool                                            `ddl:"parameter" sql:"OAUTH_ISSUE_REFRESH_TOKENS"`
 	OauthRefreshTokenValidity   *int                                             `ddl:"parameter" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
@@ -393,6 +395,7 @@ type OauthForPartnerApplicationsIntegrationSet struct {
 	OauthRedirectUri          *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_REDIRECT_URI"`
 	OauthRefreshTokenValidity *int                                             `ddl:"parameter" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
 	OauthUseSecondaryRoles    *OauthSecurityIntegrationUseSecondaryRolesOption `ddl:"parameter" sql:"OAUTH_USE_SECONDARY_ROLES"`
+	AllowedRolesList          *AllowedRolesList                                `ddl:"parameter,parentheses" sql:"ALLOWED_ROLES_LIST"`
 	BlockedRolesList          *BlockedRolesList                                `ddl:"parameter,parentheses" sql:"BLOCKED_ROLES_LIST"`
 	Comment                   *StringAllowEmpty                                `ddl:"parameter" sql:"COMMENT"`
 }
@@ -420,6 +423,7 @@ type OauthForCustomClientsIntegrationSet struct {
 	OauthAllowNonTlsRedirectUri *bool                                            `ddl:"parameter" sql:"OAUTH_ALLOW_NON_TLS_REDIRECT_URI"`
 	OauthEnforcePkce            *bool                                            `ddl:"parameter" sql:"OAUTH_ENFORCE_PKCE"`
 	PreAuthorizedRolesList      *PreAuthorizedRolesList                          `ddl:"parameter,parentheses" sql:"PRE_AUTHORIZED_ROLES_LIST"`
+	AllowedRolesList            *AllowedRolesList                                `ddl:"parameter,parentheses" sql:"ALLOWED_ROLES_LIST"`
 	BlockedRolesList            *BlockedRolesList                                `ddl:"parameter,parentheses" sql:"BLOCKED_ROLES_LIST"`
 	OauthIssueRefreshTokens     *bool                                            `ddl:"parameter" sql:"OAUTH_ISSUE_REFRESH_TOKENS"`
 	OauthRefreshTokenValidity   *int                                             `ddl:"parameter" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
