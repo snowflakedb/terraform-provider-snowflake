@@ -1015,6 +1015,29 @@ func TestTableAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ADD COLUMN IF NOT EXISTS NEXT_COLUMN VARCHAR COLLATE 'utf8' IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
 	})
 
+	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
+	t.Run("add new column with constant default through request", func(t *testing.T) {
+		// Adding a column with a non-identity default (e.g. a constant) used to panic in
+		// TableColumnActionRequest.toOpts because it dereferenced a nil identity request.
+		req := NewAlterTableRequest(id).WithColumnAction(
+			NewTableColumnActionRequest().WithAdd(
+				NewTableColumnAddActionRequest("NEW_BOOLEAN_COLUMN", DataTypeBoolean).
+					WithDefaultValue(NewColumnDefaultValueRequest().WithExpression(String("FALSE"))),
+			),
+		)
+		assertOptsValidAndSQLEquals(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEW_BOOLEAN_COLUMN BOOLEAN DEFAULT FALSE", id.FullyQualifiedName())
+	})
+
+	t.Run("add new column with identity default through request", func(t *testing.T) {
+		req := NewAlterTableRequest(id).WithColumnAction(
+			NewTableColumnActionRequest().WithAdd(
+				NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).
+					WithDefaultValue(NewColumnDefaultValueRequest().WithIdentity(NewColumnIdentityRequest(10, 1))),
+			),
+		)
+		assertOptsValidAndSQLEquals(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEXT_COLUMN VARCHAR IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
+	})
+
 	t.Run("rename column", func(t *testing.T) {
 		oldColumn := "OLD_NAME"
 		newColumnName := "NEW_NAME"

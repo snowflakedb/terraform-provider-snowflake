@@ -228,6 +228,14 @@ The `parameters` output of the related data sources (`snowflake_databases`, `sno
 
 No changes are required for existing configurations.
 
+### *(bugfix)* Fixed panic when adding a column with a constant default to a `snowflake_table`
+
+Adding a new column with a constant (or expression) default to an existing `snowflake_table` (e.g. `default { constant = "false" }`) caused a nil-pointer panic, because the ALTER TABLE ... ADD COLUMN path assumed the default was always an identity. This has been fixed: constant and expression defaults are now handled correctly when adding columns.
+
+No changes in the configuration are required.
+
+References: [#4730](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730)
+
 ### *(bugfix)* Fixed MODEL MONITOR object type in grant resources (non-empty plan)
 
 Grants on future `MODEL MONITORS` in privilege grant resources (e.g. `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`)
