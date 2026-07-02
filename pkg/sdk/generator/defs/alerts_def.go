@@ -9,6 +9,11 @@ import (
 var alertActionDef = g.NewEnum("AlertAction", "AlertActions", "RESUME", "SUSPEND")
 var alertStateDef = g.NewEnum("AlertState", "AlertStates", "started", "suspended")
 
+func alertCondition() *g.QueryStruct {
+	return g.NewQueryStruct("AlertCondition").
+		PredefinedQueryStructField("Condition", "[]string", g.KeywordOptions().Parentheses().NoComma().SQL("EXISTS"))
+}
+
 func alertSet() *g.QueryStruct {
 	return g.NewQueryStruct("AlertSet").
 		OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE")).
@@ -65,7 +70,7 @@ var alertsDef = g.NewInterface(
 		Identifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("WAREHOUSE").Required()).
 		TextAssignment("SCHEDULE", g.ParameterOptions().SingleQuotes()).
 		OptionalComment().
-		WithField(g.NewField("condition", "[]AlertCondition", g.Tags().Keyword().Parentheses().SQL("IF"), g.KeywordOptions().NoComma().Required())).
+		ListQueryStructField("condition", alertCondition(), g.KeywordOptions().SQL("IF").Parentheses().NoComma().Required()).
 		PredefinedQueryStructField("action", "string", g.ParameterOptions().NoEquals().SQL("THEN").Required()).
 		WithValidation(g.ValidIdentifier, "name"),
 ).AlterOperation(
