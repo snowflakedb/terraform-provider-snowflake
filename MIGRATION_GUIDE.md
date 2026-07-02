@@ -25,13 +25,13 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
 ## v2.18.x ➞ v2.19.0
-
 ### *(new feature)* New Iceberg Table resources
 
 We have added new preview resources for Iceberg tables:
 - [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from REST backend ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
+- [snowflake_iceberg_table_from_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_aws_glue) for managing Snowflake Iceberg Tables whose metadata is managed by an AWS Glue catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue)),
 
-These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest` to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest` or `snowflake_iceberg_table_from_aws_glue` to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 
