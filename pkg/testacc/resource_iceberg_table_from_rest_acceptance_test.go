@@ -29,7 +29,7 @@ func TestAcc_IcebergTableFromRest_BasicUseCase(t *testing.T) {
 	// TODO(SNOW-3725859): Provide the external volume and catalog integration dynamically. Unskip and
 	// fold these tests into the main suite.
 	// Also, add tests for detecting external volume and catalog changes.
-	// t.Skip("Iceberg REST tests require preconfigured external catalog integrations and are not run by default")
+	t.Skip("Iceberg REST tests require preconfigured external catalog integrations and are not run by default")
 	const (
 		icebergRestCatalogName = "REST_CATALOG_INTEGRATION"
 		icebergRestVolumeName  = "GLUE_EXTERNAL_VOLUME"
@@ -260,7 +260,7 @@ func TestAcc_IcebergTableFromRest_BasicUseCase(t *testing.T) {
 func TestAcc_IcebergTableFromRest_CompleteUseCase(t *testing.T) {
 	// TODO(SNOW-3725859): Provide the external volume and catalog integration dynamically. Unskip and
 	// fold these tests into the main suite.
-	// t.Skip("Iceberg REST tests require preconfigured external catalog integrations and are not run by default")
+	t.Skip("Iceberg REST tests require preconfigured external catalog integrations and are not run by default")
 	const (
 		icebergRestCatalogName = "REST_CATALOG_INTEGRATION"
 		icebergRestVolumeName  = "GLUE_EXTERNAL_VOLUME"

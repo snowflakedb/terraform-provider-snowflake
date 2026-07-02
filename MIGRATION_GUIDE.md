@@ -24,15 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.18.0 ➞ v2.19.0
-
-## v2.17.0 ➞ v2.18.0
-
-### *(new feature)* New Postgres instance resource
-
-We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
-
-This feature will be marked as stable in a future release. To use it, add `snowflake_postgres_instance_resource` to the `preview_features_enabled` field in the provider configuration.
+## v2.18.x ➞ v2.19.0
 
 ### *(new feature)* New Iceberg Table resources
 
@@ -42,6 +34,14 @@ We have added new preview resources for Iceberg tables:
 These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest` to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
+
+## v2.17.0 ➞ v2.18.0
+
+### *(new feature)* New Postgres instance resource
+
+We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_postgres_instance_resource` to the `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* Cortex Code daily credit limit account parameters
 
