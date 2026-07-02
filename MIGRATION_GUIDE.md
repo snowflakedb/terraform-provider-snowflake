@@ -24,7 +24,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.17.0 ➞ v2.18.0
+## v2.17.x ➞ v2.18.0
 
 ### Multiple resources and data sources promoted to stable
 
