@@ -79,6 +79,7 @@ var RepositoryLabels = []string{
 	"resource:grant_privileges_to_share",
 	"resource:iceberg_table_from_delta_files",
 	"resource:iceberg_table_from_files",
+	"resource:iceberg_table_from_rest",
 	"resource:image_repository",
 	"resource:job_service",
 	"resource:legacy_service_user",

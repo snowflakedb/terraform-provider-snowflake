@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strconv"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -73,84 +71,6 @@ func icebergTableCommonSchema() map[string]*schema.Schema {
 	}
 }
 
-var icebergTableParametersCustomDiff = ParametersCustomDiff(
-	icebergTableParametersProvider,
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterExternalVolume, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterCatalog, valueTypeString, sdk.ParameterTypeTable},
-	parameter[sdk.IcebergTableParameter]{sdk.IcebergTableParameterReplaceInvalidCharacters, valueTypeBool, sdk.ParameterTypeTable},
-)
-
-// icebergTableParametersSchema returns the parameter-backed schema fields shared by all Iceberg
-// table resources (external_volume, catalog, replace_invalid_characters). It is a builder for the
-// same reason as icebergTableCommonSchema.
-func icebergTableParametersSchema() map[string]*schema.Schema {
-	parametersSchema := make(map[string]*schema.Schema)
-
-	forceNewFields := []parameterDef[sdk.IcebergTableParameter]{
-		{
-			Name:         sdk.IcebergTableParameterExternalVolume,
-			Type:         schema.TypeString,
-			Description:  "Specifies the identifier for the external volume where the Iceberg table stores its metadata files and data in Parquet format. If not specified, the account-level default is used.",
-			DiffSuppress: suppressIdentifierQuoting,
-		},
-		{
-			Name:         sdk.IcebergTableParameterCatalog,
-			Type:         schema.TypeString,
-			Description:  "Specifies the identifier for the catalog integration to use for the Iceberg table. If not specified, the account-level default is used.",
-			DiffSuppress: suppressIdentifierQuoting,
-		},
-	}
-	for _, field := range forceNewFields {
-		fieldName := strings.ToLower(string(field.Name))
-		parametersSchema[fieldName] = &schema.Schema{
-			Type:             field.Type,
-			Description:      field.Description,
-			Computed:         true,
-			Optional:         true,
-			ForceNew:         true,
-			DiffSuppressFunc: field.DiffSuppress,
-		}
-	}
-
-	fieldName := strings.ToLower(string(sdk.IcebergTableParameterReplaceInvalidCharacters))
-	parametersSchema[fieldName] = &schema.Schema{
-		Type:        schema.TypeBool,
-		Description: enrichWithReferenceToParameterDocs(sdk.IcebergTableParameterReplaceInvalidCharacters, "Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character (`�`) in query results for an Iceberg table."),
-		Computed:    true,
-		Optional:    true,
-	}
-	return parametersSchema
-}
-
-func icebergTableParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) ([]*sdk.Parameter, error) {
-	return parametersProvider(ctx, d, meta.(*provider.Context), icebergTableParametersProviderFunc, sdk.ParseSchemaObjectIdentifier)
-}
-
-func icebergTableParametersProviderFunc(c *sdk.Client) showParametersFunc[sdk.SchemaObjectIdentifier] {
-	return c.IcebergTables.ShowParameters
-}
-
-func handleIcebergTableParameterRead(d *schema.ResourceData, parameters []*sdk.Parameter) error {
-	for _, p := range parameters {
-		switch p.Key {
-		case string(sdk.IcebergTableParameterExternalVolume),
-			string(sdk.IcebergTableParameterCatalog):
-			if err := d.Set(strings.ToLower(p.Key), p.Value); err != nil {
-				return err
-			}
-		case string(sdk.IcebergTableParameterReplaceInvalidCharacters):
-			value, err := strconv.ParseBool(p.Value)
-			if err != nil {
-				return err
-			}
-			if err := d.Set(strings.ToLower(p.Key), value); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func icebergTableDeleteFunc() schema.DeleteContextFunc {
 	return ResourceDeleteContextFunc(
 		sdk.ParseSchemaObjectIdentifier,
@@ -180,6 +100,10 @@ func importIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) (
 }
 
 func readIcebergTable(ctx context.Context, d *schema.ResourceData, meta any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable) error) diag.Diagnostics {
+	return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableParameterRead, schemas.IcebergTableParametersToSchema, setExtra)
+}
+
+func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.ResourceData, meta any, handleParameterRead func(d *schema.ResourceData, parameters []*sdk.Parameter) error, parametersToSchema func([]*sdk.Parameter, *provider.Context) map[string]any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable) error) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
@@ -230,8 +154,8 @@ func readIcebergTable(ctx context.Context, d *schema.ResourceData, meta any, set
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.IcebergTableToSchema(table)}),
 		d.Set(DescribeOutputAttributeName, schemas.IcebergTableDetailsToSchema(details)),
-		d.Set(ParametersAttributeName, []map[string]any{schemas.IcebergTableParametersToSchema(parameters, providerCtx)}),
-		handleIcebergTableParameterRead(d, parameters),
+		d.Set(ParametersAttributeName, []map[string]any{parametersToSchema(parameters, providerCtx)}),
+		handleParameterRead(d, parameters),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
