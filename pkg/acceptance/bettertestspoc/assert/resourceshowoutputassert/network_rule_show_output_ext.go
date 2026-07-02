@@ -1,13 +1,11 @@
 package resourceshowoutputassert
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-
 func (s *NetworkRuleShowOutputAssert) HasCreatedOnNotEmpty() *NetworkRuleShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("created_on"))
+	s.ValuePresent("created_on")
 	return s
 }
 
 func (s *NetworkRuleShowOutputAssert) HasCommentEmpty() *NetworkRuleShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", ""))
+	s.StringValueSet("comment", "")
 	return s
 }

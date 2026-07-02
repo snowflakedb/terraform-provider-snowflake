@@ -17,9 +17,8 @@ func UserShowOutput(t *testing.T, name string) *UserShowOutputAssert {
 	t.Helper()
 
 	userAssert := UserShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	userAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &userAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedUserShowOutput(t *testing.T, id string) *UserShowOutputAssert {
 	t.Helper()
 
 	userAssert := UserShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	userAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &userAssert
+}
+
+func UsersDatasourceShowOutput(t *testing.T, name string) *UserShowOutputAssert {
+	t.Helper()
+
+	return UsersDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func UsersDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *UserShowOutputAssert {
+	t.Helper()
+
+	userAssert := UserShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "users", idx),
+	}
 	return &userAssert
 }
 
@@ -38,147 +51,147 @@ func ImportedUserShowOutput(t *testing.T, id string) *UserShowOutputAssert {
 ////////////////////////////
 
 func (u *UserShowOutputAssert) HasName(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	u.StringValueSet("name", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasCreatedOn(expected time.Time) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	u.StringValueSet("created_on", expected.String())
 	return u
 }
 
 func (u *UserShowOutputAssert) HasLoginName(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("login_name", expected))
+	u.StringValueSet("login_name", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasDisplayName(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("display_name", expected))
+	u.StringValueSet("display_name", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasFirstName(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("first_name", expected))
+	u.StringValueSet("first_name", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasLastName(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("last_name", expected))
+	u.StringValueSet("last_name", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasEmail(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("email", expected))
+	u.StringValueSet("email", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasMinsToUnlock(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("mins_to_unlock", expected))
+	u.StringValueSet("mins_to_unlock", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasDaysToExpiry(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("days_to_expiry", expected))
+	u.StringValueSet("days_to_expiry", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasComment(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	u.StringValueSet("comment", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasDisabled(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("disabled", expected))
+	u.BoolValueSet("disabled", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasMustChangePassword(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("must_change_password", expected))
+	u.BoolValueSet("must_change_password", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasSnowflakeLock(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("snowflake_lock", expected))
+	u.BoolValueSet("snowflake_lock", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasDefaultWarehouse(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("default_warehouse", expected))
+	u.StringValueSet("default_warehouse", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasDefaultNamespace(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("default_namespace", expected))
+	u.StringValueSet("default_namespace", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasDefaultRole(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("default_role", expected))
+	u.StringValueSet("default_role", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasDefaultSecondaryRoles(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("default_secondary_roles", expected))
+	u.StringValueSet("default_secondary_roles", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasExtAuthnDuo(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("ext_authn_duo", expected))
+	u.BoolValueSet("ext_authn_duo", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasExtAuthnUid(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("ext_authn_uid", expected))
+	u.StringValueSet("ext_authn_uid", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasMinsToBypassMfa(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("mins_to_bypass_mfa", expected))
+	u.StringValueSet("mins_to_bypass_mfa", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasOwner(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	u.StringValueSet("owner", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasLastSuccessLogin(expected time.Time) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("last_success_login", expected.String()))
+	u.StringValueSet("last_success_login", expected.String())
 	return u
 }
 
 func (u *UserShowOutputAssert) HasExpiresAtTime(expected time.Time) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("expires_at_time", expected.String()))
+	u.StringValueSet("expires_at_time", expected.String())
 	return u
 }
 
 func (u *UserShowOutputAssert) HasLockedUntilTime(expected time.Time) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("locked_until_time", expected.String()))
+	u.StringValueSet("locked_until_time", expected.String())
 	return u
 }
 
 func (u *UserShowOutputAssert) HasHasPassword(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("has_password", expected))
+	u.BoolValueSet("has_password", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasHasRsaPublicKey(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("has_rsa_public_key", expected))
+	u.BoolValueSet("has_rsa_public_key", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasType(expected string) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueSet("type", expected))
+	u.StringValueSet("type", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasHasMfa(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("has_mfa", expected))
+	u.BoolValueSet("has_mfa", expected)
 	return u
 }
 
 func (u *UserShowOutputAssert) HasHasWorkloadIdentity(expected bool) *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueSet("has_workload_identity", expected))
+	u.BoolValueSet("has_workload_identity", expected)
 	return u
 }
 
@@ -187,146 +200,146 @@ func (u *UserShowOutputAssert) HasHasWorkloadIdentity(expected bool) *UserShowOu
 ///////////////////////////////
 
 func (u *UserShowOutputAssert) HasNoName() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	u.ValueNotSet("name")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoCreatedOn() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	u.ValueNotSet("created_on")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoLoginName() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("login_name"))
+	u.ValueNotSet("login_name")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoDisplayName() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("display_name"))
+	u.ValueNotSet("display_name")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoFirstName() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("first_name"))
+	u.ValueNotSet("first_name")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoLastName() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("last_name"))
+	u.ValueNotSet("last_name")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoEmail() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("email"))
+	u.ValueNotSet("email")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoMinsToUnlock() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("mins_to_unlock"))
+	u.ValueNotSet("mins_to_unlock")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoDaysToExpiry() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("days_to_expiry"))
+	u.ValueNotSet("days_to_expiry")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoComment() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	u.ValueNotSet("comment")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoDisabled() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("disabled"))
+	u.ValueNotSet("disabled")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoMustChangePassword() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("must_change_password"))
+	u.ValueNotSet("must_change_password")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoSnowflakeLock() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("snowflake_lock"))
+	u.ValueNotSet("snowflake_lock")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoDefaultWarehouse() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("default_warehouse"))
+	u.ValueNotSet("default_warehouse")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoDefaultNamespace() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("default_namespace"))
+	u.ValueNotSet("default_namespace")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoDefaultRole() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("default_role"))
+	u.ValueNotSet("default_role")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoDefaultSecondaryRoles() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("default_secondary_roles"))
+	u.ValueNotSet("default_secondary_roles")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoExtAuthnDuo() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("ext_authn_duo"))
+	u.ValueNotSet("ext_authn_duo")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoExtAuthnUid() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("ext_authn_uid"))
+	u.ValueNotSet("ext_authn_uid")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoMinsToBypassMfa() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("mins_to_bypass_mfa"))
+	u.ValueNotSet("mins_to_bypass_mfa")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoOwner() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	u.ValueNotSet("owner")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoLastSuccessLogin() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("last_success_login"))
+	u.ValueNotSet("last_success_login")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoExpiresAtTime() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("expires_at_time"))
+	u.ValueNotSet("expires_at_time")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoLockedUntilTime() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("locked_until_time"))
+	u.ValueNotSet("locked_until_time")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoHasPassword() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_password"))
+	u.ValueNotSet("has_password")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoHasRsaPublicKey() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_rsa_public_key"))
+	u.ValueNotSet("has_rsa_public_key")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoType() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputValueNotSet("type"))
+	u.ValueNotSet("type")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoHasMfa() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_mfa"))
+	u.ValueNotSet("has_mfa")
 	return u
 }
 
 func (u *UserShowOutputAssert) HasNoHasWorkloadIdentity() *UserShowOutputAssert {
-	u.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_workload_identity"))
+	u.ValueNotSet("has_workload_identity")
 	return u
 }

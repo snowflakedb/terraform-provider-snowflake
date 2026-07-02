@@ -10,6 +10,7 @@ type ExternalOauthSecurityIntegrationDescOutputAssert struct {
 	*assert.ResourceAssert
 }
 
+// TODO [next PRs]: it stays manual as describe is currently a list of properties and not the Details struct
 func ExternalOauthSecurityIntegrationDescOutput(t *testing.T, name string) *ExternalOauthSecurityIntegrationDescOutputAssert {
 	t.Helper()
 

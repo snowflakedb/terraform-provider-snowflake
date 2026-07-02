@@ -18,9 +18,8 @@ func NetworkRuleShowOutput(t *testing.T, name string) *NetworkRuleShowOutputAsse
 	t.Helper()
 
 	networkRuleAssert := NetworkRuleShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	networkRuleAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &networkRuleAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedNetworkRuleShowOutput(t *testing.T, id string) *NetworkRuleShowOutp
 	t.Helper()
 
 	networkRuleAssert := NetworkRuleShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	networkRuleAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &networkRuleAssert
+}
+
+func NetworkRulesDatasourceShowOutput(t *testing.T, name string) *NetworkRuleShowOutputAssert {
+	t.Helper()
+
+	return NetworkRulesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func NetworkRulesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *NetworkRuleShowOutputAssert {
+	t.Helper()
+
+	networkRuleAssert := NetworkRuleShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "network_rules", idx),
+	}
 	return &networkRuleAssert
 }
 
@@ -39,52 +52,52 @@ func ImportedNetworkRuleShowOutput(t *testing.T, id string) *NetworkRuleShowOutp
 ////////////////////////////
 
 func (n *NetworkRuleShowOutputAssert) HasCreatedOn(expected time.Time) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	n.StringValueSet("created_on", expected.String())
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasName(expected string) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	n.StringValueSet("name", expected)
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasDatabaseName(expected string) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	n.StringValueSet("database_name", expected)
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasSchemaName(expected string) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	n.StringValueSet("schema_name", expected)
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasOwner(expected string) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	n.StringValueSet("owner", expected)
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasComment(expected string) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	n.StringValueSet("comment", expected)
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasType(expected sdk.NetworkRuleType) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("type", expected))
+	n.StringValueSet("type", string(expected))
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasMode(expected sdk.NetworkRuleMode) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("mode", expected))
+	n.StringValueSet("mode", string(expected))
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasEntriesInValueList(expected int) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueSet("entries_in_value_list", expected))
+	n.IntValueSet("entries_in_value_list", expected)
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasOwnerRoleType(expected string) *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	n.StringValueSet("owner_role_type", expected)
 	return n
 }
 
@@ -93,51 +106,51 @@ func (n *NetworkRuleShowOutputAssert) HasOwnerRoleType(expected string) *Network
 ///////////////////////////////
 
 func (n *NetworkRuleShowOutputAssert) HasNoCreatedOn() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	n.ValueNotSet("created_on")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoName() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	n.ValueNotSet("name")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoDatabaseName() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	n.ValueNotSet("database_name")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoSchemaName() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	n.ValueNotSet("schema_name")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoOwner() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	n.ValueNotSet("owner")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoComment() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	n.ValueNotSet("comment")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoType() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("type"))
+	n.ValueNotSet("type")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoMode() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("mode"))
+	n.ValueNotSet("mode")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoEntriesInValueList() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputIntValueNotSet("entries_in_value_list"))
+	n.ValueNotSet("entries_in_value_list")
 	return n
 }
 
 func (n *NetworkRuleShowOutputAssert) HasNoOwnerRoleType() *NetworkRuleShowOutputAssert {
-	n.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	n.ValueNotSet("owner_role_type")
 	return n
 }

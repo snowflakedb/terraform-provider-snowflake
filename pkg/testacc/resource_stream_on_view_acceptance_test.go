@@ -65,7 +65,7 @@ func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(view.ID().FullyQualifiedName()).
+			HasTableName(view.ID()).
 			HasMode(sdk.StreamModeDefault).
 			HasComment("").
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
@@ -110,7 +110,7 @@ func TestAcc_StreamOnView_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(view.ID().FullyQualifiedName()).
+			HasTableName(view.ID()).
 			HasMode(sdk.StreamModeAppendOnly).
 			HasComment(comment).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
@@ -553,7 +553,7 @@ func TestAcc_StreamOnView_At(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("foo").
-						HasTableName(view.ID().FullyQualifiedName()).
+						HasTableName(view.ID()).
 						HasSourceType(sdk.StreamSourceTypeView).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
@@ -675,7 +675,7 @@ func TestAcc_StreamOnView_Before(t *testing.T) {
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("foo").
-						HasTableName(view.ID().FullyQualifiedName()).
+						HasTableName(view.ID()).
 						HasSourceType(sdk.StreamSourceTypeView).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").

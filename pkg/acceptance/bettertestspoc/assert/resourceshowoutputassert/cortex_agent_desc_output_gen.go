@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput
-
 type CortexAgentDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func CortexAgentDescribeOutput(t *testing.T, name string) *CortexAgentDescribeOu
 	t.Helper()
 
 	cortexAgentAssert := CortexAgentDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	cortexAgentAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &cortexAgentAssert
 }
 
@@ -29,9 +26,23 @@ func ImportedCortexAgentDescribeOutput(t *testing.T, id string) *CortexAgentDesc
 	t.Helper()
 
 	cortexAgentAssert := CortexAgentDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	cortexAgentAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
+	return &cortexAgentAssert
+}
+
+func CortexAgentsDatasourceDescribeOutput(t *testing.T, name string) *CortexAgentDescribeOutputAssert {
+	t.Helper()
+
+	return CortexAgentsDatasourceDescribeOutputOnIdx(t, name, 0)
+}
+
+func CortexAgentsDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx int) *CortexAgentDescribeOutputAssert {
+	t.Helper()
+
+	cortexAgentAssert := CortexAgentDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceDescribeOutputAssert(name, "cortex_agents", idx),
+	}
 	return &cortexAgentAssert
 }
 
@@ -40,54 +51,52 @@ func ImportedCortexAgentDescribeOutput(t *testing.T, id string) *CortexAgentDesc
 ////////////////////////////
 
 func (c *CortexAgentDescribeOutputAssert) HasName(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("name", expected))
+	c.StringValueSet("name", expected)
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasDatabaseName(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("database_name", expected))
+	c.StringValueSet("database_name", expected)
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasSchemaName(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("schema_name", expected))
+	c.StringValueSet("schema_name", expected)
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasOwner(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("owner", expected))
+	c.StringValueSet("owner", expected)
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasComment(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
 
-// HasProfile removed manually
-
 func (c *CortexAgentDescribeOutputAssert) HasAgentSpec(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("agent_spec", expected))
+	c.StringValueSet("agent_spec", expected)
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasCreatedOn(expected time.Time) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("created_on", expected.String()))
+	c.StringValueSet("created_on", expected.String())
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasDefaultVersionName(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("default_version_name", expected))
+	c.StringValueSet("default_version_name", expected)
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasVersions(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("versions", expected))
+	c.StringValueSet("versions", expected)
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasAliases(expected string) *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("aliases", expected))
+	c.StringValueSet("aliases", expected)
 	return c
 }
 
@@ -96,56 +105,56 @@ func (c *CortexAgentDescribeOutputAssert) HasAliases(expected string) *CortexAge
 ///////////////////////////////
 
 func (c *CortexAgentDescribeOutputAssert) HasNoName() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoDatabaseName() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("database_name"))
+	c.ValueNotSet("database_name")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoSchemaName() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("schema_name"))
+	c.ValueNotSet("schema_name")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoOwner() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("owner"))
+	c.ValueNotSet("owner")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoComment() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoProfile() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("profile"))
+	c.ValueNotSet("profile")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoAgentSpec() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("agent_spec"))
+	c.ValueNotSet("agent_spec")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoCreatedOn() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("created_on"))
+	c.ValueNotSet("created_on")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoDefaultVersionName() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("default_version_name"))
+	c.ValueNotSet("default_version_name")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoVersions() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("versions"))
+	c.ValueNotSet("versions")
 	return c
 }
 
 func (c *CortexAgentDescribeOutputAssert) HasNoAliases() *CortexAgentDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("aliases"))
+	c.ValueNotSet("aliases")
 	return c
 }

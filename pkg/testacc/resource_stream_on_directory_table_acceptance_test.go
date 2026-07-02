@@ -50,7 +50,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(stage.ID().FullyQualifiedName()).
+			HasTableName(stage.ID()).
 			HasMode(sdk.StreamModeDefault).
 			HasComment("").
 			HasOwner(testClient().Context.CurrentRole(t).Name()).
@@ -93,7 +93,7 @@ func TestAcc_StreamOnDirectoryTable_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
 			HasSchemaName(id.SchemaName()).
-			HasTableName(stage.ID().FullyQualifiedName()).
+			HasTableName(stage.ID()).
 			HasMode(sdk.StreamModeDefault).
 			HasComment(comment).
 			HasOwner(testClient().Context.CurrentRole(t).Name()).

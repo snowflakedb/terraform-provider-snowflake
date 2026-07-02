@@ -1,3 +1,5 @@
+//go:build non_account_level_tests
+
 package testacc
 
 import (
@@ -60,7 +62,7 @@ func TestAcc_Notebooks(t *testing.T) {
 					t,
 					assert.Check(resource.TestCheckResourceAttr(notebooksModel.DatasourceReference(), "notebooks.#", "1")),
 
-					resourceshowoutputassert.NotebooksDatasourceShowOutput(t, "snowflake_notebooks.test").
+					resourceshowoutputassert.NotebooksDatasourceShowOutput(t, notebooksModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -85,7 +87,7 @@ func TestAcc_Notebooks(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(notebooksModelWithoutOptionals.DatasourceReference(), "notebooks.#", "1")),
-					resourceshowoutputassert.NotebooksDatasourceShowOutput(t, "snowflake_notebooks.test").
+					resourceshowoutputassert.NotebooksDatasourceShowOutput(t, notebooksModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).

@@ -17,9 +17,8 @@ func TaskShowOutput(t *testing.T, name string) *TaskShowOutputAssert {
 	t.Helper()
 
 	taskAssert := TaskShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	taskAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &taskAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedTaskShowOutput(t *testing.T, id string) *TaskShowOutputAssert {
 	t.Helper()
 
 	taskAssert := TaskShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	taskAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &taskAssert
+}
+
+func TasksDatasourceShowOutput(t *testing.T, name string) *TaskShowOutputAssert {
+	t.Helper()
+
+	return TasksDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func TasksDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *TaskShowOutputAssert {
+	t.Helper()
+
+	taskAssert := TaskShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "tasks", idx),
+	}
 	return &taskAssert
 }
 
@@ -38,232 +51,220 @@ func ImportedTaskShowOutput(t *testing.T, id string) *TaskShowOutputAssert {
 ////////////////////////////
 
 func (t *TaskShowOutputAssert) HasCreatedOn(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	t.StringValueSet("created_on", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasName(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	t.StringValueSet("name", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasId(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("id", expected))
+	t.StringValueSet("id", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasDatabaseName(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	t.StringValueSet("database_name", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasSchemaName(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	t.StringValueSet("schema_name", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasOwner(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	t.StringValueSet("owner", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasComment(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	t.StringValueSet("comment", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("warehouse", expected.Name()))
+	t.StringValueSet("warehouse", expected.Name())
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasSchedule(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("schedule", expected))
+	t.StringValueSet("schedule", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasState(expected sdk.TaskState) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("state", expected))
+	t.StringValueSet("state", string(expected))
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasDefinition(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("definition", expected))
+	t.StringValueSet("definition", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasCondition(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("condition", expected))
+	t.StringValueSet("condition", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasAllowOverlappingExecution(expected bool) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputBoolValueSet("allow_overlapping_execution", expected))
+	t.BoolValueSet("allow_overlapping_execution", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("error_integration", expected.Name()))
+	t.StringValueSet("error_integration", expected.Name())
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasLastCommittedOn(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("last_committed_on", expected))
+	t.StringValueSet("last_committed_on", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasLastSuspendedOn(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("last_suspended_on", expected))
+	t.StringValueSet("last_suspended_on", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasOwnerRoleType(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	t.StringValueSet("owner_role_type", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasConfig(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("config", expected))
+	t.StringValueSet("config", expected)
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasBudget(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("budget", expected))
+	t.StringValueSet("budget", expected)
 	return t
 }
-
-// Manually adjusted
-// func (t *TaskShowOutputAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskShowOutputAssert {
-//	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("task_relations", expected))
-//	return t
-// }
 
 func (t *TaskShowOutputAssert) HasLastSuspendedReason(expected string) *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("last_suspended_reason", expected))
+	t.StringValueSet("last_suspended_reason", expected)
 	return t
 }
-
-// Manually adjusted
-// func (t *TaskShowOutputAssert) HasTargetCompletionInterval(expected sdk.TaskTargetCompletionInterval) *TaskShowOutputAssert {
-//	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("target_completion_interval", expected))
-//	return t
-// }
 
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
 
 func (t *TaskShowOutputAssert) HasNoCreatedOn() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	t.ValueNotSet("created_on")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoName() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	t.ValueNotSet("name")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoId() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("id"))
+	t.ValueNotSet("id")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoDatabaseName() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	t.ValueNotSet("database_name")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoSchemaName() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	t.ValueNotSet("schema_name")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoOwner() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	t.ValueNotSet("owner")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoComment() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	t.ValueNotSet("comment")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoWarehouse() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("warehouse"))
+	t.ValueNotSet("warehouse")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoSchedule() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("schedule"))
+	t.ValueNotSet("schedule")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoPredecessors() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueSet("predecessors.#", "0"))
+	t.ValueSet("predecessors.#", "0")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoState() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
+	t.ValueNotSet("state")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoDefinition() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("definition"))
+	t.ValueNotSet("definition")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoCondition() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("condition"))
+	t.ValueNotSet("condition")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoAllowOverlappingExecution() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("allow_overlapping_execution"))
+	t.ValueNotSet("allow_overlapping_execution")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoErrorIntegration() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("error_integration"))
+	t.ValueNotSet("error_integration")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoLastCommittedOn() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("last_committed_on"))
+	t.ValueNotSet("last_committed_on")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoLastSuspendedOn() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("last_suspended_on"))
+	t.ValueNotSet("last_suspended_on")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoOwnerRoleType() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	t.ValueNotSet("owner_role_type")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoConfig() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("config"))
+	t.ValueNotSet("config")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoBudget() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("budget"))
+	t.ValueNotSet("budget")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoTaskRelations() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("task_relations"))
+	t.ValueNotSet("task_relations")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoLastSuspendedReason() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputValueNotSet("last_suspended_reason"))
+	t.ValueNotSet("last_suspended_reason")
 	return t
 }
 
 func (t *TaskShowOutputAssert) HasNoTargetCompletionInterval() *TaskShowOutputAssert {
-	t.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("target_completion_interval"))
+	t.ValueNotSet("target_completion_interval")
 	return t
 }

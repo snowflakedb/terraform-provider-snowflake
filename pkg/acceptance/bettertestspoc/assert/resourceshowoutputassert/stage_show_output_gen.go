@@ -18,9 +18,8 @@ func StageShowOutput(t *testing.T, name string) *StageShowOutputAssert {
 	t.Helper()
 
 	stageAssert := StageShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	stageAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &stageAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedStageShowOutput(t *testing.T, id string) *StageShowOutputAssert {
 	t.Helper()
 
 	stageAssert := StageShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	stageAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &stageAssert
+}
+
+func StagesDatasourceShowOutput(t *testing.T, name string) *StageShowOutputAssert {
+	t.Helper()
+
+	return StagesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func StagesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *StageShowOutputAssert {
+	t.Helper()
+
+	stageAssert := StageShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "stages", idx),
+	}
 	return &stageAssert
 }
 
@@ -39,82 +52,82 @@ func ImportedStageShowOutput(t *testing.T, id string) *StageShowOutputAssert {
 ////////////////////////////
 
 func (s *StageShowOutputAssert) HasCreatedOn(expected time.Time) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
 func (s *StageShowOutputAssert) HasName(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasDatabaseName(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasSchemaName(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasUrl(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("url", expected))
+	s.StringValueSet("url", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasHasCredentials(expected bool) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("has_credentials", expected))
+	s.BoolValueSet("has_credentials", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasHasEncryptionKey(expected bool) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("has_encryption_key", expected))
+	s.BoolValueSet("has_encryption_key", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasOwner(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasComment(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasRegion(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("region", expected))
+	s.StringValueSet("region", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasType(expected sdk.StageType) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("type", expected))
+	s.StringValueSet("type", string(expected))
 	return s
 }
 
 func (s *StageShowOutputAssert) HasCloud(expected sdk.StageCloud) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("cloud", expected))
+	s.StringValueSet("cloud", string(expected))
 	return s
 }
 
 func (s *StageShowOutputAssert) HasStorageIntegration(expected sdk.AccountObjectIdentifier) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("storage_integration", expected.Name()))
+	s.StringValueSet("storage_integration", expected.Name())
 	return s
 }
 
 func (s *StageShowOutputAssert) HasEndpoint(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("endpoint", expected))
+	s.StringValueSet("endpoint", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasOwnerRoleType(expected string) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
 func (s *StageShowOutputAssert) HasDirectoryEnabled(expected bool) *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("directory_enabled", expected))
+	s.BoolValueSet("directory_enabled", expected)
 	return s
 }
 
@@ -123,81 +136,81 @@ func (s *StageShowOutputAssert) HasDirectoryEnabled(expected bool) *StageShowOut
 ///////////////////////////////
 
 func (s *StageShowOutputAssert) HasNoCreatedOn() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoName() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoDatabaseName() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoSchemaName() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoUrl() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("url"))
+	s.ValueNotSet("url")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoHasCredentials() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_credentials"))
+	s.ValueNotSet("has_credentials")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoHasEncryptionKey() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("has_encryption_key"))
+	s.ValueNotSet("has_encryption_key")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoOwner() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoComment() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoRegion() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("region"))
+	s.ValueNotSet("region")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoType() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("type"))
+	s.ValueNotSet("type")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoCloud() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("cloud"))
+	s.ValueNotSet("cloud")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoStorageIntegration() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("storage_integration"))
+	s.ValueNotSet("storage_integration")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoEndpoint() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("endpoint"))
+	s.ValueNotSet("endpoint")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoOwnerRoleType() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }
 
 func (s *StageShowOutputAssert) HasNoDirectoryEnabled() *StageShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("directory_enabled"))
+	s.ValueNotSet("directory_enabled")
 	return s
 }
