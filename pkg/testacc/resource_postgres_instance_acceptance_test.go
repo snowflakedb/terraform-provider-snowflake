@@ -33,7 +33,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 
 	basic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 18, 10).WithTimeout(accconfig.Timeouts{
 		Create: "10m",
-		Update: "60m",
+		Update: "10m",
 		Delete: "10m",
 		Read:   "10m",
 	})

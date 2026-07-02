@@ -226,7 +226,7 @@ func updateSafelyPolling(ctx context.Context, doUpdate func() error, doShowByID 
 // ("{}") is normalized to "" to represent "not set".
 func NormalizePostgresSettings(s string) (string, error) {
 	trimmed := strings.TrimSpace(s)
-	if trimmed == "" {
+	if trimmed == "" || trimmed == "{}" {
 		return "", nil
 	}
 

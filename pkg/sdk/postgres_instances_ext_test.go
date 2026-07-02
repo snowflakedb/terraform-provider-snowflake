@@ -11,46 +11,56 @@ import (
 )
 
 func TestPostgresInstances_ParseDetails(t *testing.T) {
-	t.Run("empty comment returns nil pointer", func(t *testing.T) {
-		properties := []PostgresInstanceProperty{
-			{Property: "name", Value: "test_instance"},
-			{Property: "comment", Value: ""},
+	t.Run("optional string fields: empty becomes nil, non-empty becomes pointer", func(t *testing.T) {
+		tests := []struct {
+			name      string
+			property  string
+			value     string
+			wantNil   bool
+			wantValue string
+			getField  func(*PostgresInstanceDetails) *string
+		}{
+			{
+				name:     "empty comment yields nil",
+				property: "comment", value: "",
+				wantNil:  true,
+				getField: func(d *PostgresInstanceDetails) *string { return d.Comment },
+			},
+			{
+				name:      "non-empty comment yields pointer to value",
+				property:  "comment", value: "my comment",
+				wantValue: "my comment",
+				getField:  func(d *PostgresInstanceDetails) *string { return d.Comment },
+			},
+			{
+				name:     "empty postgres_settings yields nil",
+				property: "postgres_settings", value: "",
+				wantNil:  true,
+				getField: func(d *PostgresInstanceDetails) *string { return d.PostgresSettings },
+			},
+			{
+				name:      "non-empty postgres_settings yields pointer to value",
+				property:  "postgres_settings", value: `{"work_mem":"64KB"}`,
+				wantValue: `{"work_mem":"64KB"}`,
+				getField:  func(d *PostgresInstanceDetails) *string { return d.PostgresSettings },
+			},
 		}
-		details, err := ParsePostgresInstanceDetails(properties)
-		require.NoError(t, err)
-		require.Nil(t, details.Comment, "empty comment should yield nil, not a pointer to empty string")
-	})
-
-	t.Run("non-empty comment returns pointer to value", func(t *testing.T) {
-		properties := []PostgresInstanceProperty{
-			{Property: "name", Value: "test_instance"},
-			{Property: "comment", Value: "my comment"},
+		for _, tc := range tests {
+			t.Run(tc.name, func(t *testing.T) {
+				properties := []PostgresInstanceProperty{
+					{Property: "name", Value: "test_instance"},
+					{Property: tc.property, Value: tc.value},
+				}
+				details, err := ParsePostgresInstanceDetails(properties)
+				require.NoError(t, err)
+				if tc.wantNil {
+					require.Nil(t, tc.getField(details))
+				} else {
+					require.NotNil(t, tc.getField(details))
+					assert.Equal(t, tc.wantValue, *tc.getField(details))
+				}
+			})
 		}
-		details, err := ParsePostgresInstanceDetails(properties)
-		require.NoError(t, err)
-		require.NotNil(t, details.Comment)
-		assert.Equal(t, "my comment", *details.Comment)
-	})
-
-	t.Run("empty postgres_settings returns nil pointer", func(t *testing.T) {
-		properties := []PostgresInstanceProperty{
-			{Property: "name", Value: "test_instance"},
-			{Property: "postgres_settings", Value: ""},
-		}
-		details, err := ParsePostgresInstanceDetails(properties)
-		require.NoError(t, err)
-		require.Nil(t, details.PostgresSettings, "empty postgres_settings should yield nil")
-	})
-
-	t.Run("non-empty postgres_settings returns pointer to value", func(t *testing.T) {
-		properties := []PostgresInstanceProperty{
-			{Property: "name", Value: "test_instance"},
-			{Property: "postgres_settings", Value: `{"work_mem":"64KB"}`},
-		}
-		details, err := ParsePostgresInstanceDetails(properties)
-		require.NoError(t, err)
-		require.NotNil(t, details.PostgresSettings)
-		assert.Equal(t, `{"work_mem":"64KB"}`, *details.PostgresSettings)
 	})
 
 	t.Run("parse network policy into AccountObjectIdentifier", func(t *testing.T) {

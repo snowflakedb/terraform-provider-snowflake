@@ -77,12 +77,10 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"postgres_settings": {
-		Type:     schema.TypeString,
-		Optional: true,
-		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.NormalizePostgresSettings), schema.SchemaDiffSuppressFunc(func(k, old, new string, d *schema.ResourceData) bool {
-			return old == "{}" && new == ""
-		})),
-		Description: "Specifies custom Postgres settings as a JSON string.",
+		Type:             schema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: NormalizeAndCompare(sdk.NormalizePostgresSettings),
+		Description:      "Specifies custom Postgres settings as a JSON string.",
 	},
 	"maintenance_window_start": {
 		Type:             schema.TypeInt,
@@ -221,9 +219,6 @@ func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		intAttributeCreateBuilder(d, "postgres_version", request.WithPostgresVersion),
 		attributeMappedValueCreateBuilder(d, "network_policy", request.WithNetworkPolicy, sdk.ParseAccountObjectIdentifier),
 		attributeMappedValueCreateBuilder(d, "storage_integration", request.WithStorageIntegration, sdk.ParseAccountObjectIdentifier),
-		// postgres_settings omitted from CREATE — Snowflake returns an internal error when
-		// POSTGRES_SETTINGS is present in CREATE POSTGRES INSTANCE. Set post-create via ALTER.
-		// maintenance_window_start omitted from CREATE — not supported in CREATE DDL.
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		booleanStringAttributeCreateBuilder(d, "high_availability", request.WithHighAvailability),
 	)
@@ -237,18 +232,15 @@ func CreatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
-	// postgres_settings and maintenance_window_start cannot be set at CREATE time — apply via ALTER.
+	// postgres_settings and maintenance_window_start cannot be set at CREATE time - apply via ALTER.
 	postCreateSet := sdk.NewPostgresInstanceSetRequest()
-	needsPostCreateSet := false
 	if pgSettings := d.Get("postgres_settings").(string); pgSettings != "" {
 		postCreateSet.PostgresSettings = &pgSettings
-		needsPostCreateSet = true
 	}
 	if mws := d.Get("maintenance_window_start").(int); mws != IntDefault {
 		postCreateSet.MaintenanceWindowStart = &mws
-		needsPostCreateSet = true
 	}
-	if needsPostCreateSet {
+	if !reflect.DeepEqual(postCreateSet, &sdk.PostgresInstanceSetRequest{}) {
 		if err := client.PostgresInstances.AlterSafely(ctx, sdk.NewAlterPostgresInstanceRequest(id).WithSet(*postCreateSet)); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting post-create properties for Postgres instance %s: %w", id.FullyQualifiedName(), err))
 		}
@@ -423,12 +415,6 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 
 	if !reflect.DeepEqual(unset, &sdk.PostgresInstanceUnsetRequest{}) {
 		alterReq := sdk.NewAlterPostgresInstanceRequest(id).WithUnset(*unset)
-		// AlterSafely waits for READY and retries on "must be complete" errors.
-		// We intentionally do not wait for DESCRIBE propagation after UNSET: both SHOW and
-		// DESCRIBE can take >10 minutes to reflect UNSET, exceeding the update timeout.
-		// ReadPostgresInstanceFunc reads comment/postgres_settings from the desired config on
-		// the post-update pass (withExternalChangesMarking=false), so the resource state is
-		// correct immediately without a propagation wait.
 		if err := client.PostgresInstances.AlterSafely(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error unsetting Postgres instance properties: %w", err))
 		}
