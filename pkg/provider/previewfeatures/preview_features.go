@@ -217,7 +217,7 @@ var allPreviewFeatures = []feature{
 	PasswordPolicyResource,
 	PipeResource,
 	PipesDatasource,
-	PostgresForkResource,
+	// PostgresForkResource,
 	PostgresInstanceResource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
