@@ -31,19 +31,18 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 	networkPolicy, networkPolicyCleanup := testClient().NetworkPolicy.CreateNetworkPolicyForPostgres(t, testClient().NetworkRule)
 	t.Cleanup(networkPolicyCleanup)
 
-	basic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).WithTimeout(accconfig.Timeouts{
+	basic := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 18, 10).WithTimeout(accconfig.Timeouts{
 		Create: "10m",
 		Update: "60m",
 		Delete: "10m",
 		Read:   "10m",
 	})
 
-	withOptionals := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).
+	withOptionals := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 18, 10).
 		WithComment(comment).
 		WithHighAvailability("false").
 		WithNetworkPolicy(networkPolicy.Name).
 		// TODO(SNOW-3580377): storage_integration requires POSTGRES_EXTERNAL_STORAGE type; no pre-created integration available.
-		WithPostgresVersion(18).
 		WithMaintenanceWindowStart(10).
 		WithPostgresSettings(`{"postgres:work_mem":"64KB"}`)
 
@@ -51,8 +50,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 
 	// basicAssertions builds the check slice for the "basic" (no optionals) config.
 	// After initial Create, optional fields are absent from state (HasNoX).
-	// After Update that unsets optionals, TypeString fields carry "" and TypeInt fields carry 0
-	// due to SDK v2 planned-value semantics — use HasXEmpty / HasPostgresVersion(0) in that case.
+	// After Update that unsets optionals, TypeString fields carry "" due to SDK v2 planned-value semantics — use HasXEmpty in that case.
 	basicAssertions := func(optionalsWereSet bool) []assert.TestCheckFuncProvider {
 		postgresInstanceResourceAssert := resourceassert.PostgresInstanceResource(t, ref).
 			HasNameString(id.Name()).
@@ -61,18 +59,17 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasAuthenticationAuthorityString("POSTGRES").
 			HasHighAvailability(r.BooleanDefault).
 			HasNoStorageIntegration().
+			HasPostgresVersion(18).
 			HasMaintenanceWindowStart(r.IntDefault).
 			HasFullyQualifiedNameString(id.FullyQualifiedName())
 		if optionalsWereSet {
 			postgresInstanceResourceAssert = postgresInstanceResourceAssert.HasCommentEmpty().
 				HasNetworkPolicyEmpty().
-				HasPostgresSettingsEmpty().
-				HasPostgresVersion(0)
+				HasPostgresSettingsEmpty()
 		} else {
 			postgresInstanceResourceAssert = postgresInstanceResourceAssert.HasNoComment().
 				HasNoNetworkPolicy().
-				HasNoPostgresSettings().
-				HasNoPostgresVersion()
+				HasNoPostgresSettings()
 		}
 		return []assert.TestCheckFuncProvider{
 			postgresInstanceResourceAssert,
@@ -157,7 +154,6 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"high_availability",            // mismatching because of default value
 					"maintenance_window_start",     // mismatching because of default value
-					"postgres_version",             // mismatching because of default value
 					"describe_output.0.updated_on", // TODO: To address, I think the diff should be skipped
 					"show_output.0.updated_on",     // TODO: To address, I think the diff should be skipped
 				},
@@ -238,12 +234,12 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 func TestAcc_PostgresInstance_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	modelInvalidStorageSizeGb := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 0)
-	modelInvalidMaintenanceWindowStart := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).WithMaintenanceWindowStart(24)
-	modelInvalidPostgresVersion := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).WithPostgresVersion(0)
-	modelInvalidHighAvailability := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 10).WithHighAvailability("invalid")
-	modelInvalidComputeFamily := model.PostgresInstance("test", id.Name(), "POSTGRES", "INVALID", 10)
-	modelInvalidAuthenticationAuthority := model.PostgresInstance("test", id.Name(), "INVALID", "STANDARD_M", 10)
+	modelInvalidStorageSizeGb := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 18, 0)
+	modelInvalidMaintenanceWindowStart := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 18, 10).WithMaintenanceWindowStart(24)
+	modelInvalidPostgresVersion := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 0, 10)
+	modelInvalidHighAvailability := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 18, 10).WithHighAvailability("invalid")
+	modelInvalidComputeFamily := model.PostgresInstance("test", id.Name(), "POSTGRES", "INVALID", 18, 10)
+	modelInvalidAuthenticationAuthority := model.PostgresInstance("test", id.Name(), "INVALID", "STANDARD_M", 18, 10)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

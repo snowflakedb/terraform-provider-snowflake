@@ -49,10 +49,10 @@ var postgresInstanceSchema = map[string]*schema.Schema{
 	},
 	"postgres_version": {
 		Type:             schema.TypeInt,
-		Optional:         true,
+		Required:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInDescribe("postgres_version"),
-		Description:      "Specifies the Postgres version for the instance.",
+		Description:      "Specifies the Postgres version for the instance. Note that Snowflake does not allow downgrading; the version can only be upgraded.",
 	},
 	"network_policy": {
 		Type:             schema.TypeString,
@@ -389,26 +389,13 @@ func UpdatePostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		accountObjectIdentifierAttributeUpdate(d, "network_policy", &set.NetworkPolicy, &unset.NetworkPolicy),
 		accountObjectIdentifierAttributeUpdate(d, "storage_integration", &set.StorageIntegration, &unset.StorageIntegration),
 		intAttributeUpdateSetOnly(d, "storage_size_gb", &set.StorageSizeGb),
+		intAttributeUpdateSetOnly(d, "postgres_version", &set.PostgresVersion),
 		intAttributeWithSpecialDefaultUpdate(d, "maintenance_window_start", &set.MaintenanceWindowStart, &unset.MaintenanceWindowStart),
 		attributeMappedValueUpdateSetOnly(d, "authentication_authority", &set.AuthenticationAuthority, sdk.ToPostgresInstanceAuthenticationAuthority),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "compute_family", &set.ComputeFamily),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
-	}
-
-	// Snowflake treats SET POSTGRES_VERSION as an async provisioning operation even when
-	// the version hasn't changed. A no-op SET blocks subsequent HIGH_AVAILABILITY alters
-	// for 60+ minutes, so we skip the ALTER when the effective new value equals old state.
-	if d.HasChange("postgres_version") {
-		old, _ := d.GetChange("postgres_version")
-		effectiveNew := d.Get("postgres_version").(int)
-		if effectiveNew == 0 {
-			effectiveNew = 18
-		}
-		if old.(int) != effectiveNew {
-			set.PostgresVersion = sdk.Int(effectiveNew)
-		}
 	}
 
 	if !reflect.DeepEqual(set, &sdk.PostgresInstanceSetRequest{}) {
