@@ -1,20 +1,10 @@
 package resourceshowoutputassert
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+import (
+	"fmt"
 
-// Composite methods
-
-func (c *CatalogIntegrationAllDescribeOutputAssert) HasOAuthRestAuthentication(tokenUri, clientId string, scopes ...string) *CatalogIntegrationAllDescribeOutputAssert {
-	catalogIntegrationApplyOAuthChecks(c.ResourceAssert, "oauth_rest_authentication", tokenUri, clientId, scopes...)
-	return c
-}
-
-func (c *CatalogIntegrationAllDescribeOutputAssert) HasSigV4RestAuthentication(iamRole, signingRegion, externalId string) *CatalogIntegrationAllDescribeOutputAssert {
-	catalogIntegrationApplySigV4Checks(c.ResourceAssert, iamRole, signingRegion, externalId)
-	return c
-}
-
-// Individual RestConfig methods
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+)
 
 func (c *CatalogIntegrationAllDescribeOutputAssert) HasRestConfigCatalogUri(expected string) *CatalogIntegrationAllDescribeOutputAssert {
 	c.StringValueSet("rest_config.0.catalog_uri", expected)
@@ -41,8 +31,6 @@ func (c *CatalogIntegrationAllDescribeOutputAssert) HasRestConfigAccessDelegatio
 	return c
 }
 
-// Individual SigV4 methods
-
 func (c *CatalogIntegrationAllDescribeOutputAssert) HasSigv4RestAuthenticationSigv4IamRole(expected string) *CatalogIntegrationAllDescribeOutputAssert {
 	c.StringValueSet("sigv4_rest_authentication.0.sigv4_iam_role", expected)
 	return c
@@ -57,8 +45,6 @@ func (c *CatalogIntegrationAllDescribeOutputAssert) HasSigv4RestAuthenticationSi
 	c.StringValueSet("sigv4_rest_authentication.0.sigv4_external_id", expected)
 	return c
 }
-
-// Individual OAuth methods
 
 func (c *CatalogIntegrationAllDescribeOutputAssert) HasOAuthRestAuthenticationOauthTokenUri(expected string) *CatalogIntegrationAllDescribeOutputAssert {
 	c.StringValueSet("oauth_rest_authentication.0.oauth_token_uri", expected)
@@ -76,11 +62,12 @@ func (c *CatalogIntegrationAllDescribeOutputAssert) HasOAuthRestAuthenticationOa
 }
 
 func (c *CatalogIntegrationAllDescribeOutputAssert) HasOAuthRestAuthenticationOauthAllowedScopes(expected ...string) *CatalogIntegrationAllDescribeOutputAssert {
-	catalogIntegrationApplyOAuthScopesCheck(c.ResourceAssert, "oauth_rest_authentication", expected...)
+	c.StringValueSet("oauth_rest_authentication.0.oauth_allowed_scopes.#", fmt.Sprintf("%d", len(expected)))
+	for i, v := range expected {
+		c.StringValueSet(fmt.Sprintf("oauth_rest_authentication.0.oauth_allowed_scopes.%d", i), v)
+	}
 	return c
 }
-
-// No-value OAuth methods
 
 func (c *CatalogIntegrationAllDescribeOutputAssert) HasNoOAuthRestAuthenticationOauthTokenUri() *CatalogIntegrationAllDescribeOutputAssert {
 	c.ValueNotSet("oauth_rest_authentication.0.oauth_token_uri")
@@ -101,8 +88,6 @@ func (c *CatalogIntegrationAllDescribeOutputAssert) HasNoOAuthRestAuthentication
 	c.StringValueSet("oauth_rest_authentication.0.oauth_allowed_scopes.#", "0")
 	return c
 }
-
-// Individual Glue methods
 
 func (c *CatalogIntegrationAllDescribeOutputAssert) HasGlueAwsIamUserArnNotEmpty() *CatalogIntegrationAllDescribeOutputAssert {
 	c.ValuePresent("glue_aws_iam_user_arn")
