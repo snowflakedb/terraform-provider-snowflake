@@ -182,9 +182,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Pipes.Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Pipes.Drop, sdk.NewDropPipeRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
 		}},
@@ -259,9 +257,7 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Pipes.Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Pipes.Drop, sdk.NewDropPipeRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
 		}},

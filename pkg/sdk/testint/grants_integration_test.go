@@ -1685,11 +1685,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(false),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
@@ -1747,11 +1743,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(false),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
@@ -1802,11 +1794,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 			pipeCleanup()
 		})
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(false),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
@@ -1848,11 +1836,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 			pipeCleanup()
 		})
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(true),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
