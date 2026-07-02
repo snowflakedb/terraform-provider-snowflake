@@ -82,6 +82,15 @@ var oauthIntegrationForCustomClientsSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: relatedResourceDescription("A set of Snowflake roles that a user does not need to explicitly consent to using after authenticating.", resources.AccountRole),
 	},
+	"allowed_roles_list": {
+		Type: schema.TypeSet,
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		},
+		Optional:    true,
+		Description: relatedResourceDescription("A set of Snowflake roles that a user can explicitly consent to using after authenticating. Can only be set when oauth_use_secondary_roles is set to NONE.", resources.AccountRole),
+	},
 	"blocked_roles_list": {
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{
@@ -174,6 +183,7 @@ func OauthIntegrationForCustomClients() *schema.Resource {
 		Description:   "Resource used to manage oauth security integration for custom clients objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OauthIntegrationForCustomClients, customdiff.All(
+			oauthCustomClientsAllowedRolesListRequiresSecondaryRolesNone,
 			ComputedIfAnyAttributeChanged(
 				oauthIntegrationForCustomClientsSchema,
 				ShowOutputAttributeName,
@@ -189,6 +199,7 @@ func OauthIntegrationForCustomClients() *schema.Resource {
 				"oauth_enforce_pkce",
 				"oauth_use_secondary_roles",
 				"pre_authorized_roles_list",
+				"allowed_roles_list",
 				"blocked_roles_list",
 				"oauth_issue_refresh_tokens",
 				"oauth_refresh_token_validity",
@@ -333,6 +344,12 @@ func CreateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 		req.WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: preAuthorizedRoles})
 	}
 
+	if v, ok := d.GetOk("allowed_roles_list"); ok {
+		elems := expandStringList(v.(*schema.Set).List())
+		allowedRoles := collections.Map(elems, sdk.NewAccountObjectIdentifier)
+		req.WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: allowedRoles})
+	}
+
 	if v, ok := d.GetOk("blocked_roles_list"); ok {
 		elems := expandStringList(v.(*schema.Set).List())
 		blockedRoles := make([]sdk.AccountObjectIdentifier, len(elems))
@@ -450,6 +467,20 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 			preAuthorizedRoles = strings.Split(preAuthorizedRolesList.Value, ",")
 		}
 		if err := d.Set("pre_authorized_roles_list", preAuthorizedRoles); err != nil {
+			return diag.FromErr(err)
+		}
+
+		allowedRolesList, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
+			return property.Name == "ALLOWED_ROLES_LIST"
+		})
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to find allowed roles list, err = %w", err))
+		}
+		var allowedRoles []string
+		if len(allowedRolesList.Value) > 0 {
+			allowedRoles = sdk.ParseCommaSeparatedStringArray(allowedRolesList.Value, false)
+		}
+		if err := d.Set("allowed_roles_list", allowedRoles); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -635,6 +666,12 @@ func UpdateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 		set.WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: preAuthorizedRoles})
 	}
 
+	if d.HasChange("allowed_roles_list") {
+		elems := expandStringList(d.Get("allowed_roles_list").(*schema.Set).List())
+		allowedRoles := collections.Map(elems, sdk.NewAccountObjectIdentifier)
+		set.WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: allowedRoles})
+	}
+
 	if d.HasChange("blocked_roles_list") {
 		elems := expandStringList(d.Get("blocked_roles_list").(*schema.Set).List())
 		blockedRoles := make([]sdk.AccountObjectIdentifier, len(elems))
@@ -707,4 +744,28 @@ func UpdateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 	}
 
 	return ReadContextOauthIntegrationForCustomClients(false)(ctx, d, meta)
+}
+
+// oauthCustomClientsAllowedRolesListRequiresSecondaryRolesNone validates that allowed_roles_list can
+// only be set when oauth_use_secondary_roles is NONE.
+func oauthCustomClientsAllowedRolesListRequiresSecondaryRolesNone(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() {
+		return nil
+	}
+	configMap := rawConfig.AsValueMap()
+
+	allowedRoles, ok := configMap["allowed_roles_list"]
+	if !ok || allowedRoles.IsNull() || !allowedRoles.IsKnown() || allowedRoles.LengthInt() == 0 {
+		return nil
+	}
+
+	secondaryRoles, ok := configMap["oauth_use_secondary_roles"]
+	if !ok || secondaryRoles.IsNull() || !secondaryRoles.IsKnown() {
+		return nil
+	}
+	if secondaryRoles.AsString() != string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone) {
+		return fmt.Errorf("allowed_roles_list can only be set when oauth_use_secondary_roles is set to %s", sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)
+	}
+	return nil
 }

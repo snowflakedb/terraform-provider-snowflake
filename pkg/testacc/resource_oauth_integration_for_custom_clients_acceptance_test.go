@@ -32,6 +32,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 	preAuthorizedRole, preauthorizedRoleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(preauthorizedRoleCleanup)
 
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
+
 	validUrl := "https://example.com/callback"
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	key, _ := random.GenerateRSAPublicKey(t)
@@ -48,8 +51,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
+		WithAllowedRoles(allowedRole.ID()).
 		WithComment(comment)
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -71,6 +75,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasOauthIssueRefreshTokensString(resources.BooleanDefault).
 			HasOauthAllowNonTlsRedirectUriString(resources.BooleanDefault).
 			HasPreAuthorizedRolesList().
+			HasAllowedRolesListEmpty().
 			HasRelatedParametersNotEmpty().
 			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList(resources.BooleanTrue).
 			HasBlockedRolesListEmpty(),
@@ -90,6 +95,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000")),
@@ -122,8 +128,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasOauthEnforcePkceString(resources.BooleanTrue).
 			HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 			HasOauthRefreshTokenValidityString("86400").
-			HasOauthUseSecondaryRolesString("IMPLICIT").
+			HasOauthUseSecondaryRolesString("NONE").
 			HasPreAuthorizedRolesList(preAuthorizedRole.ID().Name()).
+			HasAllowedRolesList(allowedRole.ID().Name()).
 			HasNetworkPolicyString(networkPolicy.ID().Name()).
 			HasOauthClientRsaPublicKeyString(key).
 			HasOauthClientRsaPublicKey2String(key).
@@ -145,8 +152,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", allowedRole.ID().Name())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
@@ -234,8 +242,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 							WithOauthEnforcePkce(true).
 							WithOauthIssueRefreshTokens(true).
 							WithOauthRefreshTokenValidity(86400).
-							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit).
+							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone).
 							WithPreAuthorizedRolesList(*sdk.NewPreAuthorizedRolesListRequest().WithPreAuthorizedRolesList([]sdk.AccountObjectIdentifier{preAuthorizedRole.ID()})).
+							WithAllowedRolesList(*sdk.NewAllowedRolesListRequest([]sdk.AccountObjectIdentifier{allowedRole.ID()})).
 							WithComment(comment),
 					))
 				},
@@ -277,6 +286,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 	preAuthorizedRole, preauthorizedRoleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(preauthorizedRoleCleanup)
 
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
+
 	validUrl := "https://example.com/callback"
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	key, _ := random.GenerateRSAPublicKey(t)
@@ -291,8 +303,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
+		WithAllowedRoles(allowedRole.ID()).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -324,8 +337,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 						HasOauthEnforcePkceString(resources.BooleanTrue).
 						HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 						HasOauthRefreshTokenValidityString("86400").
-						HasOauthUseSecondaryRolesString("IMPLICIT").
+						HasOauthUseSecondaryRolesString("NONE").
 						HasPreAuthorizedRolesList(preAuthorizedRole.ID().Name()).
+						HasAllowedRolesList(allowedRole.ID().Name()).
 						HasNetworkPolicyString(networkPolicy.ID().Name()).
 						HasOauthClientRsaPublicKeyString(key).
 						HasOauthClientRsaPublicKey2String(key).
@@ -347,8 +361,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", allowedRole.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
@@ -446,6 +461,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", ""),
+					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", ""),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000"),
@@ -495,6 +511,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", ""),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", ""),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000"),
@@ -521,6 +538,12 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 		WithOauthUseSecondaryRoles("invalid")
 	invalidClientTypesModel := model.OauthIntegrationForCustomClients("test", id.Name(), "invalid", validUrl)
 
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
+	allowedRolesWithImplicitModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
+		WithAllowedRoles(allowedRole.ID())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -536,6 +559,11 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 				Config:      accconfig.FromModels(t, invalidClientTypesModel),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Error: invalid oauth security integration client type option: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, allowedRolesWithImplicitModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`allowed_roles_list can only be set when oauth_use_secondary_roles is set to NONE`),
 			},
 		},
 	})

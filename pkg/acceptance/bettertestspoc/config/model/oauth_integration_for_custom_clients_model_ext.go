@@ -18,6 +18,20 @@ func (t *OauthIntegrationForCustomClientsModel) WithBlockedRolesList(blockedRole
 	return t
 }
 
+func (t *OauthIntegrationForCustomClientsModel) WithAllowedRoles(roles ...sdk.AccountObjectIdentifier) *OauthIntegrationForCustomClientsModel {
+	t.AllowedRolesList = tfconfig.SetVariable(
+		collections.Map(roles, func(role sdk.AccountObjectIdentifier) tfconfig.Variable {
+			return tfconfig.StringVariable(role.Name())
+		})...,
+	)
+	return t
+}
+
+func (t *OauthIntegrationForCustomClientsModel) WithAllowedRolesEmpty() *OauthIntegrationForCustomClientsModel {
+	t.AllowedRolesList = config.EmptyListVariable()
+	return t
+}
+
 func (t *OauthIntegrationForCustomClientsModel) WithPreAuthorizedRoles(roles ...sdk.AccountObjectIdentifier) *OauthIntegrationForCustomClientsModel {
 	t.PreAuthorizedRolesList = tfconfig.SetVariable(
 		collections.Map(roles, func(role sdk.AccountObjectIdentifier) tfconfig.Variable {
