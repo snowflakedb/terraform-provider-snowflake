@@ -65,6 +65,7 @@ func sweep(client *sdk.Client, suffix string) error {
 		return fmt.Errorf("suffix is required to run sweepers")
 	}
 	sweepers := []func() error{
+		nukePostgresInstances(client, suffix),
 		nukeSecurityIntegrations(client, suffix),
 		getAccountPolicyAttachmentsSweeper(client),
 		nukeResourceMonitors(client, suffix),
@@ -120,6 +121,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, acceptanceTestDatabasesPrefix, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep postgres instances", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukePostgresInstances(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -405,6 +413,47 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping user %s", user.ID().FullyQualifiedName())
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+func nukePostgresInstances(client *sdk.Client, suffix string) func() error {
+	return func() error {
+		ctx := context.Background()
+
+		var postgresInstanceDropCondition func(u sdk.PostgresInstance) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping postgres instances with suffix %s", suffix)
+			postgresInstanceDropCondition = func(u sdk.PostgresInstance) bool {
+				return strings.HasSuffix(u.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale postgres instances")
+			postgresInstanceDropCondition = func(u sdk.PostgresInstance) bool {
+				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+			}
+		}
+		postgresInstances, err := client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest())
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[DEBUG] Found %d postgres instances", len(postgresInstances))
+
+		var errs []error
+		for idx, postgresInstance := range postgresInstances {
+			log.Printf("[DEBUG] Processing postgres instance [%d/%d]: %s...", idx+1, len(postgresInstances), postgresInstance.Name)
+
+			if postgresInstanceDropCondition(postgresInstance) {
+				log.Printf("[DEBUG] Dropping postgres instance %s", postgresInstance.Name)
+				if err := client.PostgresInstances.DropSafely(ctx, postgresInstance.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping postgres instance %s ended with an error, err = %w", postgresInstance.Name, err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping postgres instance %s", postgresInstance.Name)
 			}
 		}
 

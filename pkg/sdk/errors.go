@@ -31,6 +31,14 @@ var (
 	ErrDifferentSchema         = NewError("schema must be the same")
 
 	ErrPolicyNotAttachedToAccount = NewError("policy kind is not attached to account")
+
+	// postgres instance errors.
+
+	// ErrPostgresOperationMustBeComplete is a substring of the Snowflake error message returned when an
+	// ALTER is issued while a previous CREATE/ALTER is still in progress.
+	// Note: this is a fragile substring match — Snowflake may change the message in future versions,
+	// or an unrelated error could accidentally match. Treat retries as best-effort.
+	ErrPostgresOperationMustBeComplete = NewError("must be complete before issuing ALTER")
 )
 
 type IntErrType string

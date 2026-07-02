@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(new feature)* New Postgres instance resource
+
+We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_postgres_instance_resource` to the `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* Cortex Code daily credit limit account parameters
 
 Added support for three new account parameters in the following resources:

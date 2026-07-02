@@ -14,6 +14,10 @@ func (r *CreatePostgresInstanceRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }
 
+func (r *AlterPostgresInstanceRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
+
 // PostgresInstanceDetails represents the parsed result of DESCRIBE POSTGRES INSTANCE
 type PostgresInstanceDetails struct {
 	Name                         string
@@ -104,13 +108,17 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 				}
 			}
 		case "comment":
-			details.Comment = String(prop.Value)
+			if prop.Value != "" {
+				details.Comment = String(prop.Value)
+			}
 		case "network_policy":
 			if prop.Value != "" {
 				details.NetworkPolicy = Pointer(NewAccountObjectIdentifier(prop.Value))
 			}
 		case "postgres_settings":
-			details.PostgresSettings = String(prop.Value)
+			if prop.Value != "" {
+				details.PostgresSettings = String(prop.Value)
+			}
 		case "storage_integration":
 			if prop.Value != "" {
 				details.StorageIntegration = Pointer(NewAccountObjectIdentifier(prop.Value))
@@ -144,12 +152,43 @@ func createSafelyPolling(ctx context.Context, doCreate func() error, doShowByID 
 	if err := doCreate(); err != nil {
 		return nil, err
 	}
+	return pollUntilReady(ctx, doShowByID)
+}
+
+func (v *postgresInstances) AlterSafely(ctx context.Context, req *AlterPostgresInstanceRequest) error {
+	return updateSafelyPolling(
+		ctx,
+		func() error { return v.Alter(ctx, req) },
+		func() (*PostgresInstance, error) { return v.ShowByID(ctx, req.GetName()) },
+	)
+}
+
+func updateSafelyPolling(ctx context.Context, doUpdate func() error, doShowByID func() (*PostgresInstance, error)) error {
+	if _, err := pollUntilReady(ctx, doShowByID); err != nil {
+		return err
+	}
 	for {
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
-		default:
+		if err := doUpdate(); err != nil {
+			if strings.Contains(err.Error(), ErrPostgresOperationMustBeComplete.Error()) {
+				if _, err := pollUntilReady(ctx, doShowByID); err != nil {
+					return err
+				}
+				continue
+			}
+			return err
 		}
+		// ALTER accepted; wait for READY to ensure the backend has committed the
+		// change before the caller issues a read (Snowflake applies some mutations
+		// asynchronously even after returning success from ALTER).
+		_, err := pollUntilReady(ctx, doShowByID)
+		return err
+	}
+}
+
+// pollUntilReady polls doShowByID every 3 seconds until the instance reaches READY state
+// or ctx is canceled. Context cancellation is respected between polls.
+func pollUntilReady(ctx context.Context, doShowByID func() (*PostgresInstance, error)) (*PostgresInstance, error) {
+	for {
 		instance, err := doShowByID()
 		if err != nil {
 			return nil, err
@@ -157,7 +196,11 @@ func createSafelyPolling(ctx context.Context, doCreate func() error, doShowByID 
 		if instance.State == PostgresInstanceStateReady {
 			return instance, nil
 		}
-		time.Sleep(3 * time.Second)
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
+		case <-time.After(3 * time.Second):
+		}
 	}
 }
 
@@ -167,7 +210,7 @@ func createSafelyPolling(ctx context.Context, doCreate func() error, doShowByID 
 // ("{}") is normalized to "" to represent "not set".
 func NormalizePostgresSettings(s string) (string, error) {
 	trimmed := strings.TrimSpace(s)
-	if trimmed == "" {
+	if trimmed == "" || trimmed == "{}" {
 		return "", nil
 	}
 

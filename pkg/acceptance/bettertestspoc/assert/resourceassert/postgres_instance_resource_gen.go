@@ -254,11 +254,6 @@ func (p *PostgresInstanceResourceAssert) HasPostgresSettingsEmpty() *PostgresIns
 	return p
 }
 
-func (p *PostgresInstanceResourceAssert) HasPostgresVersionEmpty() *PostgresInstanceResourceAssert {
-	p.ValueSet("postgres_version", "")
-	return p
-}
-
 func (p *PostgresInstanceResourceAssert) HasStorageIntegrationEmpty() *PostgresInstanceResourceAssert {
 	p.ValueSet("storage_integration", "")
 	return p
