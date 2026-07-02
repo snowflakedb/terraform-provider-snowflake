@@ -27,8 +27,8 @@ func TestPostgresInstances_ParseDetails(t *testing.T) {
 				getField: func(d *PostgresInstanceDetails) *string { return d.Comment },
 			},
 			{
-				name:      "non-empty comment yields pointer to value",
-				property:  "comment", value: "my comment",
+				name:     "non-empty comment yields pointer to value",
+				property: "comment", value: "my comment",
 				wantValue: "my comment",
 				getField:  func(d *PostgresInstanceDetails) *string { return d.Comment },
 			},
@@ -39,8 +39,8 @@ func TestPostgresInstances_ParseDetails(t *testing.T) {
 				getField: func(d *PostgresInstanceDetails) *string { return d.PostgresSettings },
 			},
 			{
-				name:      "non-empty postgres_settings yields pointer to value",
-				property:  "postgres_settings", value: `{"work_mem":"64KB"}`,
+				name:     "non-empty postgres_settings yields pointer to value",
+				property: "postgres_settings", value: `{"work_mem":"64KB"}`,
 				wantValue: `{"work_mem":"64KB"}`,
 				getField:  func(d *PostgresInstanceDetails) *string { return d.PostgresSettings },
 			},

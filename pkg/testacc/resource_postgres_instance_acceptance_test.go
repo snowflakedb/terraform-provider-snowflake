@@ -74,21 +74,26 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 		return []assert.TestCheckFuncProvider{
 			postgresInstanceResourceAssert,
 			resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
-				// TODO(Could be Snowflake bug): HasCreatedOnNotEmpty().
+				HasCreatedOnNotEmpty().
 				HasName(id.Name()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasOwnerRoleType("ROLE").
 				HasComputeFamily("STANDARD_M").
-				HasAuthenticationAuthority("POSTGRES"),
+				HasAuthenticationAuthority("POSTGRES").
+				HasStorageSize(10).
+				HasIsHa(false).
+				HasState(sdk.PostgresInstanceStateReady),
 			resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
+				HasCreatedOnNotEmpty().
 				HasName(id.Name()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasOwnerRoleType("ROLE").
 				HasComputeFamily("STANDARD_M").
 				HasStorageSizeGb(10).
 				HasAuthenticationAuthority("POSTGRES").
-				HasHighAvailability(false),
-			// TODO(Could be Snowflake bug): HasNoComment(),
+				HasHighAvailability(false).
+				HasPostgresVersion(18).
+				HasState("READY"),
 		}
 	}
 
@@ -107,14 +112,18 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasPostgresSettingsString(`{"postgres:work_mem":"64KB"}`).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
 		resourceshowoutputassert.PostgresInstanceShowOutput(t, ref).
-			// TODO(Could be Snowflake bug): HasCreatedOnNotEmpty().
+			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
 			HasComputeFamily("STANDARD_M").
 			HasAuthenticationAuthority("POSTGRES").
-			HasComment(comment),
+			HasComment(comment).
+			HasStorageSize(10).
+			HasIsHa(false).
+			HasState(sdk.PostgresInstanceStateReady),
 		resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
+			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -123,9 +132,12 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasAuthenticationAuthority("POSTGRES").
 			HasHighAvailability(false).
 			HasComment(comment).
-			// TODO(Could be Snowflake lag): HasNetworkPolicy(sdk.NewAccountObjectIdentifier(networkPolicy.Name)).
+			HasNetworkPolicy(sdk.NewAccountObjectIdentifier(networkPolicy.Name)).
 			HasPostgresVersion(18).
-			HasMaintenanceWindowStart(10),
+			HasMaintenanceWindowStart(10).
+			// Not asserted: Snowflake DESCRIBE has a propagation lag for postgres_settings and
+			// consistently returns "{}" immediately after CREATE/ALTER SET POSTGRES_SETTINGS.
+			HasState("READY"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -152,10 +164,11 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"high_availability",            // mismatching because of default value
-					"maintenance_window_start",     // mismatching because of default value
-					"describe_output.0.updated_on", // TODO: To address, I think the diff should be skipped
-					"show_output.0.updated_on",     // TODO: To address, I think the diff should be skipped
+					// BooleanDefault/IntDefault sentinels cannot be recovered from Snowflake's true/false and integer values
+					"high_availability",
+					"maintenance_window_start",
+					"describe_output.0.updated_on", // changes between reads
+					"show_output.0.updated_on",     // changes between reads
 				},
 			},
 			// Update - set optionals
@@ -222,9 +235,10 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"postgres_settings",            // TODO: To address, postgres_settings not reliably returned in SHOW after import
-					"describe_output.0.updated_on", // TODO: To address, I think the diff should be skipped
-					"show_output.0.updated_on",     // TODO: To address, I think the diff should be skipped
+					// DESCRIBE returns "{}" for postgres_settings immediately after CREATE due to propagation lag
+					"postgres_settings",
+					"describe_output.0.updated_on", // changes between reads
+					"show_output.0.updated_on",     // changes between reads
 				},
 			},
 		},

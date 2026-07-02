@@ -232,6 +232,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasEnableInternalStagesPrivat
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrl(expected bool) *CurrentOrganizationAccountResourceAssert {
+	c.BoolValueSet("enable_per_account_app_service_privatelink_url", expected)
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasEnableTriSecretAndRekeyOptOutForImageRepository(expected bool) *CurrentOrganizationAccountResourceAssert {
 	c.BoolValueSet("enable_tri_secret_and_rekey_opt_out_for_image_repository", expected)
 	return c
@@ -843,6 +848,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasEnableIdentifierFirstLogin
 
 func (c *CurrentOrganizationAccountResourceAssert) HasEnableInternalStagesPrivatelinkString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("enable_internal_stages_privatelink", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("enable_per_account_app_service_privatelink_url", expected)
 	return c
 }
 
@@ -1460,6 +1470,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoEnableInternalStagesPriv
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNoEnablePerAccountAppServicePrivatelinkUrl() *CurrentOrganizationAccountResourceAssert {
+	c.ValueNotSet("enable_per_account_app_service_privatelink_url")
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasNoEnableTriSecretAndRekeyOptOutForImageRepository() *CurrentOrganizationAccountResourceAssert {
 	c.ValueNotSet("enable_tri_secret_and_rekey_opt_out_for_image_repository")
 	return c
@@ -2066,6 +2081,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasEnableIdentifierFirstLogin
 
 func (c *CurrentOrganizationAccountResourceAssert) HasEnableInternalStagesPrivatelinkEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("enable_internal_stages_privatelink", "")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("enable_per_account_app_service_privatelink_url", "")
 	return c
 }
 
@@ -2680,6 +2700,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasEnableIdentifierFirstLogin
 
 func (c *CurrentOrganizationAccountResourceAssert) HasEnableInternalStagesPrivatelinkNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValuePresent("enable_internal_stages_privatelink")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasEnablePerAccountAppServicePrivatelinkUrlNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValuePresent("enable_per_account_app_service_privatelink_url")
 	return c
 }
 
