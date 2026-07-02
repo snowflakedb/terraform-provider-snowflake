@@ -396,3 +396,226 @@ func TestListings_ShowVersions(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s LIMIT 5", id.FullyQualifiedName())
 	})
 }
+
+// added manually
+func sampleOrganizationListingManifest() string {
+	return `
+title: "MyOrgListing"
+subtitle: "Subtitle for MyOrgListing"
+description: "Description for MyOrgListing"
+organization_targets:
+    access:
+    - all_internal_accounts: true
+locations:
+    access_regions:
+    - name: "ALL"
+`
+}
+
+func TestListings_CreateOrganization(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+	// Minimal valid CreateOrganizationListingOptions
+	defaultOpts := func() *CreateOrganizationListingOptions {
+		return &CreateOrganizationListingOptions{
+			name: id,
+		}
+	}
+
+	// added manually
+	stageId := randomSchemaObjectIdentifier()
+	manifest := sampleOrganizationListingManifest()
+	var stageLocation Location = &StageLocation{
+		stage: stageId,
+		path:  "dir/subdir",
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateOrganizationListingOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = invalidAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.As opts.From] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"))
+	})
+
+	t.Run("validation: exactly one field from [opts.As opts.From] should be present - two set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.As = &manifest
+		opts.From = &stageLocation
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"))
+	})
+
+	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present - none set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.As = &manifest
+		opts.With = &ListingWith{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"))
+	})
+
+	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present - two set", func(t *testing.T) {
+		shareId := randomAccountObjectIdentifier()
+		applicationPackageId := randomAccountObjectIdentifier()
+		opts := defaultOpts()
+		opts.As = &manifest
+		opts.With = &ListingWith{
+			Share:              &shareId,
+			ApplicationPackage: &applicationPackageId,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"))
+	})
+
+	t.Run("basic with As", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.As = &manifest
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING %s AS $$%s$$", opts.name.FullyQualifiedName(), manifest)
+	})
+
+	t.Run("basic with From", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = &stageLocation
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING %s FROM @%s/dir/subdir", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
+	})
+
+	t.Run("all As options with share", func(t *testing.T) {
+		shareId := randomAccountObjectIdentifier()
+		opts := defaultOpts()
+		opts.IfNotExists = Bool(true)
+		opts.With = &ListingWith{
+			Share: &shareId,
+		}
+		opts.As = &manifest
+		opts.Publish = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), manifest)
+	})
+
+	t.Run("all As options with application package", func(t *testing.T) {
+		applicationPackageId := randomAccountObjectIdentifier()
+		opts := defaultOpts()
+		opts.IfNotExists = Bool(true)
+		opts.With = &ListingWith{
+			ApplicationPackage: &applicationPackageId,
+		}
+		opts.As = &manifest
+		opts.Publish = Bool(false)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = false", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), manifest)
+	})
+
+	t.Run("all From options with share", func(t *testing.T) {
+		shareId := randomAccountObjectIdentifier()
+		opts := defaultOpts()
+		opts.IfNotExists = Bool(true)
+		opts.With = &ListingWith{
+			Share: &shareId,
+		}
+		opts.From = &stageLocation
+		opts.Publish = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s FROM @%s/dir/subdir PUBLISH = true", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.FullyQualifiedName())
+	})
+
+	t.Run("all From options with application package", func(t *testing.T) {
+		applicationPackageId := randomAccountObjectIdentifier()
+		opts := defaultOpts()
+		opts.IfNotExists = Bool(true)
+		opts.With = &ListingWith{
+			ApplicationPackage: &applicationPackageId,
+		}
+		opts.From = &stageLocation
+		opts.Publish = Bool(false)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s FROM @%s/dir/subdir PUBLISH = false", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), stageId.FullyQualifiedName())
+	})
+}
+
+func TestListings_ShowOrganization(t *testing.T) {
+	// Minimal valid ShowOrganizationListingOptions
+	defaultOpts := func() *ShowOrganizationListingOptions {
+		return &ShowOrganizationListingOptions{}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*ShowOrganizationListingOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "SHOW ORGANIZATION LISTING")
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Like = &Like{
+			Pattern: String("pattern"),
+		}
+		opts.StartsWith = String("startsWith")
+		opts.Limit = &LimitFrom{
+			Rows: Int(10),
+			From: String("from"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW ORGANIZATION LISTING LIKE 'pattern' STARTS WITH 'startsWith' LIMIT 10 FROM 'from'")
+	})
+}
+
+func TestListings_DescribeOrganization(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+	// Minimal valid DescribeOrganizationListingOptions
+	defaultOpts := func() *DescribeOrganizationListingOptions {
+		return &DescribeOrganizationListingOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*DescribeOrganizationListingOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = invalidAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE ORGANIZATION LISTING %s", opts.name.FullyQualifiedName())
+	})
+}
+
+func TestListings_DropOrganization(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+	// Minimal valid DropOrganizationListingOptions
+	defaultOpts := func() *DropOrganizationListingOptions {
+		return &DropOrganizationListingOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*DropOrganizationListingOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = invalidAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "DROP ORGANIZATION LISTING %s", opts.name.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "DROP ORGANIZATION LISTING IF EXISTS %s", opts.name.FullyQualifiedName())
+	})
+}
