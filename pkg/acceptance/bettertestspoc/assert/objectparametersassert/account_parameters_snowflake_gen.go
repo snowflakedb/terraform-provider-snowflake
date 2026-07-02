@@ -784,6 +784,21 @@ func (a *AccountParametersAssert) HasClientTimestampTypeMapping(expected sdk.Cli
 	return a
 }
 
+func (a *AccountParametersAssert) HasCortexCodeCliDailyEstCreditLimitPerUser(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUser(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUser(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasCortexEnabledCrossRegion(expected string) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterCortexEnabledCrossRegion, expected))
 	return a

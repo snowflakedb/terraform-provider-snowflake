@@ -500,6 +500,35 @@ func TestInt_Table(t *testing.T) {
 		assert.Equal(t, "", table.Comment)
 	})
 
+	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
+	t.Run("alter table: add a column with a constant default", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+		}
+
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, columns))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+
+		alterRequest := sdk.NewAlterTableRequest(id).
+			WithColumnAction(sdk.NewTableColumnActionRequest().
+				WithAdd(sdk.NewTableColumnAddActionRequest("COLUMN_2", sdk.DataTypeBoolean).
+					WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(sdk.String("FALSE")))))
+		err = client.Tables.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+
+		table, err := client.Tables.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		currentColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
+		expectedColumns := []expectedColumn{
+			{"COLUMN_1", sdk.DataTypeVARCHAR},
+			{"COLUMN_2", sdk.DataTypeBoolean},
+		}
+		assertColumns(t, expectedColumns, currentColumns)
+	})
+
 	t.Run("alter table: rename column", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		columns := []sdk.TableColumnRequest{

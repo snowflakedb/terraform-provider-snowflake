@@ -383,12 +383,18 @@ func (r *TableColumnActionRequest) toOpts() *TableColumnAction {
 	if r.Add != nil {
 		var defaultValue *ColumnDefaultValue
 		if r.Add.DefaultValue != nil {
-			defaultValue = &ColumnDefaultValue{
-				r.Add.DefaultValue.expression,
-				&ColumnIdentity{
+			var columnIdentity *ColumnIdentity
+			if r.Add.DefaultValue.identity != nil {
+				columnIdentity = &ColumnIdentity{
 					Start:     r.Add.DefaultValue.identity.Start,
 					Increment: r.Add.DefaultValue.identity.Increment,
-				},
+					Order:     r.Add.DefaultValue.identity.Order,
+					Noorder:   r.Add.DefaultValue.identity.Noorder,
+				}
+			}
+			defaultValue = &ColumnDefaultValue{
+				r.Add.DefaultValue.expression,
+				columnIdentity,
 			}
 		}
 		var inlineConstraint *TableColumnAddInlineConstraint
