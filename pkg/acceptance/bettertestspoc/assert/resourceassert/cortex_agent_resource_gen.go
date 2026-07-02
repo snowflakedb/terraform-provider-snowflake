@@ -16,7 +16,7 @@ func CortexAgentResource(t *testing.T, name string) *CortexAgentResourceAssert {
 	t.Helper()
 
 	return &CortexAgentResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCortexAgentResource(t *testing.T, id string) *CortexAgentResourceAs
 	t.Helper()
 
 	return &CortexAgentResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

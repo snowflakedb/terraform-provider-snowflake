@@ -84,3 +84,8 @@ func (w *WarehouseShowOutputAssert) HasGenerationNotEmpty() *WarehouseShowOutput
 	w.ValuePresent("generation")
 	return w
 }
+
+func (w *WarehouseShowOutputAssert) HasCommentEmpty() *WarehouseShowOutputAssert {
+	w.StringValueSet("comment", "")
+	return w
+}

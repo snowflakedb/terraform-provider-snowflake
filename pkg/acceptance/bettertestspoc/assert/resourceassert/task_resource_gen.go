@@ -16,7 +16,7 @@ func TaskResource(t *testing.T, name string) *TaskResourceAssert {
 	t.Helper()
 
 	return &TaskResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedTaskResource(t *testing.T, id string) *TaskResourceAssert {
 	t.Helper()
 
 	return &TaskResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

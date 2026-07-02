@@ -16,7 +16,7 @@ func CatalogIntegrationAwsGlueResource(t *testing.T, name string) *CatalogIntegr
 	t.Helper()
 
 	return &CatalogIntegrationAwsGlueResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCatalogIntegrationAwsGlueResource(t *testing.T, id string) *Catalog
 	t.Helper()
 
 	return &CatalogIntegrationAwsGlueResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

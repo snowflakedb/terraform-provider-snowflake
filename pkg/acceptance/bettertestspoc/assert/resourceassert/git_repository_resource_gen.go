@@ -16,7 +16,7 @@ func GitRepositoryResource(t *testing.T, name string) *GitRepositoryResourceAsse
 	t.Helper()
 
 	return &GitRepositoryResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGitRepositoryResource(t *testing.T, id string) *GitRepositoryResour
 	t.Helper()
 
 	return &GitRepositoryResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

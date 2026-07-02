@@ -16,7 +16,7 @@ func OauthIntegrationForCustomClientsResource(t *testing.T, name string) *OauthI
 	t.Helper()
 
 	return &OauthIntegrationForCustomClientsResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedOauthIntegrationForCustomClientsResource(t *testing.T, id string) *
 	t.Helper()
 
 	return &OauthIntegrationForCustomClientsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func GrantPrivilegesToAccountRoleResource(t *testing.T, name string) *GrantPrivi
 	t.Helper()
 
 	return &GrantPrivilegesToAccountRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantPrivilegesToAccountRoleResource(t *testing.T, id string) *Gran
 	t.Helper()
 
 	return &GrantPrivilegesToAccountRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

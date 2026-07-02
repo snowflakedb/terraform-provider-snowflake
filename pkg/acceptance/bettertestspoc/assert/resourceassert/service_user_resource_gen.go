@@ -16,7 +16,7 @@ func ServiceUserResource(t *testing.T, name string) *ServiceUserResourceAssert {
 	t.Helper()
 
 	return &ServiceUserResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedServiceUserResource(t *testing.T, id string) *ServiceUserResourceAs
 	t.Helper()
 
 	return &ServiceUserResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

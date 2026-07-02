@@ -16,7 +16,7 @@ func TableResource(t *testing.T, name string) *TableResourceAssert {
 	t.Helper()
 
 	return &TableResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedTableResource(t *testing.T, id string) *TableResourceAssert {
 	t.Helper()
 
 	return &TableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

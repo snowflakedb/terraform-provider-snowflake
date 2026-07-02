@@ -16,7 +16,7 @@ func AuthenticationPolicyResource(t *testing.T, name string) *AuthenticationPoli
 	t.Helper()
 
 	return &AuthenticationPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedAuthenticationPolicyResource(t *testing.T, id string) *Authenticati
 	t.Helper()
 
 	return &AuthenticationPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

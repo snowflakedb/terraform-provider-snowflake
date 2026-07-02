@@ -16,7 +16,7 @@ func SecretWithClientCredentialsResource(t *testing.T, name string) *SecretWithC
 	t.Helper()
 
 	return &SecretWithClientCredentialsResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSecretWithClientCredentialsResource(t *testing.T, id string) *Secre
 	t.Helper()
 
 	return &SecretWithClientCredentialsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

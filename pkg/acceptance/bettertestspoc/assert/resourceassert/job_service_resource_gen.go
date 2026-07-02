@@ -16,7 +16,7 @@ func JobServiceResource(t *testing.T, name string) *JobServiceResourceAssert {
 	t.Helper()
 
 	return &JobServiceResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedJobServiceResource(t *testing.T, id string) *JobServiceResourceAsse
 	t.Helper()
 
 	return &JobServiceResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

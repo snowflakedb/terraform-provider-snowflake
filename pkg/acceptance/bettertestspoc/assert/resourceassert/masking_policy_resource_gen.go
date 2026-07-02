@@ -16,7 +16,7 @@ func MaskingPolicyResource(t *testing.T, name string) *MaskingPolicyResourceAsse
 	t.Helper()
 
 	return &MaskingPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedMaskingPolicyResource(t *testing.T, id string) *MaskingPolicyResour
 	t.Helper()
 
 	return &MaskingPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func ExternalAzureStageResource(t *testing.T, name string) *ExternalAzureStageRe
 	t.Helper()
 
 	return &ExternalAzureStageResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalAzureStageResource(t *testing.T, id string) *ExternalAzureS
 	t.Helper()
 
 	return &ExternalAzureStageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

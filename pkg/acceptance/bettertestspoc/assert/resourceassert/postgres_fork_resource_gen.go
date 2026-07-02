@@ -16,7 +16,7 @@ func PostgresForkResource(t *testing.T, name string) *PostgresForkResourceAssert
 	t.Helper()
 
 	return &PostgresForkResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPostgresForkResource(t *testing.T, id string) *PostgresForkResource
 	t.Helper()
 
 	return &PostgresForkResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

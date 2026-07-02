@@ -1,15 +1,10 @@
 package resourceshowoutputassert
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+import (
+	"fmt"
 
-// Composite methods
-
-func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasRestAuthentication(tokenUri, clientId string, scopes ...string) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	catalogIntegrationApplyOAuthChecks(c.ResourceAssert, "rest_authentication", tokenUri, clientId, scopes...)
-	return c
-}
-
-// Individual RestConfig methods
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+)
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasRestConfigCatalogUri(expected string) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
 	c.StringValueSet("rest_config.0.catalog_uri", expected)
@@ -36,8 +31,6 @@ func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasRestConfigAccessD
 	return c
 }
 
-// Individual OAuth methods
-
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasRestAuthenticationOauthTokenUri(expected string) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
 	c.StringValueSet("rest_authentication.0.oauth_token_uri", expected)
 	return c
@@ -54,11 +47,12 @@ func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasRestAuthenticatio
 }
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasRestAuthenticationOauthAllowedScopes(expected ...string) *CatalogIntegrationOpenCatalogDescribeOutputAssert {
-	catalogIntegrationApplyOAuthScopesCheck(c.ResourceAssert, "rest_authentication", expected...)
+	c.StringValueSet("rest_authentication.0.oauth_allowed_scopes.#", fmt.Sprintf("%d", len(expected)))
+	for i, v := range expected {
+		c.StringValueSet(fmt.Sprintf("rest_authentication.0.oauth_allowed_scopes.%d", i), v)
+	}
 	return c
 }
-
-// No-value OAuth methods
 
 func (c *CatalogIntegrationOpenCatalogDescribeOutputAssert) HasNoRestAuthenticationOauthTokenUri() *CatalogIntegrationOpenCatalogDescribeOutputAssert {
 	c.ValueNotSet("rest_authentication.0.oauth_token_uri")

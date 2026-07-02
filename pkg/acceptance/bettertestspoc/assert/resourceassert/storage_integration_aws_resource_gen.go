@@ -16,7 +16,7 @@ func StorageIntegrationAwsResource(t *testing.T, name string) *StorageIntegratio
 	t.Helper()
 
 	return &StorageIntegrationAwsResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStorageIntegrationAwsResource(t *testing.T, id string) *StorageInte
 	t.Helper()
 
 	return &StorageIntegrationAwsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

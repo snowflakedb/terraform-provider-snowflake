@@ -16,7 +16,7 @@ func HybridTableResource(t *testing.T, name string) *HybridTableResourceAssert {
 	t.Helper()
 
 	return &HybridTableResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedHybridTableResource(t *testing.T, id string) *HybridTableResourceAs
 	t.Helper()
 
 	return &HybridTableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

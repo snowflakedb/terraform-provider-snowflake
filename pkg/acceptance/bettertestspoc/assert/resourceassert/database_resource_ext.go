@@ -3,7 +3,6 @@ package resourceassert
 import (
 	"strconv"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -28,10 +27,10 @@ func (d *DatabaseResourceAssert) HasAllDefaultParameters() *DatabaseResourceAsse
 }
 
 func (d *DatabaseResourceAssert) HasReplication(accountIdentifier sdk.AccountIdentifier, withFailover bool, ignoreEditionCheck bool) *DatabaseResourceAssert {
-	d.AddAssertion(assert.ValueSet("replication.#", "1"))
-	d.AddAssertion(assert.ValueSet("replication.0.enable_to_account.#", "1"))
-	d.AddAssertion(assert.ValueSet("replication.0.enable_to_account.0.account_identifier", accountIdentifier.FullyQualifiedName()))
-	d.AddAssertion(assert.ValueSet("replication.0.enable_to_account.0.with_failover", strconv.FormatBool(withFailover)))
-	d.AddAssertion(assert.ValueSet("replication.0.ignore_edition_check", strconv.FormatBool(ignoreEditionCheck)))
+	d.ValueSet("replication.#", "1")
+	d.ValueSet("replication.0.enable_to_account.#", "1")
+	d.ValueSet("replication.0.enable_to_account.0.account_identifier", accountIdentifier.FullyQualifiedName())
+	d.ValueSet("replication.0.enable_to_account.0.with_failover", strconv.FormatBool(withFailover))
+	d.ValueSet("replication.0.ignore_edition_check", strconv.FormatBool(ignoreEditionCheck))
 	return d
 }

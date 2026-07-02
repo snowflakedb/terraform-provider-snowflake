@@ -16,7 +16,7 @@ func ApiIntegrationAmazonApiGatewayResource(t *testing.T, name string) *ApiInteg
 	t.Helper()
 
 	return &ApiIntegrationAmazonApiGatewayResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationAmazonApiGatewayResource(t *testing.T, id string) *Ap
 	t.Helper()
 
 	return &ApiIntegrationAmazonApiGatewayResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

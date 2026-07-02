@@ -16,7 +16,7 @@ func SecondaryDatabaseResource(t *testing.T, name string) *SecondaryDatabaseReso
 	t.Helper()
 
 	return &SecondaryDatabaseResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSecondaryDatabaseResource(t *testing.T, id string) *SecondaryDataba
 	t.Helper()
 
 	return &SecondaryDatabaseResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

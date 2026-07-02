@@ -16,7 +16,7 @@ func ExternalVolumeResource(t *testing.T, name string) *ExternalVolumeResourceAs
 	t.Helper()
 
 	return &ExternalVolumeResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalVolumeResource(t *testing.T, id string) *ExternalVolumeReso
 	t.Helper()
 
 	return &ExternalVolumeResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

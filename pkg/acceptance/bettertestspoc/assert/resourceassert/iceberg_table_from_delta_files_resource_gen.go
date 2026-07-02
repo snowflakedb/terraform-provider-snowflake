@@ -16,7 +16,7 @@ func IcebergTableFromDeltaFilesResource(t *testing.T, name string) *IcebergTable
 	t.Helper()
 
 	return &IcebergTableFromDeltaFilesResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedIcebergTableFromDeltaFilesResource(t *testing.T, id string) *Iceber
 	t.Helper()
 
 	return &IcebergTableFromDeltaFilesResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func ApiIntegrationExternalMcpDynamicClientResource(t *testing.T, name string) *
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpDynamicClientResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationExternalMcpDynamicClientResource(t *testing.T, id str
 	t.Helper()
 
 	return &ApiIntegrationExternalMcpDynamicClientResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
