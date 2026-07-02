@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"errors"
 	"fmt"
 	"testing"
 
@@ -44,6 +43,7 @@ func TestInt_CreatePipeWithStrangeSchemaName(t *testing.T) {
 		)
 
 		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Pipe.DropPipeFunc(t, id))
 	})
 
 	t.Run("the same does not work when using non fully qualified name for table", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 	})
 
 	t.Run("describe: existing pipe", func(t *testing.T) {
-		pipe, err := itc.client.Pipes.ShowByID(itc.ctx, pipe1.ID())
+		pipe, err := itc.client.Pipes.Describe(itc.ctx, pipe1.ID())
 
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.PipeFromObject(t, pipe).
@@ -165,6 +165,7 @@ func TestInt_PipeCreate(t *testing.T) {
 			WithIfNotExists(true).
 			WithComment(comment))
 		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Pipe.DropPipeFunc(t, id))
 
 		pipe, err := itc.client.Pipes.ShowByID(itc.ctx, id)
 
@@ -172,20 +173,12 @@ func TestInt_PipeCreate(t *testing.T) {
 		assertPipe(t, pipe, id.Name(), comment)
 	})
 
-	t.Run("test if not exists and or replace are incompatible", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		err := itc.client.Pipes.Create(itc.ctx, sdk.NewCreatePipeRequest(id, copyStatement).
-			WithOrReplace(true).
-			WithIfNotExists(true))
-		require.ErrorContains(t, err, "(0A000): SQL compilation error:\noptions IF NOT EXISTS and OR REPLACE are incompatible")
-	})
-
 	t.Run("test no options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
 		err := itc.client.Pipes.Create(itc.ctx, sdk.NewCreatePipeRequest(id, copyStatement))
 		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Pipe.DropPipeFunc(t, id))
 
 		pipe, err := itc.client.Pipes.ShowByID(itc.ctx, id)
 
@@ -269,24 +262,13 @@ func TestInt_PipesShowByID(t *testing.T) {
 	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	cleanupPipeHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
-		t.Helper()
-		return func() {
-			err := client.Pipes.Drop(ctx, sdk.NewDropPipeRequest(id))
-			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
-				return
-			}
-			require.NoError(t, err)
-		}
-	}
-
 	createPipeHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
 
 		statement := createPipeCopyStatement(t, table, stage)
 		err := client.Pipes.Create(ctx, sdk.NewCreatePipeRequest(id, statement))
 		require.NoError(t, err)
-		t.Cleanup(cleanupPipeHandle(t, id))
+		t.Cleanup(testClientHelper().Pipe.DropPipeFunc(t, id))
 	}
 
 	t.Run("show by id - same name in different schemas", func(t *testing.T) {

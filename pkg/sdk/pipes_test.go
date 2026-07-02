@@ -25,6 +25,13 @@ func TestPipesCreate(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = Bool(true)
+		opts.OrReplace = Bool(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreatePipeOptions", "OrReplace", "IfNotExists"))
+	})
+
 	t.Run("validation: copy statement required", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.copyStatement = ""
