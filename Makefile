@@ -223,7 +223,7 @@ clean-resource-parameters-assertions: ## Clean resource parameters assertions
 generate-resource-show-output-assertions: ## Generate resource show output assertions
 	go generate ./pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/generate.go
 
-generate-resource-show-output-assertions-check: clean-resource-show-output-assertions generate-resource-show-output-assertions ## check that generated resource show output assertions are up-to-date
+generate-resource-show-output-assertions-check: generate-resource-show-output-assertions ## check that generated resource show output assertions are up-to-date
 	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert)
 
 clean-resource-show-output-assertions: ## Clean resource show output assertions
