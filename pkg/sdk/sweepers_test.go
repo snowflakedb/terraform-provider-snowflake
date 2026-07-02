@@ -125,6 +125,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
+	t.Run("sweep postgres instances", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukePostgresInstances(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
 	t.Run("sweep security integrations", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeSecurityIntegrations(c, "")()
