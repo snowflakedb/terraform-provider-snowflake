@@ -152,21 +152,7 @@ func createSafelyPolling(ctx context.Context, doCreate func() error, doShowByID 
 	if err := doCreate(); err != nil {
 		return nil, err
 	}
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
-		default:
-		}
-		instance, err := doShowByID()
-		if err != nil {
-			return nil, err
-		}
-		if instance.State == PostgresInstanceStateReady {
-			return instance, nil
-		}
-		time.Sleep(3 * time.Second)
-	}
+	return pollUntilReady(ctx, doShowByID)
 }
 
 func (v *postgresInstances) AlterSafely(ctx context.Context, req *AlterPostgresInstanceRequest) error {
@@ -178,23 +164,15 @@ func (v *postgresInstances) AlterSafely(ctx context.Context, req *AlterPostgresI
 }
 
 func updateSafelyPolling(ctx context.Context, doUpdate func() error, doShowByID func() (*PostgresInstance, error)) error {
+	if _, err := pollUntilReady(ctx, doShowByID); err != nil {
+		return err
+	}
 	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
-		default:
-		}
-		instance, err := doShowByID()
-		if err != nil {
-			return err
-		}
-		if instance.State != PostgresInstanceStateReady {
-			time.Sleep(3 * time.Second)
-			continue
-		}
 		if err := doUpdate(); err != nil {
-			if strings.Contains(err.Error(), "must be complete before issuing ALTER") {
-				time.Sleep(3 * time.Second)
+			if strings.Contains(err.Error(), ErrPostgresOperationMustBeComplete.Error()) {
+				if _, err := pollUntilReady(ctx, doShowByID); err != nil {
+					return err
+				}
 				continue
 			}
 			return err
@@ -202,20 +180,26 @@ func updateSafelyPolling(ctx context.Context, doUpdate func() error, doShowByID 
 		// ALTER accepted; wait for READY to ensure the backend has committed the
 		// change before the caller issues a read (Snowflake applies some mutations
 		// asynchronously even after returning success from ALTER).
-		for {
-			select {
-			case <-ctx.Done():
-				return fmt.Errorf("postgres instance did not settle after alter: %w", ctx.Err())
-			default:
-			}
-			time.Sleep(3 * time.Second)
-			instance, err = doShowByID()
-			if err != nil {
-				return err
-			}
-			if instance.State == PostgresInstanceStateReady {
-				return nil
-			}
+		_, err := pollUntilReady(ctx, doShowByID)
+		return err
+	}
+}
+
+// pollUntilReady polls doShowByID every 3 seconds until the instance reaches READY state
+// or ctx is canceled. Context cancellation is respected between polls.
+func pollUntilReady(ctx context.Context, doShowByID func() (*PostgresInstance, error)) (*PostgresInstance, error) {
+	for {
+		instance, err := doShowByID()
+		if err != nil {
+			return nil, err
+		}
+		if instance.State == PostgresInstanceStateReady {
+			return instance, nil
+		}
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("postgres instance did not reach READY state: %w", ctx.Err())
+		case <-time.After(3 * time.Second):
 		}
 	}
 }

@@ -188,6 +188,11 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 			return nil, err
 		}
 	}
+	if details.PostgresSettings != nil {
+		if err := d.Set("postgres_settings", *details.PostgresSettings); err != nil {
+			return nil, err
+		}
+	}
 	if details.StorageIntegration != nil {
 		if err := d.Set("storage_integration", details.StorageIntegration.Name()); err != nil {
 			return nil, err

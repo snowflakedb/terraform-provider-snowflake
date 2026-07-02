@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -281,7 +282,7 @@ func TestUpdateSafely(t *testing.T) {
 		doUpdate := func() error {
 			calls++
 			if calls < 3 {
-				return errors.New("604009 (03000): Running operation CREATE POSTGRES SERVICE on X must be complete before issuing ALTER SET POSTGRES_SETTINGS")
+				return fmt.Errorf("604009 (03000): Running operation CREATE POSTGRES SERVICE on X %w SET POSTGRES_SETTINGS", ErrPostgresOperationMustBeComplete)
 			}
 			return nil
 		}

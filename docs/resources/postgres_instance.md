@@ -9,6 +9,8 @@ description: |-
 
 -> **Note** Postgres instance operations (create, update, delete) can take significantly longer than the default provider timeout values. If you encounter timeout errors, use a [`timeouts` block](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts) to set higher limits for your environment.
 
+-> **Known limitation** `postgres_version` is required in this provider even though Snowflake treats it as optional. Modeling the optional-with-computed-default behavior correctly in Terraform requires non-trivial logic, so the field is required for now to keep the resource predictable.
+
 # snowflake_postgres_instance (Resource)
 
 Resource used to manage Postgres instance objects. For more information, check [Postgres instance documentation](https://docs.snowflake.com/en/sql-reference/sql/create-postgres-instance).
@@ -157,6 +159,3 @@ Import is supported using the following syntax:
 ```shell
 terraform import snowflake_postgres_instance.example '"<postgres_instance_name>"'
 ```
-
-Note: Snowflake is not returning all information needed to populate the state correctly after import (e.g. data types with attributes like NUMBER(32, 10) are returned as NUMBER, default values for arguments are not returned at all).
-Also, `ALTER` for functions is very limited so most of the attributes on this resource are marked as force new. Because of that, in multiple situations plan won't be empty after importing and manual state operations may be required.
