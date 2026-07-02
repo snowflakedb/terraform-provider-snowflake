@@ -633,6 +633,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_job_service":                                                  resources.JobService(),
 		"snowflake_legacy_service_user":                                          resources.LegacyServiceUser(),
 		"snowflake_listing":                                                      resources.Listing(),
+		"snowflake_organization_listing":                                         resources.OrganizationListing(),
 		"snowflake_managed_account":                                              resources.ManagedAccount(),
 		"snowflake_masking_policy":                                               resources.MaskingPolicy(),
 		"snowflake_materialized_view":                                            resources.MaterializedView(),

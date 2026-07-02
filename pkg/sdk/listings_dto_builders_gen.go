@@ -60,6 +60,39 @@ func (s *ListingWithRequest) WithApplicationPackage(applicationPackage AccountOb
 	return s
 }
 
+func NewCreateOrganizationListingRequest(
+	name AccountObjectIdentifier,
+) *CreateOrganizationListingRequest {
+	s := CreateOrganizationListingRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CreateOrganizationListingRequest) WithIfNotExists(ifNotExists bool) *CreateOrganizationListingRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithWith(with ListingWithRequest) *CreateOrganizationListingRequest {
+	s.With = &with
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithAs(as string) *CreateOrganizationListingRequest {
+	s.As = &as
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithFrom(from Location) *CreateOrganizationListingRequest {
+	s.From = &from
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithPublish(publish bool) *CreateOrganizationListingRequest {
+	s.Publish = &publish
+	return s
+}
+
 func NewAlterListingRequest(
 	name AccountObjectIdentifier,
 ) *AlterListingRequest {
@@ -235,5 +268,42 @@ func NewShowVersionsListingRequest(
 
 func (s *ShowVersionsListingRequest) WithLimit(limit LimitFrom) *ShowVersionsListingRequest {
 	s.Limit = &limit
+	return s
+}
+
+func NewShowOrganizationListingRequest() *ShowOrganizationListingRequest {
+	s := ShowOrganizationListingRequest{}
+	return &s
+}
+
+func (s *ShowOrganizationListingRequest) WithLike(like Like) *ShowOrganizationListingRequest {
+	s.Like = &like
+	return s
+}
+
+func (s *ShowOrganizationListingRequest) WithStartsWith(startsWith string) *ShowOrganizationListingRequest {
+	s.StartsWith = &startsWith
+	return s
+}
+
+func (s *ShowOrganizationListingRequest) WithLimit(limit LimitFrom) *ShowOrganizationListingRequest {
+	s.Limit = &limit
+	return s
+}
+
+func NewDescribeOrganizationListingRequest(name AccountObjectIdentifier) *DescribeOrganizationListingRequest {
+	s := DescribeOrganizationListingRequest{}
+	s.name = name
+	return &s
+}
+
+func NewDropOrganizationListingRequest(name AccountObjectIdentifier) *DropOrganizationListingRequest {
+	s := DropOrganizationListingRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *DropOrganizationListingRequest) WithIfExists(ifExists bool) *DropOrganizationListingRequest {
+	s.IfExists = &ifExists
 	return s
 }

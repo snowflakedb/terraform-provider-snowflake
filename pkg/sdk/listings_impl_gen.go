@@ -24,6 +24,11 @@ func (v *listings) Create(ctx context.Context, request *CreateListingRequest) er
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *listings) CreateOrganization(ctx context.Context, request *CreateOrganizationListingRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *listings) Alter(ctx context.Context, request *AlterListingRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -82,6 +87,49 @@ func (v *listings) ShowVersions(ctx context.Context, request *ShowVersionsListin
 	return convertRows[listingVersionDBRow, ListingVersion](dbRows)
 }
 
+func (v *listings) ShowOrganization(ctx context.Context, request *ShowOrganizationListingRequest) ([]Listing, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[listingDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[listingDBRow, Listing](dbRows)
+}
+
+func (v *listings) ShowOrganizationByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error) {
+	request := NewShowOrganizationListingRequest().
+		WithLike(Like{Pattern: String(id.Name())})
+	listings, err := v.ShowOrganization(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return collections.FindFirst(listings, func(r Listing) bool { return r.Name == id.Name() })
+}
+
+func (v *listings) ShowOrganizationByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Listing, error) {
+	return SafeShowById(v.client, v.ShowOrganizationByID, ctx, id)
+}
+
+func (v *listings) DescribeOrganization(ctx context.Context, request *DescribeOrganizationListingRequest) (*ListingDetails, error) {
+	opts := request.toOpts()
+	result, err := validateAndQueryOne[listingDetailsDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return conversionErrorWrapped(result.convert())
+}
+
+func (v *listings) DropOrganization(ctx context.Context, request *DropOrganizationListingRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *listings) DropOrganizationSafely(ctx context.Context, id AccountObjectIdentifier) error {
+	return SafeDrop(v.client, func() error {
+		return v.DropOrganization(ctx, NewDropOrganizationListingRequest(id).WithIfExists(true))
+	}, ctx, id)
+}
+
 func (r *CreateListingRequest) toOpts() *CreateListingOptions {
 	opts := &CreateListingOptions{
 		IfNotExists: r.IfNotExists,
@@ -91,6 +139,23 @@ func (r *CreateListingRequest) toOpts() *CreateListingOptions {
 		Publish:     r.Publish,
 		Review:      r.Review,
 		Comment:     r.Comment,
+	}
+	if r.With != nil {
+		opts.With = &ListingWith{
+			Share:              r.With.Share,
+			ApplicationPackage: r.With.ApplicationPackage,
+		}
+	}
+	return opts
+}
+
+func (r *CreateOrganizationListingRequest) toOpts() *CreateOrganizationListingOptions {
+	opts := &CreateOrganizationListingOptions{
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		As:          r.As,
+		From:        r.From,
+		Publish:     r.Publish,
 	}
 	if r.With != nil {
 		opts.With = &ListingWith{
@@ -265,6 +330,30 @@ func (r *ShowVersionsListingRequest) toOpts() *ShowVersionsListingOptions {
 	opts := &ShowVersionsListingOptions{
 		name:  r.name,
 		Limit: r.Limit,
+	}
+	return opts
+}
+
+func (r *ShowOrganizationListingRequest) toOpts() *ShowOrganizationListingOptions {
+	opts := &ShowOrganizationListingOptions{
+		Like:       r.Like,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
+	}
+	return opts
+}
+
+func (r *DescribeOrganizationListingRequest) toOpts() *DescribeOrganizationListingOptions {
+	opts := &DescribeOrganizationListingOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r *DropOrganizationListingRequest) toOpts() *DropOrganizationListingOptions {
+	opts := &DropOrganizationListingOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
 	}
 	return opts
 }
