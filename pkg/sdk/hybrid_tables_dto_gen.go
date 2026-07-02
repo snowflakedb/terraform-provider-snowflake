@@ -3,14 +3,17 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateHybridTableOptions]      = new(CreateHybridTableRequest)
-	_ optionsProvider[AlterHybridTableOptions]       = new(AlterHybridTableRequest)
-	_ optionsProvider[DropHybridTableOptions]        = new(DropHybridTableRequest)
-	_ optionsProvider[ShowHybridTableOptions]        = new(ShowHybridTableRequest)
-	_ optionsProvider[DescribeHybridTableOptions]    = new(DescribeHybridTableRequest)
-	_ optionsProvider[CreateIndexHybridTableOptions] = new(CreateIndexHybridTableRequest)
-	_ optionsProvider[DropIndexHybridTableOptions]   = new(DropIndexHybridTableRequest)
-	_ optionsProvider[ShowIndexesHybridTableOptions] = new(ShowIndexesHybridTableRequest)
+	_ optionsProvider[CreateHybridTableOptions]           = new(CreateHybridTableRequest)
+	_ optionsProvider[AlterHybridTableOptions]            = new(AlterHybridTableRequest)
+	_ optionsProvider[DropHybridTableOptions]             = new(DropHybridTableRequest)
+	_ optionsProvider[ShowHybridTableOptions]             = new(ShowHybridTableRequest)
+	_ optionsProvider[DescribeHybridTableOptions]         = new(DescribeHybridTableRequest)
+	_ optionsProvider[CreateIndexHybridTableOptions]      = new(CreateIndexHybridTableRequest)
+	_ optionsProvider[DropIndexHybridTableOptions]        = new(DropIndexHybridTableRequest)
+	_ optionsProvider[ShowIndexesHybridTableOptions]      = new(ShowIndexesHybridTableRequest)
+	_ optionsProvider[ShowPrimaryKeysHybridTableOptions]  = new(ShowPrimaryKeysHybridTableRequest)
+	_ optionsProvider[ShowUniqueKeysHybridTableOptions]   = new(ShowUniqueKeysHybridTableRequest)
+	_ optionsProvider[ShowImportedKeysHybridTableOptions] = new(ShowImportedKeysHybridTableRequest)
 )
 
 type CreateHybridTableRequest struct {
@@ -180,4 +183,16 @@ type ShowIndexesHybridTableRequest struct {
 	In         *TableIn
 	StartsWith *string
 	Limit      *LimitFrom
+}
+
+type ShowPrimaryKeysHybridTableRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type ShowUniqueKeysHybridTableRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type ShowImportedKeysHybridTableRequest struct {
+	name SchemaObjectIdentifier // required
 }

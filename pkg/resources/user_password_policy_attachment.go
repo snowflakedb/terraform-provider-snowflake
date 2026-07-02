@@ -54,11 +54,7 @@ func CreateUserPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceD
 	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
 	passwordPolicy := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(d.Get("password_policy_name").(string))
 
-	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			PasswordPolicy: &passwordPolicy,
-		},
-	})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithSet(*sdk.NewUserSetRequest().WithPasswordPolicy(passwordPolicy)))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -123,11 +119,7 @@ func DeleteUserPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceD
 
 	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
 
-	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
-		Unset: &sdk.UserUnset{
-			PasswordPolicy: sdk.Bool(true),
-		},
-	})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithUnset(*sdk.NewUserUnsetRequest().WithPasswordPolicy(true)))
 	if err != nil {
 		return diag.FromErr(err)
 	}

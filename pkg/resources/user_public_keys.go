@@ -70,7 +70,7 @@ func UserPublicKeys() *schema.Resource {
 
 func checkUserExists(ctx context.Context, client *sdk.Client, userId sdk.AccountObjectIdentifier) (bool, error) {
 	// First check if user exists
-	_, err := client.Users.Describe(ctx, userId)
+	_, err := client.Users.DescribeDetails(ctx, userId)
 	if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 		log.Printf("[DEBUG] user (%s) not found", userId.Name())
 		return false, nil

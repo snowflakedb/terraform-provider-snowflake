@@ -17,10 +17,10 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUser(t *testing.T) *TmpLegacySer
 
 	pass := random.Password()
 	tmpUser := c.setUpTmpUserWithBasicAccess(t, func(userId sdk.AccountObjectIdentifier) (*sdk.User, func()) {
-		return c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			Type:     sdk.Pointer(sdk.UserTypeLegacyService),
-			Password: sdk.String(pass),
-		}})
+		return c.User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(userId).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithUserType(sdk.UserTypeLegacyService).
+				WithPassword(pass)))
 	})
 
 	return &TmpLegacyServiceUser{
@@ -35,10 +35,10 @@ func (c *TestClient) SetUpTemporaryServiceUser(t *testing.T) *TmpServiceUser {
 	pass := random.Password()
 	privateKey, encryptedKey, publicKey, _ := random.GenerateRSAKeyPair(t, pass)
 	tmpUser := c.setUpTmpUserWithBasicAccess(t, func(userId sdk.AccountObjectIdentifier) (*sdk.User, func()) {
-		return c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			Type:         sdk.Pointer(sdk.UserTypeLegacyService),
-			RSAPublicKey: sdk.String(publicKey),
-		}})
+		return c.User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(userId).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithUserType(sdk.UserTypeLegacyService).
+				WithRsaPublicKey(publicKey)))
 	})
 
 	return &TmpServiceUser{
@@ -54,9 +54,9 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 	t.Helper()
 
 	tmpUser := c.setUpTmpUserWithBasicAccess(t, func(userId sdk.AccountObjectIdentifier) (*sdk.User, func()) {
-		return c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-			Type: sdk.Pointer(sdk.UserTypeLegacyService),
-		}})
+		return c.User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(userId).
+			WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+				WithUserType(sdk.UserTypeLegacyService)))
 	})
 	req := sdk.NewAddUserProgrammaticAccessTokenRequest(tmpUser.UserId, c.Ids.RandomAccountObjectIdentifier()).WithRoleRestriction(tmpUser.RoleId)
 	pat, cleanupPat := c.User.AddProgrammaticAccessTokenWithRequest(t, tmpUser.UserId, req)
@@ -71,10 +71,10 @@ func (c *TestClient) SetUpTemporaryLegacyServiceUserWithPat(t *testing.T) *TmpSe
 func (c *TestClient) SetUpTemporaryUserForOauthClientCredentials(t *testing.T, loginName string) *TmpUser {
 	t.Helper()
 	userId := c.Ids.RandomAccountObjectIdentifier()
-	user, userCleanup := c.User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-		MustChangePassword: sdk.Bool(false),
-		LoginName:          sdk.String(loginName),
-	}})
+	user, userCleanup := c.User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(userId).
+		WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+			WithMustChangePassword(false).
+			WithLoginName(loginName)))
 	t.Cleanup(userCleanup)
 
 	return &TmpUser{

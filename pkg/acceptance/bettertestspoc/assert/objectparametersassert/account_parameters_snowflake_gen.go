@@ -73,8 +73,8 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 	return a.
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowBindValuesAccess, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowClientMFACaching, sdk.ParameterTypeSnowflakeDefault). // modified manually
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowIDToken, sdk.ParameterTypeSnowflakeDefault).          // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowClientMfaCaching, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterAllowIdToken, sdk.ParameterTypeSnowflakeDefault).          // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientEnableLogInfoStatementParameters, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterClientMetadataRequestUseConnectionCtx, sdk.ParameterTypeSnowflakeDefault).
@@ -104,17 +104,17 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterEnforceNetworkRulesForInternalStages, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterErrorOnNondeterministicMerge, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterErrorOnNondeterministicUpdate, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterJdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterJdbcUseSessionTimezone, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterJsTreatIntegerAsBigInt, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterJsTreatIntegerAsBigint, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPeriodicDataRekeying, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPipeExecutionPaused, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterPreventUnloadToInlineURL, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterPreventUnloadToInlineUrl, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterPreventUnloadToInternalStages, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterRowTimestampDefault, sdk.ParameterTypeSnowflakeDefault).
@@ -165,7 +165,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDateInputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDateOutputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultDbtVersion, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultDDLCollation, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNullOrdering, sdk.ParameterTypeSnowflakeDefault).
@@ -174,7 +174,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterExternalVolume, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterGeographyOutputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterGeometryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.AccountParameterInitialReplicationSizeLimitInTB, sdk.ParameterTypeSnowflakeDefault). // modified manually
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterInitialReplicationSizeLimitInTb, sdk.ParameterTypeSnowflakeDefault). // modified manually
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
@@ -360,12 +360,12 @@ func (a *AccountParametersAssert) HasAllowBindValuesAccess(expected bool) *Accou
 }
 
 func (a *AccountParametersAssert) HasAllowClientMfaCaching(expected bool) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAllowClientMFACaching, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAllowClientMfaCaching, expected)) // modified manually
 	return a
 }
 
 func (a *AccountParametersAssert) HasAllowIdToken(expected bool) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAllowIDToken, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterAllowIdToken, expected)) // modified manually
 	return a
 }
 
@@ -515,7 +515,7 @@ func (a *AccountParametersAssert) HasErrorOnNondeterministicUpdate(expected bool
 }
 
 func (a *AccountParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -535,7 +535,7 @@ func (a *AccountParametersAssert) HasJdbcUseSessionTimezone(expected bool) *Acco
 }
 
 func (a *AccountParametersAssert) HasJsTreatIntegerAsBigint(expected bool) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterJsTreatIntegerAsBigint, expected)) // modified manually
 	return a
 }
 
@@ -545,7 +545,7 @@ func (a *AccountParametersAssert) HasNoorderSequenceAsDefault(expected bool) *Ac
 }
 
 func (a *AccountParametersAssert) HasOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -565,7 +565,7 @@ func (a *AccountParametersAssert) HasPipeExecutionPaused(expected bool) *Account
 }
 
 func (a *AccountParametersAssert) HasPreventUnloadToInlineUrl(expected bool) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInlineURL, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInlineUrl, expected)) // modified manually
 	return a
 }
 
@@ -784,6 +784,21 @@ func (a *AccountParametersAssert) HasClientTimestampTypeMapping(expected sdk.Cli
 	return a
 }
 
+func (a *AccountParametersAssert) HasCortexCodeCliDailyEstCreditLimitPerUser(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUser(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUser(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasCortexEnabledCrossRegion(expected string) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterCortexEnabledCrossRegion, expected))
 	return a
@@ -820,7 +835,7 @@ func (a *AccountParametersAssert) HasDefaultDbtVersion(expected string) *Account
 }
 
 func (a *AccountParametersAssert) HasDefaultDdlCollation(expected string) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultDDLCollation, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultDdlCollation, expected)) // modified manually
 	return a
 }
 
@@ -865,7 +880,7 @@ func (a *AccountParametersAssert) HasGeometryOutputFormat(expected sdk.GeometryO
 }
 
 func (a *AccountParametersAssert) HasInitialReplicationSizeLimitInTb(expected string) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterInitialReplicationSizeLimitInTb, expected)) // modified manually
 	return a
 }
 
@@ -1034,12 +1049,12 @@ func (a *AccountParametersAssert) HasAllowBindValuesAccessLevel(expected sdk.Par
 }
 
 func (a *AccountParametersAssert) HasAllowClientMfaCachingLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowClientMFACaching, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowClientMfaCaching, expected)) // modified manually
 	return a
 }
 
 func (a *AccountParametersAssert) HasAllowIdTokenLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowIDToken, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterAllowIdToken, expected)) // modified manually
 	return a
 }
 
@@ -1189,7 +1204,7 @@ func (a *AccountParametersAssert) HasErrorOnNondeterministicUpdateLevel(expected
 }
 
 func (a *AccountParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -1209,7 +1224,7 @@ func (a *AccountParametersAssert) HasJdbcUseSessionTimezoneLevel(expected sdk.Pa
 }
 
 func (a *AccountParametersAssert) HasJsTreatIntegerAsBigintLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterJsTreatIntegerAsBigint, expected)) // modified manually
 	return a
 }
 
@@ -1219,7 +1234,7 @@ func (a *AccountParametersAssert) HasNoorderSequenceAsDefaultLevel(expected sdk.
 }
 
 func (a *AccountParametersAssert) HasOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList, expected)) // modified manually
 	return a
 }
 
@@ -1239,7 +1254,7 @@ func (a *AccountParametersAssert) HasPipeExecutionPausedLevel(expected sdk.Param
 }
 
 func (a *AccountParametersAssert) HasPreventUnloadToInlineUrlLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPreventUnloadToInlineURL, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterPreventUnloadToInlineUrl, expected)) // modified manually
 	return a
 }
 
@@ -1494,7 +1509,7 @@ func (a *AccountParametersAssert) HasDefaultDbtVersionLevel(expected sdk.Paramet
 }
 
 func (a *AccountParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultDDLCollation, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultDdlCollation, expected)) // modified manually
 	return a
 }
 
@@ -1539,7 +1554,7 @@ func (a *AccountParametersAssert) HasGeometryOutputFormatLevel(expected sdk.Para
 }
 
 func (a *AccountParametersAssert) HasInitialReplicationSizeLimitInTbLevel(expected sdk.ParameterType) *AccountParametersAssert {
-	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected)) // modified manually
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterInitialReplicationSizeLimitInTb, expected)) // modified manually
 	return a
 }
 
@@ -1706,11 +1721,11 @@ func (a *AccountParametersAssert) HasDefaultAllowBindValuesAccessValue() *Accoun
 }
 
 func (a *AccountParametersAssert) HasDefaultAllowClientMfaCachingValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterAllowClientMFACaching) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterAllowClientMfaCaching) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultAllowIdTokenValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterAllowIDToken) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterAllowIdToken) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultAutocommitValue() *AccountParametersAssert {
@@ -1830,7 +1845,7 @@ func (a *AccountParametersAssert) HasDefaultErrorOnNondeterministicUpdateValue()
 }
 
 func (a *AccountParametersAssert) HasDefaultExternalOauthAddPrivilegedRolesToBlockedListValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultJdbcTreatDecimalAsIntValue() *AccountParametersAssert {
@@ -1846,7 +1861,7 @@ func (a *AccountParametersAssert) HasDefaultJdbcUseSessionTimezoneValue() *Accou
 }
 
 func (a *AccountParametersAssert) HasDefaultJsTreatIntegerAsBigintValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterJsTreatIntegerAsBigInt) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterJsTreatIntegerAsBigint) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultNoorderSequenceAsDefaultValue() *AccountParametersAssert {
@@ -1854,7 +1869,7 @@ func (a *AccountParametersAssert) HasDefaultNoorderSequenceAsDefaultValue() *Acc
 }
 
 func (a *AccountParametersAssert) HasDefaultOauthAddPrivilegedRolesToBlockedListValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultOdbcTreatDecimalAsIntValue() *AccountParametersAssert {
@@ -1870,7 +1885,7 @@ func (a *AccountParametersAssert) HasDefaultPipeExecutionPausedValue() *AccountP
 }
 
 func (a *AccountParametersAssert) HasDefaultPreventUnloadToInlineUrlValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterPreventUnloadToInlineURL) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterPreventUnloadToInlineUrl) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultPreventUnloadToInternalStagesValue() *AccountParametersAssert {
@@ -2074,7 +2089,7 @@ func (a *AccountParametersAssert) HasDefaultDefaultDbtVersionValue() *AccountPar
 }
 
 func (a *AccountParametersAssert) HasDefaultDefaultDdlCollationValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultDDLCollation) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultDdlCollation) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultDefaultNotebookComputePoolCpuValue() *AccountParametersAssert {
@@ -2110,7 +2125,7 @@ func (a *AccountParametersAssert) HasDefaultGeometryOutputFormatValue() *Account
 }
 
 func (a *AccountParametersAssert) HasDefaultInitialReplicationSizeLimitInTbValue() *AccountParametersAssert {
-	return a.HasDefaultParameterValue(sdk.AccountParameterInitialReplicationSizeLimitInTB) // modified manually
+	return a.HasDefaultParameterValue(sdk.AccountParameterInitialReplicationSizeLimitInTb) // modified manually
 }
 
 func (a *AccountParametersAssert) HasDefaultListingAutoFulfillmentReplicationRefreshScheduleValue() *AccountParametersAssert {

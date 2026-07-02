@@ -36,6 +36,16 @@ func (v *icebergTables) CreateFromDeltaLake(ctx context.Context, request *Create
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *icebergTables) CreateFromIcebergRest(ctx context.Context, request *CreateFromIcebergRestIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *icebergTables) CreateFromAwsGlue(ctx context.Context, request *CreateFromAwsGlueIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *icebergTables) Alter(ctx context.Context, request *AlterIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -333,6 +343,47 @@ func (r *CreateFromDeltaLakeIcebergTableRequest) toOpts() *CreateFromDeltaLakeIc
 		ExternalVolume:           r.ExternalVolume,
 		Catalog:                  r.Catalog,
 		BaseLocation:             r.BaseLocation,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		AutoRefresh:              r.AutoRefresh,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
+	}
+	return opts
+}
+
+func (r *CreateFromIcebergRestIcebergTableRequest) toOpts() *CreateFromIcebergRestIcebergTableOptions {
+	opts := &CreateFromIcebergRestIcebergTableOptions{
+		OrReplace:                  r.OrReplace,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		ExternalVolume:             r.ExternalVolume,
+		Catalog:                    r.Catalog,
+		CatalogTableName:           r.CatalogTableName,
+		CatalogNamespace:           r.CatalogNamespace,
+		PathLayout:                 r.PathLayout,
+		TargetFileSize:             r.TargetFileSize,
+		ReplaceInvalidCharacters:   r.ReplaceInvalidCharacters,
+		AutoRefresh:                r.AutoRefresh,
+		Comment:                    r.Comment,
+		StorageSerializationPolicy: r.StorageSerializationPolicy,
+		IcebergMergeOnReadBehavior: r.IcebergMergeOnReadBehavior,
+		EnableIcebergMergeOnRead:   r.EnableIcebergMergeOnRead,
+		Tag:                        r.Tag,
+		Contact:                    r.Contact,
+	}
+	return opts
+}
+
+func (r *CreateFromAwsGlueIcebergTableRequest) toOpts() *CreateFromAwsGlueIcebergTableOptions {
+	opts := &CreateFromAwsGlueIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
+		CatalogTableName:         r.CatalogTableName,
+		CatalogNamespace:         r.CatalogNamespace,
 		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
 		AutoRefresh:              r.AutoRefresh,
 		Comment:                  r.Comment,

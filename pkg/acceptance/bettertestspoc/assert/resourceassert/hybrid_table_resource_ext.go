@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -15,6 +16,27 @@ func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignatur
 		// canonically equivalent (see buildHybridColumnStateFromDescribe), so
 		// state holds the same form the model writes to HCL — Type.ToSql().
 		h.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type.ToSql())
+	}
+	return h
+}
+
+// HasColumnConfigs asserts all per-column fields (name, type, nullable, comment, collate)
+// in one call. Use this when the model was built with WithColumnConfigs. Zero-valued
+// fields in HybridTableColumnConfig are not asserted.
+func (h *HybridTableResourceAssert) HasColumnConfigs(columns []model.HybridTableColumnConfig) *HybridTableResourceAssert {
+	h.ValueSet("column.#", strconv.Itoa(len(columns)))
+	for i, col := range columns {
+		h.ValueSet(fmt.Sprintf("column.%d.name", i), col.Name)
+		h.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type)
+		if col.Nullable != nil {
+			h.ValueSet(fmt.Sprintf("column.%d.nullable", i), strconv.FormatBool(*col.Nullable))
+		}
+		if col.Comment != "" {
+			h.ValueSet(fmt.Sprintf("column.%d.comment", i), col.Comment)
+		}
+		if col.Collate != "" {
+			h.ValueSet(fmt.Sprintf("column.%d.collate", i), col.Collate)
+		}
 	}
 	return h
 }
@@ -44,6 +66,11 @@ func (h *HybridTableResourceAssert) HasUniqueConstraintCount(expected int) *Hybr
 
 func (h *HybridTableResourceAssert) HasForeignKeyCount(expected int) *HybridTableResourceAssert {
 	h.ValueSet("foreign_key.#", strconv.Itoa(expected))
+	return h
+}
+
+func (h *HybridTableResourceAssert) HasIndexCount(expected int) *HybridTableResourceAssert {
+	h.ValueSet("index.#", strconv.Itoa(expected))
 	return h
 }
 

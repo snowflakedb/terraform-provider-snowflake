@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -108,15 +107,12 @@ func handleStageDirectoryTable(ctx context.Context, client *sdk.Client, d *schem
 	return nil
 }
 
-func DeleteStage(previewFeature previewfeatures.PreviewFeature, resource resources.Resource) schema.DeleteContextFunc {
-	return PreviewFeatureDeleteContextWrapper(
-		previewFeature.String(),
-		TrackingDeleteWrapper(
-			resource,
-			ResourceDeleteContextFunc(
-				sdk.ParseSchemaObjectIdentifier,
-				func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Stages.DropSafely },
-			),
+func DeleteStage(resource resources.Resource) schema.DeleteContextFunc {
+	return TrackingDeleteWrapper(
+		resource,
+		ResourceDeleteContextFunc(
+			sdk.ParseSchemaObjectIdentifier,
+			func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Stages.DropSafely },
 		),
 	)
 }

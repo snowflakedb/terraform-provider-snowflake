@@ -12,7 +12,7 @@ import (
 
 func Test_ToStringProperty(t *testing.T) {
 	t.Run("with empty property row", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "null",
 			DefaultValue: "",
 			Description:  "desc",
@@ -24,7 +24,7 @@ func Test_ToStringProperty(t *testing.T) {
 	})
 
 	t.Run("with property row containing values", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "value",
 			DefaultValue: "default value",
 			Description:  "desc",
@@ -38,7 +38,7 @@ func Test_ToStringProperty(t *testing.T) {
 
 func Test_ToIntProperty(t *testing.T) {
 	t.Run("with empty property row", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "null",
 			DefaultValue: "",
 			Description:  "desc",
@@ -50,7 +50,7 @@ func Test_ToIntProperty(t *testing.T) {
 	})
 
 	t.Run("with property row not containing numbers", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "value",
 			DefaultValue: "default value",
 			Description:  "desc",
@@ -62,7 +62,7 @@ func Test_ToIntProperty(t *testing.T) {
 	})
 
 	t.Run("with property not containing default value", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "10",
 			DefaultValue: "null",
 			Description:  "desc",
@@ -74,7 +74,7 @@ func Test_ToIntProperty(t *testing.T) {
 	})
 
 	t.Run("with property row containing numbers", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "10",
 			DefaultValue: "0",
 			Description:  "desc",
@@ -86,7 +86,7 @@ func Test_ToIntProperty(t *testing.T) {
 	})
 
 	t.Run("with negative value row", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "-1",
 			DefaultValue: "0",
 			Description:  "desc",
@@ -97,7 +97,7 @@ func Test_ToIntProperty(t *testing.T) {
 	})
 
 	t.Run("with decimal part value - not parsed correctly", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "0.85",
 			DefaultValue: "0",
 			Description:  "desc",
@@ -109,7 +109,7 @@ func Test_ToIntProperty(t *testing.T) {
 
 func Test_ToBoolProperty(t *testing.T) {
 	t.Run("with empty property row", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "null",
 			DefaultValue: "",
 			Description:  "desc",
@@ -121,7 +121,7 @@ func Test_ToBoolProperty(t *testing.T) {
 	})
 
 	t.Run("with property row containing values", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "true",
 			DefaultValue: "false",
 			Description:  "desc",
@@ -135,7 +135,7 @@ func Test_ToBoolProperty(t *testing.T) {
 
 func Test_ToFloatProperty(t *testing.T) {
 	t.Run("with empty property row", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "null",
 			DefaultValue: "null",
 			Description:  "desc",
@@ -147,7 +147,7 @@ func Test_ToFloatProperty(t *testing.T) {
 	})
 
 	t.Run("with property row not containing numbers", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "value",
 			DefaultValue: "default value",
 			Description:  "desc",
@@ -159,7 +159,7 @@ func Test_ToFloatProperty(t *testing.T) {
 	})
 
 	t.Run("with property not containing default value", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "10.5",
 			DefaultValue: "null",
 			Description:  "desc",
@@ -171,7 +171,7 @@ func Test_ToFloatProperty(t *testing.T) {
 	})
 
 	t.Run("with property row containing numbers", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "10.1",
 			DefaultValue: "10.5",
 			Description:  "desc",
@@ -183,7 +183,7 @@ func Test_ToFloatProperty(t *testing.T) {
 	})
 
 	t.Run("with negative value row and zero", func(t *testing.T) {
-		row := &propertyRow{
+		row := &UserProperty{
 			Value:        "-1.0",
 			DefaultValue: "0",
 			Description:  "desc",

@@ -140,7 +140,7 @@ func TestAcc_UserAuthenticationPolicyAttachment_MissingAuthPolicy(t *testing.T) 
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
 				PreConfig: func() {
-					testClient().User.Alter(t, user.ID(), &sdk.AlterUserOptions{Unset: &sdk.UserUnset{AuthenticationPolicy: sdk.Bool(true)}})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(user.ID()).WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true)))
 					authPolicyCleanup()
 				},
 				Config:      userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),

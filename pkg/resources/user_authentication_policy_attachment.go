@@ -56,11 +56,7 @@ func CreateUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Res
 	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
 	authenticationPolicy := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(d.Get("authentication_policy_name").(string))
 
-	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			AuthenticationPolicy: &authenticationPolicy,
-		},
-	})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithSet(*sdk.NewUserSetRequest().WithAuthenticationPolicy(authenticationPolicy)))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error while creating authentication policy attachment, err = %w", err))
 	}
@@ -141,11 +137,7 @@ func DeleteUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Res
 
 	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
 
-	err := client.Users.Alter(ctx, userName, &sdk.AlterUserOptions{
-		Unset: &sdk.UserUnset{
-			AuthenticationPolicy: sdk.Bool(true),
-		},
-	})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true)))
 	if err != nil {
 		return diag.FromErr(err)
 	}

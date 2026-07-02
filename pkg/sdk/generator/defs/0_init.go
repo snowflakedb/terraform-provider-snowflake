@@ -67,6 +67,7 @@ func init() {
 		tagsDef,
 		tasksDef,
 		userProgrammaticAccessTokensDef,
+		usersDef,
 		viewsDef,
 		warehousesDef,
 	)

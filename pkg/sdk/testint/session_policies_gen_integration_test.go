@@ -215,9 +215,9 @@ func TestInt_SessionPolicies(t *testing.T) {
 			t.Cleanup(sessionPolicyCleanup)
 		}
 
-		testClientHelper().User.Alter(t, user.ID(), &sdk.AlterUserOptions{Set: &sdk.UserSet{SessionPolicy: sdk.Pointer(id1)}})
+		testClientHelper().User.Alter(t, sdk.NewAlterUserRequest(user.ID()).WithSet(*sdk.NewUserSetRequest().WithSessionPolicy(id1)))
 		userSessionPolicyAttachmentCleanup := func() {
-			testClientHelper().User.Alter(t, user.ID(), &sdk.AlterUserOptions{Unset: &sdk.UserUnset{SessionPolicy: sdk.Bool(true)}})
+			testClientHelper().User.Alter(t, sdk.NewAlterUserRequest(user.ID()).WithUnset(*sdk.NewUserUnsetRequest().WithSessionPolicy(true)))
 		}
 		t.Cleanup(userSessionPolicyAttachmentCleanup)
 
