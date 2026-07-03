@@ -145,12 +145,12 @@ func (r alertDBRow) convert() (*Alert, error) {
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		Comment:      r.Comment,
 		Warehouse:    r.Warehouse,
 		Schedule:     r.Schedule,
 		Condition:    r.Condition,
 		Action:       r.Action,
 	}
+	mapNullString(&result.Comment, r.Comment)
 	mapStringWithMapping(&result.State, r.State, ToAlertState)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	return result, nil
@@ -170,12 +170,12 @@ func (r alertDetailRow) convert() (*AlertDetails, error) {
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		Comment:      r.Comment,
 		Warehouse:    r.Warehouse,
 		Schedule:     r.Schedule,
 		State:        r.State,
 		Condition:    r.Condition,
 		Action:       r.Action,
 	}
+	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }

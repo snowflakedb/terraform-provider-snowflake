@@ -159,7 +159,7 @@ func (s *ShowAlertRequest) WithStartsWith(startsWith string) *ShowAlertRequest {
 	return s
 }
 
-func (s *ShowAlertRequest) WithLimit(limit int) *ShowAlertRequest {
+func (s *ShowAlertRequest) WithLimit(limit LimitFrom) *ShowAlertRequest {
 	s.Limit = &limit
 	return s
 }

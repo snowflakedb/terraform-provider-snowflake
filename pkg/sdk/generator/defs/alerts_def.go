@@ -36,7 +36,7 @@ var alertPairs = g.StructPair("alertDBRow", "Alert").
 	Text("database_name").
 	Text("schema_name").
 	Text("owner").
-	Field("comment", "*string", "*string").
+	OptionalText("comment").
 	Text("warehouse").
 	Text("schedule").
 	Enum("state", alertStateDef).
@@ -50,7 +50,7 @@ var alertDetailPairs = g.StructPair("alertDetailRow", "AlertDetails").
 	Text("database_name").
 	Text("schema_name").
 	Text("owner").
-	Field("comment", "*string", "*string").
+	OptionalText("comment").
 	Text("warehouse").
 	Text("schedule").
 	Text("state").
@@ -107,7 +107,7 @@ var alertsDef = g.NewInterface(
 		OptionalLike().
 		OptionalIn().
 		OptionalStartsWith().
-		OptionalNumberAssignment("LIMIT", g.ParameterOptions().NoEquals()),
+		OptionalLimitFrom(),
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).DescribeOperationWithPairedStructs(

@@ -57,7 +57,7 @@ func TestInt_AlertsShow(t *testing.T) {
 	t.Run("when limiting the number of results", func(t *testing.T) {
 		alerts, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
 			WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}).
-			WithLimit(1))
+			WithLimit(sdk.LimitFrom{Rows: new(1)}))
 		require.NoError(t, err)
 		assert.Len(t, alerts, 1)
 	})

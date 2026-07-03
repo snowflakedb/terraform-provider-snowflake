@@ -72,13 +72,13 @@ type DropAlertOptions struct {
 
 // ShowAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-alerts.
 type ShowAlertOptions struct {
-	show       bool    `ddl:"static" sql:"SHOW"`
-	Terse      *bool   `ddl:"keyword" sql:"TERSE"`
-	alerts     bool    `ddl:"static" sql:"ALERTS"`
-	Like       *Like   `ddl:"keyword" sql:"LIKE"`
-	In         *In     `ddl:"keyword" sql:"IN"`
-	StartsWith *string `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit      *int    `ddl:"parameter,no_equals" sql:"LIMIT"`
+	show       bool       `ddl:"static" sql:"SHOW"`
+	Terse      *bool      `ddl:"keyword" sql:"TERSE"`
+	alerts     bool       `ddl:"static" sql:"ALERTS"`
+	Like       *Like      `ddl:"keyword" sql:"LIKE"`
+	In         *In        `ddl:"keyword" sql:"IN"`
+	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type alertDBRow struct {
@@ -87,7 +87,7 @@ type alertDBRow struct {
 	DatabaseName  string         `db:"database_name"`
 	SchemaName    string         `db:"schema_name"`
 	Owner         string         `db:"owner"`
-	Comment       *string        `db:"comment"`
+	Comment       sql.NullString `db:"comment"`
 	Warehouse     string         `db:"warehouse"`
 	Schedule      string         `db:"schedule"`
 	State         string         `db:"state"`
@@ -127,17 +127,17 @@ type DescribeAlertOptions struct {
 }
 
 type alertDetailRow struct {
-	CreatedOn    time.Time `db:"created_on"`
-	Name         string    `db:"name"`
-	DatabaseName string    `db:"database_name"`
-	SchemaName   string    `db:"schema_name"`
-	Owner        string    `db:"owner"`
-	Comment      *string   `db:"comment"`
-	Warehouse    string    `db:"warehouse"`
-	Schedule     string    `db:"schedule"`
-	State        string    `db:"state"`
-	Condition    string    `db:"condition"`
-	Action       string    `db:"action"`
+	CreatedOn    time.Time      `db:"created_on"`
+	Name         string         `db:"name"`
+	DatabaseName string         `db:"database_name"`
+	SchemaName   string         `db:"schema_name"`
+	Owner        string         `db:"owner"`
+	Comment      sql.NullString `db:"comment"`
+	Warehouse    string         `db:"warehouse"`
+	Schedule     string         `db:"schedule"`
+	State        string         `db:"state"`
+	Condition    string         `db:"condition"`
+	Action       string         `db:"action"`
 }
 
 type AlertDetails struct {

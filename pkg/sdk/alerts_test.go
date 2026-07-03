@@ -205,7 +205,7 @@ func TestAlertShow(t *testing.T) {
 
 	t.Run("with limit", func(t *testing.T) {
 		opts := &ShowAlertOptions{
-			Limit: Int(10),
+			Limit: &LimitFrom{Rows: new(10)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW ALERTS LIMIT 10")
 	})

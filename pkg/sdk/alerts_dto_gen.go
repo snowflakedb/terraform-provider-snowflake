@@ -57,7 +57,7 @@ type ShowAlertRequest struct {
 	Like       *Like
 	In         *In
 	StartsWith *string
-	Limit      *int
+	Limit      *LimitFrom
 }
 
 type DescribeAlertRequest struct {
