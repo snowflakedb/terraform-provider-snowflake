@@ -1,9 +1,0 @@
-point_of_contact: @snowflakedb/terraform-provider
-production: true
-distributed: true
-modified: false
-code_owners_file_present: true
-release_branches:
-  - main
-jira_area: Developer Platform
-audit_in_scope: true
