@@ -18,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -597,6 +598,74 @@ func TestAcc_OauthIntegrationForCustomClients_migrateFromV0941_ensureSmoothUpgra
 				Config:                   accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_OauthIntegrationForCustomClients_AllowedRolesListDriftDetection
+// verifies that when an integration is created with v2.17.0 (before
+// allowed_roles_list was supported) and the list is then set externally,
+// the new provider version detects the drift and reconciles it.
+func TestAcc_OauthIntegrationForCustomClients_AllowedRolesListDriftDetection(t *testing.T) {
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
+
+	validUrl := "https://example.com/callback"
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := accconfig.FromModels(t, providermodel.SnowflakeProvider())
+
+	basicModel := model.OauthIntegrationForCustomClients(
+		"test", id.Name(),
+		string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential),
+		validUrl,
+	).WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone))
+
+	fixedModel := model.OauthIntegrationForCustomClients(
+		"test", id.Name(),
+		string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential),
+		validUrl,
+	).WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
+		WithAllowedRoles(allowedRole.ID())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForCustomClients),
+		Steps: []resource.TestStep{
+			// Step 1: create with v2.17.0 (no allowed_roles_list support)
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.17.0"),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel),
+			},
+			// Step 2: set allowed_roles_list externally; the new provider detects
+			// the drift, but the customer fixes their config to match, so the
+			// plan is empty.
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.UpdateOauthForClients(t,
+						sdk.NewAlterOauthForCustomClientsSecurityIntegrationRequest(id).WithSet(
+							*sdk.NewOauthForCustomClientsIntegrationSetRequest().
+								WithAllowedRolesList(*sdk.NewAllowedRolesListRequest(
+									[]sdk.AccountObjectIdentifier{allowedRole.ID()},
+								)),
+						))
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, fixedModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.ExpectDrift(fixedModel.ResourceReference(), "allowed_roles_list.0", nil, new(allowedRole.ID().Name())),
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.OauthIntegrationForCustomClientsResource(
+						t, fixedModel.ResourceReference(),
+					).HasAllowedRolesList(allowedRole.ID().Name()),
 				),
 			},
 		},
