@@ -6,8 +6,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var alertActionDef = g.NewEnum("AlertAction", "AlertActions", "RESUME", "SUSPEND")
-var alertStateDef = g.NewEnum("AlertState", "AlertStates", "started", "suspended")
+var (
+	alertActionDef = g.NewEnum("AlertAction", "AlertActions", "RESUME", "SUSPEND")
+	alertStateDef  = g.NewEnum("AlertState", "AlertStates", "started", "suspended")
+)
 
 func alertCondition() *g.QueryStruct {
 	return g.NewQueryStruct("AlertCondition").
