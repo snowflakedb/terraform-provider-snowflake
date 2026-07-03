@@ -183,7 +183,7 @@ func OauthIntegrationForCustomClients() *schema.Resource {
 		Description:   "Resource used to manage oauth security integration for custom clients objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OauthIntegrationForCustomClients, customdiff.All(
-			oauthCustomClientsAllowedRolesListRequiresSecondaryRolesNone,
+			oauthAllowedRolesListRequiresSecondaryRolesNone,
 			ComputedIfAnyAttributeChanged(
 				oauthIntegrationForCustomClientsSchema,
 				ShowOutputAttributeName,
@@ -744,28 +744,4 @@ func UpdateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 	}
 
 	return ReadContextOauthIntegrationForCustomClients(false)(ctx, d, meta)
-}
-
-// oauthCustomClientsAllowedRolesListRequiresSecondaryRolesNone validates that allowed_roles_list can
-// only be set when oauth_use_secondary_roles is NONE.
-func oauthCustomClientsAllowedRolesListRequiresSecondaryRolesNone(_ context.Context, d *schema.ResourceDiff, _ any) error {
-	rawConfig := d.GetRawConfig()
-	if rawConfig.IsNull() {
-		return nil
-	}
-	configMap := rawConfig.AsValueMap()
-
-	allowedRoles, ok := configMap["allowed_roles_list"]
-	if !ok || allowedRoles.IsNull() || !allowedRoles.IsKnown() || allowedRoles.LengthInt() == 0 {
-		return nil
-	}
-
-	secondaryRoles, ok := configMap["oauth_use_secondary_roles"]
-	if !ok || secondaryRoles.IsNull() || !secondaryRoles.IsKnown() {
-		return nil
-	}
-	if secondaryRoles.AsString() != string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone) {
-		return fmt.Errorf("allowed_roles_list can only be set when oauth_use_secondary_roles is set to %s", sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)
-	}
-	return nil
 }
