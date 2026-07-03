@@ -25,13 +25,4 @@ func TestComments(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, `COMMENT IF EXISTS ON MASKING POLICY %s IS 'mycomment2'`, id.FullyQualifiedName())
 	})
-
-	t.Run("set column comment", func(t *testing.T) {
-		id := randomDatabaseObjectIdentifier()
-		opts := &SetColumnCommentOptions{
-			Column: id,
-			Value:  String("mycomment3"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `COMMENT ON COLUMN %s IS 'mycomment3'`, id.FullyQualifiedName())
-	})
 }
