@@ -67,9 +67,9 @@ mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
 	go mod tidy -compat=1.26.3 -diff
 
-pre-push: generate-all-config-model-builders generate-sdk-no-tests generate-sdk-examples generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: check-compilation generate-all-config-model-builders generate-sdk-no-tests generate-sdk-examples generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: generate-all-config-model-builders-check generate-sdk-no-tests-check generate-sdk-examples-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: check-compilation generate-all-config-model-builders-check generate-sdk-no-tests-check generate-sdk-examples-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
