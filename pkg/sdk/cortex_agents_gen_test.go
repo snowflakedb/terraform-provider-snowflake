@@ -37,6 +37,13 @@ func TestCortexAgents_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateCortexAgentOptions", "OrReplace", "IfNotExists"))
 	})
 
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.FromSpecification]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = "spec$$injected"
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateCortexAgentOptions", "FromSpecification"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, "CREATE AGENT %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec)
@@ -101,6 +108,15 @@ func TestCortexAgents_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &CortexAgentSet{}
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCortexAgentOptions.Set", "Comment", "Profile"))
+	})
+
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.ModifyLiveVersionSet.Specification]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{
+			Specification: "spec$$injected",
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("AlterCortexAgentOptions.ModifyLiveVersionSet", "Specification"))
 	})
 
 	// all variants added manually

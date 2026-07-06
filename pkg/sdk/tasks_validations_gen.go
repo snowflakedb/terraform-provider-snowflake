@@ -28,6 +28,9 @@ func (opts *CreateTaskOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateTaskOptions", "OrReplace", "IfNotExists"))
 	}
+	if opts.Config != nil && containsDoubleDollarQuotes(*opts.Config) {
+		errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateTaskOptions", "Config"))
+	}
 	if valueSet(opts.Warehouse) {
 		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
 			errs = append(errs, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
@@ -47,6 +50,9 @@ func (opts *CreateOrAlterTaskOptions) validate() error {
 	}
 	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.Config != nil && containsDoubleDollarQuotes(*opts.Config) {
+		errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateOrAlterTaskOptions", "Config"))
 	}
 	if valueSet(opts.Warehouse) {
 		if !exactlyOneValueSet(opts.Warehouse.Warehouse, opts.Warehouse.UserTaskManagedInitialWarehouseSize) {
@@ -91,6 +97,9 @@ func (opts *AlterTaskOptions) validate() error {
 		}
 		if opts.Set.ErrorIntegration != nil && !ValidObjectIdentifier(opts.Set.ErrorIntegration) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+		if opts.Set.Config != nil && containsDoubleDollarQuotes(*opts.Set.Config) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("AlterTaskOptions.Set", "Config"))
 		}
 	}
 	if valueSet(opts.Unset) {

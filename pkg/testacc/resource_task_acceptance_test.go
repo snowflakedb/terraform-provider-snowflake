@@ -2766,3 +2766,24 @@ func TestAcc_Task_migrateFromVersion_2_11_0_serverlessTask(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_Task_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	taskWithDoubleDollarConfig := model.TaskWithId("test", id, false, "SELECT 1").WithConfig(`{"key": "contains $$ sequence"}`)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Task),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, taskWithDoubleDollarConfig),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`cannot contain the \$\$ sequence`),
+			},
+		},
+	})
+}

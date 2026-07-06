@@ -16,6 +16,7 @@ type Identifier interface {
 type ObjectIdentifier interface {
 	Identifier
 	FullyQualifiedName() string
+	FullyQualifiedNameEscaped() string
 }
 
 // TODO(SNOW-2043829): Use this in all places where we need to pass an object identifier as generic type.
@@ -93,6 +94,10 @@ func (i ExternalObjectIdentifier) FullyQualifiedName() string {
 	return fmt.Sprintf(`%v.%v`, i.accountIdentifier.FullyQualifiedName(), i.objectIdentifier.FullyQualifiedName())
 }
 
+func (i ExternalObjectIdentifier) FullyQualifiedNameEscaped() string {
+	return i.FullyQualifiedName()
+}
+
 type AccountIdentifier struct {
 	organizationName string
 	accountName      string
@@ -148,6 +153,13 @@ func (i AccountIdentifier) FullyQualifiedName() string {
 	return fmt.Sprintf(`"%s"`, i.accountLocator)
 }
 
+func (i AccountIdentifier) FullyQualifiedNameEscaped() string {
+	if i.organizationName != "" && i.accountName != "" {
+		return fmt.Sprintf(`%s.%s`, DoubleQuotes.Modify(i.organizationName), DoubleQuotes.Modify(i.accountName))
+	}
+	return fmt.Sprintf(`%s`, DoubleQuotes.Modify(i.accountLocator))
+}
+
 type AccountObjectIdentifier struct {
 	name string
 }
@@ -163,6 +175,15 @@ func NewAccountObjectIdentifierFromFullyQualifiedName(fullyQualifiedName string)
 	return AccountObjectIdentifier{name: name}
 }
 
+// NewAccountObjectIdentifierNoTrimTestOnly creates an AccountObjectIdentifier from the raw name without trimming
+// surrounding double quotes. Unlike NewAccountObjectIdentifier, it preserves the name exactly as returned by SHOW,
+// which is required when sweeping objects whose names legitimately contain double quotes (the SDK escapes them at
+// SQL-emission time via FullyQualifiedNameEscaped).
+// TODO [SNOW-1569516]: remove this once sweepers no longer need to build identifiers literally from SHOW output.
+func NewAccountObjectIdentifierNoTrimTestOnly(name string) AccountObjectIdentifier {
+	return AccountObjectIdentifier{name: name}
+}
+
 func (i AccountObjectIdentifier) Name() string {
 	return i.name
 }
@@ -172,6 +193,13 @@ func (i AccountObjectIdentifier) FullyQualifiedName() string {
 		return ""
 	}
 	return fmt.Sprintf(`"%v"`, i.name)
+}
+
+func (i AccountObjectIdentifier) FullyQualifiedNameEscaped() string {
+	if i.name == "" {
+		return ""
+	}
+	return fmt.Sprintf(`%v`, DoubleQuotes.Modify(i.name))
 }
 
 type DatabaseObjectIdentifier struct {
@@ -215,6 +243,13 @@ func (i DatabaseObjectIdentifier) FullyQualifiedName() string {
 		return ""
 	}
 	return fmt.Sprintf(`"%v"."%v"`, i.databaseName, i.name)
+}
+
+func (i DatabaseObjectIdentifier) FullyQualifiedNameEscaped() string {
+	if i.name == "" && i.databaseName == "" {
+		return ""
+	}
+	return fmt.Sprintf(`%v.%v`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.name))
 }
 
 type SchemaObjectIdentifier struct {
@@ -311,6 +346,21 @@ func (i SchemaObjectIdentifier) FullyQualifiedName() string {
 	return fmt.Sprintf(`"%v"."%v"."%v"(%v)`, i.databaseName, i.schemaName, i.name, strings.Join(args, ", "))
 }
 
+func (i SchemaObjectIdentifier) FullyQualifiedNameEscaped() string {
+	if i.schemaName == "" && i.databaseName == "" && i.name == "" {
+		return ""
+	}
+	if len(i.arguments) == 0 {
+		return fmt.Sprintf(`%v.%v.%v`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.schemaName), DoubleQuotes.Modify(i.name))
+	}
+	// if this is a function or procedure, we need to include the arguments
+	args := make([]string, len(i.arguments))
+	for i, arg := range i.arguments {
+		args[i] = string(arg)
+	}
+	return fmt.Sprintf(`%v.%v.%v(%v)`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.schemaName), DoubleQuotes.Modify(i.name), strings.Join(args, ", "))
+}
+
 func (i SchemaObjectIdentifier) WithoutArguments() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(i.databaseName, i.schemaName, i.name)
 }
@@ -401,6 +451,13 @@ func (i SchemaObjectIdentifierWithArguments) FullyQualifiedName() string {
 	return fmt.Sprintf(`"%v"."%v"."%v"(%v)`, i.databaseName, i.schemaName, i.name, strings.Join(AsStringList(i.argumentDataTypes), ", "))
 }
 
+func (i SchemaObjectIdentifierWithArguments) FullyQualifiedNameEscaped() string {
+	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentDataTypes) == 0 {
+		return ""
+	}
+	return fmt.Sprintf(`%v.%v.%v(%v)`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.schemaName), DoubleQuotes.Modify(i.name), strings.Join(AsStringList(i.argumentDataTypes), ", "))
+}
+
 type TableColumnIdentifier struct {
 	databaseName string
 	schemaName   string
@@ -448,6 +505,19 @@ func (i TableColumnIdentifier) FullyQualifiedName() string {
 		return ""
 	}
 	return fmt.Sprintf(`"%v"."%v"."%v"."%v"`, i.databaseName, i.schemaName, i.tableName, i.columnName)
+}
+
+func (i TableColumnIdentifier) FullyQualifiedNameEscaped() string {
+	if i.schemaName == "" && i.databaseName == "" && i.tableName == "" && i.columnName == "" {
+		return ""
+	}
+	return fmt.Sprintf(
+		`%v.%v.%v.%v`,
+		DoubleQuotes.Modify(i.databaseName),
+		DoubleQuotes.Modify(i.schemaName),
+		DoubleQuotes.Modify(i.tableName),
+		DoubleQuotes.Modify(i.columnName),
+	)
 }
 
 func (i TableColumnIdentifier) SchemaObjectId() SchemaObjectIdentifier {
