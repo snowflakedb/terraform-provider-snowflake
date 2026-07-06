@@ -297,8 +297,34 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	if grantOn.Future != nil {
-		// TODO (SNOW-1182623): Still waiting for the response on the behavior/SQL syntax we should use here
-		log.Printf("[WARN] Unsupported operation, please revoke ownership transfer manually")
+		// OWNERSHIP of existing objects cannot be revoked (it can only be transferred to another role),
+		// but ownership granted on FUTURE objects can and must be revoked, otherwise the future ownership
+		// grant silently survives the resource deletion (see SNOW-1182623 / SNOW-3649903).
+		grantFrom, err := getOwnershipGrantTo(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = client.Grants.RevokeOwnership(
+			ctx,
+			sdk.RevokeOwnershipGrantOn{
+				Future: grantOn.Future,
+			},
+			grantFrom,
+			new(sdk.RevokeOwnershipOptions),
+		)
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
+			err = nil
+		}
+		if err != nil {
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "An error occurred when revoking ownership of future objects",
+					Detail:   fmt.Sprintf("Id: %s\nError: %s", d.Id(), err),
+				},
+			}
+		}
 	} else {
 		accountRoleName, err := client.ContextFunctions.CurrentRole(ctx)
 		if err != nil {
