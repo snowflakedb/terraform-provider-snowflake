@@ -176,8 +176,8 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().NetworkPolicy.Update(t, sdk.NewAlterNetworkPolicyRequest(id).WithSet(
 						*sdk.NewNetworkPolicySetRequest().
-							WithAllowedIpList(*sdk.NewAllowedIPListRequest().WithAllowedIPList([]sdk.IPRequest{{"1.1.1.1"}, {"2.2.2.2"}})).
-							WithBlockedIpList(*sdk.NewBlockedIPListRequest().WithBlockedIPList([]sdk.IPRequest{{"3.3.3.3"}, {"4.4.4.4"}})).
+							WithAllowedIpList(*sdk.NewAllowedIPListRequest().WithAllowedIPList([]sdk.IPRequest{{IP: "1.1.1.1"}, {IP: "2.2.2.2"}})).
+							WithBlockedIpList(*sdk.NewBlockedIPListRequest().WithBlockedIPList([]sdk.IPRequest{{IP: "3.3.3.3"}, {IP: "4.4.4.4"}})).
 							WithAllowedNetworkRuleList(*sdk.NewAllowedNetworkRuleListRequest().WithAllowedNetworkRuleList([]sdk.SchemaObjectIdentifier{allowedNetworkRuleId1, allowedNetworkRuleId2})).
 							WithBlockedNetworkRuleList(*sdk.NewBlockedNetworkRuleListRequest().WithBlockedNetworkRuleList([]sdk.SchemaObjectIdentifier{blockedNetworkRuleId1, blockedNetworkRuleId2})).
 							WithComment(comment),

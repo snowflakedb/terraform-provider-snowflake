@@ -192,9 +192,9 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 						WithSet(
 							*sdk.NewExternalOauthIntegrationSetRequest().
 								WithEnabled(true).
-								WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{"https://example.com"}}).
+								WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}}).
 								WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable).
-								WithExternalOauthAudienceList(*sdk.NewAudienceListRequest([]sdk.AudienceListItem{{"bar"}})).
+								WithExternalOauthAudienceList(*sdk.NewAudienceListRequest([]sdk.AudienceListItem{{Item: "bar"}})).
 								WithExternalOauthSnowflakeUserMappingAttribute(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName).
 								WithComment(sdk.StringAllowEmpty{Value: comment}),
 						))

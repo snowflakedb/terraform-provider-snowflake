@@ -270,7 +270,8 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
 
 - handle more validation types
   - validating numbers in a given range constrained by another variable (e.g. `x <= y`, `x > y`, etc.)
-  - validating number relations in a sequence (e.g. `x <= y <= z`, `x < y < z`)
+  - validating number relations in a sequence (e.g. `x <= y <= z`, `x < y < z`),
+  - validating inputs containing blocklisted characters, e.g. `$$`.
 - remove name argument from QueryStruct in the Operation, because Opt structs in the Operation will have name from op name + interface field and not query struct itself
 - Derive field name from QueryStruct, e.g. see network_policies_def where we can remove "Set" field, but we have to make a convention of creating nested struct with
   name pattern like <interface name><name> e.g. NetworkPoliciesSet or NetworkPolicySet, then we could automatically remove prefix and we'll name field with postfix, so "Set" in this case

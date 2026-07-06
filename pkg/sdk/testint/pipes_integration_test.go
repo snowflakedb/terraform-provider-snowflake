@@ -37,9 +37,10 @@ func TestInt_CreatePipeWithStrangeSchemaName(t *testing.T) {
 	t.Cleanup(stageCleanup)
 
 	t.Run("if we have special characters in db or schema name, create pipe succeeds", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		err := itc.client.Pipes.Create(
 			itc.ctx,
-			sdk.NewCreatePipeRequest(testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), createPipeCopyStatement(t, table, stage)),
+			sdk.NewCreatePipeRequest(id, createPipeCopyStatement(t, table, stage)),
 		)
 
 		require.NoError(t, err)
@@ -116,10 +117,12 @@ func TestInt_PipesShowAndDescribe(t *testing.T) {
 	})
 
 	t.Run("describe: existing pipe", func(t *testing.T) {
-		pipe, err := itc.client.Pipes.Describe(itc.ctx, pipe1.ID())
+		pipeDetails, err := itc.client.Pipes.Describe(itc.ctx, pipe1.ID())
+		// TODO [next PRs]: generate assertions for pipe details, currently same as show ouput
+		p := sdk.Pipe(*pipeDetails)
 
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.PipeFromObject(t, pipe).
+		assertThatObject(t, objectassert.PipeFromObject(t, &p).
 			HasName(pipe1.Name))
 	})
 

@@ -3340,3 +3340,47 @@ func TestAcc_Warehouse_ExternalTypeChange(t *testing.T) {
 		},
 	})
 }
+
+// This test proves the provider behavior when an identifier contains double quotes:
+//   - When the identifier is used as a resource association, it is okay
+//   - When the identifier is used as a part of resource identifier, it fails with parsing error.
+//     This happens because of the Id parsing functions which disallow double quotes.
+//     We can't check this function because the framework runs the destroy function with the malformed identifier.
+//     This can't be overridden or skipped.
+func TestAcc_Warehouse_IdentifierWithDoubleQuotes(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	randomSuffix := testClient().Ids.Alpha()
+	funnyString := `a"c` + randomSuffix
+	funnyId := sdk.NewAccountObjectIdentifier(funnyString)
+	_, rmCleanup := testClient().ResourceMonitor.CreateResourceMonitorWithRequest(t,
+		sdk.NewCreateResourceMonitorRequest(funnyId))
+	t.Cleanup(rmCleanup)
+	warehouseModelWithFunnyResourceMonitor := model.Warehouse("test", id.Name()).
+		WithResourceMonitor(funnyString).
+		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
+	ref := warehouseModelWithFunnyResourceMonitor.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroyUsingLegacyIdParsing(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModelWithFunnyResourceMonitor),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseResource(t, ref).
+						HasName(id.Name()).
+						HasResourceMonitor(funnyString).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasName(id.Name()).
+						HasResourceMonitor(funnyId).
+						HasType(sdk.WarehouseTypeStandard),
+				),
+			},
+		},
+	})
+}

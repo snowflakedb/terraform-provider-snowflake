@@ -7,8 +7,34 @@ import (
 )
 
 func TestSystemGenerateSCIMAccessToken(t *testing.T) {
-	r := require.New(t)
-	sb := NewSystemGenerateSCIMAccessTokenBuilder("AAD_PROVISIONING")
+	testCases := []struct {
+		name            string
+		integrationName string
+		expected        string
+	}{
+		{
+			name:            "basic",
+			integrationName: "AAD_PROVISIONING",
+			expected:        `SELECT SYSTEM$GENERATE_SCIM_ACCESS_TOKEN('AAD_PROVISIONING') AS "TOKEN"`,
+		},
+		{
+			name:            "single quote is escaped",
+			integrationName: "AAD'PROVISIONING",
+			expected:        `SELECT SYSTEM$GENERATE_SCIM_ACCESS_TOKEN('AAD\'PROVISIONING') AS "TOKEN"`,
+		},
+		{
+			name:            "backslash is escaped",
+			integrationName: `AAD\PROVISIONING`,
+			expected:        `SELECT SYSTEM$GENERATE_SCIM_ACCESS_TOKEN('AAD\\PROVISIONING') AS "TOKEN"`,
+		},
+	}
 
-	r.Equal(`SELECT SYSTEM$GENERATE_SCIM_ACCESS_TOKEN('AAD_PROVISIONING') AS "TOKEN"`, sb.Select())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := require.New(t)
+			sb := NewSystemGenerateSCIMAccessTokenBuilder(tc.integrationName)
+
+			r.Equal(tc.expected, sb.Select())
+		})
+	}
 }

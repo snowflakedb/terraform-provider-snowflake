@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type TableColumnMaskingPolicyApplication struct {
@@ -28,7 +30,8 @@ type TableColumnMaskingPolicyApplicationCreateInput struct {
 }
 
 func (m *TableColumnMaskingPolicyApplicationManager) Create(x *TableColumnMaskingPolicyApplicationCreateInput) string {
-	return fmt.Sprintf(`ALTER TABLE IF EXISTS %s MODIFY COLUMN "%s" SET MASKING POLICY %s;`, x.Table.QualifiedName(), x.Column, x.MaskingPolicy.QualifiedName())
+	column := sdk.DoubleQuotes.Modify(x.Column)
+	return fmt.Sprintf(`ALTER TABLE IF EXISTS %s MODIFY COLUMN %s SET MASKING POLICY %s;`, x.Table.QualifiedName(), column, x.MaskingPolicy.QualifiedName())
 }
 
 type TableColumnMaskingPolicyApplicationReadInput = TableColumn
@@ -57,5 +60,6 @@ type TableColumnMaskingPolicyApplicationDeleteInput struct {
 }
 
 func (m *TableColumnMaskingPolicyApplicationManager) Delete(x *TableColumnMaskingPolicyApplicationDeleteInput) string {
-	return fmt.Sprintf(`ALTER TABLE IF EXISTS %s MODIFY COLUMN "%s" UNSET MASKING POLICY;`, x.Table.QualifiedName(), x.Column)
+	column := sdk.DoubleQuotes.Modify(x.Column)
+	return fmt.Sprintf(`ALTER TABLE IF EXISTS %s MODIFY COLUMN %s UNSET MASKING POLICY;`, x.Table.QualifiedName(), column)
 }

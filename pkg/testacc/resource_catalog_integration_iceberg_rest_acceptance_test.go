@@ -474,7 +474,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
 			HasOauthRestAuthenticationEmpty().
-			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{bearerToken}).
+			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{BearerToken: bearerToken}).
 			HasSigv4RestAuthenticationEmpty(),
 	}, evenMoreForceNewAssertions[1:4]...)
 
@@ -1189,7 +1189,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				AccessDelegationMode: "",
 			}).
 			HasOauthRestAuthenticationEmpty().
-			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{bearerToken}).
+			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{BearerToken: bearerToken}).
 			HasSigv4RestAuthenticationEmpty(),
 	}, basicAssertions[2:]...)
 

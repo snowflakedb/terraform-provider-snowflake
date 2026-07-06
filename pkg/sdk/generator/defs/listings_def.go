@@ -142,12 +142,13 @@ var listingsDef = g.NewInterface(
 			Name().
 			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
 			OptionalTextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes()).
-			PredefinedQueryStructField("From", g.KindOfTPointer[sdkcommons.Location](), g.ParameterOptions().NoQuotes().NoEquals().SQL("FROM")).
+			PredefinedQueryStructField("From", g.KindOfTPointer[sdkcommons.Location](), g.ParameterOptions().SingleQuotes().NoEquals().SQL("FROM")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
 			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "As", "From"),
+			WithValidation(g.ExactlyOneValueSet, "As", "From").
+			WithValidation(g.NoDoubleDollarQuotesIfSet, "As"),
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-listing",
@@ -165,7 +166,8 @@ var listingsDef = g.NewInterface(
 					Text("As", g.KeywordOptions().Required().DoubleDollarQuotes()).
 					OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
 					OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
-					OptionalComment(),
+					OptionalComment().
+					WithValidation(g.NoDoubleDollarQuotes, "As"),
 				g.KeywordOptions().SQL("AS"),
 			).
 			OptionalQueryStructField(
@@ -173,7 +175,7 @@ var listingsDef = g.NewInterface(
 				g.NewQueryStruct("AddListingVersion").
 					IfNotExists().
 					Text("VersionName", g.KeywordOptions().DoubleQuotes()).
-					PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().NoQuotes().NoEquals().SQL("FROM")).
+					PredefinedQueryStructField("From", "Location", g.ParameterOptions().Required().SingleQuotes().NoEquals().SQL("FROM")).
 					OptionalComment(),
 				g.KeywordOptions().SQL("ADD VERSION"),
 			).

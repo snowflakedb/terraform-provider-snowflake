@@ -3,19 +3,12 @@ package snowflake
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type Identifier interface {
 	QualifiedName() string
-}
-
-type SchemaIdentifier struct {
-	Database string
-	Schema   string
-}
-
-func (i *SchemaIdentifier) QualifiedName() string {
-	return fmt.Sprintf(`"%v"."%v"`, i.Database, i.Schema)
 }
 
 type SchemaObjectIdentifier struct {
@@ -25,7 +18,10 @@ type SchemaObjectIdentifier struct {
 }
 
 func (i *SchemaObjectIdentifier) QualifiedName() string {
-	return fmt.Sprintf(`"%v"."%v"."%v"`, i.Database, i.Schema, i.ObjectName)
+	db := sdk.DoubleQuotes.Modify(i.Database)
+	schema := sdk.DoubleQuotes.Modify(i.Schema)
+	name := sdk.DoubleQuotes.Modify(i.ObjectName)
+	return fmt.Sprintf(`%v.%v.%v`, db, schema, name)
 }
 
 func SchemaObjectIdentifierFromQualifiedName(name string) *SchemaObjectIdentifier {
@@ -45,7 +41,11 @@ type ColumnIdentifier struct {
 }
 
 func (i *ColumnIdentifier) QualifiedName() string {
-	return fmt.Sprintf(`"%v"."%v"."%v"."%v"`, i.Database, i.Schema, i.ObjectName, i.Column)
+	db := sdk.DoubleQuotes.Modify(i.Database)
+	schema := sdk.DoubleQuotes.Modify(i.Schema)
+	name := sdk.DoubleQuotes.Modify(i.ObjectName)
+	column := sdk.DoubleQuotes.Modify(i.Column)
+	return fmt.Sprintf(`%v.%v.%v.%v`, db, schema, name, column)
 }
 
 func ColumnIdentifierFromQualifiedName(name string) *ColumnIdentifier {

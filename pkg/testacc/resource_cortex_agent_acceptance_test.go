@@ -427,6 +427,7 @@ func TestAcc_CortexAgent_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	emptySpec := model.CortexAgent("t", id.DatabaseName(), id.SchemaName(), id.Name(), "")
+	specWithDoubleDollar := model.CortexAgent("t", id.DatabaseName(), id.SchemaName(), id.Name(), "contains $$ sequence")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -439,6 +440,11 @@ func TestAcc_CortexAgent_Validations(t *testing.T) {
 				Config:      config.FromModels(t, emptySpec),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected "specification" to not be an empty string`),
+			},
+			{
+				Config:      config.FromModels(t, specWithDoubleDollar),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`cannot contain the \$\$ sequence`),
 			},
 		},
 	})

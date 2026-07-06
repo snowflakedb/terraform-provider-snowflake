@@ -146,6 +146,9 @@ func (v *ParameterTransformer) DoubleQuotes() *ParameterTransformer {
 	return v
 }
 
+// Warning: Double dollar quotes tag assumes that passed input is sanitated.
+// Double dollar quotes cannot be escaped in Snowflake.
+// This is why the caller is resposible to allow only sanitized input for fields with this tag.
 func (v *ParameterTransformer) DoubleDollarQuotes() *ParameterTransformer {
 	v.quotes = "double_dollar_quotes"
 	return v

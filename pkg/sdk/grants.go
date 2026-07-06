@@ -18,6 +18,7 @@ type Grants interface {
 	RevokePrivilegeFromShare(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, from AccountObjectIdentifier) error
 	RevokePrivilegeFromShareSafely(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, from AccountObjectIdentifier) error
 	GrantOwnership(ctx context.Context, on OwnershipGrantOn, to OwnershipGrantTo, opts *GrantOwnershipOptions) error
+	RevokeOwnership(ctx context.Context, on RevokeOwnershipGrantOn, from OwnershipGrantTo, opts *RevokeOwnershipOptions) error
 
 	Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, error)
 }
@@ -334,3 +335,23 @@ const (
 	Revoke OwnershipCurrentGrantsOutboundPrivileges = "REVOKE"
 	Copy   OwnershipCurrentGrantsOutboundPrivileges = "COPY"
 )
+
+// RevokeOwnershipOptions is based on https://docs.snowflake.com/en/sql-reference/sql/revoke-privilege#syntax.
+// Note: per https://docs.snowflake.com/en/sql-reference/sql/grant-ownership, OWNERSHIP of an existing object
+// cannot be revoked - it can only be transferred to another role with GRANT OWNERSHIP. OWNERSHIP can, however,
+// be revoked for future grants, i.e. REVOKE OWNERSHIP ON FUTURE <object_type_plural> IN { DATABASE | SCHEMA } FROM ROLE.
+type RevokeOwnershipOptions struct {
+	revokeOwnership bool                   `ddl:"static" sql:"REVOKE OWNERSHIP"`
+	On              RevokeOwnershipGrantOn `ddl:"keyword" sql:"ON"`
+	From            OwnershipGrantTo       `ddl:"keyword" sql:"FROM"`
+	Restrict        *bool                  `ddl:"keyword" sql:"RESTRICT"`
+	Cascade         *bool                  `ddl:"keyword" sql:"CASCADE"`
+}
+
+// RevokeOwnershipGrantOn only allows revoking OWNERSHIP of future grants - per
+// https://docs.snowflake.com/en/sql-reference/sql/grant-ownership, OWNERSHIP of an existing object cannot be
+// revoked (it can only be transferred to another role with GRANT OWNERSHIP), so unlike OwnershipGrantOn this
+// type intentionally does not expose the Object/All variants.
+type RevokeOwnershipGrantOn struct {
+	Future *GrantOnSchemaObjectIn `ddl:"keyword" sql:"FUTURE"`
+}

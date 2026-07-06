@@ -200,7 +200,7 @@ func structToSQL(v interface{}) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return builder.sql(clauses...), nil
+	return builder.sql(clauses...)
 }
 
 const (
@@ -209,21 +209,32 @@ const (
 
 type sqlBuilder string
 
-func (b sqlBuilder) renderStaticClause(clauses ...sqlClause) sqlClause {
-	return sqlStaticClause(b.sql(clauses...))
+func (b sqlBuilder) renderStaticClause(clauses ...sqlClause) (sqlClause, error) {
+	s, err := b.sql(clauses...)
+	if err != nil {
+		return nil, err
+	}
+	return sqlStaticClause(s), nil
 }
 
 // sql builds a SQL statement from sqlClauses.
-func (b sqlBuilder) sql(clauses ...sqlClause) string {
+func (b sqlBuilder) sql(clauses ...sqlClause) (string, error) {
 	// remove nil and empty strings
 	sList := make([]string, 0)
 	for _, c := range clauses {
-		if c != nil && c.String() != "" {
-			sList = append(sList, c.String())
+		if c == nil {
+			continue
+		}
+		s, err := c.String()
+		if err != nil {
+			return "", err
+		}
+		if s != "" {
+			sList = append(sList, s)
 		}
 	}
 
-	return strings.Trim(strings.Join(sList, " "), " ")
+	return strings.Trim(strings.Join(sList, " "), " "), nil
 }
 
 func (b sqlBuilder) parseInterface(v interface{}, tag reflect.StructTag) (sqlClause, error) {
@@ -307,7 +318,14 @@ func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
 	// prune all nil and empty string clauses
 	prunedClauses := make([]sqlClause, 0)
 	for _, c := range clauses {
-		if c != nil && c.String() != "" {
+		if c == nil {
+			continue
+		}
+		s, err := c.String()
+		if err != nil {
+			return nil, err
+		}
+		if s != "" {
 			prunedClauses = append(prunedClauses, c)
 		}
 	}
@@ -382,7 +400,7 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 				cm:      b.getModifier(field.Tag, "ddl", commaModifierType, Comma).(commaModifier),
 				pm:      b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier),
 			})
-			return b.renderStaticClause(clauses...), nil
+			return b.renderStaticClause(clauses...)
 		case "parameter":
 			// time is a weird struct - you don't want to parse it, just get the string value.
 			// since it is a built-in type we can't change anything about it
@@ -408,7 +426,7 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 					em:    b.getModifier(field.Tag, "ddl", equalsModifierType, Equals).(equalsModifier),
 					rm:    b.getModifier(field.Tag, "ddl", reverseModifierType, NoReverse).(reverseModifier),
 				})
-				return b.renderStaticClause(clauses...), nil
+				return b.renderStaticClause(clauses...)
 			}
 		}
 	}
@@ -418,7 +436,7 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 		return nil, err
 	}
 	clauses = append(clauses, fieldStructClauses...)
-	return b.renderStaticClause(clauses...), nil
+	return b.renderStaticClause(clauses...)
 }
 
 func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Value) (sqlClause, error) {
@@ -466,7 +484,10 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 				}
 			}
 			// each element of the slice needs to be pre-rendered before the commas are added.
-			sClause := b.renderStaticClause(structClauses...)
+			sClause, err := b.renderStaticClause(structClauses...)
+			if err != nil {
+				return nil, err
+			}
 			listClauses = append(listClauses, sClause)
 		} else {
 			// if it is not a struct, then it is a primitive type and can be added directly.
@@ -483,11 +504,14 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 			return nil, nil
 		}
 	}
-	sClause := b.renderStaticClause(sqlListClause{
+	sClause, err := b.renderStaticClause(sqlListClause{
 		clauses: listClauses,
 		cm:      b.getModifier(field.Tag, "ddl", commaModifierType, Comma).(commaModifier),
 		pm:      b.getModifier(field.Tag, "ddl", parenModifierType, NoParentheses).(parenModifier),
 	})
+	if err != nil {
+		return nil, err
+	}
 	ddlTag := strings.Split(field.Tag.Get("ddl"), ",")[0]
 	sqlTag := field.Tag.Get("sql")
 	// depending on the ddl tag we may want to add a parameter clause or a keyword clause before rendered list clause
@@ -504,7 +528,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 		return b.renderStaticClause(sqlKeywordClause{
 			key: sqlTag,
 			qm:  b.getModifier(field.Tag, "ddl", quoteModifierType, NoQuotes).(quoteModifier),
-		}, sClause), nil
+		}, sClause)
 	}
 	return sClause, nil
 }
@@ -542,7 +566,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 		if err != nil {
 			return nil, err
 		}
-		return b.renderStaticClause(structClauses...), nil
+		return b.renderStaticClause(structClauses...)
 	}
 
 	switch ddlTag {
@@ -586,7 +610,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 	default:
 		return nil, nil
 	}
-	return b.renderStaticClause(clause), nil
+	return b.renderStaticClause(clause)
 }
 
 func (b sqlBuilder) getInterface(field reflect.Value) interface{} {
@@ -604,27 +628,31 @@ type sqlListClause struct {
 	pm      parenModifier
 }
 
-func (v sqlListClause) String() string {
+func (v sqlListClause) String() (string, error) {
 	if len(v.clauses) == 0 {
-		return ""
+		return "", nil
 	}
 	clauseStrings := make([]string, len(v.clauses))
 	for i, clause := range v.clauses {
-		clauseStrings[i] = clause.String()
+		s, err := clause.String()
+		if err != nil {
+			return "", err
+		}
+		clauseStrings[i] = s
 	}
 	s := v.cm.Modify(clauseStrings)
 	s = v.pm.Modify(s)
-	return s
+	return s, nil
 }
 
 type sqlClause interface {
-	String() string
+	String() (string, error)
 }
 
 type sqlStaticClause string
 
-func (v sqlStaticClause) String() string {
-	return string(v)
+func (v sqlStaticClause) String() (string, error) {
+	return string(v), nil
 }
 
 type sqlKeywordClause struct {
@@ -632,8 +660,8 @@ type sqlKeywordClause struct {
 	qm  quoteModifier
 }
 
-func (v sqlKeywordClause) String() string {
-	return v.qm.Modify(v.key)
+func (v sqlKeywordClause) String() (string, error) {
+	return v.qm.Modify(v.key), nil
 }
 
 type sqlIdentifierClause struct {
@@ -643,20 +671,20 @@ type sqlIdentifierClause struct {
 	qm    quoteModifier
 }
 
-func (v sqlIdentifierClause) String() string {
+func (v sqlIdentifierClause) String() (string, error) {
 	var name string
 	// object identifiers need to be fully qualified
 	if _, ok := v.value.(ObjectIdentifier); ok {
-		name = v.value.(ObjectIdentifier).FullyQualifiedName()
+		name = v.value.(ObjectIdentifier).FullyQualifiedNameEscaped()
 	} else {
-		name = DoubleQuotes.Modify(v.value.Name())
+		return "", fmt.Errorf("expected ObjectIdentifier, got %T", v.value)
 	}
 	name = v.qm.Modify(name)
 	// else try to get the string value
 	if v.key != "" {
-		return v.em.Modify(v.key) + name
+		return v.em.Modify(v.key) + name, nil
 	}
-	return name
+	return name, nil
 }
 
 type sqlParameterClause struct {
@@ -669,34 +697,43 @@ type sqlParameterClause struct {
 	rm reverseModifier
 }
 
-func (v sqlParameterClause) String() string {
+func (v sqlParameterClause) String() (string, error) {
+	value := v.value
+	// if the value is itself a clause, render it explicitly since it no longer
+	// satisfies fmt.Stringer with the (string, error) signature
+	if clause, ok := value.(sqlClause); ok {
+		rendered, err := clause.String()
+		if err != nil {
+			return "", err
+		}
+		value = rendered
+	}
 	// the reverse modifier is never used with equals modifier, so we just ignore it
 	if v.rm == Reverse {
 		// "value" key
-		return v.rm.Modify([]string{v.key, v.qm.Modify(v.value)})
+		return v.rm.Modify([]string{v.key, v.qm.Modify(value)}), nil
 	}
 	// key =
 	s := v.em.Modify(v.key)
-	if v.value == nil {
-		return s
+	if value == nil {
+		return s, nil
 	}
-	value := v.value
 	if dataType, ok := value.(datatypes.DataType); ok {
 		// We check like this and not by `dataType == nil` because for e.g. `var *datatypes.ArrayDataType` return false in a normal nil check
 		if reflect.ValueOf(dataType).IsZero() {
-			return s
+			return s, nil
 		}
 		value = dataType.ToSql()
 	}
 	if location, ok := value.(Location); ok {
 		if location == nil {
-			return s
+			return s, nil
 		}
 		value = location.ToSql()
 	}
 	// key = "value"
 	s += v.qm.Modify(value)
-	return s
+	return s, nil
 }
 
 type sqlInstanceMethodClause struct {
@@ -704,8 +741,8 @@ type sqlInstanceMethodClause struct {
 	method string
 }
 
-func (v sqlInstanceMethodClause) String() string {
-	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedName(), v.method)
+func (v sqlInstanceMethodClause) String() (string, error) {
+	return fmt.Sprintf("%s!%s", v.object.FullyQualifiedName(), v.method), nil
 }
 
 type sqlSystemReferenceClause struct {
@@ -713,6 +750,6 @@ type sqlSystemReferenceClause struct {
 	object     ObjectIdentifier
 }
 
-func (v sqlSystemReferenceClause) String() string {
-	return fmt.Sprintf("SYSTEM$REFERENCE('%s', '%s')", v.objectType, v.object.FullyQualifiedName())
+func (v sqlSystemReferenceClause) String() (string, error) {
+	return fmt.Sprintf("SYSTEM$REFERENCE('%s', '%s')", v.objectType, v.object.FullyQualifiedName()), nil
 }

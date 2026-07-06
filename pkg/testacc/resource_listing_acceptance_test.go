@@ -896,6 +896,7 @@ func TestAcc_Listing_Validations(t *testing.T) {
 		))
 
 	modelWithInvalidName := model.ListingWithInlineManifest("test", "_invalid_name", manifest)
+	modelWithDoubleDollarInManifest := model.ListingWithInlineManifest("test", id.Name(), "manifest: contains $$ sequence")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -923,6 +924,11 @@ func TestAcc_Listing_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelWithInvalidName),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores and hyphens`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelWithDoubleDollarInManifest),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`cannot contain the \$\$ sequence`),
 			},
 		},
 	})

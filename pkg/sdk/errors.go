@@ -38,7 +38,7 @@ var (
 	// ALTER is issued while a previous CREATE/ALTER is still in progress.
 	// Note: this is a fragile substring match — Snowflake may change the message in future versions,
 	// or an unrelated error could accidentally match. Treat retries as best-effort.
-	ErrPostgresOperationMustBeComplete = NewError("must be complete before issuing ALTER")
+	ErrPostgresOperationMustBeComplete = errors.New("must be complete before issuing ALTER")
 )
 
 type IntErrType string
@@ -89,6 +89,13 @@ func errMoreThanOneOf(structName string, fieldNames ...string) error {
 
 func errInvalidValue(structName string, fieldName string, invalidValue string) error {
 	return newError(fmt.Sprintf("invalid value %s of struct %s field: %s", invalidValue, structName, fieldName), 2)
+}
+
+// errDoubleDollarQuotesNotAllowed is returned when a field rendered with double dollar quoting ($$...$$) contains
+// the `$$` sequence. Snowflake dollar-quoted string constants are interpreted literally and do not support escaping,
+// so any embedded `$$` would terminate the constant and allow SQL injection. Such input is therefore rejected.
+func errDoubleDollarQuotesNotAllowed(structName string, fieldName string) error {
+	return newError(fmt.Sprintf("%s field: %s must not contain the '$$' sequence, because it is not supported by Snowflake's dollar-quoted string constants", structName, fieldName), 2)
 }
 
 var errorRegexes = map[*regexp.Regexp]error{
