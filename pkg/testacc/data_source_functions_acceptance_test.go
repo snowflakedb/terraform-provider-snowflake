@@ -54,7 +54,8 @@ func functionsConfig(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) string
 	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
 
-	functionsSetup := config.FromModels(t,
+	functionsSetup := config.FromModels(
+		t,
 		model.FunctionJavaBasicInline("f1", id1, dataType, handler, definition).WithArgument(argName, dataType),
 		model.FunctionJavaBasicInline("f2", id2, dataType, handler, definition).WithArgument(argName, dataType),
 	)

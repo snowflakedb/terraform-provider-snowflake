@@ -113,7 +113,8 @@ var taskSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("config"),
-		Description:      "Specifies a string representation of key value pairs that can be accessed by all tasks in the task graph. Must be in JSON format.",
+		Description:      joinWithSpace("Specifies a string representation of key value pairs that can be accessed by all tasks in the task graph. Must be in JSON format.", doubleDollarQuotesDescription()),
+		ValidateDiagFunc: forbidDoubleDollarQuotes,
 	},
 	"allow_overlapping_execution": {
 		Type:             schema.TypeString,
@@ -657,7 +658,8 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"allow_overlapping_execution", "allow_overlapping_execution", task.AllowOverlappingExecution, booleanStringFromBool(task.AllowOverlappingExecution), nil},
 			); err != nil {
 				return diag.FromErr(err)

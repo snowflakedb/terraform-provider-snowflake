@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -54,7 +53,7 @@ var storageIntegrationsSchema = map[string]*schema.Schema{
 
 func StorageIntegrations() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.StorageIntegrationsDatasource), TrackingReadWrapper(datasources.StorageIntegrations, ReadStorageIntegrations)),
+		ReadContext: TrackingReadWrapper(datasources.StorageIntegrations, ReadStorageIntegrations),
 		Schema:      storageIntegrationsSchema,
 		Description: "Data source used to get details of filtered storage integrations. Filtering is aligned with the current possibilities for [SHOW STORAGE INTEGRATIONS](https://docs.snowflake.com/en/sql-reference/sql/show-integrations) query (only `like` is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection `storage_integrations`.",
 	}

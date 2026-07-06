@@ -145,7 +145,7 @@ func TestInt_RolesUse(t *testing.T) {
 	t.Cleanup(cleanup)
 	require.NotEqual(t, currentRole.Name(), role.Name)
 
-	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), sdk.GrantRole{Role: &currentRole}))
+	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithRole(currentRole)))
 	require.NoError(t, err)
 
 	err = client.Sessions.UseRole(ctx, role.ID())
@@ -173,7 +173,7 @@ func TestInt_RolesUseSecondaryRoles(t *testing.T) {
 	user, err := client.ContextFunctions.CurrentUser(ctx)
 	require.NoError(t, err)
 
-	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), sdk.GrantRole{User: &user}))
+	err = client.Roles.Grant(ctx, sdk.NewGrantRoleRequest(role.ID(), *sdk.NewGrantRoleToRequest().WithUser(user)))
 	require.NoError(t, err)
 
 	err = client.Sessions.UseRole(ctx, role.ID())

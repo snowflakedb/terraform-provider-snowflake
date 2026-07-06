@@ -231,7 +231,8 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 				Config:       config.FromModels(t, basic),
 				ResourceName: ref,
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedStorageLifecyclePolicyResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasName(id.Name()).
 						HasSchema(id.SchemaName()).
@@ -308,7 +309,8 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 				Config:       config.FromModels(t, complete),
 				ResourceName: ref,
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedStorageLifecyclePolicyResource(t, helpers.EncodeResourceIdentifier(newId)).
 						HasName(newId.Name()).
 						HasSchema(newId.SchemaName()).

@@ -224,7 +224,8 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 			if computePool.Application != nil {
 				applicationFullyQualifiedName = computePool.Application.FullyQualifiedName()
 			}
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"application", "for_application", applicationFullyQualifiedName, applicationFullyQualifiedName, nil},
 				outputMapping{"auto_resume", "auto_resume", computePool.AutoResume, booleanStringFromBool(computePool.AutoResume), nil},
 				outputMapping{"auto_suspend_secs", "auto_suspend_secs", computePool.AutoSuspendSecs, computePool.AutoSuspendSecs, nil},

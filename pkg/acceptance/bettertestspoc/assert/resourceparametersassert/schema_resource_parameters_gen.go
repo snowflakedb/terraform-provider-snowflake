@@ -17,9 +17,8 @@ func SchemaResourceParameters(t *testing.T, name string) *SchemaResourceParamete
 	t.Helper()
 
 	resourceParameterAssert := SchemaResourceParametersAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedSchemaResourceParameters(t *testing.T, id string) *SchemaResourcePa
 	t.Helper()
 
 	resourceParameterAssert := SchemaResourceParametersAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -38,7 +36,7 @@ func ImportedSchemaResourceParameters(t *testing.T, id string) *SchemaResourcePa
 ////////////////////////////
 
 func (s *SchemaResourceParametersAssert) HasDefaultDdlCollation(expected string) *SchemaResourceParametersAssert {
-	s.AddAssertion(assert.ResourceParameterValueSet(sdk.ObjectParameterDefaultDDLCollation, expected)) // modified manually
+	s.ParameterValueSet(string(sdk.ObjectParameterDefaultDdlCollation), expected)
 	return s
 }
 
@@ -47,6 +45,6 @@ func (s *SchemaResourceParametersAssert) HasDefaultDdlCollation(expected string)
 ////////////////////////////
 
 func (s *SchemaResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.AddAssertion(assert.ResourceParameterLevelSet(sdk.ObjectParameterDefaultDDLCollation, expected)) // modified manually
+	s.ParameterLevelSet(string(sdk.ObjectParameterDefaultDdlCollation), expected)
 	return s
 }

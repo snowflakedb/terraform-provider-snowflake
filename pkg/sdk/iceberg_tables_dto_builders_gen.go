@@ -918,6 +918,151 @@ func (s *CreateFromDeltaLakeIcebergTableRequest) WithContact(contact []TableCont
 	return s
 }
 
+func NewCreateFromIcebergRestIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	catalogTableName string,
+) *CreateFromIcebergRestIcebergTableRequest {
+	s := CreateFromIcebergRestIcebergTableRequest{}
+	s.name = name
+	s.CatalogTableName = catalogTableName
+	return &s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromIcebergRestIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromIcebergRestIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromIcebergRestIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromIcebergRestIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithCatalogNamespace(catalogNamespace string) *CreateFromIcebergRestIcebergTableRequest {
+	s.CatalogNamespace = &catalogNamespace
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithPathLayout(pathLayout IcebergTablePathLayout) *CreateFromIcebergRestIcebergTableRequest {
+	s.PathLayout = &pathLayout
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithTargetFileSize(targetFileSize IcebergTableTargetFileSize) *CreateFromIcebergRestIcebergTableRequest {
+	s.TargetFileSize = &targetFileSize
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromIcebergRestIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithAutoRefresh(autoRefresh bool) *CreateFromIcebergRestIcebergTableRequest {
+	s.AutoRefresh = &autoRefresh
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithComment(comment string) *CreateFromIcebergRestIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateFromIcebergRestIcebergTableRequest {
+	s.StorageSerializationPolicy = &storageSerializationPolicy
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithIcebergMergeOnReadBehavior(icebergMergeOnReadBehavior IcebergTableIcebergMergeOnReadBehavior) *CreateFromIcebergRestIcebergTableRequest {
+	s.IcebergMergeOnReadBehavior = &icebergMergeOnReadBehavior
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithEnableIcebergMergeOnRead(enableIcebergMergeOnRead bool) *CreateFromIcebergRestIcebergTableRequest {
+	s.EnableIcebergMergeOnRead = &enableIcebergMergeOnRead
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromIcebergRestIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromIcebergRestIcebergTableRequest) WithContact(contact []TableContact) *CreateFromIcebergRestIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
+func NewCreateFromAwsGlueIcebergTableRequest(
+	name SchemaObjectIdentifier,
+	catalogTableName string,
+) *CreateFromAwsGlueIcebergTableRequest {
+	s := CreateFromAwsGlueIcebergTableRequest{}
+	s.name = name
+	s.CatalogTableName = catalogTableName
+	return &s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithOrReplace(orReplace bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithIfNotExists(ifNotExists bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateFromAwsGlueIcebergTableRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithCatalog(catalog AccountObjectIdentifier) *CreateFromAwsGlueIcebergTableRequest {
+	s.Catalog = &catalog
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithCatalogNamespace(catalogNamespace string) *CreateFromAwsGlueIcebergTableRequest {
+	s.CatalogNamespace = &catalogNamespace
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithAutoRefresh(autoRefresh bool) *CreateFromAwsGlueIcebergTableRequest {
+	s.AutoRefresh = &autoRefresh
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithComment(comment string) *CreateFromAwsGlueIcebergTableRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithTag(tag []TagAssociation) *CreateFromAwsGlueIcebergTableRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFromAwsGlueIcebergTableRequest) WithContact(contact []TableContact) *CreateFromAwsGlueIcebergTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func NewAlterIcebergTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterIcebergTableRequest {

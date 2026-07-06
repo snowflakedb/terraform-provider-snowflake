@@ -16,7 +16,7 @@ func StorageLifecyclePolicyResource(t *testing.T, name string) *StorageLifecycle
 	t.Helper()
 
 	return &StorageLifecyclePolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStorageLifecyclePolicyResource(t *testing.T, id string) *StorageLif
 	t.Helper()
 
 	return &StorageLifecyclePolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -79,42 +79,42 @@ func (s *StorageLifecyclePolicyResourceAssert) HasFullyQualifiedName(expected st
 ///////////////////////////////////
 
 func (s *StorageLifecyclePolicyResourceAssert) HasDatabaseString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasSchemaString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNameString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasArchiveForDaysString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("archive_for_days", expected))
+	s.ValueSet("archive_for_days", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasArchiveTierString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("archive_tier", expected))
+	s.ValueSet("archive_tier", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasBodyString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("body", expected))
+	s.ValueSet("body", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasCommentString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasFullyQualifiedNameString(expected string) *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
@@ -123,42 +123,42 @@ func (s *StorageLifecyclePolicyResourceAssert) HasFullyQualifiedNameString(expec
 ///////////////////////////////
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoDatabase() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoSchema() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoName() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoArchiveForDays() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("archive_for_days"))
+	s.ValueNotSet("archive_for_days")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoArchiveTier() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("archive_tier"))
+	s.ValueNotSet("archive_tier")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoBody() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("body"))
+	s.ValueNotSet("body")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoComment() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNoFullyQualifiedName() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
@@ -167,22 +167,22 @@ func (s *StorageLifecyclePolicyResourceAssert) HasNoFullyQualifiedName() *Storag
 ////////////////////////////
 
 func (s *StorageLifecyclePolicyResourceAssert) HasArchiveForDaysEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("archive_for_days", ""))
+	s.ValueSet("archive_for_days", "")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasArchiveTierEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("archive_tier", ""))
+	s.ValueSet("archive_tier", "")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasCommentEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasFullyQualifiedNameEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
@@ -191,41 +191,41 @@ func (s *StorageLifecyclePolicyResourceAssert) HasFullyQualifiedNameEmpty() *Sto
 ///////////////////////////////
 
 func (s *StorageLifecyclePolicyResourceAssert) HasDatabaseNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasSchemaNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasNameNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasArchiveForDaysNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("archive_for_days"))
+	s.ValuePresent("archive_for_days")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasArchiveTierNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("archive_tier"))
+	s.ValuePresent("archive_tier")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasBodyNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("body"))
+	s.ValuePresent("body")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasCommentNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StorageLifecyclePolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *StorageLifecyclePolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }

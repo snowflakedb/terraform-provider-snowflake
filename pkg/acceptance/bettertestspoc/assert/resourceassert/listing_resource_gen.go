@@ -16,7 +16,7 @@ func ListingResource(t *testing.T, name string) *ListingResourceAssert {
 	t.Helper()
 
 	return &ListingResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedListingResource(t *testing.T, id string) *ListingResourceAssert {
 	t.Helper()
 
 	return &ListingResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -69,32 +69,32 @@ func (l *ListingResourceAssert) HasShare(expected string) *ListingResourceAssert
 ///////////////////////////////////
 
 func (l *ListingResourceAssert) HasNameString(expected string) *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("name", expected))
+	l.ValueSet("name", expected)
 	return l
 }
 
 func (l *ListingResourceAssert) HasApplicationPackageString(expected string) *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("application_package", expected))
+	l.ValueSet("application_package", expected)
 	return l
 }
 
 func (l *ListingResourceAssert) HasCommentString(expected string) *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("comment", expected))
+	l.ValueSet("comment", expected)
 	return l
 }
 
 func (l *ListingResourceAssert) HasFullyQualifiedNameString(expected string) *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	l.ValueSet("fully_qualified_name", expected)
 	return l
 }
 
 func (l *ListingResourceAssert) HasPublishString(expected string) *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("publish", expected))
+	l.ValueSet("publish", expected)
 	return l
 }
 
 func (l *ListingResourceAssert) HasShareString(expected string) *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("share", expected))
+	l.ValueSet("share", expected)
 	return l
 }
 
@@ -103,32 +103,32 @@ func (l *ListingResourceAssert) HasShareString(expected string) *ListingResource
 ///////////////////////////////
 
 func (l *ListingResourceAssert) HasNoName() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueNotSet("name"))
+	l.ValueNotSet("name")
 	return l
 }
 
 func (l *ListingResourceAssert) HasNoApplicationPackage() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueNotSet("application_package"))
+	l.ValueNotSet("application_package")
 	return l
 }
 
 func (l *ListingResourceAssert) HasNoComment() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueNotSet("comment"))
+	l.ValueNotSet("comment")
 	return l
 }
 
 func (l *ListingResourceAssert) HasNoFullyQualifiedName() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	l.ValueNotSet("fully_qualified_name")
 	return l
 }
 
 func (l *ListingResourceAssert) HasNoPublish() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueNotSet("publish"))
+	l.ValueNotSet("publish")
 	return l
 }
 
 func (l *ListingResourceAssert) HasNoShare() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueNotSet("share"))
+	l.ValueNotSet("share")
 	return l
 }
 
@@ -137,27 +137,27 @@ func (l *ListingResourceAssert) HasNoShare() *ListingResourceAssert {
 ////////////////////////////
 
 func (l *ListingResourceAssert) HasApplicationPackageEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("application_package", ""))
+	l.ValueSet("application_package", "")
 	return l
 }
 
 func (l *ListingResourceAssert) HasCommentEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("comment", ""))
+	l.ValueSet("comment", "")
 	return l
 }
 
 func (l *ListingResourceAssert) HasFullyQualifiedNameEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	l.ValueSet("fully_qualified_name", "")
 	return l
 }
 
 func (l *ListingResourceAssert) HasPublishEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("publish", ""))
+	l.ValueSet("publish", "")
 	return l
 }
 
 func (l *ListingResourceAssert) HasShareEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValueSet("share", ""))
+	l.ValueSet("share", "")
 	return l
 }
 
@@ -166,31 +166,31 @@ func (l *ListingResourceAssert) HasShareEmpty() *ListingResourceAssert {
 ///////////////////////////////
 
 func (l *ListingResourceAssert) HasNameNotEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValuePresent("name"))
+	l.ValuePresent("name")
 	return l
 }
 
 func (l *ListingResourceAssert) HasApplicationPackageNotEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValuePresent("application_package"))
+	l.ValuePresent("application_package")
 	return l
 }
 
 func (l *ListingResourceAssert) HasCommentNotEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValuePresent("comment"))
+	l.ValuePresent("comment")
 	return l
 }
 
 func (l *ListingResourceAssert) HasFullyQualifiedNameNotEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	l.ValuePresent("fully_qualified_name")
 	return l
 }
 
 func (l *ListingResourceAssert) HasPublishNotEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValuePresent("publish"))
+	l.ValuePresent("publish")
 	return l
 }
 
 func (l *ListingResourceAssert) HasShareNotEmpty() *ListingResourceAssert {
-	l.AddAssertion(assert.ValuePresent("share"))
+	l.ValuePresent("share")
 	return l
 }

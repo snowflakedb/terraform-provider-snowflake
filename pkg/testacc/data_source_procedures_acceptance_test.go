@@ -55,7 +55,8 @@ func proceduresConfig(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) strin
 	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
 
-	functionsSetup := config.FromModels(t,
+	functionsSetup := config.FromModels(
+		t,
 		model.ProcedureJavaBasicInline("p1", id1, dataType, handler, definition).WithArgument(argName, dataType),
 		model.ProcedureJavaBasicInline("p2", id2, dataType, handler, definition).WithArgument(argName, dataType),
 	)

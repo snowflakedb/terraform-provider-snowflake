@@ -50,10 +50,11 @@ func TestAcc_ComputePools(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, computePoolModel, dataSourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.#", "1")),
 
-					resourceshowoutputassert.ComputePoolsDatasourceShowOutput(t, "snowflake_compute_pools.test").
+					resourceshowoutputassert.ComputePoolsDatasourceShowOutput(t, dataSourceModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasState(sdk.ComputePoolStateSuspended).
 						HasMinNodes(1).
@@ -98,10 +99,11 @@ func TestAcc_ComputePools(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, computePoolModel, dataSourceModelWithoutOptionals),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModelWithoutOptionals.DatasourceReference(), "compute_pools.#", "1")),
 
-					resourceshowoutputassert.ComputePoolsDatasourceShowOutput(t, "snowflake_compute_pools.test").
+					resourceshowoutputassert.ComputePoolsDatasourceShowOutput(t, dataSourceModelWithoutOptionals.DatasourceReference()).
 						HasName(id.Name()).
 						HasState(sdk.ComputePoolStateSuspended).
 						HasMinNodes(1).

@@ -387,7 +387,8 @@ func ReadAccount(withExternalChangesMarking bool) schema.ReadContextFunc {
 				isOrgAdmin = *account.IsOrgAdmin
 			}
 
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"edition", "edition", edition, edition, nil},
 				outputMapping{"is_org_admin", "is_org_admin", isOrgAdmin, booleanStringFromBool(isOrgAdmin), nil},
 				outputMapping{"region_group", "region_group", regionGroup, regionGroup, nil},

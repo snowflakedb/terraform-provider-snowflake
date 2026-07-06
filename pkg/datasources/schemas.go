@@ -136,56 +136,55 @@ func Schemas() *schema.Resource {
 func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
-	var opts sdk.ShowSchemaOptions
+	req := sdk.NewShowSchemaRequest()
 
 	if likePattern, ok := d.GetOk("like"); ok {
-		opts.Like = &sdk.Like{
+		req.WithLike(sdk.Like{
 			Pattern: sdk.String(likePattern.(string)),
-		}
+		})
 	}
 
 	if startsWith, ok := d.GetOk("starts_with"); ok {
-		opts.StartsWith = sdk.String(startsWith.(string))
+		req.WithStartsWith(startsWith.(string))
 	}
 
 	if limit, ok := d.GetOk("limit"); ok && len(limit.([]any)) == 1 {
 		limitMap := limit.([]any)[0].(map[string]any)
 
 		rows := limitMap["rows"].(int)
-		opts.LimitFrom = &sdk.LimitFrom{
-			Rows: &rows,
-		}
+		limitFrom := sdk.LimitFrom{Rows: &rows}
 
 		if from, ok := limitMap["from"].(string); ok {
-			opts.LimitFrom.From = &from
+			limitFrom.From = &from
 		}
+		req.WithLimit(limitFrom)
 	}
 
 	if v, ok := d.GetOk("in"); ok {
 		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok {
 			if account := v.(bool); account {
-				opts.In = &sdk.SchemaIn{Account: sdk.Bool(account)}
+				req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}})
 			}
 		}
 		if v, ok := in["database"]; ok {
 			if database := v.(string); database != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(database), Database: sdk.Pointer(true)}
+				req.WithIn(sdk.ExtendedIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}})
 			}
 		}
 		if v, ok := in["application"]; ok {
 			if application := v.(string); application != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(application), Application: sdk.Pointer(true)}
+				req.WithIn(sdk.ExtendedIn{Application: sdk.NewAccountObjectIdentifier(application)})
 			}
 		}
 		if v, ok := in["application_package"]; ok {
 			if applicationPackage := v.(string); applicationPackage != "" {
-				opts.In = &sdk.SchemaIn{Name: sdk.NewAccountObjectIdentifier(applicationPackage), ApplicationPackage: sdk.Pointer(true)}
+				req.WithIn(sdk.ExtendedIn{ApplicationPackage: sdk.NewAccountObjectIdentifier(applicationPackage)})
 			}
 		}
 	}
 
-	schemas, err := client.Schemas.Show(ctx, &opts)
+	schemas, err := client.Schemas.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}

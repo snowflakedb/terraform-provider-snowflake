@@ -59,13 +59,13 @@ func ExternalOauthSecurityIntegrationPropertiesToSchema(securityIntegrationPrope
 var _ = ExternalOauthSecurityIntegrationPropertiesToSchema
 
 var ShowExternalOauthParametersSchema = map[string]*schema.Schema{
-	strings.ToLower(string(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList)): ParameterListSchema,
+	strings.ToLower(string(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList)): ParameterListSchema,
 }
 
 func ExternalOauthParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
 	schemaMap := make(map[string]any)
 	for _, param := range parameters {
-		if slices.Contains([]sdk.AccountParameter{sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList}, sdk.AccountParameter(param.Key)) {
+		if slices.Contains([]sdk.AccountParameter{sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList}, sdk.AccountParameter(param.Key)) {
 			schemaMap[strings.ToLower(param.Key)] = []map[string]any{ParameterToSchemaReducedOutput(param, providerCtx)}
 		}
 	}

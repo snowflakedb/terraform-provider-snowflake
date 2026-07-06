@@ -50,7 +50,8 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanDefault).
@@ -78,7 +79,8 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()),
 				),
@@ -89,7 +91,8 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"is_secure", "arguments.0.arg_data_type", "null_input_behavior", "execute_as"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedProcedurePythonResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -100,7 +103,8 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 			// RENAME
 			{
 				Config: config.FromModels(t, procedureModelRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModelRenamed.ResourceReference()).
 						HasNameString(idWithChangedNameButTheSameDataType.Name()).
 						HasFullyQualifiedNameString(idWithChangedNameButTheSameDataType.FullyQualifiedName()),
@@ -187,7 +191,8 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -212,7 +217,8 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"arguments.0.arg_data_type"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedProcedurePythonResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -228,7 +234,8 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, procedureModelUpdateWithoutRecreation),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModelUpdateWithoutRecreation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -296,7 +303,8 @@ func TestAcc_ProcedurePython_ImportsDiffSuppression(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -392,7 +400,8 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, procedureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -414,7 +423,8 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, procedureModelWithUpdatedImports),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ProcedurePythonResource(t, procedureModelWithUpdatedImports.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).

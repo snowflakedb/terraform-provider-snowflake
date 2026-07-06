@@ -13,6 +13,9 @@ var (
 	_ convertibleRow[HybridTable]        = new(hybridTableRow)
 	_ convertibleRow[HybridTableDetails] = new(hybridTableDetailsRow)
 	_ convertibleRow[HybridTableIndex]   = new(hybridTableIndexRow)
+	_ convertibleRow[TablePrimaryKey]    = new(tablePrimaryKeyRow)
+	_ convertibleRow[TableUniqueKey]     = new(tableUniqueKeyRow)
+	_ convertibleRow[TableImportedKey]   = new(tableImportedKeyRow)
 )
 
 type hybridTables struct {
@@ -90,6 +93,33 @@ func (v *hybridTables) ShowIndexes(ctx context.Context, request *ShowIndexesHybr
 		return nil, err
 	}
 	return convertRows[hybridTableIndexRow, HybridTableIndex](dbRows)
+}
+
+func (v *hybridTables) ShowPrimaryKeys(ctx context.Context, request *ShowPrimaryKeysHybridTableRequest) ([]TablePrimaryKey, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tablePrimaryKeyRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tablePrimaryKeyRow, TablePrimaryKey](dbRows)
+}
+
+func (v *hybridTables) ShowUniqueKeys(ctx context.Context, request *ShowUniqueKeysHybridTableRequest) ([]TableUniqueKey, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tableUniqueKeyRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tableUniqueKeyRow, TableUniqueKey](dbRows)
+}
+
+func (v *hybridTables) ShowImportedKeys(ctx context.Context, request *ShowImportedKeysHybridTableRequest) ([]TableImportedKey, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tableImportedKeyRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tableImportedKeyRow, TableImportedKey](dbRows)
 }
 
 func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
@@ -346,5 +376,59 @@ func (r hybridTableIndexRow) convert() (*HybridTableIndex, error) {
 	mapNullStringToNonNullableField(&result.IncludedColumns, r.IncludedColumns)
 	mapNullStringToNonNullableField(&result.Owner, r.Owner)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	return result, nil
+}
+
+func (r *ShowPrimaryKeysHybridTableRequest) toOpts() *ShowPrimaryKeysHybridTableOptions {
+	opts := &ShowPrimaryKeysHybridTableOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r tablePrimaryKeyRow) convert() (*TablePrimaryKey, error) {
+	result := &TablePrimaryKey{
+		ConstraintName: r.ConstraintName,
+		ColumnName:     r.ColumnName,
+		KeySequence:    r.KeySequence,
+	}
+	return result, nil
+}
+
+func (r *ShowUniqueKeysHybridTableRequest) toOpts() *ShowUniqueKeysHybridTableOptions {
+	opts := &ShowUniqueKeysHybridTableOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r tableUniqueKeyRow) convert() (*TableUniqueKey, error) {
+	result := &TableUniqueKey{
+		ConstraintName: r.ConstraintName,
+		ColumnName:     r.ColumnName,
+		KeySequence:    r.KeySequence,
+	}
+	return result, nil
+}
+
+func (r *ShowImportedKeysHybridTableRequest) toOpts() *ShowImportedKeysHybridTableOptions {
+	opts := &ShowImportedKeysHybridTableOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r tableImportedKeyRow) convert() (*TableImportedKey, error) {
+	result := &TableImportedKey{
+		FkName:         r.FkName,
+		FkColumnName:   r.FkColumnName,
+		KeySequence:    r.KeySequence,
+		PkDatabaseName: r.PkDatabaseName,
+		PkSchemaName:   r.PkSchemaName,
+		PkTableName:    r.PkTableName,
+		PkColumnName:   r.PkColumnName,
+		DeleteRule:     r.DeleteRule,
+		UpdateRule:     r.UpdateRule,
+	}
 	return result, nil
 }

@@ -48,7 +48,8 @@ func TestInt_Listings(t *testing.T) {
 	assertNoOptionals := func(t *testing.T, id sdk.AccountObjectIdentifier) {
 		t.Helper()
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
@@ -107,7 +108,8 @@ func TestInt_Listings(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
@@ -172,7 +174,8 @@ func TestInt_Listings(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, applicationPackage.ID().Name(), listingDetails.ApplicationPackage.Name())
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasGlobalNameNotEmpty().
 				HasName(id.Name()).
@@ -242,7 +245,8 @@ func TestInt_Listings(t *testing.T) {
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStateDraft).
@@ -252,7 +256,8 @@ func TestInt_Listings(t *testing.T) {
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true))
 		assert.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStateDraft).
@@ -262,7 +267,8 @@ func TestInt_Listings(t *testing.T) {
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true))
 		assert.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStatePublished).
@@ -272,7 +278,8 @@ func TestInt_Listings(t *testing.T) {
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true))
 		assert.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStateUnpublished).
@@ -282,7 +289,8 @@ func TestInt_Listings(t *testing.T) {
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithReview(true))
 		assert.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStateUnpublished).
@@ -292,7 +300,8 @@ func TestInt_Listings(t *testing.T) {
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true))
 		assert.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, id).
 				HasTitle(basicManifestWithTargetTitle).
 				HasState(sdk.ListingStatePublished).
@@ -304,7 +313,8 @@ func TestInt_Listings(t *testing.T) {
 		listing, listingCleanup := testClientHelper().Listing.Create(t)
 		t.Cleanup(listingCleanup)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ListingFromObject(t, listing).
 				HasTitle(basicManifestTitle).
 				HasSubtitle("subtitle").
@@ -313,14 +323,16 @@ func TestInt_Listings(t *testing.T) {
 
 		basicManifestWithDifferentSubtitle, title := testClientHelper().Listing.BasicManifestWithDifferentSubtitle(t)
 		err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).
-			WithAlterListingAs(*sdk.NewAlterListingAsRequest(basicManifestWithDifferentSubtitle).
-				WithPublish(false).
-				WithReview(false).
-				WithComment(comment),
+			WithAlterListingAs(
+				*sdk.NewAlterListingAsRequest(basicManifestWithDifferentSubtitle).
+					WithPublish(false).
+					WithReview(false).
+					WithComment(comment),
 			))
 		assert.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Listing(t, listing.ID()).
 				HasTitle(title).
 				HasSubtitle("different_subtitle").
@@ -336,7 +348,8 @@ func TestInt_Listings(t *testing.T) {
 		listing, listingCleanup := testClientHelper().Listing.Create(t)
 		t.Cleanup(listingCleanup)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ListingFromObject(t, listing).
 				HasTitle(title).
 				HasSubtitle("subtitle").
@@ -350,7 +363,8 @@ func TestInt_Listings(t *testing.T) {
 				WithComment(comment)))
 		assert.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.ListingFromObject(t, listing).
 				HasTitle(title).
 				HasSubtitle("subtitle").
@@ -447,19 +461,21 @@ func TestInt_Listings(t *testing.T) {
 		assert.NoError(t, err)
 		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.Listing(t, id).
-			HasName(id.Name()).
-			HasTitle(basicManifestTitle).
-			HasComment(comment),
+		assertThatObject(
+			t, objectassert.Listing(t, id).
+				HasName(id.Name()).
+				HasTitle(basicManifestTitle).
+				HasComment(comment),
 		)
 
 		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithSet(*sdk.NewListingSetRequest().WithComment(newComment)))
 		assert.NoError(t, err)
 
-		assertThatObject(t, objectassert.Listing(t, id).
-			HasName(id.Name()).
-			HasTitle(basicManifestTitle).
-			HasComment(newComment),
+		assertThatObject(
+			t, objectassert.Listing(t, id).
+				HasName(id.Name()).
+				HasTitle(basicManifestTitle).
+				HasComment(newComment),
 		)
 	})
 
@@ -491,13 +507,14 @@ func TestInt_Listings(t *testing.T) {
 		_, listing2Cleanup := testClientHelper().Listing.CreateWithId(t, id2)
 		t.Cleanup(listing2Cleanup)
 
-		listings, err := client.Listings.Show(ctx, sdk.NewShowListingRequest().
-			WithLike(sdk.Like{Pattern: sdk.String(prefix + "%")}).
-			WithStartsWith(prefix).
-			WithLimit(sdk.LimitFrom{
-				Rows: sdk.Int(1),
-				From: sdk.String(prefix),
-			}),
+		listings, err := client.Listings.Show(
+			ctx, sdk.NewShowListingRequest().
+				WithLike(sdk.Like{Pattern: sdk.String(prefix + "%")}).
+				WithStartsWith(prefix).
+				WithLimit(sdk.LimitFrom{
+					Rows: sdk.Int(1),
+					From: sdk.String(prefix),
+				}),
 		)
 
 		assert.NoError(t, err)

@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput
-
 type CatalogIntegrationObjectStorageDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func CatalogIntegrationObjectStorageDescribeOutput(t *testing.T, name string) *C
 	t.Helper()
 
 	catalogIntegrationObjectStorageAssert := CatalogIntegrationObjectStorageDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	catalogIntegrationObjectStorageAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationObjectStorageAssert
 }
 
@@ -29,9 +26,8 @@ func ImportedCatalogIntegrationObjectStorageDescribeOutput(t *testing.T, id stri
 	t.Helper()
 
 	catalogIntegrationObjectStorageAssert := CatalogIntegrationObjectStorageDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	catalogIntegrationObjectStorageAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationObjectStorageAssert
 }
 
@@ -40,32 +36,32 @@ func ImportedCatalogIntegrationObjectStorageDescribeOutput(t *testing.T, id stri
 ////////////////////////////
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.Name()))
+	c.StringValueSet("id", expected.Name())
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasCatalogSource(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("catalog_source", expected))
+	c.StringValueSet("catalog_source", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasTableFormat(expected sdk.CatalogIntegrationTableFormat) *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("table_format", expected))
+	c.StringValueSet("table_format", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasEnabled(expected bool) *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("enabled", expected))
+	c.BoolValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasRefreshIntervalSeconds(expected int) *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueSet("refresh_interval_seconds", expected))
+	c.IntValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasComment(expected string) *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
 
@@ -74,31 +70,31 @@ func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasComment(expecte
 ///////////////////////////////
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasNoId() *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
+	c.ValueNotSet("id")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasNoCatalogSource() *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasNoTableFormat() *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("table_format"))
+	c.ValueNotSet("table_format")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasNoEnabled() *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageDescribeOutputAssert) HasNoComment() *CatalogIntegrationObjectStorageDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }

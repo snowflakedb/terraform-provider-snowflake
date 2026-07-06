@@ -49,16 +49,17 @@ func TestAcc_Streams(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
 
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(table.ID().FullyQualifiedName()).
+						HasTableName(table.ID()).
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
@@ -87,16 +88,17 @@ func TestAcc_Streams(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModelWithoutDescribe),
 
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
 
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(table.ID().FullyQualifiedName()).
+						HasTableName(table.ID()).
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
@@ -135,15 +137,16 @@ func TestAcc_StreamOnTable(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(table.ID().FullyQualifiedName()).
+						HasTableName(table.ID()).
 						HasSourceType(sdk.StreamSourceTypeTable).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").
@@ -199,15 +202,16 @@ func TestAcc_StreamOnExternalTable(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(externalTable.ID().FullyQualifiedName()).
+						HasTableName(externalTable.ID()).
 						HasSourceType(sdk.StreamSourceTypeExternalTable).
 						HasBaseTables(externalTable.ID()).
 						HasType("DELTA").
@@ -259,15 +263,16 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(stage.ID().FullyQualifiedName()).
+						HasTableName(stage.ID()).
 						HasSourceType(sdk.StreamSourceTypeStage).
 						HasBaseTables(stage.ID()).
 						HasType("DELTA").
@@ -324,15 +329,16 @@ func TestAcc_StreamOnView(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, "snowflake_streams.test").
+					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(view.ID().FullyQualifiedName()).
+						HasTableName(view.ID()).
 						HasSourceType(sdk.StreamSourceTypeView).
 						HasBaseTables(table.ID()).
 						HasType("DELTA").

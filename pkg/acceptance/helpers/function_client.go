@@ -37,7 +37,8 @@ func (c *FunctionClient) Create(t *testing.T, arguments ...sdk.DataType) *sdk.Fu
 func (c *FunctionClient) CreateWithIdentifier(t *testing.T, id sdk.SchemaObjectIdentifierWithArguments) *sdk.Function {
 	t.Helper()
 
-	return c.CreateWithRequest(t, id,
+	return c.CreateWithRequest(
+		t, id,
 		sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
 			id.SchemaObjectId(),
 			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeInt)),
@@ -51,7 +52,8 @@ func (c *FunctionClient) CreateSecure(t *testing.T, arguments ...sdk.DataType) *
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifierWithArguments(arguments...)
 
-	return c.CreateWithRequest(t, id,
+	return c.CreateWithRequest(
+		t, id,
 		sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
 			id.SchemaObjectId(),
 			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeInt)),

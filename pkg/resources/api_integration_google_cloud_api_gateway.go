@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -47,10 +48,10 @@ func ApiIntegrationGoogleCloudApiGateway() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationGoogleCloudApiGateway, CreateApiIntegrationGoogleCloudApiGateway),
-		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationGoogleCloudApiGateway, ReadApiIntegrationGoogleCloudApiGateway),
-		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationGoogleCloudApiGateway, UpdateApiIntegrationGoogleCloudApiGateway),
-		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationGoogleCloudApiGateway, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationGoogleCloudApiGatewayResource), TrackingCreateWrapper(resources.ApiIntegrationGoogleCloudApiGateway, CreateApiIntegrationGoogleCloudApiGateway)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationGoogleCloudApiGatewayResource), TrackingReadWrapper(resources.ApiIntegrationGoogleCloudApiGateway, ReadApiIntegrationGoogleCloudApiGateway)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationGoogleCloudApiGatewayResource), TrackingUpdateWrapper(resources.ApiIntegrationGoogleCloudApiGateway, UpdateApiIntegrationGoogleCloudApiGateway)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationGoogleCloudApiGatewayResource), TrackingDeleteWrapper(resources.ApiIntegrationGoogleCloudApiGateway, deleteFunc)),
 		Description:   "Resource used to manage API integration Google Cloud API Gateway objects. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationGoogleCloudApiGatewaySchema,
@@ -66,27 +67,23 @@ func ApiIntegrationGoogleCloudApiGateway() *schema.Resource {
 }
 
 func ImportApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return nil, err
-	}
-
-	details, err := client.ApiIntegrations.DescribeGoogleDetails(ctx, id)
-	if err != nil {
-		return nil, fmt.Errorf("could not describe API integration %s during import: %w", id.FullyQualifiedName(), err)
-	}
-
-	if _, err := sdk.ToApiIntegrationGoogleApiProviderType(details.ApiProvider); err != nil {
-		return nil, fmt.Errorf(
-			"api integration %s has api_provider %s, not compatible with snowflake_api_integration_google_cloud_api_gateway (expected one of %s); use the appropriate resource type",
-			id.FullyQualifiedName(),
-			details.ApiProvider,
-			possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationGoogleApiProviderTypes)),
-		)
-	}
-
-	return ImportName[sdk.AccountObjectIdentifier](ctx, d, meta)
+	return importApiIntegrationWithDetails(
+		ctx, d, meta,
+		func(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationGoogleDetails, error) {
+			return client.ApiIntegrations.DescribeGoogleDetails(ctx, id)
+		},
+		func(details *sdk.ApiIntegrationGoogleDetails, id sdk.AccountObjectIdentifier) error {
+			if _, err := sdk.ToApiIntegrationGoogleApiProviderType(details.ApiProvider); err != nil {
+				return fmt.Errorf(
+					"api integration %s has api_provider %s, not compatible with snowflake_api_integration_google_cloud_api_gateway (expected one of %s); use the appropriate resource type",
+					id.FullyQualifiedName(),
+					details.ApiProvider,
+					possibleValuesListed(sdk.AsStringList(sdk.AllApiIntegrationGoogleApiProviderTypes)),
+				)
+			}
+			return nil
+		},
+	)
 }
 
 func CreateApiIntegrationGoogleCloudApiGateway(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

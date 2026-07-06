@@ -195,7 +195,7 @@ func (r postgresInstancesRow) convert() (*PostgresInstance, error) {
 		AuthenticationAuthority: r.AuthenticationAuthority,
 		StorageSize:             r.StorageSize,
 		PostgresVersion:         r.PostgresVersion,
-		IsHa:                    r.IsHa == "true",
+		IsHighlyAvailable:       r.IsHa == "true",
 		RetentionTime:           r.RetentionTime,
 	}
 	mapNullString(&result.Origin, r.Origin)

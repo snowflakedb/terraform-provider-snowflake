@@ -16,7 +16,7 @@ func StorageIntegrationAzureResource(t *testing.T, name string) *StorageIntegrat
 	t.Helper()
 
 	return &StorageIntegrationAzureResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStorageIntegrationAzureResource(t *testing.T, id string) *StorageIn
 	t.Helper()
 
 	return &StorageIntegrationAzureResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -77,32 +77,32 @@ func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpoint(expect
 ///////////////////////////////////
 
 func (s *StorageIntegrationAzureResourceAssert) HasNameString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasAzureTenantIdString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("azure_tenant_id", expected))
+	s.ValueSet("azure_tenant_id", expected)
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasCommentString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasEnabledString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("enabled", expected))
+	s.ValueSet("enabled", expected)
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedNameString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpointString(expected string) *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("use_privatelink_endpoint", expected))
+	s.ValueSet("use_privatelink_endpoint", expected)
 	return s
 }
 
@@ -111,32 +111,32 @@ func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpointString(
 ///////////////////////////////
 
 func (s *StorageIntegrationAzureResourceAssert) HasNoName() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasNoAzureTenantId() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("azure_tenant_id"))
+	s.ValueNotSet("azure_tenant_id")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasNoComment() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasNoEnabled() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("enabled"))
+	s.ValueNotSet("enabled")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasNoFullyQualifiedName() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasNoUsePrivatelinkEndpoint() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("use_privatelink_endpoint"))
+	s.ValueNotSet("use_privatelink_endpoint")
 	return s
 }
 
@@ -145,22 +145,22 @@ func (s *StorageIntegrationAzureResourceAssert) HasNoUsePrivatelinkEndpoint() *S
 ////////////////////////////
 
 func (s *StorageIntegrationAzureResourceAssert) HasCommentEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedNameEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasStorageBlockedLocationsEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("storage_blocked_locations.#", "0"))
+	s.ValueSet("storage_blocked_locations.#", "0")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpointEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValueSet("use_privatelink_endpoint", ""))
+	s.ValueSet("use_privatelink_endpoint", "")
 	return s
 }
 
@@ -169,31 +169,31 @@ func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpointEmpty()
 ///////////////////////////////
 
 func (s *StorageIntegrationAzureResourceAssert) HasNameNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasAzureTenantIdNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("azure_tenant_id"))
+	s.ValuePresent("azure_tenant_id")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasCommentNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasEnabledNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("enabled"))
+	s.ValuePresent("enabled")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasFullyQualifiedNameNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *StorageIntegrationAzureResourceAssert) HasUsePrivatelinkEndpointNotEmpty() *StorageIntegrationAzureResourceAssert {
-	s.AddAssertion(assert.ValuePresent("use_privatelink_endpoint"))
+	s.ValuePresent("use_privatelink_endpoint")
 	return s
 }

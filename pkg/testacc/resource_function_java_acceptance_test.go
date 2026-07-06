@@ -59,7 +59,8 @@ func TestAcc_FunctionJava_InlineBasic(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanDefault).
@@ -88,7 +89,8 @@ func TestAcc_FunctionJava_InlineBasic(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()),
 				),
@@ -100,7 +102,8 @@ func TestAcc_FunctionJava_InlineBasic(t *testing.T) {
 				ImportStateId:           id.FullyQualifiedName(),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"is_secure", "arguments.0.arg_data_type", "null_input_behavior", "return_results_behavior"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedFunctionJavaResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -111,7 +114,8 @@ func TestAcc_FunctionJava_InlineBasic(t *testing.T) {
 			// RENAME
 			{
 				Config: config.FromModels(t, functionModelRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModelRenamed.ResourceReference()).
 						HasNameString(idWithChangedNameButTheSameDataType.Name()).
 						HasFullyQualifiedNameString(idWithChangedNameButTheSameDataType.FullyQualifiedName()),
@@ -143,7 +147,8 @@ func TestAcc_FunctionJava_InlineEmptyArgs(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFunctionDefinitionString(definition).
@@ -180,7 +185,8 @@ func TestAcc_FunctionJava_InlineBasicDefaultArg(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFunctionDefinitionString(definition).
@@ -279,7 +285,8 @@ func TestAcc_FunctionJava_InlineFull(t *testing.T) {
 			// CREATE WITH ALL
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -304,7 +311,8 @@ func TestAcc_FunctionJava_InlineFull(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"arguments.0.arg_data_type"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedFunctionJavaResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -320,7 +328,8 @@ func TestAcc_FunctionJava_InlineFull(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModelUpdateWithoutRecreation),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModelUpdateWithoutRecreation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -371,7 +380,8 @@ func TestAcc_FunctionJava_StagedBasic(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanDefault).
@@ -421,7 +431,8 @@ func TestAcc_FunctionJava_AllParameters(t *testing.T) {
 			// create with default values for all the parameters
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.FunctionParameters(t, id).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -433,7 +444,8 @@ func TestAcc_FunctionJava_AllParameters(t *testing.T) {
 			{
 				ResourceName: functionModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedFunctionResourceParameters(t, helpers.EncodeResourceIdentifier(id)).
 						HasAllDefaults(),
 				),
@@ -441,7 +453,8 @@ func TestAcc_FunctionJava_AllParameters(t *testing.T) {
 			// set all parameters
 			{
 				Config: config.FromModels(t, functionModelWithAllParametersSet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.FunctionParameters(t, id).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
@@ -460,7 +473,8 @@ func TestAcc_FunctionJava_AllParameters(t *testing.T) {
 			{
 				ResourceName: functionModelWithAllParametersSet.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedFunctionResourceParameters(t, helpers.EncodeResourceIdentifier(id)).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
@@ -472,7 +486,8 @@ func TestAcc_FunctionJava_AllParameters(t *testing.T) {
 			// unset all the parameters
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.FunctionParameters(t, id).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -488,7 +503,8 @@ func TestAcc_FunctionJava_AllParameters(t *testing.T) {
 			// create with all parameters set
 			{
 				Config: config.FromModels(t, functionModelWithAllParametersSet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.FunctionParameters(t, id).
 						HasEnableConsoleOutput(true).
 						HasLogLevel(sdk.LogLevelWarn).
@@ -528,7 +544,8 @@ func TestAcc_FunctionJava_handleExternalLanguageChange(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Function(t, id).HasLanguage("JAVA"),
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).HasNameString(id.Name()).HasFunctionLanguageString("JAVA"),
 					resourceshowoutputassert.FunctionShowOutput(t, functionModel.ResourceReference()).HasLanguage("JAVA"),
@@ -547,7 +564,8 @@ func TestAcc_FunctionJava_handleExternalLanguageChange(t *testing.T) {
 						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Function(t, id).HasLanguage("JAVA"),
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).HasNameString(id.Name()).HasFunctionLanguageString("JAVA"),
 					resourceshowoutputassert.FunctionShowOutput(t, functionModel.ResourceReference()).HasLanguage("JAVA"),
@@ -579,7 +597,8 @@ func TestAcc_FunctionJava_Issue4187(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFunctionDefinitionString(definition).

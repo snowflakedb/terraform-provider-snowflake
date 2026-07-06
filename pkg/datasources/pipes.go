@@ -72,11 +72,7 @@ func ReadPipes(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	databaseName := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
 
-	extractedPipes, err := client.Pipes.Show(ctx, &sdk.ShowPipeOptions{
-		In: &sdk.In{
-			Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName),
-		},
-	})
+	extractedPipes, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().WithIn(sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)}))
 	if err != nil {
 		log.Printf("[DEBUG] unable to parse pipes in schema (%s)", d.Id())
 		d.SetId("")

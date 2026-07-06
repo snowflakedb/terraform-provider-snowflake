@@ -17,9 +17,9 @@ type CreatePostgresInstanceRequest struct {
 	StorageSizeGb           int                                     // required
 	AuthenticationAuthority PostgresInstanceAuthenticationAuthority // required
 	PostgresVersion         *int
-	NetworkPolicy           *string
+	NetworkPolicy           *AccountObjectIdentifier
 	HighAvailability        *bool
-	StorageIntegration      *string
+	StorageIntegration      *AccountObjectIdentifier
 	PostgresSettings        *string
 	Comment                 *string
 	Tag                     []TagAssociation
@@ -62,13 +62,13 @@ type AlterPostgresInstanceRequest struct {
 }
 
 type PostgresInstanceSetRequest struct {
-	NetworkPolicy           *string
+	NetworkPolicy           *AccountObjectIdentifier
 	AuthenticationAuthority *PostgresInstanceAuthenticationAuthority
 	Comment                 *string
 	HighAvailability        *bool
 	ComputeFamily           *string
 	StorageSizeGb           *int
-	StorageIntegration      *string
+	StorageIntegration      *AccountObjectIdentifier
 	PostgresVersion         *int
 	MaintenanceWindowStart  *int
 	PostgresSettings        *string

@@ -10,9 +10,8 @@ func {{ .Name }}ResourceParameters(t *testing.T, name string) *{{ $assertName }}
     t.Helper()
 
     resourceParameterAssert := {{ $assertName }}{
-        ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+        ResourceAssert: assert.NewResourceParametersAssert(name),
     }
-    resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
     return &resourceParameterAssert
 }
 
@@ -20,8 +19,24 @@ func Imported{{ .Name }}ResourceParameters(t *testing.T, id string) *{{ $assertN
     t.Helper()
 
     resourceParameterAssert := {{ $assertName }}{
-        ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+        ResourceAssert: assert.NewImportedResourceParametersAssert(id),
     }
-    resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
     return &resourceParameterAssert
 }
+
+{{ if .DataSourceName -}}
+func {{ .DataSourceName }}DatasourceParameters(t *testing.T, name string) *{{ $assertName }} {
+    t.Helper()
+
+    return {{ .DataSourceName }}DatasourceParametersOnIdx(t, name, 0)
+}
+
+func {{ .DataSourceName }}DatasourceParametersOnIdx(t *testing.T, name string, idx int) *{{ $assertName }} {
+    t.Helper()
+
+    resourceParameterAssert := {{ $assertName }}{
+        ResourceAssert: assert.NewDatasourceParametersAssert(name, "{{ SnakeCase .DataSourceName }}", idx),
+    }
+    return &resourceParameterAssert
+}
+{{ end -}}

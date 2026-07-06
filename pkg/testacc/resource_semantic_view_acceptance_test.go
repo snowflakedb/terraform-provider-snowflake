@@ -42,7 +42,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithTableName(table1.ID()).
 		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
 		WithUniqueKeys([][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}).
-		WithSynonyms([]sdk.Synonym{{"orders"}, {"sales"}}).
+		WithSynonyms([]sdk.Synonym{{Synonym: "orders"}, {Synonym: "sales"}}).
 		WithComment("logical table 1")
 
 	logicalTable2 := sdk.LogicalTable{}
@@ -301,7 +301,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 			// create with only required attributes
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -327,7 +328,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelBasic),
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedSemanticViewResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -358,7 +360,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -381,7 +384,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelComplete),
 				ResourceName: modelComplete.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedSemanticViewResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -412,7 +416,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -434,7 +439,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -463,7 +469,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 				),
@@ -476,7 +483,8 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -564,7 +572,8 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString("old comment").
@@ -579,7 +588,8 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 						plancheck.ExpectResourceAction(renamedAndChanged.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, renamedAndChanged.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasCommentString("new comment").
@@ -595,7 +605,8 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 						plancheck.ExpectResourceAction(renamedDifferentSchema.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, renamedDifferentSchema.ResourceReference()).
 						HasNameString(newIdInDifferentSchema.Name()).
 						HasCommentString("new comment").
@@ -611,7 +622,8 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 						plancheck.ExpectResourceAction(renamedDifferentDatabase.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SemanticViewResource(t, renamedDifferentDatabase.ResourceReference()).
 						HasNameString(newIdInDifferentDatabase.Name()).
 						HasCommentString("new comment").

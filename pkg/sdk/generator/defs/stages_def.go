@@ -108,34 +108,35 @@ var externalS3StageParamsDef = func() *g.QueryStruct {
 				WithValidation(g.ConflictingFields, "AwsToken", "AwsRole"),
 			g.ListOptions().Parentheses().NoComma().SQL("CREDENTIALS ="),
 		).
-		OptionalQueryStructField("Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
-			OptionalQueryStructField(
-				"AwsCse",
-				g.NewQueryStruct("ExternalStageS3EncryptionAwsCse").
-					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_CSE'").
-					TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"AwsSseS3",
-				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseS3").
-					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_S3'"),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"AwsSseKms",
-				g.NewQueryStruct("ExternalStageS3EncryptionAwsSseKms").
-					SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_KMS'").
-					OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
-				g.KeywordOptions(),
-			).
-			OptionalQueryStructField(
-				"None",
-				g.NewQueryStruct("ExternalStageS3EncryptionNone").
-					SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
-				g.KeywordOptions(),
-			).
-			WithValidation(g.ExactlyOneValueSet, "AwsCse", "AwsSseS3", "AwsSseKms", "None"),
+		OptionalQueryStructField(
+			"Encryption", g.NewQueryStruct("ExternalStageS3Encryption").
+				OptionalQueryStructField(
+					"AwsCse",
+					g.NewQueryStruct("ExternalStageS3EncryptionAwsCse").
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_CSE'").
+						TextAssignment("MASTER_KEY", g.ParameterOptions().Required().SingleQuotes()),
+					g.KeywordOptions(),
+				).
+				OptionalQueryStructField(
+					"AwsSseS3",
+					g.NewQueryStruct("ExternalStageS3EncryptionAwsSseS3").
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_S3'"),
+					g.KeywordOptions(),
+				).
+				OptionalQueryStructField(
+					"AwsSseKms",
+					g.NewQueryStruct("ExternalStageS3EncryptionAwsSseKms").
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'AWS_SSE_KMS'").
+						OptionalTextAssignment("KMS_KEY_ID", g.ParameterOptions().SingleQuotes()),
+					g.KeywordOptions(),
+				).
+				OptionalQueryStructField(
+					"None",
+					g.NewQueryStruct("ExternalStageS3EncryptionNone").
+						SQLWithCustomFieldName("encryptionType", "TYPE = 'NONE'"),
+					g.KeywordOptions(),
+				).
+				WithValidation(g.ExactlyOneValueSet, "AwsCse", "AwsSseS3", "AwsSseKms", "None"),
 			g.ListOptions().Parentheses().NoComma().SQL("ENCRYPTION ="),
 		).
 		OptionalBooleanAssignment("USE_PRIVATELINK_ENDPOINT", g.ParameterOptions()).

@@ -483,7 +483,8 @@ func TestTableCreate(t *testing.T) {
 			Tags:                       tableTags,
 			Comment:                    &tableComment,
 		}
-		assertOptsValidAndSQLEquals(t, opts,
+		assertOptsValidAndSQLEquals(
+			t, opts,
 			`CREATE TABLE %s (%s %s CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING (FOO, BAR) TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY (COLUMN_1, COLUMN_2) REFERENCES %s (COLUMN_3, COLUMN_4) MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE (COLUMN_1) ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV COMPRESSION = AUTO) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			columnName,
@@ -581,7 +582,8 @@ func TestTableCreateAsSelect(t *testing.T) {
 			RowAccessPolicy: &rowAccessPolicy,
 			Query:           "SELECT * FROM ANOTHER_TABLE",
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TABLE %s (FIRST_COLUMN VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE",
+		assertOptsValidAndSQLEquals(
+			t, opts, "CREATE OR REPLACE TABLE %s (FIRST_COLUMN VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE",
 			id.FullyQualifiedName(),
 			maskingPolicy.Name.FullyQualifiedName(),
 			rowAccessPolicy.Name.FullyQualifiedName(),
@@ -735,7 +737,7 @@ func TestTableAlter(t *testing.T) {
 
 	t.Run("validation: no action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: incorrect identifier", func(t *testing.T) {
@@ -749,7 +751,7 @@ func TestTableAlter(t *testing.T) {
 		opts.NewName = Pointer(randomSchemaObjectIdentifier())
 		opts.SwapWith = Pointer(randomSchemaObjectIdentifier())
 
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: NewName's incorrect identifier", func(t *testing.T) {
@@ -900,6 +902,27 @@ func TestTableAlter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
 	})
 
+	t.Run("validation: add storage lifecycle policy incorrect identifier", func(t *testing.T) {
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: emptySchemaObjectIdentifier,
+				On:                     []Column{{Value: "FIRST_COLUMN"}},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("TableAddStorageLifecyclePolicy", "Name"))
+	})
+
+	t.Run("validation: add storage lifecycle policy without columns", func(t *testing.T) {
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: randomSchemaObjectIdentifier(),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("TableAddStorageLifecyclePolicy", "On"))
+	})
+
 	t.Run("empty options", func(t *testing.T) {
 		opts := &alterTableOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("alterTableOptions", "name"))
@@ -990,6 +1013,29 @@ func TestTableAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ADD COLUMN IF NOT EXISTS NEXT_COLUMN VARCHAR COLLATE 'utf8' IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
+	})
+
+	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
+	t.Run("add new column with constant default through request", func(t *testing.T) {
+		// Adding a column with a non-identity default (e.g. a constant) used to panic in
+		// TableColumnActionRequest.toOpts because it dereferenced a nil identity request.
+		req := NewAlterTableRequest(id).WithColumnAction(
+			NewTableColumnActionRequest().WithAdd(
+				NewTableColumnAddActionRequest("NEW_BOOLEAN_COLUMN", DataTypeBoolean).
+					WithDefaultValue(NewColumnDefaultValueRequest().WithExpression(String("FALSE"))),
+			),
+		)
+		assertOptsValidAndSQLEquals(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEW_BOOLEAN_COLUMN BOOLEAN DEFAULT FALSE", id.FullyQualifiedName())
+	})
+
+	t.Run("add new column with identity default through request", func(t *testing.T) {
+		req := NewAlterTableRequest(id).WithColumnAction(
+			NewTableColumnActionRequest().WithAdd(
+				NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).
+					WithDefaultValue(NewColumnDefaultValueRequest().WithIdentity(NewColumnIdentityRequest(10, 1))),
+			),
+		)
+		assertOptsValidAndSQLEquals(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEXT_COLUMN VARCHAR IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
 	})
 
 	t.Run("rename column", func(t *testing.T) {
@@ -1448,6 +1494,40 @@ func TestTableAlter(t *testing.T) {
 			DropAllAccessRowPolicies: Bool(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
+	})
+
+	t.Run("add storage lifecycle policy", func(t *testing.T) {
+		storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: storageLifecyclePolicyId,
+				On:                     []Column{{Value: "FIRST_COLUMN"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+	})
+
+	t.Run("add storage lifecycle policy with multiple columns", func(t *testing.T) {
+		storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+
+		opts := &alterTableOptions{
+			name: id,
+			AddStorageLifecyclePolicy: &TableAddStorageLifecyclePolicy{
+				StorageLifecyclePolicy: storageLifecyclePolicyId,
+				On:                     []Column{{Value: "FIRST_COLUMN"}, {Value: "SECOND_COLUMN"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN", "SECOND_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+	})
+
+	t.Run("drop storage lifecycle policy", func(t *testing.T) {
+		opts := &alterTableOptions{
+			name:                       id,
+			DropStorageLifecyclePolicy: new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP STORAGE LIFECYCLE POLICY`, id.FullyQualifiedName())
 	})
 }
 

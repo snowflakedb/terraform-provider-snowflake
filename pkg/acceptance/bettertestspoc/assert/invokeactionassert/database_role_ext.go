@@ -15,5 +15,6 @@ func DatabaseRoleDoesNotExist(t *testing.T, id sdk.DatabaseObjectIdentifier) ass
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.DatabaseRole, sdk.DatabaseObjectIdentifier] {
 			return testClient.DatabaseRole.Show
-		})
+		},
+	)
 }

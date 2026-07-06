@@ -26,19 +26,195 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
-### *(new feature)* `snowflake_grant_ownership`: support for `AGENT` object type
+### *(bug fix)* SDK, literals, and privileges are now properly escaped
 
-The `snowflake_grant_ownership` resource now supports granting ownership on `AGENT` objects. This includes single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`).
+Multiple legacy SQL builders and provider resources previously interpolated user-provided values directly into SQL strings without proper quoting or escaping. This could lead to incorrect queries and Snowflake errors like SQL compilation error. The following areas have been fixed:
+- Identifier SQL emission (provider-wide): double-quote characters inside quoted identifiers are now escaped as `""` in the SQL builder, matching the SQL standard.
+- Single quotes are now correctly escaped in the following resources:
+  - `snowflake_system_generate_scim_access_token`,
+  - `snowflake_system_get_aws_sns_iam_policy`,
+  - `snowflake_user_public_keys`,
+  - `snowflake_table_column_masking_policy_application`,
+  - Legacy `snowflake_stage` resource: the stage name, URL, comment, and storage integration fields. We kindly remind you that this resource is deprecated. Please use other [new stage resources](./MIGRATION_GUIDE.md#new-feature-new-stage-resources).
+- Dollar-quoted fields: the `$$` sequence is now rejected in any field rendered with Snowflake dollar-quoting because `$$` cannot be escaped inside a dollar-quoted constant. The affected resources:
+  - `snowflake_cortex_agent`,
+  - `snowflake_listings`,
+  - `snowflake_service`,
+  - `snowflake_task`,
+- The following fields are now wrapped by single quotes:
+  - Stage location in `snowflake_listing` and `snowflake_service`: stage location values are now quoted with single quotes in the SDK-generated SQL.
+  - Account and account_region in `snowflake_account` resource.
+- Improved validations for object types and privileges: values with unexpected characters (e.g. semicolons, quotes) are rejected at plan time.
+
+No action required.
+
+### *(bug fix)* Explicit false in the provider block now correctly overrides TOML profile values
+When a Boolean provider field was explicitly set to false in the provider block or environmental variables, the TOML value incorrectly took precedence. Affected fields: passcode_in_password, keep_session_alive, disable_query_context_cache, enable_single_use_refresh_tokens, log_query_text, log_query_parameters, crl_in_memory_cache_disabled, crl_on_disk_cache_disabled, disable_ocsp_checks / insecure_mode.
+
+This behavior is now fixed: the values set explicitly in the provider block or in environmental variables take precedence.
+
+No action required.
+
+### *(improvement)* snowflake_grant_ownership: deleting a resource with on_future now properly revokes the grant
+If you use the future option in the snowflake_grant_ownership, it now issues REVOKE OWNERSHIP ON FUTURE ... TO ROLE ... during destroy.
+
+No changes required for existing configurations.
+
+### *(new feature)* New Postgres instance resource
+
+We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_postgres_instance_resource` to the `preview_features_enabled` field in the provider configuration.
+
+### *(new feature)* Cortex Code daily credit limit account parameters
+
+Added support for three new account parameters in the following resources:
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+These parameters set the [Cortex Code per-user daily estimated credit usage limits](https://docs.snowflake.com/en/user-guide/cortex-code/credit-usage-limit) and are integer-valued (`-1` for the default/unlimited, `0` to block usage, or a positive cap on a user's estimated credit usage over a rolling 24-hour window):
+- `CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER`
+- `CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER`
+- `CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER`
+
+No action is required; this is a non-breaking addition.
+
+### Multiple resources and data sources promoted to stable
+
+The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration if present.
+
+**Resources:**
+- `snowflake_account_session_policy_attachment` (`snowflake_account_session_policy_attachment_resource`)
+- `snowflake_authentication_policy` (`snowflake_authentication_policy_resource`)
+- `snowflake_catalog_integration_aws_glue` (`snowflake_catalog_integration_aws_glue_resource`)
+- `snowflake_catalog_integration_iceberg_rest` (`snowflake_catalog_integration_iceberg_rest_resource`)
+- `snowflake_catalog_integration_object_storage` (`snowflake_catalog_integration_object_storage_resource`)
+- `snowflake_catalog_integration_open_catalog` (`snowflake_catalog_integration_open_catalog_resource`)
+- `snowflake_current_account` (`snowflake_current_account_resource`)
+- `snowflake_current_organization_account` (`snowflake_current_organization_account_resource`)
+- `snowflake_external_volume` (`snowflake_external_volume_resource`)
+- `snowflake_password_policy` (`snowflake_password_policy_resource`)
+- `snowflake_session_policy` (`snowflake_session_policy_resource`)
+- `snowflake_stage_external_azure` (`snowflake_stage_external_azure_resource`)
+- `snowflake_stage_external_gcs` (`snowflake_stage_external_gcs_resource`)
+- `snowflake_stage_external_s3` (`snowflake_stage_external_s3_resource`)
+- `snowflake_stage_external_s3_compatible` (`snowflake_stage_external_s3_compatible_resource`)
+- `snowflake_stage_internal` (`snowflake_stage_internal_resource`)
+- `snowflake_storage_integration_aws` (`snowflake_storage_integration_aws_resource`)
+- `snowflake_storage_integration_azure` (`snowflake_storage_integration_azure_resource`)
+- `snowflake_storage_integration_gcs` (`snowflake_storage_integration_gcs_resource`)
+- `snowflake_user_session_policy_attachment` (`snowflake_user_session_policy_attachment_resource`)
+
+**Data sources:**
+- `snowflake_authentication_policies` (`snowflake_authentication_policies_datasource`)
+- `snowflake_catalog_integrations` (`snowflake_catalog_integrations_datasource`)
+- `snowflake_external_volumes` (`snowflake_external_volumes_datasource`)
+- `snowflake_password_policies` (`snowflake_password_policies_datasource`)
+- `snowflake_session_policies` (`snowflake_session_policies_datasource`)
+- `snowflake_storage_integrations` (`snowflake_storage_integrations_datasource`)
+
+Provider will issue a warning if a stable feature is still present in the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
+### *(new feature)* New instance families in the compute_pool resource
+Added missing instance families that are available in Snowflake: `GEN_ARM_G1_2`, `GEN_ARM_G1_4`, `GEN_ARM_G1_8`, `GEN_ARM_G1_16`, `GEN_ARM_G1_32`, `GEN_X64_G2_2`, `GEN_X64_G2_4`, `GEN_X64_G2_8`, `GEN_X64_G2_16`, `GEN_X64_G2_32`, `MEM_X64_G2_8`, `MEM_X64_G2_32`, `MEM_X64_G2_64`, `MEM_X64_G2_96`, `MEM_X64_G2_192`, `GPU_L40S_G1_8`, `GPU_L40S_G1_16`, `GPU_L40S_G1_48`, `GPU_L40S_G1_192`, `GPU_R6K_G1_8`, `GPU_R6K_G1_16`, `GPU_R6K_G1_32`, `GPU_R6K_G1_48`, `GPU_R6K_G1_96`, `GPU_R6K_G1_192`, `GPU_A100_G1_12`, and `GPU_A100_G1_48`.
+
+### *(new feature/deprecation)* API integration resources reworked
+
+#### *(new feature/deprecation)* API integration resources
+
+The existing `snowflake_api_integration` resource has been deprecated. It has been split into nine new dedicated resources, each managing a single integration type:
+
+- [`snowflake_api_integration_amazon_api_gateway`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_amazon_api_gateway) — for AWS API Gateway, AWS Private API Gateway, AWS GovCloud API Gateway, and AWS GovCloud Private API Gateway
+- [`snowflake_api_integration_azure_api_management`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_azure_api_management) — for Azure API Management
+- [`snowflake_api_integration_google_cloud_api_gateway`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_google_cloud_api_gateway) — for Google Cloud API Gateway
+- [`snowflake_api_integration_git_repository_github_app`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_github_app) — for Git repositories using GitHub App authentication
+- [`snowflake_api_integration_git_repository_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_oauth2) — for Git repositories using OAuth 2.0
+- [`snowflake_api_integration_git_repository_token`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_token) — for Git repositories using token-based authentication
+- [`snowflake_api_integration_git_repository_private_link`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_private_link) — for Git repositories over a private link endpoint
+- [`snowflake_api_integration_external_mcp_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_oauth2) — for external MCP servers using OAuth 2.0
+- [`snowflake_api_integration_external_mcp_dynamic_client`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_external_mcp_dynamic_client) — for external MCP servers using OAuth 2.0 Dynamic Client Registration
+
+The newly introduced resources are aligned with the latest Snowflake documentation at the time of implementation. Each resource schema contains only the attributes valid for the given integration type.
+
+These resources are in preview. To use them, add the corresponding feature flag(s) to the [`preview_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#preview_features_enabled-1) provider field:
+- `snowflake_api_integration_amazon_api_gateway_resource`
+- `snowflake_api_integration_azure_api_management_resource`
+- `snowflake_api_integration_google_cloud_api_gateway_resource`
+- `snowflake_api_integration_git_repository_github_app_resource`
+- `snowflake_api_integration_git_repository_oauth2_resource`
+- `snowflake_api_integration_git_repository_token_resource`
+- `snowflake_api_integration_git_repository_private_link_resource`
+- `snowflake_api_integration_external_mcp_oauth2_resource`
+- `snowflake_api_integration_external_mcp_dynamic_client_resource`
+
+The old `snowflake_api_integration` resource is deprecated and will be removed in a future major version. It remains available in the meantime.
+
+##### Migrating from `snowflake_api_integration` to the new resources
+
+To determine which new resource to use, check the `api_provider` value in your existing `snowflake_api_integration` configuration:
+
+| Old `api_provider` value | New resource |
+|---|---|
+| `aws_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_private_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_gov_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `aws_gov_private_api_gateway` | `snowflake_api_integration_amazon_api_gateway` |
+| `azure_api_management` | `snowflake_api_integration_azure_api_management` |
+| `google_api_gateway` | `snowflake_api_integration_google_cloud_api_gateway` |
+
+Notable schema changes compared to the old resource:
+- Computed attributes (`api_aws_iam_user_arn`, `api_aws_external_id`, `azure_consent_url`, `azure_multi_tenant_app_name`, `api_gcp_service_account`) have moved to `describe_output`
+- `created_on` has moved to `show_output`
+- `api_provider` in the Amazon API Gateway resource accepts only the four AWS variants; Azure and Google each have a dedicated resource with no `api_provider` field
+- Each resource schema contains only the fields relevant to its integration type — provider-specific fields from other backends are no longer present
+
+To achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
+
+#### *(new feature)* `snowflake_api_integrations` data source
+
+We have added a new preview data source for querying API integrations: [snowflake_api_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/api_integrations).
+
+The data source supports filtering with `like` and returns both `show_output` and `describe_output` for each integration. The unified `describe_output` covers all API integration provider types (AWS, Azure, Google, Git HTTPS, and External MCP) in a single schema — fields not applicable to a given provider are empty.
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_api_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+
+### *(new feature)* New `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` account parameter
+
+The `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` parameter is now supported in the following resources:
+
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
 
 No changes are required for existing configurations.
 
-### *(new feature)* New storage lifecycle policy resource and data source
+References: [#4826](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4826)
 
-#### Resource
+### *(new feature)* `snowflake_grant_ownership`: support for new object types
 
-We have added a new preview resource for managing storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy).
+The `snowflake_grant_ownership` resource now supports granting ownership on the following additional object types:
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_storage_lifecycle_policy_resource` to the `preview_features_enabled` field in the provider configuration.
+- `AGENT` — single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`)
+- `CORTEX SEARCH SERVICE` — single object grants, bulk grants (`ALL CORTEX SEARCH SERVICES IN ...`), and future grants (`FUTURE CORTEX SEARCH SERVICES IN ...`)
+
+No changes are required for existing configurations.
+
+References: [#4868](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4868)
+
+### *(new feature)* New storage lifecycle policy resources and data source
+
+#### Resources
+
+We have added new preview resources for storage lifecycle policies: [snowflake_storage_lifecycle_policy](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy) for defining policies, and [snowflake_table_storage_lifecycle_policy_attachment](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table_storage_lifecycle_policy_attachment) for attaching a storage lifecycle policy to a table or a dynamic table.
+
+These features will be marked as stable in future releases. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_storage_lifecycle_policy_resource` for `snowflake_storage_lifecycle_policy`;
+- `snowflake_table_storage_lifecycle_policy_attachment_resource` for `snowflake_table_storage_lifecycle_policy_attachment`.
 
 #### Data source
 
@@ -48,13 +224,33 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
-### *(new preview resource)* New Iceberg Table resources
+### *(new feature)* New Iceberg Table resources
 
-We have added a new preview resource for Iceberg tables: [snowflake_iceberg_table_from_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_files) for managing Snowflake Iceberg Tables created from files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files)).
+We have added new preview resources for Iceberg tables:
+- [snowflake_iceberg_table_from_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_files) for managing Snowflake Iceberg Tables created from files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files)),
+- [snowflake_iceberg_table_from_delta_files](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_delta_files) for managing Snowflake Iceberg Tables created from Delta files ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-delta)).
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_iceberg_table_from_files_resource` to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_files_resource` or `snowflake_iceberg_table_from_delta_files_resource` to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
+
+### *(improvement)* GRANT_ACCOUNT_ROLE_SHOW_CACHING experiment for snowflake_grant_account_role
+
+A new experiment `GRANT_ACCOUNT_ROLE_SHOW_CACHING` is now available for the `snowflake_grant_account_role` resource. When enabled, the provider caches `SHOW GRANTS OF ROLE` results in memory for the duration of a single plan or apply cycle.
+
+Without caching, every `snowflake_grant_account_role` instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same set of roles (a common RBAC topology), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique role per plan.
+
+When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain correctly visible to subsequent Reads. The trailing Read at the end of Create is also skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.
+
+To enable, add `GRANT_ACCOUNT_ROLE_SHOW_CACHING` to the `experimental_features_enabled` field in the provider configuration:
+
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANT_ACCOUNT_ROLE_SHOW_CACHING"]
+}
+```
+
+No changes to existing configurations are required. The experiment is intended for large RBAC configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
 
 ### *(new feature)* `log_event_level` parameter support
 
@@ -72,6 +268,14 @@ The `parameters` output of the related data sources (`snowflake_databases`, `sno
 
 No changes are required for existing configurations.
 
+### *(bugfix)* Fixed panic when adding a column with a constant default to a `snowflake_table`
+
+Adding a new column with a constant (or expression) default to an existing `snowflake_table` (e.g. `default { constant = "false" }`) caused a nil-pointer panic, because the ALTER TABLE ... ADD COLUMN path assumed the default was always an identity. This has been fixed: constant and expression defaults are now handled correctly when adding columns.
+
+No changes in the configuration are required.
+
+References: [#4730](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730)
+
 ### *(bugfix)* Fixed MODEL MONITOR object type in grant resources (non-empty plan)
 
 Grants on future `MODEL MONITORS` in privilege grant resources (e.g. `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`)
@@ -86,14 +290,20 @@ No changes in the configuration are required.
 
 ### *(new feature)* HIERARCHY_RENAMES experiment
 
-A new `HIERARCHY_RENAMES` experiment has been added. When enabled, changing the `database` field on supported resources no longer forces resource recreation. Instead, the provider detects whether the parent database was renamed or the schema should be moved to a different database, and handles it in-place.
+A new `HIERARCHY_RENAMES` experiment has been added. When enabled, changing the parent identifier fields (`database` on `snowflake_schema`, or `database`/`schema` on `snowflake_table`) no longer forces resource recreation. Instead, the provider detects whether a parent was renamed or the object should be moved, and handles it in-place.
 
-Currently supported by: [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema).
+Currently supported by: [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema), [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table).
 
-The provider handles two use cases:
+The provider handles the following use cases:
 
+**2-level hierarchy** (e.g. `snowflake_schema`):
 1. **Database rename**: The parent database was renamed (e.g. from `A` to `B`). The provider detects that the old database no longer exists while the schema already exists under the new name, and updates the resource ID without performing any Snowflake modification.
 2. **Schema move**: Both the old and new databases exist. The provider executes `ALTER SCHEMA A.X RENAME TO B.X` to move the schema to the target database.
+
+**3-level hierarchy** (e.g. `snowflake_table`):
+- When only the `database` field changes, the provider applies the same rename/move logic at the database level.
+- When only the `schema` field changes, the provider applies the same rename/move logic at the schema level.
+- When both `database` and `schema` change simultaneously, the provider evaluates all combinations of database and schema existence to determine the correct action (e.g. both were renamed, or one was renamed while the other was moved).
 
 To enable, add `HIERARCHY_RENAMES` to your provider's `experimental_features_enabled` list:
 ```hcl
@@ -102,7 +312,7 @@ provider "snowflake" {
 }
 ```
 
-Example configuration using an implicit dependency (recommended):
+Example configuration using implicit dependencies (recommended):
 ```hcl
 resource "snowflake_database" "example" {
   name = "my_database"
@@ -112,9 +322,20 @@ resource "snowflake_schema" "example" {
   name     = "my_schema"
   database = snowflake_database.example.name
 }
+
+resource "snowflake_table" "example" {
+  name     = "my_table"
+  database = snowflake_database.example.name
+  schema   = snowflake_schema.example.name
+
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+  }
+}
 ```
 
-With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause the schema resource to detect the rename and update its state accordingly — without recreating the schema or losing any objects within it.
+With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause both the schema and table resources to detect the rename and update their state accordingly — without recreating the objects or losing any data within them.
 
 For more details, see the [Object Renaming Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
 

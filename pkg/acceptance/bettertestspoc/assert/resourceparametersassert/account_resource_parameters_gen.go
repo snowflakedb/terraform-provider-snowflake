@@ -17,9 +17,8 @@ func AccountResourceParameters(t *testing.T, name string) *AccountResourceParame
 	t.Helper()
 
 	resourceParameterAssert := AccountResourceParametersAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedAccountResourceParameters(t *testing.T, id string) *AccountResource
 	t.Helper()
 
 	resourceParameterAssert := AccountResourceParametersAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -38,587 +36,687 @@ func ImportedAccountResourceParameters(t *testing.T, id string) *AccountResource
 ////////////////////////////
 
 func (a *AccountResourceParametersAssert) HasAbortDetachedQuery(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAbortDetachedQuery, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterAbortDetachedQuery), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasAllowBindValuesAccess(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterAllowBindValuesAccess), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAllowClientMfaCaching(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAllowClientMFACaching, expected)) // modified manually
+	a.ParameterBoolValueSet(string(sdk.AccountParameterAllowClientMfaCaching), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAllowIdToken(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAllowIDToken, expected)) // modified manually
+	a.ParameterBoolValueSet(string(sdk.AccountParameterAllowIdToken), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAutocommit(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterAutocommit, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterAutocommit), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientEnableLogInfoStatementParameters(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterClientEnableLogInfoStatementParameters, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterClientEnableLogInfoStatementParameters), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterClientMetadataRequestUseConnectionCtx, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterClientMetadataRequestUseConnectionCtx), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientMetadataUseSessionDatabase(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterClientMetadataUseSessionDatabase, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterClientMetadataUseSessionDatabase), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientResultColumnCaseInsensitive(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterClientResultColumnCaseInsensitive, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterClientResultColumnCaseInsensitive), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientSessionKeepAlive(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterClientSessionKeepAlive, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterClientSessionKeepAlive), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasDisallowedSpcsWorkloadTypes(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterDisallowedSpcsWorkloadTypes), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDisableUiDownloadButton(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterDisableUiDownloadButton, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterDisableUiDownloadButton), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDisableUserPrivilegeGrants(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterDisableUserPrivilegeGrants, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterDisableUserPrivilegeGrants), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableAutomaticSensitiveDataClassificationLog(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableBudgetEventLogging(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableBudgetEventLogging), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableDataCompaction(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableDataCompaction), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableEgressCostOptimizer(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableEgressCostOptimizer, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableEgressCostOptimizer), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableGetDdlUseDataTypeAlias), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableIcebergMergeOnRead(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableIcebergMergeOnRead), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableNotebookCreationInPersonalDb(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableNotebookCreationInPersonalDb), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableTagPropagationEventLogging(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableTagPropagationEventLogging), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableIdentifierFirstLogin(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableIdentifierFirstLogin, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableIdentifierFirstLogin), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableInternalStagesPrivatelink(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableInternalStagesPrivatelink, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableInternalStagesPrivatelink), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableTriSecretAndRekeyOptOutForImageRepository(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorage(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnhandledExceptionsReporting(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableUnhandledExceptionsReporting, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableUnhandledExceptionsReporting), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnredactedQuerySyntaxError(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableUnredactedQuerySyntaxError, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableUnredactedQuerySyntaxError), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnredactedSecureObjectError(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnableUnredactedSecureObjectError, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnableUnredactedSecureObjectError), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnforceNetworkRulesForInternalStages(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterEnforceNetworkRulesForInternalStages, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterEnforceNetworkRulesForInternalStages), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasErrorOnNondeterministicMerge(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterErrorOnNondeterministicMerge, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterErrorOnNondeterministicMerge), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasErrorOnNondeterministicUpdate(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterErrorOnNondeterministicUpdate, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterErrorOnNondeterministicUpdate), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.ParameterBoolValueSet(string(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJdbcTreatDecimalAsInt(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterJdbcTreatDecimalAsInt, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterJdbcTreatDecimalAsInt), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJdbcUseSessionTimezone(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterJdbcUseSessionTimezone, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterJdbcUseSessionTimezone), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJsTreatIntegerAsBigint(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected)) // modified manually
+	a.ParameterBoolValueSet(string(sdk.AccountParameterJsTreatIntegerAsBigint), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasNoorderSequenceAsDefault(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterNoorderSequenceAsDefault, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterNoorderSequenceAsDefault), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasOauthAddPrivilegedRolesToBlockedList(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.ParameterBoolValueSet(string(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasOdbcTreatDecimalAsInt(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterOdbcTreatDecimalAsInt, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterOdbcTreatDecimalAsInt), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPeriodicDataRekeying(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterPeriodicDataRekeying, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterPeriodicDataRekeying), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPipeExecutionPaused(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterPipeExecutionPaused, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterPipeExecutionPaused), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPreventUnloadToInlineUrl(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInlineURL, expected)) // modified manually
+	a.ParameterBoolValueSet(string(sdk.AccountParameterPreventUnloadToInlineUrl), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPreventUnloadToInternalStages(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterPreventUnloadToInternalStages, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterPreventUnloadToInternalStages), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterQuotedIdentifiersIgnoreCase, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterQuotedIdentifiersIgnoreCase), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasRowTimestampDefault(expected bool) *AccountResourceParametersAssert {
+	a.ParameterBoolValueSet(string(sdk.AccountParameterRowTimestampDefault), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasReplaceInvalidCharacters(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterReplaceInvalidCharacters, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterReplaceInvalidCharacters), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasRequireStorageIntegrationForStageCreation(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterRequireStorageIntegrationForStageCreation, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterRequireStorageIntegrationForStageCreation), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasRequireStorageIntegrationForStageOperation(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterRequireStorageIntegrationForStageOperation, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterRequireStorageIntegrationForStageOperation), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSsoLoginPage(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterSsoLoginPage, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterSsoLoginPage), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStrictJsonOutput(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterStrictJsonOutput, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterStrictJsonOutput), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampDayIsAlways24h(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterTimestampDayIsAlways24h, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterTimestampDayIsAlways24h), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTransactionAbortOnError(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterTransactionAbortOnError, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterTransactionAbortOnError), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUseCachedResult(expected bool) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.AccountParameterUseCachedResult, expected))
+	a.ParameterBoolValueSet(string(sdk.AccountParameterUseCachedResult), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientEncryptionKeySize(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterClientEncryptionKeySize, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterClientEncryptionKeySize), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientMemoryLimit(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterClientMemoryLimit, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterClientMemoryLimit), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientPrefetchThreads(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterClientPrefetchThreads, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterClientPrefetchThreads), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientResultChunkSize(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterClientResultChunkSize, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterClientResultChunkSize), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientSessionKeepAliveHeartbeatFrequency(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDataRetentionTimeInDays(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterDataRetentionTimeInDays, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterDataRetentionTimeInDays), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasHybridTableLockTimeout(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterHybridTableLockTimeout, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterHybridTableLockTimeout), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasIcebergVersionDefault(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterIcebergVersionDefault), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJsonIndent(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterJsonIndent, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterJsonIndent), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasLockTimeout(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterLockTimeout, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterLockTimeout), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMaxConcurrencyLevel(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterMaxConcurrencyLevel, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterMaxConcurrencyLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMaxDataExtensionTimeInDays(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterMaxDataExtensionTimeInDays, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterMaxDataExtensionTimeInDays), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMinDataRetentionTimeInDays(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterMinDataRetentionTimeInDays, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterMinDataRetentionTimeInDays), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMultiStatementCount(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterMultiStatementCount, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterMultiStatementCount), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasRowsPerResultset(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterRowsPerResultset, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterRowsPerResultset), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStatementQueuedTimeoutInSeconds(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterStatementQueuedTimeoutInSeconds, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterStatementQueuedTimeoutInSeconds), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStatementTimeoutInSeconds(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterStatementTimeoutInSeconds, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterStatementTimeoutInSeconds), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterSuspendTaskAfterNumFailures, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterSuspendTaskAfterNumFailures), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTaskAutoRetryAttempts(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterTaskAutoRetryAttempts, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterTaskAutoRetryAttempts), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTwoDigitCenturyStart(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterTwoDigitCenturyStart, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterTwoDigitCenturyStart), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUserTaskTimeoutMs(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterUserTaskTimeoutMs, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterUserTaskTimeoutMs), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasWeekOfYearPolicy(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterWeekOfYearPolicy, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterWeekOfYearPolicy), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasWeekStart(expected int) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterIntValueSet(sdk.AccountParameterWeekStart, expected))
+	a.ParameterIntValueSet(string(sdk.AccountParameterWeekStart), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasActivePythonProfiler(expected sdk.ActivePythonProfiler) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterActivePythonProfiler, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterActivePythonProfiler), string(expected))
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasAllowedSpcsWorkloadTypes(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterAllowedSpcsWorkloadTypes), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasBaseLocationPrefix(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterBaseLocationPrefix, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterBaseLocationPrefix), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasBinaryInputFormat(expected sdk.BinaryInputFormat) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterBinaryInputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterBinaryInputFormat), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasBinaryOutputFormat(expected sdk.BinaryOutputFormat) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterBinaryOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterBinaryOutputFormat), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCatalog(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterCatalog, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterCatalog), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCatalogSync(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterCatalogSync, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterCatalogSync), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientTimestampTypeMapping(expected sdk.ClientTimestampTypeMapping) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterClientTimestampTypeMapping, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterClientTimestampTypeMapping), string(expected))
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeCliDailyEstCreditLimitPerUser(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUser(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUser(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCortexEnabledCrossRegion(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterCortexEnabledCrossRegion, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterCortexEnabledCrossRegion), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCortexModelsAllowlist(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterCortexModelsAllowlist, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterCortexModelsAllowlist), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCsvTimestampFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterCsvTimestampFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterCsvTimestampFormat), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasDataMetricSchedule(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterDataMetricSchedule), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDateInputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDateInputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterDateInputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDateOutputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDateOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterDateOutputFormat), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasDefaultDbtVersion(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterDefaultDbtVersion), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultDdlCollation(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDefaultDDLCollation, expected)) // modified manually
+	a.ParameterValueSet(string(sdk.AccountParameterDefaultDdlCollation), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultNotebookComputePoolCpu(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDefaultNotebookComputePoolCpu, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterDefaultNotebookComputePoolCpu), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultNotebookComputePoolGpu(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDefaultNotebookComputePoolGpu, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterDefaultNotebookComputePoolGpu), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultNullOrdering(expected sdk.DefaultNullOrdering) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterDefaultNullOrdering, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterDefaultNullOrdering), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultStreamlitNotebookWarehouse(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterDefaultStreamlitNotebookWarehouse, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEventTable(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterEventTable, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterEventTable), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasExternalVolume(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterExternalVolume, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterExternalVolume), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasGeographyOutputFormat(expected sdk.GeographyOutputFormat) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterGeographyOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterGeographyOutputFormat), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasGeometryOutputFormat(expected sdk.GeometryOutputFormat) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterGeometryOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterGeometryOutputFormat), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasInitialReplicationSizeLimitInTb(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected)) // modified manually
+	a.ParameterValueSet(string(sdk.AccountParameterInitialReplicationSizeLimitInTb), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasListingAutoFulfillmentReplicationRefreshSchedule(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterLogLevel, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterLogLevel), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterLogEventLevel, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterLogEventLevel), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterMetricLevel, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterMetricLevel), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasNetworkPolicy(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterNetworkPolicy, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterNetworkPolicy), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPythonProfilerModules(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterPythonProfilerModules, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterPythonProfilerModules), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPythonProfilerTargetStage(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterPythonProfilerTargetStage, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterPythonProfilerTargetStage), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasQueryTag(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterQueryTag, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterQueryTag), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasReadConsistencyMode(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterReadConsistencyMode), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasS3StageVpceDnsName(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterS3StageVpceDnsName, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterS3StageVpceDnsName), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSearchPath(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterSearchPath, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterSearchPath), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk.WarehouseSize) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterServerlessTaskMaxStatementSize, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterServerlessTaskMaxStatementSize), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasServerlessTaskMinStatementSize(expected sdk.WarehouseSize) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterServerlessTaskMinStatementSize, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterServerlessTaskMinStatementSize), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSimulatedDataSharingConsumer(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterSimulatedDataSharingConsumer, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterSimulatedDataSharingConsumer), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasSqlTraceQueryText(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterSqlTraceQueryText), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStorageSerializationPolicy(expected sdk.StorageSerializationPolicy) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterStorageSerializationPolicy, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterStorageSerializationPolicy), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampInputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimestampInputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimestampInputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampLtzOutputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimestampLtzOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimestampLtzOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampNtzOutputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimestampNtzOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimestampNtzOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampOutputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimestampOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimestampOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampTypeMapping(expected sdk.TimestampTypeMapping) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterTimestampTypeMapping, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimestampTypeMapping), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampTzOutputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimestampTzOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimestampTzOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimezone(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimezone, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimezone), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimeInputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimeInputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimeInputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimeOutputFormat(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTimeOutputFormat, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTimeOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterTraceLevel, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTraceLevel), string(expected))
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTransactionDefaultIsolationLevel(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterTransactionDefaultIsolationLevel, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterTransactionDefaultIsolationLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUnsupportedDdlAction(expected string) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterValueSet(sdk.AccountParameterUnsupportedDdlAction, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterUnsupportedDdlAction), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.AccountParameterUserTaskManagedInitialWarehouseSize, expected))
+	a.ParameterValueSet(string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize), string(expected))
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasUseWorkspacesForSql(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterUseWorkspacesForSql), expected)
 	return a
 }
 
@@ -627,586 +725,686 @@ func (a *AccountResourceParametersAssert) HasUserTaskManagedInitialWarehouseSize
 ////////////////////////////
 
 func (a *AccountResourceParametersAssert) HasAbortDetachedQueryLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAbortDetachedQuery, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterAbortDetachedQuery), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasAllowBindValuesAccessLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterAllowBindValuesAccess), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAllowClientMfaCachingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAllowClientMFACaching, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterAllowClientMfaCaching), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAllowIdTokenLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAllowIDToken, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterAllowIdToken), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasAutocommitLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterAutocommit, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterAutocommit), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientEnableLogInfoStatementParametersLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientEnableLogInfoStatementParameters, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientEnableLogInfoStatementParameters), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientMetadataRequestUseConnectionCtxLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientMetadataRequestUseConnectionCtx, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientMetadataRequestUseConnectionCtx), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientMetadataUseSessionDatabaseLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientMetadataUseSessionDatabase, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientMetadataUseSessionDatabase), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientResultColumnCaseInsensitiveLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientResultColumnCaseInsensitive, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientResultColumnCaseInsensitive), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientSessionKeepAliveLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientSessionKeepAlive, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientSessionKeepAlive), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasDisallowedSpcsWorkloadTypesLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterDisallowedSpcsWorkloadTypes), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDisableUiDownloadButtonLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDisableUiDownloadButton, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDisableUiDownloadButton), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDisableUserPrivilegeGrantsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDisableUserPrivilegeGrants, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDisableUserPrivilegeGrants), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableAutomaticSensitiveDataClassificationLogLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableAutomaticSensitiveDataClassificationLog), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableBudgetEventLoggingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableBudgetEventLogging), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableDataCompactionLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableDataCompaction), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableEgressCostOptimizerLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableEgressCostOptimizer, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableEgressCostOptimizer), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableGetDdlUseDataTypeAliasLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableGetDdlUseDataTypeAlias), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableIcebergMergeOnReadLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableIcebergMergeOnRead), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableNotebookCreationInPersonalDbLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableNotebookCreationInPersonalDb), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcementLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasEnableTagPropagationEventLoggingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableTagPropagationEventLogging), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableIdentifierFirstLoginLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableIdentifierFirstLogin, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableIdentifierFirstLogin), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableInternalStagesPrivatelinkLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableInternalStagesPrivatelink, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableInternalStagesPrivatelink), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableTriSecretAndRekeyOptOutForImageRepositoryLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForImageRepository), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableTriSecretAndRekeyOptOutForSpcsBlockStorageLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableTriSecretAndRekeyOptOutForSpcsBlockStorage), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnhandledExceptionsReportingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableUnhandledExceptionsReporting, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableUnhandledExceptionsReporting), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnloadPhysicalTypeOptimizationLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableUnloadPhysicalTypeOptimization), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnredactedQuerySyntaxErrorLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableUnredactedQuerySyntaxError, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableUnredactedQuerySyntaxError), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnableUnredactedSecureObjectErrorLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnableUnredactedSecureObjectError, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnableUnredactedSecureObjectError), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEnforceNetworkRulesForInternalStagesLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEnforceNetworkRulesForInternalStages, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEnforceNetworkRulesForInternalStages), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasErrorOnNondeterministicMergeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterErrorOnNondeterministicMerge, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterErrorOnNondeterministicMerge), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasErrorOnNondeterministicUpdateLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterErrorOnNondeterministicUpdate, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterErrorOnNondeterministicUpdate), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasExternalOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterJdbcTreatDecimalAsInt, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterJdbcTreatDecimalAsInt), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJdbcTreatTimestampNtzAsUtcLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterJdbcTreatTimestampNtzAsUtc), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJdbcUseSessionTimezoneLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterJdbcUseSessionTimezone, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterJdbcUseSessionTimezone), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJsTreatIntegerAsBigintLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterJsTreatIntegerAsBigInt, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterJsTreatIntegerAsBigint), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasNoorderSequenceAsDefaultLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterNoorderSequenceAsDefault, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterNoorderSequenceAsDefault), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasOauthAddPrivilegedRolesToBlockedListLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterOAuthAddPrivilegedRolesToBlockedList, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasOdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterOdbcTreatDecimalAsInt, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterOdbcTreatDecimalAsInt), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPeriodicDataRekeyingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPeriodicDataRekeying, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterPeriodicDataRekeying), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPipeExecutionPausedLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPipeExecutionPaused, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterPipeExecutionPaused), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPreventUnloadToInlineUrlLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPreventUnloadToInlineURL, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterPreventUnloadToInlineUrl), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPreventUnloadToInternalStagesLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPreventUnloadToInternalStages, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterPreventUnloadToInternalStages), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterQuotedIdentifiersIgnoreCase, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterQuotedIdentifiersIgnoreCase), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasRowTimestampDefaultLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterRowTimestampDefault), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasReplaceInvalidCharactersLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterReplaceInvalidCharacters, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterReplaceInvalidCharacters), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasRequireStorageIntegrationForStageCreationLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterRequireStorageIntegrationForStageCreation, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterRequireStorageIntegrationForStageCreation), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasRequireStorageIntegrationForStageOperationLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterRequireStorageIntegrationForStageOperation, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterRequireStorageIntegrationForStageOperation), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSsoLoginPageLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterSsoLoginPage, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterSsoLoginPage), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStrictJsonOutputLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterStrictJsonOutput, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterStrictJsonOutput), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampDayIsAlways24hLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimestampDayIsAlways24h, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimestampDayIsAlways24h), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTransactionAbortOnErrorLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTransactionAbortOnError, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTransactionAbortOnError), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUseCachedResultLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterUseCachedResult, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterUseCachedResult), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientEncryptionKeySizeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientEncryptionKeySize, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientEncryptionKeySize), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientMemoryLimitLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientMemoryLimit, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientMemoryLimit), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientPrefetchThreadsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientPrefetchThreads, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientPrefetchThreads), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientResultChunkSizeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientResultChunkSize, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientResultChunkSize), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientSessionKeepAliveHeartbeatFrequencyLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientSessionKeepAliveHeartbeatFrequency), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDataRetentionTimeInDays, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDataRetentionTimeInDays), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasHybridTableLockTimeoutLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterHybridTableLockTimeout, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterHybridTableLockTimeout), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasIcebergVersionDefaultLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterIcebergVersionDefault), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasJsonIndentLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterJsonIndent, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterJsonIndent), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasLockTimeoutLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterLockTimeout, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterLockTimeout), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMaxConcurrencyLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterMaxConcurrencyLevel, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterMaxConcurrencyLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterMaxDataExtensionTimeInDays, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterMaxDataExtensionTimeInDays), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMinDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterMinDataRetentionTimeInDays, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterMinDataRetentionTimeInDays), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMultiStatementCountLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterMultiStatementCount, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterMultiStatementCount), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasRowsPerResultsetLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterRowsPerResultset, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterRowsPerResultset), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStatementQueuedTimeoutInSecondsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterStatementQueuedTimeoutInSeconds, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterStatementQueuedTimeoutInSeconds), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStatementTimeoutInSecondsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterStatementTimeoutInSeconds, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterStatementTimeoutInSeconds), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterSuspendTaskAfterNumFailures, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterSuspendTaskAfterNumFailures), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTaskAutoRetryAttempts, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTaskAutoRetryAttempts), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTwoDigitCenturyStartLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTwoDigitCenturyStart, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTwoDigitCenturyStart), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterUserTaskTimeoutMs, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterUserTaskTimeoutMs), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasWeekOfYearPolicyLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterWeekOfYearPolicy, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterWeekOfYearPolicy), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasWeekStartLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterWeekStart, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterWeekStart), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasActivePythonProfilerLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterActivePythonProfiler, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterActivePythonProfiler), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasAllowedSpcsWorkloadTypesLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterAllowedSpcsWorkloadTypes), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasBaseLocationPrefixLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterBaseLocationPrefix, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterBaseLocationPrefix), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasBinaryInputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterBinaryInputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterBinaryInputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasBinaryOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterBinaryOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterBinaryOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCatalogLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterCatalog, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterCatalog), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCatalogSyncLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterCatalogSync, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterCatalogSync), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasClientTimestampTypeMappingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterClientTimestampTypeMapping, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterClientTimestampTypeMapping), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeCliDailyEstCreditLimitPerUserLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUserLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUserLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCortexEnabledCrossRegionLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterCortexEnabledCrossRegion, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexEnabledCrossRegion), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCortexModelsAllowlistLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterCortexModelsAllowlist, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexModelsAllowlist), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasCsvTimestampFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterCsvTimestampFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterCsvTimestampFormat), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasDataMetricScheduleLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterDataMetricSchedule), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDateInputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDateInputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDateInputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDateOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDateOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDateOutputFormat), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasDefaultDbtVersionLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterDefaultDbtVersion), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDefaultDDLCollation, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterDefaultDdlCollation), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultNotebookComputePoolCpuLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDefaultNotebookComputePoolCpu, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDefaultNotebookComputePoolCpu), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultNotebookComputePoolGpuLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDefaultNotebookComputePoolGpu, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDefaultNotebookComputePoolGpu), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultNullOrderingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDefaultNullOrdering, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDefaultNullOrdering), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasDefaultStreamlitNotebookWarehouseLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterDefaultStreamlitNotebookWarehouse, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasEventTableLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterEventTable, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterEventTable), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasExternalVolumeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterExternalVolume, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterExternalVolume), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasGeographyOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterGeographyOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterGeographyOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasGeometryOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterGeometryOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterGeometryOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasInitialReplicationSizeLimitInTbLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterInitialReplicationSizeLimitInTB, expected)) // modified manually
+	a.ParameterLevelSet(string(sdk.AccountParameterInitialReplicationSizeLimitInTb), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasListingAutoFulfillmentReplicationRefreshScheduleLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterLogLevel, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterLogLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterLogEventLevel, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterLogEventLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasMetricLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterMetricLevel, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterMetricLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasNetworkPolicyLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterNetworkPolicy, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterNetworkPolicy), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPythonProfilerModulesLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPythonProfilerModules, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterPythonProfilerModules), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasPythonProfilerTargetStageLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterPythonProfilerTargetStage, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterPythonProfilerTargetStage), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasQueryTagLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterQueryTag, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterQueryTag), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasReadConsistencyModeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterReadConsistencyMode), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasS3StageVpceDnsNameLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterS3StageVpceDnsName, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterS3StageVpceDnsName), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSearchPathLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterSearchPath, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterSearchPath), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasServerlessTaskMaxStatementSizeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterServerlessTaskMaxStatementSize, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterServerlessTaskMaxStatementSize), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasServerlessTaskMinStatementSizeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterServerlessTaskMinStatementSize, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterServerlessTaskMinStatementSize), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasSimulatedDataSharingConsumerLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterSimulatedDataSharingConsumer, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterSimulatedDataSharingConsumer), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasSqlTraceQueryTextLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterSqlTraceQueryText), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasStorageSerializationPolicyLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterStorageSerializationPolicy, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterStorageSerializationPolicy), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampInputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimestampInputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimestampInputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampLtzOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimestampLtzOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimestampLtzOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampNtzOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimestampNtzOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimestampNtzOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimestampOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimestampOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampTypeMappingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimestampTypeMapping, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimestampTypeMapping), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimestampTzOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimestampTzOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimestampTzOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimezoneLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimezone, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimezone), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimeInputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimeInputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimeInputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTimeOutputFormatLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTimeOutputFormat, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTimeOutputFormat), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTraceLevel, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTraceLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasTransactionDefaultIsolationLevelLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterTransactionDefaultIsolationLevel, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterTransactionDefaultIsolationLevel), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUnsupportedDdlActionLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterUnsupportedDdlAction, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterUnsupportedDdlAction), expected)
 	return a
 }
 
 func (a *AccountResourceParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
-	a.AddAssertion(assert.ResourceParameterLevelSet(sdk.AccountParameterUserTaskManagedInitialWarehouseSize, expected))
+	a.ParameterLevelSet(string(sdk.AccountParameterUserTaskManagedInitialWarehouseSize), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasUseWorkspacesForSqlLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterUseWorkspacesForSql), expected)
 	return a
 }

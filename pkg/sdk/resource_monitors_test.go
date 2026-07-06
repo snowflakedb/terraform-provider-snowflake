@@ -56,7 +56,8 @@ func TestResourceMonitorCreate(t *testing.T) {
 			name: id,
 		}
 
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE RESOURCE MONITOR %s WITH CREDIT_QUOTA = 100 FREQUENCY = MONTHLY START_TIMESTAMP = 'IMMIEDIATELY' END_TIMESTAMP = '%s' NOTIFY_USERS = ("FIRST_USER", "SECOND_USER") TRIGGERS ON 50 PERCENT DO SUSPEND_IMMEDIATE ON 100 PERCENT DO NOTIFY`,
+		assertOptsValidAndSQLEquals(
+			t, opts, `CREATE OR REPLACE RESOURCE MONITOR %s WITH CREDIT_QUOTA = 100 FREQUENCY = MONTHLY START_TIMESTAMP = 'IMMIEDIATELY' END_TIMESTAMP = '%s' NOTIFY_USERS = ("FIRST_USER", "SECOND_USER") TRIGGERS ON 50 PERCENT DO SUSPEND_IMMEDIATE ON 100 PERCENT DO NOTIFY`,
 			id.FullyQualifiedName(),
 			endTimeStamp,
 		)
@@ -83,7 +84,7 @@ func TestResourceMonitorAlter(t *testing.T) {
 			name: id,
 			Set:  &ResourceMonitorSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("ResourceMonitorSet", "CreditQuota", "Frequency", "StartTimestamp", "EndTimestamp", "NotifyUsers"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterResourceMonitorOptions.Set", "CreditQuota", "Frequency", "StartTimestamp", "EndTimestamp", "NotifyUsers"))
 	})
 
 	t.Run("with a single set", func(t *testing.T) {

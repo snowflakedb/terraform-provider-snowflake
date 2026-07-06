@@ -47,7 +47,8 @@ func TestAcc_FunctionJavascript_InlineBasic(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavascriptResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasReturnTypeString(datatypes.VariantLegacyDataType).
@@ -74,7 +75,8 @@ func TestAcc_FunctionJavascript_InlineBasic(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavascriptResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()),
 				),
@@ -82,7 +84,8 @@ func TestAcc_FunctionJavascript_InlineBasic(t *testing.T) {
 			// RENAME
 			{
 				Config: config.FromModels(t, functionModelRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModelRenamed.ResourceReference()).
 						HasNameString(idWithChangedNameButTheSameDataType.Name()).
 						HasFullyQualifiedNameString(idWithChangedNameButTheSameDataType.FullyQualifiedName()),
@@ -107,7 +110,8 @@ func TestAcc_FunctionJavascript_InlineEmptyArgs(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavaResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFunctionDefinitionString(definition).
@@ -149,7 +153,8 @@ func TestAcc_FunctionJavascript_InlineFull(t *testing.T) {
 			// CREATE WITH ALL
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavascriptResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -169,7 +174,8 @@ func TestAcc_FunctionJavascript_InlineFull(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"arguments.0.arg_data_type"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedFunctionJavaResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -185,7 +191,8 @@ func TestAcc_FunctionJavascript_InlineFull(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModelUpdateWithoutRecreation),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionJavascriptResource(t, functionModelUpdateWithoutRecreation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).

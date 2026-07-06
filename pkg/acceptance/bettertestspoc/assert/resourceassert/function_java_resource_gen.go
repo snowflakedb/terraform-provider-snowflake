@@ -16,7 +16,7 @@ func FunctionJavaResource(t *testing.T, name string) *FunctionJavaResourceAssert
 	t.Helper()
 
 	return &FunctionJavaResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedFunctionJavaResource(t *testing.T, id string) *FunctionJavaResource
 	t.Helper()
 
 	return &FunctionJavaResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -145,92 +145,92 @@ func (f *FunctionJavaResourceAssert) HasTraceLevel(expected string) *FunctionJav
 ///////////////////////////////////
 
 func (f *FunctionJavaResourceAssert) HasDatabaseString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("database", expected))
+	f.ValueSet("database", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasSchemaString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("schema", expected))
+	f.ValueSet("schema", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNameString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("name", expected))
+	f.ValueSet("name", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasCommentString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("comment", expected))
+	f.ValueSet("comment", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasEnableConsoleOutputString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("enable_console_output", expected))
+	f.ValueSet("enable_console_output", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFullyQualifiedNameString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	f.ValueSet("fully_qualified_name", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFunctionDefinitionString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_definition", expected))
+	f.ValueSet("function_definition", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFunctionLanguageString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_language", expected))
+	f.ValueSet("function_language", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasHandlerString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("handler", expected))
+	f.ValueSet("handler", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasIsSecureString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("is_secure", expected))
+	f.ValueSet("is_secure", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasLogEventLevelString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_event_level", expected))
+	f.ValueSet("log_event_level", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasLogLevelString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_level", expected))
+	f.ValueSet("log_level", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasMetricLevelString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("metric_level", expected))
+	f.ValueSet("metric_level", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNullInputBehaviorString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("null_input_behavior", expected))
+	f.ValueSet("null_input_behavior", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasReturnResultsBehaviorString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_results_behavior", expected))
+	f.ValueSet("return_results_behavior", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasReturnTypeString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_type", expected))
+	f.ValueSet("return_type", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasRuntimeVersionString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("runtime_version", expected))
+	f.ValueSet("runtime_version", expected)
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasTraceLevelString(expected string) *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("trace_level", expected))
+	f.ValueSet("trace_level", expected)
 	return f
 }
 
@@ -239,92 +239,92 @@ func (f *FunctionJavaResourceAssert) HasTraceLevelString(expected string) *Funct
 ///////////////////////////////
 
 func (f *FunctionJavaResourceAssert) HasNoDatabase() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("database"))
+	f.ValueNotSet("database")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoSchema() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("schema"))
+	f.ValueNotSet("schema")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoName() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("name"))
+	f.ValueNotSet("name")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoComment() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("comment"))
+	f.ValueNotSet("comment")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoEnableConsoleOutput() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("enable_console_output"))
+	f.ValueNotSet("enable_console_output")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoFullyQualifiedName() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	f.ValueNotSet("fully_qualified_name")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoFunctionDefinition() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("function_definition"))
+	f.ValueNotSet("function_definition")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoFunctionLanguage() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("function_language"))
+	f.ValueNotSet("function_language")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoHandler() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("handler"))
+	f.ValueNotSet("handler")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoIsSecure() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("is_secure"))
+	f.ValueNotSet("is_secure")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoLogEventLevel() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("log_event_level"))
+	f.ValueNotSet("log_event_level")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoLogLevel() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("log_level"))
+	f.ValueNotSet("log_level")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoMetricLevel() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("metric_level"))
+	f.ValueNotSet("metric_level")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoNullInputBehavior() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("null_input_behavior"))
+	f.ValueNotSet("null_input_behavior")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoReturnResultsBehavior() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("return_results_behavior"))
+	f.ValueNotSet("return_results_behavior")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoReturnType() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("return_type"))
+	f.ValueNotSet("return_type")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoRuntimeVersion() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("runtime_version"))
+	f.ValueNotSet("runtime_version")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNoTraceLevel() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueNotSet("trace_level"))
+	f.ValueNotSet("trace_level")
 	return f
 }
 
@@ -333,97 +333,97 @@ func (f *FunctionJavaResourceAssert) HasNoTraceLevel() *FunctionJavaResourceAsse
 ////////////////////////////
 
 func (f *FunctionJavaResourceAssert) HasArgumentsEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	f.ValueSet("arguments.#", "0")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasCommentEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("comment", ""))
+	f.ValueSet("comment", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasEnableConsoleOutputEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	f.ValueSet("enable_console_output", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasExternalAccessIntegrationsEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	f.ValueSet("external_access_integrations.#", "0")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFullyQualifiedNameEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	f.ValueSet("fully_qualified_name", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFunctionDefinitionEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_definition", ""))
+	f.ValueSet("function_definition", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFunctionLanguageEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("function_language", ""))
+	f.ValueSet("function_language", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasImportsEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("imports.#", "0"))
+	f.ValueSet("imports.#", "0")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasIsSecureEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("is_secure", ""))
+	f.ValueSet("is_secure", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasLogEventLevelEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_event_level", ""))
+	f.ValueSet("log_event_level", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasLogLevelEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("log_level", ""))
+	f.ValueSet("log_level", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasMetricLevelEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("metric_level", ""))
+	f.ValueSet("metric_level", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNullInputBehaviorEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("null_input_behavior", ""))
+	f.ValueSet("null_input_behavior", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasPackagesEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("packages.#", "0"))
+	f.ValueSet("packages.#", "0")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasReturnResultsBehaviorEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("return_results_behavior", ""))
+	f.ValueSet("return_results_behavior", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasRuntimeVersionEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("runtime_version", ""))
+	f.ValueSet("runtime_version", "")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasSecretsEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("secrets.#", "0"))
+	f.ValueSet("secrets.#", "0")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasTargetPathEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("target_path.#", "0"))
+	f.ValueSet("target_path.#", "0")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasTraceLevelEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValueSet("trace_level", ""))
+	f.ValueSet("trace_level", "")
 	return f
 }
 
@@ -432,91 +432,91 @@ func (f *FunctionJavaResourceAssert) HasTraceLevelEmpty() *FunctionJavaResourceA
 ///////////////////////////////
 
 func (f *FunctionJavaResourceAssert) HasDatabaseNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("database"))
+	f.ValuePresent("database")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasSchemaNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("schema"))
+	f.ValuePresent("schema")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNameNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("name"))
+	f.ValuePresent("name")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasCommentNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("comment"))
+	f.ValuePresent("comment")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasEnableConsoleOutputNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("enable_console_output"))
+	f.ValuePresent("enable_console_output")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFullyQualifiedNameNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	f.ValuePresent("fully_qualified_name")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFunctionDefinitionNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("function_definition"))
+	f.ValuePresent("function_definition")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasFunctionLanguageNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("function_language"))
+	f.ValuePresent("function_language")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasHandlerNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("handler"))
+	f.ValuePresent("handler")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasIsSecureNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("is_secure"))
+	f.ValuePresent("is_secure")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasLogEventLevelNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("log_event_level"))
+	f.ValuePresent("log_event_level")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasLogLevelNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("log_level"))
+	f.ValuePresent("log_level")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasMetricLevelNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("metric_level"))
+	f.ValuePresent("metric_level")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasNullInputBehaviorNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("null_input_behavior"))
+	f.ValuePresent("null_input_behavior")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasReturnResultsBehaviorNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("return_results_behavior"))
+	f.ValuePresent("return_results_behavior")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasReturnTypeNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("return_type"))
+	f.ValuePresent("return_type")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasRuntimeVersionNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("runtime_version"))
+	f.ValuePresent("runtime_version")
 	return f
 }
 
 func (f *FunctionJavaResourceAssert) HasTraceLevelNotEmpty() *FunctionJavaResourceAssert {
-	f.AddAssertion(assert.ValuePresent("trace_level"))
+	f.ValuePresent("trace_level")
 	return f
 }

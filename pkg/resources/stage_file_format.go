@@ -1014,7 +1014,8 @@ func handleStageFileFormatRead(d *schema.ResourceData, details *sdk.StageDetails
 		return v
 	})
 	fileFormatToSet := stageFileFormatToSchema(details, false)
-	return handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+	return handleExternalChangesToObjectInFlatDescribeDeepEqual(
+		d,
 		outputMapping{"file_format", "file_format", fileFormatToCompare, fileFormatToSet, nil},
 	)
 }

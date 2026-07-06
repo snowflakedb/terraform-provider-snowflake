@@ -30,6 +30,7 @@ const (
 func (k ShowByIDFindPredicateKind) IsName() bool        { return k == ShowByIDFindPredicateName }
 func (k ShowByIDFindPredicateKind) IsFullID() bool      { return k == ShowByIDFindPredicateFullID }
 func (k ShowByIDFindPredicateKind) IsAccountName() bool { return k == ShowByIDFindPredicateAccountName }
+
 func (k ShowByIDFindPredicateKind) IsNameAndLocator() bool {
 	return k == ShowByIDFindPredicateNameAndLocator
 }

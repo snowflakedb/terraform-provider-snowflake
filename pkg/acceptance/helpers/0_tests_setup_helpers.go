@@ -25,7 +25,7 @@ func (c *TestClient) CreateTestSchema(ctx context.Context, ifNotExists bool) (*s
 	cleanup := func() {
 		_ = c.context.client.Schemas.DropSafely(ctx, id)
 	}
-	err := c.context.client.Schemas.Create(ctx, id, &sdk.CreateSchemaOptions{IfNotExists: sdk.Bool(ifNotExists)})
+	err := c.context.client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(id).WithIfNotExists(ifNotExists))
 	if err != nil {
 		return nil, cleanup, err
 	}

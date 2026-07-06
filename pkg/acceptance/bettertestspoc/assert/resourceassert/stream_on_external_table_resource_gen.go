@@ -16,7 +16,7 @@ func StreamOnExternalTableResource(t *testing.T, name string) *StreamOnExternalT
 	t.Helper()
 
 	return &StreamOnExternalTableResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStreamOnExternalTableResource(t *testing.T, id string) *StreamOnExt
 	t.Helper()
 
 	return &StreamOnExternalTableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -91,52 +91,52 @@ func (s *StreamOnExternalTableResourceAssert) HasStreamType(expected string) *St
 ///////////////////////////////////
 
 func (s *StreamOnExternalTableResourceAssert) HasDatabaseString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasSchemaString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNameString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasCommentString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasCopyGrantsString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("copy_grants", expected))
+	s.ValueSet("copy_grants", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasExternalTableString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_table", expected))
+	s.ValueSet("external_table", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasFullyQualifiedNameString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasInsertOnlyString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("insert_only", expected))
+	s.ValueSet("insert_only", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasStaleString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stale", expected))
+	s.ValueSet("stale", expected)
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasStreamTypeString(expected string) *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stream_type", expected))
+	s.ValueSet("stream_type", expected)
 	return s
 }
 
@@ -145,52 +145,52 @@ func (s *StreamOnExternalTableResourceAssert) HasStreamTypeString(expected strin
 ///////////////////////////////
 
 func (s *StreamOnExternalTableResourceAssert) HasNoDatabase() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoSchema() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoName() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoComment() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoCopyGrants() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("copy_grants"))
+	s.ValueNotSet("copy_grants")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoExternalTable() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("external_table"))
+	s.ValueNotSet("external_table")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoFullyQualifiedName() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoInsertOnly() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("insert_only"))
+	s.ValueNotSet("insert_only")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoStale() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("stale"))
+	s.ValueNotSet("stale")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNoStreamType() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("stream_type"))
+	s.ValueNotSet("stream_type")
 	return s
 }
 
@@ -199,42 +199,42 @@ func (s *StreamOnExternalTableResourceAssert) HasNoStreamType() *StreamOnExterna
 ////////////////////////////
 
 func (s *StreamOnExternalTableResourceAssert) HasAtEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("at.#", "0"))
+	s.ValueSet("at.#", "0")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasBeforeEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("before.#", "0"))
+	s.ValueSet("before.#", "0")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasCommentEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasCopyGrantsEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("copy_grants", ""))
+	s.ValueSet("copy_grants", "")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasFullyQualifiedNameEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasInsertOnlyEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("insert_only", ""))
+	s.ValueSet("insert_only", "")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasStaleEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stale", ""))
+	s.ValueSet("stale", "")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasStreamTypeEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValueSet("stream_type", ""))
+	s.ValueSet("stream_type", "")
 	return s
 }
 
@@ -243,51 +243,51 @@ func (s *StreamOnExternalTableResourceAssert) HasStreamTypeEmpty() *StreamOnExte
 ///////////////////////////////
 
 func (s *StreamOnExternalTableResourceAssert) HasDatabaseNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasSchemaNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasNameNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasCommentNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasCopyGrantsNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("copy_grants"))
+	s.ValuePresent("copy_grants")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasExternalTableNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("external_table"))
+	s.ValuePresent("external_table")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasFullyQualifiedNameNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasInsertOnlyNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("insert_only"))
+	s.ValuePresent("insert_only")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasStaleNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("stale"))
+	s.ValuePresent("stale")
 	return s
 }
 
 func (s *StreamOnExternalTableResourceAssert) HasStreamTypeNotEmpty() *StreamOnExternalTableResourceAssert {
-	s.AddAssertion(assert.ValuePresent("stream_type"))
+	s.ValuePresent("stream_type")
 	return s
 }

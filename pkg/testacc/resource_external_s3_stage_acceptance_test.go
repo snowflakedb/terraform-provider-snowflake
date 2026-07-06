@@ -102,7 +102,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 			// Create with empty optionals (basic)
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -147,7 +148,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlter.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelAlter.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -201,7 +203,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, modelComplete),
 
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -248,7 +251,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -309,7 +313,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -354,7 +359,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelUpdated),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -394,7 +400,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelEncryptionNoneWithComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelEncryptionNoneWithComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -431,7 +438,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithCredentials.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithCredentials.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -467,7 +475,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelRenamed.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -505,7 +514,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithStorageIntegration.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithStorageIntegration.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -548,7 +558,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						planchecks.ExpectDrift(modelWithStorageIntegration.ResourceReference(), "url", sdk.Pointer(awsUrl), sdk.Pointer(s3CompatUrl)),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithStorageIntegration.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -589,7 +600,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithUsePrivatelinkEndpoint.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithUsePrivatelinkEndpoint.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -630,7 +642,8 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithUsePrivatelinkEndpoint.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithUsePrivatelinkEndpoint.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -692,7 +705,8 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -771,7 +785,8 @@ func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 			// Start with inline CSV
 			{
 				Config: accconfig.FromModels(t, modelWithCsvFormat),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -787,7 +802,8 @@ func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -814,7 +830,8 @@ func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -830,7 +847,8 @@ func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithCsvFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -846,7 +864,8 @@ func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalS3StageResource(t, modelBasic.ResourceReference()).
 						HasFileFormatEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.#", "1")),

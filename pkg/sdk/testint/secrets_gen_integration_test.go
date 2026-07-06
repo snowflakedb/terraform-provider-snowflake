@@ -21,7 +21,8 @@ func TestInt_Secrets(t *testing.T) {
 
 	refreshTokenExpiryTime := time.Now().Add(24 * time.Hour).Format(time.DateOnly)
 
-	_, apiIntegrationCleanup := testClientHelper().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClientHelper().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "foo", "foo").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "foo"}, {Scope: "bar"}}),
 	)
@@ -71,7 +72,8 @@ func TestInt_Secrets(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Secret.DropFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Secret(t, id).
 				HasName(id.Name()).
 				HasComment("a").
@@ -102,7 +104,8 @@ func TestInt_Secrets(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Secret.DropFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Secret(t, id).
 				HasName(id.Name()).
 				HasDatabaseName(id.DatabaseName()).
@@ -127,7 +130,8 @@ func TestInt_Secrets(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Secret.DropFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Secret(t, id).
 				HasName(id.Name()).
 				HasOauthScopes().
@@ -151,14 +155,16 @@ func TestInt_Secrets(t *testing.T) {
 	// Inheritance is internal to Snowflake's OAuth flow and not surfaced in describe output.
 	t.Run("OauthScopes: null when not set, visible when set, null after clearing", func(t *testing.T) {
 		scopedIntegrationId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		_, scopedIntegrationCleanup := testClientHelper().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+		_, scopedIntegrationCleanup := testClientHelper().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+			t,
 			sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(scopedIntegrationId, true, "foo", "foo").
 				WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}}),
 		)
 		t.Cleanup(scopedIntegrationCleanup)
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.Secrets.CreateWithOAuthClientCredentialsFlow(ctx,
+		err := client.Secrets.CreateWithOAuthClientCredentialsFlow(
+			ctx,
 			sdk.NewCreateWithOAuthClientCredentialsFlowSecretRequest(id, scopedIntegrationId),
 		)
 		require.NoError(t, err)
@@ -171,12 +177,14 @@ func TestInt_Secrets(t *testing.T) {
 
 		// Set 2 out of 3 available scopes on the secret
 		err = client.Secrets.Alter(ctx, sdk.NewAlterSecretRequest(id).WithSet(
-			*sdk.NewSecretSetRequest().WithSetForFlow(*sdk.NewSetForFlowRequest().
-				WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
-					WithOauthScopes(sdk.OauthScopesListRequest{OauthScopesList: []sdk.ApiIntegrationScope{
-						{Scope: "scope1"}, {Scope: "scope2"},
-					}}),
-				),
+			*sdk.NewSecretSetRequest().WithSetForFlow(
+				*sdk.NewSetForFlowRequest().
+					WithSetForOAuthClientCredentials(
+						*sdk.NewSetForOAuthClientCredentialsRequest().
+							WithOauthScopes(sdk.OauthScopesListRequest{OauthScopesList: []sdk.ApiIntegrationScope{
+								{Scope: "scope1"}, {Scope: "scope2"},
+							}}),
+					),
 			),
 		))
 		require.NoError(t, err)
@@ -188,10 +196,12 @@ func TestInt_Secrets(t *testing.T) {
 
 		// Clear scopes by setting an empty list — DESC returns null (empty) again
 		err = client.Secrets.Alter(ctx, sdk.NewAlterSecretRequest(id).WithSet(
-			*sdk.NewSecretSetRequest().WithSetForFlow(*sdk.NewSetForFlowRequest().
-				WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
-					WithOauthScopes(sdk.OauthScopesListRequest{}),
-				),
+			*sdk.NewSecretSetRequest().WithSetForFlow(
+				*sdk.NewSetForFlowRequest().
+					WithSetForOAuthClientCredentials(
+						*sdk.NewSetForOAuthClientCredentialsRequest().
+							WithOauthScopes(sdk.OauthScopesListRequest{}),
+					),
 			),
 		))
 		require.NoError(t, err)
@@ -214,7 +224,8 @@ func TestInt_Secrets(t *testing.T) {
 		_, err = client.Secrets.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Secret(t, id).
 				HasName(id.Name()).
 				HasComment("a").
@@ -270,7 +281,8 @@ func TestInt_Secrets(t *testing.T) {
 		secret, err := client.Secrets.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.SecretFromObject(t, secret).
 				HasName(id.Name()).
 				HasComment(comment).
@@ -323,7 +335,8 @@ func TestInt_Secrets(t *testing.T) {
 		_, err = client.Secrets.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Secret(t, id).
 				HasName(id.Name()).
 				HasComment(comment).
@@ -341,7 +354,8 @@ func TestInt_Secrets(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Secret.DropFunc(t, id))
 
-		assertThatObject(t,
+		assertThatObject(
+			t,
 			objectassert.Secret(t, id).
 				HasName(id.Name()).
 				HasSecretType(string(sdk.SecretTypeGenericString)).
@@ -360,10 +374,12 @@ func TestInt_Secrets(t *testing.T) {
 			WithSet(
 				*sdk.NewSecretSetRequest().
 					WithComment(comment).
-					WithSetForFlow(*sdk.NewSetForFlowRequest().
-						WithSetForOAuthClientCredentials(*sdk.NewSetForOAuthClientCredentialsRequest().
-							WithOauthScopes(sdk.OauthScopesListRequest{OauthScopesList: []sdk.ApiIntegrationScope{{Scope: "foo"}, {Scope: "bar"}}}),
-						),
+					WithSetForFlow(
+						*sdk.NewSetForFlowRequest().
+							WithSetForOAuthClientCredentials(
+								*sdk.NewSetForOAuthClientCredentialsRequest().
+									WithOauthScopes(sdk.OauthScopesListRequest{OauthScopesList: []sdk.ApiIntegrationScope{{Scope: "foo"}, {Scope: "bar"}}}),
+							),
 					),
 			)
 		err := client.Secrets.Alter(ctx, setRequest)
@@ -406,11 +422,13 @@ func TestInt_Secrets(t *testing.T) {
 			WithSet(
 				*sdk.NewSecretSetRequest().
 					WithComment(comment).
-					WithSetForFlow(*sdk.NewSetForFlowRequest().
-						WithSetForOAuthAuthorization(*sdk.NewSetForOAuthAuthorizationRequest().
-							WithOauthRefreshToken("bar").
-							WithOauthRefreshTokenExpiryTime(alteredRefreshTokenExpiryTime),
-						),
+					WithSetForFlow(
+						*sdk.NewSetForFlowRequest().
+							WithSetForOAuthAuthorization(
+								*sdk.NewSetForOAuthAuthorizationRequest().
+									WithOauthRefreshToken("bar").
+									WithOauthRefreshTokenExpiryTime(alteredRefreshTokenExpiryTime),
+							),
 					),
 			)
 		err := client.Secrets.Alter(ctx, setRequest)
@@ -452,11 +470,13 @@ func TestInt_Secrets(t *testing.T) {
 			WithSet(
 				*sdk.NewSecretSetRequest().
 					WithComment(comment).
-					WithSetForFlow(*sdk.NewSetForFlowRequest().
-						WithSetForBasicAuthentication(*sdk.NewSetForBasicAuthenticationRequest().
-							WithUsername("bar").
-							WithPassword("bar"),
-						),
+					WithSetForFlow(
+						*sdk.NewSetForFlowRequest().
+							WithSetForBasicAuthentication(
+								*sdk.NewSetForBasicAuthenticationRequest().
+									WithUsername("bar").
+									WithPassword("bar"),
+							),
 					),
 			)
 		err := client.Secrets.Alter(ctx, setRequest)
@@ -497,10 +517,12 @@ func TestInt_Secrets(t *testing.T) {
 			WithSet(
 				*sdk.NewSecretSetRequest().
 					WithComment(comment).
-					WithSetForFlow(*sdk.NewSetForFlowRequest().
-						WithSetForGenericString(*sdk.NewSetForGenericStringRequest().
-							WithSecretString("bar"),
-						),
+					WithSetForFlow(
+						*sdk.NewSetForFlowRequest().
+							WithSetForGenericString(
+								*sdk.NewSetForGenericStringRequest().
+									WithSecretString("bar"),
+							),
 					),
 			)
 		err := client.Secrets.Alter(ctx, setRequest)

@@ -16,7 +16,7 @@ func CatalogIntegrationObjectStorageResource(t *testing.T, name string) *Catalog
 	t.Helper()
 
 	return &CatalogIntegrationObjectStorageResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCatalogIntegrationObjectStorageResource(t *testing.T, id string) *C
 	t.Helper()
 
 	return &CatalogIntegrationObjectStorageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -72,37 +72,37 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasTableFormat(expected 
 ///////////////////////////////////
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNameString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("name", expected))
+	c.ValueSet("name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", expected))
+	c.ValueSet("catalog_source", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasCommentString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", expected))
+	c.ValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasEnabledString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("enabled", expected))
+	c.ValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasFullyQualifiedNameString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	c.ValueSet("fully_qualified_name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasRefreshIntervalSecondsString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", expected))
+	c.ValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasTableFormatString(expected string) *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("table_format", expected))
+	c.ValueSet("table_format", expected)
 	return c
 }
 
@@ -111,37 +111,37 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasTableFormatString(exp
 ///////////////////////////////
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoName() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoCatalogSource() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoComment() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoEnabled() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoFullyQualifiedName() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	c.ValueNotSet("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoTableFormat() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("table_format"))
+	c.ValueNotSet("table_format")
 	return c
 }
 
@@ -150,22 +150,22 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasNoTableFormat() *Cata
 ////////////////////////////
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", ""))
+	c.ValueSet("catalog_source", "")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasCommentEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", ""))
+	c.ValueSet("comment", "")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasFullyQualifiedNameEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	c.ValueSet("fully_qualified_name", "")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasRefreshIntervalSecondsEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", ""))
+	c.ValueSet("refresh_interval_seconds", "")
 	return c
 }
 
@@ -174,36 +174,36 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasRefreshIntervalSecond
 ///////////////////////////////
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasNameNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValuePresent("name"))
+	c.ValuePresent("name")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValuePresent("catalog_source"))
+	c.ValuePresent("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasCommentNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValuePresent("comment"))
+	c.ValuePresent("comment")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasEnabledNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValuePresent("enabled"))
+	c.ValuePresent("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasFullyQualifiedNameNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	c.ValuePresent("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasRefreshIntervalSecondsNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValuePresent("refresh_interval_seconds"))
+	c.ValuePresent("refresh_interval_seconds")
 	return c
 }
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasTableFormatNotEmpty() *CatalogIntegrationObjectStorageResourceAssert {
-	c.AddAssertion(assert.ValuePresent("table_format"))
+	c.ValuePresent("table_format")
 	return c
 }

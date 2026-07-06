@@ -109,7 +109,8 @@ func CortexSearchService() *schema.Resource {
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingUpdateWrapper(resources.CortexSearchService, UpdateCortexSearchService)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CortexSearchServiceResource), TrackingDeleteWrapper(resources.CortexSearchService, deleteFunc)),
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.CortexSearchService,
+		CustomizeDiff: TrackingCustomDiffWrapper(
+			resources.CortexSearchService,
 			ComputedIfAnyAttributeChanged(cortexSearchServiceSchema, DescribeOutputAttributeName, "embedding_model"),
 		),
 
@@ -199,7 +200,8 @@ func GetReadCortexSearchServiceFunc(withExternalChangesMarking bool) schema.Read
 			if cortexSearchServiceDetails.EmbeddingModel != nil {
 				embeddingModel = *cortexSearchServiceDetails.EmbeddingModel
 			}
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"embedding_model", "embedding_model", embeddingModel, embeddingModel, nil},
 			); err != nil {
 				return diag.FromErr(err)

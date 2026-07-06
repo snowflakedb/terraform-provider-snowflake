@@ -75,7 +75,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 			// create without optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -240,7 +241,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelComplete.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -406,7 +408,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -503,7 +506,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -587,7 +591,8 @@ func TestAcc_Service_basic_fromSpecification(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithDifferentValues.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -696,7 +701,8 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -716,7 +722,8 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelBasicOnStage),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasicOnStage.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -736,7 +743,8 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelBasicOnStageTemplate),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasicOnStageTemplate.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -759,7 +767,8 @@ func TestAcc_Service_changingSpec(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelBasicOnStageTemplate),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasicOnStageTemplate.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -792,7 +801,8 @@ func TestAcc_Service_changeServiceTypeExternally(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasServiceTypeString(string(sdk.ServiceTypeService)),
@@ -820,7 +830,8 @@ func TestAcc_Service_changeServiceTypeExternally(t *testing.T) {
 						planchecks.ExpectChange(modelBasic.ResourceReference(), "service_type", tfjson.ActionCreate, sdk.Pointer(string(sdk.ServiceTypeJobService)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasServiceTypeString(string(sdk.ServiceTypeService)),
@@ -862,7 +873,8 @@ func TestAcc_Service_fromSpecificationOnStage(t *testing.T) {
 			// create without optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -960,7 +972,8 @@ func TestAcc_Service_fromSpecificationTemplate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -1063,7 +1076,8 @@ func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -1175,7 +1189,8 @@ func TestAcc_Service_complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ServiceResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -1258,7 +1273,8 @@ func TestAcc_Service_complete(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"from_specification", "show_output.0.current_instances", "show_output.0.target_instances", "describe_output.0.current_instances", "describe_output.0.target_instances"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
@@ -1332,6 +1348,8 @@ func TestAcc_Service_Validations(t *testing.T) {
 		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"stage": tfconfig.StringVariable("stage"),
 		}))
+	modelWithDoubleDollarInUsingValue := model.ServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), specTemplate,
+		acchelpers.ServiceSpecUsing{Key: "key", Value: "contains $$ sequence"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: servicesProviderFactory,
@@ -1414,6 +1432,11 @@ func TestAcc_Service_Validations(t *testing.T) {
 				Config:      config.FromModels(t, modelWithStageAndNoFile),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.stage` must be specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithDoubleDollarInUsingValue),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`cannot contain the \$\$ sequence`),
 			},
 		},
 	})

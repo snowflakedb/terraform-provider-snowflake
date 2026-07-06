@@ -212,10 +212,12 @@ var oauthForPartnerApplicationsIntegrationSetDef = g.NewQueryStruct("OauthForPar
 		"OAUTH_USE_SECONDARY_ROLES", OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef,
 		g.ParameterOptions(),
 	).
+	// AllowedRolesList can only be set when OAUTH_USE_SECONDARY_ROLES = NONE (the default); it is incompatible with IMPLICIT.
+	OptionalQueryStructField("AllowedRolesList", allowedRolesListDef, g.ParameterOptions().SQL("ALLOWED_ROLES_LIST").Parentheses()).
 	OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
 	OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
 	WithValidation(g.AtLeastOneValueSet, "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles",
-		"BlockedRolesList", "Comment")
+		"AllowedRolesList", "BlockedRolesList", "Comment")
 
 var oauthForPartnerApplicationsIntegrationUnsetDef = g.NewQueryStruct("OauthForPartnerApplicationsIntegrationUnset").
 	OptionalSQL("ENABLED").
@@ -228,6 +230,8 @@ var oauthForCustomClientsIntegrationSetDef = g.NewQueryStruct("OauthForCustomCli
 	OptionalBooleanAssignment("OAUTH_ALLOW_NON_TLS_REDIRECT_URI", g.ParameterOptions()).
 	OptionalBooleanAssignment("OAUTH_ENFORCE_PKCE", g.ParameterOptions()).
 	OptionalQueryStructField("PreAuthorizedRolesList", preAuthorizedRolesListDef, g.ParameterOptions().SQL("PRE_AUTHORIZED_ROLES_LIST").Parentheses()).
+	// AllowedRolesList can only be set when OAUTH_USE_SECONDARY_ROLES = NONE (the default); it is incompatible with IMPLICIT.
+	OptionalQueryStructField("AllowedRolesList", allowedRolesListDef, g.ParameterOptions().SQL("ALLOWED_ROLES_LIST").Parentheses()).
 	OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
 	OptionalBooleanAssignment("OAUTH_ISSUE_REFRESH_TOKENS", g.ParameterOptions()).
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
@@ -240,7 +244,7 @@ var oauthForCustomClientsIntegrationSetDef = g.NewQueryStruct("OauthForCustomCli
 	OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes()).
 	OptionalComment().
 	WithValidation(g.AtLeastOneValueSet, "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList",
-		"BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey",
+		"AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey",
 		"OauthClientRsaPublicKey2", "Comment")
 
 var oauthForCustomClientsIntegrationUnsetDef = g.NewQueryStruct("OauthForCustomClientsIntegrationUnset").
@@ -430,6 +434,8 @@ var securityIntegrationsDef = g.NewInterface(
 					"OAUTH_USE_SECONDARY_ROLES", OauthSecurityIntegrationUseSecondaryRolesOptionEnumDef,
 					g.ParameterOptions(),
 				).
+				// AllowedRolesList can only be set when OAUTH_USE_SECONDARY_ROLES = NONE (the default); it is incompatible with IMPLICIT.
+				OptionalQueryStructField("AllowedRolesList", allowedRolesListDef, g.ParameterOptions().SQL("ALLOWED_ROLES_LIST").Parentheses()).
 				OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses())
 		}).WithAdditionalValidations(),
 		preAuthorizedRolesListDef,
@@ -455,6 +461,8 @@ var securityIntegrationsDef = g.NewInterface(
 					g.ParameterOptions(),
 				).
 				OptionalQueryStructField("PreAuthorizedRolesList", preAuthorizedRolesListDef, g.ParameterOptions().SQL("PRE_AUTHORIZED_ROLES_LIST").Parentheses()).
+				// AllowedRolesList can only be set when OAUTH_USE_SECONDARY_ROLES = NONE (the default); it is incompatible with IMPLICIT.
+				OptionalQueryStructField("AllowedRolesList", allowedRolesListDef, g.ParameterOptions().SQL("ALLOWED_ROLES_LIST").Parentheses()).
 				OptionalQueryStructField("BlockedRolesList", blockedRolesListDef, g.ParameterOptions().SQL("BLOCKED_ROLES_LIST").Parentheses()).
 				OptionalBooleanAssignment("OAUTH_ISSUE_REFRESH_TOKENS", g.ParameterOptions()).
 				OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).

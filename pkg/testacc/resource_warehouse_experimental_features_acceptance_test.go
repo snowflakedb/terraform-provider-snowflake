@@ -36,7 +36,8 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModel, warehouseModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModel.ResourceReference()).
 						HasNameString(warehouseId.Name()),
 					invokeactionassert.QueryHistoryEntry(t, secondaryTestClient(), expectedWarehouseQuery, tracking.CreateOperation, 100),
@@ -46,7 +47,8 @@ func TestAcc_Experimental_Warehouse_ShowImprovedPerformance(t *testing.T) {
 				Config:       config.FromModels(t, providerModel, warehouseModel),
 				ResourceName: warehouseModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
 						HasNameString(warehouseId.Name()),
 					invokeactionassert.QueryHistoryEntryInImport(t, secondaryTestClient(), expectedWarehouseQuery, tracking.ImportOperation, 100),

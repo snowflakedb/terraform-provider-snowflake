@@ -23,7 +23,8 @@ var cortexAgentsDef = g.NewInterface(
 			OptionalTextAssignment("PROFILE", g.ParameterOptions().SingleQuotes()).
 			TextAssignment("FROM SPECIFICATION", g.ParameterOptions().NoEquals().DoubleDollarQuotes()).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+			WithValidation(g.NoDoubleDollarQuotes, "FromSpecification"),
 	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-agent",
@@ -43,7 +44,8 @@ var cortexAgentsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"ModifyLiveVersionSet",
 				g.NewQueryStruct("CortexAgentModifyLiveVersionSet").
-					TextAssignment("SPECIFICATION", g.ParameterOptions().DoubleDollarQuotes()),
+					TextAssignment("SPECIFICATION", g.ParameterOptions().DoubleDollarQuotes()).
+					WithValidation(g.NoDoubleDollarQuotes, "Specification"),
 				g.KeywordOptions().SQL("MODIFY LIVE VERSION SET"),
 			).
 			WithValidation(g.ValidIdentifier, "name").

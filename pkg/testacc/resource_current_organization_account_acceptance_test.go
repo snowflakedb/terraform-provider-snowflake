@@ -58,7 +58,8 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 			// resource with unset parameters
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetParametersModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasAllDefaultParameters(),
@@ -69,7 +70,8 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 				Config:       config.FromModels(t, provider, unsetParametersModel),
 				ResourceName: unsetParametersModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
 						HasAllDefaultParameters(),
@@ -78,7 +80,8 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 			// set all parameters
 			{
 				Config: config.FromModels(t, provider, setParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, setParametersModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()),
@@ -89,7 +92,8 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 				Config:       config.FromModels(t, provider, setParametersModel),
 				ResourceName: setParametersModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()),
@@ -98,7 +102,8 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 			// unset parameters
 			{
 				Config: config.FromModels(t, provider, unsetParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetParametersModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasAllDefaultParameters(),
@@ -115,7 +120,8 @@ func TestAcc_CurrentOrganizationAccount_Parameters(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, provider, unsetParametersModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, setParametersModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasAllDefaultParameters(),
@@ -176,7 +182,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 			// create with unset values
 			{
 				Config: config.FromModels(t, provider, unsetModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentEmpty().
@@ -190,7 +197,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Config:       config.FromModels(t, provider, unsetModel),
 				ResourceName: unsetModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentEmpty().
@@ -207,7 +215,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithComment(comment)))
 				},
 				Config: config.FromModels(t, provider, unsetModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentEmpty().
@@ -219,7 +228,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 			// set optional values
 			{
 				Config: config.FromModels(t, provider, setModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentString(comment).
@@ -233,7 +243,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 				Config:       config.FromModels(t, provider, setModel),
 				ResourceName: setModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentString(comment).
@@ -245,7 +256,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 			// set new optional values
 			{
 				Config: config.FromModels(t, provider, setModelWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModelWithDifferentValues.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentString(newComment).
@@ -262,7 +274,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 					testClient().OrganizationAccount.Alter(t, sdk.NewAlterOrganizationAccountRequest().WithUnset(*sdk.NewOrganizationAccountUnsetRequest().WithComment(true)))
 				},
 				Config: config.FromModels(t, provider, setModelWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, setModelWithDifferentValues.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentString(newComment).
@@ -274,7 +287,8 @@ func TestAcc_CurrentOrganizationAccount_NonParameterValues(t *testing.T) {
 			// unset optional values
 			{
 				Config: config.FromModels(t, provider, unsetModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, unsetModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentEmpty().
@@ -332,7 +346,8 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, provider, completeConfigModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, completeConfigModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasAllDefaultParameters().
@@ -365,7 +380,8 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, provider, completeConfigModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, completeConfigModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()).
@@ -378,7 +394,8 @@ func TestAcc_CurrentOrganizationAccount_Complete(t *testing.T) {
 				Config:       config.FromModels(t, provider, completeConfigModel),
 				ResourceName: completeConfigModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedCurrentOrganizationAccountResource(t, currentOrganizationAccountName).
 						HasNameString(currentOrganizationAccountName).
 						HasAllParametersEqualToPredefinedValues(warehouseId, eventTable.ID(), externalVolumeId, networkPolicy.ID(), stage.ID()).
@@ -436,7 +453,8 @@ func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
 			// Create with import-like behavior
 			{
 				Config: config.FromModels(t, completePropertiesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, completePropertiesModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentString(comment),
@@ -452,7 +470,8 @@ func TestAcc_CurrentOrganizationAccount_NonEmptyComment_OnCreate(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, completePropertiesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.CurrentOrganizationAccountResource(t, completePropertiesModel.ResourceReference()).
 						HasNameString(currentOrganizationAccountName).
 						HasCommentString(comment),
@@ -483,7 +502,8 @@ func TestAcc_CurrentOrganizationAccount_migrateFromV2_10_0(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.10.0"),
 				Config:            config.FromModels(t, provider, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(configModel.ResourceReference(), "saml_identity_provider", "")),
 				),
 			},
@@ -495,7 +515,8 @@ func TestAcc_CurrentOrganizationAccount_migrateFromV2_10_0(t *testing.T) {
 				},
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, provider, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(configModel.ResourceReference(), "saml_identity_provider")),
 				),
 			},

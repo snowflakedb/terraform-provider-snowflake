@@ -16,7 +16,7 @@ func ServiceResource(t *testing.T, name string) *ServiceResourceAssert {
 	t.Helper()
 
 	return &ServiceResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedServiceResource(t *testing.T, id string) *ServiceResourceAssert {
 	t.Helper()
 
 	return &ServiceResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -111,67 +111,67 @@ func (s *ServiceResourceAssert) HasServiceType(expected string) *ServiceResource
 ///////////////////////////////////
 
 func (s *ServiceResourceAssert) HasDatabaseString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasSchemaString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNameString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasAutoResumeString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("auto_resume", expected))
+	s.ValueSet("auto_resume", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasAutoSuspendSecsString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("auto_suspend_secs", expected))
+	s.ValueSet("auto_suspend_secs", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasCommentString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasComputePoolString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("compute_pool", expected))
+	s.ValueSet("compute_pool", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasFullyQualifiedNameString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMaxInstancesString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("max_instances", expected))
+	s.ValueSet("max_instances", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMinInstancesString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("min_instances", expected))
+	s.ValueSet("min_instances", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMinReadyInstancesString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("min_ready_instances", expected))
+	s.ValueSet("min_ready_instances", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasQueryWarehouseString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("query_warehouse", expected))
+	s.ValueSet("query_warehouse", expected)
 	return s
 }
 
 func (s *ServiceResourceAssert) HasServiceTypeString(expected string) *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("service_type", expected))
+	s.ValueSet("service_type", expected)
 	return s
 }
 
@@ -180,67 +180,67 @@ func (s *ServiceResourceAssert) HasServiceTypeString(expected string) *ServiceRe
 ///////////////////////////////
 
 func (s *ServiceResourceAssert) HasNoDatabase() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoSchema() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoName() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoAutoResume() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("auto_resume"))
+	s.ValueNotSet("auto_resume")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoAutoSuspendSecs() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("auto_suspend_secs"))
+	s.ValueNotSet("auto_suspend_secs")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoComment() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoComputePool() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("compute_pool"))
+	s.ValueNotSet("compute_pool")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoFullyQualifiedName() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoMaxInstances() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("max_instances"))
+	s.ValueNotSet("max_instances")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoMinInstances() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("min_instances"))
+	s.ValueNotSet("min_instances")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoMinReadyInstances() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("min_ready_instances"))
+	s.ValueNotSet("min_ready_instances")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoQueryWarehouse() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("query_warehouse"))
+	s.ValueNotSet("query_warehouse")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNoServiceType() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("service_type"))
+	s.ValueNotSet("service_type")
 	return s
 }
 
@@ -249,62 +249,62 @@ func (s *ServiceResourceAssert) HasNoServiceType() *ServiceResourceAssert {
 ////////////////////////////
 
 func (s *ServiceResourceAssert) HasAutoResumeEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("auto_resume", ""))
+	s.ValueSet("auto_resume", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasAutoSuspendSecsEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("auto_suspend_secs", ""))
+	s.ValueSet("auto_suspend_secs", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasCommentEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasExternalAccessIntegrationsEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	s.ValueSet("external_access_integrations.#", "0")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasFromSpecificationEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("from_specification.#", "0"))
+	s.ValueSet("from_specification.#", "0")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasFromSpecificationTemplateEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("from_specification_template.#", "0"))
+	s.ValueSet("from_specification_template.#", "0")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasFullyQualifiedNameEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMaxInstancesEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("max_instances", ""))
+	s.ValueSet("max_instances", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMinInstancesEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("min_instances", ""))
+	s.ValueSet("min_instances", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMinReadyInstancesEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("min_ready_instances", ""))
+	s.ValueSet("min_ready_instances", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasQueryWarehouseEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	s.ValueSet("query_warehouse", "")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasServiceTypeEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValueSet("service_type", ""))
+	s.ValueSet("service_type", "")
 	return s
 }
 
@@ -313,66 +313,66 @@ func (s *ServiceResourceAssert) HasServiceTypeEmpty() *ServiceResourceAssert {
 ///////////////////////////////
 
 func (s *ServiceResourceAssert) HasDatabaseNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasSchemaNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasNameNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasAutoResumeNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("auto_resume"))
+	s.ValuePresent("auto_resume")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasAutoSuspendSecsNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("auto_suspend_secs"))
+	s.ValuePresent("auto_suspend_secs")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasCommentNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasComputePoolNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("compute_pool"))
+	s.ValuePresent("compute_pool")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasFullyQualifiedNameNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMaxInstancesNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("max_instances"))
+	s.ValuePresent("max_instances")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMinInstancesNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("min_instances"))
+	s.ValuePresent("min_instances")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasMinReadyInstancesNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("min_ready_instances"))
+	s.ValuePresent("min_ready_instances")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasQueryWarehouseNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("query_warehouse"))
+	s.ValuePresent("query_warehouse")
 	return s
 }
 
 func (s *ServiceResourceAssert) HasServiceTypeNotEmpty() *ServiceResourceAssert {
-	s.AddAssertion(assert.ValuePresent("service_type"))
+	s.ValuePresent("service_type")
 	return s
 }

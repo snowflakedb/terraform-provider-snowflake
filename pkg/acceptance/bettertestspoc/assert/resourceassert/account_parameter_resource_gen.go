@@ -16,7 +16,7 @@ func AccountParameterResource(t *testing.T, name string) *AccountParameterResour
 	t.Helper()
 
 	return &AccountParameterResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedAccountParameterResource(t *testing.T, id string) *AccountParameter
 	t.Helper()
 
 	return &AccountParameterResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -47,12 +47,12 @@ func (a *AccountParameterResourceAssert) HasValue(expected string) *AccountParam
 ///////////////////////////////////
 
 func (a *AccountParameterResourceAssert) HasKeyString(expected string) *AccountParameterResourceAssert {
-	a.AddAssertion(assert.ValueSet("key", expected))
+	a.ValueSet("key", expected)
 	return a
 }
 
 func (a *AccountParameterResourceAssert) HasValueString(expected string) *AccountParameterResourceAssert {
-	a.AddAssertion(assert.ValueSet("value", expected))
+	a.ValueSet("value", expected)
 	return a
 }
 
@@ -61,12 +61,12 @@ func (a *AccountParameterResourceAssert) HasValueString(expected string) *Accoun
 ///////////////////////////////
 
 func (a *AccountParameterResourceAssert) HasNoKey() *AccountParameterResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("key"))
+	a.ValueNotSet("key")
 	return a
 }
 
 func (a *AccountParameterResourceAssert) HasNoValue() *AccountParameterResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("value"))
+	a.ValueNotSet("value")
 	return a
 }
 
@@ -79,11 +79,11 @@ func (a *AccountParameterResourceAssert) HasNoValue() *AccountParameterResourceA
 ///////////////////////////////
 
 func (a *AccountParameterResourceAssert) HasKeyNotEmpty() *AccountParameterResourceAssert {
-	a.AddAssertion(assert.ValuePresent("key"))
+	a.ValuePresent("key")
 	return a
 }
 
 func (a *AccountParameterResourceAssert) HasValueNotEmpty() *AccountParameterResourceAssert {
-	a.AddAssertion(assert.ValuePresent("value"))
+	a.ValuePresent("value")
 	return a
 }

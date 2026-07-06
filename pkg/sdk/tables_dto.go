@@ -171,23 +171,25 @@ type OutOfLineForeignKeyRequest struct {
 }
 
 type AlterTableRequest struct {
-	IfExists                  *bool
-	name                      SchemaObjectIdentifier // required
-	NewName                   *SchemaObjectIdentifier
-	SwapWith                  *SchemaObjectIdentifier
-	ClusteringAction          *TableClusteringActionRequest
-	ColumnAction              *TableColumnActionRequest
-	ConstraintAction          *TableConstraintActionRequest
-	ExternalTableAction       *TableExternalTableActionRequest
-	SearchOptimizationAction  *TableSearchOptimizationActionLegacyRequest
-	Set                       *TableSetRequest
-	SetTags                   []TagAssociationRequest
-	UnsetTags                 []ObjectIdentifier
-	Unset                     *TableUnsetRequest
-	AddRowAccessPolicy        *TableAddRowAccessPolicyRequest
-	DropRowAccessPolicy       *TableDropRowAccessPolicyRequest
-	DropAndAddRowAccessPolicy *TableDropAndAddRowAccessPolicy
-	DropAllAccessRowPolicies  *bool
+	IfExists                   *bool
+	name                       SchemaObjectIdentifier // required
+	NewName                    *SchemaObjectIdentifier
+	SwapWith                   *SchemaObjectIdentifier
+	ClusteringAction           *TableClusteringActionRequest
+	ColumnAction               *TableColumnActionRequest
+	ConstraintAction           *TableConstraintActionRequest
+	ExternalTableAction        *TableExternalTableActionRequest
+	SearchOptimizationAction   *TableSearchOptimizationActionLegacyRequest
+	Set                        *TableSetRequest
+	SetTags                    []TagAssociationRequest
+	UnsetTags                  []ObjectIdentifier
+	Unset                      *TableUnsetRequest
+	AddRowAccessPolicy         *TableAddRowAccessPolicyRequest
+	DropRowAccessPolicy        *TableDropRowAccessPolicyRequest
+	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicy
+	DropAllAccessRowPolicies   *bool
+	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicyRequest
+	DropStorageLifecyclePolicy *bool
 }
 
 type DropTableRequest struct {
@@ -243,6 +245,11 @@ type TableDropRowAccessPolicyRequest struct {
 type TableDropAndAddRowAccessPolicyRequest struct {
 	Drop TableDropRowAccessPolicyRequest // required
 	Add  TableAddRowAccessPolicyRequest  // required
+}
+
+type TableAddStorageLifecyclePolicyRequest struct {
+	StorageLifecyclePolicy SchemaObjectIdentifier // required
+	On                     []Column               // required
 }
 
 type TableUnsetRequest struct {

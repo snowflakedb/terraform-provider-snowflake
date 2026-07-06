@@ -63,10 +63,11 @@ func TestAcc_UserProgrammaticAccessTokens(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete1, datasourceModelWithOneToken),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithOneToken.DatasourceReference(), "user_programmatic_access_tokens.#", "1")),
 
-					resourceshowoutputassert.ProgrammaticAccessTokensDatasourceShowOutput(t, datasourceModelWithOneToken.DatasourceReference()).
+					resourceshowoutputassert.UserProgrammaticAccessTokensDatasourceShowOutput(t, datasourceModelWithOneToken.DatasourceReference()).
 						HasName(id1.Name()).
 						HasUserName(user.ID()).
 						HasRoleRestriction(snowflakeroles.Public).
@@ -81,13 +82,15 @@ func TestAcc_UserProgrammaticAccessTokens(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, modelComplete1, modelComplete2, datasourceModelWithTwoTokens),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithTwoTokens.DatasourceReference(), "user_programmatic_access_tokens.#", "2")),
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, modelWithDifferentUser, datasourceModelWithDifferentUser),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDifferentUser.DatasourceReference(), "user_programmatic_access_tokens.#", "1")),
 				),
 			},

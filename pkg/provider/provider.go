@@ -391,9 +391,10 @@ func GetProviderSchema() map[string]*schema.Schema {
 				Type:             schema.TypeString,
 				ValidateDiagFunc: validators.StringInSlice(previewfeatures.ValidPreviewFeatures, true),
 			},
-			Description: fmt.Sprintf("A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md)."+
-				" Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables."+
-				" Preview features that can be enabled are: %v. Promoted features that are stable and are enabled by default are: %v. Promoted features can be safely removed from this field. They will be removed in the next major version.",
+			Description: fmt.Sprintf(
+				"A list of preview features that are handled by the provider. See [preview features list](https://github.com/Snowflake-Labs/terraform-provider-snowflake/blob/main/v1-preparations/LIST_OF_PREVIEW_FEATURES_FOR_V1.md)."+
+					" Preview features may have breaking changes in future releases, even without raising the major version. This field can not be set with environmental variables."+
+					" Preview features that can be enabled are: %v. Promoted features that are stable and are enabled by default are: %v. Promoted features can be safely removed from this field. They will be removed in the next major version.",
 				docs.PossibleValuesListed(previewfeatures.AllPreviewFeatures), docs.PossibleValuesListed(previewfeatures.PromotedFeatures),
 			),
 		},
@@ -576,6 +577,8 @@ func GetProviderSchema() map[string]*schema.Schema {
 	}
 }
 
+// TODO(next postgres prs): "snowflake_postgres_fork":                                                resources.PostgresFork(),
+// TODO(next postgres prs): "snowflake_postgres_instance":                                            resources.PostgresInstance(),
 func getResources() map[string]*schema.Resource {
 	return map[string]*schema.Resource{
 		"snowflake_account": resources.Account(),
@@ -589,6 +592,15 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_api_authentication_integration_with_client_credentials":       resources.ApiAuthenticationIntegrationWithClientCredentials(),
 		"snowflake_api_authentication_integration_with_jwt_bearer":               resources.ApiAuthenticationIntegrationWithJwtBearer(),
 		"snowflake_api_integration":                                              resources.APIIntegration(),
+		"snowflake_api_integration_amazon_api_gateway":                           resources.ApiIntegrationAmazonApiGateway(),
+		"snowflake_api_integration_azure_api_management":                         resources.ApiIntegrationAzureApiManagement(),
+		"snowflake_api_integration_external_mcp_dynamic_client":                  resources.ApiIntegrationExternalMcpDynamicClient(),
+		"snowflake_api_integration_external_mcp_oauth2":                          resources.ApiIntegrationExternalMcpOAuth2(),
+		"snowflake_api_integration_git_repository_github_app":                    resources.ApiIntegrationGitRepositoryGithubApp(),
+		"snowflake_api_integration_git_repository_oauth2":                        resources.ApiIntegrationGitRepositoryOauth2(),
+		"snowflake_api_integration_git_repository_private_link":                  resources.ApiIntegrationGitRepositoryPrivateLink(),
+		"snowflake_api_integration_git_repository_token":                         resources.ApiIntegrationGitRepositoryToken(),
+		"snowflake_api_integration_google_cloud_api_gateway":                     resources.ApiIntegrationGoogleCloudApiGateway(),
 		"snowflake_authentication_policy":                                        resources.AuthenticationPolicy(),
 		"snowflake_catalog_integration_aws_glue":                                 resources.CatalogIntegrationAwsGlue(),
 		"snowflake_catalog_integration_object_storage":                           resources.CatalogIntegrationObjectStorage(),
@@ -627,6 +639,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_grant_privileges_to_database_role":                            resources.GrantPrivilegesToDatabaseRole(),
 		"snowflake_grant_privileges_to_share":                                    resources.GrantPrivilegesToShare(),
 		"snowflake_git_repository":                                               resources.GitRepository(),
+		"snowflake_iceberg_table_from_delta_files":                               resources.IcebergTableFromDeltaFiles(),
 		"snowflake_iceberg_table_from_files":                                     resources.IcebergTableFromFiles(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_stage_internal":                                               resources.InternalStage(),
@@ -646,6 +659,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_object_parameter":                                             resources.ObjectParameter(),
 		"snowflake_password_policy":                                              resources.PasswordPolicy(),
 		"snowflake_pipe":                                                         resources.Pipe(),
+		"snowflake_postgres_instance":                                            resources.PostgresInstance(),
 		"snowflake_primary_connection":                                           resources.PrimaryConnection(),
 		"snowflake_procedure_java":                                               resources.ProcedureJava(),
 		"snowflake_procedure_javascript":                                         resources.ProcedureJavascript(),
@@ -693,6 +707,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_user_programmatic_access_token":                               resources.UserProgrammaticAccessToken(),
 		"snowflake_user_public_keys":                                             resources.UserPublicKeys(),
 		"snowflake_user_session_policy_attachment":                               resources.UserSessionPolicyAttachment(),
+		"snowflake_table_storage_lifecycle_policy_attachment":                    resources.TableStorageLifecyclePolicyAttachment(),
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
@@ -704,6 +719,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_accounts":                           datasources.Accounts(),
 		"snowflake_account_roles":                      datasources.AccountRoles(),
 		"snowflake_alerts":                             datasources.Alerts(),
+		"snowflake_api_integrations":                   datasources.ApiIntegrations(),
 		"snowflake_authentication_policies":            datasources.AuthenticationPolicies(),
 		"snowflake_catalog_integrations":               datasources.CatalogIntegrations(),
 		"snowflake_compute_pools":                      datasources.ComputePools(),
@@ -790,6 +806,7 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 			return nil, diag.FromErr(err)
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
+		fixBooleanConfigFields(s, config)
 	}
 	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
 	if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
@@ -798,7 +815,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		}
 	}
 
-	providerCtx := &provider.Context{}
+	providerCtx := &provider.Context{
+		GrantShowOfRoleCache: provider.NewCache[[]sdk.Grant](),
+	}
 	if client, err := sdk.NewClient(config); err != nil {
 		return nil, diag.FromErr(err)
 	} else {
@@ -823,6 +842,31 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 	}
 
 	return providerCtx, diags
+}
+
+// fixBooleanConfigFields is a temporary function to fix the boolean config fields that are set in the Terraform configuration.
+// Without this function, if the users set a value to false explicitly, it will be overridden by the TOML profile value because of MergeConfig logic.
+// Instead, MergeConfig should have an abstraction that does this correctly, so this workaround can be removed.
+// TODO(SNOW-3174224): Remove this function after the merging logic is fixed.
+func fixBooleanConfigFields(s *schema.ResourceData, config *gosnowflake.Config) {
+	// MergeConfig prefers the TOML value for plain boolean fields whenever the Terraform value equals
+	// the bool zero value (false), so an explicit `false` in the Terraform configuration would otherwise
+	// be lost. Re-apply the exact values taken from the raw configuration so that the Terraform
+	// configuration always takes precedence over the TOML profile for these fields.
+	overrideBooleanConfigField(s, "passcode_in_password", &config.PasscodeInPassword)
+	overrideBooleanConfigField(s, "keep_session_alive", &config.ServerSessionKeepAlive)
+	overrideBooleanConfigField(s, "disable_query_context_cache", &config.DisableQueryContextCache)
+	overrideBooleanConfigField(s, "enable_single_use_refresh_tokens", &config.EnableSingleUseRefreshTokens)
+	overrideBooleanConfigField(s, "log_query_text", &config.LogQueryText)
+	overrideBooleanConfigField(s, "log_query_parameters", &config.LogQueryParameters)
+	overrideBooleanConfigField(s, "crl_in_memory_cache_disabled", &config.CrlInMemoryCacheDisabled)
+	overrideBooleanConfigField(s, "crl_on_disk_cache_disabled", &config.CrlOnDiskCacheDisabled)
+	// insecure_mode and disable_ocsp_checks both map to DisableOCSPChecks. When at least one of them is set
+	// explicitly in the Terraform configuration, the Terraform value wins over the TOML profile, and true
+	// wins over false between the two (mimicking the pre-v2 driver behavior).
+	if insecureMode, disableOcspChecks := getBooleanConfigValue(s, "insecure_mode"), getBooleanConfigValue(s, "disable_ocsp_checks"); insecureMode != nil || disableOcspChecks != nil {
+		config.DisableOCSPChecks = (insecureMode != nil && *insecureMode) || (disableOcspChecks != nil && *disableOcspChecks)
+	}
 }
 
 // TODO: reuse with the function from resources package

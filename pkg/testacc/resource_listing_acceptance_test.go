@@ -70,7 +70,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 			// create without optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -91,7 +92,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelBasic),
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasNoManifest().
@@ -115,7 +117,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -136,7 +139,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelComplete),
 				ResourceName: modelComplete.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasNoManifest().
@@ -155,7 +159,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 			// alter
 			{
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -185,7 +190,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -209,7 +215,8 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelUnset),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelUnset.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -271,7 +278,8 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 			// create without optionals
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageNotEmpty().
@@ -292,7 +300,8 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelBasic),
 				ResourceName: modelBasic.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasNoManifest().
@@ -316,7 +325,8 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageNotEmpty().
@@ -337,7 +347,8 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelComplete),
 				ResourceName: modelComplete.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasNoManifest().
@@ -356,7 +367,8 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 			// alter
 			{
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageNotEmpty().
@@ -386,7 +398,8 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelCompleteWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelCompleteWithDifferentValues.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageNotEmpty().
@@ -405,7 +418,8 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 			// unset
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageNotEmpty().
@@ -459,7 +473,8 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 			// create complete with all optionals
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -480,7 +495,8 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelComplete),
 				ResourceName: modelComplete.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasNoManifest().
@@ -535,7 +551,8 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 			// create complete with all optionals
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageNotEmpty().
@@ -556,7 +573,8 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 				Config:       accconfig.FromModels(t, modelComplete),
 				ResourceName: modelComplete.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasNoManifest().
@@ -612,7 +630,8 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 			// Create listing with inlined manifest (inline manifests don't track versions)
 			{
 				Config: accconfig.FromModels(t, modelInitialInlined),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelInitialInlined.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -628,7 +647,8 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 			// Modify the manifest and show that no version was produced
 			{
 				Config: accconfig.FromModels(t, modelModifiedInlined),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelModifiedInlined.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -644,7 +664,8 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 			// Change the manifest source from inlined to staged (the manifest is the same; a new version is produced)
 			{
 				Config: accconfig.FromModels(t, modelStaged),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelStaged.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageStageId(stage.ID()).
@@ -663,7 +684,8 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 			// Now, it doesn't matter if it's sourced from stage or back to inlined.
 			{
 				Config: accconfig.FromModels(t, modelModifiedInlined),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelModifiedInlined.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStringNotEmpty().
@@ -730,7 +752,8 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 			// create initial listing with staged manifest
 			{
 				Config: accconfig.FromModels(t, modelInitial),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelInitial.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageStageId(stage1.ID()).
@@ -748,7 +771,8 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 			// Change manifest location (points to a different manifest, but it shouldn't matter) - should create a new version
 			{
 				Config: accconfig.FromModels(t, modelWithNewManifestLocation),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelWithNewManifestLocation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageStageId(stage1.ID()).
@@ -765,7 +789,8 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 			// add optional values (version name and version comment) - should create a new version
 			{
 				Config: accconfig.FromModels(t, modelWithVersionNameAndComment),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelWithVersionNameAndComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageStageId(stage1.ID()).
@@ -782,7 +807,8 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 			// change version_name - should create a new version
 			{
 				Config: accconfig.FromModels(t, modelWithNewVersionName),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelWithNewVersionName.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageStageId(stage1.ID()).
@@ -799,7 +825,8 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 			// change stage and location - should create a new version
 			{
 				Config: accconfig.FromModels(t, modelWithNewStage),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelWithNewStage.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageStageId(stage2.ID()).
@@ -824,7 +851,8 @@ func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelWithNewStage),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ListingResource(t, modelWithNewStage.ResourceReference()).
 						HasNameString(id.Name()).
 						HasManifestFromStageStageId(stage2.ID()).
@@ -868,6 +896,7 @@ func TestAcc_Listing_Validations(t *testing.T) {
 		))
 
 	modelWithInvalidName := model.ListingWithInlineManifest("test", "_invalid_name", manifest)
+	modelWithDoubleDollarInManifest := model.ListingWithInlineManifest("test", id.Name(), "manifest: contains $$ sequence")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -895,6 +924,11 @@ func TestAcc_Listing_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelWithInvalidName),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores and hyphens`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelWithDoubleDollarInManifest),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`cannot contain the \$\$ sequence`),
 			},
 		},
 	})

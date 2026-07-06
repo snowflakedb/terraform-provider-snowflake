@@ -12,12 +12,14 @@ var PartialGenerationExample = g.NewInterface(
 	g.KindOfT[sdkcommons.DatabaseObjectIdentifier](),
 ).
 	WithAllowedGenerationParts(g.PartDefault, g.PartDto, g.PartImpl, g.PartValidations).
-	CreateOperation("https://example.com",
+	CreateOperation(
+		"https://example.com",
 		g.NewQueryStruct("Alter").
 			Alter().
 			IfExists().
 			Name(),
-	).AlterOperation("https://example.com",
+	).AlterOperation(
+	"https://example.com",
 	g.NewQueryStruct("Alter").
 		Alter().
 		IfExists().

@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -118,10 +117,10 @@ var catalogIntegrationOpenCatalogSchema = func() map[string]*schema.Schema {
 
 func CatalogIntegrationOpenCatalog() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CatalogIntegrationOpenCatalogResource), TrackingCreateWrapper(resources.CatalogIntegrationOpenCatalog, CreateCatalogIntegrationOpenCatalog)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CatalogIntegrationOpenCatalogResource), TrackingReadWrapper(resources.CatalogIntegrationOpenCatalog, ReadCatalogIntegrationOpenCatalogFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CatalogIntegrationOpenCatalogResource), TrackingUpdateWrapper(resources.CatalogIntegrationOpenCatalog, UpdateCatalogIntegrationOpenCatalog)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CatalogIntegrationOpenCatalogResource), TrackingDeleteWrapper(resources.CatalogIntegrationOpenCatalog, deleteCatalogIntegrationFunc())),
+		CreateContext: TrackingCreateWrapper(resources.CatalogIntegrationOpenCatalog, CreateCatalogIntegrationOpenCatalog),
+		ReadContext:   TrackingReadWrapper(resources.CatalogIntegrationOpenCatalog, ReadCatalogIntegrationOpenCatalogFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.CatalogIntegrationOpenCatalog, UpdateCatalogIntegrationOpenCatalog),
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationOpenCatalog, deleteCatalogIntegrationFunc()),
 		Description:   "Resource used to manage catalog integration objects for Apache Iceberg™ tables that integrate with Snowflake Open Catalog. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-open-catalog).",
 
 		Schema: catalogIntegrationOpenCatalogSchema,
@@ -233,7 +232,8 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) sche
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -322,7 +322,8 @@ func handleExternalChangesToNestedAttrs(d *schema.ResourceData, details *sdk.Cat
 			"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
 		},
 	}
-	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(
+		d,
 		outputMapping{"rest_config", "rest_config", restConfig, restConfig, nil},
 	)
 	if err != nil {

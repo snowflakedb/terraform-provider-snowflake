@@ -12,11 +12,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 // TODO: Handle IMPORTED PRIVILEGES privilege (after second account will be added - SNOW-976501)
@@ -40,8 +42,11 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 			"all_privileges",
 		},
 		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: isNotOwnershipGrant(),
+			Type: schema.TypeString,
+			ValidateDiagFunc: validation.AllDiag(
+				isNotOwnershipGrant(),
+				validators.NormalizeValidation(sdk.ToPrivilege),
+			),
 		},
 	},
 	"all_privileges": {
@@ -414,9 +419,10 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = client.Grants.RevokePrivilegesFromDatabaseRole(ctx, &sdk.DatabaseRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
-			},
+			err = client.Grants.RevokePrivilegesFromDatabaseRole(
+				ctx, &sdk.DatabaseRoleGrantPrivileges{
+					AllPrivileges: sdk.Bool(true),
+				},
 				grantOn,
 				id.DatabaseRoleName,
 				new(sdk.RevokePrivilegesFromDatabaseRoleOptions),
@@ -543,9 +549,10 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = client.Grants.GrantPrivilegesToDatabaseRole(ctx, &sdk.DatabaseRoleGrantPrivileges{
-				AllPrivileges: sdk.Bool(true),
-			},
+			err = client.Grants.GrantPrivilegesToDatabaseRole(
+				ctx, &sdk.DatabaseRoleGrantPrivileges{
+					AllPrivileges: sdk.Bool(true),
+				},
 				grantOn,
 				id.DatabaseRoleName,
 				new(sdk.GrantPrivilegesToDatabaseRoleOptions),
@@ -945,9 +952,11 @@ func getDatabaseRoleGrantOn(d *schema.ResourceData) (*sdk.DatabaseRoleGrantOn, e
 
 		switch {
 		case objectTypeOk && objectNameOk:
-			objectType := sdk.ObjectType(objectType)
+			objectType, err := sdk.ToObjectType(objectType)
+			if err != nil {
+				return nil, err
+			}
 			var id sdk.ObjectIdentifier
-			var err error
 			// TODO(SNOW-1569535): use a mapper from object type to parsing function
 			if objectType.IsWithArguments() {
 				id, err = sdk.ParseSchemaObjectIdentifierWithArguments(objectName)

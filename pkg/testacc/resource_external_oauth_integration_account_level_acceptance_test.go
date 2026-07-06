@@ -22,7 +22,7 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, "true")
+	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, "true")
 	t.Cleanup(paramCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -58,7 +58,8 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
 				ConfigVariables: m(),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalOauthSecurityIntegrationResource(t, "snowflake_external_oauth_integration.test").
 						HasComment("foo").
 						HasEnabled(true).
@@ -101,7 +102,8 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 				ConfigVariables: m(),
 				ResourceName:    "snowflake_external_oauth_integration.test",
 				ImportState:     true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedExternalOauthSecurityIntegrationResource(t, resourcehelpers.EncodeResourceIdentifier(id)).
 						HasCommentString("foo").
 						HasEnabledString("true").
@@ -125,7 +127,7 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList, "false")
+	paramCleanup := testClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList, "false")
 	t.Cleanup(paramCleanup)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -159,7 +161,8 @@ func TestAcc_ExternalOauthIntegration_completeWithRsaPublicKeysAndBlockedRolesLi
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalOauthIntegration/completeWithRsaPublicKeysAndBlockedRolesList"),
 				ConfigVariables: m(),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalOauthSecurityIntegrationResource(t, "snowflake_external_oauth_integration.test").
 						HasComment("foo").
 						HasEnabled(true).

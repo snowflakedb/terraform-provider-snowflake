@@ -18,9 +18,8 @@ func ComputePoolShowOutput(t *testing.T, name string) *ComputePoolShowOutputAsse
 	t.Helper()
 
 	computePoolAssert := ComputePoolShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	computePoolAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &computePoolAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedComputePoolShowOutput(t *testing.T, id string) *ComputePoolShowOutp
 	t.Helper()
 
 	computePoolAssert := ComputePoolShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	computePoolAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &computePoolAssert
+}
+
+func ComputePoolsDatasourceShowOutput(t *testing.T, name string) *ComputePoolShowOutputAssert {
+	t.Helper()
+
+	return ComputePoolsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ComputePoolsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ComputePoolShowOutputAssert {
+	t.Helper()
+
+	computePoolAssert := ComputePoolShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "compute_pools", idx),
+	}
 	return &computePoolAssert
 }
 
@@ -39,97 +52,97 @@ func ImportedComputePoolShowOutput(t *testing.T, id string) *ComputePoolShowOutp
 ////////////////////////////
 
 func (c *ComputePoolShowOutputAssert) HasName(expected string) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	c.StringValueSet("name", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasState(expected sdk.ComputePoolState) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("state", expected))
+	c.StringValueSet("state", string(expected))
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasMinNodes(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("min_nodes", expected))
+	c.IntValueSet("min_nodes", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasMaxNodes(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("max_nodes", expected))
+	c.IntValueSet("max_nodes", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasInstanceFamily(expected sdk.ComputePoolInstanceFamily) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("instance_family", expected))
+	c.StringValueSet("instance_family", string(expected))
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNumServices(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("num_services", expected))
+	c.IntValueSet("num_services", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNumJobs(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("num_jobs", expected))
+	c.IntValueSet("num_jobs", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasAutoSuspendSecs(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("auto_suspend_secs", expected))
+	c.IntValueSet("auto_suspend_secs", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasAutoResume(expected bool) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputBoolValueSet("auto_resume", expected))
+	c.BoolValueSet("auto_resume", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasActiveNodes(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("active_nodes", expected))
+	c.IntValueSet("active_nodes", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasIdleNodes(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("idle_nodes", expected))
+	c.IntValueSet("idle_nodes", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasTargetNodes(expected int) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueSet("target_nodes", expected))
+	c.IntValueSet("target_nodes", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasCreatedOn(expected time.Time) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	c.StringValueSet("created_on", expected.String())
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasResumedOn(expected time.Time) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("resumed_on", expected.String()))
+	c.StringValueSet("resumed_on", expected.String())
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasUpdatedOn(expected time.Time) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("updated_on", expected.String()))
+	c.StringValueSet("updated_on", expected.String())
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasOwner(expected string) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	c.StringValueSet("owner", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasComment(expected string) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasIsExclusive(expected bool) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_exclusive", expected))
+	c.BoolValueSet("is_exclusive", expected)
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasApplication(expected sdk.AccountObjectIdentifier) *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("application", expected.Name()))
+	c.StringValueSet("application", expected.Name())
 	return c
 }
 
@@ -138,96 +151,96 @@ func (c *ComputePoolShowOutputAssert) HasApplication(expected sdk.AccountObjectI
 ///////////////////////////////
 
 func (c *ComputePoolShowOutputAssert) HasNoName() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoState() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("state"))
+	c.ValueNotSet("state")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoMinNodes() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_nodes"))
+	c.ValueNotSet("min_nodes")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoMaxNodes() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_nodes"))
+	c.ValueNotSet("max_nodes")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoInstanceFamily() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("instance_family"))
+	c.ValueNotSet("instance_family")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoNumServices() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("num_services"))
+	c.ValueNotSet("num_services")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoNumJobs() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("num_jobs"))
+	c.ValueNotSet("num_jobs")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoAutoSuspendSecs() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("auto_suspend_secs"))
+	c.ValueNotSet("auto_suspend_secs")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoAutoResume() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("auto_resume"))
+	c.ValueNotSet("auto_resume")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoActiveNodes() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("active_nodes"))
+	c.ValueNotSet("active_nodes")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoIdleNodes() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("idle_nodes"))
+	c.ValueNotSet("idle_nodes")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoTargetNodes() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputIntValueNotSet("target_nodes"))
+	c.ValueNotSet("target_nodes")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoCreatedOn() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	c.ValueNotSet("created_on")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoResumedOn() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("resumed_on"))
+	c.ValueNotSet("resumed_on")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoUpdatedOn() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	c.ValueNotSet("updated_on")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoOwner() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	c.ValueNotSet("owner")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoComment() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoIsExclusive() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_exclusive"))
+	c.ValueNotSet("is_exclusive")
 	return c
 }
 
 func (c *ComputePoolShowOutputAssert) HasNoApplication() *ComputePoolShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("application"))
+	c.ValueNotSet("application")
 	return c
 }

@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -83,7 +82,8 @@ var authenticationPolicySchema = map[string]*schema.Schema{
 					return false
 				}
 				return old == sdk.MfaEnrollmentReadOptionRequiredPasswordOnly && new == sdk.MfaEnrollmentOptionOptional
-			}),
+			},
+		),
 	},
 	"client_types": {
 		Type: schema.TypeSet,
@@ -273,10 +273,10 @@ func AuthenticationPolicy() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingCreateWrapper(resources.AuthenticationPolicy, CreateContextAuthenticationPolicy)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingReadWrapper(resources.AuthenticationPolicy, ReadContextAuthenticationPolicy(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingUpdateWrapper(resources.AuthenticationPolicy, UpdateContextAuthenticationPolicy)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AuthenticationPolicyResource), TrackingDeleteWrapper(resources.AuthenticationPolicy, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.AuthenticationPolicy, CreateContextAuthenticationPolicy),
+		ReadContext:   TrackingReadWrapper(resources.AuthenticationPolicy, ReadContextAuthenticationPolicy(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.AuthenticationPolicy, UpdateContextAuthenticationPolicy),
+		DeleteContext: TrackingDeleteWrapper(resources.AuthenticationPolicy, deleteFunc),
 		Description:   "Resource used to manage authentication policy objects. For more information, check [authentication policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.AuthenticationPolicy, customdiff.All(

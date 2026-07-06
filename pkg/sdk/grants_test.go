@@ -1,10 +1,41 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestGrantPrivilegesToAccountRole(t *testing.T) {
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &GrantPrivilegesToAccountRoleOptions{
+			privileges: &AccountRoleGrantPrivileges{
+				GlobalPrivileges: []GlobalPrivilege{"MONITOR USAGE; SELECT"},
+			},
+			on: &AccountRoleGrantOn{
+				Account: new(true),
+			},
+			accountRole: NewAccountObjectIdentifier("role1"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "MONITOR USAGE; SELECT", allowedUnquotedCharactersRegex.String()))
+	})
+
+	t.Run("privileges with certain special characters are allowed", func(t *testing.T) {
+		schemaId := randomDatabaseObjectIdentifier()
+		opts := &GrantPrivilegesToAccountRoleOptions{
+			privileges: &AccountRoleGrantPrivileges{
+				SchemaPrivileges: []SchemaPrivilege{"CREATE SNOWFLAKE.ML.ANOMALY_DETECTION", "applybudget"},
+			},
+			on: &AccountRoleGrantOn{
+				Schema: &GrantOnSchema{
+					Schema: new(schemaId),
+				},
+			},
+			accountRole:     NewAccountObjectIdentifier("role1"),
+			WithGrantOption: new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT CREATE SNOWFLAKE.ML.ANOMALY_DETECTION, applybudget ON SCHEMA %s TO ROLE "role1" WITH GRANT OPTION`, schemaId.FullyQualifiedName())
+	})
+
 	t.Run("on account", func(t *testing.T) {
 		opts := &GrantPrivilegesToAccountRoleOptions{
 			privileges: &AccountRoleGrantPrivileges{
@@ -214,6 +245,19 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifier()
 
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &RevokePrivilegesFromAccountRoleOptions{
+			privileges: &AccountRoleGrantPrivileges{
+				GlobalPrivileges: []GlobalPrivilege{"MONITOR USAGE; SELECT"},
+			},
+			on: &AccountRoleGrantOn{
+				Account: new(true),
+			},
+			accountRole: NewAccountObjectIdentifier("role1"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "MONITOR USAGE; SELECT", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("on account", func(t *testing.T) {
 		opts := &RevokePrivilegesFromAccountRoleOptions{
 			privileges: &AccountRoleGrantPrivileges{
@@ -409,6 +453,14 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 		}
 	}
 
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := defaultGrantsForDb()
+		opts.privileges = &DatabaseRoleGrantPrivileges{
+			DatabasePrivileges: []AccountObjectPrivilege{"CREATE SCHEMA--"},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "CREATE SCHEMA--", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("validation: nil privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
 		opts.privileges = nil
@@ -600,6 +652,14 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 		}
 	}
 
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := defaultGrantsForDb()
+		opts.privileges = &DatabaseRoleGrantPrivileges{
+			DatabasePrivileges: []AccountObjectPrivilege{"CREATE SCHEMA--"},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "CREATE SCHEMA--", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("validation: nil privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
 		opts.privileges = nil
@@ -738,6 +798,17 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 
 func TestGrantPrivilegeToShare(t *testing.T) {
 	id := randomAccountObjectIdentifier()
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &grantPrivilegeToShareOptions{
+			privileges: []ObjectPrivilege{"USAGE;"},
+			On: &ShareGrantOn{
+				Database: randomAccountObjectIdentifier(),
+			},
+			to: id,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "USAGE;", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("on database", func(t *testing.T) {
 		otherID := randomAccountObjectIdentifier()
 		opts := &grantPrivilegeToShareOptions{
@@ -805,6 +876,17 @@ func TestGrantPrivilegeToShare(t *testing.T) {
 
 func TestRevokePrivilegeFromShare(t *testing.T) {
 	id := randomAccountObjectIdentifier()
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &revokePrivilegeFromShareOptions{
+			privileges: []ObjectPrivilege{"USAGE;"},
+			On: &ShareGrantOn{
+				Database: randomAccountObjectIdentifier(),
+			},
+			from: id,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "USAGE;", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("on database", func(t *testing.T) {
 		otherID := randomAccountObjectIdentifier()
 		opts := &revokePrivilegeFromShareOptions{
@@ -1012,6 +1094,90 @@ func TestGrants_GrantOwnership(t *testing.T) {
 			OutboundPrivileges: Copy,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `GRANT OWNERSHIP ON TABLE %s TO ROLE %s COPY CURRENT GRANTS`, tableId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+}
+
+func TestGrants_RevokeOwnership(t *testing.T) {
+	dbId := randomAccountObjectIdentifier()
+	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
+	roleId := randomAccountObjectIdentifier()
+	databaseRoleId := randomDatabaseObjectIdentifierInDatabase(dbId)
+
+	defaultOpts := func() *RevokeOwnershipOptions {
+		return &RevokeOwnershipOptions{
+			On: RevokeOwnershipGrantOn{
+				Future: &GrantOnSchemaObjectIn{
+					PluralObjectType: PluralObjectTypeTables,
+					InDatabase:       Pointer(dbId),
+				},
+			},
+			From: OwnershipGrantTo{
+				AccountRoleName: Pointer(roleId),
+			},
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *RevokeOwnershipOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: revoke on empty (future not set)", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.On = RevokeOwnershipGrantOn{}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokeOwnershipGrantOn", "Future"))
+	})
+
+	t.Run("validation: revoke from empty", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = OwnershipGrantTo{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+	})
+
+	t.Run("validation: revoke from role and database role", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = OwnershipGrantTo{
+			DatabaseRoleName: Pointer(databaseRoleId),
+			AccountRoleName:  Pointer(roleId),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+	})
+
+	t.Run("validation: restrict and cascade", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Restrict = Bool(true)
+		opts.Cascade = Bool(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("RevokeOwnershipOptions", "Restrict", "Cascade"))
+	})
+
+	t.Run("on future schema object in database to role", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN DATABASE %s FROM ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("on future schema object in schema to role", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.On = RevokeOwnershipGrantOn{
+			Future: &GrantOnSchemaObjectIn{
+				PluralObjectType: PluralObjectTypeTables,
+				InSchema:         Pointer(schemaId),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN SCHEMA %s FROM ROLE %s`, schemaId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("on future schema object in database to database role", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = OwnershipGrantTo{
+			DatabaseRoleName: Pointer(databaseRoleId),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN DATABASE %s FROM DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+
+	t.Run("on future schema object with cascade", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Cascade = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN DATABASE %s FROM ROLE %s CASCADE`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
 	})
 }
 

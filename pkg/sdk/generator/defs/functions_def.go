@@ -99,7 +99,8 @@ var functionsDef = g.NewInterface(
 		ListQueryStructField(
 			"Arguments",
 			functionArgument(),
-			g.ListOptions().MustParentheses()).
+			g.ListOptions().MustParentheses(),
+		).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
@@ -148,7 +149,8 @@ var functionsDef = g.NewInterface(
 		ListQueryStructField(
 			"Arguments",
 			functionArgument(),
-			g.ListOptions().MustParentheses()).
+			g.ListOptions().MustParentheses(),
+		).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
@@ -182,7 +184,8 @@ var functionsDef = g.NewInterface(
 		ListQueryStructField(
 			"Arguments",
 			functionArgument(),
-			g.ListOptions().MustParentheses()).
+			g.ListOptions().MustParentheses(),
+		).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",
@@ -232,7 +235,8 @@ var functionsDef = g.NewInterface(
 		ListQueryStructField(
 			"Arguments",
 			functionArgument(),
-			g.ListOptions().MustParentheses()).
+			g.ListOptions().MustParentheses(),
+		).
 		OptionalSQL("COPY GRANTS").
 		SQL("RETURNS").
 		PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.ParameterOptions().NoEquals()).
@@ -280,7 +284,8 @@ var functionsDef = g.NewInterface(
 		ListQueryStructField(
 			"Arguments",
 			functionArgument(),
-			g.ListOptions().MustParentheses()).
+			g.ListOptions().MustParentheses(),
+		).
 		OptionalSQL("COPY GRANTS").
 		QueryStructField(
 			"Returns",

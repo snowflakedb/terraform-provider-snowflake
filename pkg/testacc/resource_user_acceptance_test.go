@@ -105,7 +105,8 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			// CREATE WITHOUT ATTRIBUTES
 			{
 				Config: config.FromModels(t, userModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoPassword().
@@ -137,7 +138,8 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			// RENAME AND CHANGE ONE PROP
 			{
 				Config: config.FromModels(t, userModelNoAttributesRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelNoAttributes.ResourceReference()).
 						HasNameString(id2.Name()).
 						HasCommentString(newComment),
@@ -164,7 +166,8 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 					"must_change_password",
 					"default_secondary_roles_option",
 				},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedUserResource(t, id2.Name()).
 						HasLoginNameString(strings.ToUpper(id.Name())).
 						HasDisplayNameString(id.Name()).
@@ -181,7 +184,8 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			// CREATE WITH ALL ATTRIBUTES
 			{
 				Config: config.FromModels(t, userModelAllAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasPasswordString(pass).
@@ -210,7 +214,8 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			// CHANGE PROPERTIES
 			{
 				Config: config.FromModels(t, userModelAllAttributesChanged(newLoginName)),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelAllAttributesChanged(newLoginName).ResourceReference()).
 						HasNameString(id.Name()).
 						HasPasswordString(newPass).
@@ -251,7 +256,8 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 					"login_name",
 					"show_output.0.days_to_expiry",
 				},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedUserResource(t, id.Name()).
 						HasDefaultNamespaceString("ONE_PART_NAMESPACE").
 						HasLoginNameString(strings.ToUpper(newLoginName)),
@@ -272,7 +278,8 @@ func TestAcc_User_BasicFlows(t *testing.T) {
 			// UNSET ALL
 			{
 				Config: config.FromModels(t, userModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasPasswordString("").
@@ -368,7 +375,8 @@ func TestAcc_User_issue2058(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel1),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel1.ResourceReference()).HasNameString(userId.Name()),
 				),
 			},
@@ -454,7 +462,8 @@ func TestAcc_User_AllParameters(t *testing.T) {
 			// create with default values for all the parameters
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.UserParameters(t, userId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -466,7 +475,8 @@ func TestAcc_User_AllParameters(t *testing.T) {
 			{
 				ResourceName: userModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedUserResourceParameters(t, userId.Name()).
 						HasAllDefaults(),
 				),
@@ -474,7 +484,8 @@ func TestAcc_User_AllParameters(t *testing.T) {
 			// set all parameters
 			{
 				Config: config.FromModels(t, userModelWithAllParametersSet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.UserParameters(t, userId).
 						HasAbortDetachedQuery(true).
 						HasAutocommit(false).
@@ -601,7 +612,8 @@ func TestAcc_User_AllParameters(t *testing.T) {
 			{
 				ResourceName: userModelWithAllParametersSet.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceparametersassert.ImportedUserResourceParameters(t, userId.Name()).
 						HasAbortDetachedQuery(true).
 						HasAutocommit(false).
@@ -667,7 +679,8 @@ func TestAcc_User_AllParameters(t *testing.T) {
 			// unset all the parameters
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectparametersassert.UserParameters(t, userId).
 						HasAllDefaults().
 						HasAllDefaultsExplicit(),
@@ -696,7 +709,8 @@ func TestAcc_User_issue2836(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.User(t, userId).
 						HasDefaultRole(defaultRole),
 				),
@@ -736,7 +750,8 @@ func TestAcc_User_issue2970(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasPasswordString(pass).
 						HasRsaPublicKeyString(key),
@@ -760,7 +775,8 @@ func TestAcc_User_issue2970(t *testing.T) {
 						planchecks.ExpectChange(newUserModel.ResourceReference(), "rsa_public_key", tfjson.ActionUpdate, sdk.String(key), sdk.String(newKey)),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, newUserModel.ResourceReference()).
 						HasPasswordString(newPass).
 						HasRsaPublicKeyString(newKey),
@@ -784,7 +800,8 @@ func TestAcc_User_issue1572(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasDisabledString(r.BooleanDefault),
 					objectassert.User(t, userId).HasDisabled(false),
@@ -802,7 +819,8 @@ func TestAcc_User_issue1572(t *testing.T) {
 						planchecks.ExpectChange(userModel.ResourceReference(), "disabled", tfjson.ActionUpdate, sdk.String(r.BooleanTrue), sdk.String(r.BooleanDefault)),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasDisabledString(r.BooleanDefault),
 					objectassert.User(t, userId).HasDisabled(false),
@@ -831,7 +849,8 @@ func TestAcc_User_issue1535_withNullPassword(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasPasswordString(pass),
 				),
@@ -843,7 +862,8 @@ func TestAcc_User_issue1535_withNullPassword(t *testing.T) {
 						planchecks.ExpectChange(userWithNullPasswordModel.ResourceReference(), "password", tfjson.ActionUpdate, sdk.String(pass), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userWithNullPasswordModel.ResourceReference()).
 						HasEmptyPassword(),
 				),
@@ -870,7 +890,8 @@ func TestAcc_User_issue1535_withRemovedPassword(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasPasswordString(pass),
 				),
@@ -882,7 +903,8 @@ func TestAcc_User_issue1535_withRemovedPassword(t *testing.T) {
 						planchecks.ExpectChange(userWithoutPasswordModel.ResourceReference(), "password", tfjson.ActionUpdate, sdk.String(pass), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userWithoutPasswordModel.ResourceReference()).
 						HasEmptyPassword(),
 				),
@@ -909,7 +931,8 @@ func TestAcc_User_issue1155_handleChangesToDaysToExpiry(t *testing.T) {
 			// 1. create without days_to_expiry
 			{
 				Config: config.FromModels(t, userModelWithoutDaysToExpiry),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithoutDaysToExpiry.ResourceReference()).HasNoDaysToExpiry(),
 					objectassert.User(t, userId).HasDaysToExpiryEmpty(),
 				),
@@ -917,7 +940,8 @@ func TestAcc_User_issue1155_handleChangesToDaysToExpiry(t *testing.T) {
 			// 2. change to 10 (no plan after)
 			{
 				Config: config.FromModels(t, userModelDaysToExpiry10),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelDaysToExpiry10.ResourceReference()).HasDaysToExpiryString("10"),
 					objectassert.User(t, userId).HasDaysToExpiryNotEmpty(),
 				),
@@ -954,7 +978,8 @@ func TestAcc_User_issue1155_handleChangesToDaysToExpiry(t *testing.T) {
 						planchecks.ExpectChange(userModelDaysToExpiry5.ResourceReference(), "days_to_expiry", tfjson.ActionUpdate, sdk.String("10"), sdk.String("5")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelDaysToExpiry10.ResourceReference()).HasDaysToExpiryString("5"),
 					objectassert.User(t, userId).HasDaysToExpiryNotEmpty(),
 				),
@@ -967,7 +992,8 @@ func TestAcc_User_issue1155_handleChangesToDaysToExpiry(t *testing.T) {
 						planchecks.ExpectChange(userModelDaysToExpiry0.ResourceReference(), "days_to_expiry", tfjson.ActionUpdate, sdk.String("5"), sdk.String("0")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelDaysToExpiry10.ResourceReference()).HasDaysToExpiryString("0"),
 					objectassert.User(t, userId).HasDaysToExpiryEmpty(),
 				),
@@ -980,7 +1006,8 @@ func TestAcc_User_issue1155_handleChangesToDaysToExpiry(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithoutDaysToExpiry.ResourceReference()).HasDaysToExpiryString("0"),
 					objectassert.User(t, userId).HasDaysToExpiryEmpty(),
 				),
@@ -1003,7 +1030,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
 					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
@@ -1019,7 +1047,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
 					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
@@ -1036,7 +1065,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
 					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
@@ -1053,7 +1083,8 @@ func TestAcc_User_handleExternalTypeChange(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).HasNameString(userId.Name()).HasUserTypeString(string(sdk.UserTypePerson)),
 					resourceshowoutputassert.UserShowOutput(t, userModel.ResourceReference()).HasType(string(sdk.UserTypePerson)),
 				),
@@ -1083,7 +1114,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 			// 1. create without default secondary roles option set (DEFAULT will be used)
 			{
 				Config: config.FromModels(t, userModelEmpty),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
@@ -1105,7 +1137,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 						planchecks.ExpectChange(userModelWithOptionNone.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("DEFAULT"), sdk.String("all")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionString("all"),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
@@ -1113,7 +1146,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 			// 4. add default secondary roles NONE
 			{
 				Config: config.FromModels(t, userModelWithOptionNone),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithOptionNone.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`[]`),
 				),
@@ -1129,7 +1163,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 						planchecks.ExpectChange(userModelWithOptionNone.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("ALL"), sdk.String("NONE")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithOptionAll.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`[]`),
 				),
@@ -1142,7 +1177,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 						planchecks.ExpectChange(userModelEmpty.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("NONE"), sdk.String("DEFAULT")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
@@ -1165,7 +1201,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 						planchecks.ExpectChange(userModelWithOptionNone.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("DEFAULT"), sdk.String("NONE")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithOptionNone.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles("[]"),
 				),
@@ -1178,7 +1215,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 						planchecks.ExpectChange(userModelEmpty.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("NONE"), sdk.String("DEFAULT")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
@@ -1186,7 +1224,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 			// 11. add default secondary roles NONE
 			{
 				Config: config.FromModels(t, userModelWithOptionNone),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionNone),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`[]`),
 				),
@@ -1199,7 +1238,8 @@ func TestAcc_User_handleChangesToDefaultSecondaryRoles(t *testing.T) {
 						planchecks.ExpectChange(userModelNullValue.ResourceReference(), "default_secondary_roles_option", tfjson.ActionUpdate, sdk.String("NONE"), sdk.String("DEFAULT")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelEmpty.ResourceReference()).HasDefaultSecondaryRolesOptionEnum(sdk.SecondaryRolesOptionDefault),
 					objectassert.User(t, userId).HasDefaultSecondaryRoles(`["ALL"]`),
 				),
@@ -1277,7 +1317,8 @@ func TestAcc_User_ParameterValidationsAndDiffSuppressions(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasBinaryInputFormatString(string(sdk.BinaryInputFormatHex)).
 						HasBinaryOutputFormatString(string(sdk.BinaryOutputFormatHex)).
@@ -1312,7 +1353,8 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Create without both set
 			{
 				Config: config.FromModels(t, userModelWithoutBoth),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithoutBoth.ResourceReference()).
 						HasNoDisplayName().
 						HasNoLoginName(),
@@ -1324,7 +1366,8 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Rename
 			{
 				Config: config.FromModels(t, userModelWithNewId),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithNewId.ResourceReference()).
 						HasNoDisplayName().
 						HasNoLoginName(),
@@ -1336,7 +1379,8 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Set both params
 			{
 				Config: config.FromModels(t, userModelWithBoth),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithBoth.ResourceReference()).
 						HasDisplayNameString("display_name").
 						HasLoginNameString(loginName),
@@ -1348,17 +1392,11 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Unset externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, newId, &sdk.AlterUserOptions{
-						Unset: &sdk.UserUnset{
-							ObjectProperties: &sdk.UserObjectPropertiesUnset{
-								LoginName:   sdk.Bool(true),
-								DisplayName: sdk.Bool(true),
-							},
-						},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(newId).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().WithLoginName(true).WithDisplayName(true))))
 				},
 				Config: config.FromModels(t, userModelWithBoth),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithBoth.ResourceReference()).
 						HasDisplayNameString("display_name").
 						HasLoginNameString(loginName),
@@ -1370,7 +1408,8 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Unset both params
 			{
 				Config: config.FromModels(t, userModelWithNewId),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithNewId.ResourceReference()).
 						HasDisplayNameString("").
 						HasLoginNameString(""),
@@ -1382,19 +1421,11 @@ func TestAcc_User_LoginNameAndDisplayName(t *testing.T) {
 			// Set externally
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, newId, &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{
-							ObjectProperties: &sdk.UserAlterObjectProperties{
-								UserObjectProperties: sdk.UserObjectProperties{
-									LoginName:   sdk.String("external_" + loginName),
-									DisplayName: sdk.String("external_display_name"),
-								},
-							},
-						},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(newId).WithSet(*sdk.NewUserSetRequest().WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().WithLoginName("external_" + loginName).WithDisplayName("external_display_name"))))
 				},
 				Config: config.FromModels(t, userModelWithNewId),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithNewId.ResourceReference()).
 						HasDisplayNameString("").
 						HasLoginNameString(""),
@@ -1424,14 +1455,16 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_gh3125(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, userModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelNoAttributes.ResourceReference()).
 						HasAllDefaults(userId, sdk.SecondaryRolesOptionDefault),
 				),
 			},
 			{
 				Config: config.FromModels(t, userModelWithNoneDefaultSecondaryRoles),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModelWithNoneDefaultSecondaryRoles.ResourceReference()).
 						HasAllDefaults(userId, sdk.SecondaryRolesOptionNone),
 				),
@@ -1458,7 +1491,8 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 				PreConfig:         func() { SetLegacyConfigPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.98.0"),
 				Config:            config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNameString(userId.Name()).
 						HasNoPassword().
@@ -1493,7 +1527,8 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_generallyEnabled(t *testing
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasAllDefaults(userId, sdk.SecondaryRolesOptionDefault),
 				),
@@ -1525,7 +1560,8 @@ func TestAcc_User_handleChangesToShowUsers_bcr202408_defaults(t *testing.T) {
 				PreConfig:         func() { SetLegacyConfigPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("0.98.0"),
 				Config:            config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNoDefaultNamespace(),
 				),
@@ -1539,10 +1575,8 @@ func TestAcc_User_importPassword(t *testing.T) {
 	pass := random.Password()
 	firstName := random.AlphaN(6)
 
-	_, userCleanup := testClient().User.CreateUserWithOptions(t, userId, &sdk.CreateUserOptions{ObjectProperties: &sdk.UserObjectProperties{
-		Password:  sdk.String(pass),
-		FirstName: sdk.String(firstName),
-	}})
+	_, userCleanup := testClient().User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(userId).
+		WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithPassword(pass).WithFirstName(firstName)))
 	t.Cleanup(userCleanup)
 
 	userModel := model.User("w", userId.Name()).WithPassword(pass).WithFirstName(firstName)
@@ -1560,7 +1594,8 @@ func TestAcc_User_importPassword(t *testing.T) {
 				ResourceName:  userModel.ResourceReference(),
 				ImportState:   true,
 				ImportStateId: userId.Name(),
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedUserResource(t, userId.Name()).
 						HasNoPassword().
 						HasFirstNameString(firstName),
@@ -1569,7 +1604,8 @@ func TestAcc_User_importPassword(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNotEmptyPassword().
 						HasFirstNameString(firstName),
@@ -1582,7 +1618,8 @@ func TestAcc_User_importPassword(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNotEmptyPassword().
 						HasFirstNameString(firstName),
@@ -1614,8 +1651,9 @@ func TestAcc_User_gh3522_proof(t *testing.T) {
 				PreConfig:         func() { SetLegacyConfigPathEnv(t) },
 				ExternalProviders: ExternalProviderWithExactVersion("1.0.5"),
 				Config:            gh3522ConfigFirstStep(userId),
-				Check: assertThat(t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
-					HasNoComment(),
+				Check: assertThat(
+					t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
+						HasNoComment(),
 				),
 			},
 			{
@@ -1652,14 +1690,16 @@ func TestAcc_User_gh3522_fix(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: gh3522ConfigFirstStep(userId),
-				Check: assertThat(t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
-					HasCommentEmpty(),
+				Check: assertThat(
+					t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
+						HasCommentEmpty(),
 				),
 			},
 			{
 				Config: gh3522ConfigSecondStep(userId, userId2, comment),
-				Check: assertThat(t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
-					HasCommentString(comment),
+				Check: assertThat(
+					t, resourceassert.UserResource(t, "snowflake_legacy_service_user.one").
+						HasCommentString(comment),
 				),
 			},
 		},
@@ -1706,16 +1746,18 @@ func TestAcc_User_gh3655(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.0.0"),
 				Config:            config.FromModels(t, networkPolicyModel, userModel),
-				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
-					HasNetworkPolicyString(networkPolicyId.Name()),
+				Check: assertThat(
+					t, resourceassert.UserResource(t, userModel.ResourceReference()).
+						HasNetworkPolicyString(networkPolicyId.Name()),
 				),
 				ExpectNonEmptyPlan: true,
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, networkPolicyModel, userModel),
-				Check: assertThat(t, resourceassert.UserResource(t, userModel.ResourceReference()).
-					HasNetworkPolicyString(networkPolicyId.Name()),
+				Check: assertThat(
+					t, resourceassert.UserResource(t, userModel.ResourceReference()).
+						HasNetworkPolicyString(networkPolicyId.Name()),
 				),
 			},
 		},
@@ -1736,7 +1778,8 @@ func TestAcc_User_migrateFromV2_11_0(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
 				Config:            config.FromModels(t, basicModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, basicModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceshowoutputassert.UserShowOutput(t, basicModel.ResourceReference()).
@@ -1751,7 +1794,8 @@ func TestAcc_User_migrateFromV2_11_0(t *testing.T) {
 						plancheck.ExpectResourceAction(basicModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, basicModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceshowoutputassert.UserShowOutput(t, basicModel.ResourceReference()).
@@ -1790,7 +1834,8 @@ func TestAcc_User_DetectingExternalChangesToStringValues_NotHandledWithShowOutpu
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
 				Config:            config.FromModels(t, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasFirstNameString("Jan").
 						HasMiddleNameString("Jakub").
@@ -1805,21 +1850,18 @@ func TestAcc_User_DetectingExternalChangesToStringValues_NotHandledWithShowOutpu
 			},
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, id, &sdk.AlterUserOptions{
-						Unset: &sdk.UserUnset{
-							ObjectProperties: &sdk.UserObjectPropertiesUnset{
-								FirstName:        sdk.Bool(true),
-								MiddleName:       sdk.Bool(true),
-								LastName:         sdk.Bool(true),
-								Email:            sdk.Bool(true),
-								DefaultWarehouse: sdk.Bool(true),
-								DefaultRole:      sdk.Bool(true),
-								RSAPublicKey:     sdk.Bool(true),
-								RSAPublicKey2:    sdk.Bool(true),
-								Comment:          sdk.Bool(true),
-							},
-						},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(
+						*sdk.NewUserObjectPropertiesUnsetRequest().
+							WithFirstName(true).
+							WithMiddleName(true).
+							WithLastName(true).
+							WithEmail(true).
+							WithDefaultWarehouse(true).
+							WithDefaultRole(true).
+							WithRsaPublicKey(true).
+							WithRsaPublicKey2(true).
+							WithComment(true),
+					)))
 				},
 				ExternalProviders: ExternalProviderWithExactVersion("2.12.0"),
 				Config:            config.FromModels(t, userModel),
@@ -1828,7 +1870,8 @@ func TestAcc_User_DetectingExternalChangesToStringValues_NotHandledWithShowOutpu
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasFirstNameString("Jan").
 						HasMiddleNameString("Jakub").
@@ -1861,7 +1904,8 @@ func TestAcc_User_DetectingExternalChangesToStringValues_NotHandledWithShowOutpu
 						planchecks.ExpectChange(userModel.ResourceReference(), "rsa_public_key_2", tfjson.ActionUpdate, sdk.String(""), sdk.String(key2)),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasFirstNameString("Jan").
 						HasMiddleNameString("Jakub").

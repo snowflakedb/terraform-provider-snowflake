@@ -15,5 +15,6 @@ func NotebookDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.Te
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.Notebook, sdk.SchemaObjectIdentifier] {
 			return testClient.Notebook.Show
-		})
+		},
+	)
 }

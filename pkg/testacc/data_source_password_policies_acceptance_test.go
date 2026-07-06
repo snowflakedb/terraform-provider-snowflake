@@ -57,9 +57,10 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel, passwordPoliciesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(passwordPoliciesModel.DatasourceReference(), "password_policies.#", "1")),
-					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, "snowflake_password_policies.test").
+					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, passwordPoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -69,7 +70,7 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
 						HasOptions(""),
-					resourceshowoutputassert.PasswordPoliciesDatasourceDescribeOutput(t, "snowflake_password_policies.test").
+					resourceshowoutputassert.PasswordPoliciesDatasourceDescribeOutput(t, passwordPoliciesModel.DatasourceReference()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasPasswordMinLength(10).
@@ -87,9 +88,10 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, completeModel, passwordPoliciesModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(passwordPoliciesModelWithoutDescribe.DatasourceReference(), "password_policies.#", "1")),
-					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, "snowflake_password_policies.test").
+					resourceshowoutputassert.PasswordPoliciesDatasourceShowOutput(t, passwordPoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -186,9 +188,7 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testClient().User.Alter(t, testUser.ID(), &sdk.AlterUserOptions{
-						Set: &sdk.UserSet{PasswordPolicy: sdk.Pointer(id3)},
-					})
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(testUser.ID()).WithSet(*sdk.NewUserSetRequest().WithPasswordPolicy(id3)))
 				},
 				Config: accconfig.FromModels(t, model1, model2, model3, passwordPoliciesModelOnUser),
 				Check: resource.ComposeTestCheckFunc(
@@ -198,9 +198,7 @@ func TestAcc_PasswordPolicies_Filtering(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						planchecks.Execute(func() {
-							testClient().User.Alter(t, testUser.ID(), &sdk.AlterUserOptions{
-								Unset: &sdk.UserUnset{PasswordPolicy: sdk.Bool(true)},
-							})
+							testClient().User.Alter(t, sdk.NewAlterUserRequest(testUser.ID()).WithUnset(*sdk.NewUserUnsetRequest().WithPasswordPolicy(true)))
 						}),
 					},
 				},

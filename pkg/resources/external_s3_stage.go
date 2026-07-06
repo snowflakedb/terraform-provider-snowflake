@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -195,10 +194,10 @@ func ExternalS3Stage() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingCreateWrapper(resources.ExternalS3Stage, CreateExternalS3Stage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingReadWrapper(resources.ExternalS3Stage, ReadExternalS3StageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3StageResource), TrackingUpdateWrapper(resources.ExternalS3Stage, UpdateExternalS3Stage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalS3StageResource, resources.ExternalS3Stage),
+		CreateContext: TrackingCreateWrapper(resources.ExternalS3Stage, CreateExternalS3Stage),
+		ReadContext:   TrackingReadWrapper(resources.ExternalS3Stage, ReadExternalS3StageFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.ExternalS3Stage, UpdateExternalS3Stage),
+		DeleteContext: DeleteStage(resources.ExternalS3Stage),
 		Description:   "Resource used to manage external S3 stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3Stage, customdiff.All(
@@ -378,12 +377,14 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			if stage.StorageIntegration != nil {
 				storageIntegrationName = stage.StorageIntegration.Name()
 			}
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"storage_integration", "storage_integration", storageIntegrationName, storageIntegrationName, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
+				d,
 				directoryTableOutputMapping(*details.DirectoryTable),
 				outputMapping{"location.0.aws_access_point_arn", "aws_access_point_arn", details.Location.AwsAccessPointArn, details.Location.AwsAccessPointArn, nil},
 			); err != nil {
@@ -396,7 +397,8 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			if details.PrivateLink != nil {
 				usePrivatelinkEndpoint = details.PrivateLink.UsePrivatelinkEndpoint
 			}
-			if err = handleExternalChangesToObject(d,
+			if err = handleExternalChangesToObject(
+				d,
 				"describe_output.0.privatelink",
 				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", usePrivatelinkEndpoint, booleanStringFromBool(usePrivatelinkEndpoint), nil},
 			); err != nil {

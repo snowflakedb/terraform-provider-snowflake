@@ -17,9 +17,8 @@ func ApiIntegrationShowOutput(t *testing.T, name string) *ApiIntegrationShowOutp
 	t.Helper()
 
 	apiIntegrationAssert := ApiIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	apiIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &apiIntegrationAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedApiIntegrationShowOutput(t *testing.T, id string) *ApiIntegrationSh
 	t.Helper()
 
 	apiIntegrationAssert := ApiIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	apiIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &apiIntegrationAssert
+}
+
+func ApiIntegrationsDatasourceShowOutput(t *testing.T, name string) *ApiIntegrationShowOutputAssert {
+	t.Helper()
+
+	return ApiIntegrationsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ApiIntegrationsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ApiIntegrationShowOutputAssert {
+	t.Helper()
+
+	apiIntegrationAssert := ApiIntegrationShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "api_integrations", idx),
+	}
 	return &apiIntegrationAssert
 }
 
@@ -38,32 +51,32 @@ func ImportedApiIntegrationShowOutput(t *testing.T, id string) *ApiIntegrationSh
 ////////////////////////////
 
 func (a *ApiIntegrationShowOutputAssert) HasName(expected string) *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	a.StringValueSet("name", expected)
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasApiType(expected string) *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("api_type", expected))
+	a.StringValueSet("api_type", expected)
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasCategory(expected string) *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("category", expected))
+	a.StringValueSet("category", expected)
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasEnabled(expected bool) *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueSet("enabled", expected))
+	a.BoolValueSet("enabled", expected)
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasComment(expected string) *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	a.StringValueSet("comment", expected)
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	a.StringValueSet("created_on", expected.String())
 	return a
 }
 
@@ -72,31 +85,31 @@ func (a *ApiIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *ApiIn
 ///////////////////////////////
 
 func (a *ApiIntegrationShowOutputAssert) HasNoName() *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasNoApiType() *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("api_type"))
+	a.ValueNotSet("api_type")
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasNoCategory() *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("category"))
+	a.ValueNotSet("category")
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasNoEnabled() *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("enabled"))
+	a.ValueNotSet("enabled")
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasNoComment() *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *ApiIntegrationShowOutputAssert) HasNoCreatedOn() *ApiIntegrationShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	a.ValueNotSet("created_on")
 	return a
 }

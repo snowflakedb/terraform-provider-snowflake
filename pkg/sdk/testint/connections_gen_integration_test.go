@@ -36,21 +36,22 @@ func TestInt_Connections(t *testing.T) {
 		t.Cleanup(testClientHelper().Connection.DropFunc(t, id))
 
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
-		assertThatObject(t, objectassert.Connection(t, id).
-			HasSnowflakeRegion(sessionDetails.Region).
-			HasAccountName(sessionDetails.AccountName).
-			HasName(id.Name()).
-			HasNoComment().
-			HasIsPrimary(true).
-			HasPrimaryIdentifier(externalObjectIdentifier).
-			HasFailoverAllowedToAccounts(accountId).
-			HasOrganizationName(sessionDetails.OrganizationName).
-			HasAccountLocator(client.GetAccountLocator()).
-			HasConnectionUrl(
-				strings.ToLower(
-					fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+		assertThatObject(
+			t, objectassert.Connection(t, id).
+				HasSnowflakeRegion(sessionDetails.Region).
+				HasAccountName(sessionDetails.AccountName).
+				HasName(id.Name()).
+				HasNoComment().
+				HasIsPrimary(true).
+				HasPrimaryIdentifier(externalObjectIdentifier).
+				HasFailoverAllowedToAccounts(accountId).
+				HasOrganizationName(sessionDetails.OrganizationName).
+				HasAccountLocator(client.GetAccountLocator()).
+				HasConnectionUrl(
+					strings.ToLower(
+						fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+					),
 				),
-			),
 		)
 	})
 
@@ -63,21 +64,22 @@ func TestInt_Connections(t *testing.T) {
 		t.Cleanup(testClientHelper().Connection.DropFunc(t, id))
 
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
-		assertThatObject(t, objectassert.Connection(t, id).
-			HasSnowflakeRegion(sessionDetails.Region).
-			HasAccountName(sessionDetails.AccountName).
-			HasName(id.Name()).
-			HasComment("test comment for connection").
-			HasIsPrimary(true).
-			HasPrimaryIdentifier(externalObjectIdentifier).
-			HasFailoverAllowedToAccounts(accountId).
-			HasOrganizationName(sessionDetails.OrganizationName).
-			HasAccountLocator(client.GetAccountLocator()).
-			HasConnectionUrl(
-				strings.ToLower(
-					fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+		assertThatObject(
+			t, objectassert.Connection(t, id).
+				HasSnowflakeRegion(sessionDetails.Region).
+				HasAccountName(sessionDetails.AccountName).
+				HasName(id.Name()).
+				HasComment("test comment for connection").
+				HasIsPrimary(true).
+				HasPrimaryIdentifier(externalObjectIdentifier).
+				HasFailoverAllowedToAccounts(accountId).
+				HasOrganizationName(sessionDetails.OrganizationName).
+				HasAccountLocator(client.GetAccountLocator()).
+				HasConnectionUrl(
+					strings.ToLower(
+						fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+					),
 				),
-			),
 		)
 	})
 
@@ -89,33 +91,36 @@ func TestInt_Connections(t *testing.T) {
 		_, connectionCleanup := testClientHelper().Connection.CreateWithIdentifier(t, id)
 		t.Cleanup(connectionCleanup)
 
-		err := client.Connections.Alter(ctx, sdk.NewAlterConnectionRequest(id).
-			WithEnableConnectionFailover(
-				*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId})),
+		err := client.Connections.Alter(
+			ctx, sdk.NewAlterConnectionRequest(id).
+				WithEnableConnectionFailover(
+					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId}),
+				),
 		)
 		// TODO: [SNOW-1763442]
 		// require.NoError(t, err)
 		require.ErrorContains(t, err, ConnectionFailoverToAccountInSameRegionErrorMessage)
 
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
-		assertThatObject(t, objectassert.Connection(t, id).
-			HasSnowflakeRegion(sessionDetails.Region).
-			HasAccountName(sessionDetails.AccountName).
-			HasName(id.Name()).
-			HasNoComment().
-			HasIsPrimary(true).
-			HasPrimaryIdentifier(externalObjectIdentifier).
-			HasFailoverAllowedToAccounts(
-				accountId,
-				secondaryAccountId,
-			).
-			HasOrganizationName(sessionDetails.OrganizationName).
-			HasAccountLocator(client.GetAccountLocator()).
-			HasConnectionUrl(
-				strings.ToLower(
-					fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+		assertThatObject(
+			t, objectassert.Connection(t, id).
+				HasSnowflakeRegion(sessionDetails.Region).
+				HasAccountName(sessionDetails.AccountName).
+				HasName(id.Name()).
+				HasNoComment().
+				HasIsPrimary(true).
+				HasPrimaryIdentifier(externalObjectIdentifier).
+				HasFailoverAllowedToAccounts(
+					accountId,
+					secondaryAccountId,
+				).
+				HasOrganizationName(sessionDetails.OrganizationName).
+				HasAccountLocator(client.GetAccountLocator()).
+				HasConnectionUrl(
+					strings.ToLower(
+						fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+					),
 				),
-			),
 		)
 	})
 
@@ -126,9 +131,11 @@ func TestInt_Connections(t *testing.T) {
 		primaryConn, connectionCleanup := testClientHelper().Connection.CreateWithIdentifier(t, testClientHelper().Ids.RandomAccountObjectIdentifier())
 		t.Cleanup(connectionCleanup)
 
-		err := client.Connections.Alter(ctx, sdk.NewAlterConnectionRequest(primaryConn.ID()).
-			WithEnableConnectionFailover(
-				*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId})),
+		err := client.Connections.Alter(
+			ctx, sdk.NewAlterConnectionRequest(primaryConn.ID()).
+				WithEnableConnectionFailover(
+					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId}),
+				),
 		)
 		require.ErrorContains(t, err, ConnectionFailoverToAccountInSameRegionErrorMessage)
 		// TODO: [SNOW-1763442]
@@ -141,24 +148,25 @@ func TestInt_Connections(t *testing.T) {
 		t.Cleanup(testClientHelper().Connection.DropFunc(t, id))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Connection(t, id).
-			HasSnowflakeRegion(sessionDetails.Region).
-			HasAccountName(sessionDetails.AccountName).
-			HasName(id.Name()).
-			HasNoComment().
-			HasIsPrimary(false).
-			HasPrimaryIdentifier(externalObjectIdentifier).
-			HasFailoverAllowedToAccounts(
-				accountId,
-				secondaryAccountId,
-			).
-			HasOrganizationName(sessionDetails.OrganizationName).
-			HasAccountLocator(client.GetAccountLocator()).
-			HasConnectionUrl(
-				strings.ToLower(
-					fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+		assertThatObject(
+			t, objectassert.Connection(t, id).
+				HasSnowflakeRegion(sessionDetails.Region).
+				HasAccountName(sessionDetails.AccountName).
+				HasName(id.Name()).
+				HasNoComment().
+				HasIsPrimary(false).
+				HasPrimaryIdentifier(externalObjectIdentifier).
+				HasFailoverAllowedToAccounts(
+					accountId,
+					secondaryAccountId,
+				).
+				HasOrganizationName(sessionDetails.OrganizationName).
+				HasAccountLocator(client.GetAccountLocator()).
+				HasConnectionUrl(
+					strings.ToLower(
+						fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
+					),
 				),
-			),
 		)
 	})
 
@@ -170,9 +178,11 @@ func TestInt_Connections(t *testing.T) {
 		t.Cleanup(connectionCleanup)
 
 		// Add secondary account to failover list
-		err := client.Connections.Alter(ctx, sdk.NewAlterConnectionRequest(id).
-			WithEnableConnectionFailover(
-				*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId})),
+		err := client.Connections.Alter(
+			ctx, sdk.NewAlterConnectionRequest(id).
+				WithEnableConnectionFailover(
+					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId}),
+				),
 		)
 		require.ErrorContains(t, err, ConnectionFailoverToAccountInSameRegionErrorMessage)
 		// TODO: [SNOW-1763442]
@@ -186,9 +196,10 @@ func TestInt_Connections(t *testing.T) {
 
 		// Assert that promotion for other account has been disabled
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
-		assertThatObject(t, objectassert.Connection(t, primaryConn.ID()).
-			HasPrimaryIdentifier(externalObjectIdentifier).
-			HasFailoverAllowedToAccounts(accountId),
+		assertThatObject(
+			t, objectassert.Connection(t, primaryConn.ID()).
+				HasPrimaryIdentifier(externalObjectIdentifier).
+				HasFailoverAllowedToAccounts(accountId),
 		)
 
 		// Try to create repllication on secondary account
@@ -207,9 +218,10 @@ func TestInt_Connections(t *testing.T) {
 				WithComment("new integration test comment")))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Connection(t, id).
-			HasName(id.Name()).
-			HasComment("new integration test comment"),
+		assertThatObject(
+			t, objectassert.Connection(t, id).
+				HasName(id.Name()).
+				HasComment("new integration test comment"),
 		)
 
 		// Unset
@@ -218,9 +230,10 @@ func TestInt_Connections(t *testing.T) {
 				WithComment(true)))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Connection(t, id).
-			HasName(id.Name()).
-			HasNoComment(),
+		assertThatObject(
+			t, objectassert.Connection(t, id).
+				HasName(id.Name()).
+				HasNoComment(),
 		)
 	})
 

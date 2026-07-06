@@ -130,8 +130,9 @@ func TestAcc_Tags_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, tagModel, datasourceModel),
-				Check: assertThat(t,
-					resourceshowoutputassert.TagsDatasourceShowOutput(t, "test").
+				Check: assertThat(
+					t,
+					resourceshowoutputassert.TagsDatasourceShowOutput(t, datasourceModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(tagId.Name()).
 						HasDatabaseName(tagId.DatabaseName()).

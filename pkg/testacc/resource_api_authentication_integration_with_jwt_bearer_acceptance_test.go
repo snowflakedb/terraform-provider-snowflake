@@ -168,10 +168,12 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_BasicUseCase(t *testing.T
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().SecurityIntegration.AlterApiAuthenticationWithJwtBearerFlow(t, sdk.NewAlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest(id).
-						WithSet(*sdk.NewApiAuthenticationWithJwtBearerFlowIntegrationSetRequest().
-							WithComment(comment),
-						),
+					testClient().SecurityIntegration.AlterApiAuthenticationWithJwtBearerFlow(
+						t, sdk.NewAlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationRequest(id).
+							WithSet(
+								*sdk.NewApiAuthenticationWithJwtBearerFlowIntegrationSetRequest().
+									WithComment(comment),
+							),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -186,7 +188,8 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_BasicUseCase(t *testing.T
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.ApiIntegrationDoesNotExist(t, id),
 				),
 			},
@@ -229,7 +232,8 @@ func TestAcc_ApiAuthenticationIntegrationWithJwtBearer_CompleteUseCase(t *testin
 			// Create - with all optionals (including force-new fields)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SecurityIntegration(t, id).
 						HasName(id.Name()).
 						HasIntegrationType("API_AUTHENTICATION").

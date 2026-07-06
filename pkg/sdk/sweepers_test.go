@@ -65,6 +65,7 @@ func sweep(client *sdk.Client, suffix string) error {
 		return fmt.Errorf("suffix is required to run sweepers")
 	}
 	sweepers := []func() error{
+		nukePostgresInstances(client, suffix),
 		nukeSecurityIntegrations(client, suffix),
 		getAccountPolicyAttachmentsSweeper(client),
 		nukeResourceMonitors(client, suffix),
@@ -120,6 +121,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, acceptanceTestDatabasesPrefix, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep postgres instances", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukePostgresInstances(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -235,15 +243,17 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 
 		var errs []error
 		for idx, wh := range whs {
-			log.Printf("[DEBUG] Processing warehouse [%d/%d]: %s...", idx+1, len(whs), wh.ID().FullyQualifiedName())
+			// TODO [SNOW-1569516]: Use the usual constructors instead.
+			id := sdk.NewAccountObjectIdentifierNoTrimTestOnly(wh.Name)
+			log.Printf("[DEBUG] Processing warehouse [%d/%d]: %s...", idx+1, len(whs), id.FullyQualifiedName())
 			if !slices.Contains(protectedWarehouses, wh.Name) && whDropCondition(wh) {
 				if wh.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on warehouse %s, to ACCOUNTADMIN", wh.ID().FullyQualifiedName())
+					log.Printf("[DEBUG] Granting ownership on warehouse %s, to ACCOUNTADMIN", id.FullyQualifiedName())
 					err := client.Grants.GrantOwnership(
 						ctx,
 						sdk.OwnershipGrantOn{Object: &sdk.Object{
 							ObjectType: sdk.ObjectTypeWarehouse,
-							Name:       wh.ID(),
+							Name:       id,
 						}},
 						sdk.OwnershipGrantTo{
 							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
@@ -251,23 +261,18 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 						nil,
 					)
 					if err != nil {
-						errs = append(errs, fmt.Errorf("granting ownership on warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err))
+						errs = append(errs, fmt.Errorf("granting ownership on warehouse %s ended with error, err = %w", id.FullyQualifiedName(), err))
 						continue
 					}
 				}
 
-				log.Printf("[DEBUG] Dropping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
-				// to handle identifiers containing `"` - we do not escape them currently in the SDK SQL generation
-				whId := wh.ID()
-				if strings.Contains(whId.Name(), `"`) {
-					whId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(whId.Name(), `"`, `""`))
-				}
-				if err := client.Warehouses.DropSafely(ctx, whId); err != nil {
-					log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", wh.ID().FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", wh.ID().FullyQualifiedName(), err))
+				log.Printf("[DEBUG] Dropping warehouse %s, created at: %s", id.FullyQualifiedName(), wh.CreatedOn.String())
+				if err := client.Warehouses.DropSafely(ctx, id); err != nil {
+					log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", id.FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", id.FullyQualifiedName(), err))
 				}
 			} else {
-				log.Printf("[DEBUG] Skipping warehouse %s, created at: %s", wh.ID().FullyQualifiedName(), wh.CreatedOn.String())
+				log.Printf("[DEBUG] Skipping warehouse %s, created at: %s", id.FullyQualifiedName(), wh.CreatedOn.String())
 			}
 		}
 		return errors.Join(errs...)
@@ -313,15 +318,17 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 
 		var errs []error
 		for idx, db := range dbs {
-			log.Printf("[DEBUG] Processing database [%d/%d]: %s...", idx+1, len(dbs), db.ID().FullyQualifiedName())
+			// TODO [SNOW-1569516]: Use the usual constructors instead.
+			id := sdk.NewAccountObjectIdentifierNoTrimTestOnly(db.Name)
+			log.Printf("[DEBUG] Processing database [%d/%d]: %s...", idx+1, len(dbs), id.FullyQualifiedName())
 			if !slices.Contains(protectedDatabases, db.Name) && dbDropCondition(db) {
 				if db.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on database %s, to ACCOUNTADMIN", db.ID().FullyQualifiedName())
+					log.Printf("[DEBUG] Granting ownership on database %s, to ACCOUNTADMIN", id.FullyQualifiedName())
 					err := client.Grants.GrantOwnership(
 						ctx,
 						sdk.OwnershipGrantOn{Object: &sdk.Object{
 							ObjectType: sdk.ObjectTypeDatabase,
-							Name:       db.ID(),
+							Name:       id,
 						}},
 						sdk.OwnershipGrantTo{
 							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
@@ -330,30 +337,25 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 					)
 					if err != nil {
 						if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
-							log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
+							log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", id.FullyQualifiedName(), err)
 							continue
 						}
-						errs = append(errs, fmt.Errorf("granting ownership on database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
+						errs = append(errs, fmt.Errorf("granting ownership on database %s ended with error, err = %w", id.FullyQualifiedName(), err))
 						continue
 					}
 				}
 
-				log.Printf("[DEBUG] Dropping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
-				// to handle identifiers containing `"` - we do not escape them currently in the SDK SQL generation
-				dbId := db.ID()
-				if strings.Contains(dbId.Name(), `"`) {
-					dbId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(dbId.Name(), `"`, `""`))
-				}
-				if err := client.Databases.DropSafely(ctx, dbId); err != nil {
+				log.Printf("[DEBUG] Dropping database %s, created at: %s", id.FullyQualifiedName(), db.CreatedOn.String())
+				if err := client.Databases.DropSafely(ctx, id); err != nil {
 					if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
-						log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", db.ID().FullyQualifiedName(), err)
+						log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", id.FullyQualifiedName(), err)
 						continue
 					}
-					log.Printf("[DEBUG] Dropping database %s, resulted in error %v", db.ID().FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping database %s ended with error, err = %w", db.ID().FullyQualifiedName(), err))
+					log.Printf("[DEBUG] Dropping database %s, resulted in error %v", id.FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping database %s ended with error, err = %w", id.FullyQualifiedName(), err))
 				}
 			} else {
-				log.Printf("[DEBUG] Skipping database %s, created at: %s", db.ID().FullyQualifiedName(), db.CreatedOn.String())
+				log.Printf("[DEBUG] Skipping database %s, created at: %s", id.FullyQualifiedName(), db.CreatedOn.String())
 			}
 		}
 		return errors.Join(errs...)
@@ -387,7 +389,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
-		urs, err := client.Users.Show(ctx, new(sdk.ShowUserOptions))
+		urs, err := client.Users.Show(ctx, sdk.NewShowUserRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW USERS ended with error, err = %w", err)
 		}
@@ -400,11 +402,52 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 
 			if !slices.Contains(protectedUsers, user.Name) && userDropCondition(user) {
 				log.Printf("[DEBUG] Dropping user %s", user.ID().FullyQualifiedName())
-				if err := client.Users.Drop(ctx, user.ID(), &sdk.DropUserOptions{IfExists: sdk.Bool(true)}); err != nil {
+				if err := client.Users.Drop(ctx, sdk.NewDropUserRequest(user.ID()).WithIfExists(true)); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping user %s ended with error, err = %w", user.ID().FullyQualifiedName(), err))
 				}
 			} else {
 				log.Printf("[DEBUG] Skipping user %s", user.ID().FullyQualifiedName())
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+func nukePostgresInstances(client *sdk.Client, suffix string) func() error {
+	return func() error {
+		ctx := context.Background()
+
+		var postgresInstanceDropCondition func(u sdk.PostgresInstance) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping postgres instances with suffix %s", suffix)
+			postgresInstanceDropCondition = func(u sdk.PostgresInstance) bool {
+				return strings.HasSuffix(u.Name, suffix)
+			}
+		} else {
+			log.Println("[DEBUG] Sweeping stale postgres instances")
+			postgresInstanceDropCondition = func(u sdk.PostgresInstance) bool {
+				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
+			}
+		}
+		postgresInstances, err := client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest())
+		if err != nil {
+			return err
+		}
+
+		log.Printf("[DEBUG] Found %d postgres instances", len(postgresInstances))
+
+		var errs []error
+		for idx, postgresInstance := range postgresInstances {
+			log.Printf("[DEBUG] Processing postgres instance [%d/%d]: %s...", idx+1, len(postgresInstances), postgresInstance.Name)
+
+			if postgresInstanceDropCondition(postgresInstance) {
+				log.Printf("[DEBUG] Dropping postgres instance %s", postgresInstance.Name)
+				if err := client.PostgresInstances.DropSafely(ctx, postgresInstance.ID()); err != nil {
+					errs = append(errs, fmt.Errorf("sweeping postgres instance %s ended with an error, err = %w", postgresInstance.Name, err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping postgres instance %s", postgresInstance.Name)
 			}
 		}
 
@@ -652,7 +695,7 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
-		rms, err := client.ResourceMonitors.Show(ctx, new(sdk.ShowResourceMonitorOptions))
+		rms, err := client.ResourceMonitors.Show(ctx, sdk.NewShowResourceMonitorRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW RESOURCE MONITORS ended with error, err = %w", err)
 		}
@@ -661,16 +704,18 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 
 		var errs []error
 		for idx, rm := range rms {
-			log.Printf("[DEBUG] Processing resurce monitor [%d/%d]: %s...", idx+1, len(rms), rm.ID().FullyQualifiedName())
+			// TODO [SNOW-1569516]: Use the usual constructors instead.
+			id := sdk.NewAccountObjectIdentifierNoTrimTestOnly(rm.Name)
+			log.Printf("[DEBUG] Processing resurce monitor [%d/%d]: %s...", idx+1, len(rms), id.FullyQualifiedName())
 
 			if !slices.Contains(protectedResourceMonitors, rm.Name) && rmDropCondition(rm) {
 				if rm.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on resource monitor %s, to ACCOUNTADMIN", rm.ID().FullyQualifiedName())
+					log.Printf("[DEBUG] Granting ownership on resource monitor %s, to ACCOUNTADMIN", id.FullyQualifiedName())
 					err := client.Grants.GrantOwnership(
 						ctx,
 						sdk.OwnershipGrantOn{Object: &sdk.Object{
 							ObjectType: sdk.ObjectTypeResourceMonitor,
-							Name:       rm.ID(),
+							Name:       id,
 						}},
 						sdk.OwnershipGrantTo{
 							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
@@ -678,23 +723,18 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 						nil,
 					)
 					if err != nil {
-						errs = append(errs, fmt.Errorf("granting ownership on resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err))
+						errs = append(errs, fmt.Errorf("granting ownership on resource monitor %s ended with error, err = %w", id.FullyQualifiedName(), err))
 						continue
 					}
 				}
 
-				log.Printf("[DEBUG] Dropping resource monitor %s, created at: %s", rm.ID().FullyQualifiedName(), rm.CreatedOn.String())
-				// to handle identifiers with containing `"` - we do not escape them currently in the SDK SQL generation
-				rmId := rm.ID()
-				if strings.Contains(rmId.Name(), `"`) {
-					rmId = sdk.NewAccountObjectIdentifier(strings.ReplaceAll(rmId.Name(), `"`, `""`))
-				}
-				if err := client.ResourceMonitors.DropSafely(ctx, rmId); err != nil {
-					log.Printf("[DEBUG] Dropping resource monitor %s, resulted in error %v", rm.ID().FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping resource monitor %s ended with error, err = %w", rm.ID().FullyQualifiedName(), err))
+				log.Printf("[DEBUG] Dropping resource monitor %s, created at: %s", id.FullyQualifiedName(), rm.CreatedOn.String())
+				if err := client.ResourceMonitors.DropSafely(ctx, id); err != nil {
+					log.Printf("[DEBUG] Dropping resource monitor %s, resulted in error %v", id.FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping resource monitor %s ended with error, err = %w", id.FullyQualifiedName(), err))
 				}
 			} else {
-				log.Printf("[DEBUG] Skipping resource monitor %s, created at: %s", rm.ID().FullyQualifiedName(), rm.CreatedOn.String())
+				log.Printf("[DEBUG] Skipping resource monitor %s, created at: %s", id.FullyQualifiedName(), rm.CreatedOn.String())
 			}
 		}
 		return errors.Join(errs...)

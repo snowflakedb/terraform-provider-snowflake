@@ -201,8 +201,8 @@ func (p *PostgresInstanceAssert) HasPostgresSettings(expected string) *PostgresI
 func (p *PostgresInstanceAssert) HasIsHa(expected bool) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
-		if o.IsHa != expected {
-			return fmt.Errorf("expected is ha: %v; got: %v", expected, o.IsHa)
+		if o.IsHighlyAvailable != expected {
+			return fmt.Errorf("expected is ha: %v; got: %v", expected, o.IsHighlyAvailable)
 		}
 		return nil
 	})

@@ -42,6 +42,9 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
 	t.Cleanup(catalogCleanup)
 
+	externalVolumeId2, externalVolumeCleanup2 := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup2)
+
 	// Create a dedicated database with external_volume and catalog set at db level so the table
 	// can be created without specifying them explicitly (matching the "required fields only" test case).
 	dbForIcebergFiles, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(testClient().Ids.RandomAccountObjectIdentifier()).WithCatalog(catalogId).WithExternalVolume(externalVolumeId))
@@ -98,7 +101,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 			HasNameMapping("").
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus(""),
+			HasAutoRefreshStatusEmpty(),
 		resourceparametersassert.IcebergTableResourceParameters(t, ref).
 			HasExternalVolume(externalVolumeId.Name()).
 			HasExternalVolumeLevel(sdk.ParameterTypeDatabase).
@@ -135,7 +138,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 			HasNameMapping("").
 			HasOwnerRoleType("ROLE").
 			HasCatalogSyncName("").
-			HasAutoRefreshStatus(""),
+			HasAutoRefreshStatusEmpty(),
 		resourceparametersassert.IcebergTableResourceParameters(t, ref).
 			HasExternalVolume(externalVolumeId.Name()).
 			HasExternalVolumeLevel(sdk.ParameterTypeDatabase).
@@ -192,10 +195,7 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 				PreConfig: func() {
 					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).WithSet(
 						*sdk.NewIcebergTableSetPropertiesRequest().
-							WithReplaceInvalidCharacters(false),
-					))
-					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).WithSet(
-						*sdk.NewIcebergTableSetPropertiesRequest().
+							WithReplaceInvalidCharacters(false).
 							WithComment(externalComment),
 					))
 				},
@@ -206,6 +206,25 @@ func TestAcc_IcebergTableFromFiles_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, new(externalComment), new(comment)),
 						planchecks.ExpectDrift(ref, "replace_invalid_characters", new("true"), new("false")),
 						planchecks.ExpectChange(ref, "replace_invalid_characters", tfjson.ActionUpdate, new("false"), new("true")),
+					},
+				},
+				Config: accconfig.FromModels(t, modelWithAllOptional),
+				Check:  assertThat(t, allOptionalAssertions...),
+			},
+			// Change force new fields externally and detect drift
+			{
+				PreConfig: func() {
+					testClient().IcebergTable.CreateFromIcebergFiles(
+						t, id,
+						sdk.NewCreateFromIcebergFilesIcebergTableRequest(id, metadataFilePath).
+							WithOrReplace(true).
+							WithComment(externalComment).
+							WithExternalVolume(externalVolumeId2),
+					)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 				Config: accconfig.FromModels(t, modelWithAllOptional),
@@ -264,7 +283,8 @@ func TestAcc_IcebergTableFromFiles_CompleteUseCase(t *testing.T) {
 			// Create with all fields
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.IcebergTableFromFilesResource(t, modelComplete.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).

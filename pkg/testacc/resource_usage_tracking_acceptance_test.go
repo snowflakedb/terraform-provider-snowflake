@@ -66,7 +66,8 @@ func TestAcc_CompleteUsageTracking_Resource(t *testing.T) {
 			// Create
 			{
 				Config: config.FromModels(t, schemaModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(""),
@@ -77,7 +78,8 @@ func TestAcc_CompleteUsageTracking_Resource(t *testing.T) {
 			{
 				ResourceName: schemaModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedSchemaResource(t, id.FullyQualifiedName()).
 						HasCommentString(""),
 					assert.CheckImport(func(states []*terraform.InstanceState) error {
@@ -88,7 +90,8 @@ func TestAcc_CompleteUsageTracking_Resource(t *testing.T) {
 			// Update + CustomDiff (parameters) + Read
 			{
 				Config: config.FromModels(t, schemaModelWithComment),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.SchemaResource(t, schemaModelWithComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(comment),
@@ -106,7 +109,8 @@ func TestAcc_CompleteUsageTracking_Resource(t *testing.T) {
 			{
 				Config:  config.FromModels(t, schemaModelWithComment),
 				Destroy: true,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(assertQueryMetadataExists(t, tracking.DeleteOperation, fmt.Sprintf(`DROP SCHEMA IF EXISTS %s`, id.FullyQualifiedName()))),
 				),
 			},

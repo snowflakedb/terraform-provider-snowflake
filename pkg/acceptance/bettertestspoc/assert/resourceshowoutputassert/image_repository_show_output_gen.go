@@ -18,9 +18,8 @@ func ImageRepositoryShowOutput(t *testing.T, name string) *ImageRepositoryShowOu
 	t.Helper()
 
 	imageRepositoryAssert := ImageRepositoryShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	imageRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &imageRepositoryAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedImageRepositoryShowOutput(t *testing.T, id string) *ImageRepository
 	t.Helper()
 
 	imageRepositoryAssert := ImageRepositoryShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	imageRepositoryAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &imageRepositoryAssert
+}
+
+func ImageRepositoriesDatasourceShowOutput(t *testing.T, name string) *ImageRepositoryShowOutputAssert {
+	t.Helper()
+
+	return ImageRepositoriesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ImageRepositoriesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ImageRepositoryShowOutputAssert {
+	t.Helper()
+
+	imageRepositoryAssert := ImageRepositoryShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "image_repositories", idx),
+	}
 	return &imageRepositoryAssert
 }
 
@@ -39,52 +52,52 @@ func ImportedImageRepositoryShowOutput(t *testing.T, id string) *ImageRepository
 ////////////////////////////
 
 func (i *ImageRepositoryShowOutputAssert) HasCreatedOn(expected time.Time) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	i.StringValueSet("created_on", expected.String())
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasName(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	i.StringValueSet("name", expected)
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasDatabaseName(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	i.StringValueSet("database_name", expected)
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasSchemaName(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	i.StringValueSet("schema_name", expected)
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasRepositoryUrl(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("repository_url", expected))
+	i.StringValueSet("repository_url", expected)
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasOwner(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	i.StringValueSet("owner", expected)
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasOwnerRoleType(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	i.StringValueSet("owner_role_type", expected)
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasComment(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	i.StringValueSet("comment", expected)
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasEncryption(expected sdk.ImageRepositoryEncryptionType) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("encryption", expected))
+	i.StringValueSet("encryption", string(expected))
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasPrivatelinkRepositoryUrl(expected string) *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("privatelink_repository_url", expected))
+	i.StringValueSet("privatelink_repository_url", expected)
 	return i
 }
 
@@ -93,51 +106,51 @@ func (i *ImageRepositoryShowOutputAssert) HasPrivatelinkRepositoryUrl(expected s
 ///////////////////////////////
 
 func (i *ImageRepositoryShowOutputAssert) HasNoCreatedOn() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	i.ValueNotSet("created_on")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoName() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	i.ValueNotSet("name")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoDatabaseName() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	i.ValueNotSet("database_name")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoSchemaName() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	i.ValueNotSet("schema_name")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoRepositoryUrl() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("repository_url"))
+	i.ValueNotSet("repository_url")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoOwner() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	i.ValueNotSet("owner")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoOwnerRoleType() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	i.ValueNotSet("owner_role_type")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoComment() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	i.ValueNotSet("comment")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoEncryption() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("encryption"))
+	i.ValueNotSet("encryption")
 	return i
 }
 
 func (i *ImageRepositoryShowOutputAssert) HasNoPrivatelinkRepositoryUrl() *ImageRepositoryShowOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("privatelink_repository_url"))
+	i.ValueNotSet("privatelink_repository_url")
 	return i
 }

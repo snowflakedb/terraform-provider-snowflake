@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -101,10 +100,10 @@ func ExternalS3CompatibleStage() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingCreateWrapper(resources.ExternalS3CompatibleStage, CreateExternalS3CompatStage)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingReadWrapper(resources.ExternalS3CompatibleStage, ReadExternalS3CompatStageFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalS3CompatibleStageResource), TrackingUpdateWrapper(resources.ExternalS3CompatibleStage, UpdateExternalS3CompatStage)),
-		DeleteContext: DeleteStage(previewfeatures.ExternalS3CompatibleStageResource, resources.ExternalS3CompatibleStage),
+		CreateContext: TrackingCreateWrapper(resources.ExternalS3CompatibleStage, CreateExternalS3CompatStage),
+		ReadContext:   TrackingReadWrapper(resources.ExternalS3CompatibleStage, ReadExternalS3CompatStageFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.ExternalS3CompatibleStage, UpdateExternalS3CompatStage),
+		DeleteContext: DeleteStage(resources.ExternalS3CompatibleStage),
 		Description:   "Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatibleStage, customdiff.All(
@@ -254,7 +253,8 @@ func ReadExternalS3CompatStageFunc(withExternalChangesMarking bool) schema.ReadC
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
+				d,
 				directoryTableOutputMapping(*details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)

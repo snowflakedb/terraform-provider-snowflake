@@ -71,14 +71,15 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		// check that the semantic view's properties match our settings
-		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasName(id.Name()).
-			HasCreatedOnNotEmpty().
-			HasOwner("ACCOUNTADMIN").
-			HasOwnerRoleType("ROLE").
-			HasComment("comment"),
+		assertThatObject(
+			t, objectassert.SemanticViewFromObject(t, semanticView).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasName(id.Name()).
+				HasCreatedOnNotEmpty().
+				HasOwner("ACCOUNTADMIN").
+				HasOwnerRoleType("ROLE").
+				HasComment("comment"),
 		)
 	})
 
@@ -97,10 +98,11 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		// check that the semantic view's properties match our settings
-		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasName(id.Name()),
+		assertThatObject(
+			t, objectassert.SemanticViewFromObject(t, semanticView).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasName(id.Name()),
 		)
 	})
 
@@ -136,14 +138,15 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		// check that the semantic view's properties match our settings
-		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasName(id.Name()).
-			HasCreatedOnNotEmpty().
-			HasOwner("ACCOUNTADMIN").
-			HasOwnerRoleType("ROLE").
-			HasComment("comment"),
+		assertThatObject(
+			t, objectassert.SemanticViewFromObject(t, semanticView).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasName(id.Name()).
+				HasCreatedOnNotEmpty().
+				HasOwner("ACCOUNTADMIN").
+				HasOwnerRoleType("ROLE").
+				HasComment("comment"),
 		)
 	})
 
@@ -209,14 +212,15 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		// check that the semantic view's properties match our settings
-		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasName(id.Name()).
-			HasCreatedOnNotEmpty().
-			HasOwner("ACCOUNTADMIN").
-			HasOwnerRoleType("ROLE").
-			HasComment("comment"),
+		assertThatObject(
+			t, objectassert.SemanticViewFromObject(t, semanticView).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasName(id.Name()).
+				HasCreatedOnNotEmpty().
+				HasOwner("ACCOUNTADMIN").
+				HasOwnerRoleType("ROLE").
+				HasComment("comment"),
 		)
 
 		t1Alias, t2Alias, dimensionName, factName, factName2, metricName, metric2Name, relationshipName := "table1", "table2", "d1", "fact1", "fact2", "metric1", "metric2", "rel1"
@@ -303,17 +307,18 @@ func TestInt_SemanticView(t *testing.T) {
 			ParentEntity:        t2Alias,
 		}
 
-		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
-			HasDetailsCount(37).
-			HasComment("comment").
-			ContainsTable(expectedTable1).
-			ContainsTable(expectedTable2).
-			ContainsDimension(expectedDimension).
-			ContainsFact(expectedFact1).
-			ContainsFact(expectedFact2).
-			ContainsMetric(expectedMetric1).
-			ContainsMetric(expectedMetric2).
-			ContainsRelationship(expectedRelationship),
+		assertThatObject(
+			t, objectassert.SemanticViewDetails(t, id).
+				HasDetailsCount(37).
+				HasComment("comment").
+				ContainsTable(expectedTable1).
+				ContainsTable(expectedTable2).
+				ContainsDimension(expectedDimension).
+				ContainsFact(expectedFact1).
+				ContainsFact(expectedFact2).
+				ContainsMetric(expectedMetric1).
+				ContainsMetric(expectedMetric2).
+				ContainsRelationship(expectedRelationship),
 		)
 	})
 
@@ -359,11 +364,12 @@ func TestInt_SemanticView(t *testing.T) {
 		}
 
 		// confirm the semantic view details are correct
-		assertThatObject(t, objectassert.SemanticViewDetails(t, id).
-			HasDetailsCount(11).
-			ContainsTable(expectedTable1).
-			ContainsTable(expectedTable2).
-			ContainsMetric(expectedMetric),
+		assertThatObject(
+			t, objectassert.SemanticViewDetails(t, id).
+				HasDetailsCount(11).
+				ContainsTable(expectedTable1).
+				ContainsTable(expectedTable2).
+				ContainsMetric(expectedMetric),
 		)
 	})
 
@@ -379,8 +385,9 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		// check that the semantic view was created with a comment
-		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
-			HasComment("comment"),
+		assertThatObject(
+			t, objectassert.SemanticViewFromObject(t, semanticView).
+				HasComment("comment"),
 		)
 
 		// alter the semantic view to unset the comment
@@ -393,8 +400,9 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		// check that the semantic view no longer has a comment
-		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
-			HasNoComment(),
+		assertThatObject(
+			t, objectassert.SemanticViewFromObject(t, semanticView).
+				HasNoComment(),
 		)
 
 		// add a new comment to the semantic view
@@ -407,8 +415,9 @@ func TestInt_SemanticView(t *testing.T) {
 		require.NoError(t, err)
 
 		// semantic view should now have the new comment
-		assertThatObject(t, objectassert.SemanticViewFromObject(t, semanticView).
-			HasComment("updated comment"),
+		assertThatObject(
+			t, objectassert.SemanticViewFromObject(t, semanticView).
+				HasComment("updated comment"),
 		)
 	})
 

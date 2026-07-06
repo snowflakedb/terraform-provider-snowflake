@@ -38,7 +38,8 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -69,7 +70,8 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 			{
 				ResourceName: "snowflake_resource_monitor.test",
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -111,7 +113,8 @@ func TestAcc_ResourceMonitor_Complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -143,7 +146,8 @@ func TestAcc_ResourceMonitor_Complete(t *testing.T) {
 				ResourceName: "snowflake_resource_monitor.test",
 				ImportState:  true,
 				Config:       config.FromModels(t, configModel),
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -204,7 +208,8 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, configModelNothingSet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -235,7 +240,8 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 			// Set
 			{
 				Config: config.FromModels(t, configModelEverythingSet),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -266,7 +272,8 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 			// Update
 			{
 				Config: config.FromModels(t, configModelUpdated),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -297,7 +304,8 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 			// Unset
 			{
 				Config: config.FromModels(t, configModelEverythingUnset),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -371,38 +379,29 @@ func TestAcc_ResourceMonitor_ExternalChanges(t *testing.T) {
 			// Update externally, but match the updated configuration (expected updates to the same values)
 			{
 				PreConfig: func() {
-					testClient().ResourceMonitor.Alter(t, id, &sdk.AlterResourceMonitorOptions{
-						Set: &sdk.ResourceMonitorSet{
-							NotifyUsers: &sdk.NotifyUsers{
-								Users: []sdk.NotifiedUser{
-									{Name: sdk.NewAccountObjectIdentifier("JAN_CIESLAK")},
-									{Name: sdk.NewAccountObjectIdentifier("ARTUR_SAWICKI")},
-								},
-							},
-							CreditQuota:    sdk.Int(20),
-							Frequency:      sdk.Pointer(sdk.FrequencyMonthly),
-							StartTimestamp: sdk.String(startTimestamp),
-							EndTimestamp:   sdk.String(endTimestamp),
-						},
-						Triggers: []sdk.TriggerDefinition{
-							{
-								Threshold:     110,
-								TriggerAction: sdk.TriggerActionNotify,
-							},
-							{
-								Threshold:     120,
-								TriggerAction: sdk.TriggerActionNotify,
-							},
-							{
-								Threshold:     130,
-								TriggerAction: sdk.TriggerActionSuspend,
-							},
-							{
-								Threshold:     160,
-								TriggerAction: sdk.TriggerActionSuspendImmediate,
-							},
-						},
-					})
+					testClient().ResourceMonitor.Alter(
+						t, sdk.NewAlterResourceMonitorRequest(id).
+							WithSet(
+								*sdk.NewResourceMonitorSetRequest().
+									WithNotifyUsers(
+										*sdk.NewNotifyUsersRequest().
+											WithUsers([]sdk.NotifiedUserRequest{
+												*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK")),
+												*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("ARTUR_SAWICKI")),
+											}),
+									).
+									WithCreditQuota(20).
+									WithFrequency(sdk.FrequencyMonthly).
+									WithStartTimestamp(startTimestamp).
+									WithEndTimestamp(endTimestamp),
+							).
+							WithTriggers([]sdk.TriggerDefinitionRequest{
+								*sdk.NewTriggerDefinitionRequest(110, sdk.TriggerActionNotify),
+								*sdk.NewTriggerDefinitionRequest(120, sdk.TriggerActionNotify),
+								*sdk.NewTriggerDefinitionRequest(130, sdk.TriggerActionSuspend),
+								*sdk.NewTriggerDefinitionRequest(160, sdk.TriggerActionSuspendImmediate),
+							}),
+					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -442,7 +441,8 @@ func TestAcc_ResourceMonitor_PartialUpdate(t *testing.T) {
 			{
 				Config:      config.FromModels(t, configModelInvalidUpdate),
 				ExpectError: regexp.MustCompile("Invalid date/time format string"),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasEndTimestampString(validTimestamp),
 				),
@@ -457,7 +457,8 @@ func TestAcc_ResourceMonitor_PartialUpdate(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasEndTimestampString(validTimestamp),
 				),
@@ -876,7 +877,8 @@ func TestAcc_ResourceMonitor_StartTimestampImmediately(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, configModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ResourceMonitorResource(t, "snowflake_resource_monitor.test").
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -892,7 +894,8 @@ func TestAcc_ResourceMonitor_StartTimestampImmediately(t *testing.T) {
 				ResourceName: "snowflake_resource_monitor.test",
 				ImportState:  true,
 				Config:       config.FromModels(t, configModel),
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedResourceMonitorResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).

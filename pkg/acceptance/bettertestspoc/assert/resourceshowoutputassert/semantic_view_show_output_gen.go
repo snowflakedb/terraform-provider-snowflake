@@ -17,9 +17,8 @@ func SemanticViewShowOutput(t *testing.T, name string) *SemanticViewShowOutputAs
 	t.Helper()
 
 	semanticViewAssert := SemanticViewShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	semanticViewAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &semanticViewAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedSemanticViewShowOutput(t *testing.T, id string) *SemanticViewShowOu
 	t.Helper()
 
 	semanticViewAssert := SemanticViewShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	semanticViewAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &semanticViewAssert
+}
+
+func SemanticViewsDatasourceShowOutput(t *testing.T, name string) *SemanticViewShowOutputAssert {
+	t.Helper()
+
+	return SemanticViewsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func SemanticViewsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *SemanticViewShowOutputAssert {
+	t.Helper()
+
+	semanticViewAssert := SemanticViewShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "semantic_views", idx),
+	}
 	return &semanticViewAssert
 }
 
@@ -38,42 +51,42 @@ func ImportedSemanticViewShowOutput(t *testing.T, id string) *SemanticViewShowOu
 ////////////////////////////
 
 func (s *SemanticViewShowOutputAssert) HasCreatedOn(expected time.Time) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasName(expected string) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasDatabaseName(expected string) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasSchemaName(expected string) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasComment(expected string) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasOwner(expected string) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasOwnerRoleType(expected string) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasExtension(expected string) *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("extension", expected))
+	s.StringValueSet("extension", expected)
 	return s
 }
 
@@ -82,41 +95,41 @@ func (s *SemanticViewShowOutputAssert) HasExtension(expected string) *SemanticVi
 ///////////////////////////////
 
 func (s *SemanticViewShowOutputAssert) HasNoCreatedOn() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasNoName() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasNoDatabaseName() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasNoSchemaName() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasNoComment() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasNoOwner() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasNoOwnerRoleType() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }
 
 func (s *SemanticViewShowOutputAssert) HasNoExtension() *SemanticViewShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("extension"))
+	s.ValueNotSet("extension")
 	return s
 }

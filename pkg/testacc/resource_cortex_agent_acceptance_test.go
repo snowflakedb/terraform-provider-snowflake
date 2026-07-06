@@ -29,13 +29,15 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 	response := "You are a helpful assistant"
 	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
 	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
-		testClient().CortexAgent.SampleSpecWithResponse(t, response))
+		testClient().CortexAgent.SampleSpecWithResponse(t, response),
+	)
 	require.NoError(t, err)
 
 	newResponse := "You will respond in a friendly but concise manner"
 	newHclSpec := model.SampleSpecAsYamlencodeHCL(newResponse)
 	newNormalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
-		testClient().CortexAgent.SampleSpecWithResponse(t, newResponse))
+		testClient().CortexAgent.SampleSpecWithResponse(t, newResponse),
+	)
 	require.NoError(t, err)
 
 	comment := random.Comment()
@@ -272,14 +274,16 @@ func TestAcc_CortexAgent_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterCortexAgentRequest(id).WithModifyLiveVersionSet(
-						*sdk.NewCortexAgentModifyLiveVersionSetRequest(normalizedSpec))
+						*sdk.NewCortexAgentModifyLiveVersionSetRequest(normalizedSpec),
+					)
 					testClient().CortexAgent.Alter(t, alterRequest)
 
 					externalProfileAsJson, err := sdk.MarshalCortexAgentProfile(externalProfile)
 					require.NoError(t, err)
-					alterRequest = sdk.NewAlterCortexAgentRequest(id).WithSet(*sdk.NewCortexAgentSetRequest().
-						WithComment(sdk.StringAllowEmpty{Value: externalComment}).
-						WithProfile(externalProfileAsJson),
+					alterRequest = sdk.NewAlterCortexAgentRequest(id).WithSet(
+						*sdk.NewCortexAgentSetRequest().
+							WithComment(sdk.StringAllowEmpty{Value: externalComment}).
+							WithProfile(externalProfileAsJson),
 					)
 					testClient().CortexAgent.Alter(t, alterRequest)
 				},
@@ -313,7 +317,8 @@ func TestAcc_CortexAgent_CompleteUseCase_EmptyAndNullCommentsHandling(t *testing
 	response := "You are a helpful assistant"
 	hclSpec := model.SampleSpecAsYamlencodeHCL(response)
 	normalizedSpec, err := sdk.NormalizeCortexAgentSpecification(
-		testClient().CortexAgent.SampleSpecWithResponse(t, response))
+		testClient().CortexAgent.SampleSpecWithResponse(t, response),
+	)
 	require.NoError(t, err)
 	emptyProfile := sdk.CortexAgentProfile{}
 
@@ -374,8 +379,9 @@ func TestAcc_CortexAgent_CompleteUseCase_EmptyAndNullCommentsHandling(t *testing
 			// Set empty comment externally and expect no drift
 			{
 				PreConfig: func() {
-					alterRequest := sdk.NewAlterCortexAgentRequest(id).WithSet(*sdk.NewCortexAgentSetRequest().
-						WithComment(sdk.StringAllowEmpty{Value: ""}),
+					alterRequest := sdk.NewAlterCortexAgentRequest(id).WithSet(
+						*sdk.NewCortexAgentSetRequest().
+							WithComment(sdk.StringAllowEmpty{Value: ""}),
 					)
 					testClient().CortexAgent.Alter(t, alterRequest)
 				},
@@ -421,6 +427,7 @@ func TestAcc_CortexAgent_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	emptySpec := model.CortexAgent("t", id.DatabaseName(), id.SchemaName(), id.Name(), "")
+	specWithDoubleDollar := model.CortexAgent("t", id.DatabaseName(), id.SchemaName(), id.Name(), "contains $$ sequence")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -433,6 +440,11 @@ func TestAcc_CortexAgent_Validations(t *testing.T) {
 				Config:      config.FromModels(t, emptySpec),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected "specification" to not be an empty string`),
+			},
+			{
+				Config:      config.FromModels(t, specWithDoubleDollar),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`cannot contain the \$\$ sequence`),
 			},
 		},
 	})
