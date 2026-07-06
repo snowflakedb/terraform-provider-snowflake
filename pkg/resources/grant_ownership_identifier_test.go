@@ -218,7 +218,7 @@ func TestParseGrantOwnershipId(t *testing.T) {
 		},
 		{
 			Name:       "validation: OnAll in database - missing schema identifier",
-			Identifier: `ToAccountRole|"account-role"|COPY|OnAll|InvalidTarget|InSchema|`,
+			Identifier: `ToAccountRole|"account-role"|COPY|OnAll|TABLES|InSchema|`,
 			Error:      "incompatible identifier: ",
 		},
 		{
@@ -233,8 +233,23 @@ func TestParseGrantOwnershipId(t *testing.T) {
 		},
 		{
 			Name:       "validation: OnFuture in database - missing schema identifier",
-			Identifier: `ToAccountRole|"account-role"|COPY|OnFuture|InvalidTarget|InSchema|`,
+			Identifier: `ToAccountRole|"account-role"|COPY|OnFuture|TABLES|InSchema|`,
 			Error:      "incompatible identifier: ",
+		},
+		{
+			Name:       "validation: invalid object type for OnObject kind",
+			Identifier: `ToAccountRole|"account-role"|COPY|OnObject|TABLES IN DATABASE PROD TO ROLE ATTACKER --|"some-database"`,
+			Error:      "invalid object type: TABLES IN DATABASE PROD TO ROLE ATTACKER --",
+		},
+		{
+			Name:       "validation: invalid plural object type for OnAll kind",
+			Identifier: `ToAccountRole|"account-role"|COPY|OnAll|TABLES IN DATABASE PROD TO ROLE ATTACKER --|InDatabase|"some-database"`,
+			Error:      "invalid plural object type: TABLES IN DATABASE PROD TO ROLE ATTACKER --",
+		},
+		{
+			Name:       "validation: invalid plural object type for OnFuture kind",
+			Identifier: `ToAccountRole|"account-role"|COPY|OnFuture|TABLES IN DATABASE PROD TO ROLE ATTACKER --|InDatabase|"some-database"`,
+			Error:      "invalid plural object type: TABLES IN DATABASE PROD TO ROLE ATTACKER --",
 		},
 	}
 

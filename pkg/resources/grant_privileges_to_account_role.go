@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -42,8 +43,11 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"all_privileges",
 		},
 		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: isNotOwnershipGrant(),
+			Type: schema.TypeString,
+			ValidateDiagFunc: validation.AllDiag(
+				isNotOwnershipGrant(),
+				validators.NormalizeValidation(sdk.ToPrivilege),
+			),
 		},
 	},
 	"all_privileges": {
@@ -1107,14 +1111,17 @@ func getAccountRoleGrantOn(d *schema.ResourceData) (*sdk.AccountRoleGrantOn, err
 
 		grantOnAccountObject := new(sdk.GrantOnAccountObject)
 
-		objectType := onAccountObject["object_type"].(string)
+		objectType, err := sdk.ToObjectType(onAccountObject["object_type"].(string))
+		if err != nil {
+			return nil, err
+		}
 		objectName := onAccountObject["object_name"].(string)
 		objectIdentifier, err := sdk.ParseAccountObjectIdentifier(objectName)
 		if err != nil {
 			return nil, err
 		}
 
-		switch sdk.ObjectType(objectType) {
+		switch objectType {
 		case sdk.ObjectTypeDatabase:
 			grantOnAccountObject.Database = &objectIdentifier
 		case sdk.ObjectTypeConnection:
@@ -1193,9 +1200,11 @@ func getAccountRoleGrantOn(d *schema.ResourceData) (*sdk.AccountRoleGrantOn, err
 
 		switch {
 		case objectTypeOk && objectNameOk:
-			objectType := sdk.ObjectType(objectType)
+			objectType, err := sdk.ToObjectType(objectType)
+			if err != nil {
+				return nil, err
+			}
 			var id sdk.ObjectIdentifier
-			var err error
 			// TODO(SNOW-1569535): use a mapper from object type to parsing function
 			if objectType.IsWithArguments() {
 				id, err = sdk.ParseSchemaObjectIdentifierWithArguments(objectName)
