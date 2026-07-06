@@ -14,6 +14,7 @@ var (
 	_ validatable = new(grantPrivilegeToShareOptions)
 	_ validatable = new(revokePrivilegeFromShareOptions)
 	_ validatable = new(GrantOwnershipOptions)
+	_ validatable = new(RevokeOwnershipOptions)
 	_ validatable = new(ShowGrantOptions)
 )
 
@@ -563,6 +564,35 @@ func (v *OwnershipGrantTo) validate() error {
 		return errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName")
 	}
 	return nil
+}
+
+func (opts *RevokeOwnershipOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	var errs []error
+	if err := opts.On.validate(); err != nil {
+		errs = append(errs, err)
+	}
+	if err := opts.From.validate(); err != nil {
+		errs = append(errs, err)
+	}
+	if everyValueSet(opts.Restrict, opts.Cascade) {
+		errs = append(errs, errOneOf("RevokeOwnershipOptions", "Restrict", "Cascade"))
+	}
+	return errors.Join(errs...)
+}
+
+func (v *RevokeOwnershipGrantOn) validate() error {
+	var errs []error
+	// Snowflake only supports revoking OWNERSHIP for future grants; ownership of existing objects must be
+	// transferred with GRANT OWNERSHIP instead, hence Future is the only allowed variant here.
+	if !valueSet(v.Future) {
+		errs = append(errs, errNotSet("RevokeOwnershipGrantOn", "Future"))
+	} else if err := v.Future.validate(); err != nil {
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
 }
 
 // TODO: add validations for ShowGrantsOn, ShowGrantsTo, ShowGrantsOf and ShowGrantsIn

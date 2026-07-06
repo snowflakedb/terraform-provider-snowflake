@@ -291,6 +291,20 @@ func (v *grants) GrantOwnership(ctx context.Context, on OwnershipGrantOn, to Own
 	return validateAndExec(v.client, ctx, opts)
 }
 
+// RevokeOwnership revokes an OWNERSHIP grant. Note that Snowflake only allows revoking ownership of FUTURE objects;
+// ownership of existing objects must be transferred to another role with GrantOwnership instead - this is enforced
+// by the RevokeOwnershipGrantOn type, which only exposes the Future variant.
+func (v *grants) RevokeOwnership(ctx context.Context, on RevokeOwnershipGrantOn, from OwnershipGrantTo, opts *RevokeOwnershipOptions) error {
+	if opts == nil {
+		opts = &RevokeOwnershipOptions{}
+	}
+
+	opts.On = on
+	opts.From = from
+
+	return validateAndExec(v.client, ctx, opts)
+}
+
 // TODO(SNOW-2097063): Improve SHOW GRANTS implementation
 func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, error) {
 	if opts == nil {

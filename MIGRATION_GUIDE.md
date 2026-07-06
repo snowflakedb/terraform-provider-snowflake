@@ -33,6 +33,11 @@ This behavior is now fixed: the values set explicitly in the provider block or i
 
 No action required.
 
+### *(improvement)* snowflake_grant_ownership: deleting a resource with on_future now properly revokes the grant
+If you use the future option in the snowflake_grant_ownership, it now issues REVOKE OWNERSHIP ON FUTURE ... TO ROLE ... during destroy.
+
+No changes required for existing configurations.
+
 ### *(new feature)* New Postgres instance resource
 
 We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
