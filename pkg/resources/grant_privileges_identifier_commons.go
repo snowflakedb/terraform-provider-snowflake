@@ -2,7 +2,6 @@ package resources
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -106,8 +105,12 @@ func getBulkOperationGrantData(in *sdk.GrantOnSchemaObjectIn) *BulkOperationGran
 }
 
 func getGrantOnSchemaObjectIn(allOrFuture map[string]any) (*sdk.GrantOnSchemaObjectIn, error) {
+	pluralObjectType, err := sdk.ToPluralObjectType(allOrFuture["object_type_plural"].(string))
+	if err != nil {
+		return nil, err
+	}
 	grantOnSchemaObjectIn := &sdk.GrantOnSchemaObjectIn{
-		PluralObjectType: sdk.PluralObjectType(strings.ToUpper(allOrFuture["object_type_plural"].(string))),
+		PluralObjectType: pluralObjectType,
 	}
 
 	if inDatabase, ok := allOrFuture["in_database"].(string); ok && len(inDatabase) > 0 {

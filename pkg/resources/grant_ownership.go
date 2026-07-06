@@ -540,7 +540,10 @@ func getOwnershipGrantOn(d *schema.ResourceData) (*sdk.OwnershipGrantOn, error) 
 
 	switch {
 	case len(onObjectType) > 0 && len(onObjectName) > 0:
-		objectType := sdk.ObjectType(strings.ToUpper(onObjectType))
+		objectType, err := sdk.ToObjectType(onObjectType)
+		if err != nil {
+			return nil, err
+		}
 		objectName, err := GetOnObjectIdentifier(objectType, onObjectName)
 		if err != nil {
 			return nil, err
@@ -691,7 +694,10 @@ func createGrantOwnershipIdFromSchema(d *schema.ResourceData) (*GrantOwnershipId
 	switch {
 	case len(objectType) > 0 && len(objectName) > 0:
 		id.Kind = OnObjectGrantOwnershipKind
-		objectType := sdk.ObjectType(objectType)
+		objectType, err := sdk.ToObjectType(objectType)
+		if err != nil {
+			return nil, err
+		}
 		objectName, err := GetOnObjectIdentifier(objectType, objectName)
 		if err != nil {
 			return nil, err

@@ -1,10 +1,41 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
 )
 
 func TestGrantPrivilegesToAccountRole(t *testing.T) {
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &GrantPrivilegesToAccountRoleOptions{
+			privileges: &AccountRoleGrantPrivileges{
+				GlobalPrivileges: []GlobalPrivilege{"MONITOR USAGE; SELECT"},
+			},
+			on: &AccountRoleGrantOn{
+				Account: new(true),
+			},
+			accountRole: NewAccountObjectIdentifier("role1"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "MONITOR USAGE; SELECT", allowedUnquotedCharactersRegex.String()))
+	})
+
+	t.Run("privileges with certain special characters are allowed", func(t *testing.T) {
+		schemaId := randomDatabaseObjectIdentifier()
+		opts := &GrantPrivilegesToAccountRoleOptions{
+			privileges: &AccountRoleGrantPrivileges{
+				SchemaPrivileges: []SchemaPrivilege{"CREATE SNOWFLAKE.ML.ANOMALY_DETECTION", "applybudget"},
+			},
+			on: &AccountRoleGrantOn{
+				Schema: &GrantOnSchema{
+					Schema: new(schemaId),
+				},
+			},
+			accountRole:     NewAccountObjectIdentifier("role1"),
+			WithGrantOption: new(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT CREATE SNOWFLAKE.ML.ANOMALY_DETECTION, applybudget ON SCHEMA %s TO ROLE "role1" WITH GRANT OPTION`, schemaId.FullyQualifiedName())
+	})
+
 	t.Run("on account", func(t *testing.T) {
 		opts := &GrantPrivilegesToAccountRoleOptions{
 			privileges: &AccountRoleGrantPrivileges{
@@ -214,6 +245,19 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 func TestRevokePrivilegesFromAccountRole(t *testing.T) {
 	schemaId := randomDatabaseObjectIdentifier()
 
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &RevokePrivilegesFromAccountRoleOptions{
+			privileges: &AccountRoleGrantPrivileges{
+				GlobalPrivileges: []GlobalPrivilege{"MONITOR USAGE; SELECT"},
+			},
+			on: &AccountRoleGrantOn{
+				Account: new(true),
+			},
+			accountRole: NewAccountObjectIdentifier("role1"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "MONITOR USAGE; SELECT", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("on account", func(t *testing.T) {
 		opts := &RevokePrivilegesFromAccountRoleOptions{
 			privileges: &AccountRoleGrantPrivileges{
@@ -409,6 +453,14 @@ func TestGrants_GrantPrivilegesToDatabaseRole(t *testing.T) {
 		}
 	}
 
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := defaultGrantsForDb()
+		opts.privileges = &DatabaseRoleGrantPrivileges{
+			DatabasePrivileges: []AccountObjectPrivilege{"CREATE SCHEMA--"},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "CREATE SCHEMA--", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("validation: nil privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
 		opts.privileges = nil
@@ -600,6 +652,14 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 		}
 	}
 
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := defaultGrantsForDb()
+		opts.privileges = &DatabaseRoleGrantPrivileges{
+			DatabasePrivileges: []AccountObjectPrivilege{"CREATE SCHEMA--"},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "CREATE SCHEMA--", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("validation: nil privileges set", func(t *testing.T) {
 		opts := defaultGrantsForDb()
 		opts.privileges = nil
@@ -738,6 +798,17 @@ func TestGrants_RevokePrivilegesFromDatabaseRoleRole(t *testing.T) {
 
 func TestGrantPrivilegeToShare(t *testing.T) {
 	id := randomAccountObjectIdentifier()
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &grantPrivilegeToShareOptions{
+			privileges: []ObjectPrivilege{"USAGE;"},
+			On: &ShareGrantOn{
+				Database: randomAccountObjectIdentifier(),
+			},
+			to: id,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "USAGE;", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("on database", func(t *testing.T) {
 		otherID := randomAccountObjectIdentifier()
 		opts := &grantPrivilegeToShareOptions{
@@ -805,6 +876,17 @@ func TestGrantPrivilegeToShare(t *testing.T) {
 
 func TestRevokePrivilegeFromShare(t *testing.T) {
 	id := randomAccountObjectIdentifier()
+	t.Run("validation: privilege with disallowed characters", func(t *testing.T) {
+		opts := &revokePrivilegeFromShareOptions{
+			privileges: []ObjectPrivilege{"USAGE;"},
+			On: &ShareGrantOn{
+				Database: randomAccountObjectIdentifier(),
+			},
+			from: id,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("invalid privilege: %s contains disallowed characters; it must follow this regex: %s", "USAGE;", allowedUnquotedCharactersRegex.String()))
+	})
+
 	t.Run("on database", func(t *testing.T) {
 		otherID := randomAccountObjectIdentifier()
 		opts := &revokePrivilegeFromShareOptions{

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -31,10 +32,11 @@ var grantsSchema = map[string]*schema.Schema{
 					Description:  "Name of object to list privileges on.",
 				},
 				"object_type": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					RequiredWith: []string{"grants_on.0.object_name"},
-					Description:  "Type of object to list privileges on.",
+					Type:             schema.TypeString,
+					Optional:         true,
+					RequiredWith:     []string{"grants_on.0.object_name"},
+					Description:      "Type of object to list privileges on.",
+					ValidateDiagFunc: validators.NormalizeValidation(sdk.ToObjectType),
 				},
 				"account": {
 					Type:         schema.TypeBool,
@@ -381,9 +383,11 @@ func buildOptsForGrantsOn(grantsOn map[string]any) (*sdk.ShowGrantOptions, error
 			return nil, fmt.Errorf("object_type (%s) or object_name (%s) missing", objectType, objectName)
 		}
 
-		sdkObjectType := sdk.ObjectType(objectType)
+		sdkObjectType, err := sdk.ToObjectType(objectType)
+		if err != nil {
+			return nil, err
+		}
 		var objectId sdk.ObjectIdentifier
-		var err error
 		// TODO [SNOW-1569535]: use a mapper from object type to parsing function
 		// TODO [SNOW-1569535]: grant_ownership#getOnObjectIdentifier could be used but it is limited only to ownership-transferable objects (according to the docs) - we should add an integration test to verify if the docs are complete
 		if sdkObjectType.IsWithArguments() {

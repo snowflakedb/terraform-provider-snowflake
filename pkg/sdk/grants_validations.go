@@ -3,7 +3,9 @@ package sdk
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"slices"
+	"strings"
 )
 
 var (
@@ -263,6 +265,40 @@ func init() {
 	}
 }
 
+// allowedUnquotedCharactersRegex matches non-empty strings consisting only of allowed characters
+var allowedUnquotedCharactersRegex = regexp.MustCompile(`^[a-zA-Z ._]+$`)
+
+// validateUnquotedInput checks that the passed string contains only allowed characters.
+func validateUnquotedInput(s string) error {
+	var errs []error
+	if !allowedUnquotedCharactersRegex.MatchString(s) {
+		errs = append(errs, fmt.Errorf("%s contains disallowed characters; it must follow this regex: %s", s, allowedUnquotedCharactersRegex.String()))
+	}
+	return errors.Join(errs...)
+}
+
+// validatePrivileges checks that every passed privilege contains only allowed characters.
+func validatePrivileges[T fmt.Stringer](privileges []T) error {
+	var errs []error
+	for _, privilege := range privileges {
+		if err := validateUnquotedInput(privilege.String()); err != nil {
+			errs = append(errs, fmt.Errorf("invalid privilege: %w", err))
+		}
+	}
+	return errors.Join(errs...)
+}
+
+// ToPrivilege converts a string to a privilege name.
+// It should be used instead of the raw privilege conversion whenever the input is not trusted.
+// There is no dedicated privilege type in the SDK, so we use string instead.
+func ToPrivilege(s string) (string, error) {
+	s = strings.ToUpper(s)
+	if err := validateUnquotedInput(s); err != nil {
+		return "", fmt.Errorf("invalid privilege: %w", err)
+	}
+	return s, nil
+}
+
 func (opts *GrantPrivilegesToAccountRoleOptions) validate() error {
 	if opts == nil {
 		return errors.Join(ErrNilOptions)
@@ -289,7 +325,12 @@ func (v *AccountRoleGrantPrivileges) validate() error {
 	if !exactlyOneValueSet(v.AllPrivileges, v.GlobalPrivileges, v.AccountObjectPrivileges, v.SchemaPrivileges, v.SchemaObjectPrivileges) {
 		return errExactlyOneOf("AccountRoleGrantPrivileges", "AllPrivileges", "GlobalPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges")
 	}
-	return nil
+	return errors.Join(
+		validatePrivileges(v.GlobalPrivileges),
+		validatePrivileges(v.AccountObjectPrivileges),
+		validatePrivileges(v.SchemaPrivileges),
+		validatePrivileges(v.SchemaObjectPrivileges),
+	)
 }
 
 func (v *AccountRoleGrantOn) validate() error {
@@ -409,6 +450,9 @@ func (v *DatabaseRoleGrantPrivileges) validate() error {
 	if !exactlyOneValueSet(v.DatabasePrivileges, v.SchemaPrivileges, v.SchemaObjectPrivileges, v.AllPrivileges) {
 		errs = append(errs, errExactlyOneOf("DatabaseRoleGrantPrivileges", "DatabasePrivileges", "SchemaPrivileges", "SchemaObjectPrivileges", "AllPrivileges"))
 	}
+	errs = append(errs, validatePrivileges(v.DatabasePrivileges))
+	errs = append(errs, validatePrivileges(v.SchemaPrivileges))
+	errs = append(errs, validatePrivileges(v.SchemaObjectPrivileges))
 	return errors.Join(errs...)
 }
 
@@ -469,6 +513,7 @@ func (opts *grantPrivilegeToShareOptions) validate() error {
 	if !valueSet(opts.On) || len(opts.privileges) == 0 {
 		errs = append(errs, fmt.Errorf("on and privilege are required"))
 	}
+	errs = append(errs, validatePrivileges(opts.privileges))
 	if valueSet(opts.On) {
 		if err := opts.On.validate(); err != nil {
 			errs = append(errs, err)
@@ -508,6 +553,7 @@ func (opts *revokePrivilegeFromShareOptions) validate() error {
 	if !valueSet(opts.On) || len(opts.privileges) == 0 {
 		errs = append(errs, errNotSet("revokePrivilegeFromShareOptions", "On", "privileges"))
 	}
+	errs = append(errs, validatePrivileges(opts.privileges))
 	if valueSet(opts.On) {
 		if err := opts.On.validate(); err != nil {
 			errs = append(errs, err)

@@ -14,6 +14,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -30,8 +31,11 @@ var failoverGroupSchema = map[string]*schema.Schema{
 		},
 	},
 	"object_types": {
-		Type:          schema.TypeSet,
-		Elem:          &schema.Schema{Type: schema.TypeString},
+		Type: schema.TypeSet,
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToPluralObjectType),
+		},
 		Optional:      true,
 		ConflictsWith: []string{"from_replica"},
 		Description:   "Type(s) of objects for which you are enabling replication and failover from the source account to the target account. The following object types are supported: \"ACCOUNT PARAMETERS\", \"DATABASES\", \"INTEGRATIONS\", \"NETWORK POLICIES\", \"RESOURCE MONITORS\", \"ROLES\", \"SHARES\", \"USERS\", \"WAREHOUSES\"",
@@ -191,7 +195,11 @@ func CreateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 	objectTypesList := expandStringList(d.Get("object_types").(*schema.Set).List())
 	objectTypes := make([]sdk.PluralObjectType, len(objectTypesList))
 	for i, v := range objectTypesList {
-		objectTypes[i] = sdk.PluralObjectType(v)
+		objectType, err := sdk.ToPluralObjectType(v)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		objectTypes[i] = objectType
 	}
 
 	if _, ok := d.GetOk("allowed_accounts"); !ok {
@@ -429,7 +437,11 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 		newObjectTypes := expandStringList(n.(*schema.Set).List())
 		objectTypes := make([]sdk.PluralObjectType, len(newObjectTypes))
 		for i, v := range newObjectTypes {
-			objectTypes[i] = sdk.PluralObjectType(v)
+			objectType, err := sdk.ToPluralObjectType(v)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			objectTypes[i] = objectType
 		}
 		opts.Set.ObjectTypes = objectTypes
 		if slices.Contains(objectTypes, sdk.PluralObjectTypeIntegrations) {
