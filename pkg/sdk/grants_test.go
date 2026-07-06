@@ -1015,6 +1015,90 @@ func TestGrants_GrantOwnership(t *testing.T) {
 	})
 }
 
+func TestGrants_RevokeOwnership(t *testing.T) {
+	dbId := randomAccountObjectIdentifier()
+	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
+	roleId := randomAccountObjectIdentifier()
+	databaseRoleId := randomDatabaseObjectIdentifierInDatabase(dbId)
+
+	defaultOpts := func() *RevokeOwnershipOptions {
+		return &RevokeOwnershipOptions{
+			On: RevokeOwnershipGrantOn{
+				Future: &GrantOnSchemaObjectIn{
+					PluralObjectType: PluralObjectTypeTables,
+					InDatabase:       Pointer(dbId),
+				},
+			},
+			From: OwnershipGrantTo{
+				AccountRoleName: Pointer(roleId),
+			},
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *RevokeOwnershipOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: revoke on empty (future not set)", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.On = RevokeOwnershipGrantOn{}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("RevokeOwnershipGrantOn", "Future"))
+	})
+
+	t.Run("validation: revoke from empty", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = OwnershipGrantTo{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+	})
+
+	t.Run("validation: revoke from role and database role", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = OwnershipGrantTo{
+			DatabaseRoleName: Pointer(databaseRoleId),
+			AccountRoleName:  Pointer(roleId),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("OwnershipGrantTo", "databaseRoleName", "accountRoleName"))
+	})
+
+	t.Run("validation: restrict and cascade", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Restrict = Bool(true)
+		opts.Cascade = Bool(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("RevokeOwnershipOptions", "Restrict", "Cascade"))
+	})
+
+	t.Run("on future schema object in database to role", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN DATABASE %s FROM ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("on future schema object in schema to role", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.On = RevokeOwnershipGrantOn{
+			Future: &GrantOnSchemaObjectIn{
+				PluralObjectType: PluralObjectTypeTables,
+				InSchema:         Pointer(schemaId),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN SCHEMA %s FROM ROLE %s`, schemaId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("on future schema object in database to database role", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.From = OwnershipGrantTo{
+			DatabaseRoleName: Pointer(databaseRoleId),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN DATABASE %s FROM DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+
+	t.Run("on future schema object with cascade", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Cascade = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE OWNERSHIP ON FUTURE TABLES IN DATABASE %s FROM ROLE %s CASCADE`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+}
+
 func TestGrantShow(t *testing.T) {
 	t.Run("no options", func(t *testing.T) {
 		opts := &ShowGrantOptions{}

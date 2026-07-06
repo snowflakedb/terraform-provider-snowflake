@@ -63,15 +63,6 @@ Most of the rules are described in the [official documentation for grant ownersh
 which we highly recommend reading. Due to the complexity and risk of partial or full operation failures during creation or deletion,
 it is advised to use ownership grants on these objects with caution and report any unexpected errors.
 
-### Granting ownership on future objects
-
-When creating this resource, we were unsure about certain parts of granting ownership of future objects.
-Because of that, we decided to provide this functionality partially.
-You can still grant ownership of future objects with grant ownership resources, but it cannot be revoked.
-Currently, the revoking part has to be done manually.
-This behavior was documented, and recently, we confirmed how this feature can be added, so stay tuned (e.g. [\#3317](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3317);
-more on that in the “Future Plans” section).
-
 ## Future plans
 
 We already have some ideas about how to expand this resource, but we wanted to start with only essential features and extend it according to further customer requirements.
