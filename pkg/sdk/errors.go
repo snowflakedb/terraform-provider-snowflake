@@ -91,6 +91,13 @@ func errInvalidValue(structName string, fieldName string, invalidValue string) e
 	return newError(fmt.Sprintf("invalid value %s of struct %s field: %s", invalidValue, structName, fieldName), 2)
 }
 
+// errDoubleDollarQuotesNotAllowed is returned when a field rendered with double dollar quoting ($$...$$) contains
+// the `$$` sequence. Snowflake dollar-quoted string constants are interpreted literally and do not support escaping,
+// so any embedded `$$` would terminate the constant and allow SQL injection. Such input is therefore rejected.
+func errDoubleDollarQuotesNotAllowed(structName string, fieldName string) error {
+	return newError(fmt.Sprintf("%s field: %s must not contain the '$$' sequence, because it is not supported by Snowflake's dollar-quoted string constants", structName, fieldName), 2)
+}
+
 var errorRegexes = map[*regexp.Regexp]error{
 	regexp.MustCompile(`Programmatic access token .* not found`):                   ErrPatNotFound,
 	regexp.MustCompile(`Any policy of kind [a-zA-z_]+ is not attached to ACCOUNT`): ErrPolicyNotAttachedToAccount,

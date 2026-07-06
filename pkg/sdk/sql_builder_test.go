@@ -14,6 +14,13 @@ type unexportedTestHelper struct {
 	static bool `ddl:"static" sql:"EXAMPLE_STATIC"`
 }
 
+func mustClauseString(t *testing.T, c sqlClause) string {
+	t.Helper()
+	s, err := c.String()
+	require.NoError(t, err)
+	return s
+}
+
 func TestBuilder_parseField(t *testing.T) {
 	t.Run("test boolean keyword", func(t *testing.T) {
 		s := struct {
@@ -28,7 +35,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "EXAMPLE_KEYWORD", clause.String())
+		assert.Equal(t, "EXAMPLE_KEYWORD", mustClauseString(t, clause))
 	})
 
 	t.Run("test boolean keyword with false value", func(t *testing.T) {
@@ -74,7 +81,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "example", clause.String())
+		assert.Equal(t, "example", mustClauseString(t, clause))
 	})
 
 	t.Run("test string keyword with nil value", func(t *testing.T) {
@@ -104,7 +111,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, `"example"`, clause.String())
+		assert.Equal(t, `"example"`, mustClauseString(t, clause))
 	})
 
 	t.Run("test string keyword with single quotes", func(t *testing.T) {
@@ -120,7 +127,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, `'example'`, clause.String())
+		assert.Equal(t, `'example'`, mustClauseString(t, clause))
 	})
 
 	t.Run("test string keyword with double dollar quotes", func(t *testing.T) {
@@ -136,7 +143,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, `$$example$$`, clause.String())
+		assert.Equal(t, `$$example$$`, mustClauseString(t, clause))
 	})
 
 	t.Run("test static with value", func(t *testing.T) {
@@ -152,7 +159,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "EXAMPLE_STATIC", clause.String())
+		assert.Equal(t, "EXAMPLE_STATIC", mustClauseString(t, clause))
 	})
 
 	t.Run("test static with nil value", func(t *testing.T) {
@@ -166,7 +173,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "EXAMPLE_STATIC", clause.String())
+		assert.Equal(t, "EXAMPLE_STATIC", mustClauseString(t, clause))
 	})
 
 	t.Run("test parameter with value", func(t *testing.T) {
@@ -182,7 +189,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "EXAMPLE_PARAMETER = example", clause.String())
+		assert.Equal(t, "EXAMPLE_PARAMETER = example", mustClauseString(t, clause))
 	})
 
 	t.Run("test parameter with nil value", func(t *testing.T) {
@@ -212,7 +219,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, `EXAMPLE_PARAMETER = "example"`, clause.String())
+		assert.Equal(t, `EXAMPLE_PARAMETER = "example"`, mustClauseString(t, clause))
 	})
 
 	t.Run("test parameter with double dollar quotes", func(t *testing.T) {
@@ -228,7 +235,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, `EXAMPLE_PARAMETER = $$example$$`, clause.String())
+		assert.Equal(t, `EXAMPLE_PARAMETER = $$example$$`, mustClauseString(t, clause))
 	})
 
 	t.Run("test parameter with single quotes", func(t *testing.T) {
@@ -244,7 +251,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, `EXAMPLE_PARAMETER = 'example'`, clause.String())
+		assert.Equal(t, `EXAMPLE_PARAMETER = 'example'`, mustClauseString(t, clause))
 	})
 
 	t.Run("test parameter with integer value", func(t *testing.T) {
@@ -260,7 +267,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "EXAMPLE_PARAMETER = 1", clause.String())
+		assert.Equal(t, "EXAMPLE_PARAMETER = 1", mustClauseString(t, clause))
 	})
 
 	t.Run("test parameter with no db", func(t *testing.T) {
@@ -276,7 +283,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "= example", clause.String())
+		assert.Equal(t, "= example", mustClauseString(t, clause))
 	})
 
 	t.Run("test unexported static value set", func(t *testing.T) {
@@ -290,7 +297,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "EXAMPLE_STATIC", clause.String())
+		assert.Equal(t, "EXAMPLE_STATIC", mustClauseString(t, clause))
 	})
 
 	t.Run("test unexported static value not set", func(t *testing.T) {
@@ -304,7 +311,7 @@ func TestBuilder_parseField(t *testing.T) {
 		require.True(t, ok)
 		clause, err := builder.parseField(field, value)
 		require.NoError(t, err)
-		assert.Equal(t, "EXAMPLE_STATIC", clause.String())
+		assert.Equal(t, "EXAMPLE_STATIC", mustClauseString(t, clause))
 	})
 }
 
@@ -424,9 +431,9 @@ func TestBuilder_parseStruct(t *testing.T) {
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
 		assert.Len(t, clauses, 3)
-		assert.Equal(t, "EXAMPLE_STATIC", clauses[0].String())
-		assert.Equal(t, s.name.FullyQualifiedName(), clauses[1].String())
-		assert.Equal(t, "EXAMPLE_PARAMETER = example", clauses[2].String())
+		assert.Equal(t, "EXAMPLE_STATIC", mustClauseString(t, clauses[0]))
+		assert.Equal(t, s.name.FullyQualifiedName(), mustClauseString(t, clauses[1]))
+		assert.Equal(t, "EXAMPLE_PARAMETER = example", mustClauseString(t, clauses[2]))
 	})
 
 	t.Run("struct with a slice field using ddl: keyword", func(t *testing.T) {
@@ -442,7 +449,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
 		assert.Len(t, clauses, 1)
-		assert.Equal(t, "TAG (KEY = 'abc' KEY2 = 'def', KEY = '123' KEY2 = '456')", clauses[0].String())
+		assert.Equal(t, "TAG (KEY = 'abc' KEY2 = 'def', KEY = '123' KEY2 = '456')", mustClauseString(t, clauses[0]))
 	})
 
 	t.Run("struct with a slice field using ddl: - (no elements)", func(t *testing.T) {
@@ -469,7 +476,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
 		assert.Len(t, clauses, 1)
-		assert.Equal(t, "KEY = 'abc', KEY = '123'", clauses[0].String())
+		assert.Equal(t, "KEY = 'abc', KEY = '123'", mustClauseString(t, clauses[0]))
 	})
 
 	t.Run("struct with a struct list using ddl: list", func(t *testing.T) {
@@ -486,7 +493,7 @@ func TestBuilder_parseStruct(t *testing.T) {
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
 		assert.Len(t, clauses, 1)
-		assert.Equal(t, "A, B, C", clauses[0].String())
+		assert.Equal(t, "A, B, C", mustClauseString(t, clauses[0]))
 	})
 
 	t.Run("struct with a struct list using ddl: list,no_comma", func(t *testing.T) {
@@ -503,13 +510,14 @@ func TestBuilder_parseStruct(t *testing.T) {
 		clauses, err := builder.parseStruct(s)
 		require.NoError(t, err)
 		assert.Len(t, clauses, 1)
-		assert.Equal(t, "A B C", clauses[0].String())
+		assert.Equal(t, "A B C", mustClauseString(t, clauses[0]))
 	})
 }
 
 func TestBuilder_sql(t *testing.T) {
 	t.Run("test sql with no clauses", func(t *testing.T) {
-		s := builder.sql([]sqlClause{}...)
+		s, err := builder.sql([]sqlClause{}...)
+		require.NoError(t, err)
 		assert.Equal(t, "", s)
 	})
 
@@ -522,7 +530,8 @@ func TestBuilder_sql(t *testing.T) {
 				em:    Equals,
 			},
 		}
-		s := builder.sql(clauses...)
+		s, err := builder.sql(clauses...)
+		require.NoError(t, err)
 		assert.Equal(t, "EXAMPLE_STATIC EXAMPLE_KEYWORD = example", s)
 	})
 }

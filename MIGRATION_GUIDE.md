@@ -26,6 +26,28 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.17.0 ➞ v2.18.0
 
+### *(bug fix)* SDK, literals, and privileges are now properly escaped
+
+Multiple legacy SQL builders and provider resources previously interpolated user-provided values directly into SQL strings without proper quoting or escaping. This could lead to incorrect queries and Snowflake errors like SQL compilation error. The following areas have been fixed:
+- Identifier SQL emission (provider-wide): double-quote characters inside quoted identifiers are now escaped as `""` in the SQL builder, matching the SQL standard.
+- Single quotes are now correctly escaped in the following resources:
+  - `snowflake_system_generate_scim_access_token`,
+  - `snowflake_system_get_aws_sns_iam_policy`,
+  - `snowflake_user_public_keys`,
+  - `snowflake_table_column_masking_policy_application`,
+  - Legacy `snowflake_stage` resource: the stage name, URL, comment, and storage integration fields. We kindly remind you that this resource is deprecated. Please use other [new stage resources](./MIGRATION_GUIDE.md#new-feature-new-stage-resources).
+- Dollar-quoted fields: the `$$` sequence is now rejected in any field rendered with Snowflake dollar-quoting because `$$` cannot be escaped inside a dollar-quoted constant. The affected resources:
+  - `snowflake_cortex_agent`,
+  - `snowflake_listings`,
+  - `snowflake_service`,
+  - `snowflake_task`,
+- The following fields are now wrapped by single quotes:
+  - Stage location in `snowflake_listing` and `snowflake_service`: stage location values are now quoted with single quotes in the SDK-generated SQL.
+  - Account and account_region in `snowflake_account` resource.
+- Improved validations for object types and privileges: values with unexpected characters (e.g. semicolons, quotes) are rejected at plan time.
+
+No action required.
+
 ### *(bug fix)* Explicit false in the provider block now correctly overrides TOML profile values
 When a Boolean provider field was explicitly set to false in the provider block or environmental variables, the TOML value incorrectly took precedence. Affected fields: passcode_in_password, keep_session_alive, disable_query_context_cache, enable_single_use_refresh_tokens, log_query_text, log_query_parameters, crl_in_memory_cache_disabled, crl_on_disk_cache_disabled, disable_ocsp_checks / insecure_mode.
 
