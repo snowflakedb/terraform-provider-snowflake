@@ -10,7 +10,7 @@ description: |-
 !> **Note** To use `allowed_user_domains` and `allowed_email_patterns` fields, first enable [identifier-first logins](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-security-integration-multiple#enable-identifier-first-login). This can be managed with [account_parameter](./account_parameter).
 
 ~> **Missing fields** The `saml2_snowflake_x509_cert` and `saml2_x509_cert` fields are not present in the `describe_output` on purpose due to Terraform SDK limitations (more on that in the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#removal-of-sensitive-fields)).
-This may have impact on detecting external changes for the `saml2_x509_cert` field.
+This may have impact on detecting external changes for the `saml2_x509_cert` field. The `saml2_snowflake_x509_cert` field is also not present for user configuration and will be added in the future. Please use the [execute](./execute) resource as a workaround.
 
 # snowflake_saml2_integration (Resource)
 
@@ -44,7 +44,6 @@ resource "snowflake_saml2_integration" "test" {
   saml2_sign_request                  = true
   saml2_snowflake_acs_url             = "example.snowflakecomputing.com/fed/login"
   saml2_snowflake_issuer_url          = "example.snowflakecomputing.com/fed/login"
-  saml2_snowflake_x509_cert           = file("snowflake_cert.pem")
   saml2_sp_initiated_login_page_label = "foo"
   saml2_sso_url                       = "https://example.com"
   saml2_x509_cert                     = file("cert.pem")
