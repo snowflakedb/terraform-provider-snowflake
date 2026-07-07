@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -45,6 +46,12 @@ var icebergTableFromAwsGlueSchema = collections.MergeMaps(
 				}),
 			),
 		},
+		ParametersAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW PARAMETERS IN ICEBERG TABLE` for the given Iceberg table.",
+			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableParametersSchema},
+		},
 	},
 	icebergTableParametersSchema(),
 )
@@ -64,7 +71,7 @@ func IcebergTableFromAwsGlue() *schema.Resource {
 		},
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
-			ComputedIfAnyAttributeChanged(icebergTableFromAwsGlueSchema, ShowOutputAttributeName, "comment", "auto_refresh", "catalog_table_name", "catalog_namespace"),
+			ComputedIfAnyAttributeChanged(icebergTableFromAwsGlueSchema, ShowOutputAttributeName, "comment", "auto_refresh"),
 			ComputedIfAnyAttributeChanged(icebergTableFromAwsGlueSchema, ParametersAttributeName, "external_volume", "catalog", "replace_invalid_characters"),
 			icebergTableParametersCustomDiff,
 		),

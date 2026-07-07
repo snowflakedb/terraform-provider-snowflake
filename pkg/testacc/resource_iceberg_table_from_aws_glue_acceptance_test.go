@@ -40,7 +40,7 @@ func TestAcc_IcebergTableFromAwsGlue_BasicUseCase(t *testing.T) {
 
 	// Create a dedicated database with external_volume and catalog set at db level so the table
 	// can be created without specifying them explicitly (matching the "required fields only" test case).
-	dbForIcebergGlue, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(testClient().Ids.RandomAccountObjectIdentifier()).WithCatalog(catalogId).WithExternalVolume(externalVolumeId))
+	dbForIcebergGlue, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, testClient().Database.TestParametersSet(testClient().Ids.RandomAccountObjectIdentifier()).WithCatalog(catalogId).WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbCleanup)
 	schemaIdForIcebergGlue := sdk.NewDatabaseObjectIdentifier(dbForIcebergGlue.ID().Name(), "PUBLIC")
 
