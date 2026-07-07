@@ -29,7 +29,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### *(new feature)* New Iceberg Table resources
 
 We have added new preview resources for Iceberg tables:
-- [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from REST backend ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
+- [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from a REST catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
 
 These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest` to the `preview_features_enabled` field in the provider configuration.
 

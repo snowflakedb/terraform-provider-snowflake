@@ -42,7 +42,7 @@ func TestAcc_IcebergTableFromRest_BasicUseCase(t *testing.T) {
 
 	// Create a dedicated database with external_volume and catalog set at db level so the table
 	// can be created without specifying them explicitly (matching the "required fields only" test case).
-	dbForIcebergRest, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(testClient().Ids.RandomAccountObjectIdentifier()).WithCatalog(catalogId).WithExternalVolume(externalVolumeId))
+	dbForIcebergRest, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, testClient().Database.TestParametersSet(testClient().Ids.RandomAccountObjectIdentifier()).WithCatalog(catalogId).WithExternalVolume(externalVolumeId))
 	t.Cleanup(dbCleanup)
 	schemaIdForIcebergRest := sdk.NewDatabaseObjectIdentifier(dbForIcebergRest.ID().Name(), "PUBLIC")
 
@@ -363,6 +363,79 @@ func TestAcc_IcebergTableFromRest_CompleteUseCase(t *testing.T) {
 					"path_layout",
 					"auto_refresh",
 					"catalog_namespace",
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_IcebergTableFromRest_Import(t *testing.T) {
+	// TODO(SNOW-3725859): Provide the external volume and catalog integration dynamically. Unskip and
+	// fold this test into the main suite.
+	t.Skip("Iceberg REST tests require preconfigured external catalog integrations and are not run by default")
+	const (
+		icebergRestCatalogName = "REST_CATALOG_INTEGRATION"
+		icebergRestVolumeName  = "GLUE_EXTERNAL_VOLUME"
+		// Values that must match the manually preconfigured REST catalog contents.
+		icebergRestCatalogTableName = "TEST"
+		icebergRestCatalogNamespace = "glue_iceberg_schema"
+	)
+	externalVolumeId := sdk.NewAccountObjectIdentifier(icebergRestVolumeName)
+	catalogId := sdk.NewAccountObjectIdentifier(icebergRestCatalogName)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+
+	// Only fields that are read back into state after import are set in the config, so that after import
+	// the plan is empty. path_layout (not returned by SHOW/DESCRIBE) and catalog_namespace (ForceNew,
+	// reflects the catalog default) are intentionally omitted.
+	allAttributes := model.IcebergTableFromRestWithDefaultMeta(
+		id.DatabaseName(),
+		id.SchemaName(),
+		id.Name(),
+		icebergRestCatalogTableName,
+	).WithExternalVolume(externalVolumeId.Name()).
+		WithCatalog(catalogId.Name()).
+		WithAutoRefresh("true").
+		WithComment(comment)
+
+	ref := allAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.IcebergTableFromRest),
+		Steps: []resource.TestStep{
+			// Import the externally created resource
+			{
+				PreConfig: func() {
+					createRequest := sdk.NewCreateFromIcebergRestIcebergTableRequest(id, icebergRestCatalogTableName).
+						WithExternalVolume(externalVolumeId).
+						WithCatalog(catalogId).
+						WithCatalogNamespace(icebergRestCatalogNamespace).
+						WithAutoRefresh(true).
+						WithComment(comment)
+					testClient().IcebergTable.CreateFromIcebergRest(t, id, createRequest)
+				},
+				Config:             accconfig.FromModels(t, allAttributes),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			// After import, all fields present in the config already match state, so applying the same
+			// config should result in an empty plan.
+			{
+				Config: accconfig.FromModels(t, allAttributes),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
 				},
 			},
 		},
