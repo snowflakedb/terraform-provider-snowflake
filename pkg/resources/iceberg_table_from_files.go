@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -25,6 +26,12 @@ var icebergTableFromFilesSchema = collections.MergeMaps(
 			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 			Description:  externalChangesNotDetectedFieldDescription("Specifies the relative path of the Iceberg metadata file in the external volume. Cannot be changed after creation."),
+		},
+		ParametersAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW PARAMETERS IN ICEBERG TABLE` for the given Iceberg table.",
+			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableParametersSchema},
 		},
 	},
 	icebergTableParametersSchema(),

@@ -641,6 +641,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_git_repository":                                               resources.GitRepository(),
 		"snowflake_iceberg_table_from_delta_files":                               resources.IcebergTableFromDeltaFiles(),
 		"snowflake_iceberg_table_from_files":                                     resources.IcebergTableFromFiles(),
+		"snowflake_iceberg_table_from_rest":                                      resources.IcebergTableFromRest(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_stage_internal":                                               resources.InternalStage(),
 		"snowflake_job_service":                                                  resources.JobService(),

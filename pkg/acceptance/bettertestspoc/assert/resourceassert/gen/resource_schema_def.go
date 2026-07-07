@@ -194,6 +194,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.IcebergTableFromFiles().Schema,
 	},
 	{
+		name:   "IcebergTableFromRest",
+		schema: resources.IcebergTableFromRest().Schema,
+	},
+	{
 		name:   "ImageRepository",
 		schema: resources.ImageRepository().Schema,
 	},

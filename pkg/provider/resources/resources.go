@@ -64,6 +64,7 @@ const (
 	HybridTable                                            resource = "snowflake_hybrid_table"
 	IcebergTableFromDeltaFiles                             resource = "snowflake_iceberg_table_from_delta_files"
 	IcebergTableFromFiles                                  resource = "snowflake_iceberg_table_from_files"
+	IcebergTableFromRest                                   resource = "snowflake_iceberg_table_from_rest"
 	ImageRepository                                        resource = "snowflake_image_repository"
 	InternalStage                                          resource = "snowflake_stage_internal"
 	JobService                                             resource = "snowflake_job_service"
