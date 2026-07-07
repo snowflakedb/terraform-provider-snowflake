@@ -1711,7 +1711,7 @@ func TestInt_IcebergTables(t *testing.T) {
 // preconfigured dependencies we can't provide dynamically for now.
 // TODO(SNOW-3725859): Provide the external volume and catalog integrations dynamically. Unskip and move these tests to the main test suite.
 func TestInt_IcebergTables_WithAdditionalDependencies(t *testing.T) {
-	t.Skip("Iceberg REST and AWS Glue tests require preconfigured external catalog integrations and are not run by default")
+	// t.Skip("Iceberg REST and AWS Glue tests require preconfigured external catalog integrations and are not run by default")
 
 	client := testClient(t)
 	ctx := testContext(t)
@@ -1881,7 +1881,11 @@ func TestInt_IcebergTables_WithAdditionalDependencies(t *testing.T) {
 			t, objectparametersassert.IcebergTableParameters(t, id).
 				HasCatalog(restCatalogId.Name()).
 				HasExternalVolume(externalVolumeId.Name()).
-				HasReplaceInvalidCharacters(false),
+				HasReplaceInvalidCharacters(false).
+				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+				HasTargetFileSize(sdk.IcebergTableTargetFileSizeAuto).
+				HasEnableIcebergMergeOnRead(true).
+				HasIcebergMergeOnReadBehavior("auto"),
 		)
 
 		assertUnmanagedColumns(t, id)
@@ -1937,7 +1941,7 @@ func TestInt_IcebergTables_WithAdditionalDependencies(t *testing.T) {
 				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
 				HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
 				HasEnableIcebergMergeOnRead(true).
-				HasIcebergMergeOnReadBehavior("ENABLED"),
+				HasIcebergMergeOnReadBehavior(string(sdk.IcebergTableIcebergMergeOnReadBehaviorEnabled)),
 		)
 
 		assertUnmanagedColumns(t, id)
