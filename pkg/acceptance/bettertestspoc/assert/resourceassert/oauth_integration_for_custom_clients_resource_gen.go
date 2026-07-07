@@ -37,6 +37,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasName(expected string
 	return o
 }
 
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasAllowedRolesList(expected ...string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.SetContainsExactlyStringValues("allowed_roles_list", expected...)
+	return o
+}
+
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasBlockedRolesList(expected ...string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.SetContainsExactlyStringValues("blocked_roles_list", expected...)
 	return o
@@ -265,6 +270,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoOauthUseSecondaryR
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasAllowedRolesListEmpty() *OauthIntegrationForCustomClientsResourceAssert {
+	o.ValueSet("allowed_roles_list.#", "0")
+	return o
+}
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasBlockedRolesListEmpty() *OauthIntegrationForCustomClientsResourceAssert {
 	o.ValueSet("blocked_roles_list.#", "0")
