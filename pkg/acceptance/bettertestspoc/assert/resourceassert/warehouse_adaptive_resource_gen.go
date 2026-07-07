@@ -16,7 +16,7 @@ func WarehouseAdaptiveResource(t *testing.T, name string) *WarehouseAdaptiveReso
 	t.Helper()
 
 	return &WarehouseAdaptiveResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedWarehouseAdaptiveResource(t *testing.T, id string) *WarehouseAdapti
 	t.Helper()
 
 	return &WarehouseAdaptiveResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func ImageRepositoryResource(t *testing.T, name string) *ImageRepositoryResource
 	t.Helper()
 
 	return &ImageRepositoryResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedImageRepositoryResource(t *testing.T, id string) *ImageRepositoryRe
 	t.Helper()
 
 	return &ImageRepositoryResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

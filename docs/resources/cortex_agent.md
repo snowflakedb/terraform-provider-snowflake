@@ -70,7 +70,7 @@ resource "snowflake_cortex_agent" "complete" {
 - `database` (String) The database in which to create the Cortex agent. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the Cortex agent. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the Cortex agent. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `specification` (String) Specifies a YAML object containing the settings for the Cortex agent.
+- `specification` (String) Specifies a YAML object containing the settings for the Cortex agent. The provider wraps it in `$$` by default, so be aware of that while referencing the argument in the spec definition. Using `$$` in this field is disallowed.
 
 ### Optional
 

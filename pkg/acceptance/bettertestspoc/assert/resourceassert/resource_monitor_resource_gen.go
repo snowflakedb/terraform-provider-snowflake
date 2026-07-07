@@ -16,7 +16,7 @@ func ResourceMonitorResource(t *testing.T, name string) *ResourceMonitorResource
 	t.Helper()
 
 	return &ResourceMonitorResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedResourceMonitorResource(t *testing.T, id string) *ResourceMonitorRe
 	t.Helper()
 
 	return &ResourceMonitorResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

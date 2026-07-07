@@ -113,7 +113,8 @@ var taskSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("config"),
-		Description:      "Specifies a string representation of key value pairs that can be accessed by all tasks in the task graph. Must be in JSON format.",
+		Description:      joinWithSpace("Specifies a string representation of key value pairs that can be accessed by all tasks in the task graph. Must be in JSON format.", doubleDollarQuotesDescription()),
+		ValidateDiagFunc: forbidDoubleDollarQuotes,
 	},
 	"allow_overlapping_execution": {
 		Type:             schema.TypeString,

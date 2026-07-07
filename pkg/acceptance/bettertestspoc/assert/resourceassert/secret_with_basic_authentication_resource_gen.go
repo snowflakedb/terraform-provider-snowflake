@@ -16,7 +16,7 @@ func SecretWithBasicAuthenticationResource(t *testing.T, name string) *SecretWit
 	t.Helper()
 
 	return &SecretWithBasicAuthenticationResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSecretWithBasicAuthenticationResource(t *testing.T, id string) *Sec
 	t.Helper()
 
 	return &SecretWithBasicAuthenticationResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

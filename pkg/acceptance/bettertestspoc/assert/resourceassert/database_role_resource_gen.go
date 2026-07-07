@@ -16,7 +16,7 @@ func DatabaseRoleResource(t *testing.T, name string) *DatabaseRoleResourceAssert
 	t.Helper()
 
 	return &DatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedDatabaseRoleResource(t *testing.T, id string) *DatabaseRoleResource
 	t.Helper()
 
 	return &DatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

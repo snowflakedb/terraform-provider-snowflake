@@ -60,6 +60,25 @@ func TestServices_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.FromSpecification.Specification]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecification = &ServiceFromSpecification{
+			Specification: String("spec$$injected"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecification", "Specification"))
+	})
+
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
+			SpecificationTemplate: String("spec$$injected"),
+			Using:                 []ListItem{{Key: "k", Value: "v"}},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplate"))
+	})
+
 	t.Run("validation: exactly one field from [opts.FromSpecification.SpecificationFile opts.FromSpecification.Specification] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.FromSpecification = &ServiceFromSpecification{}
@@ -204,8 +223,8 @@ func TestServices_Create(t *testing.T) {
 			Location:          &location,
 			SpecificationFile: String("spec.yaml"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM %s SPECIFICATION_FILE = 'spec.yaml'",
-			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), location.ToSql())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_FILE = 'spec.yaml'`,
+			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("from specification", func(t *testing.T) {
@@ -252,8 +271,8 @@ func TestServices_Create(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM %s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), location.ToSql())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
+			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("from specification template", func(t *testing.T) {
@@ -535,8 +554,8 @@ func TestServices_Alter(t *testing.T) {
 			Location:          &location,
 			SpecificationFile: String("spec.yaml"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM %s SPECIFICATION_FILE = 'spec.yaml'",
-			id.FullyQualifiedName(), location.ToSql())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_FILE = 'spec.yaml'`,
+			id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("from specification", func(t *testing.T) {
@@ -583,8 +602,8 @@ func TestServices_Alter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM %s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			id.FullyQualifiedName(), location.ToSql())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
+			id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("from specification template", func(t *testing.T) {
@@ -864,6 +883,25 @@ func TestServices_ExecuteJob(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.JobServiceFromSpecification.Specification]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
+			Specification: String("spec$$injected"),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecification", "Specification"))
+	})
+
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.JobServiceFromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
+			SpecificationTemplate: String("spec$$injected"),
+			Using:                 []ListItem{{Key: "k", Value: "v"}},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplate"))
+	})
+
 	t.Run("validation: exactly one field from [opts.JobServiceFromSpecification.SpecificationFile opts.JobServiceFromSpecification.Specification] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
@@ -958,8 +996,8 @@ func TestServices_ExecuteJob(t *testing.T) {
 			Location:          &location,
 			SpecificationFile: String("spec.yaml"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM %s SPECIFICATION_FILE = 'spec.yaml'",
-			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), location.ToSql())
+		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_FILE = 'spec.yaml'`,
+			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("from specification", func(t *testing.T) {
@@ -984,8 +1022,8 @@ func TestServices_ExecuteJob(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM %s SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), location.ToSql())
+		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
+			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("from specification template", func(t *testing.T) {

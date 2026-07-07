@@ -16,7 +16,7 @@ func TagAssociationResource(t *testing.T, name string) *TagAssociationResourceAs
 	t.Helper()
 
 	return &TagAssociationResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedTagAssociationResource(t *testing.T, id string) *TagAssociationReso
 	t.Helper()
 
 	return &TagAssociationResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

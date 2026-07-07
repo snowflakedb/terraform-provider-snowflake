@@ -222,7 +222,9 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 						HasRestConfigCatalogName(catalogName).
 						HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
-						HasOAuthRestAuthentication(catalogUri+"/v1/oauth/tokens", oAuthClientId, oAuthAllowedScope),
+						HasOAuthRestAuthenticationOauthTokenUri(catalogUri+"/v1/oauth/tokens").
+						HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
+						HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 				),
 			},
 			// Iceberg REST Bearer with describe

@@ -16,7 +16,7 @@ func ComputePoolResource(t *testing.T, name string) *ComputePoolResourceAssert {
 	t.Helper()
 
 	return &ComputePoolResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedComputePoolResource(t *testing.T, id string) *ComputePoolResourceAs
 	t.Helper()
 
 	return &ComputePoolResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

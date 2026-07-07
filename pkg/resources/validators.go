@@ -139,3 +139,21 @@ func IsValidListingName(i any, path cty.Path) diag.Diagnostics {
 
 	return nil
 }
+
+// forbidDoubleDollarQuotes rejects string values that contain $$.
+// Fields that Snowflake wraps in double-dollar quotes ($$...$$) must not embed $$ because it would terminate the outer quotes.
+func forbidDoubleDollarQuotes(val any, path cty.Path) diag.Diagnostics {
+	v, ok := val.(string)
+	if !ok {
+		return diag.Errorf("expected string type, got %T", val)
+	}
+	if strings.Contains(v, "$$") {
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       "Invalid value",
+			Detail:        `The value cannot contain the $$ sequence. The provider wraps the input automatically.`,
+			AttributePath: path,
+		}}
+	}
+	return nil
+}

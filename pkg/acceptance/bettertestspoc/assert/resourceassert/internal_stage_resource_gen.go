@@ -16,7 +16,7 @@ func InternalStageResource(t *testing.T, name string) *InternalStageResourceAsse
 	t.Helper()
 
 	return &InternalStageResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedInternalStageResource(t *testing.T, id string) *InternalStageResour
 	t.Helper()
 
 	return &InternalStageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

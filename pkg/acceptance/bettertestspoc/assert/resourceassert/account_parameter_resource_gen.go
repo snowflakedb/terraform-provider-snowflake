@@ -16,7 +16,7 @@ func AccountParameterResource(t *testing.T, name string) *AccountParameterResour
 	t.Helper()
 
 	return &AccountParameterResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedAccountParameterResource(t *testing.T, id string) *AccountParameter
 	t.Helper()
 
 	return &AccountParameterResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

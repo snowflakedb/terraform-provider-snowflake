@@ -16,7 +16,7 @@ func OauthIntegrationForPartnerApplicationsResource(t *testing.T, name string) *
 	t.Helper()
 
 	return &OauthIntegrationForPartnerApplicationsResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedOauthIntegrationForPartnerApplicationsResource(t *testing.T, id str
 	t.Helper()
 
 	return &OauthIntegrationForPartnerApplicationsResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func FunctionSqlResource(t *testing.T, name string) *FunctionSqlResourceAssert {
 	t.Helper()
 
 	return &FunctionSqlResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedFunctionSqlResource(t *testing.T, id string) *FunctionSqlResourceAs
 	t.Helper()
 
 	return &FunctionSqlResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -16,7 +16,7 @@ func GrantApplicationRoleResource(t *testing.T, name string) *GrantApplicationRo
 	t.Helper()
 
 	return &GrantApplicationRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantApplicationRoleResource(t *testing.T, id string) *GrantApplica
 	t.Helper()
 
 	return &GrantApplicationRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

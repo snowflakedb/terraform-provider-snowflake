@@ -16,7 +16,7 @@ func Saml2SecurityIntegrationResource(t *testing.T, name string) *Saml2SecurityI
 	t.Helper()
 
 	return &Saml2SecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSaml2SecurityIntegrationResource(t *testing.T, id string) *Saml2Sec
 	t.Helper()
 
 	return &Saml2SecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

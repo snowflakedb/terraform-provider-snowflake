@@ -16,7 +16,7 @@ func ProcedureScalaResource(t *testing.T, name string) *ProcedureScalaResourceAs
 	t.Helper()
 
 	return &ProcedureScalaResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedProcedureScalaResource(t *testing.T, id string) *ProcedureScalaReso
 	t.Helper()
 
 	return &ProcedureScalaResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

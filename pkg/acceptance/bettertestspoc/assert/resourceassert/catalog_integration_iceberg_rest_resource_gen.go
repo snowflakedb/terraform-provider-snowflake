@@ -16,7 +16,7 @@ func CatalogIntegrationIcebergRestResource(t *testing.T, name string) *CatalogIn
 	t.Helper()
 
 	return &CatalogIntegrationIcebergRestResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCatalogIntegrationIcebergRestResource(t *testing.T, id string) *Cat
 	t.Helper()
 
 	return &CatalogIntegrationIcebergRestResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

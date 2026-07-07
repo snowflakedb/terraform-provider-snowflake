@@ -16,7 +16,7 @@ func FunctionPythonResource(t *testing.T, name string) *FunctionPythonResourceAs
 	t.Helper()
 
 	return &FunctionPythonResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedFunctionPythonResource(t *testing.T, id string) *FunctionPythonReso
 	t.Helper()
 
 	return &FunctionPythonResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -1348,6 +1348,8 @@ func TestAcc_Service_Validations(t *testing.T) {
 		WithFromSpecificationValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"stage": tfconfig.StringVariable("stage"),
 		}))
+	modelWithDoubleDollarInUsingValue := model.ServiceWithSpecTemplate("test", id.DatabaseName(), id.SchemaName(), id.Name(), computePoolId.FullyQualifiedName(), specTemplate,
+		acchelpers.ServiceSpecUsing{Key: "key", Value: "contains $$ sequence"})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: servicesProviderFactory,
@@ -1430,6 +1432,11 @@ func TestAcc_Service_Validations(t *testing.T) {
 				Config:      config.FromModels(t, modelWithStageAndNoFile),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("`from_specification.0.file,from_specification.0.stage` must be specified"),
+			},
+			{
+				Config:      config.FromModels(t, modelWithDoubleDollarInUsingValue),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`cannot contain the \$\$ sequence`),
 			},
 		},
 	})
