@@ -285,6 +285,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone))),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.allowed_roles_list.0.value", "")),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.network_policy.0.value", networkPolicy.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.comment.0.value", comment)),
 					assert.Check(resource.TestCheckResourceAttrSet(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_rsa_public_key_fp.0.value")),
