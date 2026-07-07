@@ -66,19 +66,19 @@ func TestDynamicTableAlter(t *testing.T) {
 
 	t.Run("validation: no alter action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Resume = Bool(true)
 		opts.Suspend = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: no property to unset", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: add storage lifecycle policy incorrect identifier", func(t *testing.T) {
@@ -121,6 +121,12 @@ func TestDynamicTableAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s SET TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name"`, id.FullyQualifiedName())
+	})
+
+	t.Run("set comment", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetComment = new("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s SET COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage lifecycle policy", func(t *testing.T) {
