@@ -16,7 +16,7 @@ func CurrentOrganizationAccountResource(t *testing.T, name string) *CurrentOrgan
 	t.Helper()
 
 	return &CurrentOrganizationAccountResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCurrentOrganizationAccountResource(t *testing.T, id string) *Curren
 	t.Helper()
 
 	return &CurrentOrganizationAccountResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -144,6 +144,21 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMapping
 
 func (c *CurrentOrganizationAccountResourceAssert) HasComment(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.StringValueSet("comment", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeCliDailyEstCreditLimitPerUser(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("cortex_code_cli_daily_est_credit_limit_per_user", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUser(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("cortex_code_desktop_daily_est_credit_limit_per_user", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUser(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("cortex_code_snowsight_daily_est_credit_limit_per_user", expected)
 	return c
 }
 
@@ -766,6 +781,21 @@ func (c *CurrentOrganizationAccountResourceAssert) HasCommentString(expected str
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeCliDailyEstCreditLimitPerUserString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("cortex_code_cli_daily_est_credit_limit_per_user", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUserString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("cortex_code_desktop_daily_est_credit_limit_per_user", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUserString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("cortex_code_snowsight_daily_est_credit_limit_per_user", expected)
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasCortexEnabledCrossRegionString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("cortex_enabled_cross_region", expected)
 	return c
@@ -1385,6 +1415,21 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoComment() *CurrentOrgani
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNoCortexCodeCliDailyEstCreditLimitPerUser() *CurrentOrganizationAccountResourceAssert {
+	c.ValueNotSet("cortex_code_cli_daily_est_credit_limit_per_user")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasNoCortexCodeDesktopDailyEstCreditLimitPerUser() *CurrentOrganizationAccountResourceAssert {
+	c.ValueNotSet("cortex_code_desktop_daily_est_credit_limit_per_user")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasNoCortexCodeSnowsightDailyEstCreditLimitPerUser() *CurrentOrganizationAccountResourceAssert {
+	c.ValueNotSet("cortex_code_snowsight_daily_est_credit_limit_per_user")
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasNoCortexEnabledCrossRegion() *CurrentOrganizationAccountResourceAssert {
 	c.ValueNotSet("cortex_enabled_cross_region")
 	return c
@@ -1996,6 +2041,21 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMapping
 
 func (c *CurrentOrganizationAccountResourceAssert) HasCommentEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("comment", "")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeCliDailyEstCreditLimitPerUserEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("cortex_code_cli_daily_est_credit_limit_per_user", "")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUserEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("cortex_code_desktop_daily_est_credit_limit_per_user", "")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUserEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("cortex_code_snowsight_daily_est_credit_limit_per_user", "")
 	return c
 }
 
@@ -2615,6 +2675,21 @@ func (c *CurrentOrganizationAccountResourceAssert) HasClientTimestampTypeMapping
 
 func (c *CurrentOrganizationAccountResourceAssert) HasCommentNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValuePresent("comment")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeCliDailyEstCreditLimitPerUserNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValuePresent("cortex_code_cli_daily_est_credit_limit_per_user")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUserNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValuePresent("cortex_code_desktop_daily_est_credit_limit_per_user")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUserNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValuePresent("cortex_code_snowsight_daily_est_credit_limit_per_user")
 	return c
 }
 

@@ -124,7 +124,7 @@ func TestAcc_Tasks_CompleteUseCase(t *testing.T) {
 		WithInDatabase(id.DatabaseId()).
 		WithWithParameters(true)
 
-	commonShowOutputAsserts := resourceshowoutputassert.TaskDatasourceShowOutput(t, "test").
+	commonShowOutputAsserts := resourceshowoutputassert.TasksDatasourceShowOutput(t, datasourceModelWithoutParameters.DatasourceReference()).
 		HasName(id.Name()).
 		HasSchemaName(id.SchemaName()).
 		HasDatabaseName(id.DatabaseName()).

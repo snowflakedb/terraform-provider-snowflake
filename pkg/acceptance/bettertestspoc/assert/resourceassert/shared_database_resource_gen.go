@@ -16,7 +16,7 @@ func SharedDatabaseResource(t *testing.T, name string) *SharedDatabaseResourceAs
 	t.Helper()
 
 	return &SharedDatabaseResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSharedDatabaseResource(t *testing.T, id string) *SharedDatabaseReso
 	t.Helper()
 
 	return &SharedDatabaseResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

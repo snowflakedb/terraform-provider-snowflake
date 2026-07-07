@@ -481,3 +481,34 @@ resource "snowflake_failover_group" "fg" {
 }
 `, name, databaseName, strings.Join(accountNames, ", "))
 }
+
+func TestAcc_FailoverGroup_InvalidObjectType(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FailoverGroupResource))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
+		Steps: []resource.TestStep{
+			// An object type outside the supported plural object type set is rejected during create.
+			{
+				Config:      config.FromModels(t, providerModel) + failoverGroupWithObjectTypes(id.Name(), `"DATABASES", "INVALID OBJECT TYPE;"`),
+				ExpectError: regexp.MustCompile("invalid plural object type: INVALID OBJECT TYPE;"),
+			},
+		},
+	})
+}
+
+func failoverGroupWithObjectTypes(name, objectTypes string) string {
+	return fmt.Sprintf(`
+resource "snowflake_failover_group" "fg" {
+	name         = "%[1]s"
+	object_types = [%[2]s]
+}
+`, name, objectTypes)
+}

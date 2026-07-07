@@ -221,10 +221,30 @@ var allObjectTypes = []ObjectType{
 // TODO(SNOW-1834370): use ToObjectType in other places with type conversion (instead of sdk.ObjectType)
 func ToObjectType(s string) (ObjectType, error) {
 	s = strings.ToUpper(s)
-	if !slices.Contains(allObjectTypes, ObjectType(s)) {
-		return "", fmt.Errorf("invalid object type: %s", s)
+	if err := validateUnquotedInput(s); err != nil {
+		return "", fmt.Errorf("invalid object type: %w", err)
 	}
 	return ObjectType(s), nil
+}
+
+// allPluralObjectTypes returns the set of known plural object types, derived from the singular-to-plural mapping.
+func allPluralObjectTypes() []PluralObjectType {
+	singularToPlural := objectTypeSingularToPluralMap()
+	pluralObjectTypes := make([]PluralObjectType, 0, len(singularToPlural))
+	for _, plural := range singularToPlural {
+		pluralObjectTypes = append(pluralObjectTypes, plural)
+	}
+	return pluralObjectTypes
+}
+
+// ToPluralObjectType validates and converts a string into a PluralObjectType. It should be used instead of the raw
+// PluralObjectType conversion whenever the input is not trusted (e.g. user-provided resource identifiers parsed during import).
+func ToPluralObjectType(s string) (PluralObjectType, error) {
+	s = strings.ToUpper(s)
+	if err := validateUnquotedInput(s); err != nil {
+		return "", fmt.Errorf("invalid plural object type: %w", err)
+	}
+	return PluralObjectType(s), nil
 }
 
 func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {

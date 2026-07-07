@@ -12,7 +12,7 @@
 ////////////////////////////
 
 {{ range .Attributes -}}
-    {{ if not (IsTypeSlice .ConcreteType) -}}
+    {{ if and (not (IsTypeSlice .ConcreteType)) (not .IsSdkStruct) -}}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ .ConcreteType }}) *{{ $assertName }} {
             {{ $assertVar }}.{{ .AssertionCreator }}("{{ SnakeCase .Name }}", {{ RunMapper .Mapper "expected" }})
             return {{ $assertVar }}

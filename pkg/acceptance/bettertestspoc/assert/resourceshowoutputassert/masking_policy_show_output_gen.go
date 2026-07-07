@@ -17,9 +17,8 @@ func MaskingPolicyShowOutput(t *testing.T, name string) *MaskingPolicyShowOutput
 	t.Helper()
 
 	maskingPolicyAssert := MaskingPolicyShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	maskingPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &maskingPolicyAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedMaskingPolicyShowOutput(t *testing.T, id string) *MaskingPolicyShow
 	t.Helper()
 
 	maskingPolicyAssert := MaskingPolicyShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	maskingPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &maskingPolicyAssert
+}
+
+func MaskingPoliciesDatasourceShowOutput(t *testing.T, name string) *MaskingPolicyShowOutputAssert {
+	t.Helper()
+
+	return MaskingPoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func MaskingPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *MaskingPolicyShowOutputAssert {
+	t.Helper()
+
+	maskingPolicyAssert := MaskingPolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "masking_policies", idx),
+	}
 	return &maskingPolicyAssert
 }
 
@@ -38,47 +51,47 @@ func ImportedMaskingPolicyShowOutput(t *testing.T, id string) *MaskingPolicyShow
 ////////////////////////////
 
 func (m *MaskingPolicyShowOutputAssert) HasCreatedOn(expected time.Time) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	m.StringValueSet("created_on", expected.String())
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasName(expected string) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	m.StringValueSet("name", expected)
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasDatabaseName(expected string) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	m.StringValueSet("database_name", expected)
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasSchemaName(expected string) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	m.StringValueSet("schema_name", expected)
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasKind(expected string) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	m.StringValueSet("kind", expected)
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasOwner(expected string) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	m.StringValueSet("owner", expected)
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasComment(expected string) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	m.StringValueSet("comment", expected)
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasExemptOtherPolicies(expected bool) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputBoolValueSet("exempt_other_policies", expected))
+	m.BoolValueSet("exempt_other_policies", expected)
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasOwnerRoleType(expected string) *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	m.StringValueSet("owner_role_type", expected)
 	return m
 }
 
@@ -87,46 +100,46 @@ func (m *MaskingPolicyShowOutputAssert) HasOwnerRoleType(expected string) *Maski
 ///////////////////////////////
 
 func (m *MaskingPolicyShowOutputAssert) HasNoCreatedOn() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	m.ValueNotSet("created_on")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoName() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	m.ValueNotSet("name")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoDatabaseName() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	m.ValueNotSet("database_name")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoSchemaName() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	m.ValueNotSet("schema_name")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoKind() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	m.ValueNotSet("kind")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoOwner() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	m.ValueNotSet("owner")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoComment() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	m.ValueNotSet("comment")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoExemptOtherPolicies() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("exempt_other_policies"))
+	m.ValueNotSet("exempt_other_policies")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoOwnerRoleType() *MaskingPolicyShowOutputAssert {
-	m.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	m.ValueNotSet("owner_role_type")
 	return m
 }

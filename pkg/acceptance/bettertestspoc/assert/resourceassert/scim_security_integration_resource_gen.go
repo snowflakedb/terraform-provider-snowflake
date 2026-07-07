@@ -16,7 +16,7 @@ func ScimSecurityIntegrationResource(t *testing.T, name string) *ScimSecurityInt
 	t.Helper()
 
 	return &ScimSecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedScimSecurityIntegrationResource(t *testing.T, id string) *ScimSecur
 	t.Helper()
 
 	return &ScimSecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

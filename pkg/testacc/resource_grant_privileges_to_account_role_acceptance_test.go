@@ -1519,6 +1519,23 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges_Validation(t *testi
 	})
 }
 
+func TestAcc_GrantPrivilegesToAccountRole_InvalidPrivilege(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config:      grantPrivilegesToAccountObjectConfigBogusPrivilege(),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("invalid privilege: .* contains disallowed characters"),
+			},
+		},
+	})
+}
+
 // prove https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2803 is fixed
 func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges_issue2803(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
@@ -1592,6 +1609,19 @@ func grantPrivilegesToAccountObjectConfigInvalid() string {
 resource "snowflake_grant_privileges_to_account_role" "test" {
 	account_role_name = "ROLE"
 	privileges = ["IMPORTED PRIVILEGES", "APPLYBUDGET"]
+	on_account_object {
+		object_type = "DATABASE"
+		object_name = "DB"
+	}
+}
+`
+}
+
+func grantPrivilegesToAccountObjectConfigBogusPrivilege() string {
+	return `
+resource "snowflake_grant_privileges_to_account_role" "test" {
+	account_role_name = "ROLE"
+	privileges = ["SELECT; DROP TABLE users"]
 	on_account_object {
 		object_type = "DATABASE"
 		object_name = "DB"

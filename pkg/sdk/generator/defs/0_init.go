@@ -11,6 +11,7 @@ import (
 func init() {
 	gen.AllSdkObjectDefinitions = append(
 		gen.AllSdkObjectDefinitions,
+		alertsDef,
 		apiIntegrationsDef,
 		applicationPackagesDef,
 		applicationRolesDef,
@@ -46,6 +47,7 @@ func init() {
 		openflowRuntimesDef,
 		organizationAccountsDef,
 		passwordPoliciesDef,
+		pipesDef,
 		postgresInstancesDef,
 		proceduresDef,
 		resourceMonitorsDef,

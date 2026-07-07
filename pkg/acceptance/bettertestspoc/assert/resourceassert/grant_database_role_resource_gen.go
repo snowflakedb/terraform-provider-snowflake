@@ -16,7 +16,7 @@ func GrantDatabaseRoleResource(t *testing.T, name string) *GrantDatabaseRoleReso
 	t.Helper()
 
 	return &GrantDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantDatabaseRoleResource(t *testing.T, id string) *GrantDatabaseRo
 	t.Helper()
 
 	return &GrantDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -1,7 +1,6 @@
 package resourceshowoutputassert
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -14,19 +13,13 @@ import (
 // physical column order returned by DESCRIBE TABLE).
 type HybridTableDescribeOutputRowAssert struct {
 	*assert.ResourceAssert
-	rowIndex int
 }
 
 func HybridTableDescribeOutputRow(t *testing.T, name string, rowIndex int) *HybridTableDescribeOutputRowAssert {
 	t.Helper()
 	return &HybridTableDescribeOutputRowAssert{
-		ResourceAssert: assert.NewResourceAssert(name, fmt.Sprintf("describe_output.%d", rowIndex)),
-		rowIndex:       rowIndex,
+		ResourceAssert: assert.NewResourceDescribeOutputAssertAtRow(name, rowIndex),
 	}
-}
-
-func (h *HybridTableDescribeOutputRowAssert) field(name string) string {
-	return fmt.Sprintf("describe_output.%d.%s", h.rowIndex, name)
 }
 
 ////////////////////////////
@@ -34,71 +27,71 @@ func (h *HybridTableDescribeOutputRowAssert) field(name string) string {
 ////////////////////////////
 
 func (h *HybridTableDescribeOutputRowAssert) HasName(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("name"), expected))
+	h.StringValueSet("name", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasType(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("type"), expected))
+	h.StringValueSet("type", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasCollation(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("collation"), expected))
+	h.StringValueSet("collation", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasKind(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("kind"), expected))
+	h.StringValueSet("kind", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasIsNullable(expected bool) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("is_nullable"), strconv.FormatBool(expected)))
+	h.StringValueSet("is_nullable", strconv.FormatBool(expected))
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasDefault(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("default"), expected))
+	h.StringValueSet("default", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasPrimaryKey(expected bool) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("primary_key"), strconv.FormatBool(expected)))
+	h.StringValueSet("primary_key", strconv.FormatBool(expected))
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasUniqueKey(expected bool) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("unique_key"), strconv.FormatBool(expected)))
+	h.StringValueSet("unique_key", strconv.FormatBool(expected))
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasCheck(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("check"), expected))
+	h.StringValueSet("check", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasExpression(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("expression"), expected))
+	h.StringValueSet("expression", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasComment(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("comment"), expected))
+	h.StringValueSet("comment", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasPolicyName(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("policy_name"), expected))
+	h.StringValueSet("policy_name", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasPrivacyDomain(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("privacy_domain"), expected))
+	h.StringValueSet("privacy_domain", expected)
 	return h
 }
 
 func (h *HybridTableDescribeOutputRowAssert) HasSchemaEvolutionRecord(expected string) *HybridTableDescribeOutputRowAssert {
-	h.AddAssertion(assert.ValueSet(h.field("schema_evolution_record"), expected))
+	h.StringValueSet("schema_evolution_record", expected)
 	return h
 }

@@ -16,37 +16,41 @@ var listItemDef = g.NewQueryStruct("ListItem").
 
 var serviceFromSpecificationDef = g.NewQueryStruct("ServiceFromSpecification").
 	SQL("FROM").
-	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().SingleQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "Specification").
-	WithValidation(g.ConflictingFields, "Location", "Specification")
+	WithValidation(g.ConflictingFields, "Location", "Specification").
+	WithValidation(g.NoDoubleDollarQuotesIfSet, "Specification")
 
 var serviceFromSpecificationTemplateDef = g.NewQueryStruct("ServiceFromSpecificationTemplate").
 	SQL("FROM").
-	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().SingleQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
 	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses().Required()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
-	WithValidation(g.ConflictingFields, "Location", "SpecificationTemplate")
+	WithValidation(g.ConflictingFields, "Location", "SpecificationTemplate").
+	WithValidation(g.NoDoubleDollarQuotesIfSet, "SpecificationTemplate")
 
 var jobServiceFromSpecificationDef = g.NewQueryStruct("JobServiceFromSpecification").
 	SQL("FROM").
-	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().SingleQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationFile", "Specification").
-	WithValidation(g.ExactlyOneValueSet, "Location", "Specification")
+	WithValidation(g.ExactlyOneValueSet, "Location", "Specification").
+	WithValidation(g.NoDoubleDollarQuotesIfSet, "Specification")
 
 var jobServiceFromSpecificationTemplateDef = g.NewQueryStruct("JobServiceFromSpecificationTemplate").
 	SQL("FROM").
-	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().NoQuotes().NoEquals()).
+	PredefinedQueryStructField("Location", "Location", g.ParameterOptions().SingleQuotes().NoEquals()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("SPECIFICATION_TEMPLATE", g.ParameterOptions().DoubleDollarQuotes().NoEquals()).
 	ListAssignment("USING", "ListItem", g.ParameterOptions().NoEquals().Parentheses().Required()).
 	WithValidation(g.ExactlyOneValueSet, "SpecificationTemplateFile", "SpecificationTemplate").
-	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate")
+	WithValidation(g.ExactlyOneValueSet, "Location", "SpecificationTemplate").
+	WithValidation(g.NoDoubleDollarQuotesIfSet, "SpecificationTemplate")
 
 var ServiceStatusEnumDef = g.NewEnum(
 	"ServiceStatus", "ServiceStatuses",

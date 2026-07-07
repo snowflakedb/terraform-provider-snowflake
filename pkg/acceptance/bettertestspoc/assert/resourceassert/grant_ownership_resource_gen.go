@@ -16,7 +16,7 @@ func GrantOwnershipResource(t *testing.T, name string) *GrantOwnershipResourceAs
 	t.Helper()
 
 	return &GrantOwnershipResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantOwnershipResource(t *testing.T, id string) *GrantOwnershipReso
 	t.Helper()
 
 	return &GrantOwnershipResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

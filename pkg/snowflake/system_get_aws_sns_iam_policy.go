@@ -3,6 +3,7 @@ package snowflake
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -20,7 +21,8 @@ func NewSystemGetAWSSNSIAMPolicyBuilder(awsSnsTopicArn string) *SystemGetAWSSNSI
 
 // Select generates the select statement for obtaining the aws sns iam policy.
 func (pb *SystemGetAWSSNSIAMPolicyBuilder) Select() string {
-	return fmt.Sprintf(`SELECT SYSTEM$GET_AWS_SNS_IAM_POLICY('%v') AS "POLICY"`, pb.awsSnsTopicArn)
+	value := sdk.SingleQuotes.Modify(pb.awsSnsTopicArn)
+	return fmt.Sprintf(`SELECT SYSTEM$GET_AWS_SNS_IAM_POLICY(%s) AS "POLICY"`, value)
 }
 
 type AWSSNSIAMPolicy struct {

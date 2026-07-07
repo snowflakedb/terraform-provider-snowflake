@@ -16,7 +16,7 @@ func ViewResource(t *testing.T, name string) *ViewResourceAssert {
 	t.Helper()
 
 	return &ViewResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedViewResource(t *testing.T, id string) *ViewResourceAssert {
 	t.Helper()
 
 	return &ViewResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

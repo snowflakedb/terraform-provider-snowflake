@@ -50,7 +50,7 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabled(true).
 			HasComment(""),
-		resourceshowoutputassert.ApiIntegrationExternalMcpDynamicClientDescribeOutput(t, ref).
+		resourceshowoutputassert.ApiIntegrationExternalMcpDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient)).
 			HasOauthResourceUrl(mcpOauthResourceUrl).
@@ -78,7 +78,7 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasEnabled(true).
 			HasComment(comment),
-		resourceshowoutputassert.ApiIntegrationExternalMcpDynamicClientDescribeOutput(t, ref).
+		resourceshowoutputassert.ApiIntegrationExternalMcpDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
 			HasUserAuthType(string(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient)).
 			HasOauthResourceUrl(mcpOauthResourceUrl).

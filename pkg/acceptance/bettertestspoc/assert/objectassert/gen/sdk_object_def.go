@@ -73,6 +73,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.ExternalVolume{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ExternalVolumeDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Secret{},
 	},
@@ -243,22 +248,17 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.ApiIntegrationExternalMcpDetails{},
-		IsDataSourceOutput: true,
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.ApiIntegrationGitHttpsApiDetails{},
-		IsDataSourceOutput: true,
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationGitHttpsApiDetails{},
 		IsDataSourceOutput: true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationGoogleDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ApiIntegrationAllDetails{},
 		IsDataSourceOutput: true,
 	},
 	{
@@ -287,6 +287,11 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationAllDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
 		IsDataSourceOutput: true,
 	},
@@ -304,6 +309,10 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
 		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.SessionPolicy{},
 	},
 	{
 		IdType:             "sdk.SchemaObjectIdentifier",

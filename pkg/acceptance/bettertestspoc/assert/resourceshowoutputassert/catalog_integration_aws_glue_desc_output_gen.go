@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput
-
 type CatalogIntegrationAwsGlueDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func CatalogIntegrationAwsGlueDescribeOutput(t *testing.T, name string) *Catalog
 	t.Helper()
 
 	catalogIntegrationAwsGlueAssert := CatalogIntegrationAwsGlueDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	catalogIntegrationAwsGlueAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationAwsGlueAssert
 }
 
@@ -29,9 +26,8 @@ func ImportedCatalogIntegrationAwsGlueDescribeOutput(t *testing.T, id string) *C
 	t.Helper()
 
 	catalogIntegrationAwsGlueAssert := CatalogIntegrationAwsGlueDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	catalogIntegrationAwsGlueAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &catalogIntegrationAwsGlueAssert
 }
 
@@ -40,62 +36,62 @@ func ImportedCatalogIntegrationAwsGlueDescribeOutput(t *testing.T, id string) *C
 ////////////////////////////
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.Name()))
+	c.StringValueSet("id", expected.Name())
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasCatalogSource(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("catalog_source", expected))
+	c.StringValueSet("catalog_source", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasTableFormat(expected sdk.CatalogIntegrationTableFormat) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("table_format", expected))
+	c.StringValueSet("table_format", string(expected))
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasEnabled(expected bool) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueSet("enabled", expected))
+	c.BoolValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasRefreshIntervalSeconds(expected int) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueSet("refresh_interval_seconds", expected))
+	c.IntValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasComment(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsRoleArn(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("glue_aws_role_arn", expected))
+	c.StringValueSet("glue_aws_role_arn", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueCatalogId(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("glue_catalog_id", expected))
+	c.StringValueSet("glue_catalog_id", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueRegion(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("glue_region", expected))
+	c.StringValueSet("glue_region", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasCatalogNamespace(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("catalog_namespace", expected))
+	c.StringValueSet("catalog_namespace", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsIamUserArn(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("glue_aws_iam_user_arn", expected))
+	c.StringValueSet("glue_aws_iam_user_arn", expected)
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsExternalId(expected string) *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueSet("glue_aws_external_id", expected))
+	c.StringValueSet("glue_aws_external_id", expected)
 	return c
 }
 
@@ -104,71 +100,61 @@ func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsExternalId(exp
 ///////////////////////////////
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoId() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
+	c.ValueNotSet("id")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoCatalogSource() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoTableFormat() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("table_format"))
+	c.ValueNotSet("table_format")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoEnabled() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputBoolValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputIntValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoComment() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueAwsRoleArn() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("glue_aws_role_arn"))
+	c.ValueNotSet("glue_aws_role_arn")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueCatalogId() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("glue_catalog_id"))
+	c.ValueNotSet("glue_catalog_id")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueRegion() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("glue_region"))
+	c.ValueNotSet("glue_region")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoCatalogNamespace() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("catalog_namespace"))
-	return c
-}
-
-func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsIamUserArnNotEmpty() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValuePresent("glue_aws_iam_user_arn"))
-	return c
-}
-
-func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasGlueAwsExternalIdNotEmpty() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValuePresent("glue_aws_external_id"))
+	c.ValueNotSet("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueAwsIamUserArn() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("glue_aws_iam_user_arn"))
+	c.ValueNotSet("glue_aws_iam_user_arn")
 	return c
 }
 
 func (c *CatalogIntegrationAwsGlueDescribeOutputAssert) HasNoGlueAwsExternalId() *CatalogIntegrationAwsGlueDescribeOutputAssert {
-	c.AddAssertion(assert.ResourceDescribeOutputValueNotSet("glue_aws_external_id"))
+	c.ValueNotSet("glue_aws_external_id")
 	return c
 }

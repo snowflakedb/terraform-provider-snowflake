@@ -142,7 +142,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(glueNoDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueNoDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueNoDescribe.DatasourceReference()).
 						HasName(glueId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
@@ -157,13 +157,13 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(glueWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, glueWithDescribe.DatasourceReference()).
 						HasName(glueId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceAwsGlueDescribeOutput(t, glueWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, glueWithDescribe.DatasourceReference()).
 						HasId(glueId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -183,13 +183,13 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(objectStorageWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, objectStorageWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, objectStorageWithDescribe.DatasourceReference()).
 						HasName(objectStorageId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
 						HasEnabled(true).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceObjectStorageDescribeOutput(t, objectStorageWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, objectStorageWithDescribe.DatasourceReference()).
 						HasId(objectStorageId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
@@ -204,29 +204,27 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(openCatalogWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, openCatalogWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, openCatalogWithDescribe.DatasourceReference()).
 						HasName(openCatalogId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(comment),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceOpenCatalogDescribeOutput(t, openCatalogWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, openCatalogWithDescribe.DatasourceReference()).
 						HasId(openCatalogId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypePolaris).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 						HasEnabled(false).
 						HasRefreshIntervalSeconds(30).
 						HasComment(comment).
-						HasCatalogNamespace(""),
-					resourceshowoutputassert.OpenCatalogRestConfigDatasourceDescribeOutput(t, openCatalogWithDescribe.DatasourceReference()).
-						HasCatalogUri(catalogUri).
-						HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-						HasCatalogName(catalogName).
-						HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-					resourceshowoutputassert.OAuthRestAuthenticationDatasourceDescribeOutput(t, openCatalogWithDescribe.DatasourceReference(), "oauth_rest_authentication").
-						HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
-						HasOauthClientId(oAuthClientId).
-						HasOauthAllowedScopes(oAuthAllowedScope),
+						HasCatalogNamespace("").
+						HasRestConfigCatalogUri(catalogUri).
+						HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+						HasRestConfigCatalogName(catalogName).
+						HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+						HasOAuthRestAuthenticationOauthTokenUri(catalogUri+"/v1/oauth/tokens").
+						HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
+						HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 				),
 			},
 			// Iceberg REST Bearer with describe
@@ -235,29 +233,27 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(icebergBearerWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, icebergBearerWithDescribe.DatasourceReference(), 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, icebergBearerWithDescribe.DatasourceReference()).
 						HasName(icebergId.Name()).
 						HasType("CATALOG").
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceIcebergRestDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
 						HasId(icebergId).
 						HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
 						HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
 						HasEnabled(false).
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).
 						HasComment("").
-						HasCatalogNamespace(""),
-					resourceshowoutputassert.IcebergRestRestConfigDatasourceDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
-						HasCatalogUri(icebergCatalogUri).
-						HasPrefix("").
-						HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
-						HasCatalogName("").
-						HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-					resourceshowoutputassert.SigV4RestAuthenticationDatasourceDescribeOutput(t, icebergBearerWithDescribe.DatasourceReference()).
+						HasCatalogNamespace("").
+						HasRestConfigCatalogUri(icebergCatalogUri).
+						HasRestConfigPrefix("").
+						HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
+						HasRestConfigCatalogName("").
+						HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
 						// Don't check sigv4_signing_region, as its default value depends on the current region name
-						HasSigv4IamRole(sigV4IamRole),
+						HasSigv4RestAuthenticationSigv4IamRole(sigV4IamRole),
 				),
 			},
 		},
@@ -292,13 +288,13 @@ func TestAcc_CatalogIntegrations_MultipleTypes(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(ref, "catalog_integrations.#", "2")),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, ref, 0).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, ref).
 						// Don't check name, as the order of elements in SHOW output is unpredictable
 						HasType("CATALOG").
 						HasCategory("CATALOG").
 						HasEnabled(false).
 						HasComment(""),
-					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutput(t, ref, 1).
+					resourceshowoutputassert.CatalogIntegrationsDatasourceShowOutputOnIdx(t, ref, 1).
 						// Don't check name, as the order of elements in SHOW output is unpredictable
 						HasType("CATALOG").
 						HasCategory("CATALOG").

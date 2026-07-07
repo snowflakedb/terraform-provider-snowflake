@@ -16,7 +16,7 @@ func GrantPrivilegesToDatabaseRoleResource(t *testing.T, name string) *GrantPriv
 	t.Helper()
 
 	return &GrantPrivilegesToDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantPrivilegesToDatabaseRoleResource(t *testing.T, id string) *Gra
 	t.Helper()
 
 	return &GrantPrivilegesToDatabaseRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

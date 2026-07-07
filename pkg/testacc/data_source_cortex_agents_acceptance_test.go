@@ -60,7 +60,7 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(cortexAgentsModel.DatasourceReference(), "cortex_agents.#", "1")),
-					resourceshowoutputassert.CortexAgentsDatasourceShowOutput(t, "snowflake_cortex_agents.test").
+					resourceshowoutputassert.CortexAgentsDatasourceShowOutput(t, cortexAgentsModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -68,7 +68,7 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasProfile(completeProfile),
-					resourceshowoutputassert.CortexAgentsDatasourceDescribeOutput(t, "snowflake_cortex_agents.test").
+					resourceshowoutputassert.CortexAgentsDatasourceDescribeOutput(t, cortexAgentsModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()).
@@ -87,7 +87,7 @@ func TestAcc_CortexAgents_BasicUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(cortexAgentsModelWithoutDescribe.DatasourceReference(), "cortex_agents.#", "1")),
-					resourceshowoutputassert.CortexAgentsDatasourceShowOutput(t, "snowflake_cortex_agents.test").
+					resourceshowoutputassert.CortexAgentsDatasourceShowOutput(t, cortexAgentsModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).

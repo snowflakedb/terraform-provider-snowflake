@@ -16,7 +16,7 @@ func ExternalS3StageResource(t *testing.T, name string) *ExternalS3StageResource
 	t.Helper()
 
 	return &ExternalS3StageResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalS3StageResource(t *testing.T, id string) *ExternalS3StageRe
 	t.Helper()
 
 	return &ExternalS3StageResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

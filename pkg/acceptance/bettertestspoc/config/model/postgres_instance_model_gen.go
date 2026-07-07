@@ -38,12 +38,14 @@ func PostgresInstance(
 	name string,
 	authenticationAuthority string,
 	computeFamily string,
+	postgresVersion int,
 	storageSizeGb int,
 ) *PostgresInstanceModel {
 	p := &PostgresInstanceModel{ResourceModelMeta: config.Meta(resourceName, resources.PostgresInstance)}
 	p.WithName(name)
 	p.WithAuthenticationAuthority(authenticationAuthority)
 	p.WithComputeFamily(computeFamily)
+	p.WithPostgresVersion(postgresVersion)
 	p.WithStorageSizeGb(storageSizeGb)
 	return p
 }
@@ -52,12 +54,14 @@ func PostgresInstanceWithDefaultMeta(
 	name string,
 	authenticationAuthority string,
 	computeFamily string,
+	postgresVersion int,
 	storageSizeGb int,
 ) *PostgresInstanceModel {
 	p := &PostgresInstanceModel{ResourceModelMeta: config.DefaultMeta(resources.PostgresInstance)}
 	p.WithName(name)
 	p.WithAuthenticationAuthority(authenticationAuthority)
 	p.WithComputeFamily(computeFamily)
+	p.WithPostgresVersion(postgresVersion)
 	p.WithStorageSizeGb(storageSizeGb)
 	return p
 }

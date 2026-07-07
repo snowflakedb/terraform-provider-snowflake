@@ -18,9 +18,8 @@ func ServiceShowOutput(t *testing.T, name string) *ServiceShowOutputAssert {
 	t.Helper()
 
 	serviceAssert := ServiceShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	serviceAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &serviceAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedServiceShowOutput(t *testing.T, id string) *ServiceShowOutputAssert
 	t.Helper()
 
 	serviceAssert := ServiceShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	serviceAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &serviceAssert
+}
+
+func ServicesDatasourceShowOutput(t *testing.T, name string) *ServiceShowOutputAssert {
+	t.Helper()
+
+	return ServicesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ServicesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ServiceShowOutputAssert {
+	t.Helper()
+
+	serviceAssert := ServiceShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "services", idx),
+	}
 	return &serviceAssert
 }
 
@@ -39,137 +52,137 @@ func ImportedServiceShowOutput(t *testing.T, id string) *ServiceShowOutputAssert
 ////////////////////////////
 
 func (s *ServiceShowOutputAssert) HasName(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasStatus(expected sdk.ServiceStatus) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("status", expected))
+	s.StringValueSet("status", string(expected))
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasDatabaseName(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasSchemaName(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasOwner(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasComputePool(expected sdk.AccountObjectIdentifier) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("compute_pool", expected.Name()))
+	s.StringValueSet("compute_pool", expected.Name())
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasDnsName(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("dns_name", expected))
+	s.StringValueSet("dns_name", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasCurrentInstances(expected int) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueSet("current_instances", expected))
+	s.IntValueSet("current_instances", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasTargetInstances(expected int) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueSet("target_instances", expected))
+	s.IntValueSet("target_instances", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasMinReadyInstances(expected int) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueSet("min_ready_instances", expected))
+	s.IntValueSet("min_ready_instances", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasMinInstances(expected int) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueSet("min_instances", expected))
+	s.IntValueSet("min_instances", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasMaxInstances(expected int) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueSet("max_instances", expected))
+	s.IntValueSet("max_instances", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasAutoResume(expected bool) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("auto_resume", expected))
+	s.BoolValueSet("auto_resume", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasCreatedOn(expected time.Time) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasUpdatedOn(expected time.Time) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("updated_on", expected.String()))
+	s.StringValueSet("updated_on", expected.String())
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasResumedOn(expected time.Time) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("resumed_on", expected.String()))
+	s.StringValueSet("resumed_on", expected.String())
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasSuspendedOn(expected time.Time) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("suspended_on", expected.String()))
+	s.StringValueSet("suspended_on", expected.String())
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasAutoSuspendSecs(expected int) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueSet("auto_suspend_secs", expected))
+	s.IntValueSet("auto_suspend_secs", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasComment(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasOwnerRoleType(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("query_warehouse", expected.Name()))
+	s.StringValueSet("query_warehouse", expected.Name())
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasIsJob(expected bool) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_job", expected))
+	s.BoolValueSet("is_job", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasIsAsyncJob(expected bool) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_async_job", expected))
+	s.BoolValueSet("is_async_job", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasSpecDigest(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("spec_digest", expected))
+	s.StringValueSet("spec_digest", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasIsUpgrading(expected bool) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_upgrading", expected))
+	s.BoolValueSet("is_upgrading", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasManagingObjectDomain(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("managing_object_domain", expected))
+	s.StringValueSet("managing_object_domain", expected)
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasManagingObjectName(expected string) *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("managing_object_name", expected))
+	s.StringValueSet("managing_object_name", expected)
 	return s
 }
 
@@ -178,141 +191,141 @@ func (s *ServiceShowOutputAssert) HasManagingObjectName(expected string) *Servic
 ///////////////////////////////
 
 func (s *ServiceShowOutputAssert) HasNoName() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoStatus() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("status"))
+	s.ValueNotSet("status")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoDatabaseName() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoSchemaName() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoOwner() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoComputePool() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("compute_pool"))
+	s.ValueNotSet("compute_pool")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoDnsName() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("dns_name"))
+	s.ValueNotSet("dns_name")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoCurrentInstances() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("current_instances"))
+	s.ValueNotSet("current_instances")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoTargetInstances() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("target_instances"))
+	s.ValueNotSet("target_instances")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoMinReadyInstances() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_ready_instances"))
+	s.ValueNotSet("min_ready_instances")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoMinInstances() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_instances"))
+	s.ValueNotSet("min_instances")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoMaxInstances() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_instances"))
+	s.ValueNotSet("max_instances")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoAutoResume() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("auto_resume"))
+	s.ValueNotSet("auto_resume")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoExternalAccessIntegrations() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("external_access_integrations.#", "0"))
+	s.ValueSet("external_access_integrations.#", "0")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoCreatedOn() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoUpdatedOn() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("updated_on"))
+	s.ValueNotSet("updated_on")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoResumedOn() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("resumed_on"))
+	s.ValueNotSet("resumed_on")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoSuspendedOn() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("suspended_on"))
+	s.ValueNotSet("suspended_on")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoAutoSuspendSecs() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputIntValueNotSet("auto_suspend_secs"))
+	s.ValueNotSet("auto_suspend_secs")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoComment() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoOwnerRoleType() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoQueryWarehouse() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("query_warehouse"))
+	s.ValueNotSet("query_warehouse")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoIsJob() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_job"))
+	s.ValueNotSet("is_job")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoIsAsyncJob() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_async_job"))
+	s.ValueNotSet("is_async_job")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoSpecDigest() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("spec_digest"))
+	s.ValueNotSet("spec_digest")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoIsUpgrading() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_upgrading"))
+	s.ValueNotSet("is_upgrading")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoManagingObjectDomain() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("managing_object_domain"))
+	s.ValueNotSet("managing_object_domain")
 	return s
 }
 
 func (s *ServiceShowOutputAssert) HasNoManagingObjectName() *ServiceShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("managing_object_name"))
+	s.ValueNotSet("managing_object_name")
 	return s
 }

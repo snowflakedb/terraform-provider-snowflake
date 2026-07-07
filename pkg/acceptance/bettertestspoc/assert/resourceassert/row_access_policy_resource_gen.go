@@ -16,7 +16,7 @@ func RowAccessPolicyResource(t *testing.T, name string) *RowAccessPolicyResource
 	t.Helper()
 
 	return &RowAccessPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedRowAccessPolicyResource(t *testing.T, id string) *RowAccessPolicyRe
 	t.Helper()
 
 	return &RowAccessPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

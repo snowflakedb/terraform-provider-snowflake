@@ -16,7 +16,7 @@ func LegacyServiceUserResource(t *testing.T, name string) *LegacyServiceUserReso
 	t.Helper()
 
 	return &LegacyServiceUserResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedLegacyServiceUserResource(t *testing.T, id string) *LegacyServiceUs
 	t.Helper()
 
 	return &LegacyServiceUserResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

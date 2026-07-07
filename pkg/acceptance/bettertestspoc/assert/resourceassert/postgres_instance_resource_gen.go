@@ -16,7 +16,7 @@ func PostgresInstanceResource(t *testing.T, name string) *PostgresInstanceResour
 	t.Helper()
 
 	return &PostgresInstanceResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedPostgresInstanceResource(t *testing.T, id string) *PostgresInstance
 	t.Helper()
 
 	return &PostgresInstanceResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -251,11 +251,6 @@ func (p *PostgresInstanceResourceAssert) HasNetworkPolicyEmpty() *PostgresInstan
 
 func (p *PostgresInstanceResourceAssert) HasPostgresSettingsEmpty() *PostgresInstanceResourceAssert {
 	p.ValueSet("postgres_settings", "")
-	return p
-}
-
-func (p *PostgresInstanceResourceAssert) HasPostgresVersionEmpty() *PostgresInstanceResourceAssert {
-	p.ValueSet("postgres_version", "")
 	return p
 }
 

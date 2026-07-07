@@ -470,6 +470,21 @@ func (a *AccountResourceParametersAssert) HasClientTimestampTypeMapping(expected
 	return a
 }
 
+func (a *AccountResourceParametersAssert) HasCortexCodeCliDailyEstCreditLimitPerUser(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUser(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUser(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
 func (a *AccountResourceParametersAssert) HasCortexEnabledCrossRegion(expected string) *AccountResourceParametersAssert {
 	a.ParameterValueSet(string(sdk.AccountParameterCortexEnabledCrossRegion), expected)
 	return a
@@ -1141,6 +1156,21 @@ func (a *AccountResourceParametersAssert) HasCatalogSyncLevel(expected sdk.Param
 
 func (a *AccountResourceParametersAssert) HasClientTimestampTypeMappingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
 	a.ParameterLevelSet(string(sdk.AccountParameterClientTimestampTypeMapping), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeCliDailyEstCreditLimitPerUserLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeDesktopDailyEstCreditLimitPerUserLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasCortexCodeSnowsightDailyEstCreditLimitPerUserLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser), expected)
 	return a
 }
 

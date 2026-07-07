@@ -125,7 +125,10 @@ func ParseGrantOwnershipId(id string) (*GrantOwnershipId, error) {
 		if len(parts) != 6 {
 			return grantOwnershipId, sdk.NewError(`grant ownership identifier should consist of 6 parts "<target_role_kind>|<role_name>|<outbound_privileges_behavior>|OnObject|<object_type>|<object_name>"`)
 		}
-		objectType := sdk.ObjectType(parts[4])
+		objectType, err := sdk.ToObjectType(parts[4])
+		if err != nil {
+			return nil, err
+		}
 		objectName, err := GetOnObjectIdentifier(objectType, parts[5])
 		if err != nil {
 			return nil, err
@@ -135,11 +138,15 @@ func ParseGrantOwnershipId(id string) (*GrantOwnershipId, error) {
 			ObjectName: objectName,
 		}
 	case OnAllGrantOwnershipKind, OnFutureGrantOwnershipKind:
-		bulkOperationGrantData := &BulkOperationGrantData{
-			ObjectNamePlural: sdk.PluralObjectType(parts[4]),
-		}
 		if len(parts) != 7 {
 			return grantOwnershipId, sdk.NewError(`grant ownership identifier should consist of 7 parts "<target_role_kind>|<role_name>|<outbound_privileges_behavior>|On[All or Future]|<object_type_plural>|In[Database or Schema]|<identifier>"`)
+		}
+		objectNamePlural, err := sdk.ToPluralObjectType(parts[4])
+		if err != nil {
+			return nil, err
+		}
+		bulkOperationGrantData := &BulkOperationGrantData{
+			ObjectNamePlural: objectNamePlural,
 		}
 		bulkOperationGrantData.Kind = BulkOperationGrantKind(parts[5])
 		switch bulkOperationGrantData.Kind {

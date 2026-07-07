@@ -322,6 +322,16 @@ func TestParseGrantPrivilegesToDatabaseRoleId(t *testing.T) {
 			Identifier: `"database-name"."database-role"|false|false|ALL PRIVILEGES||"on-database-name"`,
 			Error:      "invalid DatabaseRoleGrantKind: ",
 		},
+		{
+			Name:       "validation: grant database role invalid object type for OnSchemaObject.OnObject kind",
+			Identifier: `"database-name"."database-role"|false|false|ALL PRIVILEGES|OnSchemaObject|OnObject|TABLE FROM ROLE SECURITYADMIN --|"db"."schema"."table"`,
+			Error:      "invalid object type: TABLE FROM ROLE SECURITYADMIN --",
+		},
+		{
+			Name:       "validation: grant database role invalid plural object type for OnSchemaObject.OnAll kind",
+			Identifier: `"database-name"."database-role"|false|false|ALL PRIVILEGES|OnSchemaObject|OnAll|TABLES FROM ROLE SECURITYADMIN --|InDatabase|"db"`,
+			Error:      "invalid plural object type: TABLES FROM ROLE SECURITYADMIN --",
+		},
 	}
 
 	for _, tt := range testCases {

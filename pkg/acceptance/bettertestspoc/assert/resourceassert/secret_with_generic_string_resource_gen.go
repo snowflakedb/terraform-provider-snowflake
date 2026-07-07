@@ -16,7 +16,7 @@ func SecretWithGenericStringResource(t *testing.T, name string) *SecretWithGener
 	t.Helper()
 
 	return &SecretWithGenericStringResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSecretWithGenericStringResource(t *testing.T, id string) *SecretWit
 	t.Helper()
 
 	return &SecretWithGenericStringResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

@@ -80,7 +80,7 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 					t,
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.#", "1")),
 
-					resourceshowoutputassert.AuthenticationPoliciesDatasourceShowOutput(t, "snowflake_authentication_policies.test").
+					resourceshowoutputassert.AuthenticationPoliciesDatasourceShowOutput(t, authenticationPoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -109,7 +109,7 @@ func TestAcc_AuthenticationPolicies(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModelWithoutOptionals.DatasourceReference(), "authentication_policies.#", "1")),
-					resourceshowoutputassert.AuthenticationPoliciesDatasourceShowOutput(t, "snowflake_authentication_policies.test").
+					resourceshowoutputassert.AuthenticationPoliciesDatasourceShowOutput(t, authenticationPoliciesModelWithoutOptionals.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).

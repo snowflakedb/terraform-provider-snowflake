@@ -16,9 +16,8 @@ func RowAccessPolicyShowOutput(t *testing.T, name string) *RowAccessPolicyShowOu
 	t.Helper()
 
 	rowAccessPolicyAssert := RowAccessPolicyShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	rowAccessPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &rowAccessPolicyAssert
 }
 
@@ -26,9 +25,23 @@ func ImportedRowAccessPolicyShowOutput(t *testing.T, id string) *RowAccessPolicy
 	t.Helper()
 
 	rowAccessPolicyAssert := RowAccessPolicyShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	rowAccessPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &rowAccessPolicyAssert
+}
+
+func RowAccessPoliciesDatasourceShowOutput(t *testing.T, name string) *RowAccessPolicyShowOutputAssert {
+	t.Helper()
+
+	return RowAccessPoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func RowAccessPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *RowAccessPolicyShowOutputAssert {
+	t.Helper()
+
+	rowAccessPolicyAssert := RowAccessPolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "row_access_policies", idx),
+	}
 	return &rowAccessPolicyAssert
 }
 
@@ -37,47 +50,47 @@ func ImportedRowAccessPolicyShowOutput(t *testing.T, id string) *RowAccessPolicy
 ////////////////////////////
 
 func (r *RowAccessPolicyShowOutputAssert) HasCreatedOn(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	r.StringValueSet("created_on", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasName(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	r.StringValueSet("name", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasDatabaseName(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	r.StringValueSet("database_name", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasSchemaName(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	r.StringValueSet("schema_name", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasKind(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	r.StringValueSet("kind", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasOwner(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	r.StringValueSet("owner", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasComment(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	r.StringValueSet("comment", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasOptions(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	r.StringValueSet("options", expected)
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasOwnerRoleType(expected string) *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	r.StringValueSet("owner_role_type", expected)
 	return r
 }
 
@@ -86,46 +99,46 @@ func (r *RowAccessPolicyShowOutputAssert) HasOwnerRoleType(expected string) *Row
 ///////////////////////////////
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoCreatedOn() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	r.ValueNotSet("created_on")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoName() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	r.ValueNotSet("name")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoDatabaseName() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	r.ValueNotSet("database_name")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoSchemaName() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	r.ValueNotSet("schema_name")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoKind() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	r.ValueNotSet("kind")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoOwner() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	r.ValueNotSet("owner")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoComment() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	r.ValueNotSet("comment")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoOptions() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
+	r.ValueNotSet("options")
 	return r
 }
 
 func (r *RowAccessPolicyShowOutputAssert) HasNoOwnerRoleType() *RowAccessPolicyShowOutputAssert {
-	r.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	r.ValueNotSet("owner_role_type")
 	return r
 }

@@ -24,6 +24,11 @@ func (i UserWorkloadIdentityAuthenticationMethodsObjectIdentifier) FullyQualifie
 	return fmt.Sprintf("%s.%s", i.userId.FullyQualifiedName(), i.name)
 }
 
+func (i UserWorkloadIdentityAuthenticationMethodsObjectIdentifier) FullyQualifiedNameEscaped() string {
+	// We don't need to escape the name here because it is a pseudo-identifier.
+	return fmt.Sprintf("%s.%s", i.userId.FullyQualifiedNameEscaped(), i.name)
+}
+
 func (i UserWorkloadIdentityAuthenticationMethodsObjectIdentifier) Name() string {
 	return i.name
 }

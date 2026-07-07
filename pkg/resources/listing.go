@@ -30,10 +30,11 @@ var listingSchema = map[string]*schema.Schema{
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_string": {
-					Type:         schema.TypeString,
-					Optional:     true,
-					Description:  "Manifest provided as a string. Wrapping `$$` signs are added by the provider automatically; do not include them. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.",
-					ExactlyOneOf: []string{"manifest.0.from_string", "manifest.0.from_stage"},
+					Type:             schema.TypeString,
+					Optional:         true,
+					Description:      joinWithSpace("Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.", doubleDollarQuotesDescription()),
+					ValidateDiagFunc: forbidDoubleDollarQuotes,
+					ExactlyOneOf:     []string{"manifest.0.from_string", "manifest.0.from_stage"},
 				},
 				"from_stage": {
 					Type:         schema.TypeList,

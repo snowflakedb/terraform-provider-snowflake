@@ -6,6 +6,21 @@ resource "snowflake_postgres_instance" "basic" {
   authentication_authority = "POSTGRES"
 }
 
+# with custom timeouts (postgres operations can take longer than the defaults)
+resource "snowflake_postgres_instance" "with_timeouts" {
+  name                     = "my_postgres_instance"
+  compute_family           = "STANDARD_M"
+  storage_size_gb          = 10
+  authentication_authority = "POSTGRES"
+
+  timeouts {
+    create = "30m"
+    update = "30m"
+    delete = "30m"
+    read   = "10m"
+  }
+}
+
 # complete resource
 resource "snowflake_postgres_instance" "complete" {
   name                     = "my_postgres_instance_complete"

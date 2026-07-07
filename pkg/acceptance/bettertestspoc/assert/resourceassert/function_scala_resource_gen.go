@@ -16,7 +16,7 @@ func FunctionScalaResource(t *testing.T, name string) *FunctionScalaResourceAsse
 	t.Helper()
 
 	return &FunctionScalaResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedFunctionScalaResource(t *testing.T, id string) *FunctionScalaResour
 	t.Helper()
 
 	return &FunctionScalaResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

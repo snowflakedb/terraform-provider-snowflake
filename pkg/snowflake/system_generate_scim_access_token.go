@@ -3,6 +3,7 @@ package snowflake
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -20,7 +21,8 @@ func NewSystemGenerateSCIMAccessTokenBuilder(integrationName string) *SystemGene
 
 // Select generates the select statement for obtaining the scim access token.
 func (pb *SystemGenerateSCIMAccessTokenBuilder) Select() string {
-	return fmt.Sprintf(`SELECT SYSTEM$GENERATE_SCIM_ACCESS_TOKEN('%v') AS "TOKEN"`, pb.integrationName)
+	value := sdk.SingleQuotes.Modify(pb.integrationName)
+	return fmt.Sprintf(`SELECT SYSTEM$GENERATE_SCIM_ACCESS_TOKEN(%s) AS "TOKEN"`, value)
 }
 
 type SCIMAccessToken struct {

@@ -18,9 +18,8 @@ func StreamShowOutput(t *testing.T, name string) *StreamShowOutputAssert {
 	t.Helper()
 
 	streamAssert := StreamShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	streamAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &streamAssert
 }
 
@@ -28,9 +27,23 @@ func ImportedStreamShowOutput(t *testing.T, id string) *StreamShowOutputAssert {
 	t.Helper()
 
 	streamAssert := StreamShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	streamAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &streamAssert
+}
+
+func StreamsDatasourceShowOutput(t *testing.T, name string) *StreamShowOutputAssert {
+	t.Helper()
+
+	return StreamsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func StreamsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *StreamShowOutputAssert {
+	t.Helper()
+
+	streamAssert := StreamShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "streams", idx),
+	}
 	return &streamAssert
 }
 
@@ -39,72 +52,72 @@ func ImportedStreamShowOutput(t *testing.T, id string) *StreamShowOutputAssert {
 ////////////////////////////
 
 func (s *StreamShowOutputAssert) HasCreatedOn(expected time.Time) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasName(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasDatabaseName(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasSchemaName(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasOwner(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasComment(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
-func (s *StreamShowOutputAssert) HasTableName(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("table_name", expected))
+func (s *StreamShowOutputAssert) HasTableName(expected sdk.SchemaObjectIdentifier) *StreamShowOutputAssert {
+	s.StringValueSet("table_name", expected.FullyQualifiedName())
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasSourceType(expected sdk.StreamSourceType) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("source_type", expected))
+	s.StringValueSet("source_type", string(expected))
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasType(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("type", expected))
+	s.StringValueSet("type", expected)
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasStale(expected bool) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("stale", expected))
+	s.BoolValueSet("stale", expected)
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasMode(expected sdk.StreamMode) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("mode", expected))
+	s.StringValueSet("mode", string(expected))
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasStaleAfter(expected time.Time) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("stale_after", expected.String()))
+	s.StringValueSet("stale_after", expected.String())
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasInvalidReason(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("invalid_reason", expected))
+	s.StringValueSet("invalid_reason", expected)
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasOwnerRoleType(expected string) *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
@@ -113,76 +126,76 @@ func (s *StreamShowOutputAssert) HasOwnerRoleType(expected string) *StreamShowOu
 ///////////////////////////////
 
 func (s *StreamShowOutputAssert) HasNoCreatedOn() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoName() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoDatabaseName() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoSchemaName() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoOwner() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoComment() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoTableName() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("table_name"))
+	s.ValueNotSet("table_name")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoSourceType() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("source_type"))
+	s.ValueNotSet("source_type")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoBaseTables() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("base_tables.#", "0"))
+	s.ValueSet("base_tables.#", "0")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoType() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("type"))
+	s.ValueNotSet("type")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoStale() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("stale"))
+	s.ValueNotSet("stale")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoMode() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("mode"))
+	s.ValueNotSet("mode")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoStaleAfter() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("stale_after"))
+	s.ValueNotSet("stale_after")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoInvalidReason() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("invalid_reason"))
+	s.ValueNotSet("invalid_reason")
 	return s
 }
 
 func (s *StreamShowOutputAssert) HasNoOwnerRoleType() *StreamShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }

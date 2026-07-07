@@ -16,7 +16,7 @@ func StreamOnDirectoryTableResource(t *testing.T, name string) *StreamOnDirector
 	t.Helper()
 
 	return &StreamOnDirectoryTableResourceAssert{
-		ResourceAssert: assert.NewResourceAssertTmp(name),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStreamOnDirectoryTableResource(t *testing.T, id string) *StreamOnDi
 	t.Helper()
 
 	return &StreamOnDirectoryTableResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssertTmp(id),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 

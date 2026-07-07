@@ -182,12 +182,8 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Pipes.Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
-		}},
-		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Pipes.Drop, sdk.NewDropPipeRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Alerts.Drop, sdk.NewDropAlertRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streamlits.Drop, sdk.NewDropStreamlitRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).AuthenticationPolicies.Drop, sdk.NewDropAuthenticationPolicyRequest(id).WithIfExists(true))},
@@ -259,12 +255,8 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Pipes.Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
-		}},
-		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Pipes.Drop, sdk.NewDropPipeRequest(id).WithIfExists(true))},
+		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Alerts.Drop, sdk.NewDropAlertRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStreamlit, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streamlits.Drop, sdk.NewDropStreamlitRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeNetworkRule, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).NetworkRules.Drop, sdk.NewDropNetworkRuleRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAuthenticationPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).AuthenticationPolicies.Drop, sdk.NewDropAuthenticationPolicyRequest(id).WithIfExists(true))},

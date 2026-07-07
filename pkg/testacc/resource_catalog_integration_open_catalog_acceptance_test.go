@@ -148,15 +148,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace(""),
-		resourceshowoutputassert.OpenCatalogRestConfigDescribeOutput(t, ref).
-			HasCatalogUri(catalogUri).
-			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasCatalogName(catalogName).
-			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-		resourceshowoutputassert.OAuthRestAuthenticationDescribeOutput(t, ref, "rest_authentication").
-			HasOauthTokenUri(catalogUri + "/v1/oauth/tokens").
-			HasOauthClientId(oAuthClientId).
-			HasOauthAllowedScopes(oAuthAllowedScope),
+		resourceshowoutputassert.CatalogIntegrationOpenCatalogDescribeOutput(t, ref).
+			HasRestConfigCatalogUri(catalogUri).
+			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasRestConfigCatalogName(catalogName).
+			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasRestAuthenticationOauthTokenUri(catalogUri + "/v1/oauth/tokens").
+			HasRestAuthenticationOauthClientId(oAuthClientId).
+			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}
 
 	basicAssertionsWithRefreshIntervalZero := append(
@@ -218,15 +217,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasComment(comment).
 			HasCatalogNamespace(""),
-		resourceshowoutputassert.OpenCatalogRestConfigDescribeOutput(t, ref).
-			HasCatalogUri(catalogUri).
-			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasCatalogName(catalogName).
-			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-		resourceshowoutputassert.OAuthRestAuthenticationDescribeOutput(t, ref, "rest_authentication").
-			HasOauthTokenUri(catalogUri + "/v1/oauth/tokens").
-			HasOauthClientId(oAuthClientId).
-			HasOauthAllowedScopes(oAuthAllowedScope),
+		resourceshowoutputassert.CatalogIntegrationOpenCatalogDescribeOutput(t, ref).
+			HasRestConfigCatalogUri(catalogUri).
+			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasRestConfigCatalogName(catalogName).
+			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasRestAuthenticationOauthTokenUri(catalogUri + "/v1/oauth/tokens").
+			HasRestAuthenticationOauthClientId(oAuthClientId).
+			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
@@ -263,15 +261,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasComment(comment).
 			HasCatalogNamespace(catalogNamespace),
-		resourceshowoutputassert.OpenCatalogRestConfigDescribeOutput(t, ref).
-			HasCatalogUri(catalogUri).
-			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasCatalogName(catalogName).
-			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-		resourceshowoutputassert.OAuthRestAuthenticationDescribeOutput(t, ref, "rest_authentication").
-			HasOauthTokenUri(oAuthTokenUri).
-			HasOauthClientId(oAuthClientId).
-			HasOauthAllowedScopes(oAuthAllowedScope),
+		resourceshowoutputassert.CatalogIntegrationOpenCatalogDescribeOutput(t, ref).
+			HasRestConfigCatalogUri(catalogUri).
+			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasRestConfigCatalogName(catalogName).
+			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasRestAuthenticationOauthTokenUri(oAuthTokenUri).
+			HasRestAuthenticationOauthClientId(oAuthClientId).
+			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}
 
 	forceNewAssertions := []assert.TestCheckFuncProvider{
@@ -308,15 +305,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasComment(comment).
 			HasCatalogNamespace(newCatalogNamespace),
-		resourceshowoutputassert.OpenCatalogRestConfigDescribeOutput(t, ref).
-			HasCatalogUri(catalogUri).
-			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-			HasCatalogName(catalogName).
-			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
-		resourceshowoutputassert.OAuthRestAuthenticationDescribeOutput(t, ref, "rest_authentication").
-			HasOauthTokenUri(oAuthTokenUri).
-			HasOauthClientId(oAuthClientId).
-			HasOauthAllowedScopes(oAuthAllowedScope),
+		resourceshowoutputassert.CatalogIntegrationOpenCatalogDescribeOutput(t, ref).
+			HasRestConfigCatalogUri(catalogUri).
+			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasRestConfigCatalogName(catalogName).
+			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasRestAuthenticationOauthTokenUri(oAuthTokenUri).
+			HasRestAuthenticationOauthClientId(oAuthClientId).
+			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}
 
 	moreForceNewAssertions := []assert.TestCheckFuncProvider{
@@ -353,15 +349,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasComment(comment).
 			HasCatalogNamespace(newCatalogNamespace),
-		resourceshowoutputassert.OpenCatalogRestConfigDescribeOutput(t, ref).
-			HasCatalogUri(privateCatalogUri).
-			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
-			HasCatalogName(newCatalogName).
-			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
-		resourceshowoutputassert.OAuthRestAuthenticationDescribeOutput(t, ref, "rest_authentication").
-			HasOauthTokenUri(oAuthTokenUri).
-			HasOauthClientId(oAuthClientId).
-			HasOauthAllowedScopes(oAuthAllowedScope),
+		resourceshowoutputassert.CatalogIntegrationOpenCatalogDescribeOutput(t, ref).
+			HasRestConfigCatalogUri(privateCatalogUri).
+			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
+			HasRestConfigCatalogName(newCatalogName).
+			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
+			HasRestAuthenticationOauthTokenUri(oAuthTokenUri).
+			HasRestAuthenticationOauthClientId(oAuthClientId).
+			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}
 
 	moreForceNewAssertionsWithChangedSecret := append(
@@ -423,15 +418,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasComment(comment).
 			HasCatalogNamespace(newCatalogNamespace),
-		resourceshowoutputassert.OpenCatalogRestConfigDescribeOutput(t, ref).
-			HasCatalogUri(privateCatalogUri).
-			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
-			HasCatalogName(newCatalogName).
-			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
-		resourceshowoutputassert.OAuthRestAuthenticationDescribeOutput(t, ref, "rest_authentication").
-			HasOauthTokenUri(newOAuthTokenUri).
-			HasOauthClientId(newOAuthClientId).
-			HasOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope),
+		resourceshowoutputassert.CatalogIntegrationOpenCatalogDescribeOutput(t, ref).
+			HasRestConfigCatalogUri(privateCatalogUri).
+			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
+			HasRestConfigCatalogName(newCatalogName).
+			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
+			HasRestAuthenticationOauthTokenUri(newOAuthTokenUri).
+			HasRestAuthenticationOauthClientId(newOAuthClientId).
+			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope),
 	}
 
 	resource.Test(t, resource.TestCase{

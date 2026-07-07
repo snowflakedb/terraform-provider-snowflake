@@ -153,11 +153,13 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 		return nil
 	}
 
-	objectType := parts[1]
+	objectType, err := sdk.ToObjectType(parts[1])
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	targetIdentifier := parts[2]
 
 	var grants []sdk.Grant
-	var err error
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
 		cacheKey := roleIdentifier.FullyQualifiedName()
 		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func() ([]sdk.Grant, error) {
@@ -178,7 +180,7 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 
 	var found bool
 	for _, grant := range grants {
-		if grant.GrantedTo == sdk.ObjectType(objectType) {
+		if grant.GrantedTo == objectType {
 			if grant.GranteeName.FullyQualifiedName() == targetIdentifier {
 				found = true
 				break

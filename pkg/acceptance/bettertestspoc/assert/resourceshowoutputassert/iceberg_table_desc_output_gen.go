@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type IcebergTableDescribeOutputAssert struct {
@@ -18,9 +17,8 @@ func IcebergTableDescribeOutput(t *testing.T, name string) *IcebergTableDescribe
 	t.Helper()
 
 	icebergTableAssert := IcebergTableDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	icebergTableAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &icebergTableAssert
 }
 
@@ -28,9 +26,8 @@ func ImportedIcebergTableDescribeOutput(t *testing.T, id string) *IcebergTableDe
 	t.Helper()
 
 	icebergTableAssert := IcebergTableDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	icebergTableAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &icebergTableAssert
 }
 
@@ -39,78 +36,72 @@ func ImportedIcebergTableDescribeOutput(t *testing.T, id string) *IcebergTableDe
 ////////////////////////////
 
 func (i *IcebergTableDescribeOutputAssert) HasName(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
-	return i
-}
-
-// Adjusted manually: DataType.ToSql() used because DataType is an interface.
-func (i *IcebergTableDescribeOutputAssert) HasType(expected datatypes.DataType) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("type", expected.ToSql()))
+	i.StringValueSet("name", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasSourceIcebergType(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("source_iceberg_type", expected))
+	i.StringValueSet("source_iceberg_type", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasKind(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	i.StringValueSet("kind", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasIsNullable(expected bool) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_nullable", expected))
+	i.BoolValueSet("is_nullable", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasDefault(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("default", expected))
+	i.StringValueSet("default", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasPrimaryKey(expected bool) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueSet("primary_key", expected))
+	i.BoolValueSet("primary_key", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasUniqueKey(expected bool) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueSet("unique_key", expected))
+	i.BoolValueSet("unique_key", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasCheck(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("check", expected))
+	i.StringValueSet("check", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasExpression(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("expression", expected))
+	i.StringValueSet("expression", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasComment(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	i.StringValueSet("comment", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasPolicyName(expected sdk.SchemaObjectIdentifier) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("policy_name", expected.FullyQualifiedName()))
+	i.StringValueSet("policy_name", expected.FullyQualifiedName())
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasPrivacyDomain(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("privacy_domain", expected))
+	i.StringValueSet("privacy_domain", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNameMapping(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("name_mapping", expected))
+	i.StringValueSet("name_mapping", expected)
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasWriteDefault(expected string) *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueSet("write_default", expected))
+	i.StringValueSet("write_default", expected)
 	return i
 }
 
@@ -119,76 +110,76 @@ func (i *IcebergTableDescribeOutputAssert) HasWriteDefault(expected string) *Ice
 ///////////////////////////////
 
 func (i *IcebergTableDescribeOutputAssert) HasNoName() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	i.ValueNotSet("name")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoType() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("type"))
+	i.ValueNotSet("type")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoSourceIcebergType() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("source_iceberg_type"))
+	i.ValueNotSet("source_iceberg_type")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoKind() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	i.ValueNotSet("kind")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoIsNullable() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_nullable"))
+	i.ValueNotSet("is_nullable")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoDefault() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("default"))
+	i.ValueNotSet("default")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoPrimaryKey() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("primary_key"))
+	i.ValueNotSet("primary_key")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoUniqueKey() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("unique_key"))
+	i.ValueNotSet("unique_key")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoCheck() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("check"))
+	i.ValueNotSet("check")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoExpression() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("expression"))
+	i.ValueNotSet("expression")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoComment() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	i.ValueNotSet("comment")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoPolicyName() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("policy_name"))
+	i.ValueNotSet("policy_name")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoPrivacyDomain() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("privacy_domain"))
+	i.ValueNotSet("privacy_domain")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoNameMapping() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("name_mapping"))
+	i.ValueNotSet("name_mapping")
 	return i
 }
 
 func (i *IcebergTableDescribeOutputAssert) HasNoWriteDefault() *IcebergTableDescribeOutputAssert {
-	i.AddAssertion(assert.ResourceShowOutputValueNotSet("write_default"))
+	i.ValueNotSet("write_default")
 	return i
 }
