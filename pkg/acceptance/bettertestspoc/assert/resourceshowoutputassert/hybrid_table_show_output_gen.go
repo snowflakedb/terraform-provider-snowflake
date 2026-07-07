@@ -17,9 +17,8 @@ func HybridTableShowOutput(t *testing.T, name string) *HybridTableShowOutputAsse
 	t.Helper()
 
 	hybridTableAssert := HybridTableShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	hybridTableAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &hybridTableAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedHybridTableShowOutput(t *testing.T, id string) *HybridTableShowOutp
 	t.Helper()
 
 	hybridTableAssert := HybridTableShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	hybridTableAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &hybridTableAssert
 }
 
@@ -38,47 +36,47 @@ func ImportedHybridTableShowOutput(t *testing.T, id string) *HybridTableShowOutp
 ////////////////////////////
 
 func (h *HybridTableShowOutputAssert) HasCreatedOn(expected time.Time) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	h.StringValueSet("created_on", expected.String())
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasName(expected string) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	h.StringValueSet("name", expected)
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasDatabaseName(expected string) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	h.StringValueSet("database_name", expected)
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasSchemaName(expected string) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	h.StringValueSet("schema_name", expected)
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasOwner(expected string) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	h.StringValueSet("owner", expected)
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasRows(expected int) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputIntValueSet("rows", expected))
+	h.IntValueSet("rows", expected)
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasBytes(expected int) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputIntValueSet("bytes", expected))
+	h.IntValueSet("bytes", expected)
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasComment(expected string) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	h.StringValueSet("comment", expected)
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasOwnerRoleType(expected string) *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	h.StringValueSet("owner_role_type", expected)
 	return h
 }
 
@@ -87,46 +85,46 @@ func (h *HybridTableShowOutputAssert) HasOwnerRoleType(expected string) *HybridT
 ///////////////////////////////
 
 func (h *HybridTableShowOutputAssert) HasNoCreatedOn() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	h.ValueNotSet("created_on")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoName() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	h.ValueNotSet("name")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoDatabaseName() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	h.ValueNotSet("database_name")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoSchemaName() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	h.ValueNotSet("schema_name")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoOwner() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	h.ValueNotSet("owner")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoRows() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputIntValueNotSet("rows"))
+	h.ValueNotSet("rows")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoBytes() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputIntValueNotSet("bytes"))
+	h.ValueNotSet("bytes")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoComment() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	h.ValueNotSet("comment")
 	return h
 }
 
 func (h *HybridTableShowOutputAssert) HasNoOwnerRoleType() *HybridTableShowOutputAssert {
-	h.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	h.ValueNotSet("owner_role_type")
 	return h
 }

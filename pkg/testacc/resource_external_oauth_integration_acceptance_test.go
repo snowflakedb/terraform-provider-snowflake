@@ -32,14 +32,16 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	issuer := random.String()
 
-	basic := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+	basic := model.ExternalOauthSecurityIntegration(
+		"test", id.Name(), true, issuer,
 		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
 		[]string{"foo"},
 		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
 	).
 		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com")))
 
-	complete := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+	complete := model.ExternalOauthSecurityIntegration(
+		"test", id.Name(), true, issuer,
 		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
 		[]string{"foo"},
 		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
@@ -187,13 +189,14 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().SecurityIntegration.UpdateExternalOauth(t, sdk.NewAlterExternalOauthSecurityIntegrationRequest(id).
-						WithSet(*sdk.NewExternalOauthIntegrationSetRequest().
-							WithEnabled(true).
-							WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{"https://example.com"}}).
-							WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable).
-							WithExternalOauthAudienceList(*sdk.NewAudienceListRequest([]sdk.AudienceListItem{{"bar"}})).
-							WithExternalOauthSnowflakeUserMappingAttribute(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName).
-							WithComment(sdk.StringAllowEmpty{Value: comment}),
+						WithSet(
+							*sdk.NewExternalOauthIntegrationSetRequest().
+								WithEnabled(true).
+								WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}}).
+								WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable).
+								WithExternalOauthAudienceList(*sdk.NewAudienceListRequest([]sdk.AudienceListItem{{Item: "bar"}})).
+								WithExternalOauthSnowflakeUserMappingAttribute(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionLoginName).
+								WithComment(sdk.StringAllowEmpty{Value: comment}),
 						))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -208,7 +211,8 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.SecurityIntegrationDoesNotExist(t, id),
 				),
 			},
@@ -234,7 +238,8 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 	comment := random.Comment()
 	issuer := random.String()
 
-	complete := model.ExternalOauthSecurityIntegration("test", id.Name(), true, issuer,
+	complete := model.ExternalOauthSecurityIntegration(
+		"test", id.Name(), true, issuer,
 		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
 		[]string{"foo"},
 		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
@@ -257,7 +262,8 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 			// Create - with all optionals (including optional force-new fields)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SecurityIntegration(t, id).
 						HasName(id.Name()).
 						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").

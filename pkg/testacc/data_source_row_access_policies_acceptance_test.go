@@ -170,7 +170,8 @@ func TestAcc_RowAccessPolicies_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, rowAccessPolicyModel, datasourceModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowOutputAsserts(t, datasourceModelWithoutDescribe.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithoutDescribe.DatasourceReference(), "row_access_policies.#", "1")),
@@ -179,7 +180,8 @@ func TestAcc_RowAccessPolicies_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, rowAccessPolicyModel, datasourceModelWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					commonShowOutputAsserts(t, datasourceModelWithDescribe.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(datasourceModelWithDescribe.DatasourceReference(), "row_access_policies.#", "1")),

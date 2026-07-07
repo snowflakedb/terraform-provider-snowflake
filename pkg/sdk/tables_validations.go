@@ -159,8 +159,10 @@ func (opts *alterTableOptions) validate() error {
 		opts.DropRowAccessPolicy,
 		opts.DropAndAddRowAccessPolicy,
 		opts.DropAllAccessRowPolicies,
+		opts.AddStorageLifecyclePolicy,
+		opts.DropStorageLifecyclePolicy,
 	); !ok {
-		errs = append(errs, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies"))
+		errs = append(errs, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	}
 	if opts.NewName != nil {
 		if !ValidObjectIdentifier(*opts.NewName) {
@@ -263,6 +265,14 @@ func (opts *alterTableOptions) validate() error {
 			searchOptimizationAction.Drop,
 		); !ok {
 			errs = append(errs, errExactlyOneOf("TableSearchOptimizationActionLegacy", "Add", "Drop"))
+		}
+	}
+	if addStorageLifecyclePolicy := opts.AddStorageLifecyclePolicy; valueSet(addStorageLifecyclePolicy) {
+		if !ValidObjectIdentifier(addStorageLifecyclePolicy.StorageLifecyclePolicy) {
+			errs = append(errs, errInvalidIdentifier("TableAddStorageLifecyclePolicy", "Name"))
+		}
+		if len(addStorageLifecyclePolicy.On) == 0 {
+			errs = append(errs, errNotSet("TableAddStorageLifecyclePolicy", "On"))
 		}
 	}
 	return errors.Join(errs...)

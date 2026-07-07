@@ -74,7 +74,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAzureModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -108,7 +109,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
 						HasUsePrivatelinkEndpointString(r.BooleanFalse),
 				),
@@ -139,7 +141,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAzureAllAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureAllAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -174,7 +177,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAzureAllAttributesChanged),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureAllAttributesChanged.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanTrue).
@@ -207,7 +211,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedStorageIntegrationAzureResource(t, id.Name()).
 						HasUsePrivatelinkEndpointString(r.BooleanFalse),
 				),
@@ -220,7 +225,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAzureModelNoAttributes),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModelNoAttributes.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEnabledString(r.BooleanFalse).
@@ -358,7 +364,8 @@ func TestAcc_StorageIntegrationAzure_AllowedLocationsUnordered(t *testing.T) {
 			// create
 			{
 				Config: config.FromModels(t, storageIntegrationAzureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModel.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAzureDescribeOutput(t, storageIntegrationAzureModel.ResourceReference()).
@@ -379,7 +386,8 @@ func TestAcc_StorageIntegrationAzure_AllowedLocationsUnordered(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAzureModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModel.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAzureDescribeOutput(t, storageIntegrationAzureModel.ResourceReference()).
@@ -394,7 +402,8 @@ func TestAcc_StorageIntegrationAzure_AllowedLocationsUnordered(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, storageIntegrationAzureModel2),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationAzureResource(t, storageIntegrationAzureModel2.ResourceReference()).
 						HasStorageAllowedLocationsStorageLocation(allowedLocations...),
 					resourceshowoutputassert.StorageIntegrationAzureDescribeOutput(t, storageIntegrationAzureModel2.ResourceReference()).

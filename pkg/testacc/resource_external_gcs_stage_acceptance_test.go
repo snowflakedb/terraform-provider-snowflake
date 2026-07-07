@@ -84,7 +84,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 			// Create with required fields only (basic)
 			{
 				Config: accconfig.FromModels(t, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -126,7 +127,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelRenamed.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelRenamed.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -160,7 +162,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelAlter.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelAlter.ResourceReference()).
 						HasNameString(newId.Name()).
 						HasDatabaseString(newId.DatabaseName()).
@@ -201,7 +204,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, modelComplete),
 
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -247,7 +251,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelCompleteWithoutAutoRefresh.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelCompleteWithoutAutoRefresh.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -289,7 +294,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -331,7 +337,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelUpdated.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelUpdated.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -369,7 +376,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelEncryptionNoneWithComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelEncryptionNoneWithComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -409,7 +417,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(modelEncryptionNoneWithComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelEncryptionNoneWithComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -465,7 +474,8 @@ func TestAcc_ExternalGcsStage_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -532,7 +542,8 @@ func TestAcc_ExternalGcsStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 			// Start with inline CSV
 			{
 				Config: accconfig.FromModels(t, modelWithCsvFormat),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -548,7 +559,8 @@ func TestAcc_ExternalGcsStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -575,7 +587,8 @@ func TestAcc_ExternalGcsStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithNamedFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelWithNamedFormat.ResourceReference()).
 						HasFileFormatFormatName(fileFormat.ID().FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(modelWithNamedFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -591,7 +604,8 @@ func TestAcc_ExternalGcsStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelWithCsvFormat.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelWithCsvFormat.ResourceReference()).
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
@@ -607,7 +621,8 @@ func TestAcc_ExternalGcsStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(modelBasic.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ExternalGcsStageResource(t, modelBasic.ResourceReference()).
 						HasFileFormatEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.file_format.#", "1")),

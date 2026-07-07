@@ -33,6 +33,9 @@ type CurrentAccountModel struct {
 	ClientSessionKeepAlive                           tfconfig.Variable `json:"client_session_keep_alive,omitempty"`
 	ClientSessionKeepAliveHeartbeatFrequency         tfconfig.Variable `json:"client_session_keep_alive_heartbeat_frequency,omitempty"`
 	ClientTimestampTypeMapping                       tfconfig.Variable `json:"client_timestamp_type_mapping,omitempty"`
+	CortexCodeCliDailyEstCreditLimitPerUser          tfconfig.Variable `json:"cortex_code_cli_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeDesktopDailyEstCreditLimitPerUser      tfconfig.Variable `json:"cortex_code_desktop_daily_est_credit_limit_per_user,omitempty"`
+	CortexCodeSnowsightDailyEstCreditLimitPerUser    tfconfig.Variable `json:"cortex_code_snowsight_daily_est_credit_limit_per_user,omitempty"`
 	CortexEnabledCrossRegion                         tfconfig.Variable `json:"cortex_enabled_cross_region,omitempty"`
 	CortexModelsAllowlist                            tfconfig.Variable `json:"cortex_models_allowlist,omitempty"`
 	CsvTimestampFormat                               tfconfig.Variable `json:"csv_timestamp_format,omitempty"`
@@ -50,6 +53,7 @@ type CurrentAccountModel struct {
 	EnableEgressCostOptimizer                        tfconfig.Variable `json:"enable_egress_cost_optimizer,omitempty"`
 	EnableIdentifierFirstLogin                       tfconfig.Variable `json:"enable_identifier_first_login,omitempty"`
 	EnableInternalStagesPrivatelink                  tfconfig.Variable `json:"enable_internal_stages_privatelink,omitempty"`
+	EnablePerAccountAppServicePrivatelinkUrl         tfconfig.Variable `json:"enable_per_account_app_service_privatelink_url,omitempty"`
 	EnableTriSecretAndRekeyOptOutForImageRepository  tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_image_repository,omitempty"`
 	EnableTriSecretAndRekeyOptOutForSpcsBlockStorage tfconfig.Variable `json:"enable_tri_secret_and_rekey_opt_out_for_spcs_block_storage,omitempty"`
 	EnableUnhandledExceptionsReporting               tfconfig.Variable `json:"enable_unhandled_exceptions_reporting,omitempty"`
@@ -302,6 +306,21 @@ func (c *CurrentAccountModel) WithClientTimestampTypeMapping(clientTimestampType
 	return c
 }
 
+func (c *CurrentAccountModel) WithCortexCodeCliDailyEstCreditLimitPerUser(cortexCodeCliDailyEstCreditLimitPerUser int) *CurrentAccountModel {
+	c.CortexCodeCliDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeCliDailyEstCreditLimitPerUser)
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeDesktopDailyEstCreditLimitPerUser(cortexCodeDesktopDailyEstCreditLimitPerUser int) *CurrentAccountModel {
+	c.CortexCodeDesktopDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeDesktopDailyEstCreditLimitPerUser)
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeSnowsightDailyEstCreditLimitPerUser(cortexCodeSnowsightDailyEstCreditLimitPerUser int) *CurrentAccountModel {
+	c.CortexCodeSnowsightDailyEstCreditLimitPerUser = tfconfig.IntegerVariable(cortexCodeSnowsightDailyEstCreditLimitPerUser)
+	return c
+}
+
 func (c *CurrentAccountModel) WithCortexEnabledCrossRegion(cortexEnabledCrossRegion string) *CurrentAccountModel {
 	c.CortexEnabledCrossRegion = tfconfig.StringVariable(cortexEnabledCrossRegion)
 	return c
@@ -384,6 +403,11 @@ func (c *CurrentAccountModel) WithEnableIdentifierFirstLogin(enableIdentifierFir
 
 func (c *CurrentAccountModel) WithEnableInternalStagesPrivatelink(enableInternalStagesPrivatelink bool) *CurrentAccountModel {
 	c.EnableInternalStagesPrivatelink = tfconfig.BoolVariable(enableInternalStagesPrivatelink)
+	return c
+}
+
+func (c *CurrentAccountModel) WithEnablePerAccountAppServicePrivatelinkUrl(enablePerAccountAppServicePrivatelinkUrl bool) *CurrentAccountModel {
+	c.EnablePerAccountAppServicePrivatelinkUrl = tfconfig.BoolVariable(enablePerAccountAppServicePrivatelinkUrl)
 	return c
 }
 
@@ -921,6 +945,21 @@ func (c *CurrentAccountModel) WithClientTimestampTypeMappingValue(value tfconfig
 	return c
 }
 
+func (c *CurrentAccountModel) WithCortexCodeCliDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.CortexCodeCliDailyEstCreditLimitPerUser = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeDesktopDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.CortexCodeDesktopDailyEstCreditLimitPerUser = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithCortexCodeSnowsightDailyEstCreditLimitPerUserValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.CortexCodeSnowsightDailyEstCreditLimitPerUser = value
+	return c
+}
+
 func (c *CurrentAccountModel) WithCortexEnabledCrossRegionValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.CortexEnabledCrossRegion = value
 	return c
@@ -1003,6 +1042,11 @@ func (c *CurrentAccountModel) WithEnableIdentifierFirstLoginValue(value tfconfig
 
 func (c *CurrentAccountModel) WithEnableInternalStagesPrivatelinkValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.EnableInternalStagesPrivatelink = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithEnablePerAccountAppServicePrivatelinkUrlValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.EnablePerAccountAppServicePrivatelinkUrl = value
 	return c
 }
 

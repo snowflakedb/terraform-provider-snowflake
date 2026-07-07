@@ -28,53 +28,49 @@ func (c *UserClient) client() sdk.Users {
 
 func (c *UserClient) CreateUser(t *testing.T) (*sdk.User, func()) {
 	t.Helper()
-	return c.CreateUserWithOptions(t, c.ids.RandomAccountObjectIdentifier(), &sdk.CreateUserOptions{})
+	return c.CreateUserWithRequest(t, sdk.NewCreateUserRequest(c.ids.RandomAccountObjectIdentifier()))
 }
 
 func (c *UserClient) CreateServiceUser(t *testing.T) (*sdk.User, func()) {
 	t.Helper()
-	return c.CreateUserWithOptions(t, c.ids.RandomAccountObjectIdentifier(), &sdk.CreateUserOptions{
-		ObjectProperties: &sdk.UserObjectProperties{
-			Type: sdk.Pointer(sdk.UserTypeService),
-		},
-	})
+	return c.CreateUserWithRequest(t, sdk.NewCreateUserRequest(c.ids.RandomAccountObjectIdentifier()).
+		WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithUserType(sdk.UserTypeService)))
 }
 
 func (c *UserClient) CreateLegacyServiceUser(t *testing.T) (*sdk.User, func()) {
 	t.Helper()
-	return c.CreateUserWithOptions(t, c.ids.RandomAccountObjectIdentifier(), &sdk.CreateUserOptions{
-		ObjectProperties: &sdk.UserObjectProperties{
-			Type: sdk.Pointer(sdk.UserTypeLegacyService),
-		},
-	})
+	return c.CreateUserWithRequest(t, sdk.NewCreateUserRequest(c.ids.RandomAccountObjectIdentifier()).
+		WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().WithUserType(sdk.UserTypeLegacyService)))
 }
 
 func (c *UserClient) CreateUserWithPrefix(t *testing.T, prefix string) (*sdk.User, func()) {
 	t.Helper()
-	return c.CreateUserWithOptions(t, c.ids.RandomAccountObjectIdentifierWithPrefix(prefix), &sdk.CreateUserOptions{})
+	return c.CreateUserWithRequest(t, sdk.NewCreateUserRequest(c.ids.RandomAccountObjectIdentifierWithPrefix(prefix)))
 }
 
-func (c *UserClient) CreateUserWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateUserOptions) (*sdk.User, func()) {
+func (c *UserClient) CreateUserWithRequest(t *testing.T, request *sdk.CreateUserRequest) (*sdk.User, func()) {
 	t.Helper()
 	ctx := context.Background()
-	err := c.client().Create(ctx, id, opts)
+	err := c.client().Create(ctx, request)
 	require.NoError(t, err)
+	id := request.ID()
 	user, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 	return user, c.DropUserFunc(t, id)
 }
 
-func (c *UserClient) Alter(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.AlterUserOptions) {
+func (c *UserClient) Alter(t *testing.T, request *sdk.AlterUserRequest) {
 	t.Helper()
-	err := c.client().Alter(context.Background(), id, opts)
+	err := c.client().Alter(context.Background(), request)
 	require.NoError(t, err)
 }
 
-func (c *UserClient) AlterCurrentUser(t *testing.T, opts *sdk.AlterUserOptions) {
+func (c *UserClient) AlterCurrentUser(t *testing.T, alter func(id sdk.AccountObjectIdentifier) *sdk.AlterUserRequest) {
 	t.Helper()
-	id, err := c.context.client.ContextFunctions.CurrentUser(context.Background())
+	ctx := context.Background()
+	id, err := c.context.client.ContextFunctions.CurrentUser(ctx)
 	require.NoError(t, err)
-	err = c.client().Alter(context.Background(), id, opts)
+	err = c.client().Alter(ctx, alter(id))
 	require.NoError(t, err)
 }
 
@@ -83,7 +79,7 @@ func (c *UserClient) DropUserFunc(t *testing.T, id sdk.AccountObjectIdentifier) 
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropUserOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, sdk.NewDropUserRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }
@@ -99,22 +95,16 @@ func (c *UserClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) (*sd
 	t.Helper()
 	ctx := context.Background()
 
-	return c.client().Describe(ctx, id)
+	return c.client().DescribeDetails(ctx, id)
 }
 
 func (c *UserClient) Disable(t *testing.T, id sdk.AccountObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					Disable: sdk.Bool(true),
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(id).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().WithDisabled(true))))
 	require.NoError(t, err)
 }
 
@@ -122,15 +112,9 @@ func (c *UserClient) SetDaysToExpiry(t *testing.T, id sdk.AccountObjectIdentifie
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					DaysToExpiry: sdk.Int(value),
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(id).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().WithDaysToExpiry(value))))
 	require.NoError(t, err)
 }
 
@@ -138,15 +122,9 @@ func (c *UserClient) SetType(t *testing.T, id sdk.AccountObjectIdentifier, userT
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					Type: sdk.Pointer(userType),
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(id).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().WithUserType(userType))))
 	require.NoError(t, err)
 }
 
@@ -154,13 +132,9 @@ func (c *UserClient) UnsetType(t *testing.T, id sdk.AccountObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
-		Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				Type: sdk.Bool(true),
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(id).
+		WithUnset(*sdk.NewUserUnsetRequest().
+			WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().WithUserType(true))))
 	require.NoError(t, err)
 }
 
@@ -168,15 +142,9 @@ func (c *UserClient) SetLoginName(t *testing.T, id sdk.AccountObjectIdentifier, 
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					LoginName: sdk.String(newLoginName),
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(id).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().WithLoginName(newLoginName))))
 	require.NoError(t, err)
 }
 
@@ -184,13 +152,9 @@ func (c *UserClient) UnsetDefaultSecondaryRoles(t *testing.T, id sdk.AccountObje
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterUserOptions{
-		Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				DefaultSecondaryRoles: sdk.Bool(true),
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(id).
+		WithUnset(*sdk.NewUserUnsetRequest().
+			WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().WithDefaultSecondaryRoles(true))))
 	require.NoError(t, err)
 }
 
@@ -248,7 +212,7 @@ func (c *UserClient) ShowUserWorkloadIdentityAuthenticationMethodOptions(t *test
 	t.Helper()
 	ctx := context.Background()
 
-	methods, err := c.context.client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, id.userId)
+	methods, err := c.context.client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(id.userId))
 	if err != nil {
 		return nil, err
 	}
@@ -271,21 +235,14 @@ func (c *UserClient) SetOidcWorkloadIdentity(t *testing.T, userId sdk.AccountObj
 		audiences[i] = sdk.StringListItemWrapper{Value: v}
 	}
 
-	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						OidcType: &sdk.UserObjectWorkloadIdentityOidc{
-							Issuer:           sdk.String(issuer),
-							Subject:          sdk.String(subject),
-							OidcAudienceList: audiences,
-						},
-					},
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+				WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+					WithOidcType(*sdk.NewUserObjectWorkloadIdentityOidcRequest().
+						WithIssuer(issuer).
+						WithSubject(subject).
+						WithOidcAudienceList(audiences))))))
 	require.NoError(t, err)
 }
 
@@ -294,19 +251,12 @@ func (c *UserClient) SetGcpWorkloadIdentity(t *testing.T, userId sdk.AccountObje
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						GcpType: &sdk.UserObjectWorkloadIdentityGcp{
-							Subject: sdk.String(subject),
-						},
-					},
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+				WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+					WithGcpType(*sdk.NewUserObjectWorkloadIdentityGcpRequest().
+						WithSubject(subject))))))
 	require.NoError(t, err)
 }
 
@@ -315,20 +265,13 @@ func (c *UserClient) SetAzureWorkloadIdentity(t *testing.T, userId sdk.AccountOb
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						AzureType: &sdk.UserObjectWorkloadIdentityAzure{
-							Issuer:  sdk.String(issuer),
-							Subject: sdk.String(subject),
-						},
-					},
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+				WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+					WithAzureType(*sdk.NewUserObjectWorkloadIdentityAzureRequest().
+						WithIssuer(issuer).
+						WithSubject(subject))))))
 	require.NoError(t, err)
 }
 
@@ -337,19 +280,12 @@ func (c *UserClient) SetAwsWorkloadIdentity(t *testing.T, userId sdk.AccountObje
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
-		Set: &sdk.UserSet{
-			ObjectProperties: &sdk.UserAlterObjectProperties{
-				UserObjectProperties: sdk.UserObjectProperties{
-					WorkloadIdentity: &sdk.UserObjectWorkloadIdentityProperties{
-						AwsType: &sdk.UserObjectWorkloadIdentityAws{
-							Arn: sdk.String(arn),
-						},
-					},
-				},
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
+				WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
+					WithAwsType(*sdk.NewUserObjectWorkloadIdentityAwsRequest().
+						WithArn(arn))))))
 	require.NoError(t, err)
 }
 
@@ -358,13 +294,9 @@ func (c *UserClient) UnsetWorkloadIdentity(t *testing.T, userId sdk.AccountObjec
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{
-		Unset: &sdk.UserUnset{
-			ObjectProperties: &sdk.UserObjectPropertiesUnset{
-				WorkloadIdentity: sdk.Bool(true),
-			},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
+		WithUnset(*sdk.NewUserUnsetRequest().
+			WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().WithWorkloadIdentity(true))))
 	require.NoError(t, err)
 }
 
@@ -373,10 +305,8 @@ func (c *UserClient) UpdateEnableUnredactedQuerySyntaxError(t *testing.T, userId
 
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, userId, &sdk.AlterUserOptions{Set: &sdk.UserSet{
-		ObjectParameters: &sdk.UserObjectParameters{
-			EnableUnredactedQuerySyntaxError: sdk.Bool(newValue),
-		},
-	}})
+	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
+		WithSet(*sdk.NewUserSetRequest().
+			WithObjectParameters(*sdk.NewUserObjectParametersRequest().WithEnableUnredactedQuerySyntaxError(newValue))))
 	require.NoError(t, err)
 }

@@ -93,7 +93,8 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 			// create with only required fields present in config
 			{
 				Config: config.FromModels(t, warehouseModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModel.ResourceReference()).
 						HasNameString(warehouseId.Name()).
 						HasNoWarehouseType().
@@ -163,7 +164,8 @@ func TestAcc_Warehouse_BasicFlows(t *testing.T) {
 			{
 				ResourceName: warehouseModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(warehouseId), "name", warehouseId.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(warehouseId), "fully_qualified_name", warehouseId.FullyQualifiedName())),
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
@@ -441,7 +443,8 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandard.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelStandard.ResourceReference(), "warehouse_type", string(sdk.WarehouseTypeStandard))),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelStandard.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelStandard.ResourceReference(), "show_output.0.type", string(sdk.WarehouseTypeStandard))),
@@ -469,7 +472,8 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimized.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSnowparkOptimized.ResourceReference(), "warehouse_type", string(sdk.WarehouseTypeSnowparkOptimized))),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSnowparkOptimized.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSnowparkOptimized.ResourceReference(), "show_output.0.type", string(sdk.WarehouseTypeSnowparkOptimized))),
@@ -487,7 +491,8 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelNoType.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "warehouse_type", "")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "show_output.0.type", string(sdk.WarehouseTypeStandard))),
@@ -504,7 +509,8 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimizedLowercase.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSnowparkOptimizedLowercase.ResourceReference(), "warehouse_type", strings.ToLower(string(sdk.WarehouseTypeSnowparkOptimized)))),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSnowparkOptimizedLowercase.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSnowparkOptimizedLowercase.ResourceReference(), "show_output.0.type", string(sdk.WarehouseTypeSnowparkOptimized))),
@@ -527,7 +533,8 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelNoType.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "warehouse_type", "")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "show_output.0.type", string(sdk.WarehouseTypeStandard))),
@@ -551,7 +558,8 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelNoType.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "warehouse_type", "")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoType.ResourceReference(), "show_output.0.type", string(sdk.WarehouseTypeStandard))),
@@ -601,7 +609,8 @@ func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSmall.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSmall.ResourceReference(), "warehouse_size", string(sdk.WarehouseSizeSmall))),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSmall.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSmall.ResourceReference(), "show_output.0.size", string(sdk.WarehouseSizeSmall))),
@@ -629,7 +638,8 @@ func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelMedium.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelMedium.ResourceReference(), "warehouse_size", string(sdk.WarehouseSizeMedium))),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelMedium.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelMedium.ResourceReference(), "show_output.0.size", string(sdk.WarehouseSizeMedium))),
@@ -647,7 +657,8 @@ func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelNoSize.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(warehouseModelNoSize.ResourceReference(), "warehouse_size")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoSize.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoSize.ResourceReference(), "show_output.0.size", string(sdk.WarehouseSizeXSmall))),
@@ -664,7 +675,8 @@ func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSmallLowercase.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSmallLowercase.ResourceReference(), "warehouse_size", strings.ToLower(string(sdk.WarehouseSizeSmall)))),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSmallLowercase.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelSmallLowercase.ResourceReference(), "show_output.0.size", string(sdk.WarehouseSizeSmall))),
@@ -687,7 +699,8 @@ func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelNoSize.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(warehouseModelNoSize.ResourceReference(), "warehouse_size")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoSize.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoSize.ResourceReference(), "show_output.0.size", string(sdk.WarehouseSizeXSmall))),
@@ -711,7 +724,8 @@ func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelNoSize.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(warehouseModelNoSize.ResourceReference(), "warehouse_size")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoSize.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelNoSize.ResourceReference(), "show_output.0.size", string(sdk.WarehouseSizeXSmall))),
@@ -900,7 +914,8 @@ func TestAcc_Warehouse_AutoResume(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelAutoResumeTrue.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoResumeTrue.ResourceReference(), "auto_resume", "true")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoResumeTrue.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoResumeTrue.ResourceReference(), "show_output.0.auto_resume", "true")),
@@ -928,7 +943,8 @@ func TestAcc_Warehouse_AutoResume(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelAutoResumeFalse.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoResumeFalse.ResourceReference(), "auto_resume", "false")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoResumeFalse.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoResumeFalse.ResourceReference(), "show_output.0.auto_resume", "false")),
@@ -946,7 +962,8 @@ func TestAcc_Warehouse_AutoResume(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelWithoutAutoResume.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoResume.ResourceReference(), "auto_resume", r.BooleanDefault)),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoResume.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoResume.ResourceReference(), "show_output.0.auto_resume", "true")),
@@ -970,7 +987,8 @@ func TestAcc_Warehouse_AutoResume(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelWithoutAutoResume.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoResume.ResourceReference(), "auto_resume", r.BooleanDefault)),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoResume.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoResume.ResourceReference(), "show_output.0.auto_resume", "true")),
@@ -1017,7 +1035,8 @@ func TestAcc_Warehouse_AutoSuspend(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelAutoSuspend1200.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoSuspend1200.ResourceReference(), "auto_suspend", "1200")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoSuspend1200.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoSuspend1200.ResourceReference(), "show_output.0.auto_suspend", "1200")),
@@ -1045,7 +1064,8 @@ func TestAcc_Warehouse_AutoSuspend(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelAutoSuspend600.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoSuspend600.ResourceReference(), "auto_suspend", "600")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoSuspend600.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelAutoSuspend600.ResourceReference(), "show_output.0.auto_suspend", "600")),
@@ -1063,7 +1083,8 @@ func TestAcc_Warehouse_AutoSuspend(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelWithoutAutoSuspend.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoSuspend.ResourceReference(), "auto_suspend", r.IntDefaultString)),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoSuspend.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoSuspend.ResourceReference(), "show_output.0.auto_suspend", "600")),
@@ -1087,7 +1108,8 @@ func TestAcc_Warehouse_AutoSuspend(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelWithoutAutoSuspend.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoSuspend.ResourceReference(), "auto_suspend", r.IntDefaultString)),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoSuspend.ResourceReference(), "show_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(warehouseModelWithoutAutoSuspend.ResourceReference(), "show_output.0.auto_suspend", "600")),
@@ -2233,7 +2255,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2249,7 +2272,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 				Config:       accconfig.FromModels(t, warehouseModelSnowparkOptimizedAndResourceConstraint),
 				ResourceName: warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
@@ -2272,7 +2296,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimizedAndResourceConstraint2.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimizedAndResourceConstraint2.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2295,7 +2320,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimized.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2317,7 +2343,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimizedAndResourceConstraintLowercase.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimizedAndResourceConstraintLowercase.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2345,7 +2372,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimized.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2374,7 +2402,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimized.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2389,7 +2418,8 @@ func TestAcc_Warehouse_ResourceConstraint(t *testing.T) {
 			{
 				ResourceName: warehouseModelSnowparkOptimized.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
@@ -2436,7 +2466,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandardAndGeneration.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandardAndGeneration.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoResourceConstraint().
@@ -2452,7 +2483,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 				Config:       accconfig.FromModels(t, providerModel, warehouseModelStandardAndGeneration),
 				ResourceName: warehouseModelStandardAndGeneration.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
@@ -2475,7 +2507,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandardAndGeneration1.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandardAndGeneration1.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasGenerationString(string(sdk.WarehouseGenerationStandardGen1)).
@@ -2498,7 +2531,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandard.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasGenerationEmpty().
@@ -2520,7 +2554,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandardAndGeneration1.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandardAndGeneration1.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasGenerationString(string(sdk.WarehouseGenerationStandardGen1)).
@@ -2548,7 +2583,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandard.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasGenerationEmpty().
@@ -2577,7 +2613,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 						planchecks.ExpectNoChangeOnField(warehouseModelStandard.ResourceReference(), "resource_constraint"),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasGenerationEmpty().
@@ -2592,7 +2629,8 @@ func TestAcc_Warehouse_Generation(t *testing.T) {
 			{
 				ResourceName: warehouseModelStandard.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
@@ -2638,7 +2676,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            accconfig.FromModels(t, providerModel, warehouseModelStandard),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -2658,7 +2697,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -2682,7 +2722,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2706,7 +2747,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandard.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -2737,7 +2779,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandard.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasGenerationEmpty().
@@ -2766,7 +2809,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelDefault.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelDefault.ResourceReference()).
 						HasWarehouseTypeEmpty().
 						HasGenerationEmpty().
@@ -2797,7 +2841,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelDefault.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelDefault.ResourceReference()).
 						HasWarehouseTypeEmpty().
 						HasGenerationEmpty().
@@ -2820,7 +2865,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelStandardAndGeneration.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandardAndGeneration.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasGenerationString(string(sdk.WarehouseGenerationStandardGen1)).
@@ -2844,7 +2890,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimized.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasGenerationEmpty().
@@ -2874,7 +2921,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelSnowparkOptimized.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasGenerationEmpty().
@@ -2903,7 +2951,8 @@ func TestAcc_Warehouse_ResourceConstraint_MixedWarehouseTypes(t *testing.T) {
 						planchecks.ExpectComputed(warehouseModelDefault.ResourceReference(), r.ShowOutputAttributeName, true),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelDefault.ResourceReference()).
 						HasWarehouseTypeEmpty().
 						HasGenerationEmpty().
@@ -2939,7 +2988,8 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateManuallySetResourceConstraint(t
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelSnowparkOptimized),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2958,7 +3008,8 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateManuallySetResourceConstraint(t
 						plancheck.ExpectResourceAction(warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimizedAndResourceConstraint.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -2993,7 +3044,8 @@ func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            accconfig.FromModels(t, providerModel, warehouseModelStandard),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -3012,7 +3064,8 @@ func TestAcc_Warehouse_Generation_MigrateManuallySetGeneration(t *testing.T) {
 						plancheck.ExpectResourceAction(warehouseModelStandardAndGeneration.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandardAndGeneration.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -3043,7 +3096,8 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelSnowparkOptimized),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -3062,7 +3116,8 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 						plancheck.ExpectResourceAction(warehouseModelSnowparkOptimized.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -3093,7 +3148,8 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            config.FromModels(t, warehouseModelSnowparkOptimized),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -3115,7 +3171,8 @@ func TestAcc_Warehouse_ResourceConstraint_MigrateSnowparkOptimizedWithoutResourc
 						plancheck.ExpectResourceAction(warehouseModelSnowparkOptimized.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelSnowparkOptimized.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasNoGeneration().
@@ -3147,7 +3204,8 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            accconfig.FromModels(t, providerModel, warehouseModelStandard),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoResourceConstraint().
@@ -3166,7 +3224,8 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration(t *testing.T)
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -3198,7 +3257,8 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.6.0"),
 				Config:            accconfig.FromModels(t, providerModel, warehouseModelStandard),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -3220,7 +3280,8 @@ func TestAcc_Warehouse_Generation_MigrateStandardWithoutGeneration_UpdatedExtern
 						plancheck.ExpectResourceAction(warehouseModelStandard.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, warehouseModelStandard.ResourceReference()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
 						HasNoGeneration().
@@ -3250,7 +3311,8 @@ func TestAcc_Warehouse_ExternalTypeChange(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, warehouseModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
 					resourceshowoutputassert.WarehouseShowOutput(t, ref).
@@ -3267,10 +3329,55 @@ func TestAcc_Warehouse_ExternalTypeChange(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, ref).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
 					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasType(sdk.WarehouseTypeStandard),
+				),
+			},
+		},
+	})
+}
+
+// This test proves the provider behavior when an identifier contains double quotes:
+//   - When the identifier is used as a resource association, it is okay
+//   - When the identifier is used as a part of resource identifier, it fails with parsing error.
+//     This happens because of the Id parsing functions which disallow double quotes.
+//     We can't check this function because the framework runs the destroy function with the malformed identifier.
+//     This can't be overridden or skipped.
+func TestAcc_Warehouse_IdentifierWithDoubleQuotes(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	randomSuffix := testClient().Ids.Alpha()
+	funnyString := `a"c` + randomSuffix
+	funnyId := sdk.NewAccountObjectIdentifier(funnyString)
+	_, rmCleanup := testClient().ResourceMonitor.CreateResourceMonitorWithRequest(t,
+		sdk.NewCreateResourceMonitorRequest(funnyId))
+	t.Cleanup(rmCleanup)
+	warehouseModelWithFunnyResourceMonitor := model.Warehouse("test", id.Name()).
+		WithResourceMonitor(funnyString).
+		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard)
+	ref := warehouseModelWithFunnyResourceMonitor.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroyUsingLegacyIdParsing(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModelWithFunnyResourceMonitor),
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseResource(t, ref).
+						HasName(id.Name()).
+						HasResourceMonitor(funnyString).
+						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasName(id.Name()).
+						HasResourceMonitor(funnyId).
 						HasType(sdk.WarehouseTypeStandard),
 				),
 			},

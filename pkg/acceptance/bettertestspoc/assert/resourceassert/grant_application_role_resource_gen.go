@@ -16,7 +16,7 @@ func GrantApplicationRoleResource(t *testing.T, name string) *GrantApplicationRo
 	t.Helper()
 
 	return &GrantApplicationRoleResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantApplicationRoleResource(t *testing.T, id string) *GrantApplica
 	t.Helper()
 
 	return &GrantApplicationRoleResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -52,17 +52,17 @@ func (g *GrantApplicationRoleResourceAssert) HasParentAccountRoleName(expected s
 ///////////////////////////////////
 
 func (g *GrantApplicationRoleResourceAssert) HasApplicationNameString(expected string) *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("application_name", expected))
+	g.ValueSet("application_name", expected)
 	return g
 }
 
 func (g *GrantApplicationRoleResourceAssert) HasApplicationRoleNameString(expected string) *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("application_role_name", expected))
+	g.ValueSet("application_role_name", expected)
 	return g
 }
 
 func (g *GrantApplicationRoleResourceAssert) HasParentAccountRoleNameString(expected string) *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("parent_account_role_name", expected))
+	g.ValueSet("parent_account_role_name", expected)
 	return g
 }
 
@@ -71,17 +71,17 @@ func (g *GrantApplicationRoleResourceAssert) HasParentAccountRoleNameString(expe
 ///////////////////////////////
 
 func (g *GrantApplicationRoleResourceAssert) HasNoApplicationName() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("application_name"))
+	g.ValueNotSet("application_name")
 	return g
 }
 
 func (g *GrantApplicationRoleResourceAssert) HasNoApplicationRoleName() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("application_role_name"))
+	g.ValueNotSet("application_role_name")
 	return g
 }
 
 func (g *GrantApplicationRoleResourceAssert) HasNoParentAccountRoleName() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("parent_account_role_name"))
+	g.ValueNotSet("parent_account_role_name")
 	return g
 }
 
@@ -90,12 +90,12 @@ func (g *GrantApplicationRoleResourceAssert) HasNoParentAccountRoleName() *Grant
 ////////////////////////////
 
 func (g *GrantApplicationRoleResourceAssert) HasApplicationNameEmpty() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("application_name", ""))
+	g.ValueSet("application_name", "")
 	return g
 }
 
 func (g *GrantApplicationRoleResourceAssert) HasParentAccountRoleNameEmpty() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValueSet("parent_account_role_name", ""))
+	g.ValueSet("parent_account_role_name", "")
 	return g
 }
 
@@ -104,16 +104,16 @@ func (g *GrantApplicationRoleResourceAssert) HasParentAccountRoleNameEmpty() *Gr
 ///////////////////////////////
 
 func (g *GrantApplicationRoleResourceAssert) HasApplicationNameNotEmpty() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("application_name"))
+	g.ValuePresent("application_name")
 	return g
 }
 
 func (g *GrantApplicationRoleResourceAssert) HasApplicationRoleNameNotEmpty() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("application_role_name"))
+	g.ValuePresent("application_role_name")
 	return g
 }
 
 func (g *GrantApplicationRoleResourceAssert) HasParentAccountRoleNameNotEmpty() *GrantApplicationRoleResourceAssert {
-	g.AddAssertion(assert.ValuePresent("parent_account_role_name"))
+	g.ValuePresent("parent_account_role_name")
 	return g
 }

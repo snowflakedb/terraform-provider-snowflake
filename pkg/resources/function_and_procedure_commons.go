@@ -12,7 +12,8 @@ func readFunctionOrProcedureArguments(d *schema.ResourceData, args []sdk.Normali
 		// TODO [before V1]: handle empty list
 		return nil
 	}
-	return HandleNestedDataTypeSet(d, "arguments", "arg_data_type", args,
+	return HandleNestedDataTypeSet(
+		d, "arguments", "arg_data_type", args,
 		func(arg sdk.NormalizedArgument) datatypes.DataType { return arg.DataType },
 		func(arg sdk.NormalizedArgument, item map[string]any, currentArg map[string]any) {
 			item["arg_name"] = arg.Name

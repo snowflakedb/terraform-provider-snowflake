@@ -35,6 +35,10 @@ var (
 		"StorageSerializationPolicy", "StorageSerializationPolicies",
 		"COMPATIBLE", "OPTIMIZED",
 	)
+	IcebergTableIcebergMergeOnReadBehaviorEnumDef = g.NewEnum(
+		"IcebergTableIcebergMergeOnReadBehavior", "IcebergTableIcebergMergeOnReadBehaviors",
+		"AUTO", "ENABLED", "DISABLED",
+	)
 )
 
 var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
@@ -245,6 +249,51 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	"CreateFromIcebergRest",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest",
+	g.NewQueryStruct("CreateFromIcebergRest").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("CATALOG_TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()).
+		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+		OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
+		OptionalComment().
+		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", StorageSerializationPolicyEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+		OptionalAssignment("ICEBERG_MERGE_ON_READ_BEHAVIOR", IcebergTableIcebergMergeOnReadBehaviorEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("ENABLE_ICEBERG_MERGE_ON_READ", g.ParameterOptions()).
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	"CreateFromAwsGlue",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue",
+	g.NewQueryStruct("CreateFromAwsGlue").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("CATALOG_TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
+		OptionalComment().
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table",
 	g.NewQueryStruct("AlterIcebergTable").
@@ -366,7 +415,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("name_mapping").
 		Text("owner_role_type").
 		Text("catalog_sync_name").
-		Text("auto_refresh_status").
+		JsonField("auto_refresh_status", "*IcebergTableAutoRefreshStatus").
 		Text("partition_specs").
 		Number("current_partition_spec_id").
 		Number("iceberg_table_format_version"),
@@ -416,4 +465,5 @@ var icebergTablesDef = g.NewInterface(
 	IcebergTableTypeEnumDef,
 	IcebergTableCatalogEnumDef,
 	StorageSerializationPolicyEnumDef,
+	IcebergTableIcebergMergeOnReadBehaviorEnumDef,
 )

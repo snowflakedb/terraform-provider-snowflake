@@ -70,6 +70,46 @@ func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 	})
 }
 
+func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
+	set := func(params *LegacyAccountParameters) *AlterAccountOptions {
+		return &AlterAccountOptions{
+			Set: &AccountSet{
+				LegacyParameters: &AccountLevelParameters{
+					AccountParameters: params,
+				},
+			},
+		}
+	}
+
+	t.Run("CLI: set to -1 (unlimited)", func(t *testing.T) {
+		opts := set(&LegacyAccountParameters{CortexCodeCliDailyEstCreditLimitPerUser: Pointer(-1)})
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER = -1")
+	})
+
+	t.Run("Desktop: set to 0 (blocked)", func(t *testing.T) {
+		opts := set(&LegacyAccountParameters{CortexCodeDesktopDailyEstCreditLimitPerUser: Pointer(0)})
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER = 0")
+	})
+
+	t.Run("Snowsight: set to a positive cap", func(t *testing.T) {
+		opts := set(&LegacyAccountParameters{CortexCodeSnowsightDailyEstCreditLimitPerUser: Pointer(10)})
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 10")
+	})
+
+	t.Run("Unset CLI limit", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				LegacyParameters: &AccountLevelParametersUnset{
+					AccountParameters: &LegacyAccountParametersUnset{
+						CortexCodeCliDailyEstCreditLimitPerUser: Bool(true),
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT UNSET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER")
+	})
+}
+
 func TestToAccountParameter(t *testing.T) {
 	type test struct {
 		input string
@@ -78,12 +118,15 @@ func TestToAccountParameter(t *testing.T) {
 
 	valid := []test{
 		// Case insensitive.
-		{input: "allow_client_mfa_caching", want: AccountParameterAllowClientMFACaching},
+		{input: "allow_client_mfa_caching", want: AccountParameterAllowClientMfaCaching},
 
 		// Supported Values.
-		{input: "ALLOW_CLIENT_MFA_CACHING", want: AccountParameterAllowClientMFACaching},
-		{input: "ALLOW_ID_TOKEN", want: AccountParameterAllowIDToken},
+		{input: "ALLOW_CLIENT_MFA_CACHING", want: AccountParameterAllowClientMfaCaching},
+		{input: "ALLOW_ID_TOKEN", want: AccountParameterAllowIdToken},
 		{input: "CLIENT_ENCRYPTION_KEY_SIZE", want: AccountParameterClientEncryptionKeySize},
+		{input: "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeCliDailyEstCreditLimitPerUser},
+		{input: "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser},
+		{input: "CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser},
 		{input: "CORTEX_ENABLED_CROSS_REGION", want: AccountParameterCortexEnabledCrossRegion},
 		{input: "DISABLE_USER_PRIVILEGE_GRANTS", want: AccountParameterDisableUserPrivilegeGrants},
 		{input: "ENABLE_IDENTIFIER_FIRST_LOGIN", want: AccountParameterEnableIdentifierFirstLogin},
@@ -93,14 +136,14 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "ENABLE_UNHANDLED_EXCEPTIONS_REPORTING", want: AccountParameterEnableUnhandledExceptionsReporting},
 		{input: "ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES", want: AccountParameterEnforceNetworkRulesForInternalStages},
 		{input: "EVENT_TABLE", want: AccountParameterEventTable},
-		{input: "EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST", want: AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList},
-		{input: "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", want: AccountParameterInitialReplicationSizeLimitInTB},
+		{input: "EXTERNAL_OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST", want: AccountParameterExternalOauthAddPrivilegedRolesToBlockedList},
+		{input: "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", want: AccountParameterInitialReplicationSizeLimitInTb},
 		{input: "MIN_DATA_RETENTION_TIME_IN_DAYS", want: AccountParameterMinDataRetentionTimeInDays},
 		{input: "METRIC_LEVEL", want: AccountParameterMetricLevel},
 		{input: "NETWORK_POLICY", want: AccountParameterNetworkPolicy},
-		{input: "OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST", want: AccountParameterOAuthAddPrivilegedRolesToBlockedList},
+		{input: "OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST", want: AccountParameterOauthAddPrivilegedRolesToBlockedList},
 		{input: "PERIODIC_DATA_REKEYING", want: AccountParameterPeriodicDataRekeying},
-		{input: "PREVENT_UNLOAD_TO_INLINE_URL", want: AccountParameterPreventUnloadToInlineURL},
+		{input: "PREVENT_UNLOAD_TO_INLINE_URL", want: AccountParameterPreventUnloadToInlineUrl},
 		{input: "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_CREATION", want: AccountParameterRequireStorageIntegrationForStageCreation},
 		{input: "REQUIRE_STORAGE_INTEGRATION_FOR_STAGE_OPERATION", want: AccountParameterRequireStorageIntegrationForStageOperation},
 		{input: "SSO_LOGIN_PAGE", want: AccountParameterSsoLoginPage},
@@ -134,7 +177,7 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC", want: AccountParameterJdbcTreatTimestampNtzAsUtc},
 		{input: "JDBC_USE_SESSION_TIMEZONE", want: AccountParameterJdbcUseSessionTimezone},
 		{input: "JSON_INDENT", want: AccountParameterJsonIndent},
-		{input: "JS_TREAT_INTEGER_AS_BIGINT", want: AccountParameterJsTreatIntegerAsBigInt},
+		{input: "JS_TREAT_INTEGER_AS_BIGINT", want: AccountParameterJsTreatIntegerAsBigint},
 		{input: "LOCK_TIMEOUT", want: AccountParameterLockTimeout},
 		{input: "MULTI_STATEMENT_COUNT", want: AccountParameterMultiStatementCount},
 		{input: "NOORDER_SEQUENCE_AS_DEFAULT", want: AccountParameterNoorderSequenceAsDefault},
@@ -169,7 +212,7 @@ func TestToAccountParameter(t *testing.T) {
 		// Object Parameters (inherited)
 		{input: "CATALOG", want: AccountParameterCatalog},
 		{input: "DATA_RETENTION_TIME_IN_DAYS", want: AccountParameterDataRetentionTimeInDays},
-		{input: "DEFAULT_DDL_COLLATION", want: AccountParameterDefaultDDLCollation},
+		{input: "DEFAULT_DDL_COLLATION", want: AccountParameterDefaultDdlCollation},
 		{input: "EXTERNAL_VOLUME", want: AccountParameterExternalVolume},
 		{input: "LOG_LEVEL", want: AccountParameterLogLevel},
 		{input: "MAX_CONCURRENCY_LEVEL", want: AccountParameterMaxConcurrencyLevel},

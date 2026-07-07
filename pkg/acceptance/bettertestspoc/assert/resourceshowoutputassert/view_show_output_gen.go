@@ -16,9 +16,8 @@ func ViewShowOutput(t *testing.T, name string) *ViewShowOutputAssert {
 	t.Helper()
 
 	viewAssert := ViewShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	viewAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &viewAssert
 }
 
@@ -26,9 +25,8 @@ func ImportedViewShowOutput(t *testing.T, id string) *ViewShowOutputAssert {
 	t.Helper()
 
 	viewAssert := ViewShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	viewAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &viewAssert
 }
 
@@ -37,67 +35,67 @@ func ImportedViewShowOutput(t *testing.T, id string) *ViewShowOutputAssert {
 ////////////////////////////
 
 func (v *ViewShowOutputAssert) HasCreatedOn(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	v.StringValueSet("created_on", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasName(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	v.StringValueSet("name", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasKind(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	v.StringValueSet("kind", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasReserved(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("reserved", expected))
+	v.StringValueSet("reserved", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasDatabaseName(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	v.StringValueSet("database_name", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasSchemaName(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	v.StringValueSet("schema_name", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasOwner(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	v.StringValueSet("owner", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasComment(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	v.StringValueSet("comment", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasText(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("text", expected))
+	v.StringValueSet("text", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasIsSecure(expected bool) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_secure", expected))
+	v.BoolValueSet("is_secure", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasIsMaterialized(expected bool) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_materialized", expected))
+	v.BoolValueSet("is_materialized", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasOwnerRoleType(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	v.StringValueSet("owner_role_type", expected)
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasChangeTracking(expected string) *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueSet("change_tracking", expected))
+	v.StringValueSet("change_tracking", expected)
 	return v
 }
 
@@ -106,66 +104,66 @@ func (v *ViewShowOutputAssert) HasChangeTracking(expected string) *ViewShowOutpu
 ///////////////////////////////
 
 func (v *ViewShowOutputAssert) HasNoCreatedOn() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	v.ValueNotSet("created_on")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoName() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	v.ValueNotSet("name")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoKind() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	v.ValueNotSet("kind")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoReserved() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("reserved"))
+	v.ValueNotSet("reserved")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoDatabaseName() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	v.ValueNotSet("database_name")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoSchemaName() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	v.ValueNotSet("schema_name")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoOwner() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	v.ValueNotSet("owner")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoComment() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	v.ValueNotSet("comment")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoText() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("text"))
+	v.ValueNotSet("text")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoIsSecure() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_secure"))
+	v.ValueNotSet("is_secure")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoIsMaterialized() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_materialized"))
+	v.ValueNotSet("is_materialized")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoOwnerRoleType() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	v.ValueNotSet("owner_role_type")
 	return v
 }
 
 func (v *ViewShowOutputAssert) HasNoChangeTracking() *ViewShowOutputAssert {
-	v.AddAssertion(assert.ResourceShowOutputValueNotSet("change_tracking"))
+	v.ValueNotSet("change_tracking")
 	return v
 }

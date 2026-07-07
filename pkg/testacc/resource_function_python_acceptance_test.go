@@ -49,7 +49,8 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 			// CREATE BASIC
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanDefault).
@@ -76,7 +77,8 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()),
 				),
@@ -87,7 +89,8 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"arguments.0.arg_data_type", "is_aggregate", "is_secure", "null_input_behavior", "return_results_behavior"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedFunctionPythonResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -98,7 +101,8 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 			// RENAME
 			{
 				Config: config.FromModels(t, functionModelRenamed),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModelRenamed.ResourceReference()).
 						HasNameString(idWithChangedNameButTheSameDataType.Name()).
 						HasFullyQualifiedNameString(idWithChangedNameButTheSameDataType.FullyQualifiedName()),
@@ -180,7 +184,8 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 			// CREATE WITH ALL
 			{
 				Config: config.FromModels(t, functionModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).
@@ -202,7 +207,8 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"is_aggregate", "arguments.0.arg_data_type"},
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedFunctionPythonResource(t, id.FullyQualifiedName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "arguments.0.arg_name", argName)),
@@ -218,7 +224,8 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, functionModelUpdateWithoutRecreation),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FunctionPythonResource(t, functionModelUpdateWithoutRecreation.ResourceReference()).
 						HasNameString(id.Name()).
 						HasIsSecureString(r.BooleanFalse).

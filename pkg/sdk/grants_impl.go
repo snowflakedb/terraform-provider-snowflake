@@ -291,6 +291,20 @@ func (v *grants) GrantOwnership(ctx context.Context, on OwnershipGrantOn, to Own
 	return validateAndExec(v.client, ctx, opts)
 }
 
+// RevokeOwnership revokes an OWNERSHIP grant. Note that Snowflake only allows revoking ownership of FUTURE objects;
+// ownership of existing objects must be transferred to another role with GrantOwnership instead - this is enforced
+// by the RevokeOwnershipGrantOn type, which only exposes the Future variant.
+func (v *grants) RevokeOwnership(ctx context.Context, on RevokeOwnershipGrantOn, from OwnershipGrantTo, opts *RevokeOwnershipOptions) error {
+	if opts == nil {
+		opts = &RevokeOwnershipOptions{}
+	}
+
+	opts.On = on
+	opts.From = from
+
+	return validateAndExec(v.client, ctx, opts)
+}
+
 // TODO(SNOW-2097063): Improve SHOW GRANTS implementation
 func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, error) {
 	if opts == nil {
@@ -384,11 +398,7 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 		originalPipeExecutionState = &pipeExecutionState
 
 		if pipeExecutionState == RunningPipeExecutionState {
-			if err := v.client.Pipes.Alter(ctx, pipeId, &AlterPipeOptions{
-				Set: &PipeSet{
-					PipeExecutionPaused: Bool(true),
-				},
-			}); err != nil {
+			if err := v.client.Pipes.Alter(ctx, NewAlterPipeRequest(pipeId).WithSet(*NewPipeSetRequest().WithPipeExecutionPaused(true))); err != nil {
 				return err
 			}
 		}
@@ -548,7 +558,11 @@ func (v *grants) runOnAllPipes(ctx context.Context, inDatabase *AccountObjectIde
 		}
 	}
 
-	pipes, err := v.client.Pipes.Show(ctx, &ShowPipeOptions{In: in})
+	showReq := NewShowPipeRequest()
+	if in != nil {
+		showReq.WithIn(*in)
+	}
+	pipes, err := v.client.Pipes.Show(ctx, showReq)
 	if err != nil {
 		return err
 	}

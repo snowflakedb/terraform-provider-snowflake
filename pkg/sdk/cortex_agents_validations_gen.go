@@ -21,6 +21,9 @@ func (opts *CreateCortexAgentOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateCortexAgentOptions", "OrReplace", "IfNotExists"))
 	}
+	if containsDoubleDollarQuotes(opts.FromSpecification) {
+		errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateCortexAgentOptions", "FromSpecification"))
+	}
 	return JoinErrors(errs...)
 }
 
@@ -38,6 +41,11 @@ func (opts *AlterCortexAgentOptions) validate() error {
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Comment, opts.Set.Profile) {
 			errs = append(errs, errAtLeastOneOf("AlterCortexAgentOptions.Set", "Comment", "Profile"))
+		}
+	}
+	if valueSet(opts.ModifyLiveVersionSet) {
+		if containsDoubleDollarQuotes(opts.ModifyLiveVersionSet.Specification) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("AlterCortexAgentOptions.ModifyLiveVersionSet", "Specification"))
 		}
 	}
 	return JoinErrors(errs...)

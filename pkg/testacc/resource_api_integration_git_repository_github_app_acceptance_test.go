@@ -174,7 +174,8 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import_WrongAuthType(t *testin
 	t.Cleanup(tokenCleanup)
 
 	githubAppId := testClient().Ids.RandomAccountObjectIdentifier()
-	githubAppModel := model.ApiIntegrationGitRepositoryGithubApp("t", githubAppId.Name(),
+	githubAppModel := model.ApiIntegrationGitRepositoryGithubApp(
+		"t", githubAppId.Name(),
 		[]string{gitAllowedPrefix},
 		true,
 	)
@@ -216,7 +217,8 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					_, cleanup := testClient().ApiIntegration.CreateWithRequest(t,
+					_, cleanup := testClient().ApiIntegration.CreateWithRequest(
+						t,
 						sdk.NewCreateApiIntegrationRequest(id,
 							[]sdk.ApiIntegrationEndpointPrefix{{Path: gitAllowedPrefix}}, true).
 							WithComment(comment).

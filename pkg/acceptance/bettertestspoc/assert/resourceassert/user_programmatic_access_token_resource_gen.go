@@ -16,7 +16,7 @@ func UserProgrammaticAccessTokenResource(t *testing.T, name string) *UserProgram
 	t.Helper()
 
 	return &UserProgrammaticAccessTokenResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedUserProgrammaticAccessTokenResource(t *testing.T, id string) *UserP
 	t.Helper()
 
 	return &UserProgrammaticAccessTokenResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -92,57 +92,57 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasUser(expected string) *Us
 ///////////////////////////////////
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNameString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("name", expected))
+	u.ValueSet("name", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasCommentString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("comment", expected))
+	u.ValueSet("comment", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasDaysToExpiryString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("days_to_expiry", expected))
+	u.ValueSet("days_to_expiry", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasDisabledString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("disabled", expected))
+	u.ValueSet("disabled", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHoursString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("expire_rotated_token_after_hours", expected))
+	u.ValueSet("expire_rotated_token_after_hours", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("keeper", expected))
+	u.ValueSet("keeper", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicyRequirementString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("mins_to_bypass_network_policy_requirement", expected))
+	u.ValueSet("mins_to_bypass_network_policy_requirement", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRoleRestrictionString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("role_restriction", expected))
+	u.ValueSet("role_restriction", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRotatedTokenNameString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("rotated_token_name", expected))
+	u.ValueSet("rotated_token_name", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasTokenString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("token", expected))
+	u.ValueSet("token", expected)
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasUserString(expected string) *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("user", expected))
+	u.ValueSet("user", expected)
 	return u
 }
 
@@ -151,57 +151,57 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasUserString(expected strin
 ///////////////////////////////
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoName() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("name"))
+	u.ValueNotSet("name")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoComment() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("comment"))
+	u.ValueNotSet("comment")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoDaysToExpiry() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("days_to_expiry"))
+	u.ValueNotSet("days_to_expiry")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoDisabled() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("disabled"))
+	u.ValueNotSet("disabled")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoExpireRotatedTokenAfterHours() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("expire_rotated_token_after_hours"))
+	u.ValueNotSet("expire_rotated_token_after_hours")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoKeeper() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("keeper"))
+	u.ValueNotSet("keeper")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoMinsToBypassNetworkPolicyRequirement() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("mins_to_bypass_network_policy_requirement"))
+	u.ValueNotSet("mins_to_bypass_network_policy_requirement")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoRoleRestriction() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("role_restriction"))
+	u.ValueNotSet("role_restriction")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoRotatedTokenName() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("rotated_token_name"))
+	u.ValueNotSet("rotated_token_name")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoToken() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("token"))
+	u.ValueNotSet("token")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNoUser() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("user"))
+	u.ValueNotSet("user")
 	return u
 }
 
@@ -210,47 +210,47 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasNoUser() *UserProgrammati
 ////////////////////////////
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasCommentEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("comment", ""))
+	u.ValueSet("comment", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasDaysToExpiryEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("days_to_expiry", ""))
+	u.ValueSet("days_to_expiry", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasDisabledEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("disabled", ""))
+	u.ValueSet("disabled", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHoursEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("expire_rotated_token_after_hours", ""))
+	u.ValueSet("expire_rotated_token_after_hours", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("keeper", ""))
+	u.ValueSet("keeper", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicyRequirementEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("mins_to_bypass_network_policy_requirement", ""))
+	u.ValueSet("mins_to_bypass_network_policy_requirement", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRoleRestrictionEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("role_restriction", ""))
+	u.ValueSet("role_restriction", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRotatedTokenNameEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("rotated_token_name", ""))
+	u.ValueSet("rotated_token_name", "")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasTokenEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValueSet("token", ""))
+	u.ValueSet("token", "")
 	return u
 }
 
@@ -259,56 +259,56 @@ func (u *UserProgrammaticAccessTokenResourceAssert) HasTokenEmpty() *UserProgram
 ///////////////////////////////
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasNameNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("name"))
+	u.ValuePresent("name")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasCommentNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("comment"))
+	u.ValuePresent("comment")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasDaysToExpiryNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("days_to_expiry"))
+	u.ValuePresent("days_to_expiry")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasDisabledNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("disabled"))
+	u.ValuePresent("disabled")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasExpireRotatedTokenAfterHoursNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("expire_rotated_token_after_hours"))
+	u.ValuePresent("expire_rotated_token_after_hours")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasKeeperNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("keeper"))
+	u.ValuePresent("keeper")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasMinsToBypassNetworkPolicyRequirementNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("mins_to_bypass_network_policy_requirement"))
+	u.ValuePresent("mins_to_bypass_network_policy_requirement")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRoleRestrictionNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("role_restriction"))
+	u.ValuePresent("role_restriction")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasRotatedTokenNameNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("rotated_token_name"))
+	u.ValuePresent("rotated_token_name")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasTokenNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("token"))
+	u.ValuePresent("token")
 	return u
 }
 
 func (u *UserProgrammaticAccessTokenResourceAssert) HasUserNotEmpty() *UserProgrammaticAccessTokenResourceAssert {
-	u.AddAssertion(assert.ValuePresent("user"))
+	u.ValuePresent("user")
 	return u
 }

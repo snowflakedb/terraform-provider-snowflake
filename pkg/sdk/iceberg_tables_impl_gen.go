@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -31,6 +32,16 @@ func (v *icebergTables) CreateFromIcebergFiles(ctx context.Context, request *Cre
 }
 
 func (v *icebergTables) CreateFromDeltaLake(ctx context.Context, request *CreateFromDeltaLakeIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *icebergTables) CreateFromIcebergRest(ctx context.Context, request *CreateFromIcebergRestIcebergTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *icebergTables) CreateFromAwsGlue(ctx context.Context, request *CreateFromAwsGlueIcebergTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -341,6 +352,47 @@ func (r *CreateFromDeltaLakeIcebergTableRequest) toOpts() *CreateFromDeltaLakeIc
 	return opts
 }
 
+func (r *CreateFromIcebergRestIcebergTableRequest) toOpts() *CreateFromIcebergRestIcebergTableOptions {
+	opts := &CreateFromIcebergRestIcebergTableOptions{
+		OrReplace:                  r.OrReplace,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		ExternalVolume:             r.ExternalVolume,
+		Catalog:                    r.Catalog,
+		CatalogTableName:           r.CatalogTableName,
+		CatalogNamespace:           r.CatalogNamespace,
+		PathLayout:                 r.PathLayout,
+		TargetFileSize:             r.TargetFileSize,
+		ReplaceInvalidCharacters:   r.ReplaceInvalidCharacters,
+		AutoRefresh:                r.AutoRefresh,
+		Comment:                    r.Comment,
+		StorageSerializationPolicy: r.StorageSerializationPolicy,
+		IcebergMergeOnReadBehavior: r.IcebergMergeOnReadBehavior,
+		EnableIcebergMergeOnRead:   r.EnableIcebergMergeOnRead,
+		Tag:                        r.Tag,
+		Contact:                    r.Contact,
+	}
+	return opts
+}
+
+func (r *CreateFromAwsGlueIcebergTableRequest) toOpts() *CreateFromAwsGlueIcebergTableOptions {
+	opts := &CreateFromAwsGlueIcebergTableOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		ExternalVolume:           r.ExternalVolume,
+		Catalog:                  r.Catalog,
+		CatalogTableName:         r.CatalogTableName,
+		CatalogNamespace:         r.CatalogNamespace,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		AutoRefresh:              r.AutoRefresh,
+		Comment:                  r.Comment,
+		Tag:                      r.Tag,
+		Contact:                  r.Contact,
+	}
+	return opts
+}
+
 func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 	opts := &AlterIcebergTableOptions{
 		IfExists:                  r.IfExists,
@@ -623,7 +675,6 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		CanWriteMetadata:          r.CanWriteMetadata == "Y",
 		OwnerRoleType:             r.OwnerRoleType,
 		CatalogSyncName:           r.CatalogSyncName,
-		AutoRefreshStatus:         r.AutoRefreshStatus,
 		PartitionSpecs:            r.PartitionSpecs,
 		CurrentPartitionSpecId:    r.CurrentPartitionSpecId,
 		IcebergTableFormatVersion: r.IcebergTableFormatVersion,
@@ -637,6 +688,11 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 	mapNullString(&result.BaseLocation, r.BaseLocation)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.NameMapping, r.NameMapping)
+	if r.AutoRefreshStatus != "" {
+		if err := json.Unmarshal([]byte(r.AutoRefreshStatus), &result.AutoRefreshStatus); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal AutoRefreshStatus: %w", err)
+		}
+	}
 	return result, nil
 }
 

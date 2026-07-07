@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -15,7 +14,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -70,7 +68,7 @@ func UserPublicKeys() *schema.Resource {
 
 func checkUserExists(ctx context.Context, client *sdk.Client, userId sdk.AccountObjectIdentifier) (bool, error) {
 	// First check if user exists
-	_, err := client.Users.Describe(ctx, userId)
+	_, err := client.Users.DescribeDetails(ctx, userId)
 	if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 		log.Printf("[DEBUG] user (%s) not found", userId.Name())
 		return false, nil
@@ -101,15 +99,15 @@ func ReadUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any) d
 
 func CreateUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	db := client.GetConn().DB
 	name := d.Get("name").(string)
+	id := sdk.NewAccountObjectIdentifier(name)
 
 	for _, prop := range userPublicKeyProperties {
 		publicKey, publicKeyOK := d.GetOk(prop)
 		if !publicKeyOK {
 			continue
 		}
-		err := updateUserPublicKeys(db, name, prop, publicKey.(string))
+		err := setUserPublicKey(ctx, client, id, prop, publicKey.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -121,8 +119,7 @@ func CreateUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any)
 
 func UpdateUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	db := client.GetConn().DB
-	name := d.Id()
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	propsToSet := map[string]string{}
 	propsToUnset := map[string]string{}
@@ -143,7 +140,7 @@ func UpdateUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any)
 
 	// set the keys we decided should be set
 	for prop, value := range propsToSet {
-		err := updateUserPublicKeys(db, name, prop, value)
+		err := setUserPublicKey(ctx, client, id, prop, value)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -151,7 +148,7 @@ func UpdateUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any)
 
 	// unset the keys we decided should be unset
 	for k := range propsToUnset {
-		err := unsetUserPublicKeys(db, name, k)
+		err := unsetUserPublicKey(ctx, client, id, k)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -162,11 +159,10 @@ func UpdateUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any)
 
 func DeleteUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	db := client.GetConn().DB
-	name := d.Id()
+	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	for _, prop := range userPublicKeyProperties {
-		err := unsetUserPublicKeys(db, name, prop)
+		err := unsetUserPublicKey(ctx, client, id, prop)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -176,12 +172,34 @@ func DeleteUserPublicKeys(ctx context.Context, d *schema.ResourceData, meta any)
 	return nil
 }
 
-func updateUserPublicKeys(db *sql.DB, name string, prop string, value string) error {
-	stmt := fmt.Sprintf(`ALTER USER "%s" SET %s = '%s'`, name, prop, value)
-	return snowflake.Exec(db, stmt)
+// setUserPublicKey sets the given RSA public key property on the user using the SDK.
+func setUserPublicKey(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier, prop string, value string) error {
+	objectProperties := sdk.NewUserAlterObjectPropertiesRequest()
+	switch prop {
+	case "rsa_public_key":
+		objectProperties.WithRsaPublicKey(value)
+	case "rsa_public_key_2":
+		objectProperties.WithRsaPublicKey2(value)
+	default:
+		return fmt.Errorf("unsupported public key property: %s", prop)
+	}
+	return client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithSet(
+		*sdk.NewUserSetRequest().WithObjectProperties(*objectProperties),
+	))
 }
 
-func unsetUserPublicKeys(db *sql.DB, name string, prop string) error {
-	stmt := fmt.Sprintf(`ALTER USER "%s" UNSET %s`, name, prop)
-	return snowflake.Exec(db, stmt)
+// unsetUserPublicKey unsets the given RSA public key property on the user using the SDK.
+func unsetUserPublicKey(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier, prop string) error {
+	objectPropertiesUnset := sdk.NewUserObjectPropertiesUnsetRequest()
+	switch prop {
+	case "rsa_public_key":
+		objectPropertiesUnset.WithRsaPublicKey(true)
+	case "rsa_public_key_2":
+		objectPropertiesUnset.WithRsaPublicKey2(true)
+	default:
+		return fmt.Errorf("unsupported public key property: %s", prop)
+	}
+	return client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithUnset(
+		*sdk.NewUserUnsetRequest().WithObjectProperties(*objectPropertiesUnset),
+	))
 }

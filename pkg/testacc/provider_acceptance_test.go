@@ -337,7 +337,8 @@ func TestAcc_Provider_TomlConfig(t *testing.T) {
 	})
 }
 
-func TestAcc_Provider_DisableOcspChecks_atLeastOneSetToTrueInToml(t *testing.T) {
+// disable_ocsp_checks/insecure_mode set to false in the Terraform configuration win over a true coming from the TOML profile.
+func TestAcc_Provider_DisableOcspChecks_falseInTfOverridesTrueInToml(t *testing.T) {
 	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
 		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
@@ -370,7 +371,7 @@ func TestAcc_Provider_DisableOcspChecks_atLeastOneSetToTrueInToml(t *testing.T) 
 				Config: config.FromModels(t, providerModelWithBothSetToFalse, datasourceModel()),
 				Check: func(s *terraform.State) error {
 					config := p.Meta().(*internalprovider.Context).Client.GetConfig()
-					assert.True(t, config.DisableOCSPChecks)
+					assert.False(t, config.DisableOCSPChecks)
 					return nil
 				},
 			},
@@ -412,6 +413,72 @@ func TestAcc_Provider_DisableOcspChecks_trueInTfNotOverriddenByFalseInToml(t *te
 				Check: func(s *terraform.State) error {
 					config := p.Meta().(*internalprovider.Context).Client.GetConfig()
 					assert.True(t, config.DisableOCSPChecks)
+					return nil
+				},
+			},
+		},
+	})
+}
+
+// boolean fields set to false in the Terraform configuration must win over true values coming from the TOML profile.
+func TestAcc_Provider_booleanFieldsFalseInTfNotOverriddenByTrueInToml(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
+		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
+			return cfg.
+				WithPasscodeInPassword(true).
+				WithKeepSessionAlive(true).
+				WithDisableQueryContextCache(true).
+				WithEnableSingleUseRefreshTokens(true).
+				WithLogQueryText(true).
+				WithLogQueryParameters(true).
+				WithCrlInMemoryCacheDisabled(true).
+				WithCrlOnDiskCacheDisabled(true).
+				WithInsecureMode(true).
+				WithDisableOCSPChecks(true)
+		})
+	})
+
+	factory, p := providerFactoryWithoutCacheReturningProvider()
+
+	providerModelWithAllFieldsSetToFalse := providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).
+		WithPasscodeInPassword(false).
+		WithKeepSessionAlive(false).
+		WithDisableQueryContextCache(false).
+		WithEnableSingleUseRefreshTokens(false).
+		WithLogQueryText(false).
+		WithLogQueryParameters(false).
+		WithCrlInMemoryCacheDisabled(false).
+		WithCrlOnDiskCacheDisabled(false).
+		WithInsecureMode(false).
+		WithDisableOcspChecks(false)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: factory,
+		PreCheck: func() {
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.User)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.Password)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.ConfigPath)
+
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModelWithAllFieldsSetToFalse, datasourceModel()),
+				Check: func(s *terraform.State) error {
+					config := p.Meta().(*internalprovider.Context).Client.GetConfig()
+					assert.False(t, config.PasscodeInPassword)
+					assert.False(t, config.ServerSessionKeepAlive)
+					assert.False(t, config.DisableQueryContextCache)
+					assert.False(t, config.EnableSingleUseRefreshTokens)
+					assert.False(t, config.LogQueryText)
+					assert.False(t, config.LogQueryParameters)
+					assert.False(t, config.CrlInMemoryCacheDisabled)
+					assert.False(t, config.CrlOnDiskCacheDisabled)
+					assert.False(t, config.DisableOCSPChecks)
 					return nil
 				},
 			},
@@ -844,11 +911,12 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 func TestAcc_Provider_testFixedDefaultAuthenticatorForToken(t *testing.T) {
 	accountId := testClient().Context.CurrentAccountId(t)
 	// TODO(SNOW-1791729): Use a proper user.
-	providerConfig := config.FromModels(t, providermodel.SnowflakeProvider().
-		WithAccountName(accountId.AccountName()).
-		WithOrganizationName(accountId.OrganizationName()).
-		WithUser(random.String()).
-		WithToken(random.String()),
+	providerConfig := config.FromModels(
+		t, providermodel.SnowflakeProvider().
+			WithAccountName(accountId.AccountName()).
+			WithOrganizationName(accountId.OrganizationName()).
+			WithUser(random.String()).
+			WithToken(random.String()),
 		datasourceModel(),
 	)
 

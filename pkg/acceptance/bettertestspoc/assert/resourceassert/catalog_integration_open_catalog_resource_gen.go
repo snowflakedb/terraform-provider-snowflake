@@ -16,7 +16,7 @@ func CatalogIntegrationOpenCatalogResource(t *testing.T, name string) *CatalogIn
 	t.Helper()
 
 	return &CatalogIntegrationOpenCatalogResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedCatalogIntegrationOpenCatalogResource(t *testing.T, id string) *Cat
 	t.Helper()
 
 	return &CatalogIntegrationOpenCatalogResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -76,37 +76,37 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasRefreshIntervalSeconds(
 ///////////////////////////////////
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNameString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("name", expected))
+	c.ValueSet("name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogNamespaceString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_namespace", expected))
+	c.ValueSet("catalog_namespace", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSourceString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", expected))
+	c.ValueSet("catalog_source", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCommentString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", expected))
+	c.ValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasEnabledString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("enabled", expected))
+	c.ValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasFullyQualifiedNameString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	c.ValueSet("fully_qualified_name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasRefreshIntervalSecondsString(expected string) *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", expected))
+	c.ValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
@@ -115,37 +115,37 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasRefreshIntervalSecondsS
 ///////////////////////////////
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoName() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoCatalogNamespace() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("catalog_namespace"))
+	c.ValueNotSet("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoCatalogSource() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("catalog_source"))
+	c.ValueNotSet("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoComment() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoEnabled() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoFullyQualifiedName() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	c.ValueNotSet("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoRefreshIntervalSeconds() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueNotSet("refresh_interval_seconds"))
+	c.ValueNotSet("refresh_interval_seconds")
 	return c
 }
 
@@ -154,27 +154,27 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNoRefreshIntervalSecond
 ////////////////////////////
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogNamespaceEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_namespace", ""))
+	c.ValueSet("catalog_namespace", "")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSourceEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("catalog_source", ""))
+	c.ValueSet("catalog_source", "")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCommentEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("comment", ""))
+	c.ValueSet("comment", "")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasFullyQualifiedNameEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	c.ValueSet("fully_qualified_name", "")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasRefreshIntervalSecondsEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValueSet("refresh_interval_seconds", ""))
+	c.ValueSet("refresh_interval_seconds", "")
 	return c
 }
 
@@ -183,36 +183,36 @@ func (c *CatalogIntegrationOpenCatalogResourceAssert) HasRefreshIntervalSecondsE
 ///////////////////////////////
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasNameNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValuePresent("name"))
+	c.ValuePresent("name")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValuePresent("catalog_namespace"))
+	c.ValuePresent("catalog_namespace")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCatalogSourceNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValuePresent("catalog_source"))
+	c.ValuePresent("catalog_source")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasCommentNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValuePresent("comment"))
+	c.ValuePresent("comment")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasEnabledNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValuePresent("enabled"))
+	c.ValuePresent("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasFullyQualifiedNameNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	c.ValuePresent("fully_qualified_name")
 	return c
 }
 
 func (c *CatalogIntegrationOpenCatalogResourceAssert) HasRefreshIntervalSecondsNotEmpty() *CatalogIntegrationOpenCatalogResourceAssert {
-	c.AddAssertion(assert.ValuePresent("refresh_interval_seconds"))
+	c.ValuePresent("refresh_interval_seconds")
 	return c
 }

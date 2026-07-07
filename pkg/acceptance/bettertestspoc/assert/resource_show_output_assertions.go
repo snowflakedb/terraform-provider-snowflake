@@ -4,8 +4,6 @@ import (
 	"strconv"
 )
 
-const showOutputPrefix = "show_output.0."
-
 func ResourceShowOutputBoolValueSet(fieldName string, expected bool) ResourceAssertion {
 	return ResourceShowOutputValueSet(fieldName, strconv.FormatBool(expected))
 }
@@ -55,17 +53,17 @@ func ResourceShowOutputStringUnderlyingValuePresent(fieldName string) ResourceAs
 }
 
 func ResourceShowOutputValueSet(fieldName string, expected string) ResourceAssertion {
-	return ResourceAssertion{fieldName: showOutputPrefix + fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
+	return ResourceAssertion{fieldName: showOutputPath + fieldName, expectedValue: expected, resourceAssertionType: resourceAssertionTypeValueSet}
 }
 
 func ResourceShowOutputValueNotSet(fieldName string) ResourceAssertion {
-	return ResourceAssertion{fieldName: showOutputPrefix + fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
+	return ResourceAssertion{fieldName: showOutputPath + fieldName, resourceAssertionType: resourceAssertionTypeValueNotSet}
 }
 
 func ResourceShowOutputValuePresent(fieldName string) ResourceAssertion {
-	return ResourceAssertion{fieldName: showOutputPrefix + fieldName, resourceAssertionType: resourceAssertionTypeValuePresent}
+	return ResourceAssertion{fieldName: showOutputPath + fieldName, resourceAssertionType: resourceAssertionTypeValuePresent}
 }
 
 func ResourceShowOutputSetElem(fieldName string, expected string) ResourceAssertion {
-	return SetElem(showOutputPrefix+fieldName, expected)
+	return SetElem(showOutputPath+fieldName, expected)
 }

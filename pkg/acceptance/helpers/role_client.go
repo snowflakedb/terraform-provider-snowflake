@@ -106,9 +106,7 @@ func (c *RoleClient) GrantRoleToUser(t *testing.T, id sdk.AccountObjectIdentifie
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Grant(ctx, sdk.NewGrantRoleRequest(id, sdk.GrantRole{
-		User: sdk.Pointer(userId),
-	}))
+	err := c.client().Grant(ctx, sdk.NewGrantRoleRequest(id, *sdk.NewGrantRoleToRequest().WithUser(userId)))
 	require.NoError(t, err)
 }
 
@@ -116,9 +114,7 @@ func (c *RoleClient) GrantRoleToRole(t *testing.T, id sdk.AccountObjectIdentifie
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Grant(ctx, sdk.NewGrantRoleRequest(id, sdk.GrantRole{
-		Role: sdk.Pointer(roleId),
-	}))
+	err := c.client().Grant(ctx, sdk.NewGrantRoleRequest(id, *sdk.NewGrantRoleToRequest().WithRole(roleId)))
 	require.NoError(t, err)
 }
 

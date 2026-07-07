@@ -16,7 +16,7 @@ func StreamlitResource(t *testing.T, name string) *StreamlitResourceAssert {
 	t.Helper()
 
 	return &StreamlitResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedStreamlitResource(t *testing.T, id string) *StreamlitResourceAssert
 	t.Helper()
 
 	return &StreamlitResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -92,52 +92,52 @@ func (s *StreamlitResourceAssert) HasTitle(expected string) *StreamlitResourceAs
 ///////////////////////////////////
 
 func (s *StreamlitResourceAssert) HasDatabaseString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasSchemaString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNameString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasCommentString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasDirectoryLocationString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("directory_location", expected))
+	s.ValueSet("directory_location", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasFullyQualifiedNameString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasMainFileString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("main_file", expected))
+	s.ValueSet("main_file", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasQueryWarehouseString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("query_warehouse", expected))
+	s.ValueSet("query_warehouse", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasStageString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("stage", expected))
+	s.ValueSet("stage", expected)
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasTitleString(expected string) *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("title", expected))
+	s.ValueSet("title", expected)
 	return s
 }
 
@@ -146,52 +146,52 @@ func (s *StreamlitResourceAssert) HasTitleString(expected string) *StreamlitReso
 ///////////////////////////////
 
 func (s *StreamlitResourceAssert) HasNoDatabase() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoSchema() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoName() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoComment() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoDirectoryLocation() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("directory_location"))
+	s.ValueNotSet("directory_location")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoFullyQualifiedName() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoMainFile() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("main_file"))
+	s.ValueNotSet("main_file")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoQueryWarehouse() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("query_warehouse"))
+	s.ValueNotSet("query_warehouse")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoStage() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("stage"))
+	s.ValueNotSet("stage")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNoTitle() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("title"))
+	s.ValueNotSet("title")
 	return s
 }
 
@@ -200,32 +200,32 @@ func (s *StreamlitResourceAssert) HasNoTitle() *StreamlitResourceAssert {
 ////////////////////////////
 
 func (s *StreamlitResourceAssert) HasCommentEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasDirectoryLocationEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("directory_location", ""))
+	s.ValueSet("directory_location", "")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasExternalAccessIntegrationsEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	s.ValueSet("external_access_integrations.#", "0")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasFullyQualifiedNameEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasQueryWarehouseEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	s.ValueSet("query_warehouse", "")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasTitleEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValueSet("title", ""))
+	s.ValueSet("title", "")
 	return s
 }
 
@@ -234,51 +234,51 @@ func (s *StreamlitResourceAssert) HasTitleEmpty() *StreamlitResourceAssert {
 ///////////////////////////////
 
 func (s *StreamlitResourceAssert) HasDatabaseNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasSchemaNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasNameNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasCommentNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasDirectoryLocationNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("directory_location"))
+	s.ValuePresent("directory_location")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasFullyQualifiedNameNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasMainFileNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("main_file"))
+	s.ValuePresent("main_file")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasQueryWarehouseNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("query_warehouse"))
+	s.ValuePresent("query_warehouse")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasStageNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("stage"))
+	s.ValuePresent("stage")
 	return s
 }
 
 func (s *StreamlitResourceAssert) HasTitleNotEmpty() *StreamlitResourceAssert {
-	s.AddAssertion(assert.ValuePresent("title"))
+	s.ValuePresent("title")
 	return s
 }

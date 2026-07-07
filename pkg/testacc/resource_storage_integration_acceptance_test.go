@@ -237,9 +237,10 @@ func TestAcc_StorageIntegration_AWS_Update(t *testing.T) {
 				PreConfig: func() {
 					unsetRequest := sdk.NewAlterStorageIntegrationRequest(id).
 						WithUnset(*sdk.NewStorageIntegrationUnsetRequest().
-							WithS3Params(*sdk.NewUnsetS3StorageParamsRequest().
-								WithStorageAwsExternalId(true).
-								WithStorageAwsObjectAcl(true),
+							WithS3Params(
+								*sdk.NewUnsetS3StorageParamsRequest().
+									WithStorageAwsExternalId(true).
+									WithStorageAwsObjectAcl(true),
 							).
 							WithStorageBlockedLocations(true))
 					testClient().StorageIntegration.Alter(t, unsetRequest)
@@ -530,7 +531,8 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateManuallySetDefault
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
 				Config:            config.FromModels(t, providerModel, s3Model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationResource(t, s3Model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStorageProviderString(string(sdk.StorageProviderS3)).
@@ -548,7 +550,8 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateManuallySetDefault
 					},
 				},
 				Config: config.FromModels(t, s3ModelWithPrivatelink),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationResource(t, s3ModelWithPrivatelink.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStorageProviderString(string(sdk.StorageProviderS3)).
@@ -581,7 +584,8 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateWithoutValue(t *te
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
 				Config:            config.FromModels(t, providerModel, s3Model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationResource(t, s3Model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStorageProviderString(string(sdk.StorageProviderS3)).
@@ -599,7 +603,8 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateWithoutValue(t *te
 					},
 				},
 				Config: config.FromModels(t, s3Model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationResource(t, s3Model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStorageProviderString(string(sdk.StorageProviderS3)).
@@ -632,7 +637,8 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateWithoutValue_Updat
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
 				Config:            config.FromModels(t, providerModel, s3Model),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationResource(t, s3Model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStorageProviderString(string(sdk.StorageProviderS3)).
@@ -653,7 +659,8 @@ func TestAcc_StorageIntegration_UsePrivateLinkEndpoint_MigrateWithoutValue_Updat
 						plancheck.ExpectResourceAction(s3Model.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StorageIntegrationResource(t, s3Model.ResourceReference()).
 						HasNameString(id.Name()).
 						HasStorageProviderString(string(sdk.StorageProviderS3)).

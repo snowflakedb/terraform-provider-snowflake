@@ -24,21 +24,11 @@ func TestInt_ShowReplicationDatabases(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	accountId := testClientHelper().Ids.AccountIdentifierWithLocator()
-	secondaryAccountId := secondaryTestClientHelper().Ids.AccountIdentifierWithLocator()
-
-	db, dbCleanup := testClientHelper().Database.CreateDatabase(t)
-	t.Cleanup(dbCleanup)
-	db2, dbCleanup2 := testClientHelper().Database.CreateDatabase(t)
-	t.Cleanup(dbCleanup2)
-
-	err := client.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(db.ID()).WithEnableReplication(*sdk.NewEnableReplicationRequest().WithToAccounts([]sdk.AccountIdentifier{secondaryAccountId})))
-	require.NoError(t, err)
-	err = client.Databases.AlterReplication(ctx, sdk.NewAlterReplicationDatabaseRequest(db2.ID()).WithEnableReplication(*sdk.NewEnableReplicationRequest().WithToAccounts([]sdk.AccountIdentifier{secondaryAccountId})))
-	require.NoError(t, err)
+	db, primaryDatabaseId := createPrimaryDatabase(t)
+	db2, _ := createPrimaryDatabase(t)
 
 	id3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
-	db3, dbCleanup3 := secondaryTestClientHelper().Database.CreateSecondaryDatabaseWithOptions(t, id3, sdk.NewExternalObjectIdentifier(accountId, db.ID()), sdk.NewCreateSecondaryDatabaseRequest(id3, sdk.NewExternalObjectIdentifier(accountId, db.ID())))
+	db3, dbCleanup3 := testClientHelper().Database.CreateSecondaryDatabaseWithOptions(t, id3, primaryDatabaseId, sdk.NewCreateSecondaryDatabaseRequest(id3, primaryDatabaseId))
 	t.Cleanup(dbCleanup3)
 
 	getByName := func(replicationDatabases []sdk.ReplicationDatabase, name sdk.AccountObjectIdentifier) *sdk.ReplicationDatabase {
@@ -105,7 +95,7 @@ func TestInt_ShowReplicationDatabases(t *testing.T) {
 
 	t.Run("with primary", func(t *testing.T) {
 		opts := &sdk.ShowReplicationDatabasesOptions{
-			WithPrimary: sdk.Pointer(sdk.NewExternalObjectIdentifier(accountId, db.ID())),
+			WithPrimary: &primaryDatabaseId,
 		}
 		replicationDatabases, err := client.ReplicationFunctions.ShowReplicationDatabases(ctx, opts)
 		require.NoError(t, err)

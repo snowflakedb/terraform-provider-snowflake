@@ -16,7 +16,7 @@ func GrantPrivilegesToShareResource(t *testing.T, name string) *GrantPrivilegesT
 	t.Helper()
 
 	return &GrantPrivilegesToShareResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedGrantPrivilegesToShareResource(t *testing.T, id string) *GrantPrivi
 	t.Helper()
 
 	return &GrantPrivilegesToShareResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -82,42 +82,42 @@ func (g *GrantPrivilegesToShareResourceAssert) HasToShare(expected string) *Gran
 ///////////////////////////////////
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnAllTablesInSchemaString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_all_tables_in_schema", expected))
+	g.ValueSet("on_all_tables_in_schema", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnDatabaseString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_database", expected))
+	g.ValueSet("on_database", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnFunctionString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_function", expected))
+	g.ValueSet("on_function", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnSchemaString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema", expected))
+	g.ValueSet("on_schema", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnTableString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_table", expected))
+	g.ValueSet("on_table", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnTagString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_tag", expected))
+	g.ValueSet("on_tag", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnViewString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_view", expected))
+	g.ValueSet("on_view", expected)
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasToShareString(expected string) *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("to_share", expected))
+	g.ValueSet("to_share", expected)
 	return g
 }
 
@@ -126,42 +126,42 @@ func (g *GrantPrivilegesToShareResourceAssert) HasToShareString(expected string)
 ///////////////////////////////
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoOnAllTablesInSchema() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_all_tables_in_schema"))
+	g.ValueNotSet("on_all_tables_in_schema")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoOnDatabase() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_database"))
+	g.ValueNotSet("on_database")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoOnFunction() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_function"))
+	g.ValueNotSet("on_function")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoOnSchema() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_schema"))
+	g.ValueNotSet("on_schema")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoOnTable() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_table"))
+	g.ValueNotSet("on_table")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoOnTag() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_tag"))
+	g.ValueNotSet("on_tag")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoOnView() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("on_view"))
+	g.ValueNotSet("on_view")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasNoToShare() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueNotSet("to_share"))
+	g.ValueNotSet("to_share")
 	return g
 }
 
@@ -170,37 +170,37 @@ func (g *GrantPrivilegesToShareResourceAssert) HasNoToShare() *GrantPrivilegesTo
 ////////////////////////////
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnAllTablesInSchemaEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_all_tables_in_schema", ""))
+	g.ValueSet("on_all_tables_in_schema", "")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnDatabaseEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_database", ""))
+	g.ValueSet("on_database", "")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnFunctionEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_function", ""))
+	g.ValueSet("on_function", "")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnSchemaEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_schema", ""))
+	g.ValueSet("on_schema", "")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnTableEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_table", ""))
+	g.ValueSet("on_table", "")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnTagEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_tag", ""))
+	g.ValueSet("on_tag", "")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnViewEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValueSet("on_view", ""))
+	g.ValueSet("on_view", "")
 	return g
 }
 
@@ -209,41 +209,41 @@ func (g *GrantPrivilegesToShareResourceAssert) HasOnViewEmpty() *GrantPrivileges
 ///////////////////////////////
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnAllTablesInSchemaNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_all_tables_in_schema"))
+	g.ValuePresent("on_all_tables_in_schema")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnDatabaseNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_database"))
+	g.ValuePresent("on_database")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnFunctionNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_function"))
+	g.ValuePresent("on_function")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnSchemaNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_schema"))
+	g.ValuePresent("on_schema")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnTableNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_table"))
+	g.ValuePresent("on_table")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnTagNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_tag"))
+	g.ValuePresent("on_tag")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasOnViewNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("on_view"))
+	g.ValuePresent("on_view")
 	return g
 }
 
 func (g *GrantPrivilegesToShareResourceAssert) HasToShareNotEmpty() *GrantPrivilegesToShareResourceAssert {
-	g.AddAssertion(assert.ValuePresent("to_share"))
+	g.ValuePresent("to_share")
 	return g
 }

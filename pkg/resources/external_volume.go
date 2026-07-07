@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -159,10 +158,10 @@ func ExternalVolume() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingCreateWrapper(resources.ExternalVolume, CreateContextExternalVolume)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingReadWrapper(resources.ExternalVolume, ReadContextExternalVolume(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingUpdateWrapper(resources.ExternalVolume, UpdateContextExternalVolume)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalVolumeResource), TrackingDeleteWrapper(resources.ExternalVolume, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.ExternalVolume, CreateContextExternalVolume),
+		ReadContext:   TrackingReadWrapper(resources.ExternalVolume, ReadContextExternalVolume(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.ExternalVolume, UpdateContextExternalVolume),
+		DeleteContext: TrackingDeleteWrapper(resources.ExternalVolume, deleteFunc),
 
 		Description: "Resource used to manage external volume objects. For more information, check [external volume documentation](https://docs.snowflake.com/en/sql-reference/commands-data-loading#external-volume).",
 
@@ -320,7 +319,8 @@ func ReadContextExternalVolume(withExternalChangesMarking bool) schema.ReadConte
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"allow_writes", "allow_writes", externalVolume.AllowWrites, booleanStringFromBool(externalVolume.AllowWrites), nil},
 			); err != nil {
 				return diag.FromErr(err)

@@ -11,6 +11,9 @@ var (
 	_ validatable = new(CreateIndexHybridTableOptions)
 	_ validatable = new(DropIndexHybridTableOptions)
 	_ validatable = new(ShowIndexesHybridTableOptions)
+	_ validatable = new(ShowPrimaryKeysHybridTableOptions)
+	_ validatable = new(ShowUniqueKeysHybridTableOptions)
+	_ validatable = new(ShowImportedKeysHybridTableOptions)
 )
 
 func (opts *CreateHybridTableOptions) validate() error {
@@ -142,5 +145,38 @@ func (opts *ShowIndexesHybridTableOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowPrimaryKeysHybridTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowUniqueKeysHybridTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowImportedKeysHybridTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	return JoinErrors(errs...)
 }

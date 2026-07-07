@@ -20,7 +20,11 @@ type HybridTables interface {
 	CreateIndex(ctx context.Context, request *CreateIndexHybridTableRequest) error
 	DropIndex(ctx context.Context, request *DropIndexHybridTableRequest) error
 	ShowIndexes(ctx context.Context, request *ShowIndexesHybridTableRequest) ([]HybridTableIndex, error)
+	ShowPrimaryKeys(ctx context.Context, request *ShowPrimaryKeysHybridTableRequest) ([]TablePrimaryKey, error)
+	ShowUniqueKeys(ctx context.Context, request *ShowUniqueKeysHybridTableRequest) ([]TableUniqueKey, error)
+	ShowImportedKeys(ctx context.Context, request *ShowImportedKeysHybridTableRequest) ([]TableImportedKey, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	GetConstraints(ctx context.Context, id SchemaObjectIdentifier) ([]HybridTableConstraint, error)
 }
 
 // CreateHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table.
@@ -317,4 +321,76 @@ type HybridTableIndex struct {
 	SchemaName      string
 	Owner           string
 	OwnerRoleType   string
+}
+
+// ShowPrimaryKeysHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-primary-keys.
+type ShowPrimaryKeysHybridTableOptions struct {
+	show        bool                   `ddl:"static" sql:"SHOW"`
+	primaryKeys bool                   `ddl:"static" sql:"PRIMARY KEYS"`
+	inTable     bool                   `ddl:"static" sql:"IN TABLE"`
+	name        SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type tablePrimaryKeyRow struct {
+	ConstraintName string `db:"constraint_name"`
+	ColumnName     string `db:"column_name"`
+	KeySequence    int    `db:"key_sequence"`
+}
+
+type TablePrimaryKey struct {
+	ConstraintName string
+	ColumnName     string
+	KeySequence    int
+}
+
+// ShowUniqueKeysHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-unique-keys.
+type ShowUniqueKeysHybridTableOptions struct {
+	show       bool                   `ddl:"static" sql:"SHOW"`
+	uniqueKeys bool                   `ddl:"static" sql:"UNIQUE KEYS"`
+	inTable    bool                   `ddl:"static" sql:"IN TABLE"`
+	name       SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type tableUniqueKeyRow struct {
+	ConstraintName string `db:"constraint_name"`
+	ColumnName     string `db:"column_name"`
+	KeySequence    int    `db:"key_sequence"`
+}
+
+type TableUniqueKey struct {
+	ConstraintName string
+	ColumnName     string
+	KeySequence    int
+}
+
+// ShowImportedKeysHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-imported-keys.
+type ShowImportedKeysHybridTableOptions struct {
+	show         bool                   `ddl:"static" sql:"SHOW"`
+	importedKeys bool                   `ddl:"static" sql:"IMPORTED KEYS"`
+	inTable      bool                   `ddl:"static" sql:"IN TABLE"`
+	name         SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type tableImportedKeyRow struct {
+	FkName         string `db:"fk_name"`
+	FkColumnName   string `db:"fk_column_name"`
+	KeySequence    int    `db:"key_sequence"`
+	PkDatabaseName string `db:"pk_database_name"`
+	PkSchemaName   string `db:"pk_schema_name"`
+	PkTableName    string `db:"pk_table_name"`
+	PkColumnName   string `db:"pk_column_name"`
+	DeleteRule     string `db:"delete_rule"`
+	UpdateRule     string `db:"update_rule"`
+}
+
+type TableImportedKey struct {
+	FkName         string
+	FkColumnName   string
+	KeySequence    int
+	PkDatabaseName string
+	PkSchemaName   string
+	PkTableName    string
+	PkColumnName   string
+	DeleteRule     string
+	UpdateRule     string
 }

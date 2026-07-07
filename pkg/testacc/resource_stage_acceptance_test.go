@@ -357,7 +357,8 @@ func TestAcc_Stage_Issue3959(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.7.0"),
 				Config:            accconfig.FromModels(t, providerModel, stageModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.StageResource(t, stageModel.ResourceReference()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
@@ -399,7 +400,7 @@ func TestAcc_InternalStage(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Stage),
 		Steps: []resource.TestStep{
 			{
-				Config: internalStageConfig(id),
+				Config: internalStageConfig(id, "Terraform acceptance test"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_stage.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_stage.test", "fully_qualified_name", id.FullyQualifiedName()),
@@ -408,17 +409,27 @@ func TestAcc_InternalStage(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_stage.test", "comment", "Terraform acceptance test"),
 				),
 			},
+			{
+				Config: internalStageConfig(id, `'\";`),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_stage.test", "name", id.Name()),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "fully_qualified_name", id.FullyQualifiedName()),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "database", TestDatabaseName),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "schema", TestSchemaName),
+					resource.TestCheckResourceAttr("snowflake_stage.test", "comment", `'";`),
+				),
+			},
 		},
 	})
 }
 
-func internalStageConfig(stageId sdk.SchemaObjectIdentifier) string {
+func internalStageConfig(stageId sdk.SchemaObjectIdentifier, comment string) string {
 	return fmt.Sprintf(`
 resource "snowflake_stage" "test" {
 	database = "%[1]s"
 	schema = "%[2]s"
 	name = "%[3]s"
-	comment = "Terraform acceptance test"
+	comment = "%[4]s"
 }
-`, stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
+`, stageId.DatabaseName(), stageId.SchemaName(), stageId.Name(), comment)
 }

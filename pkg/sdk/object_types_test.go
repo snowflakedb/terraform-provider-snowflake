@@ -95,7 +95,8 @@ func Test_ToObjectType(t *testing.T) {
 
 	invalid := []test{
 		{input: ""},
-		{input: "foo"},
+		{input: "foo;"},
+		{input: "TABLE; SELECT 1;--"},
 	}
 
 	for _, tc := range valid {
@@ -109,6 +110,49 @@ func Test_ToObjectType(t *testing.T) {
 	for _, tc := range invalid {
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToObjectType(tc.input)
+			require.Error(t, err)
+		})
+	}
+}
+
+func Test_ToPluralObjectType(t *testing.T) {
+	type test struct {
+		input string
+		want  PluralObjectType
+	}
+
+	valid := []test{
+		// Case insensitive.
+		{input: "tables", want: PluralObjectTypeTables},
+
+		// Supported Values.
+		{input: "TABLES", want: PluralObjectTypeTables},
+		{input: "VIEWS", want: PluralObjectTypeViews},
+		{input: "DATABASES", want: PluralObjectTypeDatabases},
+		{input: "SCHEMAS", want: PluralObjectTypeSchemas},
+		{input: "NETWORK POLICIES", want: PluralObjectTypeNetworkPolicies},
+		{input: "EXTERNAL TABLES", want: PluralObjectTypeExternalTables},
+		{input: "FUNCTIONS", want: PluralObjectTypeFunctions},
+		{input: "PROCEDURES", want: PluralObjectTypeProcedures},
+	}
+
+	invalid := []test{
+		{input: ""},
+		{input: "foo;"},
+		{input: "TABLES; SELECT 1;--"},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.input, func(t *testing.T) {
+			got, err := ToPluralObjectType(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, got)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.input, func(t *testing.T) {
+			_, err := ToPluralObjectType(tc.input)
 			require.Error(t, err)
 		})
 	}

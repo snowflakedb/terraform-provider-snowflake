@@ -1,48 +1,38 @@
 package resourceshowoutputassert
 
-import (
-	"testing"
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-)
-
-// DatabasesDatasourceShowOutput is a temporary workaround to have better show output assertions in data source acceptance tests.
-func DatabasesDatasourceShowOutput(t *testing.T, name string) *DatabaseShowOutputAssert {
-	t.Helper()
-
-	s := DatabaseShowOutputAssert{
-		ResourceAssert: assert.NewDatasourceAssert(name, "show_output", "databases.0."),
-	}
-	s.AddAssertion(assert.ValueSet("show_output.#", "1"))
-	return &s
+func (d *DatabaseShowOutputAssert) HasCreatedOnNotEmpty() *DatabaseShowOutputAssert {
+	d.ValuePresent("created_on")
+	return d
 }
 
-func (s *DatabaseShowOutputAssert) HasCreatedOnNotEmpty() *DatabaseShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("created_on"))
-	return s
+func (d *DatabaseShowOutputAssert) HasIsCurrentNotEmpty() *DatabaseShowOutputAssert {
+	d.ValuePresent("is_current")
+	return d
 }
 
-func (s *DatabaseShowOutputAssert) HasIsCurrentNotEmpty() *DatabaseShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("is_current"))
-	return s
+func (d *DatabaseShowOutputAssert) HasOwnerNotEmpty() *DatabaseShowOutputAssert {
+	d.ValuePresent("owner")
+	return d
 }
 
-func (s *DatabaseShowOutputAssert) HasOwnerNotEmpty() *DatabaseShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("owner"))
-	return s
+func (d *DatabaseShowOutputAssert) HasRetentionTimeNotEmpty() *DatabaseShowOutputAssert {
+	d.ValuePresent("retention_time")
+	return d
 }
 
-func (s *DatabaseShowOutputAssert) HasRetentionTimeNotEmpty() *DatabaseShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("retention_time"))
-	return s
+func (d *DatabaseShowOutputAssert) HasOwnerRoleTypeNotEmpty() *DatabaseShowOutputAssert {
+	d.ValuePresent("owner_role_type")
+	return d
 }
 
-func (s *DatabaseShowOutputAssert) HasOwnerRoleTypeNotEmpty() *DatabaseShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValuePresent("owner_role_type"))
-	return s
+func (d *DatabaseShowOutputAssert) HasOriginEmpty() *DatabaseShowOutputAssert {
+	d.ValueSet("origin", "")
+	return d
 }
 
-func (s *DatabaseShowOutputAssert) HasOriginEmpty() *DatabaseShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("origin", ""))
-	return s
+func (d *DatabaseShowOutputAssert) HasOrigin(expected sdk.ObjectIdentifier) *DatabaseShowOutputAssert {
+	d.StringValueSet("origin", expected.FullyQualifiedName())
+	return d
 }

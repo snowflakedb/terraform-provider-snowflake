@@ -16,7 +16,7 @@ func WarehouseResource(t *testing.T, name string) *WarehouseResourceAssert {
 	t.Helper()
 
 	return &WarehouseResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedWarehouseResource(t *testing.T, id string) *WarehouseResourceAssert
 	t.Helper()
 
 	return &WarehouseResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -132,97 +132,97 @@ func (w *WarehouseResourceAssert) HasWarehouseType(expected string) *WarehouseRe
 ///////////////////////////////////
 
 func (w *WarehouseResourceAssert) HasNameString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("name", expected))
+	w.ValueSet("name", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasAutoResumeString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("auto_resume", expected))
+	w.ValueSet("auto_resume", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasAutoSuspendString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("auto_suspend", expected))
+	w.ValueSet("auto_suspend", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasCommentString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("comment", expected))
+	w.ValueSet("comment", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasEnableQueryAccelerationString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("enable_query_acceleration", expected))
+	w.ValueSet("enable_query_acceleration", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasFullyQualifiedNameString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	w.ValueSet("fully_qualified_name", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasGenerationString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("generation", expected))
+	w.ValueSet("generation", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasInitiallySuspendedString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("initially_suspended", expected))
+	w.ValueSet("initially_suspended", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMaxClusterCountString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("max_cluster_count", expected))
+	w.ValueSet("max_cluster_count", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMaxConcurrencyLevelString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("max_concurrency_level", expected))
+	w.ValueSet("max_concurrency_level", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMinClusterCountString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("min_cluster_count", expected))
+	w.ValueSet("min_cluster_count", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("query_acceleration_max_scale_factor", expected))
+	w.ValueSet("query_acceleration_max_scale_factor", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasResourceConstraintString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("resource_constraint", expected))
+	w.ValueSet("resource_constraint", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasResourceMonitorString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("resource_monitor", expected))
+	w.ValueSet("resource_monitor", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasScalingPolicyString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("scaling_policy", expected))
+	w.ValueSet("scaling_policy", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasStatementQueuedTimeoutInSecondsString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", expected))
+	w.ValueSet("statement_queued_timeout_in_seconds", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasStatementTimeoutInSecondsString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", expected))
+	w.ValueSet("statement_timeout_in_seconds", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasWarehouseSizeString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("warehouse_size", expected))
+	w.ValueSet("warehouse_size", expected)
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasWarehouseTypeString(expected string) *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("warehouse_type", expected))
+	w.ValueSet("warehouse_type", expected)
 	return w
 }
 
@@ -231,97 +231,97 @@ func (w *WarehouseResourceAssert) HasWarehouseTypeString(expected string) *Wareh
 ///////////////////////////////
 
 func (w *WarehouseResourceAssert) HasNoName() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("name"))
+	w.ValueNotSet("name")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoAutoResume() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("auto_resume"))
+	w.ValueNotSet("auto_resume")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoAutoSuspend() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("auto_suspend"))
+	w.ValueNotSet("auto_suspend")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoComment() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("comment"))
+	w.ValueNotSet("comment")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoEnableQueryAcceleration() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("enable_query_acceleration"))
+	w.ValueNotSet("enable_query_acceleration")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoFullyQualifiedName() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	w.ValueNotSet("fully_qualified_name")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoGeneration() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("generation"))
+	w.ValueNotSet("generation")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoInitiallySuspended() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("initially_suspended"))
+	w.ValueNotSet("initially_suspended")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoMaxClusterCount() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("max_cluster_count"))
+	w.ValueNotSet("max_cluster_count")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoMaxConcurrencyLevel() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("max_concurrency_level"))
+	w.ValueNotSet("max_concurrency_level")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoMinClusterCount() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("min_cluster_count"))
+	w.ValueNotSet("min_cluster_count")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoQueryAccelerationMaxScaleFactor() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("query_acceleration_max_scale_factor"))
+	w.ValueNotSet("query_acceleration_max_scale_factor")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoResourceConstraint() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("resource_constraint"))
+	w.ValueNotSet("resource_constraint")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoResourceMonitor() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("resource_monitor"))
+	w.ValueNotSet("resource_monitor")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoScalingPolicy() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("scaling_policy"))
+	w.ValueNotSet("scaling_policy")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoStatementQueuedTimeoutInSeconds() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("statement_queued_timeout_in_seconds"))
+	w.ValueNotSet("statement_queued_timeout_in_seconds")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoStatementTimeoutInSeconds() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("statement_timeout_in_seconds"))
+	w.ValueNotSet("statement_timeout_in_seconds")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoWarehouseSize() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("warehouse_size"))
+	w.ValueNotSet("warehouse_size")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasNoWarehouseType() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueNotSet("warehouse_type"))
+	w.ValueNotSet("warehouse_type")
 	return w
 }
 
@@ -330,92 +330,92 @@ func (w *WarehouseResourceAssert) HasNoWarehouseType() *WarehouseResourceAssert 
 ////////////////////////////
 
 func (w *WarehouseResourceAssert) HasAutoResumeEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("auto_resume", ""))
+	w.ValueSet("auto_resume", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasAutoSuspendEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("auto_suspend", ""))
+	w.ValueSet("auto_suspend", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasCommentEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("comment", ""))
+	w.ValueSet("comment", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasEnableQueryAccelerationEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("enable_query_acceleration", ""))
+	w.ValueSet("enable_query_acceleration", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasFullyQualifiedNameEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	w.ValueSet("fully_qualified_name", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasGenerationEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("generation", ""))
+	w.ValueSet("generation", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasInitiallySuspendedEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("initially_suspended", ""))
+	w.ValueSet("initially_suspended", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMaxClusterCountEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("max_cluster_count", ""))
+	w.ValueSet("max_cluster_count", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMaxConcurrencyLevelEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("max_concurrency_level", ""))
+	w.ValueSet("max_concurrency_level", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMinClusterCountEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("min_cluster_count", ""))
+	w.ValueSet("min_cluster_count", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("query_acceleration_max_scale_factor", ""))
+	w.ValueSet("query_acceleration_max_scale_factor", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasResourceConstraintEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("resource_constraint", ""))
+	w.ValueSet("resource_constraint", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasResourceMonitorEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("resource_monitor", ""))
+	w.ValueSet("resource_monitor", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasScalingPolicyEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("scaling_policy", ""))
+	w.ValueSet("scaling_policy", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasStatementQueuedTimeoutInSecondsEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("statement_queued_timeout_in_seconds", ""))
+	w.ValueSet("statement_queued_timeout_in_seconds", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasStatementTimeoutInSecondsEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("statement_timeout_in_seconds", ""))
+	w.ValueSet("statement_timeout_in_seconds", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasWarehouseSizeEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("warehouse_size", ""))
+	w.ValueSet("warehouse_size", "")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasWarehouseTypeEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValueSet("warehouse_type", ""))
+	w.ValueSet("warehouse_type", "")
 	return w
 }
 
@@ -424,96 +424,96 @@ func (w *WarehouseResourceAssert) HasWarehouseTypeEmpty() *WarehouseResourceAsse
 ///////////////////////////////
 
 func (w *WarehouseResourceAssert) HasNameNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("name"))
+	w.ValuePresent("name")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasAutoResumeNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("auto_resume"))
+	w.ValuePresent("auto_resume")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasAutoSuspendNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("auto_suspend"))
+	w.ValuePresent("auto_suspend")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasCommentNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("comment"))
+	w.ValuePresent("comment")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasEnableQueryAccelerationNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("enable_query_acceleration"))
+	w.ValuePresent("enable_query_acceleration")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasFullyQualifiedNameNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	w.ValuePresent("fully_qualified_name")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasGenerationNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("generation"))
+	w.ValuePresent("generation")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasInitiallySuspendedNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("initially_suspended"))
+	w.ValuePresent("initially_suspended")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMaxClusterCountNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("max_cluster_count"))
+	w.ValuePresent("max_cluster_count")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMaxConcurrencyLevelNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("max_concurrency_level"))
+	w.ValuePresent("max_concurrency_level")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasMinClusterCountNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("min_cluster_count"))
+	w.ValuePresent("min_cluster_count")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasQueryAccelerationMaxScaleFactorNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("query_acceleration_max_scale_factor"))
+	w.ValuePresent("query_acceleration_max_scale_factor")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasResourceConstraintNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("resource_constraint"))
+	w.ValuePresent("resource_constraint")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasResourceMonitorNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("resource_monitor"))
+	w.ValuePresent("resource_monitor")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasScalingPolicyNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("scaling_policy"))
+	w.ValuePresent("scaling_policy")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasStatementQueuedTimeoutInSecondsNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("statement_queued_timeout_in_seconds"))
+	w.ValuePresent("statement_queued_timeout_in_seconds")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasStatementTimeoutInSecondsNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("statement_timeout_in_seconds"))
+	w.ValuePresent("statement_timeout_in_seconds")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasWarehouseSizeNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("warehouse_size"))
+	w.ValuePresent("warehouse_size")
 	return w
 }
 
 func (w *WarehouseResourceAssert) HasWarehouseTypeNotEmpty() *WarehouseResourceAssert {
-	w.AddAssertion(assert.ValuePresent("warehouse_type"))
+	w.ValuePresent("warehouse_type")
 	return w
 }

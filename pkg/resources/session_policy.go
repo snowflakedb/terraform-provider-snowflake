@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -145,10 +144,10 @@ func SessionPolicy() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.SessionPolicyResource), TrackingCreateWrapper(resources.SessionPolicy, CreateSessionPolicy)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SessionPolicyResource), TrackingReadWrapper(resources.SessionPolicy, ReadSessionPolicyFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SessionPolicyResource), TrackingUpdateWrapper(resources.SessionPolicy, UpdateSessionPolicy)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.SessionPolicyResource), TrackingDeleteWrapper(resources.SessionPolicy, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.SessionPolicy, CreateSessionPolicy),
+		ReadContext:   TrackingReadWrapper(resources.SessionPolicy, ReadSessionPolicyFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.SessionPolicy, UpdateSessionPolicy),
+		DeleteContext: TrackingDeleteWrapper(resources.SessionPolicy, deleteFunc),
 		Description:   "Resource used to manage session policy objects. For more information, check [session policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-session-policy).",
 
 		Schema: sessionPolicySchema,
@@ -219,7 +218,8 @@ func ReadSessionPolicyFunc(withExternalChangesMarking bool) schema.ReadContextFu
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"session_idle_timeout_mins", "session_idle_timeout_mins", details.SessionIdleTimeoutMins, details.SessionIdleTimeoutMins, nil},
 				outputMapping{"session_ui_idle_timeout_mins", "session_ui_idle_timeout_mins", details.SessionUiIdleTimeoutMins, details.SessionUiIdleTimeoutMins, nil},
 			); err != nil {
@@ -231,7 +231,8 @@ func ReadSessionPolicyFunc(withExternalChangesMarking bool) schema.ReadContextFu
 				}
 				return v
 			}
-			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
+				d,
 				outputMapping{"allowed_secondary_roles", "allowed_secondary_roles", details.AllowedSecondaryRoles, secondaryRolesResourceStateFromDescribeOutput(details.AllowedSecondaryRoles), normalizeStringList},
 				outputMapping{"blocked_secondary_roles", "blocked_secondary_roles", details.BlockedSecondaryRoles, secondaryRolesResourceStateFromDescribeOutput(details.BlockedSecondaryRoles), normalizeStringList},
 			); err != nil {

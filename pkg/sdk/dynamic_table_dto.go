@@ -26,10 +26,17 @@ type AlterDynamicTableRequest struct {
 	name SchemaObjectIdentifier // required
 
 	// One of
-	suspend *bool
-	resume  *bool
-	refresh *bool
-	set     *DynamicTableSetRequest
+	suspend                    *bool
+	resume                     *bool
+	refresh                    *bool
+	set                        *DynamicTableSetRequest
+	addStorageLifecyclePolicy  *DynamicTableAddStorageLifecyclePolicyRequest
+	dropStorageLifecyclePolicy *bool
+}
+
+type DynamicTableAddStorageLifecyclePolicyRequest struct {
+	StorageLifecyclePolicy SchemaObjectIdentifier // required
+	On                     []Column               // required
 }
 
 type DynamicTableSetRequest struct {

@@ -58,8 +58,28 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationAzureApiManagement().Schema,
 	},
 	{
+		name:   "ApiIntegrationExternalMcpDynamicClient",
+		schema: resources.ApiIntegrationExternalMcpDynamicClient().Schema,
+	},
+	{
+		name:   "ApiIntegrationExternalMcpOAuth2",
+		schema: resources.ApiIntegrationExternalMcpOAuth2().Schema,
+	},
+	{
 		name:   "ApiIntegrationGitRepositoryGithubApp",
 		schema: resources.ApiIntegrationGitRepositoryGithubApp().Schema,
+	},
+	{
+		name:   "ApiIntegrationGitRepositoryOauth2",
+		schema: resources.ApiIntegrationGitRepositoryOauth2().Schema,
+	},
+	{
+		name:   "ApiIntegrationGitRepositoryPrivateLink",
+		schema: resources.ApiIntegrationGitRepositoryPrivateLink().Schema,
+	},
+	{
+		name:   "ApiIntegrationGitRepositoryToken",
+		schema: resources.ApiIntegrationGitRepositoryToken().Schema,
 	},
 	{
 		name:   "ApiIntegrationGoogleCloudApiGateway",
@@ -166,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.HybridTable().Schema,
 	},
 	{
+		name:   "IcebergTableFromDeltaFiles",
+		schema: resources.IcebergTableFromDeltaFiles().Schema,
+	},
+	{
 		name:   "IcebergTableFromFiles",
 		schema: resources.IcebergTableFromFiles().Schema,
 	},
@@ -228,6 +252,14 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "PrimaryConnection",
 		schema: resources.PrimaryConnection().Schema,
+	},
+	{
+		name:   "PostgresFork",
+		schema: resources.PostgresFork().Schema,
+	},
+	{
+		name:   "PostgresInstance",
+		schema: resources.PostgresInstance().Schema,
 	},
 	{
 		name:   "ProcedureJava",
@@ -384,6 +416,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "UserSessionPolicyAttachment",
 		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
+		name:   "TableStorageLifecyclePolicyAttachment",
+		schema: resources.TableStorageLifecyclePolicyAttachment().Schema,
 	},
 	{
 		name:   "View",

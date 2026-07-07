@@ -55,7 +55,7 @@ func TestAcc_StorageLifecyclePolicies_BasicUseCase(t *testing.T) {
 		WithInDatabase(id.DatabaseId()).
 		WithDependsOn(policyModel.ResourceReference())
 
-	showOutputAssertions := resourceshowoutputassert.StorageLifecyclePoliciesDatasourceShowOutput(t, "snowflake_storage_lifecycle_policies.test").
+	showOutputAssertions := resourceshowoutputassert.StorageLifecyclePoliciesDatasourceShowOutput(t, storageLifecyclePoliciesModel.DatasourceReference()).
 		HasCreatedOnNotEmpty().
 		HasName(id.Name()).
 		HasDatabaseName(id.DatabaseName()).
@@ -74,10 +74,11 @@ func TestAcc_StorageLifecyclePolicies_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, policyModel, storageLifecyclePoliciesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(storageLifecyclePoliciesModel.DatasourceReference(), "storage_lifecycle_policies.#", "1")),
 					showOutputAssertions,
-					resourceshowoutputassert.StorageLifecyclePoliciesDatasourceDescribeOutput(t, "snowflake_storage_lifecycle_policies.test").
+					resourceshowoutputassert.StorageLifecyclePoliciesDatasourceDescribeOutput(t, storageLifecyclePoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasSignature(expectedSignature...).
 						HasReturnType(testdatatypes.DataTypeBoolean).
@@ -88,7 +89,8 @@ func TestAcc_StorageLifecyclePolicies_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, policyModel, storageLifecyclePoliciesModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(storageLifecyclePoliciesModelWithoutDescribe.DatasourceReference(), "storage_lifecycle_policies.#", "1")),
 					showOutputAssertions,
 					assert.Check(resource.TestCheckResourceAttr(storageLifecyclePoliciesModelWithoutDescribe.DatasourceReference(), "storage_lifecycle_policies.0.describe_output.#", "0")),

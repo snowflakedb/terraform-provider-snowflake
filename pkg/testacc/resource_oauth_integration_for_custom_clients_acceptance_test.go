@@ -251,7 +251,8 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.SecurityIntegrationDoesNotExist(t, id),
 				),
 			},
@@ -304,7 +305,8 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 			// Create - with all optionals (including optional ForceNew parameters)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SecurityIntegration(t, id).
 						HasName(id.Name()).
 						HasIntegrationType("OAUTH - CUSTOM").

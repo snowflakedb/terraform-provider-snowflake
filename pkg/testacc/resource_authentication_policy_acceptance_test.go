@@ -67,32 +67,35 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 		WithAuthenticationMethods(sdk.AuthenticationMethodsOptionPassword).
 		WithMfaEnrollmentEnum(sdk.MfaEnrollmentOptionRequired).
 		WithClientTypes(sdk.ClientTypesOptionSnowflakeUi, sdk.ClientTypesOptionDrivers).
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-				{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
-			}),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				}),
 		).
-		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-			WithDefaultExpiryInDays(1).
-			WithMaxExpiryInDays(30).
-			WithRequireRoleRestrictionForServiceUsers(false).
-			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
+		WithPatPolicy(
+			*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithDefaultExpiryInDays(1).
+				WithMaxExpiryInDays(30).
+				WithRequireRoleRestrictionForServiceUsers(false).
+				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 		).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAll},
-			}).
-			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
-				{Value: "111122223333"},
-			}).
-			WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
-			}).
-			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://example.com"},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAll},
+				}).
+				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+					{Value: "111122223333"},
+				}).
+				WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
+				}).
+				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://example.com"},
+				}),
 		).
 		WithSecurityIntegrations("ALL").
 		WithClientPolicy(completeModelClientPolicy...)
@@ -102,31 +105,34 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 		WithAuthenticationMethods(sdk.AuthenticationMethodsOptionSaml).
 		WithMfaEnrollmentEnum(sdk.MfaEnrollmentOptionRequiredPasswordOnly).
 		WithClientTypes(sdk.ClientTypesOptionSnowflakeCli, sdk.ClientTypesOptionDrivers).
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
-			}),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
+				}),
 		).
-		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-			WithDefaultExpiryInDays(2).
-			WithMaxExpiryInDays(40).
-			WithRequireRoleRestrictionForServiceUsers(true).
-			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionEnforcedNotRequired),
+		WithPatPolicy(
+			*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithDefaultExpiryInDays(2).
+				WithMaxExpiryInDays(40).
+				WithRequireRoleRestrictionForServiceUsers(true).
+				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionEnforcedNotRequired),
 		).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAzure},
-			}).
-			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
-				{Value: "444455556666"},
-			}).
-			WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://login.microsoftonline.com/tenantid/v3.0"},
-			}).
-			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://example2.com"},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
+				}).
+				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+					{Value: "444455556666"},
+				}).
+				WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://login.microsoftonline.com/tenantid/v3.0"},
+				}).
+				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://example2.com"},
+				}),
 		).
 		WithSecurityIntegrations(samlIntegration.ID().Name()).
 		WithClientPolicy(differentModelClientPolicy...)
@@ -141,7 +147,8 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 			// create with empty optionals
 			{
 				Config: accconfig.FromModels(t, basicModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.AuthenticationPolicyResource(t, basicModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -180,7 +187,8 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 				Config:       accconfig.FromModels(t, basicModel),
 				ResourceName: basicModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedAuthenticationPolicyResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -205,16 +213,17 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 			// set optionals
 			{
 				Config: accconfig.FromModels(t, completeModel),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString(comment).
-					HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsOptionPassword).
-					HasMfaEnrollmentString(string(sdk.MfaEnrollmentOptionRequired)).
-					HasClientTypesEnum(sdk.ClientTypesOptionSnowflakeUi, sdk.ClientTypesOptionDrivers).
-					HasSecurityIntegrations("ALL").
-					HasClientPolicyEntries(completeModelClientPolicy...),
+				Check: assertThat(
+					t, resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(comment).
+						HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsOptionPassword).
+						HasMfaEnrollmentString(string(sdk.MfaEnrollmentOptionRequired)).
+						HasClientTypesEnum(sdk.ClientTypesOptionSnowflakeUi, sdk.ClientTypesOptionDrivers).
+						HasSecurityIntegrations("ALL").
+						HasClientPolicyEntries(completeModelClientPolicy...),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, completeModel.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -242,7 +251,8 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 			// alter
 			{
 				Config: accconfig.FromModels(t, completeModelWithDifferentValues),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.AuthenticationPolicyResource(t, completeModelWithDifferentValues.ResourceReference()).
 						HasNameString(id2.Name()).
 						HasDatabaseString(id2.DatabaseName()).
@@ -291,16 +301,17 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 					))
 				},
 				Config: accconfig.FromModels(t, completeModelWithDifferentValues),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, completeModelWithDifferentValues.ResourceReference()).
-					HasNameString(id2.Name()).
-					HasDatabaseString(id2.DatabaseName()).
-					HasSchemaString(id2.SchemaName()).
-					HasCommentString(changedComment).
-					HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsOptionSaml).
-					HasMfaEnrollmentString(string(sdk.MfaEnrollmentOptionRequiredPasswordOnly)).
-					HasClientTypesEnum(sdk.ClientTypesOptionSnowflakeCli, sdk.ClientTypesOptionDrivers).
-					HasSecurityIntegrations(samlIntegration.ID().Name()).
-					HasClientPolicyEntries(differentModelClientPolicy...),
+				Check: assertThat(
+					t, resourceassert.AuthenticationPolicyResource(t, completeModelWithDifferentValues.ResourceReference()).
+						HasNameString(id2.Name()).
+						HasDatabaseString(id2.DatabaseName()).
+						HasSchemaString(id2.SchemaName()).
+						HasCommentString(changedComment).
+						HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsOptionSaml).
+						HasMfaEnrollmentString(string(sdk.MfaEnrollmentOptionRequiredPasswordOnly)).
+						HasClientTypesEnum(sdk.ClientTypesOptionSnowflakeCli, sdk.ClientTypesOptionDrivers).
+						HasSecurityIntegrations(samlIntegration.ID().Name()).
+						HasClientPolicyEntries(differentModelClientPolicy...),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, completeModelWithDifferentValues.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id2.Name()).
@@ -328,15 +339,16 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 			// unset
 			{
 				Config: accconfig.FromModels(t, basicModelWithDifferentName),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, basicModelWithDifferentName.ResourceReference()).
-					HasNameString(id2.Name()).
-					HasDatabaseString(id2.DatabaseName()).
-					HasSchemaString(id2.SchemaName()).
-					HasCommentString("").
-					HasAuthenticationMethodsEmpty().
-					HasMfaEnrollmentEmpty().
-					HasClientTypesEmpty().
-					HasSecurityIntegrationsEmpty(),
+				Check: assertThat(
+					t, resourceassert.AuthenticationPolicyResource(t, basicModelWithDifferentName.ResourceReference()).
+						HasNameString(id2.Name()).
+						HasDatabaseString(id2.DatabaseName()).
+						HasSchemaString(id2.SchemaName()).
+						HasCommentString("").
+						HasAuthenticationMethodsEmpty().
+						HasMfaEnrollmentEmpty().
+						HasClientTypesEmpty().
+						HasSecurityIntegrationsEmpty(),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, basicModelWithDifferentName.ResourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id2.Name()).
@@ -384,32 +396,35 @@ func TestAcc_AuthenticationPolicy_complete(t *testing.T) {
 		WithMfaEnrollmentEnum(sdk.MfaEnrollmentOptionRequired).
 		WithClientTypes(sdk.ClientTypesOptionSnowflakeUi, sdk.ClientTypesOptionDrivers).
 		WithSecurityIntegrations("ALL").
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
-			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
-				{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
-			}),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionAll).
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionPasskey},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				}),
 		).
-		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-			WithDefaultExpiryInDays(1).
-			WithMaxExpiryInDays(30).
-			WithRequireRoleRestrictionForServiceUsers(false).
-			WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
+		WithPatPolicy(
+			*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithDefaultExpiryInDays(1).
+				WithMaxExpiryInDays(30).
+				WithRequireRoleRestrictionForServiceUsers(false).
+				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 		).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAll},
-			}).
-			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
-				{Value: "111122223333"},
-			}).
-			WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
-			}).
-			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://example.com"},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAll},
+				}).
+				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+					{Value: "111122223333"},
+				}).
+				WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://login.microsoftonline.com/tenantid/v2.0"},
+				}).
+				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://example.com"},
+				}),
 		).
 		WithComment(comment).
 		WithClientPolicy(completeModelClientPolicy...)
@@ -423,7 +438,8 @@ func TestAcc_AuthenticationPolicy_complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.AuthenticationPolicyResource(t, completeModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(comment).
@@ -460,7 +476,8 @@ func TestAcc_AuthenticationPolicy_complete(t *testing.T) {
 				Config:       accconfig.FromModels(t, completeModel),
 				ResourceName: completeModel.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedAuthenticationPolicyResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasCommentString(comment).
@@ -526,59 +543,65 @@ func TestAcc_AuthenticationPolicy_enumSetCustomDiff(t *testing.T) {
 func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	modelWithBasicLists := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
-				{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
-			}),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+				}),
 		).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAzure},
-			}).
-			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
-				{Value: "111111111111"}, {Value: "222222222222"},
-			}).
-			WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://login.microsoftonline.com/one/v2.0"}, {Value: "https://login.microsoftonline.com/two/v2.0"},
-			}).
-			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://one.com"}, {Value: "https://two.com"},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
+				}).
+				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+					{Value: "111111111111"}, {Value: "222222222222"},
+				}).
+				WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://login.microsoftonline.com/one/v2.0"}, {Value: "https://login.microsoftonline.com/two/v2.0"},
+				}).
+				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://one.com"}, {Value: "https://two.com"},
+				}),
 		)
 
 	modelWithSomeListsEmpty := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone),
 		).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAzure},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
+				}),
 		)
 
 	modelWithSwappedLists := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
-			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
-				{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
-			}),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone).
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: sdk.MfaPolicyAllowedMethodsOptionDuo},
+					{Method: sdk.MfaPolicyAllowedMethodsOptionTotp},
+				}),
 		).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: sdk.AllowedProviderOptionAzure},
-			}).
-			WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
-				{Value: "222222222222"}, {Value: "111111111111"},
-			}).
-			WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://login.microsoftonline.com/two/v2.0"}, {Value: "https://login.microsoftonline.com/one/v2.0"},
-			}).
-			WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
-				{Value: "https://two.com"}, {Value: "https://one.com"},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: sdk.AllowedProviderOptionAzure},
+				}).
+				WithAllowedAwsAccounts([]sdk.StringListItemWrapper{
+					{Value: "222222222222"}, {Value: "111111111111"},
+				}).
+				WithAllowedAzureIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://login.microsoftonline.com/two/v2.0"}, {Value: "https://login.microsoftonline.com/one/v2.0"},
+				}).
+				WithAllowedOidcIssuers([]sdk.StringListItemWrapper{
+					{Value: "https://two.com"}, {Value: "https://one.com"},
+				}),
 		)
 
 	ref := modelWithBasicLists.ResourceReference()
@@ -591,15 +614,16 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelWithBasicLists),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString("").
-					HasAuthenticationMethodsEmpty().
-					HasNoMfaEnrollment().
-					HasClientTypesEmpty().
-					HasSecurityIntegrationsEmpty(),
+				Check: assertThat(
+					t, resourceassert.AuthenticationPolicyResource(t, ref).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString("").
+						HasAuthenticationMethodsEmpty().
+						HasNoMfaEnrollment().
+						HasClientTypesEmpty().
+						HasSecurityIntegrationsEmpty(),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -625,15 +649,16 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, modelWithSomeListsEmpty),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString("").
-					HasAuthenticationMethodsEmpty().
-					HasNoMfaEnrollment().
-					HasClientTypesEmpty().
-					HasSecurityIntegrationsEmpty(),
+				Check: assertThat(
+					t, resourceassert.AuthenticationPolicyResource(t, ref).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString("").
+						HasAuthenticationMethodsEmpty().
+						HasNoMfaEnrollment().
+						HasClientTypesEmpty().
+						HasSecurityIntegrationsEmpty(),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -659,15 +684,16 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, modelWithBasicLists),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString("").
-					HasAuthenticationMethodsEmpty().
-					HasNoMfaEnrollment().
-					HasClientTypesEmpty().
-					HasSecurityIntegrationsEmpty(),
+				Check: assertThat(
+					t, resourceassert.AuthenticationPolicyResource(t, ref).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString("").
+						HasAuthenticationMethodsEmpty().
+						HasNoMfaEnrollment().
+						HasClientTypesEmpty().
+						HasSecurityIntegrationsEmpty(),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -698,15 +724,16 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, modelWithSwappedLists),
-				Check: assertThat(t, resourceassert.AuthenticationPolicyResource(t, ref).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasCommentString("").
-					HasAuthenticationMethodsEmpty().
-					HasNoMfaEnrollment().
-					HasClientTypesEmpty().
-					HasSecurityIntegrationsEmpty(),
+				Check: assertThat(
+					t, resourceassert.AuthenticationPolicyResource(t, ref).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString("").
+						HasAuthenticationMethodsEmpty().
+						HasNoMfaEnrollment().
+						HasClientTypesEmpty().
+						HasSecurityIntegrationsEmpty(),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -744,32 +771,38 @@ func TestAcc_AuthenticationPolicy_Validations(t *testing.T) {
 	modelInvalidClientTypes := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithClientTypes("invalid")
 	modelInvalidEnforceMfaOnExternalAuthentication := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithEnforceMfaOnExternalAuthentication("invalid"),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithEnforceMfaOnExternalAuthentication("invalid"),
 		)
 	modelInvalidAllowedMethods := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithMfaPolicy(*sdk.NewAuthenticationPolicyMfaPolicyRequest().
-			WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
-				{Method: "invalid"},
-			}),
+		WithMfaPolicy(
+			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
+				WithAllowedMethods([]sdk.AuthenticationPolicyMfaPolicyListItem{
+					{Method: "invalid"},
+				}),
 		)
 	modelInvalidDefaultExpiryInDays := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-			WithDefaultExpiryInDays(0),
+		WithPatPolicy(
+			*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithDefaultExpiryInDays(0),
 		)
 	modelInvalidMaxExpiryInDays := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-			WithMaxExpiryInDays(0),
+		WithPatPolicy(
+			*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithMaxExpiryInDays(0),
 		)
 	modelInvalidNetworkPolicyEvaluation := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithPatPolicy(*sdk.NewAuthenticationPolicyPatPolicyRequest().
-			WithNetworkPolicyEvaluation("invalid"),
+		WithPatPolicy(
+			*sdk.NewAuthenticationPolicyPatPolicyRequest().
+				WithNetworkPolicyEvaluation("invalid"),
 		)
 	modelInvalidAllowedProviders := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-			WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
-				{Provider: "invalid"},
-			}),
+		WithWorkloadIdentityPolicy(
+			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
+				WithAllowedProviders([]sdk.AuthenticationPolicyAllowedProviderListItem{
+					{Provider: "invalid"},
+				}),
 		)
 	modelInvalidClientPolicyDriverType := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithClientTypes(sdk.ClientTypesOptionDrivers).

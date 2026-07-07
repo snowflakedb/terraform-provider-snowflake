@@ -182,9 +182,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Pipes.Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Pipes.Drop, sdk.NewDropPipeRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
 		}},
@@ -225,7 +223,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 
 func TestInt_DropSchemaInNonExistingDatabase(t *testing.T) {
 	ctx := context.Background()
-	err := testClient(t).Schemas.Drop(ctx, sdk.NewDatabaseObjectIdentifier("non-existing-database", "non-existing-schema"), &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)})
+	err := testClient(t).Schemas.Drop(ctx, sdk.NewDropSchemaRequest(sdk.NewDatabaseObjectIdentifier("non-existing-database", "non-existing-schema")).WithIfExists(true))
 	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 }
 
@@ -259,9 +257,7 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeFileFormat, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).FileFormats.Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
 		}},
-		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).Pipes.Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypePipe, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Pipes.Drop, sdk.NewDropPipeRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeAlert, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
 			return testClient(t).Alerts.Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
 		}},

@@ -119,20 +119,21 @@ func TestInt_PostgresInstances(t *testing.T) {
 		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()).
-			HasComputeFamily("STANDARD_M").
-			HasStorageSize(10).
-			HasAuthenticationAuthority("POSTGRES").
-			HasIsHa(false).
-			HasType("PRIMARY").
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasNoComment().
-			// TODO: Origin is documented behavior but not currently observed.
-			// HasNoOrigin().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
+				HasName(id.Name()).
+				HasComputeFamily("STANDARD_M").
+				HasStorageSize(10).
+				HasAuthenticationAuthority("POSTGRES").
+				HasIsHa(false).
+				HasType("PRIMARY").
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasNoComment().
+				// TODO: Origin is documented behavior but not currently observed.
+				// HasNoOrigin().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty(),
 		)
 	})
 
@@ -159,7 +160,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
 			WithPostgresVersion(17).
 			WithHighAvailability(true).
-			WithNetworkPolicy(networkPolicy.Name).
+			WithNetworkPolicy(networkPolicy.ID()).
 			WithPostgresSettings(`{"postgres:work_mem": "128MB"}`).
 			WithComment(comment)
 
@@ -170,17 +171,18 @@ func TestInt_PostgresInstances(t *testing.T) {
 		postgresInstance, err := client.PostgresInstances.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
-			HasName(id.Name()).
-			HasComputeFamily("STANDARD_M").
-			HasStorageSize(10).
-			HasAuthenticationAuthority("POSTGRES").
-			HasPostgresVersion("17").
-			HasIsHa(true).
-			HasComment(comment).
-			HasPostgresSettings(`{"postgres:work_mem":"128MB"}`).
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, postgresInstance).
+				HasName(id.Name()).
+				HasComputeFamily("STANDARD_M").
+				HasStorageSize(10).
+				HasAuthenticationAuthority("POSTGRES").
+				HasPostgresVersion("17").
+				HasIsHa(true).
+				HasComment(comment).
+				HasPostgresSettings(`{"postgres:work_mem":"128MB"}`).
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty(),
 		)
 	})
 
@@ -222,9 +224,10 @@ func TestInt_PostgresInstances(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.PostgresInstance(t, id).
-			HasName(id.Name()).
-			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, id).
+				HasName(id.Name()).
+				HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
 	})
 
@@ -247,7 +250,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request := sdk.NewCreatePostgresInstanceRequest(id, "STANDARD_M", 10, sdk.PostgresInstanceAuthenticationAuthorityPostgres).
-			WithStorageIntegration(storageIntegration.Name)
+			WithStorageIntegration(storageIntegration.ID())
 
 		err := client.PostgresInstances.Create(ctx, request)
 		require.NoError(t, err)
@@ -289,29 +292,33 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkedId)
 		require.NoError(t, showErr)
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
-			HasName(forkedId.Name()),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
+				HasName(forkedId.Name()),
 		)
 	})
 
-	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '2025-01-15 12:00:00'::TIMESTAMP_NTZ);
+	// Doc example: CREATE POSTGRES INSTANCE my_fork FORK my_source_instance AT (TIMESTAMP => '<timestamp>'::TIMESTAMP_NTZ);
 	t.Run("fork - with time travel options", func(t *testing.T) {
 		sourceInstance := sharedInstance.instance
+
+		// Compute a timestamp guaranteed within the retention window: 1 minute after
+		// the source instance was created, so it is always in the past and within
+		// the instance's RetentionTime-day window.
+		validTimestamp := sourceInstance.CreatedOn.UTC().Add(time.Minute).Format("2006-01-02 15:04:05")
 
 		// AT with timestamp
 		forkId1 := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request1 := sdk.NewForkPostgresInstanceRequest(forkId1, sourceInstance.ID()).
-			WithAt(*sdk.NewPostgresInstanceForkAtRequest().WithTimestamp("2025-01-15 12:00:00"))
+			WithAt(*sdk.NewPostgresInstanceForkAtRequest().WithTimestamp(validTimestamp))
 
-		// This may fail if the timestamp is outside the retention period; that's expected
 		err := client.PostgresInstances.Fork(ctx, request1)
-		if err == nil {
-			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId1))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId1))
 
-			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId1)
-			require.NoError(t, showErr)
-			assert.Equal(t, forkId1.Name(), forkedInstance.Name)
-		}
+		forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId1)
+		require.NoError(t, showErr)
+		assert.Equal(t, forkId1.Name(), forkedInstance.Name)
 
 		// AT with offset and compute overrides
 		forkId2 := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -331,17 +338,15 @@ func TestInt_PostgresInstances(t *testing.T) {
 		// BEFORE with timestamp
 		forkId3 := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		request3 := sdk.NewForkPostgresInstanceRequest(forkId3, sourceInstance.ID()).
-			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp("2025-01-15 12:00:00"))
+			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp(validTimestamp))
 
-		// This may fail if the timestamp is outside the retention period; that's expected
 		err = client.PostgresInstances.Fork(ctx, request3)
-		if err == nil {
-			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId3))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId3))
 
-			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId3)
-			require.NoError(t, showErr)
-			assert.Equal(t, forkId3.Name(), forkedInstance.Name)
-		}
+		forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkId3)
+		require.NoError(t, showErr)
+		assert.Equal(t, forkId3.Name(), forkedInstance.Name)
 
 		// BEFORE with offset
 		forkId4 := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -352,7 +357,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 		if err == nil {
 			t.Cleanup(testClientHelper().PostgresInstance.DropFunc(t, forkId4))
 
-			forkedInstance, showErr := client.PostgresInstances.ShowByID(ctx, forkId4)
+			forkedInstance, showErr = client.PostgresInstances.ShowByID(ctx, forkId4)
 			require.NoError(t, showErr)
 			assert.Equal(t, forkId4.Name(), forkedInstance.Name)
 		}
@@ -380,9 +385,10 @@ func TestInt_PostgresInstances(t *testing.T) {
 		forkedInstance, err := client.PostgresInstances.ShowByID(ctx, forkId)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
-			HasName(forkId.Name()).
-			HasComment(comment),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, forkedInstance).
+				HasName(forkId.Name()).
+				HasComment(comment),
 		)
 	})
 
@@ -392,6 +398,17 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		err := client.PostgresInstances.Fork(ctx, request)
 		assert.Error(t, err)
+	})
+
+	t.Run("fork - validation: At and Before are mutually exclusive", func(t *testing.T) {
+		forkId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewForkPostgresInstanceRequest(forkId, NonExistingAccountObjectIdentifier).
+			WithAt(*sdk.NewPostgresInstanceForkAtRequest().WithTimestamp("2025-01-15 12:00:00")).
+			WithBefore(*sdk.NewPostgresInstanceForkBeforeRequest().WithTimestamp("2025-01-15 12:00:00"))
+
+		err := client.PostgresInstances.Fork(ctx, request)
+		require.ErrorContains(t, err, "ForkPostgresInstanceOptions")
+		require.ErrorContains(t, err, "are incompatible and cannot be set at the same time")
 	})
 
 	// ==================
@@ -426,7 +443,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 					WithComment(comment).
 					WithStorageSizeGb(20).
 					WithComputeFamily("STANDARD_L").
-					WithNetworkPolicy(networkPolicy.Name).
+					WithNetworkPolicy(networkPolicy.ID()).
 					WithAuthenticationAuthority(sdk.PostgresInstanceAuthenticationAuthorityPostgresOrSnowflake).
 					WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 			return err == nil
@@ -465,12 +482,13 @@ func TestInt_PostgresInstances(t *testing.T) {
 		}, 6*time.Minute, 5*time.Second)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasComment(comment).
-			HasStorageSize(20).
-			HasComputeFamily("STANDARD_L").
-			HasIsHa(true).
-			HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+				HasComment(comment).
+				HasStorageSize(20).
+				HasComputeFamily("STANDARD_L").
+				HasIsHa(true).
+				HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
 
 		properties, err := client.PostgresInstances.Describe(ctx, postgresInstance.ID())
@@ -510,8 +528,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasStorageSize(30),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+				HasStorageSize(30),
 		)
 
 		// Set postgres_version
@@ -521,8 +540,9 @@ func TestInt_PostgresInstances(t *testing.T) {
 				WithApply(*sdk.NewPostgresInstanceApplyRequest().WithImmediately(true))))
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstance(t, postgresInstance.ID()).
-			HasPostgresVersion("17"),
+		assertThatObject(
+			t, objectassert.PostgresInstance(t, postgresInstance.ID()).
+				HasPostgresVersion("17"),
 		)
 
 		// Set with apply on timestamp
@@ -554,11 +574,12 @@ func TestInt_PostgresInstances(t *testing.T) {
 			require.NoError(t, err)
 			return result.State == sdk.PostgresInstanceStateSuspending || result.State == sdk.PostgresInstanceStateSuspended
 		}, 2*time.Minute, 5*time.Second)
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
-			HasStateOneOf(
-				sdk.PostgresInstanceStateSuspending,
-				sdk.PostgresInstanceStateSuspended,
-			),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, result).
+				HasStateOneOf(
+					sdk.PostgresInstanceStateSuspending,
+					sdk.PostgresInstanceStateSuspended,
+				),
 		)
 
 		// Suspend again - expect error due to invalid state
@@ -585,13 +606,14 @@ func TestInt_PostgresInstances(t *testing.T) {
 			return result.State != sdk.PostgresInstanceStateSuspended
 		}, 2*time.Minute, 5*time.Second)
 		// State may be RESUMING, STARTING, CREATING, or READY depending on timing
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
-			HasStateOneOf(
-				sdk.PostgresInstanceStateResuming,
-				sdk.PostgresInstanceStateStarting,
-				sdk.PostgresInstanceStateCreating,
-				sdk.PostgresInstanceStateReady,
-			),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, result).
+				HasStateOneOf(
+					sdk.PostgresInstanceStateResuming,
+					sdk.PostgresInstanceStateStarting,
+					sdk.PostgresInstanceStateCreating,
+					sdk.PostgresInstanceStateReady,
+				),
 		)
 	})
 
@@ -690,7 +712,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 
 		// Set storage_integration
 		err := client.PostgresInstances.Alter(ctx, sdk.NewAlterPostgresInstanceRequest(postgresInstance.ID()).
-			WithSet(*sdk.NewPostgresInstanceSetRequest().WithStorageIntegration(storageIntegration.Name)))
+			WithSet(*sdk.NewPostgresInstanceSetRequest().WithStorageIntegration(storageIntegration.ID())))
 		require.NoError(t, err)
 
 		// Unset storage_integration
@@ -751,27 +773,28 @@ func TestInt_PostgresInstances(t *testing.T) {
 		result, err := client.PostgresInstances.ShowByID(ctx, postgresInstance.ID())
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.PostgresInstanceFromObject(t, result).
-			HasName(postgresInstance.Name).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasOwnerRoleType("ROLE").
-			HasType("PRIMARY").
-			HasComputeFamily("STANDARD_M").
-			HasStorageSize(10).
-			HasAuthenticationAuthority("POSTGRES").
-			HasIsHa(false).
-			HasRetentionTime(0).
-			HasPostgresVersionNotEmpty().
-			HasStateOneOf(
-				sdk.PostgresInstanceStateCreating,
-				sdk.PostgresInstanceStateStarting,
-				sdk.PostgresInstanceStateReady,
-			).
-			HasNoComment().
-			// TODO: Origin is documented behavior but not currently observed.
-			// HasNoOrigin().
-			HasCreatedOnNotEmpty().
-			HasUpdatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.PostgresInstanceFromObject(t, result).
+				HasName(postgresInstance.Name).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasOwnerRoleType("ROLE").
+				HasType("PRIMARY").
+				HasComputeFamily("STANDARD_M").
+				HasStorageSize(10).
+				HasAuthenticationAuthority("POSTGRES").
+				HasIsHa(false).
+				HasRetentionTime(0).
+				HasPostgresVersionNotEmpty().
+				HasStateOneOf(
+					sdk.PostgresInstanceStateCreating,
+					sdk.PostgresInstanceStateStarting,
+					sdk.PostgresInstanceStateReady,
+				).
+				HasNoComment().
+				// TODO: Origin is documented behavior but not currently observed.
+				// HasNoOrigin().
+				HasCreatedOnNotEmpty().
+				HasUpdatedOnNotEmpty(),
 		)
 	})
 

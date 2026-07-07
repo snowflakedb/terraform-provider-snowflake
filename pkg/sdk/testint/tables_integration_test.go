@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
@@ -499,6 +500,35 @@ func TestInt_Table(t *testing.T) {
 		assert.Equal(t, "", table.Comment)
 	})
 
+	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
+	t.Run("alter table: add a column with a constant default", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+		}
+
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, columns))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+
+		alterRequest := sdk.NewAlterTableRequest(id).
+			WithColumnAction(sdk.NewTableColumnActionRequest().
+				WithAdd(sdk.NewTableColumnAddActionRequest("COLUMN_2", sdk.DataTypeBoolean).
+					WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(sdk.String("FALSE")))))
+		err = client.Tables.Alter(ctx, alterRequest)
+		require.NoError(t, err)
+
+		table, err := client.Tables.ShowByID(ctx, id)
+		require.NoError(t, err)
+
+		currentColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
+		expectedColumns := []expectedColumn{
+			{"COLUMN_1", sdk.DataTypeVARCHAR},
+			{"COLUMN_2", sdk.DataTypeBoolean},
+		}
+		assertColumns(t, expectedColumns, currentColumns)
+	})
+
 	t.Run("alter table: rename column", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		columns := []sdk.TableColumnRequest{
@@ -560,6 +590,50 @@ func TestInt_Table(t *testing.T) {
 
 		require.Len(t, tableDetails, 2)
 		assert.Empty(t, tableDetails[0].PolicyName)
+	})
+
+	t.Run("alter table: add and drop storage lifecycle policy", func(t *testing.T) {
+		storageLifecyclePolicyId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		storageLifecyclePolicyCleanup := testClientHelper().StorageLifecyclePolicy.CreateWithId(t, storageLifecyclePolicyId)
+		t.Cleanup(storageLifecyclePolicyCleanup)
+
+		tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(tableId, []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+		}))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(tableId))
+
+		addRequest := sdk.NewAlterTableRequest(tableId).WithAddStorageLifecyclePolicy(
+			sdk.NewTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "COLUMN_1"}}),
+		)
+		err = client.Tables.Alter(ctx, addRequest)
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assertThatObject(
+			t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
+				HasPolicyDb(storageLifecyclePolicyId.DatabaseName()).
+				HasPolicySchema(storageLifecyclePolicyId.SchemaName()).
+				HasPolicyName(storageLifecyclePolicyId.Name()).
+				HasPolicyKind(sdk.PolicyKindStorageLifecyclePolicy).
+				HasRefDatabaseName(tableId.DatabaseName()).
+				HasRefSchemaName(tableId.SchemaName()).
+				HasRefEntityName(tableId.Name()).
+				HasRefEntityDomain(string(sdk.PolicyEntityDomainTable)).
+				HasRefArgColumnNames(`[ "COLUMN_1" ]`).
+				HasPolicyStatus("ACTIVE"),
+		)
+
+		dropRequest := sdk.NewAlterTableRequest(tableId).WithDropStorageLifecyclePolicy(new(true))
+		err = client.Tables.Alter(ctx, dropRequest)
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Empty(t, references)
 	})
 
 	t.Run("alter table: drop columns", func(t *testing.T) {
@@ -731,11 +805,12 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(id))
 
 		alterRequest := sdk.NewAlterTableRequest(id).
-			WithExternalTableAction(sdk.NewTableExternalTableActionRequest().WithAdd(sdk.NewTableExternalTableColumnAddActionRequest().
-				WithName("COLUMN_3").
-				WithType(sdk.DataTypeNumber).
-				WithExpression("1 + 1").
-				WithComment(sdk.String("some comment")),
+			WithExternalTableAction(sdk.NewTableExternalTableActionRequest().WithAdd(
+				sdk.NewTableExternalTableColumnAddActionRequest().
+					WithName("COLUMN_3").
+					WithType(sdk.DataTypeNumber).
+					WithExpression("1 + 1").
+					WithComment(sdk.String("some comment")),
 			))
 
 		err = client.Tables.Alter(ctx, alterRequest)

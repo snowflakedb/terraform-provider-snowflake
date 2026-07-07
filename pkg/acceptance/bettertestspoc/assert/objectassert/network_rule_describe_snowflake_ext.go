@@ -23,7 +23,8 @@ func NetworkRuleDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *NetworkRul
 			id,
 			func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.NetworkRuleDetails, sdk.SchemaObjectIdentifier] {
 				return testClient.NetworkRule.Describe
-			}),
+			},
+		),
 	}
 }
 

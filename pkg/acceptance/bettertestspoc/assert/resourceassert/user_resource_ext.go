@@ -5,27 +5,26 @@ import (
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 func (u *UserResourceAssert) HasDisabledBool(expected bool) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("disabled", strconv.FormatBool(expected)))
+	u.ValueSet("disabled", strconv.FormatBool(expected))
 	return u
 }
 
 func (u *UserResourceAssert) HasEmptyPassword() *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("password", ""))
+	u.ValueSet("password", "")
 	return u
 }
 
 func (u *UserResourceAssert) HasNotEmptyPassword() *UserResourceAssert {
-	u.AddAssertion(assert.ValuePresent("password"))
+	u.ValuePresent("password")
 	return u
 }
 
 func (u *UserResourceAssert) HasMustChangePasswordBool(expected bool) *UserResourceAssert {
-	u.AddAssertion(assert.ValueSet("must_change_password", strconv.FormatBool(expected)))
+	u.ValueSet("must_change_password", strconv.FormatBool(expected))
 	return u
 }
 

@@ -59,9 +59,7 @@ func ReadAccountRoles(ctx context.Context, d *schema.ResourceData, meta any) dia
 	handleLike(d, &req.Like)
 
 	if className, ok := d.GetOk("in_class"); ok {
-		req.WithInClass(sdk.RolesInClass{
-			Class: sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(className.(string)),
-		})
+		req.WithInClass(*sdk.NewRolesInClassRequest().WithClass(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(className.(string))))
 	}
 
 	roles, err := client.Roles.Show(ctx, req)

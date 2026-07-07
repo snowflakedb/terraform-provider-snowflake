@@ -118,7 +118,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			// create with only required fields present in config
 			{
 				Config: replaceWithWarehousePoCResourceType(t, replaceWithWarehousePoCResourceType(t, config.FromModels(t, warehouseModel))),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModel.ResourceReference())).
 						HasNameString(warehouseId.Name()).
 						HasNoWarehouseType().
@@ -161,7 +162,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 			{
 				ResourceName: replaceResourceReference(warehouseModel.ResourceReference()),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(warehouseId), "name", warehouseId.Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(warehouseId), "fully_qualified_name", warehouseId.FullyQualifiedName())),
 					resourceassert.ImportedWarehouseResource(t, helpers.EncodeResourceIdentifier(warehouseId)).
@@ -221,7 +223,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						plancheck.ExpectNonEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModelRenamedFullWithoutParameters.ResourceReference())).
 						HasNameString(warehouseId2.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)).
@@ -254,7 +257,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFullWithParameters.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("172800")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					// no changes in the attributes, only for parameters
 					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModel.ResourceReference())).
 						HasNameString(warehouseId2.Name()).
@@ -286,7 +290,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFullWithParametersMediumSize.ResourceReference()), "warehouse_size", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseSizeXSmall)), sdk.String(string(sdk.WarehouseSizeMedium))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModelRenamedFullWithParametersMediumSize.ResourceReference())).
 						HasWarehouseSizeString(string(sdk.WarehouseSizeMedium)),
 					objectassert.Warehouse(t, warehouseId2).
@@ -313,7 +318,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_BasicFlows(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelRenamedFull.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), sdk.String("86400")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseResource(t, replaceResourceReference(warehouseModelRenamedFullWithParametersMediumSize.ResourceReference())).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeSnowparkOptimized)).
 						HasWarehouseSizeString(string(sdk.WarehouseSizeMedium)).
@@ -413,7 +419,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelStandard.ResourceReference()), "warehouse_type", tfjson.ActionCreate, nil, sdk.String(string(sdk.WarehouseTypeStandard))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelStandard.ResourceReference()), "warehouse_type", string(sdk.WarehouseTypeStandard))),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
@@ -436,7 +443,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelSnowparkOptimized.ResourceReference()), "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeStandard)), sdk.String(string(sdk.WarehouseTypeSnowparkOptimized))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSnowparkOptimized.ResourceReference()), "warehouse_type", string(sdk.WarehouseTypeSnowparkOptimized))),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeSnowparkOptimized),
 				),
@@ -451,7 +459,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeSnowparkOptimized)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type")),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
@@ -465,7 +474,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelSnowparkOptimizedLowercase.ResourceReference()), "warehouse_type", tfjson.ActionUpdate, nil, sdk.String(strings.ToLower(string(sdk.WarehouseTypeSnowparkOptimized)))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSnowparkOptimizedLowercase.ResourceReference()), "warehouse_type", strings.ToLower(string(sdk.WarehouseTypeSnowparkOptimized)))),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeSnowparkOptimized),
 				),
@@ -484,7 +494,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeStandard)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type")),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
@@ -504,7 +515,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseType(t *testing.T
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseTypeSnowparkOptimized)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoType.ResourceReference()), "warehouse_type")),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
@@ -549,7 +561,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelSmall.ResourceReference()), "warehouse_size", tfjson.ActionCreate, nil, sdk.String(string(sdk.WarehouseSizeSmall))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmall.ResourceReference()), "warehouse_size", string(sdk.WarehouseSizeSmall))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeSmall),
 				),
@@ -572,7 +585,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelMedium.ResourceReference()), "warehouse_size", tfjson.ActionUpdate, sdk.String(string(sdk.WarehouseSizeSmall)), sdk.String(string(sdk.WarehouseSizeMedium))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelMedium.ResourceReference()), "warehouse_size", string(sdk.WarehouseSizeMedium))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeMedium),
 				),
@@ -587,7 +601,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", tfjson.ActionCreate, sdk.String(string(sdk.WarehouseSizeMedium)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size")),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeXSmall),
 				),
@@ -601,7 +616,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), "warehouse_size", tfjson.ActionUpdate, nil, sdk.String(strings.ToLower(string(sdk.WarehouseSizeSmall)))),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelSmallLowercase.ResourceReference()), "warehouse_size", strings.ToLower(string(sdk.WarehouseSizeSmall)))),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeSmall),
 				),
@@ -620,7 +636,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", tfjson.ActionCreate, sdk.String(string(sdk.WarehouseSizeXSmall)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size")),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeXSmall),
 				),
@@ -640,7 +657,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_WarehouseSizes(t *testing.
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size", tfjson.ActionCreate, sdk.String(string(sdk.WarehouseSizeSmall)), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelNoSize.ResourceReference()), "warehouse_size")),
 					objectassert.Warehouse(t, id).HasSize(sdk.WarehouseSizeXSmall),
 				),
@@ -746,7 +764,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), "auto_resume", tfjson.ActionCreate, nil, sdk.String("true")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeTrue.ResourceReference()), "auto_resume", "true")),
 					objectassert.Warehouse(t, id).HasAutoResume(true),
 				),
@@ -769,7 +788,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoResumeFalse.ResourceReference()), "auto_resume", "false")),
 					objectassert.Warehouse(t, id).HasAutoResume(false),
 				),
@@ -784,7 +804,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("false"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume")),
 					objectassert.Warehouse(t, id).HasAutoResume(true),
 				),
@@ -804,7 +825,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoResume(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume", tfjson.ActionUpdate, sdk.String("false"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoResume.ResourceReference()), "auto_resume")),
 					objectassert.Warehouse(t, id).HasType(sdk.WarehouseTypeStandard),
 				),
@@ -846,7 +868,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), "auto_suspend", tfjson.ActionCreate, nil, sdk.String("1200")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend1200.ResourceReference()), "auto_suspend", "1200")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(1200),
 				),
@@ -869,7 +892,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("1200"), sdk.String("600")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelAutoSuspend600.ResourceReference()), "auto_suspend", "600")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(600),
 				),
@@ -884,7 +908,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("600"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(600),
 				),
@@ -904,7 +929,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_AutoSuspend(t *testing.T) 
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend", tfjson.ActionUpdate, sdk.String("2400"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModelWithoutAutoSuspend.ResourceReference()), "auto_suspend")),
 					objectassert.Warehouse(t, id).HasAutoSuspend(600),
 				),
@@ -951,7 +977,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionCreate, nil, sdk.String("0")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", "0")),
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", "0")),
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", "0")),
@@ -978,7 +1005,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("0"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "auto_suspend")),
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "query_acceleration_max_scale_factor")),
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_queued_timeout_in_seconds")),
@@ -1003,7 +1031,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_ZeroValues(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("0")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "auto_suspend", "0")),
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "query_acceleration_max_scale_factor", "0")),
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithAllValidZeroValues.ResourceReference()), "statement_queued_timeout_in_seconds", "0")),
@@ -1059,7 +1088,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionCreate, nil, sdk.String("86400")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds86400.ResourceReference()), "statement_timeout_in_seconds", "86400")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(86400).
@@ -1084,7 +1114,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), sdk.String("43200")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(43200).
@@ -1106,7 +1137,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(43200).
@@ -1129,7 +1161,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), sdk.String("43200")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(43200).
@@ -1150,7 +1183,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("43200")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds43200.ResourceReference()), "statement_timeout_in_seconds", "43200")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(43200).
@@ -1172,7 +1206,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("43200"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),
@@ -1196,7 +1231,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, nil, sdk.String("172800")),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(replaceResourceReference(warehouseModelWithStatementTimeoutInSeconds172800.ResourceReference()), "statement_timeout_in_seconds", "172800")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(172800).
@@ -1216,7 +1252,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("172800"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),
@@ -1237,7 +1274,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(86400).
@@ -1265,7 +1303,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						planchecks.ExpectChange(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), nil),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasStatementTimeoutInSeconds(86400).
@@ -1284,7 +1323,8 @@ func TestAcc_TerraformPluginFrameworkPoc_WarehousePoc_Parameter(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckNoResourceAttr(replaceResourceReference(warehouseModel.ResourceReference()), "statement_timeout_in_seconds")),
 					objectparametersassert.WarehouseParameters(t, id).
 						HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault),

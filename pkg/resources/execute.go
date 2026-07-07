@@ -58,19 +58,21 @@ func Execute() *schema.Resource {
 
 		Description: "Resource allowing execution of ANY SQL statement.",
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.Execute, customdiff.All(
-			customdiff.ForceNewIfChange("execute", func(ctx context.Context, oldValue, newValue, meta any) bool {
-				return oldValue != ""
-			}),
-			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
-				if diff.HasChange("query") {
-					err := diff.SetNewComputed("query_results")
-					if err != nil {
-						return err
+		CustomizeDiff: TrackingCustomDiffWrapper(
+			resources.Execute, customdiff.All(
+				customdiff.ForceNewIfChange("execute", func(ctx context.Context, oldValue, newValue, meta any) bool {
+					return oldValue != ""
+				}),
+				func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+					if diff.HasChange("query") {
+						err := diff.SetNewComputed("query_results")
+						if err != nil {
+							return err
+						}
 					}
-				}
-				return nil
-			}),
+					return nil
+				},
+			),
 		),
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(60 * time.Minute),

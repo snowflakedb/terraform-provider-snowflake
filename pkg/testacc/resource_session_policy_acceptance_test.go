@@ -204,9 +204,10 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			// Change secondary roles externally (All -> None, None -> All)
 			{
 				PreConfig: func() {
-					alterRequest := sdk.NewAlterSessionPolicyRequest(newId).WithSet(*sdk.NewSessionPolicySetRequest().
-						WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithAll(true)).
-						WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithNone(true)),
+					alterRequest := sdk.NewAlterSessionPolicyRequest(newId).WithSet(
+						*sdk.NewSessionPolicySetRequest().
+							WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithAll(true)).
+							WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithNone(true)),
 					)
 					testClient().SessionPolicy.Alter(t, alterRequest)
 				},
@@ -231,9 +232,10 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			// Change secondary roles externally (All -> Roles, None -> Roles)
 			{
 				PreConfig: func() {
-					alterRequest := sdk.NewAlterSessionPolicyRequest(newId).WithSet(*sdk.NewSessionPolicySetRequest().
-						WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithRoles([]sdk.AccountObjectIdentifier{role1.ID()})).
-						WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithRoles([]sdk.AccountObjectIdentifier{role2.ID()})),
+					alterRequest := sdk.NewAlterSessionPolicyRequest(newId).WithSet(
+						*sdk.NewSessionPolicySetRequest().
+							WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithRoles([]sdk.AccountObjectIdentifier{role1.ID()})).
+							WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithRoles([]sdk.AccountObjectIdentifier{role2.ID()})),
 					)
 					testClient().SessionPolicy.Alter(t, alterRequest)
 				},
@@ -307,12 +309,13 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 			// Change all props externally
 			{
 				PreConfig: func() {
-					alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(*sdk.NewSessionPolicySetRequest().
-						WithSessionIdleTimeoutMins(externalSessionIdleTimeoutMins).
-						WithSessionUiIdleTimeoutMins(externalSessionUiIdleTimeoutMins).
-						WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithNone(true)).
-						WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithAll(true)).
-						WithComment(externalComment),
+					alterRequest := sdk.NewAlterSessionPolicyRequest(id).WithSet(
+						*sdk.NewSessionPolicySetRequest().
+							WithSessionIdleTimeoutMins(externalSessionIdleTimeoutMins).
+							WithSessionUiIdleTimeoutMins(externalSessionUiIdleTimeoutMins).
+							WithAllowedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithNone(true)).
+							WithBlockedSecondaryRoles(*sdk.NewSessionPolicySecondaryRolesRequest().WithAll(true)).
+							WithComment(externalComment),
 					)
 					testClient().SessionPolicy.Alter(t, alterRequest)
 				},

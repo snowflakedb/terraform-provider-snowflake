@@ -153,7 +153,7 @@ Read-Only:
 
 Read-Only:
 
-- `auto_refresh_status` (String)
+- `auto_refresh_status` (List of Object) (see [below for nested schema](#nestedobjatt--show_output--auto_refresh_status))
 - `base_location` (String)
 - `can_write_metadata` (Boolean)
 - `catalog_name` (String)
@@ -173,6 +173,17 @@ Read-Only:
 - `owner_role_type` (String)
 - `partition_specs` (String)
 - `schema_name` (String)
+
+<a id="nestedobjatt--show_output--auto_refresh_status"></a>
+### Nested Schema for `show_output.auto_refresh_status`
+
+Read-Only:
+
+- `current_snapshot_id` (Number)
+- `execution_state` (String)
+- `last_snapshot_time` (String)
+- `last_updated_time` (String)
+- `pending_snapshot_count` (Number)
 
 ## Import
 

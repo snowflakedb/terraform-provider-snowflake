@@ -75,11 +75,7 @@ func TestInt_PipeStatus(t *testing.T) {
 
 	// Pause the pipe
 	ctx := context.Background()
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(true),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 	require.NoError(t, err)
 
 	pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
@@ -87,11 +83,7 @@ func TestInt_PipeStatus(t *testing.T) {
 	require.Equal(t, sdk.PausedPipeExecutionState, pipeExecutionState)
 
 	// Unpause the pipe
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(false),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 	require.NoError(t, err)
 
 	pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
@@ -123,11 +115,7 @@ func TestInt_PipeForceResume(t *testing.T) {
 	require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
 
 	ctx := context.Background()
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(true),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 	require.NoError(t, err)
 
 	// Move the ownership to the role and back to the currently used role by the client
@@ -164,11 +152,7 @@ func TestInt_PipeForceResume(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to resume with ALTER (error)
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(false),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 	require.ErrorContains(t, err, fmt.Sprintf("Pipe %s cannot be resumed as ownership had changed. Resuming pipe may load files inserted by previous owner into table. To forceresume pipe use SYSTEM$PIPE_FORCE_RESUME('%s')", pipe.Name, pipe.Name))
 
 	// Resume with system func (success)

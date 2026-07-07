@@ -9,8 +9,8 @@ import (
 
 func TestTagCreate(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *createTagOptions {
-		return &createTagOptions{
+	defaultOpts := func() *CreateTagOptions {
+		return &CreateTagOptions{
 			name: id,
 		}
 	}
@@ -52,7 +52,7 @@ func TestTagCreate(t *testing.T) {
 	})
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*createTagOptions)(nil)
+		opts := (*CreateTagOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -74,7 +74,7 @@ func TestTagCreate(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
 		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("createTagOptions", "OrReplace", "IfNotExists"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateTagOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("validation: multiple errors", func(t *testing.T) {
@@ -82,20 +82,20 @@ func TestTagCreate(t *testing.T) {
 		opts.name = emptySchemaObjectIdentifier
 		opts.IfNotExists = Bool(true)
 		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("createTagOptions", "OrReplace", "IfNotExists"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("CreateTagOptions", "OrReplace", "IfNotExists"))
 	})
 }
 
 func TestTagDrop(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *dropTagOptions {
-		return &dropTagOptions{
+	defaultOpts := func() *DropTagOptions {
+		return &DropTagOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *dropTagOptions = nil
+		var opts *DropTagOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -119,13 +119,13 @@ func TestTagDrop(t *testing.T) {
 
 func TestTagUndrop(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *undropTagOptions {
-		return &undropTagOptions{
+	defaultOpts := func() *UndropTagOptions {
+		return &UndropTagOptions{
 			name: id,
 		}
 	}
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *undropTagOptions = nil
+		var opts *UndropTagOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -142,12 +142,12 @@ func TestTagUndrop(t *testing.T) {
 }
 
 func TestTagShow(t *testing.T) {
-	defaultOpts := func() *showTagOptions {
-		return &showTagOptions{}
+	defaultOpts := func() *ShowTagOptions {
+		return &ShowTagOptions{}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *showTagOptions = nil
+		var opts *ShowTagOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -160,7 +160,7 @@ func TestTagShow(t *testing.T) {
 	t.Run("validation: empty in", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.In = &ExtendedIn{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("showTagOptions.In", "Account", "Database", "Schema"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ShowTagOptions.In", "Account", "Database", "Schema"))
 	})
 
 	t.Run("show with empty options", func(t *testing.T) {
@@ -187,8 +187,8 @@ func TestTagShow(t *testing.T) {
 
 func TestTagAlter(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *alterTagOptions {
-		return &alterTagOptions{
+	defaultOpts := func() *AlterTagOptions {
+		return &AlterTagOptions{
 			name: id,
 		}
 	}
@@ -220,7 +220,7 @@ func TestTagAlter(t *testing.T) {
 	t.Run("alter with rename to and if exists", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Rename = &TagRename{Name: randomSchemaObjectIdentifierInSchema(id.SchemaId())}
-		opts.ifExists = Pointer(true)
+		opts.IfExists = Pointer(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), opts.Rename.Name.FullyQualifiedName())
 	})
 
@@ -305,7 +305,7 @@ func TestTagAlter(t *testing.T) {
 	})
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*alterTagOptions)(nil)
+		opts := (*AlterTagOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -317,7 +317,7 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("validation: no alter action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
 	})
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
@@ -328,7 +328,7 @@ func TestTagAlter(t *testing.T) {
 		opts.Unset = &TagUnset{
 			AllowedValues: Bool(true),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
 	})
 
 	t.Run("validation: multiple fields in set", func(t *testing.T) {
@@ -377,7 +377,7 @@ func TestTagAlter(t *testing.T) {
 	t.Run("validation: no property to unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &TagUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TagUnset", "MaskingPolicies", "AllowedValues", "Propagate", "OnConflict", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTagOptions.Unset", "MaskingPolicies", "AllowedValues", "Propagate", "OnConflict", "Comment"))
 	})
 
 	t.Run("validation: add allowed values count", func(t *testing.T) {
@@ -403,15 +403,15 @@ func TestTagAlter(t *testing.T) {
 
 func TestTagSet(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *setTagOptions {
-		return &setTagOptions{
+	defaultOpts := func() *SetTagOptions {
+		return &SetTagOptions{
 			objectType: ObjectTypeStage,
 			objectName: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*setTagOptions)(nil)
+		opts := (*SetTagOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -440,7 +440,7 @@ func TestTagSet(t *testing.T) {
 
 	t.Run("set on account", func(t *testing.T) {
 		accountId := randomAccountIdentifier()
-		opts := &setTagOptions{
+		opts := &SetTagOptions{
 			objectType: ObjectTypeStage,
 			objectName: accountId,
 			SetTags: []TagAssociation{
@@ -462,6 +462,7 @@ func TestTagSet(t *testing.T) {
 				Value: "value1",
 			},
 		})
+		request.adjust()
 		opts := request.toOpts()
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s MODIFY COLUMN "%s" SET TAG %s = 'value1'`, id.FullyQualifiedName(), objectId.columnName, tagId.FullyQualifiedName())
 	})
@@ -469,15 +470,15 @@ func TestTagSet(t *testing.T) {
 
 func TestTagUnset(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *unsetTagOptions {
-		return &unsetTagOptions{
+	defaultOpts := func() *UnsetTagOptions {
+		return &UnsetTagOptions{
 			objectType: ObjectTypeStage,
 			objectName: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*unsetTagOptions)(nil)
+		opts := (*UnsetTagOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -505,7 +506,7 @@ func TestTagUnset(t *testing.T) {
 
 	t.Run("unset on account", func(t *testing.T) {
 		accountId := randomAccountIdentifier()
-		opts := &unsetTagOptions{
+		opts := &UnsetTagOptions{
 			objectType: ObjectTypeStage,
 			objectName: accountId,
 			UnsetTags: []ObjectIdentifier{
@@ -520,15 +521,10 @@ func TestTagUnset(t *testing.T) {
 		objectId := randomTableColumnIdentifierInSchemaObject(id)
 		tagId1 := randomSchemaObjectIdentifier()
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
-		request := UnsetTagRequest{
-			objectType: ObjectTypeColumn,
-			objectName: objectId,
-			UnsetTags: []ObjectIdentifier{
-				tagId1,
-				tagId2,
-			},
-			IfExists: Pointer(true),
-		}
+		request := NewUnsetTagRequest(ObjectTypeColumn, objectId).
+			WithUnsetTags([]ObjectIdentifier{tagId1, tagId2}).
+			WithIfExists(true)
+		request.adjust()
 		opts := request.toOpts()
 		assertOptsValidAndSQLEquals(t, opts, `ALTER %s IF EXISTS %s MODIFY COLUMN "%s" UNSET TAG %s, %s`, opts.objectType, id.FullyQualifiedName(), objectId.Name(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})

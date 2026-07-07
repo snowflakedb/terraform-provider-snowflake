@@ -32,6 +32,18 @@ To use the provider with the bundles containing this change:
 
 Reference: [BCR-1944](https://docs.snowflake.com/release-notes/bcr-bundles/un-bundled/bcr-1944)
 
+## [Bundle 2026_04](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_04_bundle)
+
+### CREATE FUNCTION and CREATE PROCEDURE: signature size limit reduced
+
+When this bundle is enabled, the combined size of a function or procedure's name, parameter list, and return type is limited to **9,800 bytes** (previously 10,000 bytes).
+
+This affects the following provider resources: [`snowflake_function_java`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/function_java), [`snowflake_function_javascript`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/function_javascript), [`snowflake_function_python`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/function_python), [`snowflake_function_scala`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/function_scala), [`snowflake_function_sql`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/function_sql), and their procedure equivalents. If a `CREATE` statement exceeds the new limit, Snowflake returns error `09024` and the provider propagates it through `terraform apply`.
+
+In practice this only affects functions and procedures with unusually large signatures (e.g. hundreds of parameters combined with long names). If you hit error `09024`, shorten the function or procedure name, reduce the number of parameters, or shorten parameter names and types. The provider does not validate the signature size limit.
+
+Reference: [BCR-2303](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_04/bcr-2303)
+
 ## [Bundle 2026_03](https://docs.snowflake.com/en/release-notes/bcr-bundles/2026_03_bundle)
 
 ### Standard warehouses: Gen2 is the default generation

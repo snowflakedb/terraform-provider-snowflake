@@ -151,7 +151,8 @@ func ReadContextSecretWithAuthorizationCodeGrant(withExternalChangesMarking bool
 		// if secret type is changed externally, we wont be able to read oauth_refresh_token_expiry_time value (since it will not be provided)
 		// in any other case, there should be oauth_refresh_token_expiry_time value since it is required
 		if withExternalChangesMarking && secretDescription.OauthRefreshTokenExpiryTime != nil {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"oauth_refresh_token_expiry_time", "oauth_refresh_token_expiry_time", secretDescription.OauthRefreshTokenExpiryTime.String(), secretDescription.OauthRefreshTokenExpiryTime.String(), nil},
 			); err != nil {
 				return diag.FromErr(err)

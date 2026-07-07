@@ -17,9 +17,8 @@ func CatalogIntegrationShowOutput(t *testing.T, name string) *CatalogIntegration
 	t.Helper()
 
 	catalogIntegrationAssert := CatalogIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	catalogIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &catalogIntegrationAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedCatalogIntegrationShowOutput(t *testing.T, id string) *CatalogInteg
 	t.Helper()
 
 	catalogIntegrationAssert := CatalogIntegrationShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	catalogIntegrationAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &catalogIntegrationAssert
+}
+
+func CatalogIntegrationsDatasourceShowOutput(t *testing.T, name string) *CatalogIntegrationShowOutputAssert {
+	t.Helper()
+
+	return CatalogIntegrationsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func CatalogIntegrationsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *CatalogIntegrationShowOutputAssert {
+	t.Helper()
+
+	catalogIntegrationAssert := CatalogIntegrationShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "catalog_integrations", idx),
+	}
 	return &catalogIntegrationAssert
 }
 
@@ -38,32 +51,32 @@ func ImportedCatalogIntegrationShowOutput(t *testing.T, id string) *CatalogInteg
 ////////////////////////////
 
 func (c *CatalogIntegrationShowOutputAssert) HasName(expected string) *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	c.StringValueSet("name", expected)
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasEnabled(expected bool) *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputBoolValueSet("enabled", expected))
+	c.BoolValueSet("enabled", expected)
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasType(expected string) *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("type", expected))
+	c.StringValueSet("type", expected)
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasCategory(expected string) *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("category", expected))
+	c.StringValueSet("category", expected)
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasComment(expected string) *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	c.StringValueSet("comment", expected)
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	c.StringValueSet("created_on", expected.String())
 	return c
 }
 
@@ -72,31 +85,31 @@ func (c *CatalogIntegrationShowOutputAssert) HasCreatedOn(expected time.Time) *C
 ///////////////////////////////
 
 func (c *CatalogIntegrationShowOutputAssert) HasNoName() *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	c.ValueNotSet("name")
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasNoEnabled() *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("enabled"))
+	c.ValueNotSet("enabled")
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasNoType() *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("type"))
+	c.ValueNotSet("type")
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasNoCategory() *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("category"))
+	c.ValueNotSet("category")
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasNoComment() *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	c.ValueNotSet("comment")
 	return c
 }
 
 func (c *CatalogIntegrationShowOutputAssert) HasNoCreatedOn() *CatalogIntegrationShowOutputAssert {
-	c.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	c.ValueNotSet("created_on")
 	return c
 }

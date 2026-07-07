@@ -58,6 +58,13 @@ func TestTasks_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateTaskOptions", "OrReplace", "IfNotExists"))
 	})
 
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.Config]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Config = String(`$${"k":1}$$ AS GRANT ROLE ACCOUNTADMIN TO USER ALICE --`)
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateTaskOptions", "Config"))
+	})
+
 	// validation added manually
 	t.Run("opts.Warehouse.Warehouse conflicting with opts.Warehouse.UserTaskManagedInitialWarehouseSize", func(t *testing.T) {
 		opts := defaultOpts()
@@ -164,6 +171,13 @@ func TestTasks_CreateOrAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Warehouse = &CreateTaskWarehouse{}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+	})
+
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.Config]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Config = String(`$${"k":1}$$ AS GRANT ROLE ACCOUNTADMIN TO USER ALICE --`)
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateOrAlterTaskOptions", "Config"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -304,6 +318,15 @@ func TestTasks_Alter(t *testing.T) {
 		opts.Set.Warehouse = &warehouseId
 		opts.Set.UserTaskManagedInitialWarehouseSize = Pointer(WarehouseSizeXSmall)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
+	})
+
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.Set.Config]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &TaskSet{
+			Config: String(`$${"k":1}$$ AS GRANT ROLE ACCOUNTADMIN TO USER ALICE --`),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("AlterTaskOptions.Set", "Config"))
 	})
 
 	t.Run("validation: valid identifier for [opts.Set.ErrorIntegration] if set", func(t *testing.T) {

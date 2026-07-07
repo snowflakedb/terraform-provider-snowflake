@@ -56,7 +56,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 			// create with empty optionals
 			{
 				Config: accconfig.FromModels(t, imageRepositoryModelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString("").
@@ -87,7 +88,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 			// set optionals
 			{
 				Config: accconfig.FromModels(t, imageRepositoryModelWithComment),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(comment).
@@ -118,7 +120,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 			// alter
 			{
 				Config: accconfig.FromModels(t, imageRepositoryModelWithChangedComment),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelWithChangedComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(changedComment).
@@ -155,7 +158,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 						planchecks.ExpectChange(imageRepositoryModelWithChangedComment.ResourceReference(), "comment", tfjson.ActionUpdate, sdk.Pointer(comment), sdk.Pointer(changedComment)),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelWithChangedComment.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(changedComment).
@@ -179,7 +183,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 			// unset
 			{
 				Config: accconfig.FromModels(t, imageRepositoryModelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString("").
@@ -213,7 +218,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(imageRepositoryModelWithChangedComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoEncryption(),
@@ -230,7 +236,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(imageRepositoryModelWithChangedComment.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoEncryption(),
@@ -247,7 +254,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(imageRepositoryModelWithChangedComment.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEncryptionString(string(sdk.ImageRepositoryEncryptionTypeSnowflakeSse)),
@@ -264,7 +272,8 @@ func TestAcc_ImageRepository_basic(t *testing.T) {
 						plancheck.ExpectResourceAction(imageRepositoryModelWithChangedComment.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModelBasic.ResourceReference()).
 						HasNameString(id.Name()).
 						HasEncryptionString(string(sdk.ImageRepositoryEncryptionTypeSnowflakeSse)),
@@ -301,7 +310,8 @@ func TestAcc_ImageRepository_complete(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelComplete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, modelComplete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasCommentString(comment).
@@ -362,7 +372,8 @@ func TestAcc_ImageRepository_importWithoutEncryptionSet(t *testing.T) {
 				ImportState:        true,
 				ImportStateId:      id.FullyQualifiedName(),
 				ImportStatePersist: true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedImageRepositoryResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNoEncryption(),
 					resourceshowoutputassert.ImportedImageRepositoryShowOutput(t, helpers.EncodeResourceIdentifier(id)).
@@ -412,7 +423,8 @@ func TestAcc_ImageRepository_importWithEncryptionSetToSnowflakeValue(t *testing.
 				ImportState:        true,
 				ImportStateId:      id.FullyQualifiedName(),
 				ImportStatePersist: true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedImageRepositoryResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNoEncryption(),
 					resourceshowoutputassert.ImportedImageRepositoryShowOutput(t, helpers.EncodeResourceIdentifier(id)).
@@ -462,7 +474,8 @@ func TestAcc_ImageRepository_importWithEncryptionSetToDifferentValue(t *testing.
 				ImportState:        true,
 				ImportStateId:      id.FullyQualifiedName(),
 				ImportStatePersist: true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedImageRepositoryResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNoEncryption(),
 					resourceshowoutputassert.ImportedImageRepositoryShowOutput(t, helpers.EncodeResourceIdentifier(id)).
@@ -504,7 +517,8 @@ func TestAcc_ImageRepository_migrateFromV2_14_1(t *testing.T) {
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
 				Config:            accconfig.FromModels(t, imageRepositoryModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(imageRepositoryModel.ResourceReference(), "name", id.Name())),
 				),
 			},
@@ -517,7 +531,8 @@ func TestAcc_ImageRepository_migrateFromV2_14_1(t *testing.T) {
 						plancheck.ExpectResourceAction(imageRepositoryModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.ImageRepositoryResource(t, imageRepositoryModel.ResourceReference()).
 						HasNameString(id.Name()).
 						HasNoEncryption(),

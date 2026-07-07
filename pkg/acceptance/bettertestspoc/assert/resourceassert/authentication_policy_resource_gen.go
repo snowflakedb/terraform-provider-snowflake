@@ -16,7 +16,7 @@ func AuthenticationPolicyResource(t *testing.T, name string) *AuthenticationPoli
 	t.Helper()
 
 	return &AuthenticationPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedAuthenticationPolicyResource(t *testing.T, id string) *Authenticati
 	t.Helper()
 
 	return &AuthenticationPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -95,32 +95,32 @@ func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrations(expected ..
 ///////////////////////////////////
 
 func (a *AuthenticationPolicyResourceAssert) HasDatabaseString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("database", expected))
+	a.ValueSet("database", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasSchemaString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("schema", expected))
+	a.ValueSet("schema", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasNameString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasCommentString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasFullyQualifiedNameString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentString(expected string) *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("mfa_enrollment", expected))
+	a.ValueSet("mfa_enrollment", expected)
 	return a
 }
 
@@ -129,32 +129,32 @@ func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentString(expected str
 ///////////////////////////////
 
 func (a *AuthenticationPolicyResourceAssert) HasNoDatabase() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("database"))
+	a.ValueNotSet("database")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasNoSchema() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("schema"))
+	a.ValueNotSet("schema")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasNoName() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasNoComment() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasNoFullyQualifiedName() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasNoMfaEnrollment() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("mfa_enrollment"))
+	a.ValueNotSet("mfa_enrollment")
 	return a
 }
 
@@ -163,57 +163,57 @@ func (a *AuthenticationPolicyResourceAssert) HasNoMfaEnrollment() *Authenticatio
 ////////////////////////////
 
 func (a *AuthenticationPolicyResourceAssert) HasAuthenticationMethodsEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("authentication_methods.#", "0"))
+	a.ValueSet("authentication_methods.#", "0")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasClientPolicyEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("client_policy.#", "0"))
+	a.ValueSet("client_policy.#", "0")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasClientTypesEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("client_types.#", "0"))
+	a.ValueSet("client_types.#", "0")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasCommentEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasFullyQualifiedNameEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasMfaAuthenticationMethodsEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("mfa_authentication_methods.#", "0"))
+	a.ValueSet("mfa_authentication_methods.#", "0")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("mfa_enrollment", ""))
+	a.ValueSet("mfa_enrollment", "")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasMfaPolicyEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("mfa_policy.#", "0"))
+	a.ValueSet("mfa_policy.#", "0")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasPatPolicyEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("pat_policy.#", "0"))
+	a.ValueSet("pat_policy.#", "0")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrationsEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("security_integrations.#", "0"))
+	a.ValueSet("security_integrations.#", "0")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasWorkloadIdentityPolicyEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValueSet("workload_identity_policy.#", "0"))
+	a.ValueSet("workload_identity_policy.#", "0")
 	return a
 }
 
@@ -222,31 +222,31 @@ func (a *AuthenticationPolicyResourceAssert) HasWorkloadIdentityPolicyEmpty() *A
 ///////////////////////////////
 
 func (a *AuthenticationPolicyResourceAssert) HasDatabaseNotEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValuePresent("database"))
+	a.ValuePresent("database")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasSchemaNotEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValuePresent("schema"))
+	a.ValuePresent("schema")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasNameNotEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasCommentNotEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
 
 func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentNotEmpty() *AuthenticationPolicyResourceAssert {
-	a.AddAssertion(assert.ValuePresent("mfa_enrollment"))
+	a.ValuePresent("mfa_enrollment")
 	return a
 }

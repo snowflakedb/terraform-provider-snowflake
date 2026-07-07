@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -179,10 +178,10 @@ var catalogIntegrationIcebergRestSchema = func() map[string]*schema.Schema {
 
 func CatalogIntegrationIcebergRest() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CatalogIntegrationIcebergRestResource), TrackingCreateWrapper(resources.CatalogIntegrationIcebergRest, CreateCatalogIntegrationIcebergRest)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CatalogIntegrationIcebergRestResource), TrackingReadWrapper(resources.CatalogIntegrationIcebergRest, ReadCatalogIntegrationIcebergRestFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CatalogIntegrationIcebergRestResource), TrackingUpdateWrapper(resources.CatalogIntegrationIcebergRest, UpdateCatalogIntegrationIcebergRest)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CatalogIntegrationIcebergRestResource), TrackingDeleteWrapper(resources.CatalogIntegrationIcebergRest, deleteCatalogIntegrationFunc())),
+		CreateContext: TrackingCreateWrapper(resources.CatalogIntegrationIcebergRest, CreateCatalogIntegrationIcebergRest),
+		ReadContext:   TrackingReadWrapper(resources.CatalogIntegrationIcebergRest, ReadCatalogIntegrationIcebergRestFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.CatalogIntegrationIcebergRest, UpdateCatalogIntegrationIcebergRest),
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationIcebergRest, deleteCatalogIntegrationFunc()),
 		Description:   "Resource used to manage catalog integration objects for Apache Iceberg™ tables managed in a remote catalog that complies with the open source Apache Iceberg™ REST OpenAPI specification. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-rest).",
 
 		Schema: catalogIntegrationIcebergRestSchema,
@@ -291,7 +290,8 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) sche
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -429,7 +429,8 @@ func handleExternalChangesToIcebergRestConfig(d *schema.ResourceData, details *s
 			"access_delegation_mode": string(details.RestConfig.AccessDelegationMode),
 		},
 	}
-	return handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+	return handleExternalChangesToObjectInFlatDescribeDeepEqual(
+		d,
 		outputMapping{"rest_config", "rest_config", restConfig, restConfig, nil},
 	)
 }
@@ -455,7 +456,8 @@ func handleExternalChangesToSigV4RestAuthentication(d *schema.ResourceData, deta
 			"sigv4_signing_region": details.SigV4RestAuthentication.Sigv4SigningRegion,
 		},
 	}
-	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d,
+	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(
+		d,
 		outputMapping{"sigv4_rest_authentication", "sigv4_rest_authentication", sigV4RestAuthorization, sigV4RestAuthorization, nil},
 	)
 	return errors.Join(

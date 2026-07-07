@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -50,7 +49,7 @@ var externalVolumesSchema = map[string]*schema.Schema{
 
 func ExternalVolumes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ExternalVolumesDatasource), TrackingReadWrapper(datasources.ExternalVolumes, ReadExternalVolumes)),
+		ReadContext: TrackingReadWrapper(datasources.ExternalVolumes, ReadExternalVolumes),
 		Schema:      externalVolumesSchema,
 		Description: "Data source used to get details of filtered external volumes. Filtering is aligned with the current possibilities for [SHOW EXTERNAL VOLUMES](https://docs.snowflake.com/en/sql-reference/sql/show-external-volumes) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `external_volumes`.",
 	}
