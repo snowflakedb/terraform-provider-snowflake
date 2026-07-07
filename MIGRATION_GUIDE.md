@@ -32,6 +32,15 @@ The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terrafor
 
 In most cases no action is required; this is a non-breaking addition. However, if you set `ALLOWED_ROLES_LIST` on the integration outside of Terraform (e.g. directly in Snowflake) before this release, the provider will now detect it as drift. Because the attribute is not present in your configuration, the next plan will show a change that removes the externally set roles. To keep them, add the roles to the `allowed_roles_list` attribute in your configuration.
 
+### *(new feature)* New Iceberg Table resources
+
+We have added new preview resources for Iceberg tables:
+- [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from a REST catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
+
+These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest` to the `preview_features_enabled` field in the provider configuration.
+
+Stay tuned for the next variants of Iceberg Tables support in the provider!
+
 ## v2.17.x ➞ v2.18.0
 
 ### Multiple resources and data sources promoted to stable
