@@ -13,6 +13,8 @@ description: |-
 
 ~> **Note** Due to Snowflake limitations, external changes to the external cloud storage type is not detected.
 
+~> **Note** External changes to `path_layout` are not detected. This value is not read back from Snowflake during refresh. After import, the first `terraform plan` may show a resource recreation for write-only non-alterable fields that are not reconciled with Snowflake. Run `terraform apply` once to sync these values into state.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
@@ -25,8 +27,6 @@ description: |-
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
-
-~> **Note** External changes to `path_layout` are not detected. This value is not read back from Snowflake during refresh. After import, the first `terraform plan` may show a resource recreation for write-only non-alterable fields that are not reconciled with Snowflake. Run `terraform apply` once to sync these values into state.
 
 {{ .SchemaMarkdown | trimspace }}
 {{- if .HasImport }}
