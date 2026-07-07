@@ -1,49 +1,41 @@
 ---
-page_title: "snowflake_iceberg_table_from_rest Resource - terraform-provider-snowflake"
+page_title: "snowflake_iceberg_table_from_aws_glue Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Resource used to manage an Iceberg table whose metadata is managed by an external Iceberg REST catalog. For more information, check the official documentation https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest.
+  Resource used to manage an Iceberg table whose metadata is managed by an AWS Glue catalog. For more information, check the official documentation https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 ~> **Note** Due to Snowflake limitations, external changes to the external cloud storage type is not detected.
 
-~> **Note** External changes to `path_layout` are not detected. This value is not read back from Snowflake during refresh. After import, the first `terraform plan` may show a resource recreation for write-only non-alterable fields that are not reconciled with Snowflake. Run `terraform apply` once to sync these values into state.
+# snowflake_iceberg_table_from_aws_glue (Resource)
 
-# snowflake_iceberg_table_from_rest (Resource)
-
-Resource used to manage an Iceberg table whose metadata is managed by an external Iceberg REST catalog. For more information, check [the official documentation](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest).
+Resource used to manage an Iceberg table whose metadata is managed by an AWS Glue catalog. For more information, check [the official documentation](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue).
 
 ## Example Usage
 
 ```terraform
 # Basic - only required fields
-resource "snowflake_iceberg_table_from_rest" "basic" {
+resource "snowflake_iceberg_table_from_aws_glue" "basic" {
   database           = "DATABASE"
   schema             = "SCHEMA"
   name               = "TABLE"
   catalog_table_name = "my_catalog_table"
-
 }
 
 # Complete - all fields set
-resource "snowflake_iceberg_table_from_rest" "complete" {
-  database                       = "DATABASE"
-  schema                         = "SCHEMA"
-  name                           = "TABLE"
-  external_volume                = "EXTERNAL_VOLUME"
-  catalog                        = "CATALOG"
-  catalog_table_name             = "my_catalog_table"
-  catalog_namespace              = "my_namespace"
-  path_layout                    = "HIERARCHICAL"
-  target_file_size               = "128MB"
-  replace_invalid_characters     = true
-  auto_refresh                   = "true"
-  comment                        = "COMMENT"
-  storage_serialization_policy   = "OPTIMIZED"
-  iceberg_merge_on_read_behavior = "ENABLED"
-  enable_iceberg_merge_on_read   = true
+resource "snowflake_iceberg_table_from_aws_glue" "complete" {
+  database                   = "DATABASE"
+  schema                     = "SCHEMA"
+  name                       = "TABLE"
+  external_volume            = "EXTERNAL_VOLUME"
+  catalog                    = "CATALOG"
+  catalog_table_name         = "my_catalog_table"
+  catalog_namespace          = "my_namespace"
+  replace_invalid_characters = true
+  auto_refresh               = "true"
+  comment                    = "COMMENT"
 }
 ```
 
@@ -57,24 +49,19 @@ resource "snowflake_iceberg_table_from_rest" "complete" {
 
 ### Required
 
-- `catalog_table_name` (String) Specifies the name of the table as it appears in the external catalog.
+- `catalog_table_name` (String) Specifies the name of the table as it appears in the AWS Glue catalog.
 - `database` (String) The database in which to create the Iceberg table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the Iceberg table; must be unique for the schema in which the Iceberg table is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the Iceberg table. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 ### Optional
 
-- `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should periodically refresh the Iceberg table metadata from the external catalog. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should periodically refresh the Iceberg table metadata from the AWS Glue catalog. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `catalog` (String) Specifies the identifier for the catalog integration to use for the Iceberg table. If not specified, the account-level default is used.
-- `catalog_namespace` (String) Specifies the namespace (or database) in the external catalog that the table belongs to. If not specified, the catalog integration's default namespace is used.
+- `catalog_namespace` (String) Specifies the namespace (or database) in the AWS Glue catalog that the table belongs to. If not specified, the catalog integration's default namespace is used.
 - `comment` (String) Specifies a comment for the Iceberg table.
-- `enable_iceberg_merge_on_read` (Boolean) Specifies whether merge-on-read is enabled for the Iceberg table. For more information, check [ENABLE_ICEBERG_MERGE_ON_READ docs](https://docs.snowflake.com/en/sql-reference/parameters#enable-iceberg-merge-on-read).
 - `external_volume` (String) Specifies the identifier for the external volume where the Iceberg table stores its metadata files and data in Parquet format. If not specified, the account-level default is used.
-- `iceberg_merge_on_read_behavior` (String) Specifies the merge-on-read behavior for the Iceberg table. Valid values are: [AUTO ENABLED DISABLED]. Cannot be changed after creation. For more information, check [ICEBERG_MERGE_ON_READ_BEHAVIOR docs](https://docs.snowflake.com/en/sql-reference/parameters#iceberg-merge-on-read-behavior).
-- `path_layout` (String) Specifies the storage layout for the Iceberg table's Parquet files. Valid values are: [FLAT HIERARCHICAL]. Cannot be changed after creation. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `replace_invalid_characters` (Boolean) Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character (`�`) in query results for an Iceberg table. For more information, check [REPLACE_INVALID_CHARACTERS docs](https://docs.snowflake.com/en/sql-reference/parameters#replace-invalid-characters).
-- `storage_serialization_policy` (String) Specifies the storage serialization policy for the Iceberg table. Valid values are: [COMPATIBLE OPTIMIZED]. Cannot be changed after creation. For more information, check [STORAGE_SERIALIZATION_POLICY docs](https://docs.snowflake.com/en/sql-reference/parameters#storage-serialization-policy).
-- `target_file_size` (String) Specifies the target file size (in bytes) used when writing the Iceberg table's Parquet files. Valid values are: [AUTO 16MB 32MB 64MB 128MB]. For more information, check [TARGET_FILE_SIZE docs](https://docs.snowflake.com/en/sql-reference/parameters#target-file-size).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -124,27 +111,11 @@ Read-Only:
 Read-Only:
 
 - `catalog` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--catalog))
-- `enable_iceberg_merge_on_read` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--enable_iceberg_merge_on_read))
 - `external_volume` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--external_volume))
-- `iceberg_merge_on_read_behavior` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--iceberg_merge_on_read_behavior))
 - `replace_invalid_characters` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--replace_invalid_characters))
-- `storage_serialization_policy` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--storage_serialization_policy))
-- `target_file_size` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--target_file_size))
 
 <a id="nestedobjatt--parameters--catalog"></a>
 ### Nested Schema for `parameters.catalog`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--enable_iceberg_merge_on_read"></a>
-### Nested Schema for `parameters.enable_iceberg_merge_on_read`
 
 Read-Only:
 
@@ -167,44 +138,8 @@ Read-Only:
 - `value` (String)
 
 
-<a id="nestedobjatt--parameters--iceberg_merge_on_read_behavior"></a>
-### Nested Schema for `parameters.iceberg_merge_on_read_behavior`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
 <a id="nestedobjatt--parameters--replace_invalid_characters"></a>
 ### Nested Schema for `parameters.replace_invalid_characters`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--storage_serialization_policy"></a>
-### Nested Schema for `parameters.storage_serialization_policy`
-
-Read-Only:
-
-- `default` (String)
-- `description` (String)
-- `key` (String)
-- `level` (String)
-- `value` (String)
-
-
-<a id="nestedobjatt--parameters--target_file_size"></a>
-### Nested Schema for `parameters.target_file_size`
 
 Read-Only:
 
@@ -258,5 +193,5 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_iceberg_table_from_rest.example '"<database_name>"."<schema_name>"."<table_name>"'
+terraform import snowflake_iceberg_table_from_aws_glue.example '"<database_name>"."<schema_name>"."<table_name>"'
 ```

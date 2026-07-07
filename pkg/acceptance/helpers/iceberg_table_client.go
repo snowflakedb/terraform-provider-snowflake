@@ -68,6 +68,16 @@ func (c *IcebergTableClient) CreateFromIcebergRest(t *testing.T, id sdk.SchemaOb
 	return obj, c.DropFunc(t, id)
 }
 
+func (c *IcebergTableClient) CreateFromAwsGlue(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateFromAwsGlueIcebergTableRequest) (*sdk.IcebergTable, func()) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.context.client.IcebergTables.CreateFromAwsGlue(ctx, request)
+	require.NoError(t, err)
+	obj, err := c.context.client.IcebergTables.ShowByID(ctx, id)
+	require.NoError(t, err)
+	return obj, c.DropFunc(t, id)
+}
+
 func (c *IcebergTableClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 
