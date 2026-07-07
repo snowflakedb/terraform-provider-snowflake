@@ -313,6 +313,23 @@ There are some limitations to this mechanism:
 - In Plugin SDK, there is no possibility to mark sensitive values in nested fields ([reference](https://github.com/hashicorp/terraform-plugin-sdk/issues/201)). This means the nested fields, like these in `show_output` and `describe_output` cannot be sensitive.
 As a result, such nested fields are not marked as sensitive. For such cases, we add disclaimers in the resource documentation. Additionally, some fields are missing from `show_output` and `describe_output`. However, these fields are present in the resource's root, so they can still be referenced.
 The alternative solution we considered was setting the whole `show_output` and `describe_output` as sensitive. However, this solution could reduce the provider functionality and would require changes in user's configurations.
+- Sensitive values cannot be used as `for_each` keys ([reference](https://github.com/hashicorp/terraform/issues/28222)). This means that if a resource attribute is marked as sensitive (e.g. `name` in `snowflake_user`), it cannot be used directly in a `for_each` expression. For example, iterating over a set of user names to create role grants will fail with `Sensitive values, or values derived from sensitive values, cannot be used as for_each arguments`. The workaround is to wrap the sensitive value with the [`nonsensitive`](https://developer.hashicorp.com/terraform/language/functions/nonsensitive) function when you are certain the value is not actually sensitive in your context (e.g. a username that is not a secret):
+  ```terraform
+  resource "snowflake_user" "example" {
+    name = "my_user"
+  }
+
+  resource "snowflake_role" "example" {
+    name = "my_role"
+  }
+
+  resource "snowflake_grant_account_role" "example" {
+    for_each  = toset([for u in [snowflake_user.example.name] : nonsensitive(u)])
+    role_name = snowflake_role.example.name
+    user_name = each.value
+  }
+  ```
+  Note: use `nonsensitive` only when you are confident the value does not need to be protected. Misuse can inadvertently expose secrets in logs or plan output.
 
 As a general rule, please ensure that no personal data, sensitive data, export-controlled data, or other regulated data is entered as metadata when using the provider. If you use one of these fields, they may be present in logs, so ensure that the provider logs are properly restricted. For more information, see [Sensitive values limitations](../#sensitive-values-limitations) and [Metadata fields in Snowflake](https://docs.snowflake.com/en/sql-reference/metadata).
 
