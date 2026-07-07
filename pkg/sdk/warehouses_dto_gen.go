@@ -3,13 +3,12 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateWarehouseOptions]            = new(CreateWarehouseRequest)
-	_ optionsProvider[CreateAdaptiveWarehouseOptions]    = new(CreateAdaptiveWarehouseRequest)
-	_ optionsProvider[CreateInteractiveWarehouseOptions] = new(CreateInteractiveWarehouseRequest)
-	_ optionsProvider[AlterWarehouseOptions]             = new(AlterWarehouseRequest)
-	_ optionsProvider[DropWarehouseOptions]              = new(DropWarehouseRequest)
-	_ optionsProvider[ShowWarehouseOptions]              = new(ShowWarehouseRequest)
-	_ optionsProvider[DescribeWarehouseOptions]          = new(DescribeWarehouseRequest)
+	_ optionsProvider[CreateWarehouseOptions]         = new(CreateWarehouseRequest)
+	_ optionsProvider[CreateAdaptiveWarehouseOptions] = new(CreateAdaptiveWarehouseRequest)
+	_ optionsProvider[AlterWarehouseOptions]          = new(AlterWarehouseRequest)
+	_ optionsProvider[DropWarehouseOptions]           = new(DropWarehouseRequest)
+	_ optionsProvider[ShowWarehouseOptions]           = new(ShowWarehouseRequest)
+	_ optionsProvider[DescribeWarehouseOptions]       = new(DescribeWarehouseRequest)
 )
 
 type CreateWarehouseRequest struct {
@@ -48,25 +47,6 @@ type CreateAdaptiveWarehouseRequest struct {
 	StatementTimeoutInSeconds       *int
 }
 
-type CreateInteractiveWarehouseRequest struct {
-	OrReplace                       *bool
-	IfNotExists                     *bool
-	name                            AccountObjectIdentifier // required
-	Tables                          []SchemaObjectIdentifier
-	WarehouseSize                   *WarehouseSize
-	MaxClusterCount                 *int
-	MinClusterCount                 *int
-	AutoSuspend                     *int
-	AutoResume                      *bool
-	InitiallySuspended              *bool
-	ResourceMonitor                 *AccountObjectIdentifier
-	Comment                         *string
-	MaxConcurrencyLevel             *int
-	StatementQueuedTimeoutInSeconds *int
-	StatementTimeoutInSeconds       *int
-	Tag                             []TagAssociation
-}
-
 type AlterWarehouseRequest struct {
 	IfExists        *bool
 	name            AccountObjectIdentifier // required
@@ -77,8 +57,6 @@ type AlterWarehouseRequest struct {
 	RenameTo        *AccountObjectIdentifier
 	Set             *WarehouseSetRequest
 	Unset           *WarehouseUnsetRequest
-	AddTables       []SchemaObjectIdentifier
-	DropTables      []SchemaObjectIdentifier
 	SetTags         []TagAssociation
 	UnsetTags       []ObjectIdentifier
 }
@@ -103,7 +81,6 @@ type WarehouseSetRequest struct {
 	MaxConcurrencyLevel             *int
 	StatementQueuedTimeoutInSeconds *int
 	StatementTimeoutInSeconds       *int
-	FallbackWarehouse               *AccountObjectIdentifier
 }
 
 type WarehouseUnsetRequest struct {
@@ -125,7 +102,6 @@ type WarehouseUnsetRequest struct {
 	StatementTimeoutInSeconds       *bool
 	QueryThroughputMultiplier       *bool
 	MaxQueryPerformanceLevel        *bool
-	FallbackWarehouse               *bool
 }
 
 type DropWarehouseRequest struct {

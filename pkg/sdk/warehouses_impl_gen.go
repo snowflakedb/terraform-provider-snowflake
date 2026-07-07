@@ -29,11 +29,6 @@ func (v *warehouses) CreateAdaptive(ctx context.Context, request *CreateAdaptive
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *warehouses) CreateInteractive(ctx context.Context, request *CreateInteractiveWarehouseRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
 func (v *warehouses) Alter(ctx context.Context, request *AlterWarehouseRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -124,28 +119,6 @@ func (r *CreateAdaptiveWarehouseRequest) toOpts() *CreateAdaptiveWarehouseOption
 	return opts
 }
 
-func (r *CreateInteractiveWarehouseRequest) toOpts() *CreateInteractiveWarehouseOptions {
-	opts := &CreateInteractiveWarehouseOptions{
-		OrReplace:                       r.OrReplace,
-		IfNotExists:                     r.IfNotExists,
-		name:                            r.name,
-		Tables:                          r.Tables,
-		WarehouseSize:                   r.WarehouseSize,
-		MaxClusterCount:                 r.MaxClusterCount,
-		MinClusterCount:                 r.MinClusterCount,
-		AutoSuspend:                     r.AutoSuspend,
-		AutoResume:                      r.AutoResume,
-		InitiallySuspended:              r.InitiallySuspended,
-		ResourceMonitor:                 r.ResourceMonitor,
-		Comment:                         r.Comment,
-		MaxConcurrencyLevel:             r.MaxConcurrencyLevel,
-		StatementQueuedTimeoutInSeconds: r.StatementQueuedTimeoutInSeconds,
-		StatementTimeoutInSeconds:       r.StatementTimeoutInSeconds,
-		Tag:                             r.Tag,
-	}
-	return opts
-}
-
 func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 	opts := &AlterWarehouseOptions{
 		IfExists:        r.IfExists,
@@ -155,8 +128,6 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 		IfSuspended:     r.IfSuspended,
 		AbortAllQueries: r.AbortAllQueries,
 		RenameTo:        r.RenameTo,
-		AddTables:       r.AddTables,
-		DropTables:      r.DropTables,
 		SetTags:         r.SetTags,
 		UnsetTags:       r.UnsetTags,
 	}
@@ -181,7 +152,6 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 			MaxConcurrencyLevel:             r.Set.MaxConcurrencyLevel,
 			StatementQueuedTimeoutInSeconds: r.Set.StatementQueuedTimeoutInSeconds,
 			StatementTimeoutInSeconds:       r.Set.StatementTimeoutInSeconds,
-			FallbackWarehouse:               r.Set.FallbackWarehouse,
 		}
 	}
 	if r.Unset != nil {
@@ -204,7 +174,6 @@ func (r *AlterWarehouseRequest) toOpts() *AlterWarehouseOptions {
 			StatementTimeoutInSeconds:       r.Unset.StatementTimeoutInSeconds,
 			QueryThroughputMultiplier:       r.Unset.QueryThroughputMultiplier,
 			MaxQueryPerformanceLevel:        r.Unset.MaxQueryPerformanceLevel,
-			FallbackWarehouse:               r.Unset.FallbackWarehouse,
 		}
 	}
 	return opts
