@@ -32,7 +32,6 @@ type Client struct {
 	AuthenticationPolicies       AuthenticationPolicies
 	Budgets                      Budgets
 	CatalogIntegrations          CatalogIntegrations
-	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
 	CortexAgents                 CortexAgents
@@ -174,7 +173,6 @@ func (c *Client) initialize() {
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
 	c.Budgets = &budgets{client: c}
 	c.CatalogIntegrations = &catalogIntegrations{client: c}
-	c.Comments = &comments{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}

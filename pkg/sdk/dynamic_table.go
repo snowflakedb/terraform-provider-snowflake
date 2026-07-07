@@ -54,6 +54,7 @@ type alterDynamicTableOptions struct {
 	Resume                     *bool                                  `ddl:"keyword" sql:"RESUME"`
 	Refresh                    *bool                                  `ddl:"keyword" sql:"REFRESH"`
 	Set                        *DynamicTableSet                       `ddl:"keyword" sql:"SET"`
+	SetComment                 *string                                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
 	AddStorageLifecyclePolicy  *DynamicTableAddStorageLifecyclePolicy `ddl:"keyword"`
 	DropStorageLifecyclePolicy *bool                                  `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
 }

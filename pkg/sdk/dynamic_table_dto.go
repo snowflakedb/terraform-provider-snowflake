@@ -30,6 +30,7 @@ type AlterDynamicTableRequest struct {
 	resume                     *bool
 	refresh                    *bool
 	set                        *DynamicTableSetRequest
+	comment                    *string
 	addStorageLifecyclePolicy  *DynamicTableAddStorageLifecyclePolicyRequest
 	dropStorageLifecyclePolicy *bool
 }

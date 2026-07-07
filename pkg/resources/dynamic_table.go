@@ -409,12 +409,10 @@ func UpdateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	if d.HasChange("comment") {
-		err := client.Comments.Set(ctx, &sdk.SetCommentOptions{
-			ObjectType: sdk.ObjectTypeDynamicTable,
-			ObjectName: id,
-			Value:      sdk.String(d.Get("comment").(string)),
-		})
-		if err != nil {
+		if err := client.DynamicTables.Alter(
+			ctx,
+			sdk.NewAlterDynamicTableRequest(id).WithComment(d.Get("comment").(string)),
+		); err != nil {
 			return diag.FromErr(err)
 		}
 	}

@@ -52,8 +52,8 @@ func (opts *alterDynamicTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if ok := exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Refresh, opts.Set, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy); !ok {
-		errs = append(errs, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+	if ok := exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Refresh, opts.Set, opts.SetComment, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy); !ok {
+		errs = append(errs, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	}
 	if valueSet(opts.Set) && valueSet(opts.Set.TargetLag) {
 		errs = append(errs, opts.Set.TargetLag.validate())

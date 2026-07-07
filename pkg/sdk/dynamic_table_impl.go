@@ -95,6 +95,9 @@ func (s *AlterDynamicTableRequest) toOpts() *alterDynamicTableOptions {
 	if s.set != nil {
 		opts.Set = &DynamicTableSet{s.set.targetLag, s.set.warehouse}
 	}
+	if s.comment != nil {
+		opts.SetComment = s.comment
+	}
 	if s.addStorageLifecyclePolicy != nil {
 		opts.AddStorageLifecyclePolicy = &DynamicTableAddStorageLifecyclePolicy{
 			StorageLifecyclePolicy: s.addStorageLifecyclePolicy.StorageLifecyclePolicy,
