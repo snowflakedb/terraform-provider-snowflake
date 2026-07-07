@@ -282,7 +282,7 @@ func TestUpdateSafely(t *testing.T) {
 		doUpdate := func() error {
 			calls++
 			if calls < 3 {
-				return fmt.Errorf("604009 (03000): Running operation CREATE POSTGRES SERVICE on X %w SET POSTGRES_SETTINGS", ErrPostgresOperationMustBeComplete)
+				return fmt.Errorf("604009 (03000): Running operation CREATE POSTGRES SERVICE on X %s SET POSTGRES_SETTINGS", ErrPostgresOperationMustBeComplete.Error())
 			}
 			return nil
 		}

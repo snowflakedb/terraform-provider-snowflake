@@ -28,7 +28,7 @@ jobs:
       # For why we need to generate a token and not use the default
       - name: Create token
         id: create-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -72,7 +72,8 @@ jobs:
         if: ${{ steps.release.outputs.releases_created }}
         uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5
         with:
-          version: latest
+          # Always pin to a specific GoReleaser binary version.
+          version: 'v2.16.0'
           args: release --clean --verbose
         env:
           GITHUB_TOKEN: ${{ steps.create-token.outputs.token }}

@@ -72,7 +72,8 @@ var tasksDef = g.NewInterface(
 			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
-			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
 	).
 	CustomOperation(
 		"CreateOrAlter",
@@ -98,7 +99,8 @@ var tasksDef = g.NewInterface(
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
 			WithAdditionalValidations().
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration"),
+			WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
+			WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
 	).
 	CustomOperation(
 		"Clone",
@@ -146,7 +148,8 @@ var tasksDef = g.NewInterface(
 					WithAdditionalValidations().
 					WithValidation(g.AtLeastOneValueSet, "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize").
 					WithValidation(g.ConflictingFields, "Warehouse", "UserTaskManagedInitialWarehouseSize").
-					WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration"),
+					WithValidation(g.ValidIdentifierIfSet, "ErrorIntegration").
+					WithValidation(g.NoDoubleDollarQuotesIfSet, "Config"),
 				g.ListOptions().SQL("SET").NoParentheses(),
 			).
 			OptionalQueryStructField(

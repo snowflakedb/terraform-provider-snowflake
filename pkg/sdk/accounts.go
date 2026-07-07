@@ -87,8 +87,8 @@ type CreateAccountOptions struct {
 	Email                    string         `ddl:"parameter,single_quotes" sql:"EMAIL"`
 	MustChangePassword       *bool          `ddl:"parameter" sql:"MUST_CHANGE_PASSWORD"`
 	Edition                  AccountEdition `ddl:"parameter" sql:"EDITION"`
-	RegionGroup              *string        `ddl:"parameter" sql:"REGION_GROUP"`
-	Region                   *string        `ddl:"parameter" sql:"REGION"`
+	RegionGroup              *string        `ddl:"parameter,single_quotes" sql:"REGION_GROUP"`
+	Region                   *string        `ddl:"parameter,single_quotes" sql:"REGION"`
 	Comment                  *string        `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	ConsumptionBillingEntity *string        `ddl:"parameter,double_quotes" sql:"CONSUMPTION_BILLING_ENTITY"`
 	Polaris                  *bool          `ddl:"parameter" sql:"POLARIS"`

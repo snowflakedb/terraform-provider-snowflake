@@ -83,6 +83,13 @@ func TestListings_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
 	})
 
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.As]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.As = String("manifest$$ PUBLISH = TRUE REVIEW = FALSE /*")
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateListingOptions", "As"))
+	})
+
 	// all variants added manually
 	t.Run("basic with As", func(t *testing.T) {
 		opts := defaultOpts()
@@ -93,7 +100,7 @@ func TestListings_Create(t *testing.T) {
 	t.Run("basic with From", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.From = &stageLocation
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING %s FROM @%s/dir/subdir", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL LISTING %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir'`, opts.name.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("all As options with stage", func(t *testing.T) {
@@ -135,7 +142,7 @@ func TestListings_Create(t *testing.T) {
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
 		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s FROM @%s/dir/subdir PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' PUBLISH = true REVIEW = true COMMENT = 'comment'`, opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("all From options with application package", func(t *testing.T) {
@@ -149,7 +156,7 @@ func TestListings_Create(t *testing.T) {
 		opts.Publish = Bool(true)
 		opts.Review = Bool(true)
 		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s FROM @%s/dir/subdir PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' PUBLISH = true REVIEW = true COMMENT = 'comment'`, opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 }
 
@@ -193,6 +200,15 @@ func TestListings_Alter(t *testing.T) {
 		opts.Publish = Bool(true)
 		opts.Unpublish = Bool(true)
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"))
+	})
+
+	// added manually
+	t.Run("validation: double dollar quotes not allowed in [opts.AlterListingAs.As]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AlterListingAs = &AlterListingAs{
+			As: "manifest$$ PUBLISH = TRUE REVIEW = FALSE /*",
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("AlterListingOptions.AlterListingAs", "As"))
 	})
 
 	// all variants added manually
@@ -250,7 +266,7 @@ func TestListings_Alter(t *testing.T) {
 			},
 			Comment: String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s ADD VERSION IF NOT EXISTS \"version-name\" FROM @%s/dir/subdir COMMENT = 'comment'", opts.name.FullyQualifiedName(), stageId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER LISTING %s ADD VERSION IF NOT EXISTS "version-name" FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' COMMENT = 'comment'`, opts.name.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
 	})
 
 	t.Run("rename to", func(t *testing.T) {

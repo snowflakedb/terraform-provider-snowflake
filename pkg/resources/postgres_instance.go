@@ -172,7 +172,7 @@ func ImportPostgresInstance(ctx context.Context, d *schema.ResourceData, meta an
 		d.Set("authentication_authority", pi.AuthenticationAuthority),
 		d.Set("high_availability", booleanStringFromBool(pi.IsHighlyAvailable)),
 		d.Set("postgres_version", details.PostgresVersion),
-		d.Set("maintenance_window_start", details.MaintenanceWindowStart),
+		d.Set("maintenance_window_start", optionalIntOutputMappingIntDefault(details.MaintenanceWindowStart)),
 	)
 	if errs != nil {
 		return nil, errs
@@ -308,13 +308,14 @@ func ReadPostgresInstanceFunc(withExternalChangesMarking bool) schema.ReadContex
 			if details.PostgresSettings != nil {
 				postgresSettings = *details.PostgresSettings
 			}
+			maintenanceWindowStart := optionalIntOutputMappingIntDefault(details.MaintenanceWindowStart)
 			if err = handleExternalChangesToObjectInFlatDescribe(
 				d,
 				outputMapping{"network_policy", "network_policy", networkPolicy, networkPolicy, nil},
 				outputMapping{"storage_integration", "storage_integration", storageIntegration, storageIntegration, nil},
 				outputMapping{"postgres_version", "postgres_version", details.PostgresVersion, details.PostgresVersion, nil},
 				outputMapping{"postgres_settings", "postgres_settings", postgresSettings, postgresSettings, nil},
-				outputMapping{"maintenance_window_start", "maintenance_window_start", details.MaintenanceWindowStart, details.MaintenanceWindowStart, nil},
+				outputMapping{"maintenance_window_start", "maintenance_window_start", maintenanceWindowStart, maintenanceWindowStart, nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}

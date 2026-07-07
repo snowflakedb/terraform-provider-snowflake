@@ -19,8 +19,8 @@ func TestAlertCreate(t *testing.T) {
 
 		opts := &CreateAlertOptions{
 			name:      id,
-			warehouse: warehouse,
-			schedule:  schedule,
+			Warehouse: warehouse,
+			Schedule:  schedule,
 			condition: []AlertCondition{condition},
 			action:    action,
 			Comment:   String(newComment),
@@ -44,7 +44,7 @@ func TestAlertAlter(t *testing.T) {
 		newComment := random.Comment()
 		opts := &AlterAlertOptions{
 			name:   id,
-			Action: &AlertActionResume,
+			Action: new(AlertActionResume),
 			Set: &AlertSet{
 				Comment: String(newComment),
 			},
@@ -55,7 +55,7 @@ func TestAlertAlter(t *testing.T) {
 	t.Run("with resume", func(t *testing.T) {
 		opts := &AlterAlertOptions{
 			name:   id,
-			Action: &AlertActionResume,
+			Action: new(AlertActionResume),
 		}
 
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ALERT %s RESUME", id.FullyQualifiedName())
@@ -64,7 +64,7 @@ func TestAlertAlter(t *testing.T) {
 	t.Run("with suspend", func(t *testing.T) {
 		opts := &AlterAlertOptions{
 			name:   id,
-			Action: &AlertActionSuspend,
+			Action: new(AlertActionSuspend),
 		}
 
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ALERT %s SUSPEND", id.FullyQualifiedName())
@@ -97,7 +97,7 @@ func TestAlertAlter(t *testing.T) {
 		modifyCondition := "SELECT * FROM FOO"
 		opts := &AlterAlertOptions{
 			name:            id,
-			ModifyCondition: &[]string{modifyCondition},
+			ModifyCondition: []string{modifyCondition},
 		}
 
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ALERT %s MODIFY CONDITION EXISTS (%s)", id.FullyQualifiedName(), modifyCondition)
@@ -205,7 +205,7 @@ func TestAlertShow(t *testing.T) {
 
 	t.Run("with limit", func(t *testing.T) {
 		opts := &ShowAlertOptions{
-			Limit: Int(10),
+			Limit: &LimitFrom{Rows: new(10)},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW ALERTS LIMIT 10")
 	})
@@ -215,12 +215,12 @@ func TestAlertDescribe(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
 	t.Run("empty options", func(t *testing.T) {
-		opts := &describeAlertOptions{}
+		opts := &DescribeAlertOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("only name", func(t *testing.T) {
-		opts := &describeAlertOptions{
+		opts := &DescribeAlertOptions{
 			name: id,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE ALERT %s", id.FullyQualifiedName())

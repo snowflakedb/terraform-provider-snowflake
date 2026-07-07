@@ -36,7 +36,7 @@ type PostgresInstanceDetails struct {
 	AuthenticationAuthority      string
 	State                        string
 	RetentionTime                int
-	MaintenanceWindowStart       int
+	MaintenanceWindowStart       *int
 	Comment                      *string
 	NetworkPolicy                *AccountObjectIdentifier
 	PostgresSettings             *string
@@ -104,7 +104,7 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 				if val, err := strconv.Atoi(prop.Value); err != nil {
 					errs = append(errs, err)
 				} else {
-					details.MaintenanceWindowStart = val
+					details.MaintenanceWindowStart = &val
 				}
 			}
 		case "comment":

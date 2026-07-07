@@ -89,3 +89,7 @@ func ignoredAfterCreationDescription() string {
 func enumValuesDescription[T ~string](values []T) string {
 	return fmt.Sprintf("Valid values are (case-insensitive): %s.", possibleValuesListed(values))
 }
+
+func doubleDollarQuotesDescription() string {
+	return "The provider wraps it in `$$` by default, so be aware of that while referencing the argument in the spec definition. Using `$$` in this field is disallowed."
+}

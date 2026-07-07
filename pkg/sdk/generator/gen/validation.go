@@ -27,6 +27,8 @@ const (
 	ValidateValue
 	ValidateValueSet
 	AdditionalValidations
+	NoDoubleDollarQuotes
+	NoDoubleDollarQuotesIfSet
 )
 
 type Validation struct {
@@ -103,6 +105,17 @@ func (v *Validation) Condition(field *Field) string {
 		return fmt.Sprintf("err := %s.validate(); err != nil", fieldNamesProvider(field)[0])
 	case AdditionalValidations:
 		log.Panicf("Condition() must not be called for AdditionalValidations type")
+	case NoDoubleDollarQuotes:
+		if len(v.FieldNames) != 1 {
+			log.Panicf("expected NoDoubleDollarQuotes to be called with exactly one field, got: %v", v.FieldNames)
+		}
+		return fmt.Sprintf("containsDoubleDollarQuotes(%s)", fieldNamesProvider(field)[0])
+	case NoDoubleDollarQuotesIfSet:
+		if len(v.FieldNames) != 1 {
+			log.Panicf("expected NoDoubleDollarQuotesIfSet to be called with exactly one field, got: %v", v.FieldNames)
+		}
+		fieldPath := fieldNamesProvider(field)[0]
+		return fmt.Sprintf("%s != nil && containsDoubleDollarQuotes(*%s)", fieldPath, fieldPath)
 	}
 	panic("condition for validation unknown")
 }
@@ -127,6 +140,8 @@ func (v *Validation) ReturnedError(field *Field) string {
 		return "err"
 	case AdditionalValidations:
 		log.Panicf("ReturnedError() must not be called for AdditionalValidations type")
+	case NoDoubleDollarQuotes, NoDoubleDollarQuotesIfSet:
+		return fmt.Sprintf(`errDoubleDollarQuotesNotAllowed("%s", "%s")`, field.PathWithRoot(), v.FieldNames[0])
 	}
 	panic("condition for validation unknown")
 }
@@ -151,6 +166,10 @@ func (v *Validation) TodoComment(field *Field) string {
 		return fmt.Sprintf("validation: %v should be set", v.fieldsWithPath(field))
 	case ValidateValue:
 		return fmt.Sprintf("validation: %v should be valid", v.fieldsWithPath(field)[0])
+	case NoDoubleDollarQuotes:
+		return fmt.Sprintf("validation: %v must not contain $$", v.fieldsWithPath(field)[0])
+	case NoDoubleDollarQuotesIfSet:
+		return fmt.Sprintf("validation: %v must not contain $$ if set", v.fieldsWithPath(field)[0])
 	}
 	panic("condition for validation unknown")
 }

@@ -218,8 +218,11 @@ func (p *PostgresInstanceDetailsAssert) HasRetentionTime(expected int) *Postgres
 func (p *PostgresInstanceDetailsAssert) HasMaintenanceWindowStart(expected int) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
-		if o.MaintenanceWindowStart != expected {
-			return fmt.Errorf("expected maintenance window start: %v; got: %v", expected, o.MaintenanceWindowStart)
+		if o.MaintenanceWindowStart == nil {
+			return fmt.Errorf("expected maintenance window start: %v; got: nil", expected)
+		}
+		if *o.MaintenanceWindowStart != expected {
+			return fmt.Errorf("expected maintenance window start: %v; got: %v", expected, *o.MaintenanceWindowStart)
 		}
 		return nil
 	})

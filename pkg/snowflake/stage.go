@@ -3,6 +3,8 @@ package snowflake
 import (
 	"fmt"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 func fixFileFormat(inputFileFormat string) string {
@@ -28,8 +30,11 @@ type StageBuilder struct {
 // QualifiedName prepends the db and schema and escapes everything nicely.
 func (sb *StageBuilder) QualifiedName() string {
 	var n strings.Builder
+	db := sdk.DoubleQuotes.Modify(sb.db)
+	schema := sdk.DoubleQuotes.Modify(sb.schema)
+	name := sdk.DoubleQuotes.Modify(sb.name)
 
-	n.WriteString(fmt.Sprintf(`"%v"."%v"."%v"`, sb.db, sb.schema, sb.name))
+	n.WriteString(fmt.Sprintf(`%v.%v.%v`, db, schema, name))
 
 	return n.String()
 }
@@ -88,21 +93,6 @@ func (sb *StageBuilder) WithTags(tags []TagValue) *StageBuilder {
 	return sb
 }
 
-// AddTag returns the SQL query that will add a new tag to the view.
-func (sb *StageBuilder) AddTag(tag TagValue) string {
-	return fmt.Sprintf(`ALTER STAGE %s SET TAG "%v"."%v"."%v" = "%v"`, sb.QualifiedName(), tag.Database, tag.Schema, tag.Name, tag.Value)
-}
-
-// ChangeTag returns the SQL query that will alter a tag on the view.
-func (sb *StageBuilder) ChangeTag(tag TagValue) string {
-	return fmt.Sprintf(`ALTER STAGE %s SET TAG "%v"."%v"."%v" = "%v"`, sb.QualifiedName(), tag.Database, tag.Schema, tag.Name, tag.Value)
-}
-
-// UnsetTag returns the SQL query that will unset a tag on the view.
-func (sb *StageBuilder) UnsetTag(tag TagValue) string {
-	return fmt.Sprintf(`ALTER STAGE %s UNSET TAG "%v"."%v"."%v"`, sb.QualifiedName(), tag.Database, tag.Schema, tag.Name)
-}
-
 // Stage returns a pointer to a Builder that abstracts the DDL operations for a stage.
 //
 // Supported DDL operations are:
@@ -129,48 +119,49 @@ func (sb *StageBuilder) Create() string {
 	q.WriteString(fmt.Sprintf(` STAGE %v`, sb.QualifiedName()))
 
 	if sb.url != "" {
-		q.WriteString(fmt.Sprintf(` URL = '%v'`, sb.url))
+		q.WriteString(fmt.Sprintf(` URL = %v`, sdk.SingleQuotes.Modify(sb.url)))
 	}
 
 	if sb.credentials != "" {
+		// No escaping here because credentials allows complex SQL statements.
 		q.WriteString(fmt.Sprintf(` CREDENTIALS = (%v)`, sb.credentials))
 	}
 
 	if sb.storageIntegration != "" {
-		q.WriteString(fmt.Sprintf(` STORAGE_INTEGRATION = "%v"`, sb.storageIntegration))
+		q.WriteString(fmt.Sprintf(` STORAGE_INTEGRATION = %v`, sdk.DoubleQuotes.Modify(sb.storageIntegration)))
 	}
 
 	if sb.encryption != "" {
+		// No escaping here because encryption allows complex SQL statements.
 		q.WriteString(fmt.Sprintf(` ENCRYPTION = (%v)`, sb.encryption))
 	}
 
 	if sb.fileFormat != "" {
+		// No escaping here because file format allows complex SQL statements.
 		q.WriteString(fmt.Sprintf(` FILE_FORMAT = (%v)`, fixFileFormat(sb.fileFormat)))
 	}
 
 	if sb.copyOptions != "" {
+		// No escaping here because copy options allows complex SQL statements.
 		q.WriteString(fmt.Sprintf(` COPY_OPTIONS = (%v)`, sb.copyOptions))
 	}
 
 	if sb.directory != "" {
+		// No escaping here because directory allows complex SQL statements.
 		q.WriteString(fmt.Sprintf(` DIRECTORY = (%v)`, sb.directory))
 	}
 
 	if sb.comment != "" {
-		q.WriteString(fmt.Sprintf(` COMMENT = '%v'`, EscapeString(sb.comment)))
+		q.WriteString(fmt.Sprintf(` COMMENT = %v`, sdk.SingleQuotes.Modify(sb.comment)))
 	}
 
 	return q.String()
 }
 
-// Rename returns the SQL query that will rename the stage.
-func (sb *StageBuilder) Rename(newName string) string {
-	return fmt.Sprintf(`ALTER STAGE %v RENAME TO "%v"`, sb.QualifiedName(), newName)
-}
-
 // ChangeComment returns the SQL query that will update the comment on the stage.
 func (sb *StageBuilder) ChangeComment(c string) string {
-	return fmt.Sprintf(`ALTER STAGE %v SET COMMENT = '%v'`, sb.QualifiedName(), c)
+	c = sdk.SingleQuotes.Modify(c)
+	return fmt.Sprintf(`ALTER STAGE %v SET COMMENT = %v`, sb.QualifiedName(), c)
 }
 
 // RemoveComment returns the SQL query that will remove the comment on the stage.
@@ -180,34 +171,42 @@ func (sb *StageBuilder) RemoveComment() string {
 
 // ChangeURL returns the SQL query that will update the url on the stage.
 func (sb *StageBuilder) ChangeURL(u string) string {
-	return fmt.Sprintf(`ALTER STAGE %v SET URL = '%v'`, sb.QualifiedName(), u)
+	u = sdk.SingleQuotes.Modify(u)
+	return fmt.Sprintf(`ALTER STAGE %v SET URL = %v`, sb.QualifiedName(), u)
 }
 
 // ChangeCredentials returns the SQL query that will update the credentials on the stage.
 func (sb *StageBuilder) ChangeCredentials(c string) string {
+	// No escaping here because credentials allows complex SQL statements.
 	return fmt.Sprintf(`ALTER STAGE %v SET CREDENTIALS = (%v)`, sb.QualifiedName(), c)
 }
 
 // ChangeStorageIntegration returns the SQL query that will update the storage integration on the stage.
 func (sb *StageBuilder) ChangeStorageIntegration(s string) string {
-	return fmt.Sprintf(`ALTER STAGE %v SET STORAGE_INTEGRATION = "%v"`, sb.QualifiedName(), s)
+	s = sdk.DoubleQuotes.Modify(s)
+	return fmt.Sprintf(`ALTER STAGE %v SET STORAGE_INTEGRATION = %v`, sb.QualifiedName(), s)
 }
 
 func (sb *StageBuilder) ChangeStorageIntegrationAndUrl(s string, url string) string {
-	return fmt.Sprintf(`ALTER STAGE %v SET STORAGE_INTEGRATION = "%v" URL = '%v'`, sb.QualifiedName(), s, url)
+	s = sdk.DoubleQuotes.Modify(s)
+	url = sdk.SingleQuotes.Modify(url)
+	return fmt.Sprintf(`ALTER STAGE %v SET STORAGE_INTEGRATION = %v URL = %v`, sb.QualifiedName(), s, url)
 }
 
 // ChangeEncryption returns the SQL query that will update the encryption on the stage.
 func (sb *StageBuilder) ChangeEncryption(e string) string {
+	// No escaping here because encryption allows complex SQL statements.
 	return fmt.Sprintf(`ALTER STAGE %v SET ENCRYPTION = (%v)`, sb.QualifiedName(), e)
 }
 
 // ChangeFileFormat returns the SQL query that will update the file format on the stage.
 func (sb *StageBuilder) ChangeFileFormat(f string) string {
+	// No escaping here because file format allows complex SQL statements.
 	return fmt.Sprintf(`ALTER STAGE %v SET FILE_FORMAT = (%v)`, sb.QualifiedName(), fixFileFormat(f))
 }
 
 // ChangeCopyOptions returns the SQL query that will update the copy options on the stage.
 func (sb *StageBuilder) ChangeCopyOptions(c string) string {
+	// No escaping here because copy options allows complex SQL statements.
 	return fmt.Sprintf(`ALTER STAGE %v SET COPY_OPTIONS = (%v)`, sb.QualifiedName(), c)
 }

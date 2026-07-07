@@ -144,7 +144,10 @@ func ReadContextGrantApplicationRole(ctx context.Context, d *schema.ResourceData
 
 	// first check if either the target account role or application exists
 	targetIdentifier := parts[2]
-	objectType := sdk.ObjectType(objectTypeString)
+	objectType, err := sdk.ToObjectType(objectTypeString)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	switch objectType {
 	case sdk.ObjectTypeRole:
 		roleId, err := sdk.ParseAccountObjectIdentifier(targetIdentifier)

@@ -154,7 +154,11 @@ func ParseGrantPrivilegesToAccountRoleId(id string) (GrantPrivilegesToAccountRol
 	if len(privileges) == 1 && (privileges[0] == "ALL" || privileges[0] == "ALL PRIVILEGES") {
 		accountRoleId.AllPrivileges = true
 	} else {
-		accountRoleId.Privileges = privileges
+		privilegeNames, err := toPrivileges(privileges)
+		if err != nil {
+			return accountRoleId, err
+		}
+		accountRoleId.Privileges = privilegeNames
 	}
 
 	accountRoleId.Kind = AccountRoleGrantKind(parts[4])
@@ -165,12 +169,16 @@ func ParseGrantPrivilegesToAccountRoleId(id string) (GrantPrivilegesToAccountRol
 		if len(parts) != 7 {
 			return accountRoleId, sdk.NewError(`account role identifier should hold at least 7 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnAccountObject|<object_type>|<object_name>"`)
 		}
+		objectType, err := sdk.ToObjectType(parts[5])
+		if err != nil {
+			return accountRoleId, err
+		}
 		objectId, err := sdk.ParseAccountObjectIdentifier(parts[6])
 		if err != nil {
 			return accountRoleId, err
 		}
 		accountRoleId.Data = &OnAccountObjectGrantData{
-			ObjectType: sdk.ObjectType(parts[5]),
+			ObjectType: objectType,
 			ObjectName: objectId,
 		}
 	case OnSchemaAccountRoleGrantKind:
@@ -209,7 +217,10 @@ func ParseGrantPrivilegesToAccountRoleId(id string) (GrantPrivilegesToAccountRol
 			if len(parts) != 8 {
 				return accountRoleId, sdk.NewError(`account role identifier should hold 8 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaObject|OnObject|<object_type>|<object_name>"`)
 			}
-			objectType := sdk.ObjectType(parts[6])
+			objectType, err := sdk.ToObjectType(parts[6])
+			if err != nil {
+				return accountRoleId, err
+			}
 			var id sdk.ObjectIdentifier
 			// TODO(SNOW-1569535): use a mapper from object type to parsing function
 			if objectType.IsWithArguments() {
@@ -228,8 +239,12 @@ func ParseGrantPrivilegesToAccountRoleId(id string) (GrantPrivilegesToAccountRol
 				Name:       id,
 			}
 		case OnAllSchemaObjectGrantKind, OnFutureSchemaObjectGrantKind:
+			objectNamePlural, err := sdk.ToPluralObjectType(parts[6])
+			if err != nil {
+				return accountRoleId, err
+			}
 			bulkOperationGrantData := &BulkOperationGrantData{
-				ObjectNamePlural: sdk.PluralObjectType(parts[6]),
+				ObjectNamePlural: objectNamePlural,
 			}
 			if len(parts) > 7 {
 				if len(parts) != 9 {

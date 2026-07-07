@@ -115,7 +115,9 @@ func PostgresInstanceDetailsToSchema(details *sdk.PostgresInstanceDetails) map[s
 	s["authentication_authority"] = details.AuthenticationAuthority
 	s["state"] = details.State
 	s["retention_time"] = details.RetentionTime
-	s["maintenance_window_start"] = details.MaintenanceWindowStart
+	if details.MaintenanceWindowStart != nil {
+		s["maintenance_window_start"] = *details.MaintenanceWindowStart
+	}
 	if details.Comment != nil {
 		s["comment"] = *details.Comment
 	}
