@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -239,17 +240,15 @@ func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	warehouseName := d.Get("warehouse").(string)
 	warehouse := sdk.NewAccountObjectIdentifier(warehouseName)
 
-	opts := &sdk.CreateAlertOptions{}
-
-	if v, ok := d.GetOk("comment"); ok {
-		opts.Comment = sdk.String(v.(string))
-	}
-
 	condition := d.Get("condition").(string)
-
 	action := d.Get("action").(string)
 
-	err := client.Alerts.Create(ctx, objectIdentifier, warehouse, alertSchedule, condition, action, opts)
+	req := sdk.NewCreateAlertRequest(objectIdentifier, warehouse, alertSchedule, sdk.NewAlertConditionFromString(condition), action)
+	if v, ok := d.GetOk("comment"); ok {
+		req.WithComment(v.(string))
+	}
+
+	err := client.Alerts.Create(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -259,8 +258,7 @@ func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	enabled := d.Get("enabled").(bool)
 	var diags diag.Diagnostics
 	if enabled {
-		opts := sdk.AlterAlertOptions{Action: &sdk.AlertActionResume}
-		err := client.Alerts.Alter(ctx, objectIdentifier, &opts)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithAction(sdk.AlertActionResume))
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
@@ -304,37 +302,25 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	opts := &sdk.AlterAlertOptions{
-		Set:   &sdk.AlertSet{},
-		Unset: &sdk.AlertUnset{},
-	}
-	runSetStatement := false
+	set := sdk.NewAlertSetRequest()
 
 	if d.HasChange("warehouse") {
-		runSetStatement = true
 		_, v := d.GetChange("warehouse")
-		warehouseName := v.(string)
-		warehouse := sdk.NewAccountObjectIdentifier(warehouseName)
-		opts.Set.Warehouse = &warehouse
+		set.WithWarehouse(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
 
 	if d.HasChange("alert_schedule") {
-		runSetStatement = true
 		_, v := d.GetChange("alert_schedule")
-		alertSchedule := getAlertSchedule(v)
-		opts.Set.Schedule = &alertSchedule
+		set.WithSchedule(getAlertSchedule(v))
 	}
 
 	if d.HasChange("comment") {
 		_, v := d.GetChange("comment")
-		runSetStatement = true
-		newComment := v.(string)
-		opts.Set.Comment = &newComment
+		set.WithComment(v.(string))
 	}
 
-	if runSetStatement {
-		setOptions := &sdk.AlterAlertOptions{Set: opts.Set}
-		err := client.Alerts.Alter(ctx, objectIdentifier, setOptions)
+	if !reflect.DeepEqual(set, sdk.NewAlertSetRequest()) {
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithSet(*set))
 		if err != nil {
 			return diag.Errorf("error updating alert %v: %v", objectIdentifier.Name(), err)
 		}
@@ -342,9 +328,7 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("condition") {
 		condition := d.Get("condition").(string)
-		alterOptions := &sdk.AlterAlertOptions{}
-		alterOptions.ModifyCondition = &[]string{condition}
-		err := client.Alerts.Alter(ctx, objectIdentifier, alterOptions)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithModifyCondition([]string{condition}))
 		if err != nil {
 			return diag.Errorf("error updating schedule on condition %v: %v", objectIdentifier.Name(), err)
 		}
@@ -352,9 +336,7 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("action") {
 		action := d.Get("action").(string)
-		alterOptions := &sdk.AlterAlertOptions{}
-		alterOptions.ModifyAction = &action
-		err := client.Alerts.Alter(ctx, objectIdentifier, alterOptions)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithModifyAction(action))
 		if err != nil {
 			return diag.Errorf("error updating schedule on action %v: %v", objectIdentifier.Name(), err)
 		}
@@ -380,8 +362,7 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
 	resumeAlert := func() (error, bool) {
-		opts := sdk.AlterAlertOptions{Action: &sdk.AlertActionResume}
-		err := client.Alerts.Alter(ctx, id, &opts)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithAction(sdk.AlertActionResume))
 		if err != nil {
 			return fmt.Errorf("error resuming alert %v err = %w", id.Name(), err), false
 		}
@@ -396,8 +377,7 @@ func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjec
 
 func waitSuspendAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
 	suspendAlert := func() (error, bool) {
-		opts := sdk.AlterAlertOptions{Action: &sdk.AlertActionSuspend}
-		err := client.Alerts.Alter(ctx, id, &opts)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithAction(sdk.AlertActionSuspend))
 		if err != nil {
 			return fmt.Errorf("error suspending alert %v err = %w", id.Name(), err), false
 		}
