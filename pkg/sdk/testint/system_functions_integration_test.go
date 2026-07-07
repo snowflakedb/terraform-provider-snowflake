@@ -215,16 +215,16 @@ func TestInt_GetClusteringInformation(t *testing.T) {
 		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
 			Columns: []sdk.IcebergTableColumnRequest{
 				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
-				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+				{Name: "region", ColumnType: testdatatypes.DataTypeVarcharIceberg},
 			},
 		}))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
-		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id, "REGION")
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id, "region")
 		require.NoError(t, err)
 		require.NotNil(t, info)
-		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
+		assert.Equal(t, `LINEAR("region")`, info.ClusterByKeys)
 	})
 
 	t.Run("unclustered table - without columns returns an error", func(t *testing.T) {

@@ -280,9 +280,13 @@ func (c *systemFunctions) GetClusteringInformation(ctx context.Context, id Schem
 	}{}
 	var columnsArg string
 	if len(columns) > 0 {
-		columnsArg = fmt.Sprintf(`, '(%s)'`, strings.Join(columns, ", "))
+		columns = collections.Map(columns, func(col string) string {
+			return DoubleQuotes.Modify(col)
+		})
+		columnsArg = `, ` + SingleQuotes.Modify(fmt.Sprintf("(%s)", strings.Join(columns, ", ")))
 	}
-	sql := fmt.Sprintf(`SELECT SYSTEM$CLUSTERING_INFORMATION('%s'%s) AS "CLUSTERING_INFORMATION"`, id.FullyQualifiedName(), columnsArg)
+	idEscaped := SingleQuotes.Modify(id.FullyQualifiedNameEscaped())
+	sql := fmt.Sprintf(`SELECT SYSTEM$CLUSTERING_INFORMATION(%s%s) AS "CLUSTERING_INFORMATION"`, idEscaped, columnsArg)
 	err := c.client.queryOne(ctx, row, sql)
 	if err != nil {
 		return nil, err
