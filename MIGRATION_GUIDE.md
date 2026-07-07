@@ -25,36 +25,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
 ## v2.18.x ➞ v2.19.0
+
 ### *(new feature)* New Iceberg Table resources
 
 We have added new preview resources for Iceberg tables:
-- [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from REST backend ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
+- [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from a REST catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
 - [snowflake_iceberg_table_from_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_aws_glue) for managing Snowflake Iceberg Tables whose metadata is managed by an AWS Glue catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue)),
 
 These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest` or `snowflake_iceberg_table_from_aws_glue` to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 
-## v2.17.0 ➞ v2.18.0
-
-### *(new feature)* New Postgres instance resource
-
-We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
-
-This feature will be marked as stable in a future release. To use it, add `snowflake_postgres_instance_resource` to the `preview_features_enabled` field in the provider configuration.
-
-### *(new feature)* Cortex Code daily credit limit account parameters
-
-Added support for three new account parameters in the following resources:
-- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
-- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
-- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
-These parameters set the [Cortex Code per-user daily estimated credit usage limits](https://docs.snowflake.com/en/user-guide/cortex-code/credit-usage-limit) and are integer-valued (`-1` for the default/unlimited, `0` to block usage, or a positive cap on a user's estimated credit usage over a rolling 24-hour window):
-- `CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER`
-- `CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER`
-- `CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER`
-
-No action is required; this is a non-breaking addition.
+## v2.17.x ➞ v2.18.0
 
 ### Multiple resources and data sources promoted to stable
 
@@ -94,8 +76,62 @@ Provider will issue a warning if a stable feature is still present in the `previ
 
 Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
 
-### *(new feature)* New instance families in the compute_pool resource
-Added missing instance families that are available in Snowflake: `GEN_ARM_G1_2`, `GEN_ARM_G1_4`, `GEN_ARM_G1_8`, `GEN_ARM_G1_16`, `GEN_ARM_G1_32`, `GEN_X64_G2_2`, `GEN_X64_G2_4`, `GEN_X64_G2_8`, `GEN_X64_G2_16`, `GEN_X64_G2_32`, `MEM_X64_G2_8`, `MEM_X64_G2_32`, `MEM_X64_G2_64`, `MEM_X64_G2_96`, `MEM_X64_G2_192`, `GPU_L40S_G1_8`, `GPU_L40S_G1_16`, `GPU_L40S_G1_48`, `GPU_L40S_G1_192`, `GPU_R6K_G1_8`, `GPU_R6K_G1_16`, `GPU_R6K_G1_32`, `GPU_R6K_G1_48`, `GPU_R6K_G1_96`, `GPU_R6K_G1_192`, `GPU_A100_G1_12`, and `GPU_A100_G1_48`.
+### *(new feature)* A new experiment for handling renames in object hierarchy
+
+A new `HIERARCHY_RENAMES` experiment has been added. When enabled, changing the parent identifier fields (`database` on `snowflake_schema`, or `database`/`schema` on `snowflake_table`) no longer forces resource recreation. Instead, the provider detects whether a parent was renamed or the object should be moved, and handles it in-place.
+
+Currently supported by: [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema), [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table).
+
+The provider handles the following use cases:
+
+**2-level hierarchy** (e.g. `snowflake_schema`):
+1. **Database rename**: The parent database was renamed (e.g. from `A` to `B`). The provider detects that the old database no longer exists while the schema already exists under the new name, and updates the resource ID without performing any Snowflake modification.
+2. **Schema move**: Both the old and new databases exist. The provider executes `ALTER SCHEMA A.X RENAME TO B.X` to move the schema to the target database.
+
+**3-level hierarchy** (e.g. `snowflake_table`):
+- When only the `database` field changes, the provider applies the same rename/move logic at the database level.
+- When only the `schema` field changes, the provider applies the same rename/move logic at the schema level.
+- When both `database` and `schema` change simultaneously, the provider evaluates all combinations of database and schema existence to determine the correct action (e.g. both were renamed, or one was renamed while the other was moved).
+
+To enable, add `HIERARCHY_RENAMES` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["HIERARCHY_RENAMES"]
+}
+```
+
+Example configuration using implicit dependencies (recommended):
+```hcl
+resource "snowflake_database" "example" {
+  name = "my_database"
+}
+
+resource "snowflake_schema" "example" {
+  name     = "my_schema"
+  database = snowflake_database.example.name
+}
+
+resource "snowflake_table" "example" {
+  name     = "my_table"
+  database = snowflake_database.example.name
+  schema   = snowflake_schema.example.name
+
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+  }
+}
+```
+
+With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause both the schema and table resources to detect the rename and update their state accordingly — without recreating the objects or losing any data within them.
+
+For more details, see the [Object Renaming Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
+
+### *(new feature)* New Postgres instance resource
+
+We have added a new preview resource for managing Postgres instances: [snowflake_postgres_instance](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_instance).
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_postgres_instance_resource` to the `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature/deprecation)* API integration resources reworked
 
@@ -159,29 +195,6 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
-### *(new feature)* New `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` account parameter
-
-The `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` parameter is now supported in the following resources:
-
-- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
-- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
-- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
-
-No changes are required for existing configurations.
-
-References: [#4826](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4826)
-
-### *(new feature)* `snowflake_grant_ownership`: support for new object types
-
-The `snowflake_grant_ownership` resource now supports granting ownership on the following additional object types:
-
-- `AGENT` — single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`)
-- `CORTEX SEARCH SERVICE` — single object grants, bulk grants (`ALL CORTEX SEARCH SERVICES IN ...`), and future grants (`FUTURE CORTEX SEARCH SERVICES IN ...`)
-
-No changes are required for existing configurations.
-
-References: [#4868](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4868)
-
 ### *(new feature)* New storage lifecycle policy resources and data source
 
 #### Resources
@@ -211,23 +224,30 @@ These features will be marked as stable in future releases. To use them, add `sn
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 
-### *(improvement)* GRANT_ACCOUNT_ROLE_SHOW_CACHING experiment for snowflake_grant_account_role
+### *(new feature)* Cortex Code daily credit limit account parameters
 
-A new experiment `GRANT_ACCOUNT_ROLE_SHOW_CACHING` is now available for the `snowflake_grant_account_role` resource. When enabled, the provider caches `SHOW GRANTS OF ROLE` results in memory for the duration of a single plan or apply cycle.
+Added support for three new account parameters in the following resources:
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
+These parameters set the [Cortex Code per-user daily estimated credit usage limits](https://docs.snowflake.com/en/user-guide/cortex-code/credit-usage-limit) and are integer-valued (`-1` for the default/unlimited, `0` to block usage, or a positive cap on a user's estimated credit usage over a rolling 24-hour window):
+- `CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER`
+- `CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER`
+- `CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER`
 
-Without caching, every `snowflake_grant_account_role` instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same set of roles (a common RBAC topology), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique role per plan.
+No action is required; this is a non-breaking addition.
 
-When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain correctly visible to subsequent Reads. The trailing Read at the end of Create is also skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.
+### *(new feature)* New `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` account parameter
 
-To enable, add `GRANT_ACCOUNT_ROLE_SHOW_CACHING` to the `experimental_features_enabled` field in the provider configuration:
+The `ENABLE_PER_ACCOUNT_APP_SERVICE_PRIVATELINK_URL` parameter is now supported in the following resources:
 
-```hcl
-provider "snowflake" {
-  experimental_features_enabled = ["GRANT_ACCOUNT_ROLE_SHOW_CACHING"]
-}
-```
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter)
+- [`snowflake_current_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_account)
+- [`snowflake_current_organization_account`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/current_organization_account)
 
-No changes to existing configurations are required. The experiment is intended for large RBAC configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
+No changes are required for existing configurations.
+
+References: [#4826](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4826)
 
 ### *(new feature)* `log_event_level` parameter support
 
@@ -244,6 +264,39 @@ We added support for the [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-r
 The `parameters` output of the related data sources (`snowflake_databases`, `snowflake_schemas`, `snowflake_functions`, `snowflake_procedures`, `snowflake_tasks`, and `snowflake_users`) now also exposes `log_event_level`. Additionally, the [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) resource now accepts `LOG_EVENT_LEVEL` as a parameter name.
 
 No changes are required for existing configurations.
+
+### *(new feature)* New instance families in the compute_pool resource
+
+Added missing instance families that are available in Snowflake: `GEN_ARM_G1_2`, `GEN_ARM_G1_4`, `GEN_ARM_G1_8`, `GEN_ARM_G1_16`, `GEN_ARM_G1_32`, `GEN_X64_G2_2`, `GEN_X64_G2_4`, `GEN_X64_G2_8`, `GEN_X64_G2_16`, `GEN_X64_G2_32`, `MEM_X64_G2_8`, `MEM_X64_G2_32`, `MEM_X64_G2_64`, `MEM_X64_G2_96`, `MEM_X64_G2_192`, `GPU_L40S_G1_8`, `GPU_L40S_G1_16`, `GPU_L40S_G1_48`, `GPU_L40S_G1_192`, `GPU_R6K_G1_8`, `GPU_R6K_G1_16`, `GPU_R6K_G1_32`, `GPU_R6K_G1_48`, `GPU_R6K_G1_96`, `GPU_R6K_G1_192`, `GPU_A100_G1_12`, and `GPU_A100_G1_48`.
+
+References: [#4916](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4916)
+
+### *(new feature)* `snowflake_grant_ownership`: support for new object types
+
+The `snowflake_grant_ownership` resource now supports granting ownership on the following additional object types:
+
+- `AGENT` — single object grants, bulk grants (`ALL AGENTS IN ...`), and future grants (`FUTURE AGENTS IN ...`)
+- `CORTEX SEARCH SERVICE` — single object grants, bulk grants (`ALL CORTEX SEARCH SERVICES IN ...`), and future grants (`FUTURE CORTEX SEARCH SERVICES IN ...`)
+
+No changes are required for existing configurations.
+
+References: [#4868](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4868)
+
+### *(new feature)* Tagging support for iceberg table columns
+
+Tagging support for iceberg table columns is now supported. We added a new `ICEBERG TABLE COLUMN` value to the allowed `object_type` values of the `snowflake_tag_association` resource. Use it to tag a column of an Iceberg table:
+
+```terraform
+resource "snowflake_tag_association" "example" {
+  # For now, column fully qualified names have to be constructed manually.
+  object_identifiers = [format("%s.\"column1\"", snowflake_iceberg_table.example.fully_qualified_name)]
+  object_type        = "ICEBERG TABLE COLUMN"
+  tag_id             = snowflake_tag.example.fully_qualified_name
+  tag_value          = "example"
+}
+```
+
+Do not use the `COLUMN` object type, as it is reserved for table columns.
 
 ### *(bugfix)* Fixed panic when adding a column with a constant default to a `snowflake_table`
 
@@ -265,72 +318,59 @@ This has been fixed: grant resources can now be used with the `MODEL MONITOR` ob
 
 No changes in the configuration are required.
 
-### *(new feature)* HIERARCHY_RENAMES experiment
+### *(bug fix)* SDK, literals, and privileges are now properly escaped
 
-A new `HIERARCHY_RENAMES` experiment has been added. When enabled, changing the parent identifier fields (`database` on `snowflake_schema`, or `database`/`schema` on `snowflake_table`) no longer forces resource recreation. Instead, the provider detects whether a parent was renamed or the object should be moved, and handles it in-place.
+Multiple legacy SQL builders and provider resources previously interpolated user-provided values directly into SQL strings without proper quoting or escaping. This could lead to incorrect queries and Snowflake errors like SQL compilation error. The following areas have been fixed:
+- Identifier SQL emission (provider-wide): double-quote characters inside quoted identifiers are now escaped as `""` in the SQL builder, matching the SQL standard.
+- Single quotes are now correctly escaped in the following resources:
+    - `snowflake_system_generate_scim_access_token`,
+    - `snowflake_system_get_aws_sns_iam_policy`,
+    - `snowflake_user_public_keys`,
+    - `snowflake_table_column_masking_policy_application`,
+    - Legacy `snowflake_stage` resource: the stage name, URL, comment, and storage integration fields. We kindly remind you that this resource is deprecated. Please use other [new stage resources](./MIGRATION_GUIDE.md#new-feature-new-stage-resources).
+- Dollar-quoted fields: the `$$` sequence is now rejected in any field rendered with Snowflake dollar-quoting because `$$` cannot be escaped inside a dollar-quoted constant. The affected resources:
+    - `snowflake_cortex_agent`,
+    - `snowflake_listings`,
+    - `snowflake_service`,
+    - `snowflake_task`,
+- The following fields are now wrapped by single quotes:
+    - Stage location in `snowflake_listing` and `snowflake_service`: stage location values are now quoted with single quotes in the SDK-generated SQL.
+    - Account and account_region in `snowflake_account` resource.
+- Improved validations for object types and privileges: values with unexpected characters (e.g. semicolons, quotes) are rejected at plan time.
 
-Currently supported by: [`snowflake_schema`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/schema), [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table).
+No action required.
 
-The provider handles the following use cases:
+### *(bug fix)* Explicit false in the provider block now correctly overrides TOML profile values
 
-**2-level hierarchy** (e.g. `snowflake_schema`):
-1. **Database rename**: The parent database was renamed (e.g. from `A` to `B`). The provider detects that the old database no longer exists while the schema already exists under the new name, and updates the resource ID without performing any Snowflake modification.
-2. **Schema move**: Both the old and new databases exist. The provider executes `ALTER SCHEMA A.X RENAME TO B.X` to move the schema to the target database.
+When a Boolean provider field was explicitly set to false in the provider block or environmental variables, the TOML value incorrectly took precedence. Affected fields: passcode_in_password, keep_session_alive, disable_query_context_cache, enable_single_use_refresh_tokens, log_query_text, log_query_parameters, crl_in_memory_cache_disabled, crl_on_disk_cache_disabled, disable_ocsp_checks / insecure_mode.
 
-**3-level hierarchy** (e.g. `snowflake_table`):
-- When only the `database` field changes, the provider applies the same rename/move logic at the database level.
-- When only the `schema` field changes, the provider applies the same rename/move logic at the schema level.
-- When both `database` and `schema` change simultaneously, the provider evaluates all combinations of database and schema existence to determine the correct action (e.g. both were renamed, or one was renamed while the other was moved).
+This behavior is now fixed: the values set explicitly in the provider block or in environmental variables take precedence.
 
-To enable, add `HIERARCHY_RENAMES` to your provider's `experimental_features_enabled` list:
+No action required.
+
+### *(improvement)* GRANT_ACCOUNT_ROLE_SHOW_CACHING experiment for snowflake_grant_account_role
+
+A new experiment `GRANT_ACCOUNT_ROLE_SHOW_CACHING` is now available for the `snowflake_grant_account_role` resource. When enabled, the provider caches `SHOW GRANTS OF ROLE` results in memory for the duration of a single plan or apply cycle.
+
+Without caching, every `snowflake_grant_account_role` instance issues an independent `SHOW GRANTS OF ROLE <name>` call during Read. In configurations with many grants sharing the same set of roles (a common RBAC topology), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique role per plan.
+
+When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain correctly visible to subsequent Reads. The trailing Read at the end of Create is also skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.
+
+To enable, add `GRANT_ACCOUNT_ROLE_SHOW_CACHING` to the `experimental_features_enabled` field in the provider configuration:
+
 ```hcl
 provider "snowflake" {
-  experimental_features_enabled = ["HIERARCHY_RENAMES"]
+  experimental_features_enabled = ["GRANT_ACCOUNT_ROLE_SHOW_CACHING"]
 }
 ```
 
-Example configuration using implicit dependencies (recommended):
-```hcl
-resource "snowflake_database" "example" {
-  name = "my_database"
-}
+No changes to existing configurations are required. The experiment is intended for large RBAC configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
 
-resource "snowflake_schema" "example" {
-  name     = "my_schema"
-  database = snowflake_database.example.name
-}
+### *(improvement)* snowflake_grant_ownership: deleting a resource with on_future now properly revokes the grant
 
-resource "snowflake_table" "example" {
-  name     = "my_table"
-  database = snowflake_database.example.name
-  schema   = snowflake_schema.example.name
+If you use the future option in the snowflake_grant_ownership, it now issues REVOKE OWNERSHIP ON FUTURE ... TO ROLE ... during destroy.
 
-  column {
-    name = "id"
-    type = "NUMBER(38,0)"
-  }
-}
-```
-
-With the experiment enabled, renaming `snowflake_database.example` from `my_database` to `my_new_database` will cause both the schema and table resources to detect the rename and update their state accordingly — without recreating the objects or losing any data within them.
-
-For more details, see the [Object Renaming Guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/object_renaming_guide).
-
-### *(new feature)* Tagging support for iceberg table columns
-
-Tagging support for iceberg table columns is now supported. We added a new `ICEBERG TABLE COLUMN` value to the allowed `object_type` values of the `snowflake_tag_association` resource. Use it to tag a column of an Iceberg table:
-
-```terraform
-resource "snowflake_tag_association" "example" {
-  # For now, column fully qualified names have to be constructed manually.
-  object_identifiers = [format("%s.\"column1\"", snowflake_iceberg_table.example.fully_qualified_name)]
-  object_type        = "ICEBERG TABLE COLUMN"
-  tag_id             = snowflake_tag.example.fully_qualified_name
-  tag_value          = "example"
-}
-```
-
-Do not use the `COLUMN` object type, as it is reserved for table columns.
+No changes required for existing configurations
 
 ## v2.16.0 ➞ v2.17.0
 

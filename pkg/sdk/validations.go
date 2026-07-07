@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -106,4 +107,11 @@ func validateIntGreaterThan(value int, min int) bool {
 
 func validateIntGreaterThanOrEqual(value int, min int) bool {
 	return value >= min
+}
+
+// containsDoubleDollarQuotes reports whether the given value contains the `$$` sequence. It is used to reject user
+// input for fields rendered with double dollar quoting, because Snowflake's dollar-quoted string constants are
+// interpreted literally (no escaping) and an embedded `$$` would terminate the constant, enabling SQL injection.
+func containsDoubleDollarQuotes(value string) bool {
+	return strings.Contains(value, "$$")
 }

@@ -116,6 +116,28 @@ func handleBoolField(d *schema.ResourceData, key string, field *bool) error {
 	return nil
 }
 
+// getBooleanConfigValue extracts the exact boolean value set for the given key in the Terraform
+// configuration. It can distinguish a field that was not set at all from a field explicitly set to false.
+func getBooleanConfigValue(d *schema.ResourceData, key string) *bool {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() {
+		return nil
+	}
+	value, ok := rawConfig.AsValueMap()[key]
+	if !ok || value.IsNull() {
+		return nil
+	}
+	return new(value.True())
+}
+
+// overrideBooleanConfigField overrides the field with the exact boolean value set for the given key
+// in the Terraform configuration, if it was set. Fields without an explicit value are left untouched.
+func overrideBooleanConfigField(d *schema.ResourceData, key string, field *bool) {
+	if v := getBooleanConfigValue(d, key); v != nil {
+		*field = *v
+	}
+}
+
 func handleDurationInSecondsAttribute(d *schema.ResourceData, key string, field *time.Duration) error {
 	if v, ok := d.GetOk(key); ok {
 		*field = time.Second * time.Duration(int64(v.(int)))

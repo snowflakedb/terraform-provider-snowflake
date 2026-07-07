@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -26,7 +27,14 @@ func v098TaskStateUpgrader(ctx context.Context, rawState map[string]any, meta an
 	if rawState["session_parameters"] != nil {
 		if sessionParamsMap, okType := rawState["session_parameters"].(map[string]any); okType {
 			for k, v := range sessionParamsMap {
-				rawState[k] = v
+				// Skip reserved schema fields for task identification.
+				switch k {
+				case "id", "schema", "name", "database":
+					log.Printf("[DEBUG] v098TaskStateUpgrader: skipping reserved session parameter key %q to prevent overwriting task identification fields", k)
+					continue
+				default:
+					rawState[k] = v
+				}
 			}
 		}
 	}

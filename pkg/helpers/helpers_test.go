@@ -188,6 +188,10 @@ func (i unsupportedObjectIdentifier) FullyQualifiedName() string {
 	return "fully qualified name"
 }
 
+func (i unsupportedObjectIdentifier) FullyQualifiedNameEscaped() string {
+	return "fully qualified name escaped"
+}
+
 func Test_DecodeSnowflakeAccountIdentifier(t *testing.T) {
 	t.Run("decodes account identifier", func(t *testing.T) {
 		id, err := DecodeSnowflakeAccountIdentifier("abc.def")

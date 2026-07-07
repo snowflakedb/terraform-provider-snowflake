@@ -62,6 +62,11 @@ func (s *AlterDynamicTableRequest) WithSet(set *DynamicTableSetRequest) *AlterDy
 	return s
 }
 
+func (s *AlterDynamicTableRequest) WithComment(comment string) *AlterDynamicTableRequest {
+	s.comment = new(comment)
+	return s
+}
+
 func (s *AlterDynamicTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePolicy *DynamicTableAddStorageLifecyclePolicyRequest) *AlterDynamicTableRequest {
 	s.addStorageLifecyclePolicy = addStorageLifecyclePolicy
 	return s

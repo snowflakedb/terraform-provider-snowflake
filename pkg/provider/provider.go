@@ -808,6 +808,7 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 			return nil, diag.FromErr(err)
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
+		fixBooleanConfigFields(s, config)
 	}
 	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
 	if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
@@ -843,6 +844,31 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 	}
 
 	return providerCtx, diags
+}
+
+// fixBooleanConfigFields is a temporary function to fix the boolean config fields that are set in the Terraform configuration.
+// Without this function, if the users set a value to false explicitly, it will be overridden by the TOML profile value because of MergeConfig logic.
+// Instead, MergeConfig should have an abstraction that does this correctly, so this workaround can be removed.
+// TODO(SNOW-3174224): Remove this function after the merging logic is fixed.
+func fixBooleanConfigFields(s *schema.ResourceData, config *gosnowflake.Config) {
+	// MergeConfig prefers the TOML value for plain boolean fields whenever the Terraform value equals
+	// the bool zero value (false), so an explicit `false` in the Terraform configuration would otherwise
+	// be lost. Re-apply the exact values taken from the raw configuration so that the Terraform
+	// configuration always takes precedence over the TOML profile for these fields.
+	overrideBooleanConfigField(s, "passcode_in_password", &config.PasscodeInPassword)
+	overrideBooleanConfigField(s, "keep_session_alive", &config.ServerSessionKeepAlive)
+	overrideBooleanConfigField(s, "disable_query_context_cache", &config.DisableQueryContextCache)
+	overrideBooleanConfigField(s, "enable_single_use_refresh_tokens", &config.EnableSingleUseRefreshTokens)
+	overrideBooleanConfigField(s, "log_query_text", &config.LogQueryText)
+	overrideBooleanConfigField(s, "log_query_parameters", &config.LogQueryParameters)
+	overrideBooleanConfigField(s, "crl_in_memory_cache_disabled", &config.CrlInMemoryCacheDisabled)
+	overrideBooleanConfigField(s, "crl_on_disk_cache_disabled", &config.CrlOnDiskCacheDisabled)
+	// insecure_mode and disable_ocsp_checks both map to DisableOCSPChecks. When at least one of them is set
+	// explicitly in the Terraform configuration, the Terraform value wins over the TOML profile, and true
+	// wins over false between the two (mimicking the pre-v2 driver behavior).
+	if insecureMode, disableOcspChecks := getBooleanConfigValue(s, "insecure_mode"), getBooleanConfigValue(s, "disable_ocsp_checks"); insecureMode != nil || disableOcspChecks != nil {
+		config.DisableOCSPChecks = (insecureMode != nil && *insecureMode) || (disableOcspChecks != nil && *disableOcspChecks)
+	}
 }
 
 // TODO: reuse with the function from resources package

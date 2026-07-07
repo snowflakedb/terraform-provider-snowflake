@@ -42,7 +42,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 		WithTableName(table1.ID()).
 		WithPrimaryKeys([]sdk.SemanticViewColumn{{Name: "a1"}}).
 		WithUniqueKeys([][]sdk.SemanticViewColumn{{{Name: "a2"}}, {{Name: "a3"}, {Name: "a4"}}}).
-		WithSynonyms([]sdk.Synonym{{"orders"}, {"sales"}}).
+		WithSynonyms([]sdk.Synonym{{Synonym: "orders"}, {Synonym: "sales"}}).
 		WithComment("logical table 1")
 
 	logicalTable2 := sdk.LogicalTable{}

@@ -178,7 +178,10 @@ func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta int
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	objectType := parts[1]
+	objectType, err := sdk.ToObjectType(parts[1])
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	targetIdentifier := parts[2]
 	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
 		Of: &sdk.ShowGrantsOf{
@@ -193,7 +196,7 @@ func ReadGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta int
 
 	var found bool
 	for _, grant := range grants {
-		if grant.GrantedTo == sdk.ObjectType(objectType) &&
+		if grant.GrantedTo == objectType &&
 			grant.GranteeName.FullyQualifiedName() == targetIdentifier {
 			found = true
 			break

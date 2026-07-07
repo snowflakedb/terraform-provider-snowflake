@@ -336,6 +336,21 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 			Identifier: `"account-role"|false|false|ALL PRIVILEGES||"on-database-name"`,
 			Error:      "invalid AccountRoleGrantKind: ",
 		},
+		{
+			Name:       "validation: grant account role invalid object type for OnAccountObject kind",
+			Identifier: `"account-role"|false|false|ALL PRIVILEGES|OnAccountObject|DATABASE FROM ROLE SECURITYADMIN --|"on-database-name"`,
+			Error:      "invalid object type: DATABASE FROM ROLE SECURITYADMIN --",
+		},
+		{
+			Name:       "validation: grant account role invalid object type for OnSchemaObject.OnObject kind",
+			Identifier: `"role-name"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchemaObject|OnObject|TABLE FROM ROLE SECURITYADMIN --|"db"."schema"."table"`,
+			Error:      "invalid object type: TABLE FROM ROLE SECURITYADMIN --",
+		},
+		{
+			Name:       "validation: grant account role invalid plural object type for OnSchemaObject.OnAll kind",
+			Identifier: `"role-name"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchemaObject|OnAll|TABLES FROM ROLE SECURITYADMIN --|InDatabase|"db"`,
+			Error:      "invalid plural object type: TABLES FROM ROLE SECURITYADMIN --",
+		},
 	}
 
 	for _, tt := range testCases {

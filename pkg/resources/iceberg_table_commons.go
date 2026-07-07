@@ -62,12 +62,6 @@ func icebergTableCommonSchema() map[string]*schema.Schema {
 			Description: "Outputs the result of `DESCRIBE ICEBERG TABLE` for the given Iceberg table.",
 			Elem:        &schema.Resource{Schema: schemas.DescribeIcebergTableSchema},
 		},
-		ParametersAttributeName: {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW PARAMETERS IN ICEBERG TABLE` for the given Iceberg table.",
-			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableParametersSchema},
-		},
 	}
 }
 

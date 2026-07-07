@@ -53,7 +53,6 @@ var icebergTableFromRestSchema = collections.MergeMaps(
 				}),
 			),
 		},
-		// Override the shared parameters output to expose the additional REST-specific parameters.
 		ParametersAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -79,7 +78,7 @@ func IcebergTableFromRest() *schema.Resource {
 		},
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
-			ComputedIfAnyAttributeChanged(icebergTableFromRestSchema, ShowOutputAttributeName, "comment", "auto_refresh", "catalog_table_name", "catalog_namespace"),
+			ComputedIfAnyAttributeChanged(icebergTableFromRestSchema, ShowOutputAttributeName, "comment", "auto_refresh"),
 			ComputedIfAnyAttributeChanged(icebergTableFromRestSchema, ParametersAttributeName, "external_volume", "catalog", "replace_invalid_characters", "target_file_size", "storage_serialization_policy", "enable_iceberg_merge_on_read", "iceberg_merge_on_read_behavior"),
 			icebergTableFromRestParametersCustomDiff,
 		),
@@ -119,22 +118,18 @@ func CreateIcebergTableFromRest(ctx context.Context, d *schema.ResourceData, met
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 	req := sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName)
 
-	if err := stringAttributeCreate(d, "comment", &req.Comment); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := stringAttributeCreate(d, "catalog_namespace", &req.CatalogNamespace); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := attributeMappedValueCreate(d, "path_layout", &req.PathLayout, func(value any) (*sdk.IcebergTablePathLayout, error) {
-		pathLayout, err := sdk.ToIcebergTablePathLayout(value.(string))
-		if err != nil {
-			return nil, err
-		}
-		return &pathLayout, nil
-	}); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := booleanStringAttributeCreate(d, "auto_refresh", &req.AutoRefresh); err != nil {
+	if err := errors.Join(
+		stringAttributeCreate(d, "comment", &req.Comment),
+		stringAttributeCreate(d, "catalog_namespace", &req.CatalogNamespace),
+		attributeMappedValueCreate(d, "path_layout", &req.PathLayout, func(value any) (*sdk.IcebergTablePathLayout, error) {
+			pathLayout, err := sdk.ToIcebergTablePathLayout(value.(string))
+			if err != nil {
+				return nil, err
+			}
+			return &pathLayout, nil
+		}),
+		booleanStringAttributeCreate(d, "auto_refresh", &req.AutoRefresh),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 	if diags := handleIcebergTableParametersCreate(d, &req.ExternalVolume, &req.Catalog, &req.ReplaceInvalidCharacters); diags.HasError() {

@@ -74,9 +74,10 @@ func serviceFromSpecificationTemplateSchema(allFieldsForceNew, isTemplate bool) 
 						Description: "The name of the template variable. The provider wraps it in double quotes by default, so be aware of that while referencing the argument in the spec definition.",
 					},
 					"value": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "The value to assign to the variable in the template. The provider wraps it in `$$` by default, so be aware of that while referencing the argument in the spec definition. The value must either be alphanumeric or valid JSON.",
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      joinWithSpace("The value to assign to the variable in the template. The value must either be alphanumeric or valid JSON.", doubleDollarQuotesDescription()),
+						ValidateDiagFunc: forbidDoubleDollarQuotes,
 					},
 				},
 			},
