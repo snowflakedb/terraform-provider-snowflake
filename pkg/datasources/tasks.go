@@ -87,7 +87,6 @@ func ReadTasks(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	flattenedTasks := make([]map[string]any, len(tasks))
 	for i, task := range tasks {
-
 		var taskParameters []map[string]any
 		if d.Get("with_parameters").(bool) {
 			parameters, err := client.Tasks.ShowParameters(ctx, task.ID())

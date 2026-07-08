@@ -79,7 +79,6 @@ func ReadNetworkPolicies(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	flattenedNetworkPolicies := make([]map[string]any, len(networkPolicies))
 	for i, networkPolicy := range networkPolicies {
-
 		var networkPolicyDescribeOutput []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.NetworkPolicies.Describe(ctx, networkPolicy.ID())
