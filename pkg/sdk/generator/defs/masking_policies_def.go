@@ -8,7 +8,7 @@ import (
 
 var createMaskingPolicySignatureDef = g.NewQueryStruct("CreateMaskingPolicySignature").
 	Text("Name", g.KeywordOptions().DoubleQuotes().Required()).
-	PredefinedQueryStructField("Type", "datatypes.DataType", g.ParameterOptions().NoEquals().Required())
+	PredefinedQueryStructField("DataType", "datatypes.DataType", g.ParameterOptions().NoEquals().Required())
 
 var maskingPoliciesDef = g.NewInterface(
 	"MaskingPolicies",
@@ -47,13 +47,25 @@ var maskingPoliciesDef = g.NewInterface(
 			IfExists().
 			Name().
 			OptionalIdentifier("NewName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
-			OptionalSetBodyWithPrecedingArrow().
+			OptionalQueryStructField(
+				"Set",
+				g.NewQueryStruct("MaskingPolicySet").
+					PredefinedQueryStructField("Body", "*string", g.ParameterOptions().NoEquals().NoQuotes().SQL("BODY ->")).
+					OptionalComment().
+					WithValidation(g.ExactlyOneValueSet, "Body", "Comment"),
+				g.KeywordOptions().SQL("SET"),
+			).
+			OptionalQueryStructField(
+				"Unset",
+				g.NewQueryStruct("MaskingPolicyUnset").
+					OptionalSQL("COMMENT").
+					WithValidation(g.ExactlyOneValueSet, "Comment"),
+				g.KeywordOptions().SQL("UNSET"),
+			).
 			OptionalSetTags().
 			OptionalUnsetTags().
-			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
-			OptionalSQL("UNSET COMMENT").
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "NewName", "SetBody", "SetTags", "UnsetTags", "SetComment", "UnsetComment").
+			WithValidation(g.ExactlyOneValueSet, "NewName", "Set", "Unset", "SetTags", "UnsetTags").
 			WithAdditionalValidations(),
 	).
 	DropOperation(
@@ -75,7 +87,7 @@ var maskingPoliciesDef = g.NewInterface(
 			Text("kind").
 			Text("owner").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			Text("options", g.WithManualConvert()).
+			JsonField("options", "MaskingPolicyOptions").
 			Text("owner_role_type").
 			PlainOnlyField("ExemptOtherPolicies", "bool"),
 		g.NewQueryStruct("ShowMaskingPolicies").
@@ -93,7 +105,7 @@ var maskingPoliciesDef = g.NewInterface(
 		g.StructPair("describeMaskingPolicyDBRow", "MaskingPolicyDetails").
 			Text("name").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
-			Field("return_type", "string", "datatypes.DataType", g.WithManualConvert()).
+			DataType("return_type").
 			Text("body"),
 		g.NewQueryStruct("DescribeMaskingPolicy").
 			Describe().
