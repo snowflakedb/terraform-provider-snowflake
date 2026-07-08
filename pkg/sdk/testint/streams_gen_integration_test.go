@@ -434,7 +434,7 @@ func TestInt_Streams(t *testing.T) {
 		_, cleanupStream := testClientHelper().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
 		t.Cleanup(cleanupStream)
 
-		err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(table.ID()))
+		err := client.TablesLegacy.Drop(ctx, sdk.NewDropTableRequest(table.ID()))
 		require.NoError(t, err)
 
 		_, err = client.Streams.ShowByID(ctx, id)

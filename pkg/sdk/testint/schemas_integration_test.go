@@ -265,7 +265,7 @@ func TestInt_Schemas(t *testing.T) {
 		table, _ := testClientHelper().Table.CreateInSchema(t, schema.ID())
 		t.Cleanup(func() {
 			newId := sdk.NewSchemaObjectIdentifierInSchema(swapSchema.ID(), table.Name)
-			err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(newId))
+			err := client.TablesLegacy.Drop(ctx, sdk.NewDropTableRequest(newId))
 			require.NoError(t, err)
 		})
 

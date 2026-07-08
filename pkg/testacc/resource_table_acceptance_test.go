@@ -1743,7 +1743,7 @@ func checkDatabaseSchemaAndTableDataRetentionTime(id sdk.SchemaObjectIdentifier,
 			return fmt.Errorf("invalid schema retention time, expected: %d, got: %d", expectedSchemaRetentionDays, schemaRetentionTime)
 		}
 
-		table, err := client.Tables.ShowByID(ctx, id)
+		table, err := client.TablesLegacy.ShowByID(ctx, id)
 		if err != nil {
 			return err
 		}

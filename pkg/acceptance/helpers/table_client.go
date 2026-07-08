@@ -23,8 +23,8 @@ func NewTableClient(context *TestClientContext, idsGenerator *IdsGenerator) *Tab
 	}
 }
 
-func (c *TableClient) client() sdk.Tables {
-	return c.context.client.Tables
+func (c *TableClient) client() sdk.TablesLegacy {
+	return c.context.client.TablesLegacy
 }
 
 func (c *TableClient) Create(t *testing.T) (*sdk.Table, func()) {
