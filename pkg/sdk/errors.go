@@ -24,6 +24,7 @@ var (
 	ErrAccountIsEmpty                           = NewError("account is empty")
 	ErrGrantPartiallyExecuted                   = NewError("grant partially executed")
 	ErrPatNotFound                              = NewError("programmatic access token not found")
+	ErrTableNotClustered                        = NewError("table is not clustered")
 
 	// snowflake-sdk errors.
 	ErrInvalidObjectIdentifier = NewError("invalid object identifier")
@@ -113,6 +114,7 @@ func decodeDriverError(err error) error {
 		"does not exist or not authorized":                        ErrObjectNotExistOrAuthorized,
 		"account is empty":                                        ErrAccountIsEmpty,
 		"Grant partially executed":                                ErrGrantPartiallyExecuted,
+		"is not clustered":                                        ErrTableNotClustered,
 	}
 	for k, v := range m {
 		if strings.Contains(err.Error(), k) {

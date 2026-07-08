@@ -53,6 +53,15 @@ func TestIcebergTables_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	})
 
+	t.Run("validation: conflicting fields for [opts.PartitionBy opts.ClusterBy]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.PartitionBy = []IcebergTablePartitionExpression{
+			{Identity: new("ID")},
+		}
+		opts.ClusterBy = []string{`"ID"`}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateIcebergTableOptions", "PartitionBy", "ClusterBy"))
+	})
+
 	t.Run("validation: exactly one field from [opts.PartitionBy.Identity opts.PartitionBy.Bucket opts.PartitionBy.Truncate opts.PartitionBy.Year opts.PartitionBy.Month opts.PartitionBy.Day opts.PartitionBy.Hour] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.PartitionBy = []IcebergTablePartitionExpression{
@@ -303,6 +312,12 @@ func TestIcebergTables_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE IF NOT EXISTS %s`, id.FullyQualifiedName())
 	})
 
+	t.Run("with cluster by", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ClusterBy = []string{`"col1"`, `"col2"`}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE ICEBERG TABLE %s CLUSTER BY ("col1", "col2")`, id.FullyQualifiedName())
+	})
+
 	t.Run("all options", func(t *testing.T) {
 		contactId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
@@ -373,7 +388,6 @@ func TestIcebergTables_Create(t *testing.T) {
 			},
 		}
 		opts.PathLayout = new(IcebergTablePathLayoutHierarchical)
-		opts.ClusterBy = []string{`"col1"`, `"col2"`}
 		opts.ExternalVolume = new(NewAccountObjectIdentifier("vol1"))
 		opts.Catalog = new(IcebergTableCatalogSnowflake)
 		opts.BaseLocation = new("base/loc")
@@ -411,7 +425,6 @@ func TestIcebergTables_Create(t *testing.T) {
 				`"NAME" VARCHAR(16777216) COMMENT 'name column') `+
 				`PARTITION BY ("ID", BUCKET (4, "NAME"), TRUNCATE (10, "C1"), YEAR ("C2"), MONTH ("C3"), DAY ("C4"), HOUR ("C5")) `+
 				`PATH_LAYOUT = HIERARCHICAL `+
-				`CLUSTER BY ("col1", "col2") `+
 				`EXTERNAL_VOLUME = '\"vol1\"' `+
 				`CATALOG = 'SNOWFLAKE' `+
 				`BASE_LOCATION = 'base/loc' `+
