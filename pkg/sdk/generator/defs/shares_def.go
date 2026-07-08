@@ -19,7 +19,7 @@ var sharePairs = g.StructPair("shareRow", "Share").
 	Text("comment")
 
 var shareInfoPairs = g.StructPair("shareDetailsRow", "ShareInfo").
-	PlainField("kind", "ObjectType").
+	PlainField("kind", "ObjectType", g.WithManualConvert()).
 	Field("name", "string", "ObjectIdentifier", g.WithManualConvert()).
 	Time("shared_on")
 
@@ -69,10 +69,10 @@ var sharesDef = g.NewInterface(
 		SQL("SHARE").
 		IfExists().
 		Name().
-		OptionalQueryStructField("Add", shareAdd(), g.ListOptions().NoParentheses().SQL("ADD")).
-		OptionalQueryStructField("Remove", shareRemove(), g.ListOptions().NoParentheses().SQL("REMOVE")).
-		OptionalQueryStructField("Set", shareSet(), g.ListOptions().NoParentheses().SQL("SET")).
-		OptionalQueryStructField("Unset", shareUnset(), g.ListOptions().NoParentheses().SQL("UNSET")).
+		OptionalQueryStructField("Add", shareAdd(), g.KeywordOptions().SQL("ADD")).
+		OptionalQueryStructField("Remove", shareRemove(), g.KeywordOptions().SQL("REMOVE")).
+		OptionalQueryStructField("Set", shareSet(), g.KeywordOptions().SQL("SET")).
+		OptionalQueryStructField("Unset", shareUnset(), g.KeywordOptions().SQL("UNSET")).
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
@@ -102,7 +102,7 @@ var sharesDef = g.NewInterface(
 	g.NewQueryStruct("DescribeShare").
 		Describe().
 		SQL("SHARE").
-		Name().
+		Identifier("name", "ObjectIdentifier", g.IdentifierOptions().Required()).
 		WithValidation(g.ValidIdentifier, "name"),
 ).WithCustomInterfaceMethod(
 	"DescribeProvider",
