@@ -39,7 +39,7 @@ func parseV085ExternalFunctionId(stringID string) (*v085ExternalFunctionId, erro
 	}, nil
 }
 
-func v085ExternalFunctionStateUpgrader(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func v085ExternalFunctionStateUpgrader(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
 	if rawState == nil {
 		return rawState, nil
 	}

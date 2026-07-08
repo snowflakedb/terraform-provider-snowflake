@@ -325,7 +325,7 @@ func (c columns) diffs(new columns) (removed columns, added columns, changed cha
 	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
 }
 
-func getColumnDefault(def map[string]interface{}) *columnDefault {
+func getColumnDefault(def map[string]any) *columnDefault {
 	if c, ok := def["constant"]; ok {
 		if constant, ok := c.(string); ok && len(constant) > 0 {
 			return &columnDefault{
@@ -353,7 +353,7 @@ func getColumnDefault(def map[string]interface{}) *columnDefault {
 	return nil
 }
 
-func getColumnIdentity(identity map[string]interface{}) *columnIdentity {
+func getColumnIdentity(identity map[string]any) *columnIdentity {
 	if len(identity) > 0 {
 		startNum := identity["start_num"].(int)
 		stepNum := identity["step_num"].(int)
@@ -363,19 +363,19 @@ func getColumnIdentity(identity map[string]interface{}) *columnIdentity {
 	return nil
 }
 
-func getColumn(from interface{}) (to column) {
-	c := from.(map[string]interface{})
+func getColumn(from any) (to column) {
+	c := from.(map[string]any)
 	var cd *columnDefault
 	var id *columnIdentity
 
-	_default := c["default"].([]interface{})
-	identity := c["identity"].([]interface{})
+	_default := c["default"].([]any)
+	identity := c["identity"].([]any)
 
 	if len(_default) == 1 {
-		cd = getColumnDefault(_default[0].(map[string]interface{}))
+		cd = getColumnDefault(_default[0].(map[string]any))
 	}
 	if len(identity) == 1 {
-		id = getColumnIdentity(identity[0].(map[string]interface{}))
+		id = getColumnIdentity(identity[0].(map[string]any))
 	}
 
 	return column{
@@ -390,8 +390,8 @@ func getColumn(from interface{}) (to column) {
 	}
 }
 
-func getColumns(from interface{}) (to columns) {
-	cols := from.([]interface{})
+func getColumns(from any) (to columns) {
+	cols := from.([]any)
 	to = make(columns, len(cols))
 	for i, c := range cols {
 		to[i] = getColumn(c)
@@ -399,8 +399,8 @@ func getColumns(from interface{}) (to columns) {
 	return to
 }
 
-func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
-	c := from.(map[string]interface{})
+func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
+	c := from.(map[string]any)
 	_type := c["type"].(string)
 	dataType, err := datatypes.ParseDataType(_type)
 	if err != nil {
@@ -410,10 +410,10 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 	nameInQuotes := fmt.Sprintf(`"%v"`, snowflake.EscapeString(c["name"].(string)))
 	request := sdk.NewTableColumnRequest(nameInQuotes, sdk.DataType(_type))
 
-	_default := c["default"].([]interface{})
+	_default := c["default"].([]any)
 	var expression string
 	if len(_default) == 1 {
-		if c, ok := _default[0].(map[string]interface{})["constant"]; ok {
+		if c, ok := _default[0].(map[string]any)["constant"]; ok {
 			if constant, ok := c.(string); ok && len(constant) > 0 {
 				if datatypes.IsTextDataType(dataType) {
 					expression = snowflake.EscapeSnowflakeString(constant)
@@ -423,13 +423,13 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 			}
 		}
 
-		if e, ok := _default[0].(map[string]interface{})["expression"]; ok {
+		if e, ok := _default[0].(map[string]any)["expression"]; ok {
 			if expr, ok := e.(string); ok && len(expr) > 0 {
 				expression = expr
 			}
 		}
 
-		if s, ok := _default[0].(map[string]interface{})["sequence"]; ok {
+		if s, ok := _default[0].(map[string]any)["sequence"]; ok {
 			if seq, ok2 := s.(string); ok2 && len(seq) > 0 {
 				expression = fmt.Sprintf(`%v.NEXTVAL`, seq)
 			}
@@ -437,9 +437,9 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		request.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(sdk.String(expression)))
 	}
 
-	identity := c["identity"].([]interface{})
+	identity := c["identity"].([]any)
 	if len(identity) == 1 {
-		identityProp := identity[0].(map[string]interface{})
+		identityProp := identity[0].(map[string]any)
 		startNum := identityProp["start_num"].(int)
 		stepNum := identityProp["step_num"].(int)
 		request.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(startNum, stepNum)))
@@ -459,8 +459,8 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		WithComment(sdk.String(c["comment"].(string))), nil
 }
 
-func getTableColumnRequests(from interface{}) ([]sdk.TableColumnRequest, error) {
-	cols := from.([]interface{})
+func getTableColumnRequests(from any) ([]sdk.TableColumnRequest, error) {
+	cols := from.([]any)
 	to := make([]sdk.TableColumnRequest, len(cols))
 	for i, c := range cols {
 		cReq, err := getTableColumnRequest(c)
@@ -477,13 +477,13 @@ type primarykey struct {
 	keys []string
 }
 
-func getPrimaryKey(from interface{}) (to primarykey) {
-	pk := from.([]interface{})
+func getPrimaryKey(from any) (to primarykey) {
+	pk := from.([]any)
 	to = primarykey{}
 	if len(pk) > 0 {
-		pkDetails := pk[0].(map[string]interface{})
+		pkDetails := pk[0].(map[string]any)
 		to.name = pkDetails["name"].(string)
-		to.keys = expandStringList(pkDetails["keys"].([]interface{}))
+		to.keys = expandStringList(pkDetails["keys"].([]any))
 		return to
 	}
 	return to
@@ -596,7 +596,7 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	name := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]interface{}))
+	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -608,13 +608,13 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	if v, ok := d.GetOk("cluster_by"); ok {
-		createRequest.WithClusterBy(expandStringList(v.([]interface{})))
+		createRequest.WithClusterBy(expandStringList(v.([]any)))
 	}
 
 	if v, ok := d.GetOk("primary_key"); ok {
 		keysList := v.([]any)
 		if len(keysList) > 0 {
-			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]interface{}))
+			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]any))
 			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(keys))
 
 			keyName, isPresent := keysList[0].(map[string]any)["name"]
@@ -701,7 +701,7 @@ func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	}
 
 	// Set the relevant data in the state
-	toSet := map[string]interface{}{
+	toSet := map[string]any{
 		"name":            table.Name,
 		"owner":           table.Owner,
 		"database":        table.DatabaseName,
@@ -807,7 +807,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	if d.HasChange("cluster_by") {
-		cb := expandStringList(d.Get("cluster_by").([]interface{}))
+		cb := expandStringList(d.Get("cluster_by").([]any))
 
 		if len(cb) != 0 {
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithClusterBy(cb)))

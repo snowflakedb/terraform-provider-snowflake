@@ -80,9 +80,9 @@ func ReadShares(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	sharesFlatten := []map[string]interface{}{}
+	sharesFlatten := []map[string]any{}
 	for _, share := range shares {
-		m := map[string]interface{}{}
+		m := map[string]any{}
 		m["name"] = share.Name.Name()
 		m["comment"] = share.Comment
 		m["owner"] = share.Owner

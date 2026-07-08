@@ -9,7 +9,7 @@ import (
 func TestExpandStringList(t *testing.T) {
 	r := require.New(t)
 
-	in := []interface{}{"this", "is", "just", "a", "test"}
+	in := []any{"this", "is", "just", "a", "test"}
 	out := expandStringList(in)
 
 	r.Equal("this", out[0])
@@ -21,7 +21,7 @@ func TestExpandStringList(t *testing.T) {
 
 func TestExpandBlankStringList(t *testing.T) {
 	r := require.New(t)
-	in := []interface{}{}
+	in := []any{}
 	out := expandStringList(in)
 
 	r.Empty(out)

@@ -901,7 +901,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -970,7 +970,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1034,7 +1034,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1053,7 +1053,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1082,7 +1082,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]interface{}) {
+			for _, s := range d.Get("null_if").([]any) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1169,7 +1169,7 @@ func fileFormatIDFromString(stringID string) (*fileFormatID, error) {
 	}, nil
 }
 
-func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption string) (interface{}, bool, error) {
+func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption string) (any, bool, error) {
 	validFormatTypeOptions := formatTypeOptions[formatType]
 	if v, ok := d.GetOk(formatTypeOption); ok {
 		if err := validateFormatTypeOptions(formatType, formatTypeOption, validFormatTypeOptions); err != nil {

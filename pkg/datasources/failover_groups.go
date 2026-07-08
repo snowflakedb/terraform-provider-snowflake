@@ -140,9 +140,9 @@ func ReadFailoverGroups(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 	d.SetId("failover_groups")
-	failoverGroupsFlatten := []map[string]interface{}{}
+	failoverGroupsFlatten := []map[string]any{}
 	for _, failoverGroup := range failoverGroups {
-		m := map[string]interface{}{}
+		m := map[string]any{}
 		m["region_group"] = failoverGroup.RegionGroup
 		m["snowflake_region"] = failoverGroup.SnowflakeRegion
 		m["created_on"] = failoverGroup.CreatedOn.String()

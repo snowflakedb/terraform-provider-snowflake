@@ -14,7 +14,7 @@ import (
 )
 
 func NormalizeValidation[T any](normalize func(string) (T, error)) schema.SchemaValidateDiagFunc {
-	return func(val interface{}, _ cty.Path) diag.Diagnostics {
+	return func(val any, _ cty.Path) diag.Diagnostics {
 		_, err := normalize(val.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -114,7 +114,7 @@ func getExpectedIdentifierForm(id any) string {
 
 // StringInSlice has the same implementation as validation.StringInSlice, but adapted to schema.SchemaValidateDiagFunc
 func StringInSlice(valid []string, ignoreCase bool) schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i any, path cty.Path) diag.Diagnostics {
 		v, ok := i.(string)
 		if !ok {
 			return diag.Errorf("expected type of %v to be string", path)

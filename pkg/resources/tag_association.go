@@ -310,7 +310,7 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 	return ReadContextTagAssociation(ctx, d, meta)
 }
 
-func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	tagId, ids, objectType, err := TagIdentifierAndObjectIdentifier(d)

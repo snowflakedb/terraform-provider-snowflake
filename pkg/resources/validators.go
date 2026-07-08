@@ -63,7 +63,7 @@ func StringInSlice(valid []string, ignoreCase bool) schema.SchemaValidateDiagFun
 
 // IntInSlice has the same implementation as validation.StringInSlice, but adapted to schema.SchemaValidateDiagFunc
 func IntInSlice(valid []int) schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i any, path cty.Path) diag.Diagnostics {
 		v, ok := i.(int)
 		if !ok {
 			return diag.Errorf("expected type of %v to be integer", path)

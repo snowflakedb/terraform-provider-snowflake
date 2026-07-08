@@ -96,13 +96,11 @@ func TestCache_ConcurrentReadsAreSafe(t *testing.T) {
 
 	var wg sync.WaitGroup
 	for range 100 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			result, err := cache.GetOrLoad("ROLE_A", func() ([]sdk.Grant, error) { return grants, nil })
 			assert.NoError(t, err)
 			assert.Equal(t, grants, result)
-		}()
+		})
 	}
 	wg.Wait()
 }

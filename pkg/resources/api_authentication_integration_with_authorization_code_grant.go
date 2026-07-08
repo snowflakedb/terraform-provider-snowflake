@@ -96,7 +96,7 @@ func ImportApiAuthenticationWithAuthorizationCodeGrant(ctx context.Context, d *s
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	commonCreate, err := handleApiAuthCreate(d)
 	if err != nil {
@@ -138,7 +138,7 @@ func CreateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(ctx con
 }
 
 func ReadContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
@@ -197,7 +197,7 @@ func ReadContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(withExter
 	}
 }
 
-func UpdateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextApiAuthenticationIntegrationWithAuthorizationCodeGrant(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

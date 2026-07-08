@@ -195,7 +195,7 @@ func (b *sqlBuilder) getModifier(tag reflect.StructTag, tagName string, modType 
 	return defaultMod
 }
 
-func structToSQL(v interface{}) (string, error) {
+func structToSQL(v any) (string, error) {
 	clauses, err := builder.parseStruct(v)
 	if err != nil {
 		return "", err
@@ -237,7 +237,7 @@ func (b sqlBuilder) sql(clauses ...sqlClause) (string, error) {
 	return strings.Trim(strings.Join(sList, " "), " "), nil
 }
 
-func (b sqlBuilder) parseInterface(v interface{}, tag reflect.StructTag) (sqlClause, error) {
+func (b sqlBuilder) parseInterface(v any, tag reflect.StructTag) (sqlClause, error) {
 	ddlTag := tag.Get("ddl")
 	sqlTag := tag.Get("sql")
 	if ddlTag == "" {
@@ -270,7 +270,7 @@ func (b sqlBuilder) parseInterface(v interface{}, tag reflect.StructTag) (sqlCla
 }
 
 // parseStruct parses a struct and returns a slice of sqlClauses.
-func (b sqlBuilder) parseStruct(s interface{}) ([]sqlClause, error) {
+func (b sqlBuilder) parseStruct(s any) ([]sqlClause, error) {
 	clauses := make([]sqlClause, 0)
 	v := reflect.ValueOf(s)
 	if v.Kind() == reflect.Pointer {
@@ -613,7 +613,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 	return b.renderStaticClause(clause)
 }
 
-func (b sqlBuilder) getInterface(field reflect.Value) interface{} {
+func (b sqlBuilder) getInterface(field reflect.Value) any {
 	// if the field is exported, then do this safely
 	if field.CanInterface() {
 		return field.Interface()
@@ -656,7 +656,7 @@ func (v sqlStaticClause) String() (string, error) {
 }
 
 type sqlKeywordClause struct {
-	key interface{}
+	key any
 	qm  quoteModifier
 }
 
@@ -689,7 +689,7 @@ func (v sqlIdentifierClause) String() (string, error) {
 
 type sqlParameterClause struct {
 	key   string
-	value interface{}
+	value any
 
 	// modifiers
 	qm quoteModifier

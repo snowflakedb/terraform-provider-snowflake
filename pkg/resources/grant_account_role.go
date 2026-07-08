@@ -58,7 +58,7 @@ func GrantAccountRole() *schema.Resource {
 		DeleteContext: TrackingDeleteWrapper(resources.GrantAccountRole, DeleteGrantAccountRole),
 		Schema:        grantAccountRoleSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.GrantAccountRole, func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+			StateContext: TrackingImportWrapper(resources.GrantAccountRole, func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 				parts := strings.Split(d.Id(), helpers.IDDelimiter)
 				if len(parts) != 3 {
 					return nil, fmt.Errorf("invalid ID specified: %v, expected <role_name>|<grantee_object_type>|<grantee_identifier>", d.Id())
@@ -87,7 +87,7 @@ func GrantAccountRole() *schema.Resource {
 }
 
 // CreateGrantAccountRole implements schema.CreateFunc.
-func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	roleName := d.Get("role_name").(string)
@@ -136,7 +136,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	return ReadGrantAccountRole(ctx, d, meta)
 }
 
-func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
@@ -195,7 +195,7 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
