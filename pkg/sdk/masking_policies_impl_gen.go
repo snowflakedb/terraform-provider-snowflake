@@ -148,8 +148,10 @@ func (r maskingPolicyDBRow) convert() (*MaskingPolicy, error) {
 		OwnerRoleType: r.OwnerRoleType,
 	}
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	if err := json.Unmarshal([]byte(r.Options), &result.Options); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal Options: %w", err)
+	if r.Options != "" {
+		if err := json.Unmarshal([]byte(r.Options), &result.Options); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal Options: %w", err)
+		}
 	}
 	return result, nil
 }

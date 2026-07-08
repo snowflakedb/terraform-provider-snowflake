@@ -6,7 +6,9 @@ type MaskingPolicyOptions struct {
 
 // additionalConvert extracts ExemptOtherPolicies from the JSON-parsed Options field.
 func (r maskingPolicyDBRow) additionalConvert(result *MaskingPolicy) error {
-	result.ExemptOtherPolicies = result.Options.ExemptOtherPolicies
+	if result.Options != nil {
+		result.ExemptOtherPolicies = result.Options.ExemptOtherPolicies
+	}
 	return nil
 }
 

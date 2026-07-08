@@ -87,7 +87,7 @@ var maskingPoliciesDef = g.NewInterface(
 			Text("kind").
 			Text("owner").
 			OptionalText("comment", g.WithRequiredInPlain()).
-			JsonField("options", "MaskingPolicyOptions").
+			JsonField("options", "*MaskingPolicyOptions").
 			Text("owner_role_type").
 			PlainOnlyField("ExemptOtherPolicies", "bool"),
 		g.NewQueryStruct("ShowMaskingPolicies").

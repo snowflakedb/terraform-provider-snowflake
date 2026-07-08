@@ -100,7 +100,7 @@ type MaskingPolicy struct {
 	Kind                string
 	Owner               string
 	Comment             string
-	Options             MaskingPolicyOptions
+	Options             *MaskingPolicyOptions
 	OwnerRoleType       string
 	ExemptOtherPolicies bool
 }
