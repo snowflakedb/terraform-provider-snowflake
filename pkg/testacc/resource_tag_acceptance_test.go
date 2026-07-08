@@ -1490,6 +1490,55 @@ func TestAcc_Tag_OrderedAllowedValues_FieldTransitions(t *testing.T) {
 	})
 }
 
+func TestAcc_Tag_OrderedAllowedValues_ExternalOrderMatchesConfig(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	withoutOrdering := model.TagBase("test", id).
+		WithAllowedValues("a", "b", "c")
+	withOrdering := model.TagBase("test", id).
+		WithOrderedAllowedValues("c", "b", "a")
+
+	ref := withoutOrdering.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Tag),
+		Steps: []resource.TestStep{
+			// Create with initial ordering
+			{
+				Config: config.FromModels(t, withoutOrdering),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValues("a", "b", "c"),
+					resourceassert.TagResource(t, ref).HasAllowedValues("a", "b", "c"),
+				),
+			},
+			// Validate that going from unordered to ordered allowed values results in no changes planned when the ordering is correct on the Snowflake side
+			{
+				PreConfig: func() {
+					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(
+						*sdk.NewTagSetRequest().
+							WithAllowedValues(*sdk.NewAllowedValuesRequestFromStrings([]string{"c", "b", "a"})),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						// We expect here an update-in-place plan, but it cannot be asserted as Terraform doesn't differentiate between update-in-place and update plans
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withOrdering),
+				Check: assertThat(t,
+					objectassert.Tag(t, id).HasAllowedValues("c", "b", "a"),
+					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("c", "b", "a"),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Tag_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
