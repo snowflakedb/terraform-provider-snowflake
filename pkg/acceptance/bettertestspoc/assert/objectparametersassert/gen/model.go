@@ -19,11 +19,12 @@ type SnowflakeObjectParametersAssertionsModel struct {
 }
 
 type ParameterAssertionModel struct {
-	Name             string
-	Type             string
-	DefaultValue     string
-	DefaultLevel     string
-	AssertionCreator string
+	Name               string
+	Type               string
+	DefaultValue       string
+	DefaultLevel       string
+	AssertionCreator   string
+	IsSnowflakeDefault bool
 }
 
 func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjectParameters, preamble *genhelpers.PreambleModel) SnowflakeObjectParametersAssertionsModel {
@@ -52,11 +53,12 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjec
 		}
 
 		parameters[idx] = ParameterAssertionModel{
-			Name:             p.ParameterName,
-			Type:             p.ParameterType,
-			DefaultValue:     defaultValue,
-			DefaultLevel:     p.DefaultLevel,
-			AssertionCreator: assertionCreator,
+			Name:               p.ParameterName,
+			Type:               p.ParameterType,
+			DefaultValue:       defaultValue,
+			DefaultLevel:       p.DefaultLevel,
+			AssertionCreator:   assertionCreator,
+			IsSnowflakeDefault: p.DefaultLevel == "sdk.ParameterTypeSnowflakeDefault",
 		}
 	}
 
