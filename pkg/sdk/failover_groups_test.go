@@ -9,7 +9,7 @@ func TestFailoverGroupsCreate(t *testing.T) {
 		opts := &CreateFailoverGroupOptions{
 			IfNotExists: Bool(true),
 			name:        NewAccountObjectIdentifier("fg1"),
-			objectTypes: []PluralObjectType{
+			ObjectTypes: []PluralObjectType{
 				PluralObjectTypeShares,
 				PluralObjectTypeDatabases,
 			},
@@ -19,7 +19,7 @@ func TestFailoverGroupsCreate(t *testing.T) {
 			AllowedShares: []AccountObjectIdentifier{
 				NewAccountObjectIdentifier("share1"),
 			},
-			allowedAccounts: []AccountIdentifier{
+			AllowedAccounts: []AccountIdentifier{
 				NewAccountIdentifier("MY_ORG", "MY_ACCOUNT"),
 			},
 			IgnoreEditionCheck:  Bool(true),
@@ -32,10 +32,10 @@ func TestFailoverGroupsCreate(t *testing.T) {
 		opts := &CreateFailoverGroupOptions{
 			IfNotExists: Bool(true),
 			name:        NewAccountObjectIdentifier("fg1"),
-			objectTypes: []PluralObjectType{
+			ObjectTypes: []PluralObjectType{
 				PluralObjectTypeRoles,
 			},
-			allowedAccounts: []AccountIdentifier{
+			AllowedAccounts: []AccountIdentifier{
 				NewAccountIdentifier("MY_ORG", "MY_ACCOUNT"),
 			},
 		}
@@ -44,10 +44,10 @@ func TestFailoverGroupsCreate(t *testing.T) {
 }
 
 func TestCreateSecondaryReplicationGroup(t *testing.T) {
-	opts := &CreateSecondaryReplicationGroupOptions{
+	opts := &CreateSecondaryReplicationGroupFailoverGroupOptions{
 		IfNotExists:          Bool(true),
 		name:                 NewAccountObjectIdentifier("fg1"),
-		primaryFailoverGroup: NewExternalObjectIdentifierFromFullyQualifiedName("myorg.myaccount.fg1"),
+		PrimaryFailoverGroup: NewExternalObjectIdentifierFromFullyQualifiedName("myorg.myaccount.fg1"),
 	}
 	assertOptsValidAndSQLEquals(t, opts, `CREATE FAILOVER GROUP IF NOT EXISTS "fg1" AS REPLICA OF "myorg"."myaccount"."fg1"`)
 }
@@ -60,7 +60,7 @@ func TestFailoverGroupAlterSource(t *testing.T) {
 			name:  id,
 			Unset: &FailoverGroupUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("FailoverGroupUnset", "ReplicationSchedule"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule"))
 	})
 
 	t.Run("unset replication schedule", func(t *testing.T) {
@@ -76,7 +76,7 @@ func TestFailoverGroupAlterSource(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		opts := &AlterSourceFailoverGroupOptions{
 			name:    id,
-			NewName: NewAccountObjectIdentifier("myfg1"),
+			NewName: Pointer(NewAccountObjectIdentifier("myfg1")),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" RENAME TO "myfg1"`)
 	})
@@ -228,14 +228,14 @@ func TestFailoverGroupsShow(t *testing.T) {
 }
 
 func TestFailoverGroupsShowDatabases(t *testing.T) {
-	opts := &ShowFailoverGroupDatabasesOptions{
+	opts := &ShowFailoverGroupDatabasesFailoverGroupOptions{
 		In: NewAccountObjectIdentifier("fg1"),
 	}
 	assertOptsValidAndSQLEquals(t, opts, `SHOW DATABASES IN FAILOVER GROUP "fg1"`)
 }
 
 func TestFailoverGroupsShowShares(t *testing.T) {
-	opts := &ShowFailoverGroupSharesOptions{
+	opts := &ShowFailoverGroupSharesFailoverGroupOptions{
 		In: NewAccountObjectIdentifier("fg1"),
 	}
 	assertOptsValidAndSQLEquals(t, opts, `SHOW SHARES IN FAILOVER GROUP "fg1"`)

@@ -1,6 +1,11 @@
 package sdk
 
-import "context"
+import (
+	"context"
+	"errors"
+	"slices"
+	"strings"
+)
 
 func (v *FailoverGroup) ExternalID() ExternalObjectIdentifier {
 	return NewExternalObjectIdentifier(AccountIdentifier{
@@ -10,8 +15,63 @@ func (v *FailoverGroup) ExternalID() ExternalObjectIdentifier {
 	}, v.ID())
 }
 
+func (v *FailoverGroupSet) additionalValidations() error {
+	if len(v.AllowedIntegrationTypes) > 0 {
+		if !slices.Contains(v.ObjectTypes, PluralObjectTypeIntegrations) {
+			return errors.New("INTEGRATIONS must be set in OBJECT_TYPES when setting allowed integration types")
+		}
+	}
+	return nil
+}
+
+func (row failoverGroupDBRow) additionalConvert(result *FailoverGroup) error {
+	result.Primary = NewExternalObjectIdentifierFromFullyQualifiedName(row.Primary)
+
+	ots := strings.Split(row.ObjectTypes, ",")
+	result.ObjectTypes = make([]PluralObjectType, 0, len(ots))
+	for _, ot := range ots {
+		pot := PluralObjectType(strings.TrimSpace(ot))
+		if pot == PluralObjectTypeParameters {
+			result.ObjectTypes = append(result.ObjectTypes, PluralObjectType("ACCOUNT PARAMETERS"))
+		} else {
+			result.ObjectTypes = append(result.ObjectTypes, pot)
+		}
+	}
+
+	its := strings.Split(row.AllowedIntegrationTypes, ",")
+	result.AllowedIntegrationTypes = make([]IntegrationType, 0, len(its))
+	for _, it := range its {
+		if it == "" {
+			continue
+		}
+		result.AllowedIntegrationTypes = append(result.AllowedIntegrationTypes, IntegrationType(strings.ReplaceAll(strings.TrimSpace(it), "_", " ")+" INTEGRATIONS"))
+	}
+
+	aas := strings.Split(row.AllowedAccounts, ",")
+	result.AllowedAccounts = make([]AccountIdentifier, 0, len(aas))
+	for _, aa := range aas {
+		s := strings.TrimSpace(aa)
+		p := strings.Split(s, ".")
+		if len(p) != 2 {
+			continue
+		}
+		result.AllowedAccounts = append(result.AllowedAccounts, NewAccountIdentifier(p[0], p[1]))
+	}
+
+	result.SecondaryState = FailoverGroupSecondaryStateNull
+	if row.SecondaryState.Valid {
+		result.SecondaryState = FailoverGroupSecondaryState(row.SecondaryState.String)
+	}
+
+	return nil
+}
+
+func (r *CreateFailoverGroupRequest) GetName() AccountObjectIdentifier {
+	return r.name
+}
+
 func (v *failoverGroups) ShowDatabases(ctx context.Context, id AccountObjectIdentifier) ([]AccountObjectIdentifier, error) {
-	databases, err := v.ShowFailoverGroupDatabases(ctx, NewShowFailoverGroupDatabasesRequest(id))
+	databases, err := v.ShowFailoverGroupDatabases(ctx, NewShowFailoverGroupDatabasesFailoverGroupRequest(id))
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +83,7 @@ func (v *failoverGroups) ShowDatabases(ctx context.Context, id AccountObjectIden
 }
 
 func (v *failoverGroups) ShowShares(ctx context.Context, id AccountObjectIdentifier) ([]AccountObjectIdentifier, error) {
-	shares, err := v.ShowFailoverGroupShares(ctx, NewShowFailoverGroupSharesRequest(id))
+	shares, err := v.ShowFailoverGroupShares(ctx, NewShowFailoverGroupSharesFailoverGroupRequest(id))
 	if err != nil {
 		return nil, err
 	}
