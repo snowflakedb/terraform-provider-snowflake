@@ -140,7 +140,6 @@ func OauthIntegrationForPartnerApplications() *schema.Resource {
 		Description:   "Resource used to manage oauth security integration for partner applications objects. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OauthIntegrationForPartnerApplications, customdiff.All(
-			oauthAllowedRolesListRequiresSecondaryRolesNone,
 			ComputedIfAnyAttributeChanged(
 				oauthIntegrationForPartnerApplicationsSchema,
 				ShowOutputAttributeName,
@@ -165,6 +164,9 @@ func OauthIntegrationForPartnerApplications() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.OauthIntegrationForPartnerApplications, ImportOauthForPartnerApplicationIntegration),
 		},
 		Timeouts: defaultTimeouts,
+		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
+			oauthAllowedRolesListRequiresSecondaryRolesNone,
+		},
 	}
 }
 
