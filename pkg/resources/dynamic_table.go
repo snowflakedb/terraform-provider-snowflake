@@ -223,15 +223,15 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if err := d.Set("comment", dynamicTable.Comment); err != nil {
 		return diag.FromErr(err)
 	}
-	tl := map[string]interface{}{}
+	tl := map[string]any{}
 	if dynamicTable.TargetLag == "DOWNSTREAM" {
 		tl["downstream"] = true
-		if err := d.Set("target_lag", []interface{}{tl}); err != nil {
+		if err := d.Set("target_lag", []any{tl}); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
 		tl["maximum_duration"] = dynamicTable.TargetLag
-		if err := d.Set("target_lag", []interface{}{tl}); err != nil {
+		if err := d.Set("target_lag", []any{tl}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -334,9 +334,9 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	return nil
 }
 
-func parseTargetLag(v interface{}) sdk.TargetLag {
+func parseTargetLag(v any) sdk.TargetLag {
 	var result sdk.TargetLag
-	tl := v.([]interface{})[0].(map[string]interface{})
+	tl := v.([]any)[0].(map[string]any)
 	if v, ok := tl["maximum_duration"]; ok {
 		result.MaximumDuration = sdk.String(v.(string))
 	}

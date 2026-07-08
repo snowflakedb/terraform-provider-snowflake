@@ -223,11 +223,11 @@ type tag struct {
 	schema   string
 }
 
-func getTags(from interface{}) (to tags) {
-	tags := from.([]interface{})
+func getTags(from any) (to tags) {
+	tags := from.([]any)
 	to = make([]tag, len(tags))
 	for i, t := range tags {
-		v := t.(map[string]interface{})
+		v := t.(map[string]any)
 		to[i] = tag{
 			name:     v["name"].(string),
 			value:    v["value"].(string),

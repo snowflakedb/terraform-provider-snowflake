@@ -67,7 +67,7 @@ func ExternalFunctions() *schema.Resource {
 	}
 }
 
-func ReadContextExternalFunctions(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadContextExternalFunctions(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	databaseName := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
@@ -79,9 +79,9 @@ func ReadContextExternalFunctions(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	}
 
-	externalFunctionsList := []map[string]interface{}{}
+	externalFunctionsList := []map[string]any{}
 	for _, externalFunction := range externalFunctions {
-		externalFunctionMap := map[string]interface{}{}
+		externalFunctionMap := map[string]any{}
 		externalFunctionMap["name"] = externalFunction.Name
 
 		// do we filter by database?

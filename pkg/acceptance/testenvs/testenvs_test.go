@@ -15,11 +15,9 @@ func Test_GetOrSkipTest(t *testing.T) {
 		t.Helper()
 		var env string
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			env = testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-		}()
+		})
 		wg.Wait()
 		return env
 	}
@@ -51,11 +49,9 @@ func Test_SkipTestIfSet(t *testing.T) {
 	runSkipTestIfSetInGoroutineAndWaitForCompletion := func(t *testing.T, env testenvs.Env) {
 		t.Helper()
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			testenvs.SkipTestIfSet(t, env, "some good reason")
-		}()
+		})
 		wg.Wait()
 	}
 
@@ -84,11 +80,9 @@ func Test_SkipTestIfSetTo(t *testing.T) {
 	runSkipTestIfSetToInGoroutineAndWaitForCompletion := func(t *testing.T, env testenvs.Env, value string) {
 		t.Helper()
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			testenvs.SkipTestIfSetTo(t, env, value, "some good reason")
-		}()
+		})
 		wg.Wait()
 	}
 
@@ -126,11 +120,9 @@ func Test_SkipTestIfValueIn(t *testing.T) {
 	runSkipTestIfValueInInGoroutineAndWaitForCompletion := func(t *testing.T, env testenvs.Env, values []string) {
 		t.Helper()
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			testenvs.SkipTestIfValueIn(t, env, values, "some good reason")
-		}()
+		})
 		wg.Wait()
 	}
 
@@ -167,11 +159,9 @@ func Test_Assertions(t *testing.T) {
 	// so we need to be wrapped in a Goroutine.
 	runAssertionInGoroutineAndWaitForCompletion := func(assertion func()) {
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			assertion()
-		}()
+		})
 		wg.Wait()
 	}
 
