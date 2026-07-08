@@ -256,6 +256,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic))),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit))),
+					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.allowed_roles_list.0.value", "")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_issue_refresh_tokens.0.value", "false")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "86400")),

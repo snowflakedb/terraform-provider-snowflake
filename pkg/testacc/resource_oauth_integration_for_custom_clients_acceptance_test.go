@@ -564,7 +564,7 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, allowedRolesWithImplicitModel),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`allowed_roles_list can only be set when oauth_use_secondary_roles is set to NONE`),
+				ExpectError: regexp.MustCompile(`allowed_roles_list can only be set when oauth_use_secondary_roles is set to\s+NONE`),
 			},
 		},
 	})
