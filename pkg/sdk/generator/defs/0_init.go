@@ -65,6 +65,7 @@ func init() {
 		storageLifecyclePoliciesDef,
 		streamlitsDef,
 		streamsDef,
+		tablesDef,
 		tagReferencesDef,
 		tagsDef,
 		tasksDef,

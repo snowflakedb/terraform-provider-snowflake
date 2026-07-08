@@ -330,6 +330,11 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.TableSearchOptimizationDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PasswordPolicy{},
 	},
