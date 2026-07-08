@@ -36,8 +36,8 @@ type DatabaseDetailsRow struct {
 }
 
 func (v *Database) SetTransient(value string) {
-	parts := strings.Split(value, ", ")
-	for _, part := range parts {
+	parts := strings.SplitSeq(value, ", ")
+	for part := range parts {
 		if part == "TRANSIENT" {
 			v.Transient = true
 		}

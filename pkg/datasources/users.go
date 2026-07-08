@@ -123,7 +123,6 @@ func ReadUsers(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	flattenedUsers := make([]map[string]any, len(users))
 
 	for i, user := range users {
-		user := user
 		var userDescription []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Users.DescribeDetails(ctx, user.ID())

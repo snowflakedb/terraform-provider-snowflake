@@ -540,9 +540,9 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 
 	defaultRaw := *td.Default
 	def := map[string]any{}
-	if strings.HasSuffix(defaultRaw, ".NEXTVAL") {
+	if before, ok := strings.CutSuffix(defaultRaw, ".NEXTVAL"); ok {
 		// TODO [SNOW-867240]: SHOW TABLE returns last part of id without double quotes... we have to quote it again. Move it to SDK.
-		sequenceIdRaw := strings.TrimSuffix(defaultRaw, ".NEXTVAL")
+		sequenceIdRaw := before
 		def["sequence"] = sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(sequenceIdRaw).FullyQualifiedName()
 		return def
 	}

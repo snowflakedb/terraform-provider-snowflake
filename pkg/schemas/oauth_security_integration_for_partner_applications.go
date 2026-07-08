@@ -53,7 +53,6 @@ var OauthIntegrationForPartnerApplicationsPropertiesNames = []string{
 func DescribeOauthIntegrationForPartnerApplicationsToSchema(integrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
 	securityIntegrationProperties := make(map[string]any)
 	for _, property := range integrationProperties {
-		property := property
 		if slices.Contains(OauthIntegrationForPartnerApplicationsPropertiesNames, property.Name) {
 			securityIntegrationProperties[strings.ToLower(property.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&property)}
 		} else {

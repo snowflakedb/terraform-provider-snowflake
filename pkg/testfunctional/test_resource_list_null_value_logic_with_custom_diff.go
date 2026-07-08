@@ -3,6 +3,7 @@ package testfunctional
 import (
 	"context"
 	"log"
+	"maps"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
@@ -29,9 +30,7 @@ func listNullValueLogicHelperFieldFromRawConfig(d *schema.ResourceDiff) string {
 
 var testResourceListNullValueLogicWithHelperFieldSchema = func() map[string]*schema.Schema {
 	s := map[string]*schema.Schema{}
-	for k, v := range testResourceListNullValueLogicSchema {
-		s[k] = v
-	}
+	maps.Copy(s, testResourceListNullValueLogicSchema)
 	s["nullable_list_presence"] = &schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,

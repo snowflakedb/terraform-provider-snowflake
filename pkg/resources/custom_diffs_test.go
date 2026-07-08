@@ -783,7 +783,6 @@ func Test_RecreateWhenUserTypeChangedExternally(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			customDiff := resources.RecreateWhenUserTypeChangedExternally(tt.userType)
 			testProvider := createProviderWithNamedPropertyAndCustomDiff(t, "user_type", &schema.Schema{
@@ -982,7 +981,6 @@ func Test_RecreateWhenSecretTypeChangedExternally(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			customDiff := resources.RecreateWhenSecretTypeChangedExternally(tt.secretType)
 			testProvider := createProviderWithNamedPropertyAndCustomDiff(t, "secret_type", &schema.Schema{
@@ -1051,7 +1049,6 @@ func Test_RecreateWhenSecretTypeChangedExternallyForOAuth2(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			customDiff := resources.RecreateWhenSecretTypeChangedExternally(tt.secretType)
 			testProvider := createProviderWithCustomSchemaAndCustomDiff(t,
@@ -1126,7 +1123,6 @@ func Test_RecreateWhenResourceBoolFieldChangedExternally(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			customDiff := resources.RecreateWhenResourceBoolFieldChangedExternally("is_primary", tt.isPrimary)
 			testProvider := createProviderWithCustomSchemaAndCustomDiff(t,

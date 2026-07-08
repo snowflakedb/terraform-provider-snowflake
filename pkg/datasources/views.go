@@ -174,7 +174,6 @@ func ReadViews(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	flattenedViews := make([]map[string]any, len(views))
 	for i, view := range views {
-		view := view
 		var viewDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.Views.Describe(ctx, view.ID())

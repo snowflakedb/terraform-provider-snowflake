@@ -653,7 +653,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.CSVFieldOptionallyEnclosedBy = &v
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.CSVNullIf = &newNullIf
@@ -723,7 +723,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.JSONTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.JSONNullIf = newNullIf
@@ -789,7 +789,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.AvroTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.AvroNullIf = &newNullIf
@@ -819,7 +819,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.ORCTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ORCNullIf = &newNullIf
@@ -846,7 +846,7 @@ func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.ParquetTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ParquetNullIf = &newNullIf

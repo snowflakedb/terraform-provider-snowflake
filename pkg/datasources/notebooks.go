@@ -74,7 +74,6 @@ func ReadNotebooks(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 	flattenedNotebooks := make([]map[string]any, len(notebooks))
 	for i, notebook := range notebooks {
-		notebook := notebook
 		var notebookDetails []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Notebooks.Describe(ctx, notebook.ID())

@@ -187,7 +187,6 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 
 	flattenedRowAccessPolicies := make([]map[string]any, len(rowAccessPolicies))
 	for i, policy := range rowAccessPolicies {
-		policy := policy
 		var policyDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.RowAccessPolicies.Describe(ctx, policy.ID())

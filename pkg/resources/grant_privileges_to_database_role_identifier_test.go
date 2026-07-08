@@ -335,7 +335,6 @@ func TestParseGrantPrivilegesToDatabaseRoleId(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			id, err := ParseGrantPrivilegesToDatabaseRoleId(tt.Identifier)
 			if tt.Error == "" {
@@ -467,7 +466,6 @@ func TestGrantPrivilegesToDatabaseRoleIdString(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			assert.Equal(t, tt.Expected, tt.Identifier.String())
 		})
