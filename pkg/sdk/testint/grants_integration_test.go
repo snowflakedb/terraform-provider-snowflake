@@ -2180,10 +2180,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		t.Cleanup(func() {
 			currentRole := testClientHelper().Context.CurrentRole(t)
-			usePreviousRole := testClientHelper().Role.UseRole(t, role.ID())
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(task), sdk.Pointer(sdk.Revoke))
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(secondTask), sdk.Pointer(sdk.Revoke))
-			usePreviousRole()
 		})
 
 		usePreviousRole = testClientHelper().Role.UseRole(t, taskRole.ID())
