@@ -11,53 +11,26 @@ func (v *FailoverGroup) ExternalID() ExternalObjectIdentifier {
 }
 
 func (v *failoverGroups) ShowDatabases(ctx context.Context, id AccountObjectIdentifier) ([]AccountObjectIdentifier, error) {
-	opts := &showFailoverGroupDatabasesOptions{
-		in: id,
-	}
-	if err := opts.validate(); err != nil {
-		return nil, err
-	}
-	sql, err := structToSQL(opts)
+	databases, err := v.ShowFailoverGroupDatabases(ctx, NewShowFailoverGroupDatabasesRequest(id))
 	if err != nil {
 		return nil, err
 	}
-	dest := []struct {
-		Name string `db:"name"`
-	}{}
-	err = v.client.query(ctx, &dest, sql)
-	if err != nil {
-		return nil, err
+	result := make([]AccountObjectIdentifier, len(databases))
+	for i, db := range databases {
+		result[i] = NewAccountObjectIdentifier(db.Name)
 	}
-	resultList := make([]AccountObjectIdentifier, len(dest))
-	for i, row := range dest {
-		resultList[i] = NewAccountObjectIdentifier(row.Name)
-	}
-	return resultList, nil
+	return result, nil
 }
 
 func (v *failoverGroups) ShowShares(ctx context.Context, id AccountObjectIdentifier) ([]AccountObjectIdentifier, error) {
-	opts := &showFailoverGroupSharesOptions{
-		in: id,
-	}
-	if err := opts.validate(); err != nil {
-		return nil, err
-	}
-	sql, err := structToSQL(opts)
+	shares, err := v.ShowFailoverGroupShares(ctx, NewShowFailoverGroupSharesRequest(id))
 	if err != nil {
 		return nil, err
 	}
-	dest := []struct {
-		Name         string `db:"name"`
-		OwnerAccount string `db:"owner_account"`
-	}{}
-	err = v.client.query(ctx, &dest, sql)
-	if err != nil {
-		return nil, err
-	}
-	resultList := make([]AccountObjectIdentifier, len(dest))
-	for i, r := range dest {
+	result := make([]AccountObjectIdentifier, len(shares))
+	for i, s := range shares {
 		// TODO [SNOW-1348343]: change during failover groups rework; this was not working correctly with identifiers containing `.` character
-		resultList[i] = NewExternalObjectIdentifier(NewAccountIdentifierFromFullyQualifiedName(r.OwnerAccount), NewAccountObjectIdentifier(r.Name)).objectIdentifier.(AccountObjectIdentifier)
+		result[i] = NewExternalObjectIdentifier(NewAccountIdentifierFromFullyQualifiedName(s.OwnerAccount), NewAccountObjectIdentifier(s.Name)).objectIdentifier.(AccountObjectIdentifier)
 	}
-	return resultList, nil
+	return result, nil
 }

@@ -228,15 +228,15 @@ func TestFailoverGroupsShow(t *testing.T) {
 }
 
 func TestFailoverGroupsShowDatabases(t *testing.T) {
-	opts := &showFailoverGroupDatabasesOptions{
-		in: NewAccountObjectIdentifier("fg1"),
+	opts := &ShowFailoverGroupDatabasesOptions{
+		In: NewAccountObjectIdentifier("fg1"),
 	}
 	assertOptsValidAndSQLEquals(t, opts, `SHOW DATABASES IN FAILOVER GROUP "fg1"`)
 }
 
 func TestFailoverGroupsShowShares(t *testing.T) {
-	opts := &showFailoverGroupSharesOptions{
-		in: NewAccountObjectIdentifier("fg1"),
+	opts := &ShowFailoverGroupSharesOptions{
+		In: NewAccountObjectIdentifier("fg1"),
 	}
 	assertOptsValidAndSQLEquals(t, opts, `SHOW SHARES IN FAILOVER GROUP "fg1"`)
 }

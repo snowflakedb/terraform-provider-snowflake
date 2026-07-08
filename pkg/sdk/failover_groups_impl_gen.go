@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -189,4 +190,118 @@ func (row failoverGroupDBRow) convert() (*FailoverGroup, error) {
 		Owner:                   row.Owner.String,
 		Type:                    row.Type,
 	}, nil
+}
+
+// FailoverGroupDatabase and FailoverGroupShare, their db row types, Request types, and
+// ShowFailoverGroupDatabases/ShowFailoverGroupShares methods are generated in Step 3.
+// These stubs let the package compile until the generator runs.
+
+// The types below are stubs that will be replaced by generator output in Step 3.
+
+type FailoverGroupDatabase struct {
+	Name string
+}
+
+type FailoverGroupShare struct {
+	Name         string
+	OwnerAccount string
+}
+
+// ShowFailoverGroupDatabasesOptions and ShowFailoverGroupSharesOptions mirror
+// what the generator will produce from the def (public In field, value type).
+type ShowFailoverGroupDatabasesOptions struct {
+	show      bool                    `ddl:"static" sql:"SHOW"`
+	databases bool                    `ddl:"static" sql:"DATABASES"`
+	In        AccountObjectIdentifier `ddl:"identifier" sql:"IN FAILOVER GROUP"`
+}
+
+func (opts *ShowFailoverGroupDatabasesOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	if !ValidObjectIdentifier(opts.In) {
+		return errors.Join(ErrInvalidObjectIdentifier)
+	}
+	return nil
+}
+
+type ShowFailoverGroupSharesOptions struct {
+	show   bool                    `ddl:"static" sql:"SHOW"`
+	shares bool                    `ddl:"static" sql:"SHARES"`
+	In     AccountObjectIdentifier `ddl:"identifier" sql:"IN FAILOVER GROUP"`
+}
+
+func (opts *ShowFailoverGroupSharesOptions) validate() error {
+	if opts == nil {
+		return errors.Join(ErrNilOptions)
+	}
+	if !ValidObjectIdentifier(opts.In) {
+		return errors.Join(ErrInvalidObjectIdentifier)
+	}
+	return nil
+}
+
+type ShowFailoverGroupDatabasesRequest struct {
+	in AccountObjectIdentifier
+}
+
+func NewShowFailoverGroupDatabasesRequest(in AccountObjectIdentifier) *ShowFailoverGroupDatabasesRequest {
+	return &ShowFailoverGroupDatabasesRequest{in: in}
+}
+
+type ShowFailoverGroupSharesRequest struct {
+	in AccountObjectIdentifier
+}
+
+func NewShowFailoverGroupSharesRequest(in AccountObjectIdentifier) *ShowFailoverGroupSharesRequest {
+	return &ShowFailoverGroupSharesRequest{in: in}
+}
+
+func (v *failoverGroups) ShowFailoverGroupDatabases(ctx context.Context, req *ShowFailoverGroupDatabasesRequest) ([]FailoverGroupDatabase, error) {
+	opts := &ShowFailoverGroupDatabasesOptions{In: req.in}
+	if err := opts.validate(); err != nil {
+		return nil, err
+	}
+	sql, err := structToSQL(opts)
+	if err != nil {
+		return nil, err
+	}
+	dbRows := []failoverGroupDatabaseDBRow{}
+	if err := v.client.query(ctx, &dbRows, sql); err != nil {
+		return nil, err
+	}
+	return convertRows[failoverGroupDatabaseDBRow, FailoverGroupDatabase](dbRows)
+}
+
+type failoverGroupDatabaseDBRow struct {
+	Name string `db:"name"`
+}
+
+func (r failoverGroupDatabaseDBRow) convert() (*FailoverGroupDatabase, error) {
+	return &FailoverGroupDatabase{Name: r.Name}, nil
+}
+
+func (v *failoverGroups) ShowFailoverGroupShares(ctx context.Context, req *ShowFailoverGroupSharesRequest) ([]FailoverGroupShare, error) {
+	opts := &ShowFailoverGroupSharesOptions{In: req.in}
+	if err := opts.validate(); err != nil {
+		return nil, err
+	}
+	sql, err := structToSQL(opts)
+	if err != nil {
+		return nil, err
+	}
+	dbRows := []failoverGroupShareDBRow{}
+	if err := v.client.query(ctx, &dbRows, sql); err != nil {
+		return nil, err
+	}
+	return convertRows[failoverGroupShareDBRow, FailoverGroupShare](dbRows)
+}
+
+type failoverGroupShareDBRow struct {
+	Name         string `db:"name"`
+	OwnerAccount string `db:"owner_account"`
+}
+
+func (r failoverGroupShareDBRow) convert() (*FailoverGroupShare, error) {
+	return &FailoverGroupShare{Name: r.Name, OwnerAccount: r.OwnerAccount}, nil
 }

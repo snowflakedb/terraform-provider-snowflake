@@ -155,20 +155,6 @@ func (v *FailoverGroup) ObjectType() ObjectType {
 	return ObjectTypeFailoverGroup
 }
 
-// showFailoverGroupDatabasesOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-databases-in-failover-group.
-type showFailoverGroupDatabasesOptions struct {
-	show      bool                    `ddl:"static" sql:"SHOW"`
-	databases bool                    `ddl:"static" sql:"DATABASES"`
-	in        AccountObjectIdentifier `ddl:"identifier" sql:"IN FAILOVER GROUP"`
-}
-
-// showFailoverGroupSharesOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-shares-in-failover-group.
-type showFailoverGroupSharesOptions struct {
-	show   bool                    `ddl:"static" sql:"SHOW"`
-	shares bool                    `ddl:"static" sql:"SHARES"`
-	in     AccountObjectIdentifier `ddl:"identifier" sql:"IN FAILOVER GROUP"`
-}
-
 // failoverGroupDBRow is used to decode the result of a CREATE FAILOVER GROUP query.
 type failoverGroupDBRow struct {
 	RegionGroup             string         `db:"region_group"`

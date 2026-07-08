@@ -136,23 +136,3 @@ func (opts *ShowFailoverGroupOptions) validate() error {
 	}
 	return nil
 }
-
-func (opts *showFailoverGroupDatabasesOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	if !ValidObjectIdentifier(opts.in) {
-		return errors.Join(ErrInvalidObjectIdentifier)
-	}
-	return nil
-}
-
-func (opts *showFailoverGroupSharesOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	if !ValidObjectIdentifier(opts.in) {
-		return errors.Join(ErrInvalidObjectIdentifier)
-	}
-	return nil
-}

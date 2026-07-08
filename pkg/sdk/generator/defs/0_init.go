@@ -28,6 +28,7 @@ func init() {
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
 		externalFunctionsDef,
+		failoverGroupsDef,
 		externalVolumesDef,
 		fileFormatsDef,
 		functionsDef,
