@@ -15,8 +15,8 @@ func TestMappingHelpers(t *testing.T) {
 			Input          sql.NullString
 			ExpectedOutput *string
 		}{
-			{Input: sql.NullString{Valid: true, String: "test"}, ExpectedOutput: String("test")},
-			{Input: sql.NullString{Valid: true, String: ""}, ExpectedOutput: String("")},
+			{Input: sql.NullString{Valid: true, String: "test"}, ExpectedOutput: new("test")},
+			{Input: sql.NullString{Valid: true, String: ""}, ExpectedOutput: new("")},
 			{Input: sql.NullString{Valid: false, String: "test"}, ExpectedOutput: nil},
 			{Input: sql.NullString{Valid: false, String: ""}, ExpectedOutput: nil},
 		}
@@ -40,8 +40,8 @@ func TestMappingHelpers(t *testing.T) {
 			Input          sql.NullBool
 			ExpectedOutput *bool
 		}{
-			{Input: sql.NullBool{Valid: true, Bool: true}, ExpectedOutput: Bool(true)},
-			{Input: sql.NullBool{Valid: true, Bool: false}, ExpectedOutput: Bool(false)},
+			{Input: sql.NullBool{Valid: true, Bool: true}, ExpectedOutput: new(true)},
+			{Input: sql.NullBool{Valid: true, Bool: false}, ExpectedOutput: new(false)},
 			{Input: sql.NullBool{Valid: false, Bool: true}, ExpectedOutput: nil},
 			{Input: sql.NullBool{Valid: false, Bool: false}, ExpectedOutput: nil},
 		}
@@ -65,7 +65,7 @@ func TestMappingHelpers(t *testing.T) {
 			Input          sql.NullString
 			ExpectedOutput *ListingState
 		}{
-			{Input: sql.NullString{Valid: true, String: "DRAFT"}, ExpectedOutput: Pointer(ListingStateDraft)},
+			{Input: sql.NullString{Valid: true, String: "DRAFT"}, ExpectedOutput: new(ListingStateDraft)},
 			{Input: sql.NullString{Valid: true, String: "test"}, ExpectedOutput: nil},
 			{Input: sql.NullString{Valid: true, String: ""}, ExpectedOutput: nil},
 			{Input: sql.NullString{Valid: false, String: "DRAFT"}, ExpectedOutput: nil},
@@ -92,9 +92,9 @@ func TestMappingHelpers(t *testing.T) {
 			Input          string
 			ExpectedOutput *ListingState
 		}{
-			{Input: "DRAFT", ExpectedOutput: Pointer(ListingStateDraft)},
-			{Input: "test", ExpectedOutput: Pointer(ListingState(""))},
-			{Input: "", ExpectedOutput: Pointer(ListingState(""))},
+			{Input: "DRAFT", ExpectedOutput: new(ListingStateDraft)},
+			{Input: "test", ExpectedOutput: new(ListingState(""))},
+			{Input: "", ExpectedOutput: new(ListingState(""))},
 		}
 
 		for _, tc := range testCases {

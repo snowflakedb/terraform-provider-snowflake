@@ -9,22 +9,22 @@ func TestExternalTablesCreate(t *testing.T) {
 
 	t.Run("basic options", func(t *testing.T) {
 		opts := &CreateExternalTableOptions{
-			IfNotExists: Bool(true),
+			IfNotExists: new(true),
 			name:        id,
 			Columns: []ExternalTableColumn{
 				{
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
 			},
 			CloudProviderParams: &CloudProviderParams{
-				GoogleCloudStorageIntegration: String("123"),
+				GoogleCloudStorageIntegration: new("123"),
 			},
 			Location: "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
@@ -39,22 +39,22 @@ func TestExternalTablesCreate(t *testing.T) {
 	t.Run("every optional field", func(t *testing.T) {
 		rowAccessPolicyId := randomSchemaObjectIdentifier()
 		opts := &CreateExternalTableOptions{
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			name:      id,
 			Columns: []ExternalTableColumn{
 				{
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
 			},
 			CloudProviderParams: &CloudProviderParams{
-				GoogleCloudStorageIntegration: String("123"),
+				GoogleCloudStorageIntegration: new("123"),
 			},
 			Location: "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
@@ -62,8 +62,8 @@ func TestExternalTablesCreate(t *testing.T) {
 					Type: &ExternalTableFileFormatTypeJson,
 				},
 			},
-			AwsSnsTopic: String("aws_sns_topic"),
-			CopyGrants:  Bool(true),
+			AwsSnsTopic: new("aws_sns_topic"),
+			CopyGrants:  new(true),
 			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
@@ -78,15 +78,15 @@ func TestExternalTablesCreate(t *testing.T) {
 					Value: "value2",
 				},
 			},
-			Comment: String("some_comment"),
+			Comment: new("some_comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON) AWS_SNS_TOPIC = 'aws_sns_topic' COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
 		opts := &CreateExternalTableOptions{
-			OrReplace:   Bool(true),
-			IfNotExists: Bool(true),
+			OrReplace:   new(true),
+			IfNotExists: new(true),
 			name:        emptySchemaObjectIdentifier,
 		}
 		assertOptsInvalidJoinedErrors(
@@ -106,9 +106,9 @@ func TestExternalTablesCreate(t *testing.T) {
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
@@ -127,9 +127,9 @@ func TestExternalTablesCreate(t *testing.T) {
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
@@ -146,22 +146,22 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 	t.Run("valid options", func(t *testing.T) {
 		rowAccessPolicyId := randomSchemaObjectIdentifier()
 		opts := &CreateWithManualPartitioningExternalTableOptions{
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			name:      id,
 			Columns: []ExternalTableColumn{
 				{
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
 			},
 			CloudProviderParams: &CloudProviderParams{
-				GoogleCloudStorageIntegration: String("123"),
+				GoogleCloudStorageIntegration: new("123"),
 			},
 			Location: "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
@@ -169,7 +169,7 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 					Type: &ExternalTableFileFormatTypeJson,
 				},
 			},
-			CopyGrants: Bool(true),
+			CopyGrants: new(true),
 			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
@@ -184,15 +184,15 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 					Value: "value2",
 				},
 			},
-			Comment: String("some_comment"),
+			Comment: new("some_comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON) COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
 		opts := &CreateWithManualPartitioningExternalTableOptions{
-			OrReplace:   Bool(true),
-			IfNotExists: Bool(true),
+			OrReplace:   new(true),
+			IfNotExists: new(true),
 			name:        emptySchemaObjectIdentifier,
 		}
 		assertOptsInvalidJoinedErrors(
@@ -212,9 +212,9 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
@@ -233,9 +233,9 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
@@ -252,7 +252,7 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 	t.Run("valid options", func(t *testing.T) {
 		rowAccessPolicyId := randomSchemaObjectIdentifier()
 		opts := &CreateDeltaLakeExternalTableOptions{
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			name:      id,
 			Columns: []ExternalTableColumn{
 				{
@@ -263,16 +263,16 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 				},
 			},
 			CloudProviderParams: &CloudProviderParams{
-				MicrosoftAzureIntegration: String("123"),
+				MicrosoftAzureIntegration: new("123"),
 			},
 			PartitionBy: []string{"column"},
 			Location:    "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
 				{
-					Name: String("JSON"),
+					Name: new("JSON"),
 				},
 			},
-			CopyGrants: Bool(true),
+			CopyGrants: new(true),
 			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
@@ -287,15 +287,15 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 					Value: "value2",
 				},
 			},
-			Comment: String("some_comment"),
+			Comment: new("some_comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar)) INTEGRATION = '123' PARTITION BY (column) LOCATION = @s1/logs/ FILE_FORMAT = (FORMAT_NAME = 'JSON') TABLE_FORMAT = DELTA COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
 		opts := &CreateDeltaLakeExternalTableOptions{
-			OrReplace:   Bool(true),
-			IfNotExists: Bool(true),
+			OrReplace:   new(true),
+			IfNotExists: new(true),
 			name:        emptySchemaObjectIdentifier,
 		}
 		assertOptsInvalidJoinedErrors(
@@ -315,9 +315,9 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
@@ -336,9 +336,9 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 					Name:         "column",
 					Type:         "varchar",
 					AsExpression: []string{"value::column::varchar"},
-					NotNull:      Bool(true),
+					NotNull:      new(true),
 					InlineConstraint: &ColumnInlineConstraint{
-						Name: String("my_constraint"),
+						Name: new("my_constraint"),
 						Type: ColumnConstraintTypeUnique,
 					},
 				},
@@ -355,21 +355,21 @@ func TestExternalTableUsingTemplateOpts(t *testing.T) {
 	t.Run("valid options", func(t *testing.T) {
 		rowAccessPolicyId := randomSchemaObjectIdentifier()
 		opts := &CreateExternalTableUsingTemplateOptions{
-			OrReplace:  Bool(true),
+			OrReplace:  new(true),
 			name:       id,
-			CopyGrants: Bool(true),
+			CopyGrants: new(true),
 			Query:      []string{"query statement"},
 			CloudProviderParams: &CloudProviderParams{
-				MicrosoftAzureIntegration: String("123"),
+				MicrosoftAzureIntegration: new("123"),
 			},
 			PartitionBy: []string{"column"},
 			Location:    "@s1/logs/",
 			FileFormat: []ExternalTableFileFormat{
 				{
-					Name: String("JSON"),
+					Name: new("JSON"),
 				},
 			},
-			Comment: String("some_comment"),
+			Comment: new("some_comment"),
 			RowAccessPolicy: &TableRowAccessPolicyLegacy{
 				Name: rowAccessPolicyId,
 				On:   []string{"value1", "value2"},
@@ -430,7 +430,7 @@ func TestExternalTablesAlter(t *testing.T) {
 
 	t.Run("refresh without path", func(t *testing.T) {
 		opts := &AlterExternalTableOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     id,
 			Refresh:  &RefreshExternalTable{},
 		}
@@ -439,7 +439,7 @@ func TestExternalTablesAlter(t *testing.T) {
 
 	t.Run("refresh with path", func(t *testing.T) {
 		opts := &AlterExternalTableOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     id,
 			Refresh: &RefreshExternalTable{
 				Path: "some/path",
@@ -473,7 +473,7 @@ func TestExternalTablesAlter(t *testing.T) {
 	t.Run("set auto refresh", func(t *testing.T) {
 		opts := &AlterExternalTableOptions{
 			name:        id,
-			AutoRefresh: Bool(true),
+			AutoRefresh: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE %s SET AUTO_REFRESH = true`, id.FullyQualifiedName())
 	})
@@ -526,7 +526,7 @@ func TestExternalTablesAlterPartitions(t *testing.T) {
 	t.Run("add partition", func(t *testing.T) {
 		opts := &AlterExternalTablePartitionOptions{
 			name:     id,
-			IfExists: Bool(true),
+			IfExists: new(true),
 			AddPartitions: []Partition{
 				{
 					ColumnName: "one",
@@ -545,8 +545,8 @@ func TestExternalTablesAlterPartitions(t *testing.T) {
 	t.Run("remove partition", func(t *testing.T) {
 		opts := &AlterExternalTablePartitionOptions{
 			name:          id,
-			IfExists:      Bool(true),
-			DropPartition: Bool(true),
+			IfExists:      new(true),
+			DropPartition: new(true),
 			Location:      "partition_location",
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s DROP PARTITION LOCATION 'partition_location'`, id.FullyQualifiedName())
@@ -556,7 +556,7 @@ func TestExternalTablesAlterPartitions(t *testing.T) {
 		opts := &AlterExternalTablePartitionOptions{
 			name:          emptySchemaObjectIdentifier,
 			AddPartitions: []Partition{{ColumnName: "colName", Value: "value"}},
-			DropPartition: Bool(true),
+			DropPartition: new(true),
 		}
 		assertOptsInvalidJoinedErrors(
 			t, opts,
@@ -571,10 +571,10 @@ func TestExternalTablesDrop(t *testing.T) {
 
 	t.Run("restrict", func(t *testing.T) {
 		opts := &DropExternalTableOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     id,
 			DropOption: &ExternalTableDropOption{
-				Restrict: Bool(true),
+				Restrict: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP EXTERNAL TABLE IF EXISTS %s RESTRICT`, id.FullyQualifiedName())
@@ -582,10 +582,10 @@ func TestExternalTablesDrop(t *testing.T) {
 
 	t.Run("cascade", func(t *testing.T) {
 		opts := &DropExternalTableOptions{
-			IfExists: Bool(true),
+			IfExists: new(true),
 			name:     id,
 			DropOption: &ExternalTableDropOption{
-				Cascade: Bool(true),
+				Cascade: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP EXTERNAL TABLE IF EXISTS %s CASCADE`, id.FullyQualifiedName())
@@ -595,8 +595,8 @@ func TestExternalTablesDrop(t *testing.T) {
 		opts := &DropExternalTableOptions{
 			name: emptySchemaObjectIdentifier,
 			DropOption: &ExternalTableDropOption{
-				Restrict: Bool(true),
-				Cascade:  Bool(true),
+				Restrict: new(true),
+				Cascade:  new(true),
 			},
 		}
 
@@ -611,17 +611,17 @@ func TestExternalTablesDrop(t *testing.T) {
 func TestExternalTablesShow(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &ShowExternalTableOptions{
-			Terse: Bool(true),
+			Terse: new(true),
 			Like: &Like{
-				Pattern: String("some_pattern"),
+				Pattern: new("some_pattern"),
 			},
 			In: &In{
-				Account: Bool(true),
+				Account: new(true),
 			},
-			StartsWith: String("some_external_table"),
+			StartsWith: new("some_external_table"),
 			LimitFrom: &LimitFrom{
-				Rows: Int(123),
-				From: String("some_string"),
+				Rows: new(123),
+				From: new("some_string"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE EXTERNAL TABLES LIKE 'some_pattern' IN ACCOUNT STARTS WITH 'some_external_table' LIMIT 123 FROM 'some_string'`)
@@ -629,7 +629,7 @@ func TestExternalTablesShow(t *testing.T) {
 
 	t.Run("in database", func(t *testing.T) {
 		opts := &ShowExternalTableOptions{
-			Terse: Bool(true),
+			Terse: new(true),
 			In: &In{
 				Database: NewAccountObjectIdentifier("database_name"),
 			},
@@ -640,7 +640,7 @@ func TestExternalTablesShow(t *testing.T) {
 	t.Run("in schema", func(t *testing.T) {
 		id := randomDatabaseObjectIdentifier()
 		opts := &ShowExternalTableOptions{
-			Terse: Bool(true),
+			Terse: new(true),
 			In: &In{
 				Schema: id,
 			},
@@ -652,8 +652,8 @@ func TestExternalTablesShow(t *testing.T) {
 		opts := &DropExternalTableOptions{
 			name: emptySchemaObjectIdentifier,
 			DropOption: &ExternalTableDropOption{
-				Restrict: Bool(true),
-				Cascade:  Bool(true),
+				Restrict: new(true),
+				Cascade:  new(true),
 			},
 		}
 

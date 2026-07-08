@@ -41,7 +41,7 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 
 	t.Run("validation: FromDefinition and From are conflicting fields", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.FromDefinition = String("mydef")
+		opts.FromDefinition = new("mydef")
 		opts.From = &stageLocation
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOpenflowConnectorOptions", "FromDefinition", "From"))
 	})
@@ -56,7 +56,7 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 		opts := &CreateOpenflowConnectorOptions{
 			name:           id,
 			InRuntime:      runtimeId,
-			FromDefinition: String("mydef"),
+			FromDefinition: new("mydef"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OPENFLOW CONNECTOR %s IN RUNTIME %s FROM DEFINITION mydef",
 			id.FullyQualifiedName(), runtimeId.FullyQualifiedName())
@@ -75,11 +75,11 @@ func TestOpenflowConnectors_Create(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		comment := random.Comment()
 		opts := &CreateOpenflowConnectorOptions{
-			IfNotExists:    Bool(true),
+			IfNotExists:    new(true),
 			name:           id,
 			InRuntime:      runtimeId,
-			FromDefinition: String("mydef"),
-			DisplayName:    String("My Connector"),
+			FromDefinition: new("mydef"),
+			DisplayName:    new("My Connector"),
 			Comment:        &comment,
 		}
 		assertOptsValidAndSQLEquals(t, opts,
@@ -126,31 +126,31 @@ func TestOpenflowConnectors_Alter(t *testing.T) {
 
 	t.Run("start", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Start = Bool(true)
+		opts.Start = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW CONNECTOR %s START", id.FullyQualifiedName())
 	})
 
 	t.Run("stop", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Stop = Bool(true)
+		opts.Stop = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW CONNECTOR %s STOP", id.FullyQualifiedName())
 	})
 
 	t.Run("terminate", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Terminate = Bool(true)
+		opts.Terminate = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW CONNECTOR %s TERMINATE", id.FullyQualifiedName())
 	})
 
 	t.Run("commit", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Commit = Bool(true)
+		opts.Commit = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW CONNECTOR %s COMMIT", id.FullyQualifiedName())
 	})
 
 	t.Run("abort", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Abort = Bool(true)
+		opts.Abort = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW CONNECTOR %s ABORT", id.FullyQualifiedName())
 	})
 
@@ -158,7 +158,7 @@ func TestOpenflowConnectors_Alter(t *testing.T) {
 		comment := random.Comment()
 		opts := defaultOpts()
 		opts.Set = &OpenflowConnectorSet{
-			DisplayName: String("Updated Connector"),
+			DisplayName: new("Updated Connector"),
 			Comment:     &comment,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW CONNECTOR %s SET DISPLAY_NAME = 'Updated Connector' COMMENT = '%s'",
@@ -168,8 +168,8 @@ func TestOpenflowConnectors_Alter(t *testing.T) {
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &OpenflowConnectorUnset{
-			DisplayName: Bool(true),
-			Comment:     Bool(true),
+			DisplayName: new(true),
+			Comment:     new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER OPENFLOW CONNECTOR %s UNSET DISPLAY_NAME, COMMENT", id.FullyQualifiedName())
 	})
@@ -201,7 +201,7 @@ func TestOpenflowConnectors_Drop(t *testing.T) {
 
 	t.Run("if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, "DROP OPENFLOW CONNECTOR IF EXISTS %s", id.FullyQualifiedName())
 	})
 }
@@ -223,7 +223,7 @@ func TestOpenflowConnectors_Show(t *testing.T) {
 
 	t.Run("like", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("my-connector%")}
+		opts.Like = &Like{Pattern: new("my-connector%")}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW OPENFLOW CONNECTORS LIKE 'my-connector%%'")
 	})
 

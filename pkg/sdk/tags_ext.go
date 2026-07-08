@@ -119,7 +119,7 @@ func normalizeTagColumnIdentifier(objectType *ObjectType, objectName *ObjectIden
 				*objectType = ObjectTypeIcebergTable
 			}
 			*objectName = id.SchemaObjectId()
-			*column = Pointer(id.Name())
+			*column = new(id.Name())
 		}
 	}
 }

@@ -5,13 +5,17 @@ import (
 )
 
 // String returns a pointer to the given string.
+//
+//go:fix inline
 func String(s string) *string {
-	return &s
+	return new(s)
 }
 
 // Bool returns a pointer to the given bool.
+//
+//go:fix inline
 func Bool(b bool) *bool {
-	return &b
+	return new(b)
 }
 
 // ToBool converts a string to a bool.
@@ -24,8 +28,10 @@ func ToBool(s string) bool {
 }
 
 // Int returns a pointer to the given int.
+//
+//go:fix inline
 func Int(i int) *int {
-	return &i
+	return new(i)
 }
 
 // ToInt converts a string to an int.
@@ -46,8 +52,10 @@ func ToIntWithDefault(s string, defaultValue int) int {
 }
 
 // Float64 returns a pointer to the given float64.
+//
+//go:fix inline
 func Float64(f float64) *float64 {
-	return &f
+	return new(f)
 }
 
 // ToFloat64 converts a string to a float64.
@@ -56,6 +64,8 @@ func ToFloat64(s string) (float64, error) {
 }
 
 // Pointer is a generic function that returns a pointer to a given value.
+//
+//go:fix inline
 func Pointer[K any](v K) *K {
-	return &v
+	return new(v)
 }

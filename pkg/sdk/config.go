@@ -153,7 +153,7 @@ func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 		if driverCfg.Params == nil {
 			driverCfg.Params = make(map[string]*string)
 		}
-		driverCfg.Params[ClientTelemetryEnableSessionParameter] = Pointer("false")
+		driverCfg.Params[ClientTelemetryEnableSessionParameter] = new("false")
 	}
 	pointerConfigBoolAttributeSet(c.ValidateDefaultParameters, &driverCfg.ValidateDefaultParameters)
 	pointerConfigBoolAttributeSet(c.ClientRequestMfaToken, &driverCfg.ClientRequestMfaToken)

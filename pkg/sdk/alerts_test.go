@@ -23,7 +23,7 @@ func TestAlertCreate(t *testing.T) {
 			schedule:  schedule,
 			condition: []AlertCondition{condition},
 			action:    action,
-			Comment:   String(newComment),
+			Comment:   new(newComment),
 		}
 
 		assertOptsValidAndSQLEquals(t, opts, `CREATE ALERT %s WAREHOUSE = "%s" SCHEDULE = '%s' COMMENT = '%s' IF (EXISTS (%s)) THEN %s`, id.FullyQualifiedName(), warehouse.name, schedule, newComment, existsCondition, action)
@@ -46,7 +46,7 @@ func TestAlertAlter(t *testing.T) {
 			name:   id,
 			Action: &AlertActionResume,
 			Set: &AlertSet{
-				Comment: String(newComment),
+				Comment: new(newComment),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAlertOptions", "Action", "Set", "Unset", "ModifyCondition", "ModifyAction"))
@@ -75,7 +75,7 @@ func TestAlertAlter(t *testing.T) {
 		opts := &AlterAlertOptions{
 			name: id,
 			Set: &AlertSet{
-				Comment: String(newComment),
+				Comment: new(newComment),
 			},
 		}
 
@@ -86,7 +86,7 @@ func TestAlertAlter(t *testing.T) {
 		opts := &AlterAlertOptions{
 			name: id,
 			Unset: &AlertUnset{
-				Comment: Bool(true),
+				Comment: new(true),
 			},
 		}
 
@@ -104,7 +104,7 @@ func TestAlertAlter(t *testing.T) {
 	})
 
 	t.Run("with modify action", func(t *testing.T) {
-		modifyAction := String("INSERT INTO FOO VALUES (1)")
+		modifyAction := new("INSERT INTO FOO VALUES (1)")
 		opts := &AlterAlertOptions{
 			name:         id,
 			ModifyAction: modifyAction,
@@ -132,7 +132,7 @@ func TestAlertDrop(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := &DropAlertOptions{
 			name:     id,
-			IfExists: Bool(true),
+			IfExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "DROP ALERT IF EXISTS %s", id.FullyQualifiedName())
 	})
@@ -147,14 +147,14 @@ func TestAlertShow(t *testing.T) {
 	})
 
 	t.Run("terse", func(t *testing.T) {
-		opts := &ShowAlertOptions{Terse: Bool(true)}
+		opts := &ShowAlertOptions{Terse: new(true)}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW TERSE ALERTS")
 	})
 
 	t.Run("with like", func(t *testing.T) {
 		opts := &ShowAlertOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW ALERTS LIKE '%s'", id.Name())
@@ -163,10 +163,10 @@ func TestAlertShow(t *testing.T) {
 	t.Run("with like and in account", func(t *testing.T) {
 		opts := &ShowAlertOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			In: &In{
-				Account: Bool(true),
+				Account: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW ALERTS LIKE '%s' IN ACCOUNT", id.Name())
@@ -175,7 +175,7 @@ func TestAlertShow(t *testing.T) {
 	t.Run("with like and in database", func(t *testing.T) {
 		opts := &ShowAlertOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			In: &In{
 				Database: id.DatabaseId(),
@@ -187,7 +187,7 @@ func TestAlertShow(t *testing.T) {
 	t.Run("with like and in schema", func(t *testing.T) {
 		opts := &ShowAlertOptions{
 			Like: &Like{
-				Pattern: String(id.Name()),
+				Pattern: new(id.Name()),
 			},
 			In: &In{
 				Schema: id.SchemaId(),
@@ -198,14 +198,14 @@ func TestAlertShow(t *testing.T) {
 
 	t.Run("with 'starts with'", func(t *testing.T) {
 		opts := &ShowAlertOptions{
-			StartsWith: String("FOO"),
+			StartsWith: new("FOO"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW ALERTS STARTS WITH 'FOO'")
 	})
 
 	t.Run("with limit", func(t *testing.T) {
 		opts := &ShowAlertOptions{
-			Limit: Int(10),
+			Limit: new(10),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW ALERTS LIMIT 10")
 	})

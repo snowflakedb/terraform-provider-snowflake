@@ -511,7 +511,7 @@ func (v *legacyFileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier,
 }
 
 func (v *legacyFileFormats) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // ShowFileFormatsOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-file-formats.
@@ -538,7 +538,7 @@ func (v *legacyFileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptio
 func (v *legacyFileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
 	fileFormats, err := v.client.FileFormats.Show(ctx, &ShowFileFormatsOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 		In: &In{
 			Schema: id.SchemaId(),

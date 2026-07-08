@@ -72,7 +72,7 @@ func TestTableCreate(t *testing.T) {
 			Columns: []TableColumn{{
 				Name: "a",
 				DefaultValue: &ColumnDefaultValue{
-					Expression: String("expr"),
+					Expression: new("expr"),
 					Identity: &ColumnIdentity{
 						Start:     10,
 						Increment: 1,
@@ -93,8 +93,8 @@ func TestTableCreate(t *testing.T) {
 					Identity: &ColumnIdentity{
 						Start:     10,
 						Increment: 1,
-						Order:     Bool(true),
-						Noorder:   Bool(true),
+						Order:     new(true),
+						Noorder:   new(true),
 					},
 				},
 			}},
@@ -136,8 +136,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: stageFileFormat's both format name and format type are present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.StageFileFormat = &LegacyFileFormat{
-			FormatName:     String("some_format"),
-			FileFormatType: Pointer(FileFormatTypeCsv),
+			FormatName:     new("some_format"),
+			FileFormatType: new(FileFormatTypeCsv),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("StageFileFormat", "FormatName", "FormatType"))
 	})
@@ -200,8 +200,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: inline constraint - enforced and not enforced both present", func(t *testing.T) {
 		inlineConstraint := ColumnInlineConstraint{
 			Type:        ColumnConstraintTypeUnique,
-			Enforced:    Bool(true),
-			NotEnforced: Bool(true),
+			Enforced:    new(true),
+			NotEnforced: new(true),
 		}
 		opts := defaultOptsWithColumnInlineConstraint(&inlineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("ColumnInlineConstraint", "Enforced", "NotEnforced"))
@@ -210,8 +210,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: inline constraint - deferrable and not deferrable both present", func(t *testing.T) {
 		inlineConstraint := ColumnInlineConstraint{
 			Type:          ColumnConstraintTypeUnique,
-			Deferrable:    Bool(true),
-			NotDeferrable: Bool(true),
+			Deferrable:    new(true),
+			NotDeferrable: new(true),
 		}
 		opts := defaultOptsWithColumnInlineConstraint(&inlineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("ColumnInlineConstraint", "Deferrable", "NotDeferrable"))
@@ -220,8 +220,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: inline constraint - initially deferred and initially immediate both present", func(t *testing.T) {
 		inlineConstraint := ColumnInlineConstraint{
 			Type:               ColumnConstraintTypeUnique,
-			InitiallyDeferred:  Bool(true),
-			InitiallyImmediate: Bool(true),
+			InitiallyDeferred:  new(true),
+			InitiallyImmediate: new(true),
 		}
 		opts := defaultOptsWithColumnInlineConstraint(&inlineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("ColumnInlineConstraint", "InitiallyDeferred", "InitiallyImmediate"))
@@ -230,8 +230,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: inline constraint - enable and disable both present", func(t *testing.T) {
 		inlineConstraint := ColumnInlineConstraint{
 			Type:    ColumnConstraintTypeUnique,
-			Enable:  Bool(true),
-			Disable: Bool(true),
+			Enable:  new(true),
+			Disable: new(true),
 		}
 		opts := defaultOptsWithColumnInlineConstraint(&inlineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("ColumnInlineConstraint", "Enable", "Disable"))
@@ -240,8 +240,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: inline constraint - validate and novalidate both present", func(t *testing.T) {
 		inlineConstraint := ColumnInlineConstraint{
 			Type:       ColumnConstraintTypeUnique,
-			Validate:   Bool(true),
-			NoValidate: Bool(true),
+			Validate:   new(true),
+			NoValidate: new(true),
 		}
 		opts := defaultOptsWithColumnInlineConstraint(&inlineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("ColumnInlineConstraint", "Validate", "Novalidate"))
@@ -250,8 +250,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: inline constraint - rely and norely both present", func(t *testing.T) {
 		inlineConstraint := ColumnInlineConstraint{
 			Type:   ColumnConstraintTypeUnique,
-			Rely:   Bool(true),
-			NoRely: Bool(true),
+			Rely:   new(true),
+			NoRely: new(true),
 		}
 		opts := defaultOptsWithColumnInlineConstraint(&inlineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("ColumnInlineConstraint", "Rely", "Norely"))
@@ -315,8 +315,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: out of line constraint - enforced and not enforced both present", func(t *testing.T) {
 		outOfLineConstraint := OutOfLineConstraint{
 			Type:        ColumnConstraintTypeUnique,
-			Enforced:    Bool(true),
-			NotEnforced: Bool(true),
+			Enforced:    new(true),
+			NotEnforced: new(true),
 		}
 		opts := defaultOptsWithColumnOutOfLineConstraint(&outOfLineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("OutOfLineConstraint", "Enforced", "NotEnforced"))
@@ -325,8 +325,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: out of line constraint - deferrable and not deferrable both present", func(t *testing.T) {
 		outOfLineConstraint := OutOfLineConstraint{
 			Type:          ColumnConstraintTypeUnique,
-			Deferrable:    Bool(true),
-			NotDeferrable: Bool(true),
+			Deferrable:    new(true),
+			NotDeferrable: new(true),
 		}
 		opts := defaultOptsWithColumnOutOfLineConstraint(&outOfLineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("OutOfLineConstraint", "Deferrable", "NotDeferrable"))
@@ -335,8 +335,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: out of line constraint - initially deferred and initially immediate both present", func(t *testing.T) {
 		outOfLineConstraint := OutOfLineConstraint{
 			Type:               ColumnConstraintTypeUnique,
-			InitiallyDeferred:  Bool(true),
-			InitiallyImmediate: Bool(true),
+			InitiallyDeferred:  new(true),
+			InitiallyImmediate: new(true),
 		}
 		opts := defaultOptsWithColumnOutOfLineConstraint(&outOfLineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("OutOfLineConstraint", "InitiallyDeferred", "InitiallyImmediate"))
@@ -345,8 +345,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: out of line constraint - enable and disable both present", func(t *testing.T) {
 		outOfLineConstraint := OutOfLineConstraint{
 			Type:    ColumnConstraintTypeUnique,
-			Enable:  Bool(true),
-			Disable: Bool(true),
+			Enable:  new(true),
+			Disable: new(true),
 		}
 		opts := defaultOptsWithColumnOutOfLineConstraint(&outOfLineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("OutOfLineConstraint", "Enable", "Disable"))
@@ -355,8 +355,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: out of line constraint - validate and novalidate both present", func(t *testing.T) {
 		outOfLineConstraint := OutOfLineConstraint{
 			Type:       ColumnConstraintTypeUnique,
-			Validate:   Bool(true),
-			NoValidate: Bool(true),
+			Validate:   new(true),
+			NoValidate: new(true),
 		}
 		opts := defaultOptsWithColumnOutOfLineConstraint(&outOfLineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("OutOfLineConstraint", "Validate", "Novalidate"))
@@ -365,8 +365,8 @@ func TestTableCreate(t *testing.T) {
 	t.Run("validation: out of line constraint - rely and norely both present", func(t *testing.T) {
 		outOfLineConstraint := OutOfLineConstraint{
 			Type:   ColumnConstraintTypeUnique,
-			Rely:   Bool(true),
-			NoRely: Bool(true),
+			Rely:   new(true),
+			NoRely: new(true),
 		}
 		opts := defaultOptsWithColumnOutOfLineConstraint(&outOfLineConstraint)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("OutOfLineConstraint", "Rely", "Norely"))
@@ -410,41 +410,41 @@ func TestTableCreate(t *testing.T) {
 			},
 		}
 		inlineConstraint := ColumnInlineConstraint{
-			Name: String("INLINE_CONSTRAINT"),
+			Name: new("INLINE_CONSTRAINT"),
 			Type: ColumnConstraintTypePrimaryKey,
 		}
 		require.NoError(t, err)
 		outOfLineConstraint1 := OutOfLineConstraint{
-			Name:    String("OUT_OF_LINE_CONSTRAINT"),
+			Name:    new("OUT_OF_LINE_CONSTRAINT"),
 			Type:    ColumnConstraintTypeForeignKey,
 			Columns: []string{"COLUMN_1", "COLUMN_2"},
 			ForeignKey: &OutOfLineForeignKey{
 				TableName:   randomSchemaObjectIdentifier(),
 				ColumnNames: []string{"COLUMN_3", "COLUMN_4"},
-				Match:       Pointer(FullMatchType),
+				Match:       new(FullMatchType),
 				On: &ForeignKeyOnAction{
-					OnUpdate: Pointer(ForeignKeySetNullAction),
-					OnDelete: Pointer(ForeignKeyRestrictAction),
+					OnUpdate: new(ForeignKeySetNullAction),
+					OnDelete: new(ForeignKeyRestrictAction),
 				},
 			},
 		}
 		outOfLineConstraint2 := OutOfLineConstraint{
 			Type:              ColumnConstraintTypeUnique,
 			Columns:           []string{"COLUMN_1"},
-			Enforced:          Bool(true),
-			Deferrable:        Bool(true),
-			InitiallyDeferred: Bool(true),
-			Enable:            Bool(true),
-			Rely:              Bool(true),
+			Enforced:          new(true),
+			Deferrable:        new(true),
+			InitiallyDeferred: new(true),
+			Enable:            new(true),
+			Rely:              new(true),
 		}
 		stageFileFormat := LegacyFileFormat{
-			FileFormatType: Pointer(FileFormatTypeCsv),
+			FileFormatType: new(FileFormatTypeCsv),
 			Options: &LegacyFileFormatTypeOptions{
-				CSVCompression: Pointer(CsvCompressionAuto),
+				CSVCompression: new(CsvCompressionAuto),
 			},
 		}
 		legacyTableCopyOptions := LegacyTableCopyOptions{
-			OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
+			OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")},
 		}
 		rowAccessPolicy := TableRowAccessPolicyLegacy{
 			Name: randomSchemaObjectIdentifier(),
@@ -459,10 +459,10 @@ func TestTableCreate(t *testing.T) {
 				Identity: &ColumnIdentity{
 					Start:     10,
 					Increment: 1,
-					Order:     Bool(true),
+					Order:     new(true),
 				},
 			},
-			NotNull:          Bool(true),
+			NotNull:          new(true),
 			MaskingPolicy:    &maskingPolicy,
 			Tags:             columnTags,
 			InlineConstraint: &inlineConstraint,
@@ -471,14 +471,14 @@ func TestTableCreate(t *testing.T) {
 			name:                       id,
 			ColumnsAndConstraints:      CreateTableColumnsAndConstraints{columns, []OutOfLineConstraint{outOfLineConstraint1, outOfLineConstraint2}},
 			ClusterBy:                  []string{"COLUMN_1", "COLUMN_2"},
-			EnableSchemaEvolution:      Bool(true),
+			EnableSchemaEvolution:      new(true),
 			StageFileFormat:            &stageFileFormat,
 			StageCopyOptions:           &legacyTableCopyOptions,
-			DataRetentionTimeInDays:    Int(10),
-			MaxDataExtensionTimeInDays: Int(100),
-			ChangeTracking:             Bool(true),
-			DefaultDDLCollation:        String("en"),
-			CopyGrants:                 Bool(true),
+			DataRetentionTimeInDays:    new(10),
+			MaxDataExtensionTimeInDays: new(100),
+			ChangeTracking:             new(true),
+			DefaultDDLCollation:        new("en"),
+			CopyGrants:                 new(true),
 			RowAccessPolicy:            &rowAccessPolicy,
 			Tags:                       tableTags,
 			Comment:                    &tableComment,
@@ -567,17 +567,17 @@ func TestTableCreateAsSelect(t *testing.T) {
 			On:   []string{"COLUMN_1", "COLUMN_2"},
 		}
 		opts := &createTableAsSelectOptions{
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			name:      id,
 			Columns: []TableAsSelectColumn{
 				{
 					Name:          columnName,
-					Type:          Pointer(columnType),
+					Type:          new(columnType),
 					MaskingPolicy: &maskingPolicy,
 				},
 			},
 			ClusterBy:  []string{"COLUMN_1", "COLUMN_2"},
-			CopyGrants: Bool(true),
+			CopyGrants: new(true),
 
 			RowAccessPolicy: &rowAccessPolicy,
 			Query:           "SELECT * FROM ANOTHER_TABLE",
@@ -614,9 +614,9 @@ func TestTableCreateUsingTemplate(t *testing.T) {
 	t.Run("with complete options", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &createTableUsingTemplateOptions{
-			OrReplace:  Bool(true),
+			OrReplace:  new(true),
 			name:       id,
-			CopyGrants: Bool(true),
+			CopyGrants: new(true),
 			Query:      []string{"sample_data"},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TABLE %s COPY GRANTS USING TEMPLATE (sample_data)", id.FullyQualifiedName())
@@ -659,11 +659,11 @@ func TestTableCreateLike(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		sourceTable := randomSchemaObjectIdentifier()
 		opts := &createTableLikeOptions{
-			OrReplace:   Bool(true),
+			OrReplace:   new(true),
 			name:        id,
 			SourceTable: sourceTable,
 			ClusterBy:   []string{"date", "id"},
-			CopyGrants:  Bool(true),
+			CopyGrants:  new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TABLE %s LIKE %s CLUSTER BY (date, id) COPY GRANTS", id.FullyQualifiedName(), sourceTable.FullyQualifiedName())
 	})
@@ -707,15 +707,15 @@ func TestTableCreateClone(t *testing.T) {
 		clonePoint := ClonePoint{
 			Moment: CloneMomentAt,
 			At: TimeTravel{
-				Offset: Int(0),
+				Offset: new(0),
 			},
 		}
 		opts := &createTableCloneOptions{
-			OrReplace:   Bool(true),
+			OrReplace:   new(true),
 			name:        id,
 			SourceTable: sourceTable,
 			ClonePoint:  &clonePoint,
-			CopyGrants:  Bool(true),
+			CopyGrants:  new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TABLE %s CLONE %s AT (OFFSET => 0) COPY GRANTS", id.FullyQualifiedName(), sourceTable.FullyQualifiedName())
 	})
@@ -748,21 +748,21 @@ func TestTableAlter(t *testing.T) {
 
 	t.Run("validation: both NewName and SwapWith are present ", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.NewName = Pointer(randomSchemaObjectIdentifier())
-		opts.SwapWith = Pointer(randomSchemaObjectIdentifier())
+		opts.NewName = new(randomSchemaObjectIdentifier())
+		opts.SwapWith = new(randomSchemaObjectIdentifier())
 
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterTableOptions", "NewName", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllAccessRowPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: NewName's incorrect identifier", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.NewName = Pointer(emptySchemaObjectIdentifier)
+		opts.NewName = new(emptySchemaObjectIdentifier)
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("alterTableOptions", "NewName"))
 	})
 
 	t.Run("validation: SwapWith incorrect identifier", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SwapWith = Pointer(emptySchemaObjectIdentifier)
+		opts.SwapWith = new(emptySchemaObjectIdentifier)
 		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("alterTableOptions", "SwapWith"))
 	})
 
@@ -777,8 +777,8 @@ func TestTableAlter(t *testing.T) {
 		opts.ClusteringAction = &TableClusteringAction{
 			ClusterBy: []string{"date"},
 			Recluster: &TableReclusterAction{
-				MaxSize:   Int(10),
-				Condition: String("true"),
+				MaxSize:   new(10),
+				Condition: new("true"),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
@@ -814,8 +814,8 @@ func TestTableAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.ColumnAction = &TableColumnAction{
 			Alter: []TableColumnAlterAction{{
-				DropDefault: Bool(true),
-				SetDefault:  Pointer(SequenceName("sequence")),
+				DropDefault: new(true),
+				SetDefault:  new(SequenceName("sequence")),
 			}},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableColumnAlterAction", "DropDefault", "SetDefault", "NotNullConstraint", "Type", "Comment", "UnsetComment"))
@@ -833,8 +833,8 @@ func TestTableAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &TableConstraintAction{
 			Alter: &TableConstraintAlterAction{
-				ConstraintName: String("constraint"),
-				Unique:         Bool(true),
+				ConstraintName: new("constraint"),
+				Unique:         new(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableConstraintAlterAction", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey", "Columns"))
@@ -852,8 +852,8 @@ func TestTableAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.ConstraintAction = &TableConstraintAction{
 			Drop: &TableConstraintDropAction{
-				ConstraintName: String("constraint"),
-				Unique:         Bool(true),
+				ConstraintName: new("constraint"),
+				Unique:         new(true),
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("TableConstraintDropAction", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey", "Columns"))
@@ -963,7 +963,7 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ClusteringAction: &TableClusteringAction{
 				Recluster: &TableReclusterAction{
-					MaxSize:   Int(1024),
+					MaxSize:   new(1024),
 					Condition: &condition,
 				},
 			},
@@ -976,7 +976,7 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ClusteringAction: &TableClusteringAction{
 				ChangeReclusterState: &TableReclusterChangeState{
-					State: Pointer(ReclusterStateSuspend),
+					State: new(ReclusterStateSuspend),
 				},
 			},
 		}
@@ -987,7 +987,7 @@ func TestTableAlter(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
 			ClusteringAction: &TableClusteringAction{
-				DropClusteringKey: Bool(true),
+				DropClusteringKey: new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s DROP CLUSTERING KEY", id.FullyQualifiedName())
@@ -999,10 +999,10 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ColumnAction: &TableColumnAction{
 				Add: &TableColumnAddAction{
-					IfNotExists: Bool(true),
+					IfNotExists: new(true),
 					Name:        columnName,
 					Type:        DataTypeVARCHAR,
-					Collate:     String("utf8"),
+					Collate:     new("utf8"),
 					DefaultValue: &ColumnDefaultValue{
 						Identity: &ColumnIdentity{
 							Start:     10,
@@ -1022,7 +1022,7 @@ func TestTableAlter(t *testing.T) {
 		req := NewAlterTableRequest(id).WithColumnAction(
 			NewTableColumnActionRequest().WithAdd(
 				NewTableColumnAddActionRequest("NEW_BOOLEAN_COLUMN", DataTypeBoolean).
-					WithDefaultValue(NewColumnDefaultValueRequest().WithExpression(String("FALSE"))),
+					WithDefaultValue(NewColumnDefaultValueRequest().WithExpression(new("FALSE"))),
 			),
 		)
 		assertOptsValidAndSQLEquals(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEW_BOOLEAN_COLUMN BOOLEAN DEFAULT FALSE", id.FullyQualifiedName())
@@ -1059,15 +1059,15 @@ func TestTableAlter(t *testing.T) {
 		alterActionsForColumnOne := []TableColumnAlterAction{
 			{
 				Name:        columnOneName,
-				DropDefault: Bool(true),
+				DropDefault: new(true),
 			},
 			{
 				Name:       columnOneName,
-				SetDefault: Pointer(SequenceName("SEQUENCE_1")),
+				SetDefault: new(SequenceName("SEQUENCE_1")),
 			},
 			{
 				Name:         columnOneName,
-				UnsetComment: Bool(true),
+				UnsetComment: new(true),
 			},
 		}
 
@@ -1075,24 +1075,24 @@ func TestTableAlter(t *testing.T) {
 		alterActionsForColumnTwo := []TableColumnAlterAction{
 			{
 				Name:        columnTwoName,
-				DropDefault: Bool(true),
+				DropDefault: new(true),
 			},
 			{
 				Name:       columnTwoName,
-				SetDefault: Pointer(SequenceName("SEQUENCE_2")),
+				SetDefault: new(SequenceName("SEQUENCE_2")),
 			},
 			{
 				Name:    columnTwoName,
-				Comment: String("comment"),
+				Comment: new("comment"),
 			},
 			{
 				Name:    columnTwoName,
-				Type:    Pointer(DataTypeVARCHAR),
-				Collate: String("utf8"),
+				Type:    new(DataTypeVARCHAR),
+				Collate: new("utf8"),
 			},
 			{
 				Name:              columnTwoName,
-				NotNullConstraint: &TableColumnNotNullConstraint{Drop: Bool(true)},
+				NotNullConstraint: &TableColumnNotNullConstraint{Drop: new(true)},
 			},
 		}
 		actions := slices.Concat(alterActionsForColumnOne, alterActionsForColumnTwo)
@@ -1115,7 +1115,7 @@ func TestTableAlter(t *testing.T) {
 					ColumnName:        "COLUMN_1",
 					MaskingPolicyName: maskingPolicyName,
 					Using:             []string{"FOO", "BAR"},
-					Force:             Bool(true),
+					Force:             new(true),
 				},
 			},
 		}
@@ -1184,7 +1184,7 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ColumnAction: &TableColumnAction{
 				DropColumns: &TableColumnAlterDropColumns{
-					IfExists: Bool(true),
+					IfExists: new(true),
 					Columns:  columns,
 				},
 			},
@@ -1233,16 +1233,16 @@ func TestTableAlter(t *testing.T) {
 
 	t.Run("alter constraint: add", func(t *testing.T) {
 		outOfLineConstraint := OutOfLineConstraint{
-			Name:    String("OUT_OF_LINE_CONSTRAINT"),
+			Name:    new("OUT_OF_LINE_CONSTRAINT"),
 			Type:    ColumnConstraintTypeForeignKey,
 			Columns: []string{"COLUMN_1", "COLUMN_2"},
 			ForeignKey: &OutOfLineForeignKey{
 				TableName:   randomSchemaObjectIdentifier(),
 				ColumnNames: []string{"COLUMN_3", "COLUMN_4"},
-				Match:       Pointer(FullMatchType),
+				Match:       new(FullMatchType),
 				On: &ForeignKeyOnAction{
-					OnUpdate: Pointer(ForeignKeySetNullAction),
-					OnDelete: Pointer(ForeignKeyRestrictAction),
+					OnUpdate: new(ForeignKeySetNullAction),
+					OnDelete: new(ForeignKeyRestrictAction),
 				},
 			},
 		}
@@ -1273,11 +1273,11 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ConstraintAction: &TableConstraintAction{
 				Alter: &TableConstraintAlterAction{
-					ConstraintName: String("OUT_OF_LINE_CONSTRAINT"),
+					ConstraintName: new("OUT_OF_LINE_CONSTRAINT"),
 					Columns:        []string{"COLUMN_3", "COLUMN_4"},
-					NotEnforced:    Bool(true),
-					Validate:       Bool(true),
-					Rely:           Bool(true),
+					NotEnforced:    new(true),
+					Validate:       new(true),
+					Rely:           new(true),
 				},
 			},
 		}
@@ -1289,9 +1289,9 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ConstraintAction: &TableConstraintAction{
 				Drop: &TableConstraintDropAction{
-					ConstraintName: String("OUT_OF_LINE_CONSTRAINT"),
+					ConstraintName: new("OUT_OF_LINE_CONSTRAINT"),
 					Columns:        []string{"COLUMN_3", "COLUMN_4"},
-					Cascade:        Bool(true),
+					Cascade:        new(true),
 				},
 			},
 		}
@@ -1303,7 +1303,7 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ExternalTableAction: &TableExternalTableAction{
 				Add: &TableExternalTableColumnAddAction{
-					IfNotExists: Bool(true),
+					IfNotExists: new(true),
 					Name:        "COLUMN_1",
 					Type:        DataTypeBoolean,
 					Expression:  []string{"SELECT 1"},
@@ -1331,7 +1331,7 @@ func TestTableAlter(t *testing.T) {
 			name: id,
 			ExternalTableAction: &TableExternalTableAction{
 				Drop: &TableExternalTableColumnDropAction{
-					IfExists: Bool(true),
+					IfExists: new(true),
 					Names:    []string{"COLUMN_3", "COLUMN_4"},
 				},
 			},
@@ -1380,17 +1380,17 @@ func TestTableAlter(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
 			Set: &TableSet{
-				EnableSchemaEvolution: Bool(true),
+				EnableSchemaEvolution: new(true),
 				StageFileFormat: &LegacyFileFormat{
-					FileFormatType: Pointer(FileFormatTypeCsv),
+					FileFormatType: new(FileFormatTypeCsv),
 				},
 				StageCopyOptions: &LegacyTableCopyOptions{
-					OnError: &LegacyTableCopyOnErrorOptions{SkipFile: String("SKIP_FILE")},
+					OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")},
 				},
-				DataRetentionTimeInDays:    Int(30),
-				MaxDataExtensionTimeInDays: Int(90),
-				ChangeTracking:             Bool(false),
-				DefaultDDLCollation:        String("us"),
+				DataRetentionTimeInDays:    new(30),
+				MaxDataExtensionTimeInDays: new(90),
+				ChangeTracking:             new(false),
+				DefaultDDLCollation:        new("us"),
 				Comment:                    &comment,
 			},
 		}
@@ -1433,12 +1433,12 @@ func TestTableAlter(t *testing.T) {
 		opts := &alterTableOptions{
 			name: id,
 			Unset: &TableUnset{
-				DataRetentionTimeInDays:    Bool(true),
-				MaxDataExtensionTimeInDays: Bool(true),
-				ChangeTracking:             Bool(true),
-				DefaultDDLCollation:        Bool(true),
-				EnableSchemaEvolution:      Bool(true),
-				Comment:                    Bool(true),
+				DataRetentionTimeInDays:    new(true),
+				MaxDataExtensionTimeInDays: new(true),
+				ChangeTracking:             new(true),
+				DefaultDDLCollation:        new(true),
+				EnableSchemaEvolution:      new(true),
+				Comment:                    new(true),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS CHANGE_TRACKING DEFAULT_DDL_COLLATION ENABLE_SCHEMA_EVOLUTION COMMENT`, id.FullyQualifiedName())
@@ -1491,7 +1491,7 @@ func TestTableAlter(t *testing.T) {
 	t.Run("drop all row access policies", func(t *testing.T) {
 		opts := &alterTableOptions{
 			name:                     id,
-			DropAllAccessRowPolicies: Bool(true),
+			DropAllAccessRowPolicies: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
 	})
@@ -1558,14 +1558,14 @@ func TestTableDrop(t *testing.T) {
 
 	t.Run("with if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE IF EXISTS %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: both cascade and restrict present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Cascade = Bool(true)
-		opts.Restrict = Bool(true)
+		opts.Cascade = new(true)
+		opts.Restrict = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("dropTableOptions", "Cascade", "Restrict"))
 	})
 }
@@ -1596,7 +1596,7 @@ func TestTableShow(t *testing.T) {
 	t.Run("show with like", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW TABLES LIKE '%s'`, id.Name())
 	})

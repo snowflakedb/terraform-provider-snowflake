@@ -10,7 +10,7 @@ func TestDynamicTableCreate(t *testing.T) {
 		return &createDynamicTableOptions{
 			name: id,
 			targetLag: TargetLag{
-				MaximumDuration: String("1 minutes"),
+				MaximumDuration: new("1 minutes"),
 			},
 			warehouse: AccountObjectIdentifier{
 				name: "warehouse_name",
@@ -31,14 +31,14 @@ func TestDynamicTableCreate(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
+		opts.OrReplace = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE DYNAMIC TABLE %s TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name" AS SELECT product_id, product_name FROM staging_table`, id.FullyQualifiedName())
 	})
 
 	t.Run("all optional", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Comment = String("comment")
+		opts.OrReplace = new(true)
+		opts.Comment = new("comment")
 		opts.RefreshMode = DynamicTableRefreshModeFull.ToPointer()
 		opts.Initialize = DynamicTableInitializeOnSchedule.ToPointer()
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE DYNAMIC TABLE %s TARGET_LAG = '1 minutes' INITIALIZE = ON_SCHEDULE REFRESH_MODE = FULL WAREHOUSE = "warehouse_name" COMMENT = 'comment' AS SELECT product_id, product_name FROM staging_table`, id.FullyQualifiedName())
@@ -71,8 +71,8 @@ func TestDynamicTableAlter(t *testing.T) {
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Resume = Bool(true)
-		opts.Suspend = Bool(true)
+		opts.Resume = new(true)
+		opts.Suspend = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
@@ -100,13 +100,13 @@ func TestDynamicTableAlter(t *testing.T) {
 
 	t.Run("suspend", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Suspend = Bool(true)
+		opts.Suspend = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s SUSPEND`, id.FullyQualifiedName())
 	})
 
 	t.Run("resume", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Resume = Bool(true)
+		opts.Resume = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DYNAMIC TABLE %s RESUME`, id.FullyQualifiedName())
 	})
 
@@ -114,7 +114,7 @@ func TestDynamicTableAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &DynamicTableSet{
 			TargetLag: &TargetLag{
-				MaximumDuration: String("1 minutes"),
+				MaximumDuration: new("1 minutes"),
 			},
 			Warehouse: &AccountObjectIdentifier{
 				name: "warehouse_name",
@@ -176,7 +176,7 @@ func TestDynamicTableDrop(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP DYNAMIC TABLE IF EXISTS %s`, id.FullyQualifiedName())
 	})
 }
@@ -209,7 +209,7 @@ func TestDynamicTableShow(t *testing.T) {
 	t.Run("show with like", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW DYNAMIC TABLES LIKE '%s'`, id.Name())
 	})
@@ -217,7 +217,7 @@ func TestDynamicTableShow(t *testing.T) {
 	t.Run("show with like and in", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		opts.In = &In{
 			Database: NewAccountObjectIdentifier("database"),

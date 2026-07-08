@@ -64,9 +64,9 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 		case "host":
 			details.Host = prop.Value
 		case "origin":
-			details.Origin = String(prop.Value)
+			details.Origin = new(prop.Value)
 		case "privatelink_service_identifier":
-			details.PrivatelinkServiceIdentifier = String(prop.Value)
+			details.PrivatelinkServiceIdentifier = new(prop.Value)
 		case "compute_family":
 			details.ComputeFamily = prop.Value
 		case "storage_size_gb":
@@ -109,19 +109,19 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 			}
 		case "comment":
 			if prop.Value != "" {
-				details.Comment = String(prop.Value)
+				details.Comment = new(prop.Value)
 			}
 		case "network_policy":
 			if prop.Value != "" {
-				details.NetworkPolicy = Pointer(NewAccountObjectIdentifier(prop.Value))
+				details.NetworkPolicy = new(NewAccountObjectIdentifier(prop.Value))
 			}
 		case "postgres_settings":
 			if prop.Value != "" {
-				details.PostgresSettings = String(prop.Value)
+				details.PostgresSettings = new(prop.Value)
 			}
 		case "storage_integration":
 			if prop.Value != "" {
-				details.StorageIntegration = Pointer(NewAccountObjectIdentifier(prop.Value))
+				details.StorageIntegration = new(NewAccountObjectIdentifier(prop.Value))
 			}
 		}
 	}
