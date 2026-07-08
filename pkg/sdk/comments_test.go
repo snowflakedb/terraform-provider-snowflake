@@ -10,7 +10,7 @@ func TestComments(t *testing.T) {
 		opts := &SetCommentOptions{
 			ObjectType: ObjectTypeSchema,
 			ObjectName: &id,
-			Value:      String("mycomment"),
+			Value:      new("mycomment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `COMMENT ON SCHEMA %s IS 'mycomment'`, id.FullyQualifiedName())
 	})
@@ -18,10 +18,10 @@ func TestComments(t *testing.T) {
 	t.Run("set if exists", func(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &SetCommentOptions{
-			IfExists:   Bool(true),
+			IfExists:   new(true),
 			ObjectType: ObjectTypeMaskingPolicy,
 			ObjectName: &id,
-			Value:      String("mycomment2"),
+			Value:      new("mycomment2"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `COMMENT IF EXISTS ON MASKING POLICY %s IS 'mycomment2'`, id.FullyQualifiedName())
 	})
@@ -30,7 +30,7 @@ func TestComments(t *testing.T) {
 		id := randomDatabaseObjectIdentifier()
 		opts := &SetColumnCommentOptions{
 			Column: id,
-			Value:  String("mycomment3"),
+			Value:  new("mycomment3"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `COMMENT ON COLUMN %s IS 'mycomment3'`, id.FullyQualifiedName())
 	})

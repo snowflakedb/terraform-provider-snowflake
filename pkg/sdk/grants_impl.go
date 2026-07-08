@@ -441,7 +441,7 @@ func (v *grants) grantOwnershipOnTask(ctx context.Context, taskId SchemaObjectId
 
 	currentGrantsOnAccount, err := v.client.Grants.Show(ctx, &ShowGrantOptions{
 		On: &ShowGrantsOn{
-			Account: Bool(true),
+			Account: new(true),
 		},
 	})
 	if err != nil {

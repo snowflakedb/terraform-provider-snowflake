@@ -614,13 +614,13 @@ func (row tableDBRow) convert() (*Table, error) {
 		table.Rows = int(row.Rows.Int64)
 	}
 	if row.Bytes.Valid {
-		table.Bytes = Int(int(row.Bytes.Int64))
+		table.Bytes = new(int(row.Bytes.Int64))
 	}
 	if row.RetentionTime.Valid {
 		table.RetentionTime = int(row.RetentionTime.Int64)
 	}
 	if row.DroppedOn.Valid {
-		table.DroppedOn = String(row.DroppedOn.String)
+		table.DroppedOn = new(row.DroppedOn.String)
 	}
 	if row.AutomaticClustering.Valid {
 		table.AutomaticClustering = row.AutomaticClustering.String == "ON"
@@ -635,7 +635,7 @@ func (row tableDBRow) convert() (*Table, error) {
 		table.SearchOptimizationProgress = row.SearchOptimizationProgress.String
 	}
 	if row.SearchOptimizationBytes.Valid {
-		table.SearchOptimizationBytes = Int(int(row.SearchOptimizationBytes.Int64))
+		table.SearchOptimizationBytes = new(int(row.SearchOptimizationBytes.Int64))
 	}
 	if row.IsExternal.Valid {
 		table.IsExternal = row.IsExternal.String == "Y"
@@ -656,7 +656,7 @@ func (row tableDBRow) convert() (*Table, error) {
 		table.OwnerRoleType = row.OwnerRoleType.String
 	}
 	if row.Budget.Valid {
-		table.Budget = String(row.Budget.String)
+		table.Budget = new(row.Budget.String)
 	}
 	return &table, nil
 }
@@ -721,22 +721,22 @@ func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 		Collation:  collation,
 	}
 	if r.Default.Valid {
-		details.Default = String(r.Default.String)
+		details.Default = new(r.Default.String)
 	}
 	if r.Check.Valid {
-		details.Check = Bool(r.Check.String == "Y")
+		details.Check = new(r.Check.String == "Y")
 	}
 	if r.Expression.Valid {
-		details.Expression = String(r.Expression.String)
+		details.Expression = new(r.Expression.String)
 	}
 	if r.Comment.Valid {
-		details.Comment = String(r.Comment.String)
+		details.Comment = new(r.Comment.String)
 	}
 	if r.PolicyName.Valid {
-		details.PolicyName = String(r.PolicyName.String)
+		details.PolicyName = new(r.PolicyName.String)
 	}
 	if r.SchemaEvolutionRecord.Valid {
-		details.SchemaEvolutionRecord = String(r.SchemaEvolutionRecord.String)
+		details.SchemaEvolutionRecord = new(r.SchemaEvolutionRecord.String)
 	}
 	return details, nil
 }

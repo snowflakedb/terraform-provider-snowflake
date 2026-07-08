@@ -213,24 +213,24 @@ func (d *FunctionDetail) setOptionalBoolValueOrError(property string, field **bo
 		if err != nil {
 			return fmt.Errorf("invalid value for field %s, err: %w", property, err)
 		} else {
-			*field = Bool(v)
+			*field = new(v)
 		}
 	}
 	return nil
 }
 
 func (s *CreateForJavaFunctionRequest) WithFunctionDefinitionWrapped(functionDefinition string) *CreateForJavaFunctionRequest {
-	s.FunctionDefinition = String(fmt.Sprintf(`$$%s$$`, functionDefinition))
+	s.FunctionDefinition = new(fmt.Sprintf(`$$%s$$`, functionDefinition))
 	return s
 }
 
 func (s *CreateForPythonFunctionRequest) WithFunctionDefinitionWrapped(functionDefinition string) *CreateForPythonFunctionRequest {
-	s.FunctionDefinition = String(fmt.Sprintf(`$$%s$$`, functionDefinition))
+	s.FunctionDefinition = new(fmt.Sprintf(`$$%s$$`, functionDefinition))
 	return s
 }
 
 func (s *CreateForScalaFunctionRequest) WithFunctionDefinitionWrapped(functionDefinition string) *CreateForScalaFunctionRequest {
-	s.FunctionDefinition = String(fmt.Sprintf(`$$%s$$`, functionDefinition))
+	s.FunctionDefinition = new(fmt.Sprintf(`$$%s$$`, functionDefinition))
 	return s
 }
 
@@ -276,7 +276,7 @@ func (r functionRow) additionalConvert(result *Function) error {
 
 func (r functionDetailRow) additionalConvert(result *FunctionDetail) error {
 	if r.Value.Valid && r.Value.String != "null" {
-		result.Value = String(r.Value.String)
+		result.Value = new(r.Value.String)
 	}
 	return nil
 }

@@ -30,7 +30,7 @@ func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
 		Unset: &AccountUnset{
 			LegacyParameters: &AccountLevelParametersUnset{
 				ObjectParameters: &ObjectParametersUnset{
-					NetworkPolicy: Bool(true),
+					NetworkPolicy: new(true),
 				},
 			},
 		},
@@ -45,7 +45,7 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 		name: NewAccountObjectIdentifierFromFullyQualifiedName("TEST_USER"),
 		Unset: &UserUnset{
 			ObjectParameters: &UserObjectParametersUnset{
-				NetworkPolicy: Bool(true),
+				NetworkPolicy: new(true),
 			},
 		},
 	}
@@ -60,7 +60,7 @@ func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 		Set: &AccountSet{
 			LegacyParameters: &AccountLevelParameters{
 				AccountParameters: &LegacyAccountParameters{
-					EnforceNetworkRulesForInternalStages: Bool(true),
+					EnforceNetworkRulesForInternalStages: new(true),
 				},
 			},
 		},
@@ -82,17 +82,17 @@ func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
 	}
 
 	t.Run("CLI: set to -1 (unlimited)", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeCliDailyEstCreditLimitPerUser: Pointer(-1)})
+		opts := set(&LegacyAccountParameters{CortexCodeCliDailyEstCreditLimitPerUser: new(-1)})
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER = -1")
 	})
 
 	t.Run("Desktop: set to 0 (blocked)", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeDesktopDailyEstCreditLimitPerUser: Pointer(0)})
+		opts := set(&LegacyAccountParameters{CortexCodeDesktopDailyEstCreditLimitPerUser: new(0)})
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER = 0")
 	})
 
 	t.Run("Snowsight: set to a positive cap", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeSnowsightDailyEstCreditLimitPerUser: Pointer(10)})
+		opts := set(&LegacyAccountParameters{CortexCodeSnowsightDailyEstCreditLimitPerUser: new(10)})
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 10")
 	})
 
@@ -101,7 +101,7 @@ func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
 			Unset: &AccountUnset{
 				LegacyParameters: &AccountLevelParametersUnset{
 					AccountParameters: &LegacyAccountParametersUnset{
-						CortexCodeCliDailyEstCreditLimitPerUser: Bool(true),
+						CortexCodeCliDailyEstCreditLimitPerUser: new(true),
 					},
 				},
 			},

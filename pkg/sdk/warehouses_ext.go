@@ -141,9 +141,9 @@ var WarehouseParameters = []ObjectParameter{
 // ShowByIDExperimental is a show by id function with improved performance (using starts with and limit).
 func (v *warehouses) ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error) {
 	warehouses, err := v.Show(ctx, NewShowWarehouseRequest().
-		WithLike(Like{Pattern: String(id.Name())}).
+		WithLike(Like{Pattern: new(id.Name())}).
 		WithStartsWith(id.Name()).
-		WithLimit(LimitFrom{Rows: Int(1)}))
+		WithLimit(LimitFrom{Rows: new(1)}))
 	if err != nil {
 		return nil, err
 	}

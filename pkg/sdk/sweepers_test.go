@@ -256,7 +256,7 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 							Name:       id,
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -331,7 +331,7 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 							Name:       id,
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -552,7 +552,7 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 							Name:       role.ID(),
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -718,7 +718,7 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 							Name:       id,
 						}},
 						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+							AccountRoleName: new(snowflakeroles.Accountadmin),
 						},
 						nil,
 					)
@@ -791,7 +791,7 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 						Name:       fg.ID(),
 					}},
 					sdk.OwnershipGrantTo{
-						AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+						AccountRoleName: new(snowflakeroles.Accountadmin),
 					},
 					nil,
 				)

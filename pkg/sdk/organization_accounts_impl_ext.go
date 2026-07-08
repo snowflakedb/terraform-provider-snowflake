@@ -9,7 +9,7 @@ import (
 func (v *organizationAccounts) ShowParameters(ctx context.Context) ([]*Parameter, error) {
 	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
 		In: &ParametersIn{
-			Account: Bool(true),
+			Account: new(true),
 		},
 	})
 }

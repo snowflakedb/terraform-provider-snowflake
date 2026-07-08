@@ -26,16 +26,16 @@ func TestDatabaseRoleCreate(t *testing.T) {
 
 	t.Run("validation: both ifNotExists and orReplace present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
+		opts.IfNotExists = new(true)
+		opts.OrReplace = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateDatabaseRoleOptions", "OrReplace", "IfNotExists"))
 	})
 
 	t.Run("validation: multiple errors", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.name = emptyDatabaseObjectIdentifier
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
+		opts.IfNotExists = new(true)
+		opts.OrReplace = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("CreateDatabaseRoleOptions", "OrReplace", "IfNotExists"))
 	})
 
@@ -46,8 +46,8 @@ func TestDatabaseRoleCreate(t *testing.T) {
 
 	t.Run("all optional", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("some comment")
+		opts.IfNotExists = new(true)
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE DATABASE ROLE IF NOT EXISTS %s COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
@@ -80,10 +80,10 @@ func TestDatabaseRoleAlter(t *testing.T) {
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &DatabaseRoleSet{
-			Comment: String("new comment"),
+			Comment: new("new comment"),
 		}
 		opts.Unset = &DatabaseRoleUnset{
-			Comment: Bool(true),
+			Comment: new(true),
 		}
 		opts.SetTags = []TagAssociation{}
 		opts.UnsetTags = []ObjectIdentifier{}
@@ -120,16 +120,16 @@ func TestDatabaseRoleAlter(t *testing.T) {
 
 	t.Run("set", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &DatabaseRoleSet{
-			Comment: String("new comment"),
+			Comment: new("new comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s SET COMMENT = 'new comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("set tags", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.SetTags = []TagAssociation{
 			{
 				Name:  NewAccountObjectIdentifier("123"),
@@ -145,25 +145,25 @@ func TestDatabaseRoleAlter(t *testing.T) {
 
 	t.Run("set comment", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &DatabaseRoleSet{
-			Comment: String("some comment"),
+			Comment: new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s SET COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Unset = &DatabaseRoleUnset{
-			Comment: Bool(true),
+			Comment: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE IF EXISTS %s UNSET COMMENT`, id.FullyQualifiedName())
 	})
 
 	t.Run("unset tags", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.UnsetTags = []ObjectIdentifier{
 			NewAccountObjectIdentifier("123"),
 			NewAccountObjectIdentifier("456"),
@@ -199,7 +199,7 @@ func TestDatabaseRoleDrop(t *testing.T) {
 
 	t.Run("with if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP DATABASE ROLE IF EXISTS %s`, id.FullyQualifiedName())
 	})
 }
@@ -238,7 +238,7 @@ func TestDatabaseRolesShow(t *testing.T) {
 	t.Run("show with like", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW DATABASE ROLES LIKE '%s' IN DATABASE %s`, id.Name(), id.FullyQualifiedName())
 	})
@@ -246,11 +246,11 @@ func TestDatabaseRolesShow(t *testing.T) {
 	t.Run("show with like and limit from", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Like = &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		}
 		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-			From: String("name"),
+			Rows: new(10),
+			From: new("name"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW DATABASE ROLES LIKE '%s' IN DATABASE %s LIMIT 10 FROM 'name'`, id.Name(), id.FullyQualifiedName())
 	})

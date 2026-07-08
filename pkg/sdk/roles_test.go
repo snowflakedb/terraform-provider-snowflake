@@ -8,7 +8,7 @@ func TestRolesCreate(t *testing.T) {
 	t.Run("if not exists", func(t *testing.T) {
 		opts := &CreateRoleOptions{
 			name:        NewAccountObjectIdentifier("new_role"),
-			IfNotExists: Bool(true),
+			IfNotExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE ROLE IF NOT EXISTS "new_role"`)
 	})
@@ -17,14 +17,14 @@ func TestRolesCreate(t *testing.T) {
 		tagId := randomSchemaObjectIdentifier()
 		opts := &CreateRoleOptions{
 			name:      NewAccountObjectIdentifier("new_role"),
-			OrReplace: Bool(true),
+			OrReplace: new(true),
 			Tag: []TagAssociation{
 				{
 					Name:  tagId,
 					Value: "v1",
 				},
 			},
-			Comment: String("comment"),
+			Comment: new("comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE ROLE "new_role" COMMENT = 'comment' TAG (%s = 'v1')`, tagId.FullyQualifiedName())
 	})
@@ -39,8 +39,8 @@ func TestRolesCreate(t *testing.T) {
 	t.Run("validation: one of OrReplace, IfNotExists", func(t *testing.T) {
 		opts := &CreateRoleOptions{
 			name:        randomAccountObjectIdentifier(),
-			IfNotExists: Bool(true),
-			OrReplace:   Bool(true),
+			IfNotExists: new(true),
+			OrReplace:   new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateRoleOptions", "OrReplace", "IfNotExists"))
 	})
@@ -57,7 +57,7 @@ func TestRolesDrop(t *testing.T) {
 	t.Run("if exists", func(t *testing.T) {
 		opts := &DropRoleOptions{
 			name:     NewAccountObjectIdentifier("new_role"),
-			IfExists: Bool(true),
+			IfExists: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP ROLE IF EXISTS "new_role"`)
 	})
@@ -83,7 +83,7 @@ func TestRolesAlter(t *testing.T) {
 	t.Run("set comment", func(t *testing.T) {
 		opts := &AlterRoleOptions{
 			name:       NewAccountObjectIdentifier("new_role"),
-			SetComment: String("some comment"),
+			SetComment: new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ROLE "new_role" SET COMMENT = 'some comment'`)
 	})
@@ -91,7 +91,7 @@ func TestRolesAlter(t *testing.T) {
 	t.Run("unset comment", func(t *testing.T) {
 		opts := &AlterRoleOptions{
 			name:         NewAccountObjectIdentifier("new_role"),
-			UnsetComment: Bool(true),
+			UnsetComment: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ROLE "new_role" UNSET COMMENT`)
 	})
@@ -127,7 +127,7 @@ func TestRolesAlter(t *testing.T) {
 	t.Run("validation: invalid identifier", func(t *testing.T) {
 		opts := &AlterRoleOptions{
 			name:         emptyAccountObjectIdentifier,
-			UnsetComment: Bool(true),
+			UnsetComment: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
@@ -142,8 +142,8 @@ func TestRolesAlter(t *testing.T) {
 	t.Run("validation: more than one alter action specified", func(t *testing.T) {
 		opts := &AlterRoleOptions{
 			name:         randomAccountObjectIdentifier(),
-			SetComment:   String("comment"),
-			UnsetComment: Bool(true),
+			SetComment:   new("comment"),
+			UnsetComment: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterRoleOptions", "RenameTo", "SetComment", "SetTags", "UnsetComment", "UnsetTags"))
 	})
@@ -157,7 +157,7 @@ func TestRolesShow(t *testing.T) {
 	t.Run("like", func(t *testing.T) {
 		opts := &ShowRoleOptions{
 			Like: &Like{
-				Pattern: String("new_role"),
+				Pattern: new("new_role"),
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW ROLES LIKE 'new_role'`)

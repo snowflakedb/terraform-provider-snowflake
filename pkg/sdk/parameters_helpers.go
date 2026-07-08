@@ -34,6 +34,6 @@ func setIntegerValue[P ParameterConstraint](parameter P, value string, setField 
 	if err != nil {
 		return fmt.Errorf("failed to parse parameter %s, expected an integer, but got %v", parameter, value)
 	}
-	*setField = Pointer(v)
+	*setField = new(v)
 	return nil
 }

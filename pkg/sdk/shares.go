@@ -176,7 +176,7 @@ func (s *shares) Drop(ctx context.Context, id AccountObjectIdentifier, opts *Dro
 }
 
 func (s *shares) DropSafely(ctx context.Context, id AccountObjectIdentifier) error {
-	return SafeDrop(s.client, func() error { return s.Drop(ctx, id, &DropShareOptions{IfExists: Bool(true)}) }, ctx, id)
+	return SafeDrop(s.client, func() error { return s.Drop(ctx, id, &DropShareOptions{IfExists: new(true)}) }, ctx, id)
 }
 
 // AlterShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-share.
@@ -317,7 +317,7 @@ func (s *shares) Show(ctx context.Context, opts *ShowShareOptions) ([]Share, err
 func (s *shares) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Share, error) {
 	shares, err := s.Show(ctx, &ShowShareOptions{
 		Like: &Like{
-			Pattern: String(id.Name()),
+			Pattern: new(id.Name()),
 		},
 	})
 	if err != nil {

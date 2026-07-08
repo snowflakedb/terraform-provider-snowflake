@@ -252,8 +252,9 @@ func (row *UserProperty) toFloatProperty() *FloatProperty {
 
 type ExecuteAs string
 
+//go:fix inline
 func ExecuteAsPointer(v ExecuteAs) *ExecuteAs {
-	return &v
+	return new(v)
 }
 
 // TODO [SNOW-1348103]: fix SDK - constants should have only CALLER and OWNER (not the EXECUTE AS part)
@@ -280,8 +281,9 @@ var AllAllowedExecuteAs = []ExecuteAs{
 
 type NullInputBehavior string
 
+//go:fix inline
 func NullInputBehaviorPointer(v NullInputBehavior) *NullInputBehavior {
-	return &v
+	return new(v)
 }
 
 const (
@@ -330,8 +332,9 @@ var AllReturnResultsBehaviors = []ReturnResultsBehavior{
 	ReturnResultsBehaviorImmutable,
 }
 
+//go:fix inline
 func ReturnResultsBehaviorPointer(v ReturnResultsBehavior) *ReturnResultsBehavior {
-	return &v
+	return new(v)
 }
 
 type ReturnNullValues string
@@ -341,8 +344,9 @@ var (
 	ReturnNullValuesNotNull ReturnNullValues = "NOT NULL"
 )
 
+//go:fix inline
 func ReturnNullValuesPointer(v ReturnNullValues) *ReturnNullValues {
-	return &v
+	return new(v)
 }
 
 type SecretReference struct {
@@ -358,8 +362,9 @@ var (
 	ValuesBehaviorNoOrder ValuesBehavior = "NOORDER"
 )
 
+//go:fix inline
 func ValuesBehaviorPointer(v ValuesBehavior) *ValuesBehavior {
-	return &v
+	return new(v)
 }
 
 type Distribution string

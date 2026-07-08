@@ -31,8 +31,6 @@ linters:
         - mapsloop
         # Replace if/else statements with calls to min or max.
         - minmax
-        # Simplify code by using go1.26's new(expr).
-        - newexpr
         # Suggest replacing omitempty with omitzero for struct fields.
         - omitzero
         # Remove obsolete //+build comments.

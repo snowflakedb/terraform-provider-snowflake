@@ -8,7 +8,7 @@ import (
 )
 
 func (v *databaseRoles) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error) {
-	request := NewShowDatabaseRoleRequest().WithDatabase(id.DatabaseId()).WithLike(Like{Pointer(id.Name())})
+	request := NewShowDatabaseRoleRequest().WithDatabase(id.DatabaseId()).WithLike(Like{new(id.Name())})
 	databaseRoles, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
