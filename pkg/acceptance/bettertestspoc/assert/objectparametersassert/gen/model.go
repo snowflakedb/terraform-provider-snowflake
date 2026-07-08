@@ -12,6 +12,7 @@ type SnowflakeObjectParametersAssertionsModel struct {
 	IdType                string
 	ParameterConstantName string
 	ObjectTypeName        string
+	IgnoreIdInProvider    bool
 	Parameters            []ParameterAssertionModel
 
 	*genhelpers.PreambleModel
@@ -74,6 +75,7 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjec
 		IdType:                snowflakeObjectParameters.IdType,
 		ParameterConstantName: parameterConstantName,
 		ObjectTypeName:        objectTypeName,
+		IgnoreIdInProvider:    snowflakeObjectParameters.IgnoreIdInProvider,
 		Parameters:            parameters,
 		PreambleModel:         preamble,
 	}

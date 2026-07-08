@@ -12,6 +12,7 @@ type SnowflakeObjectParameters struct {
 	Parameters              []SnowflakeParameter
 	ParameterConstantPrefix string
 	ObjectTypeName          string
+	IgnoreIdInProvider      bool
 }
 
 func (p SnowflakeObjectParameters) ObjectName() string {
@@ -237,9 +238,10 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		},
 	},
 	{
-		Name:   "Account",
-		IdType: "sdk.AccountIdentifier",
-		Level:  sdk.ParameterTypeAccount,
+		Name:               "Account",
+		IdType:             "sdk.AccountIdentifier",
+		Level:              sdk.ParameterTypeAccount,
+		IgnoreIdInProvider: true,
 		Parameters: []SnowflakeParameter{
 			// Bool parameters
 			{ParameterName: string(sdk.AccountParameterAbortDetachedQuery), ParameterType: "bool", DefaultValue: "false", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},

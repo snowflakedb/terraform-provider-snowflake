@@ -9,7 +9,13 @@ func {{ .Name }}Parameters(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
         assert.NewSnowflakeParametersAssertWithTestClientParametersProvider(id, sdk.ObjectType{{ .ObjectTypeName }}, func(testClient *helpers.TestClient) assert.ParametersProvider[{{ .IdType }}] {
+            {{- if .IgnoreIdInProvider }}
+            return func(t *testing.T, _ {{ .IdType }}) []*sdk.Parameter {
+                return testClient.Parameter.Show{{ .ObjectTypeName }}Parameters(t)
+            }
+            {{- else }}
             return testClient.Parameter.Show{{ .ObjectTypeName }}Parameters
+            {{- end }}
         }),
     }
 }
