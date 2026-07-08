@@ -893,13 +893,6 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 		),
 	}
 
-	externalSignature := []sdk.TableColumnSignature{
-		{
-			Name: "A",
-			Type: testdatatypes.DataTypeNumber,
-		},
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -973,13 +966,6 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 		),
 	}
 
-	externalSignature := []sdk.TableColumnSignature{
-		{
-			Name: "A",
-			Type: testdatatypes.DataTypeVarchar_100,
-		},
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1047,13 +1033,6 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 				"type": config.StringVariable("VARCHAR"),
 			}),
 		),
-	}
-
-	externalSignature := []sdk.TableColumnSignature{
-		{
-			Name: "A",
-			Type: testdatatypes.DataTypeVarchar,
-		},
 	}
 
 	resource.Test(t, resource.TestCase{
