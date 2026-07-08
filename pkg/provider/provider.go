@@ -870,7 +870,7 @@ func fixBooleanConfigFields(s *schema.ResourceData, config *gosnowflake.Config) 
 }
 
 // TODO: reuse with the function from resources package
-func expandStringList(configured []interface{}) []string {
+func expandStringList(configured []any) []string {
 	vs := make([]string, 0, len(configured))
 	for _, v := range configured {
 		val, ok := v.(string)
@@ -1018,9 +1018,9 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 		config.Account = strings.Join([]string{organizationName, accountName}, "-")
 	}
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	if v, ok := s.GetOk("params"); ok {
-		m = v.(map[string]interface{})
+		m = v.(map[string]any)
 	}
 
 	params := make(map[string]*string)

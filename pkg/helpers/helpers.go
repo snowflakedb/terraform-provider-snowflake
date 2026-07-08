@@ -29,7 +29,7 @@ func StringToBool(s string) bool {
 }
 
 // EncodeSnowflakeID generates a unique ID for a resource.
-func EncodeSnowflakeID(attributes ...interface{}) string {
+func EncodeSnowflakeID(attributes ...any) string {
 	// is attribute already an object identifier?
 	if len(attributes) == 1 {
 		if id, ok := attributes[0].(sdk.ObjectIdentifier); ok {

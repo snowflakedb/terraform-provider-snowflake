@@ -25,7 +25,7 @@ func ValidObjectIdentifier(objectIdentifier ObjectIdentifier) bool {
 	return ValidObjectName(objectIdentifier.Name())
 }
 
-func anyValueSet(values ...interface{}) bool {
+func anyValueSet(values ...any) bool {
 	for _, v := range values {
 		if valueSet(v) {
 			return true
@@ -34,7 +34,7 @@ func anyValueSet(values ...interface{}) bool {
 	return false
 }
 
-func exactlyOneValueSet(values ...interface{}) bool {
+func exactlyOneValueSet(values ...any) bool {
 	var count int
 	for _, v := range values {
 		if valueSet(v) {
@@ -44,7 +44,7 @@ func exactlyOneValueSet(values ...interface{}) bool {
 	return count == 1
 }
 
-func moreThanOneValueSet(values ...interface{}) bool {
+func moreThanOneValueSet(values ...any) bool {
 	var count int
 	for _, v := range values {
 		if valueSet(v) {
@@ -54,7 +54,7 @@ func moreThanOneValueSet(values ...interface{}) bool {
 	return count > 1
 }
 
-func everyValueSet(values ...interface{}) bool {
+func everyValueSet(values ...any) bool {
 	for _, v := range values {
 		if !valueSet(v) {
 			return false
@@ -63,7 +63,7 @@ func everyValueSet(values ...interface{}) bool {
 	return true
 }
 
-func everyValueNil(values ...interface{}) bool {
+func everyValueNil(values ...any) bool {
 	for _, v := range values {
 		if valueSet(v) {
 			return false
@@ -72,7 +72,7 @@ func everyValueNil(values ...interface{}) bool {
 	return true
 }
 
-func valueSet(value interface{}) bool {
+func valueSet(value any) bool {
 	if value == nil {
 		return false
 	}

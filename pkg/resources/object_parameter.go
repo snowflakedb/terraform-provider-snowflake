@@ -99,7 +99,7 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 
 	o := sdk.Object{}
 	if v, ok := d.GetOk("object_identifier"); ok {
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]interface{}))
+		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
 		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
 		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
 		o.Name = sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier)
@@ -211,7 +211,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 		}
 	} else {
 		v := d.Get("object_identifier")
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]interface{}))
+		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
 		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
 		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
 		objectType, err := sdk.ToObjectType(d.Get("object_type").(string))

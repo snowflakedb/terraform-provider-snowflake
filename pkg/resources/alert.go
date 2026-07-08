@@ -132,7 +132,7 @@ func Alert() *schema.Resource {
 }
 
 // ReadAlert implements schema.ReadContextFunc.
-func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadAlert(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
@@ -174,8 +174,8 @@ func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = d.Set("alert_schedule", []interface{}{
-				map[string]interface{}{
+			err = d.Set("alert_schedule", []any{
+				map[string]any{
 					"interval": interval,
 				},
 			})
@@ -186,10 +186,10 @@ func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 			repScheduleParts := strings.Split(alertSchedule, " ")
 			timeZone := repScheduleParts[len(repScheduleParts)-1]
 			expression := strings.TrimSuffix(strings.TrimPrefix(alertSchedule, "USING CRON "), " "+timeZone)
-			err = d.Set("alert_schedule", []interface{}{
-				map[string]interface{}{
-					"cron": []interface{}{
-						map[string]interface{}{
+			err = d.Set("alert_schedule", []any{
+				map[string]any{
+					"cron": []any{
+						map[string]any{
 							"expression": expression,
 							"time_zone":  timeZone,
 						},
@@ -225,7 +225,7 @@ func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 }
 
 // CreateAlert implements schema.CreateContextFunc.
-func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateAlert(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	databaseName := d.Get("database").(string)
@@ -271,13 +271,13 @@ func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	return append(diags, ReadAlert(ctx, d, meta)...)
 }
 
-func getAlertSchedule(v interface{}) string {
+func getAlertSchedule(v any) string {
 	var alertSchedule string
-	schedule := v.([]interface{})[0].(map[string]interface{})
+	schedule := v.([]any)[0].(map[string]any)
 	if v, ok := schedule["cron"]; ok {
-		c := v.([]interface{})
+		c := v.([]any)
 		if len(c) > 0 {
-			cron := c[0].(map[string]interface{})
+			cron := c[0].(map[string]any)
 			cronExpression := cron["expression"].(string)
 			timeZone := cron["time_zone"].(string)
 			alertSchedule = fmt.Sprintf("USING CRON %s %s", cronExpression, timeZone)
@@ -293,7 +293,7 @@ func getAlertSchedule(v interface{}) string {
 }
 
 // UpdateAlert implements schema.UpdateContextFunc.
-func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	objectIdentifier := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
