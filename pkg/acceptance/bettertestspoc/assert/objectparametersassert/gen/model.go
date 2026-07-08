@@ -8,9 +8,10 @@ import (
 )
 
 type SnowflakeObjectParametersAssertionsModel struct {
-	Name       string
-	IdType     string
-	Parameters []ParameterAssertionModel
+	Name                  string
+	IdType                string
+	ParameterConstantName string
+	Parameters            []ParameterAssertionModel
 
 	*genhelpers.PreambleModel
 }
@@ -57,10 +58,16 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjec
 		}
 	}
 
+	parameterConstantName := snowflakeObjectParameters.ObjectName()
+	if snowflakeObjectParameters.ParameterConstantPrefix != "" {
+		parameterConstantName = snowflakeObjectParameters.ParameterConstantPrefix
+	}
+
 	return SnowflakeObjectParametersAssertionsModel{
-		Name:          snowflakeObjectParameters.ObjectName(),
-		IdType:        snowflakeObjectParameters.IdType,
-		Parameters:    parameters,
-		PreambleModel: preamble,
+		Name:                  snowflakeObjectParameters.ObjectName(),
+		IdType:                snowflakeObjectParameters.IdType,
+		ParameterConstantName: parameterConstantName,
+		Parameters:            parameters,
+		PreambleModel:         preamble,
 	}
 }
