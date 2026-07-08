@@ -470,7 +470,7 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.Streamlits.ShowByID)
 	},
 	resources.Table: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
-		return runShowById(ctx, id, client.Tables.ShowByID)
+		return runShowById(ctx, id, client.TablesLegacy.ShowByID)
 	},
 	resources.Tag: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Tags.ShowByID)

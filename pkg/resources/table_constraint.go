@@ -331,7 +331,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithAdd(constraintRequest))
-	err = client.Tables.Alter(ctx, alterStatement)
+	err = client.TablesLegacy.Alter(ctx, alterStatement)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating table constraint %v err = %w", name, err))
 	}
@@ -413,7 +413,7 @@ func DeleteTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 
 	dropRequest := sdk.NewTableConstraintDropActionRequest().WithConstraintName(&tc.name)
 	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithDrop(dropRequest))
-	err = client.Tables.Alter(ctx, alterStatement)
+	err = client.TablesLegacy.Alter(ctx, alterStatement)
 	if err != nil {
 		// if the table constraint does not exist, then remove from state file
 		if strings.Contains(err.Error(), "does not exist") {

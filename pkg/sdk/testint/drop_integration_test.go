@@ -52,7 +52,7 @@ func TestInt_SafeDropOnSchemaObjectIdentifier(t *testing.T) {
 	ctx := context.Background()
 	tableDrop := func(id sdk.SchemaObjectIdentifier) func() error {
 		return func() error {
-			return testClient(t).Tables.Drop(ctx, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))
+			return testClient(t).TablesLegacy.Drop(ctx, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))
 		}
 	}
 
