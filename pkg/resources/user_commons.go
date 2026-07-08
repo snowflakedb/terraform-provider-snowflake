@@ -34,6 +34,11 @@ var defaultWorkloadIdentitySchema = map[string]*schema.Schema{
 								Required:    true,
 								Description: "The ARN of the AWS IAM role to use for workload identity federation.",
 							},
+							"issuer": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "The AWS issuer URL. Required for JWT-based (GetWebIdentityToken) workload identity federation.",
+							},
 						},
 					},
 					ExactlyOneOf: []string{

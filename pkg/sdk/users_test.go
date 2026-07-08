@@ -140,6 +140,24 @@ func TestUserCreate(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s')", id.FullyQualifiedName(), wifType, wifArn)
 	})
 
+	t.Run("with setting an AWS WIF - with issuer", func(t *testing.T) {
+		wifType := WIFTypeAws
+		wifArn := "arn:aws:iam::123456789012:role/test-role"
+		wifIssuer := "https://sts.amazonaws.com"
+		opts := &CreateUserOptions{
+			name: id,
+			ObjectProperties: &UserObjectProperties{
+				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+					AwsType: &UserObjectWorkloadIdentityAws{
+						Arn:    &wifArn,
+						Issuer: &wifIssuer,
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s' ISSUER = '%s')", id.FullyQualifiedName(), wifType, wifArn, wifIssuer)
+	})
+
 	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {
 		wifType := WIFTypeOidc
 		wifIssuer := "https://accounts.google.com"
@@ -623,6 +641,26 @@ func TestUserAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s')", id.FullyQualifiedName(), wifType, wifArn)
+	})
+
+	t.Run("with setting an AWS WIF - with issuer", func(t *testing.T) {
+		wifType := WIFTypeAws
+		wifArn := "arn:aws:iam::123456789012:role/test-role"
+		wifIssuer := "https://sts.amazonaws.com"
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
+						AwsType: &UserObjectWorkloadIdentityAws{
+							Arn:    &wifArn,
+							Issuer: &wifIssuer,
+						},
+					},
+				},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s' ISSUER = '%s')", id.FullyQualifiedName(), wifType, wifArn, wifIssuer)
 	})
 
 	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {

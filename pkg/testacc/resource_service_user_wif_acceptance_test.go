@@ -170,12 +170,18 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", random.NumericN(12))
+	issuer := "https://sts.amazonaws.com"
 
 	providerModelWithWIF := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
 
 	userModelWithAWS := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityAws(arn)
+
+	// userModelWithAWSAndIssuer configures the JWT-based (GetWebIdentityToken) workload identity
+	// federation, which requires both arn and issuer.
+	userModelWithAWSAndIssuer := model.ServiceUser("w", id.Name()).
+		WithDefaultWorkloadIdentityAws(arn, issuer)
 
 	userModelWithoutWIF := model.ServiceUser("w", id.Name())
 
@@ -210,6 +216,24 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"days_to_expiry", "mins_to_unlock", "login_name", "display_name", "disabled", "must_change_password", "default_secondary_roles_option", "default_workload_identity"},
+			},
+			// UPDATE - SWITCH TO JWT-BASED (arn + issuer)
+			{
+				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWSAndIssuer),
+				Check: assertThat(
+					t,
+					resourceassert.ServiceUserResource(t, userModelWithAWSAndIssuer.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityAws(arn, issuer),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithAWSAndIssuer.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeAws).
+						HasNoComment().
+						HasLastUsedNotEmpty().
+						HasCreatedOnNotEmpty(),
+				),
 			},
 			// UPDATE - REMOVE WIF
 			{
