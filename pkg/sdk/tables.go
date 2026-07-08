@@ -14,7 +14,7 @@ import (
 // - describe search optimization (https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization)
 // - truncate table (https://docs.snowflake.com/en/sql-reference/sql/truncate-table)
 // - undrop table (https://docs.snowflake.com/en/sql-reference/sql/undrop-table)
-type Tables interface {
+type TablesLegacy interface {
 	Create(ctx context.Context, req *CreateTableRequest) error
 	CreateAsSelect(ctx context.Context, req *CreateTableAsSelectRequest) error
 	CreateUsingTemplate(ctx context.Context, req *CreateTableUsingTemplateRequest) error
