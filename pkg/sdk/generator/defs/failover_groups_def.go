@@ -160,7 +160,7 @@ var failoverGroupsDef = g.NewInterface(
 	WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateNameAndLocator).
 	WithCustomInterfaceMethod(
 		"ShowDatabases",
-		"// ShowDatabases returns the list of databases in the failover group as identifiers.",
+		"ShowDatabases returns the list of databases in the failover group as identifiers.",
 		[]*g.MethodParameter{
 			g.NewMethodParameter("id", "AccountObjectIdentifier"),
 		},
@@ -168,7 +168,7 @@ var failoverGroupsDef = g.NewInterface(
 	).
 	WithCustomInterfaceMethod(
 		"ShowShares",
-		"// ShowShares returns the list of shares in the failover group as identifiers.",
+		"ShowShares returns the list of shares in the failover group as identifiers.",
 		[]*g.MethodParameter{
 			g.NewMethodParameter("id", "AccountObjectIdentifier"),
 		},

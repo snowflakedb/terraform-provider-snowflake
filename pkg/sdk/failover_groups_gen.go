@@ -20,9 +20,9 @@ type FailoverGroups interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*FailoverGroup, error)
 	ShowFailoverGroupDatabases(ctx context.Context, request *ShowFailoverGroupDatabasesFailoverGroupRequest) ([]FailoverGroupDatabase, error)
 	ShowFailoverGroupShares(ctx context.Context, request *ShowFailoverGroupSharesFailoverGroupRequest) ([]FailoverGroupShare, error)
-	// // ShowDatabases returns the list of databases in the failover group as identifiers.
+	// ShowDatabases returns the list of databases in the failover group as identifiers.
 	ShowDatabases(ctx context.Context, id AccountObjectIdentifier) ([]AccountObjectIdentifier, error)
-	// // ShowShares returns the list of shares in the failover group as identifiers.
+	// ShowShares returns the list of shares in the failover group as identifiers.
 	ShowShares(ctx context.Context, id AccountObjectIdentifier) ([]AccountObjectIdentifier, error)
 }
 
