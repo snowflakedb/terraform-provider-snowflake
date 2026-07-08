@@ -127,7 +127,7 @@ func MaskingPolicies() *schema.Resource {
 
 func ReadMaskingPolicies(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	req := sdk.ShowMaskingPolicyOptions{}
+	req := sdk.NewShowMaskingPolicyRequest()
 
 	handleLike(d, &req.Like)
 	handleLimitFrom(d, &req.Limit)
@@ -136,7 +136,7 @@ func ReadMaskingPolicies(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	maskingPolicies, err := client.MaskingPolicies.Show(ctx, &req)
+	maskingPolicies, err := client.MaskingPolicies.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}

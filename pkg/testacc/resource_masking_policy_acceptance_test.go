@@ -162,11 +162,12 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, argument, testdatatypes.DataTypeVarchar, body, &sdk.CreateMaskingPolicyOptions{
-						ExemptOtherPolicies: sdk.Pointer(false),
-						Comment:             sdk.Pointer("Terraform acceptance test - changed comment"),
-						OrReplace:           sdk.Pointer(true),
-					})
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
+						[]sdk.CreateMaskingPolicySignatureRequest{
+							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeVarchar),
+							*sdk.NewCreateMaskingPolicySignatureRequest("B", testdatatypes.DataTypeVarchar),
+						},
+						testdatatypes.DataTypeVarchar, body)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -189,11 +190,8 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
-					testClient().MaskingPolicy.Alter(t, id, &sdk.AlterMaskingPolicyOptions{
-						Set: &sdk.MaskingPolicySet{
-							Body: sdk.Pointer(changedBody),
-						},
-					})
+					testClient().MaskingPolicy.Alter(t, sdk.NewAlterMaskingPolicyRequest(id).
+						WithSet(*sdk.NewMaskingPolicySetRequest().WithBody(changedBody)))
 				},
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
@@ -217,11 +215,8 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithComment("")),
 				PreConfig: func() {
-					testClient().MaskingPolicy.Alter(t, id, &sdk.AlterMaskingPolicyOptions{
-						Unset: &sdk.MaskingPolicyUnset{
-							Comment: sdk.Pointer(true),
-						},
-					})
+					testClient().MaskingPolicy.Alter(t, sdk.NewAlterMaskingPolicyRequest(id).
+						WithUnset(*sdk.NewMaskingPolicyUnsetRequest().WithComment(true)))
 				},
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
@@ -933,7 +928,11 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 					// 090207 (42601): Declared return type 'NUMBER(38,0)' is incompatible with actual return type 'VARCHAR(5)'
 					// we could later suppress the body changes to be sure what triggers the changes
 					// TODO [SNOW-2298286]: suppress the body changes
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeNumber, updatedBody, &sdk.CreateMaskingPolicyOptions{})
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
+						[]sdk.CreateMaskingPolicySignatureRequest{
+							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeNumber),
+						},
+						testdatatypes.DataTypeNumber, updatedBody)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1005,7 +1004,11 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 			},
 			{
 				PreConfig: func() {
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeVarchar, body, &sdk.CreateMaskingPolicyOptions{})
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
+						[]sdk.CreateMaskingPolicySignatureRequest{
+							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeVarchar),
+						},
+						testdatatypes.DataTypeVarchar, body)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1077,7 +1080,11 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeVarchar_100, body, &sdk.CreateMaskingPolicyOptions{})
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
+						[]sdk.CreateMaskingPolicySignatureRequest{
+							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeVarchar_100),
+						},
+						testdatatypes.DataTypeVarchar_100, body)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
