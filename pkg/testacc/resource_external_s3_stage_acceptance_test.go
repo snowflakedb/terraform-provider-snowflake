@@ -45,7 +45,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 	modelBasic := model.ExternalS3StageWithId(id, awsUrl)
 	modelAlter := model.ExternalS3StageWithId(newId, awsUrl).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 		}).
@@ -57,10 +57,11 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/complete").
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 			AutoRefresh:     sdk.Bool(false),
+			AwsSnsTopic:     sdk.String("arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic"),
 		}).
 		WithEncryptionAwsCse(masterKey)
 
@@ -68,7 +69,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/updated").
 		WithComment(changedComment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          false,
 			RefreshOnCreate: sdk.Bool(false),
 			AutoRefresh:     sdk.Bool(false),
@@ -216,6 +217,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 							Enable:          true,
 							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(true),
+							AwsSnsTopic:     sdk.String("arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic"),
 						}).
 						HasEncryptionAwsCse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -303,6 +305,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "cloud", string(sdk.StageCloudAws)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.enable", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.auto_refresh", "false"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.aws_sns_topic", "arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic"),
 				),
 			},
 			// Alter (update comment, directory.enable, encryption)
@@ -689,7 +692,7 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 	modelComplete := model.ExternalS3StageWithId(id, awsUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 			AutoRefresh:     sdk.Bool(false),

@@ -465,7 +465,7 @@ func TestInt_Stages(t *testing.T) {
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithIfNotExists(true).
-			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
+			WithDirectoryTableOptions(*sdk.NewStageS3DirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(true).
 				WithAutoRefresh(false)).
@@ -864,7 +864,7 @@ func TestInt_Stages(t *testing.T) {
 
 		request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq).
 			WithIfNotExists(true).
-			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
+			WithDirectoryTableOptions(*sdk.NewStageS3CompatibleDirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(false).
 				WithAutoRefresh(false)).

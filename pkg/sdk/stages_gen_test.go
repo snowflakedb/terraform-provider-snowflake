@@ -218,7 +218,7 @@ func TestStages_CreateOnS3(t *testing.T) {
 			},
 			UsePrivatelinkEndpoint: Bool(true),
 		}
-		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3DirectoryTableOptions{
 			Enable:          true,
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
@@ -492,7 +492,7 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CompatibleDirectoryTableOptions{
 			Enable:          true,
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
