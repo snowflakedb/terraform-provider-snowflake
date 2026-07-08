@@ -26,9 +26,9 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
-### *(new feature)* `allowed_roles_list` added to `snowflake_oauth_integration_for_custom_clients`
+### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 
-The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) resource now supports the `allowed_roles_list` attribute, which maps to the `ALLOWED_ROLES_LIST` Snowflake property. This attribute specifies Snowflake roles that a user can explicitly consent to using after authenticating. It can only be set when `oauth_use_secondary_roles` is `NONE` (the Snowflake default).
+The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) and [`snowflake_oauth_integration_for_partner_applications`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_partner_applications) resources now support the `allowed_roles_list` attribute, which maps to the `ALLOWED_ROLES_LIST` Snowflake property. This attribute specifies Snowflake roles that a user can explicitly consent to using after authenticating. It can only be set when `oauth_use_secondary_roles` is `NONE` (the Snowflake default).
 
 In most cases no action is required; this is a non-breaking addition. However, if you set `ALLOWED_ROLES_LIST` on the integration outside of Terraform (e.g. directly in Snowflake) before this release, the provider will now detect it as drift. Because the attribute is not present in your configuration, the next plan will show a change that removes the externally set roles. To keep them, add the roles to the `allowed_roles_list` attribute in your configuration.
 
