@@ -278,20 +278,37 @@ func (c *systemFunctions) GetClusteringInformation(ctx context.Context, id Schem
 	row := &struct {
 		Info string `db:"CLUSTERING_INFORMATION"`
 	}{}
-	var columnsArg string
-	if len(columns) > 0 {
-		columns = collections.Map(columns, func(col string) string {
-			return DoubleQuotes.Modify(col)
-		})
-		columnsArg = `, ` + SingleQuotes.Modify(fmt.Sprintf("(%s)", strings.Join(columns, ", ")))
+	opts := &getClusteringInformationOptions{
+		arguments: &clusteringInformationArgs{
+			Name: id,
+			Columns: collections.Map(columns, func(col string) clusteringInformationColumn {
+				return clusteringInformationColumn{Name: col}
+			}),
+		},
 	}
-	idEscaped := SingleQuotes.Modify(id.FullyQualifiedNameEscaped())
-	sql := fmt.Sprintf(`SELECT SYSTEM$CLUSTERING_INFORMATION(%s%s) AS "CLUSTERING_INFORMATION"`, idEscaped, columnsArg)
-	err := c.client.queryOne(ctx, row, sql)
+	sql, err := structToSQL(opts)
 	if err != nil {
 		return nil, err
 	}
+	if err := c.client.queryOne(ctx, row, sql); err != nil {
+		return nil, err
+	}
 	return parseClusteringInformation(row.Info)
+}
+
+type getClusteringInformationOptions struct {
+	selectSystemClusteringInformation bool                       `ddl:"static" sql:"SELECT SYSTEM$CLUSTERING_INFORMATION"`
+	arguments                         *clusteringInformationArgs `ddl:"list,parentheses,must_parentheses"`
+	as                                bool                       `ddl:"static" sql:"AS \"CLUSTERING_INFORMATION\""`
+}
+
+type clusteringInformationArgs struct {
+	Name    SchemaObjectIdentifier        `ddl:"identifier,single_quotes"`
+	Columns []clusteringInformationColumn `ddl:"parameter,no_equals,single_quotes,parentheses"`
+}
+
+type clusteringInformationColumn struct {
+	Name string `ddl:"keyword,double_quotes"`
 }
 
 func parseClusteringInformation(raw string) (*ClusteringInformation, error) {

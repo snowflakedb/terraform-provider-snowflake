@@ -189,7 +189,7 @@ var icebergTablesDef = g.NewInterface(
 		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses().Required()).
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
-		// TODO: report docs discrepancy to Snowflake - the CREATE ICEBERG TABLE docs list both PARTITION BY and
+		// TODO [next PRs]: report docs discrepancy to Snowflake - the CREATE ICEBERG TABLE docs list both PARTITION BY and
 		// CLUSTER BY as available options without noting they are mutually exclusive, but Snowflake rejects setting both with
 		// error 099207 (0A000): "Partition by and Cluster by cannot be specified together for Iceberg tables." This is enforced
 		// by the ConflictingFields validation below.

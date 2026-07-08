@@ -3,6 +3,7 @@ package sdk
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,6 +39,49 @@ func Test_ToBehaviorChangeBundleStatus(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func Test_getClusteringInformationOptions_SQL(t *testing.T) {
+	id := NewSchemaObjectIdentifier("db", "schema", "table")
+
+	buildColumns := func(columns ...string) []clusteringInformationColumn {
+		return collections.Map(columns, func(col string) clusteringInformationColumn {
+			return clusteringInformationColumn{Name: col}
+		})
+	}
+
+	t.Run("without columns", func(t *testing.T) {
+		opts := &getClusteringInformationOptions{
+			arguments: &clusteringInformationArgs{Name: id},
+		}
+		got, err := structToSQL(opts)
+		require.NoError(t, err)
+		require.Equal(t, `SELECT SYSTEM$CLUSTERING_INFORMATION ('\"db\".\"schema\".\"table\"') AS "CLUSTERING_INFORMATION"`, got)
+	})
+
+	t.Run("with columns", func(t *testing.T) {
+		opts := &getClusteringInformationOptions{
+			arguments: &clusteringInformationArgs{
+				Name:    id,
+				Columns: buildColumns("REGION", "id"),
+			},
+		}
+		got, err := structToSQL(opts)
+		require.NoError(t, err)
+		require.Equal(t, `SELECT SYSTEM$CLUSTERING_INFORMATION ('\"db\".\"schema\".\"table\"', '(\"REGION\", \"id\")') AS "CLUSTERING_INFORMATION"`, got)
+	})
+
+	t.Run("column with double quote is escaped", func(t *testing.T) {
+		opts := &getClusteringInformationOptions{
+			arguments: &clusteringInformationArgs{
+				Name:    id,
+				Columns: buildColumns(`we"ird`),
+			},
+		}
+		got, err := structToSQL(opts)
+		require.NoError(t, err)
+		require.Equal(t, `SELECT SYSTEM$CLUSTERING_INFORMATION ('\"db\".\"schema\".\"table\"', '(\"we\"\"ird\")') AS "CLUSTERING_INFORMATION"`, got)
+	})
 }
 
 func Test_parseClusteringInformation(t *testing.T) {
