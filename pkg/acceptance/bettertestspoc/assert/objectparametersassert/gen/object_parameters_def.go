@@ -11,6 +11,7 @@ type SnowflakeObjectParameters struct {
 	Level                   sdk.ParameterType
 	Parameters              []SnowflakeParameter
 	ParameterConstantPrefix string
+	ObjectTypeName          string
 }
 
 func (p SnowflakeObjectParameters) ObjectName() string {
@@ -112,6 +113,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		IdType:                  "sdk.AccountObjectIdentifier",
 		Level:                   sdk.ParameterTypeWarehouse,
 		ParameterConstantPrefix: "Warehouse",
+		ObjectTypeName:          "Warehouse",
 		Parameters: []SnowflakeParameter{
 			{ParameterName: string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.WarehouseParameterStatementTimeoutInSeconds), ParameterType: "int", DefaultValue: "172800", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},

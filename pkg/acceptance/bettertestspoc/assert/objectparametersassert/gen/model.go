@@ -11,6 +11,7 @@ type SnowflakeObjectParametersAssertionsModel struct {
 	Name                  string
 	IdType                string
 	ParameterConstantName string
+	ObjectTypeName        string
 	Parameters            []ParameterAssertionModel
 
 	*genhelpers.PreambleModel
@@ -63,10 +64,16 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjec
 		parameterConstantName = snowflakeObjectParameters.ParameterConstantPrefix
 	}
 
+	objectTypeName := snowflakeObjectParameters.ObjectName()
+	if snowflakeObjectParameters.ObjectTypeName != "" {
+		objectTypeName = snowflakeObjectParameters.ObjectTypeName
+	}
+
 	return SnowflakeObjectParametersAssertionsModel{
 		Name:                  snowflakeObjectParameters.ObjectName(),
 		IdType:                snowflakeObjectParameters.IdType,
 		ParameterConstantName: parameterConstantName,
+		ObjectTypeName:        objectTypeName,
 		Parameters:            parameters,
 		PreambleModel:         preamble,
 	}
