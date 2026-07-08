@@ -304,6 +304,12 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.IcebergTableFromFiles: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.IcebergTables.ShowByID)
 	},
+	resources.IcebergTableFromAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
+	resources.IcebergTableFromRest: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ImageRepositories.ShowByID)
 	},

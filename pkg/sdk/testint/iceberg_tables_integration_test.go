@@ -509,6 +509,26 @@ func TestInt_IcebergTables(t *testing.T) {
 		)
 	})
 
+	t.Run("create Snowflake managed: cluster by", func(t *testing.T) {
+		// PARTITION BY and CLUSTER BY are mutually exclusive for Iceberg tables (err 099207), so clustering is
+		// tested in a separate table from the partitioned "all options" one above.
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}).WithClusterBy([]string{"ID", "REGION"}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
+		clusteringInfo, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, "LINEAR(ID, REGION)", clusteringInfo.ClusterByKeys)
+	})
+
 	t.Run("create Snowflake managed: copy grants", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
@@ -1107,11 +1127,18 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithClusterBy([]string{"REGION"})))
 		require.NoError(t, err)
 
+		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
+
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true)))
 		require.NoError(t, err)
 
-		// TODO (next PR): verify the clustering key with SYSTEM$CLUSTERING_INFORMATION, as it is not returned from SHOW/DESCRIBE.
+		// After dropping the clustering key, the table is no longer clustered.
+		_, err = client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrTableNotClustered)
 	})
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {
@@ -1703,6 +1730,261 @@ func TestInt_IcebergTables(t *testing.T) {
 	t.Run("describe iceberg table: non-existing", func(t *testing.T) {
 		_, err := client.IcebergTables.Describe(ctx, NonExistingSchemaObjectIdentifier)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+}
+
+// TestInt_IcebergTables_WithAdditionalDependencies covers creating Iceberg tables from an external
+// catalog (AWS Glue and Iceberg REST). Unlike TestInt_IcebergTables, these require additional
+// preconfigured dependencies we can't provide dynamically for now.
+// TODO(SNOW-3725859): Provide the external volume and catalog integrations dynamically. Unskip and move these tests to the main test suite.
+func TestInt_IcebergTables_WithAdditionalDependencies(t *testing.T) {
+	t.Skip("Iceberg REST and AWS Glue tests require preconfigured external catalog integrations and are not run by default")
+
+	client := testClient(t)
+	ctx := testContext(t)
+
+	// These tests reuse preexisting, manually configured dependencies instead of creating their own
+	// external volume and catalog integrations.
+	externalVolumeId := sdk.NewAccountObjectIdentifier("GLUE_EXTERNAL_VOLUME")
+	awsGlueCatalogId := sdk.NewAccountObjectIdentifier("GLUE_CATALOG_INTEGRATION")
+	restCatalogId := sdk.NewAccountObjectIdentifier("REST_CATALOG_INTEGRATION")
+
+	catalogTableName := "TEST"
+	catalogNamespace := "glue_iceberg_schema"
+
+	dbForAwsGlueId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	dbForAwsGlue, dbForAwsGlueCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForAwsGlueId).WithCatalog(awsGlueCatalogId).WithExternalVolume(externalVolumeId))
+	t.Cleanup(dbForAwsGlueCleanup)
+	schemaIdForAwsGlue := sdk.NewDatabaseObjectIdentifier(dbForAwsGlue.ID().Name(), "PUBLIC")
+
+	// Separate database wired to the Iceberg REST catalog integration and the external volume.
+	dbForRestId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+	dbForRest, dbForRestCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForRestId).WithCatalog(restCatalogId).WithExternalVolume(externalVolumeId))
+	t.Cleanup(dbForRestCleanup)
+	schemaIdForRest := sdk.NewDatabaseObjectIdentifier(dbForRest.ID().Name(), "PUBLIC")
+
+	contactId, contactCleanup := testClientHelper().Contact.Create(t)
+	t.Cleanup(contactCleanup)
+
+	assertUnmanagedColumns := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
+		t.Helper()
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.NotEmpty(t, details)
+		// With an external catalog, we cannot manage table columns; assert only the generic properties.
+		for _, col := range details {
+			assertThatObject(
+				t, objectassert.IcebergTableDetailsFromObject(t, &col).
+					HasKind("COLUMN").
+					HasNoPolicyName().
+					HasNoPrivacyDomain().
+					HasNoWriteDefault(),
+			)
+		}
+	}
+
+	t.Run("create from aws glue: basic", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForAwsGlue)
+
+		err := client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(
+			t, objectassert.IcebergTable(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner("ACCOUNTADMIN").
+				HasExternalVolumeName(externalVolumeId).
+				HasCatalogName(awsGlueCatalogId).
+				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+				HasCatalogTableName(catalogTableName).
+				HasCatalogNamespace(catalogNamespace).
+				HasCanWriteMetadata(true).
+				HasComment("").
+				HasNoNameMapping().
+				HasOwnerRoleType("ROLE").
+				HasCatalogSyncName("").
+				HasNoAutoRefreshStatus(),
+		)
+
+		assertThatObject(
+			t, objectparametersassert.IcebergTableParameters(t, id).
+				HasCatalog(awsGlueCatalogId.Name()).
+				HasExternalVolume(externalVolumeId.Name()).
+				HasReplaceInvalidCharacters(false),
+		)
+
+		assertUnmanagedColumns(t, id)
+	})
+
+	t.Run("create from aws glue: all options", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName).
+			WithOrReplace(true).
+			WithExternalVolume(externalVolumeId).
+			WithCatalog(awsGlueCatalogId).
+			WithCatalogNamespace(catalogNamespace).
+			WithReplaceInvalidCharacters(true).
+			WithAutoRefresh(true).
+			WithComment("integration test").
+			WithContact([]sdk.TableContact{
+				{Purpose: "SUPPORT", Contact: contactId},
+			}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(
+			t, objectassert.IcebergTable(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner("ACCOUNTADMIN").
+				HasExternalVolumeName(externalVolumeId).
+				HasCatalogName(awsGlueCatalogId).
+				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+				HasCatalogTableName(catalogTableName).
+				HasCatalogNamespace(catalogNamespace).
+				HasCanWriteMetadata(true).
+				HasComment("integration test").
+				HasNoNameMapping().
+				HasOwnerRoleType("ROLE").
+				HasCatalogSyncName("").
+				HasAutoRefreshStatusNotEmpty(),
+		)
+
+		assertThatObject(
+			t, objectparametersassert.IcebergTableParameters(t, id).
+				HasCatalog(awsGlueCatalogId.FullyQualifiedName()).
+				HasExternalVolume(externalVolumeId.FullyQualifiedName()).
+				HasReplaceInvalidCharacters(true),
+		)
+
+		assertUnmanagedColumns(t, id)
+	})
+
+	t.Run("create from aws glue: if not exists", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForAwsGlue)
+
+		err := client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// IF NOT EXISTS should not error when the table already exists.
+		err = client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName).
+			WithIfNotExists(true))
+		require.NoError(t, err)
+	})
+
+	t.Run("create from iceberg rest: basic", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForRest)
+
+		err := client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(
+			t, objectassert.IcebergTable(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner("ACCOUNTADMIN").
+				HasExternalVolumeName(externalVolumeId).
+				HasCatalogName(restCatalogId).
+				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+				HasCatalogTableName(catalogTableName).
+				HasCatalogNamespace(catalogNamespace).
+				HasCanWriteMetadata(true).
+				HasComment("").
+				HasNoNameMapping().
+				HasOwnerRoleType("ROLE").
+				HasCatalogSyncName("").
+				HasNoAutoRefreshStatus(),
+		)
+
+		assertThatObject(
+			t, objectparametersassert.IcebergTableParameters(t, id).
+				HasCatalog(restCatalogId.Name()).
+				HasExternalVolume(externalVolumeId.Name()).
+				HasReplaceInvalidCharacters(false).
+				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+				HasTargetFileSize(sdk.IcebergTableTargetFileSizeAuto).
+				HasEnableIcebergMergeOnRead(true).
+				HasIcebergMergeOnReadBehavior("auto"),
+		)
+
+		assertUnmanagedColumns(t, id)
+	})
+
+	t.Run("create from iceberg rest: all options", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName).
+			WithOrReplace(true).
+			WithExternalVolume(externalVolumeId).
+			WithCatalog(restCatalogId).
+			WithCatalogNamespace(catalogNamespace).
+			WithPathLayout(sdk.IcebergTablePathLayoutHierarchical).
+			WithTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
+			WithReplaceInvalidCharacters(true).
+			WithAutoRefresh(true).
+			WithComment("integration test").
+			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+			WithIcebergMergeOnReadBehavior(sdk.IcebergTableIcebergMergeOnReadBehaviorEnabled).
+			WithEnableIcebergMergeOnRead(true).
+			WithContact([]sdk.TableContact{
+				{Purpose: "SUPPORT", Contact: contactId},
+			}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		assertThatObject(
+			t, objectassert.IcebergTable(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner("ACCOUNTADMIN").
+				HasExternalVolumeName(externalVolumeId).
+				HasCatalogName(restCatalogId).
+				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
+				HasCatalogTableName(catalogTableName).
+				HasCatalogNamespace(catalogNamespace).
+				HasCanWriteMetadata(true).
+				HasComment("integration test").
+				HasNoNameMapping().
+				HasOwnerRoleType("ROLE").
+				HasCatalogSyncName("").
+				HasAutoRefreshStatusNotEmpty(),
+			// Path layout is not returned from Snowflake.
+		)
+
+		assertThatObject(
+			t, objectparametersassert.IcebergTableParameters(t, id).
+				HasCatalog(restCatalogId.FullyQualifiedName()).
+				HasExternalVolume(externalVolumeId.FullyQualifiedName()).
+				HasReplaceInvalidCharacters(true).
+				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+				HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
+				HasEnableIcebergMergeOnRead(true).
+				HasIcebergMergeOnReadBehavior(string(sdk.IcebergTableIcebergMergeOnReadBehaviorEnabled)),
+		)
+
+		assertUnmanagedColumns(t, id)
+	})
+
+	t.Run("create from iceberg rest: if not exists", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForRest)
+
+		err := client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// IF NOT EXISTS should not error when the table already exists.
+		err = client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName).
+			WithIfNotExists(true))
+		require.NoError(t, err)
 	})
 }
 
