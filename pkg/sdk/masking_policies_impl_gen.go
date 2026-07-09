@@ -153,6 +153,9 @@ func (r maskingPolicyDBRow) convert() (*MaskingPolicy, error) {
 			return nil, fmt.Errorf("failed to unmarshal Options: %w", err)
 		}
 	}
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
