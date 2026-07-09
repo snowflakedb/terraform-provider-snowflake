@@ -2164,13 +2164,6 @@ Added a new preview resource for managing listings. Check the official Snowflake
 
 This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_listing_resource` to `preview_features_enabled` field in the provider configuration.
 
-### *(new feature)* snowflake_organization_listing resource
-Added a new preview resource for managing organization listings. Organization listings are shared across all accounts within your Snowflake organization, unlike external listings which target specific accounts. Check the official Snowflake documentation to know more [about organization listings](https://other-docs.snowflake.com/en/collaboration/collaboration-listings-about).
-
-> **Note** For inlined manifest version, only string is accepted. The manifest structure is not mapped to the resource schema to keep it simple and aligned with other similar resources. While it's more recommended to keep your manifest in a stage, the inlined version may be useful for initial setup and testing.
-
-This feature will be marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add `snowflake_organization_listing_resource` to `preview_features_enabled` field in the provider configuration.
-
 ### *(new feature)* Added `storage_aws_external_id` field in the `storage_integration` resource
 
 Previously, this field was read-only. In this version, this field is promoted to optional configurable attribute. Because config was previously empty, and there is a value in state, the provider will show the planned change to `null`. After applying, the plan should be empty. This apply is effectively a no-op, as it will run ALTER UNSET on the integration, which will revert the `storage_aws_external_id` to the default (the same value as there was no option to set it through the resource before). In case, when the value was changed externally (manually or through `snowflake_execute`), make sure to set this value in config before bumping the version.
