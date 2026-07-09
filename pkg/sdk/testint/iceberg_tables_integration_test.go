@@ -1402,7 +1402,21 @@ func TestInt_IcebergTables(t *testing.T) {
 					}))))
 		require.NoError(t, err)
 
-		// TODO (next PRs): Add support for DESCRIBE SEARCH OPTIMIZATION and assert the results.
+		details, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, details, 2)
+		objectassert.TableSearchOptimizationDetailsFromObject(t, &details[0]).
+			HasExpressionId(1).
+			HasActive(true).
+			HasMethod(string(sdk.TableSearchMethodEquality)).
+			HasTarget("REGION").
+			HasTargetDataType(testdatatypes.DataTypeVarcharIceberg)
+		objectassert.TableSearchOptimizationDetailsFromObject(t, &details[1]).
+			HasExpressionId(2).
+			HasActive(true).
+			HasMethod(string(sdk.TableSearchMethodFullText)).
+			HasTarget("REGION").
+			HasTargetDataType(testdatatypes.DataTypeVarcharIceberg)
 
 		// Drop by method/target: removes only the EQUALITY entry. The analyzer is not part of the matcher.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
@@ -1414,6 +1428,10 @@ func TestInt_IcebergTables(t *testing.T) {
 					}))))
 		require.NoError(t, err)
 
+		details, err = client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+
 		// Drop by column name: removes the remaining (FULL_TEXT) search optimization on the column.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
@@ -1422,6 +1440,10 @@ func TestInt_IcebergTables(t *testing.T) {
 						*sdk.NewTableDropSearchOptimizationOnRequest().WithColumnName("REGION"),
 					}))))
 		require.NoError(t, err)
+
+		details, err = client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Empty(t, details)
 	})
 
 	t.Run("alter: set and unset join policy", func(t *testing.T) {
