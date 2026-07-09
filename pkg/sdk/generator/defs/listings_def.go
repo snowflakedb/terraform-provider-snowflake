@@ -149,6 +149,21 @@ var listingsDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ExactlyOneValueSet, "As", "From"),
 	).
+	CustomOperation(
+		"CreateOrganization",
+		"https://docs.snowflake.com/en/sql-reference/sql/create-organization-listing",
+		g.NewQueryStruct("CreateOrganizationListing").
+			Create().
+			SQL("ORGANIZATION LISTING").
+			IfNotExists().
+			Name().
+			OptionalQueryStructField("With", listingWithDef, g.KeywordOptions()).
+			OptionalTextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes()).
+			PredefinedQueryStructField("From", g.KindOfTPointer[sdkcommons.Location](), g.ParameterOptions().NoQuotes().NoEquals().SQL("FROM")).
+			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
+			WithValidation(g.ValidIdentifier, "name").
+			WithValidation(g.ExactlyOneValueSet, "As", "From"),
+	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-listing",
 		g.NewQueryStruct("AlterListing").
@@ -243,7 +258,7 @@ var listingsDef = g.NewInterface(
 		ListingStateEnumDef,
 	)
 
-	// TODO [SNOW-2236968]: Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface
+	// Note: there is no SHOW / DESCRIBE / DROP ORGANIZATION LISTING in Snowflake SQL; use Show / Describe / Drop from the Listings interface instead.
 	// TODO [SNOW-2236968]: Show available listings
 	// TODO [SNOW-2236968]: Describe available listing
 	// TODO [SNOW-2236968]: Listing manifest builder - https://docs.snowflake.com/en/progaccess/listing-manifest-reference

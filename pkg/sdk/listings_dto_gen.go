@@ -3,16 +3,13 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateListingOptions]              = new(CreateListingRequest)
-	_ optionsProvider[CreateOrganizationListingOptions]  = new(CreateOrganizationListingRequest)
-	_ optionsProvider[AlterListingOptions]               = new(AlterListingRequest)
-	_ optionsProvider[DropListingOptions]                = new(DropListingRequest)
-	_ optionsProvider[ShowListingOptions]                = new(ShowListingRequest)
-	_ optionsProvider[DescribeListingOptions]            = new(DescribeListingRequest)
-	_ optionsProvider[ShowVersionsListingOptions]        = new(ShowVersionsListingRequest)
-	_ optionsProvider[ShowOrganizationListingOptions]    = new(ShowOrganizationListingRequest)
-	_ optionsProvider[DescribeOrganizationListingOptions] = new(DescribeOrganizationListingRequest)
-	_ optionsProvider[DropOrganizationListingOptions]    = new(DropOrganizationListingRequest)
+	_ optionsProvider[CreateListingOptions]             = new(CreateListingRequest)
+	_ optionsProvider[CreateOrganizationListingOptions] = new(CreateOrganizationListingRequest)
+	_ optionsProvider[AlterListingOptions]              = new(AlterListingRequest)
+	_ optionsProvider[DropListingOptions]               = new(DropListingRequest)
+	_ optionsProvider[ShowListingOptions]               = new(ShowListingRequest)
+	_ optionsProvider[DescribeListingOptions]           = new(DescribeListingRequest)
+	_ optionsProvider[ShowVersionsListingOptions]       = new(ShowVersionsListingRequest)
 )
 
 type CreateListingRequest struct {
@@ -94,19 +91,4 @@ type DescribeListingRequest struct {
 type ShowVersionsListingRequest struct {
 	name  AccountObjectIdentifier // required
 	Limit *LimitFrom
-}
-
-type ShowOrganizationListingRequest struct {
-	Like       *Like
-	StartsWith *string
-	Limit      *LimitFrom
-}
-
-type DescribeOrganizationListingRequest struct {
-	name AccountObjectIdentifier // required
-}
-
-type DropOrganizationListingRequest struct {
-	IfExists *bool
-	name     AccountObjectIdentifier // required
 }

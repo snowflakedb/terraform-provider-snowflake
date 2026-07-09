@@ -18,12 +18,6 @@ type Listings interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
 	Describe(ctx context.Context, request *DescribeListingRequest) (*ListingDetails, error)
 	ShowVersions(ctx context.Context, request *ShowVersionsListingRequest) ([]ListingVersion, error)
-	ShowOrganization(ctx context.Context, request *ShowOrganizationListingRequest) ([]Listing, error)
-	ShowOrganizationByID(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
-	ShowOrganizationByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Listing, error)
-	DescribeOrganization(ctx context.Context, request *DescribeOrganizationListingRequest) (*ListingDetails, error)
-	DropOrganization(ctx context.Context, request *DropOrganizationListingRequest) error
-	DropOrganizationSafely(ctx context.Context, id AccountObjectIdentifier) error
 }
 
 // CreateListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-listing.
@@ -308,30 +302,6 @@ type ListingDetails struct {
 	RequestApprovalType          *string
 	MonetizationDisplayOrder     *string
 	LegacyUniformListingLocators *string
-}
-
-// ShowOrganizationListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-organization-listings.
-type ShowOrganizationListingOptions struct {
-	show                bool       `ddl:"static" sql:"SHOW"`
-	organizationListing bool       `ddl:"static" sql:"ORGANIZATION LISTING"`
-	Like                *Like      `ddl:"keyword" sql:"LIKE"`
-	StartsWith          *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit               *LimitFrom `ddl:"keyword" sql:"LIMIT"`
-}
-
-// DescribeOrganizationListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-organization-listing.
-type DescribeOrganizationListingOptions struct {
-	describe            bool                    `ddl:"static" sql:"DESCRIBE"`
-	organizationListing bool                    `ddl:"static" sql:"ORGANIZATION LISTING"`
-	name                AccountObjectIdentifier `ddl:"identifier"`
-}
-
-// DropOrganizationListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-organization-listing.
-type DropOrganizationListingOptions struct {
-	drop                bool                    `ddl:"static" sql:"DROP"`
-	organizationListing bool                    `ddl:"static" sql:"ORGANIZATION LISTING"`
-	IfExists            *bool                   `ddl:"keyword" sql:"IF EXISTS"`
-	name                AccountObjectIdentifier `ddl:"identifier"`
 }
 
 // ShowVersionsListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-versions-in-listing.

@@ -10,9 +10,6 @@ var (
 	_ validatable = new(ShowListingOptions)
 	_ validatable = new(DescribeListingOptions)
 	_ validatable = new(ShowVersionsListingOptions)
-	_ validatable = new(ShowOrganizationListingOptions)
-	_ validatable = new(DescribeOrganizationListingOptions)
-	_ validatable = new(DropOrganizationListingOptions)
 )
 
 func (opts *CreateListingOptions) validate() error {
@@ -29,6 +26,25 @@ func (opts *CreateListingOptions) validate() error {
 	if valueSet(opts.With) {
 		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
 			errs = append(errs, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateOrganizationListingOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.As, opts.From) {
+		errs = append(errs, errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"))
+	}
+	if valueSet(opts.With) {
+		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
+			errs = append(errs, errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -82,55 +98,6 @@ func (opts *DescribeListingOptions) validate() error {
 }
 
 func (opts *ShowVersionsListingOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateOrganizationListingOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if !exactlyOneValueSet(opts.As, opts.From) {
-		errs = append(errs, errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"))
-	}
-	if valueSet(opts.With) {
-		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
-			errs = append(errs, errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"))
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *ShowOrganizationListingOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	return JoinErrors(errs...)
-}
-
-func (opts *DescribeOrganizationListingOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *DropOrganizationListingOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
