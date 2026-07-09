@@ -69,3 +69,9 @@ func (opts *ShowDatabaseRoleOptions) additionalValidations() error {
 	}
 	return nil
 }
+
+func (r databaseRoleDBRow) additionalConvert(_ *DatabaseRole) error {
+	// additionalConvert is generated as DatabaseName is a plain only field.
+	// it can't be currently set here, as it is not a returned value, and we can get it only from ID(), which is not passed to convert method
+	return nil
+}
