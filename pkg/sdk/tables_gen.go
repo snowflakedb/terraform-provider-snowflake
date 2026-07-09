@@ -12,7 +12,7 @@ import (
 
 type Tables interface {
 	DescribeSearchOptimization(ctx context.Context, request *DescribeSearchOptimizationTableRequest) ([]TableSearchOptimizationDetails, error)
-	ShowConstraints(ctx context.Context, request *ShowConstraintsTableRequest) ([]TableConstraintDetails, error)
+	SelectTableConstraints(ctx context.Context, request *SelectTableConstraintsTableRequest) ([]TableConstraintDetails, error)
 }
 
 // DescribeSearchOptimizationTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization.
@@ -39,8 +39,8 @@ type TableSearchOptimizationDetails struct {
 	Active         bool
 }
 
-// ShowConstraintsTableOptions is based on https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints.
-type ShowConstraintsTableOptions struct {
+// SelectTableConstraintsTableOptions is based on https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints.
+type SelectTableConstraintsTableOptions struct {
 	selectAll                         bool                    `ddl:"static" sql:"SELECT * FROM"`
 	Database                          AccountObjectIdentifier `ddl:"identifier"`
 	dot                               bool                    `ddl:"static" sql:"."`

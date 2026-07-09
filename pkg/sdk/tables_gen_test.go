@@ -36,11 +36,11 @@ func TestTables_DescribeSearchOptimization(t *testing.T) {
 	})
 }
 
-func TestTables_ShowConstraints(t *testing.T) {
+func TestTables_SelectTableConstraints(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid ShowConstraintsTableOptions
-	defaultOpts := func() *ShowConstraintsTableOptions {
-		return &ShowConstraintsTableOptions{
+	defaultOpts := func() *SelectTableConstraintsTableOptions {
+		return &SelectTableConstraintsTableOptions{
 			Database:    NewAccountObjectIdentifier(id.DatabaseName()),
 			TableSchema: id.SchemaName(),
 			TableName:   id.Name(),
@@ -48,7 +48,7 @@ func TestTables_ShowConstraints(t *testing.T) {
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowConstraintsTableOptions)(nil)
+		opts := (*SelectTableConstraintsTableOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 

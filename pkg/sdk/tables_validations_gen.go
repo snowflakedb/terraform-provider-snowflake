@@ -4,7 +4,7 @@ package sdk
 
 var (
 	_ validatable = new(DescribeSearchOptimizationTableOptions)
-	_ validatable = new(ShowConstraintsTableOptions)
+	_ validatable = new(SelectTableConstraintsTableOptions)
 )
 
 func (opts *DescribeSearchOptimizationTableOptions) validate() error {
@@ -18,7 +18,7 @@ func (opts *DescribeSearchOptimizationTableOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *ShowConstraintsTableOptions) validate() error {
+func (opts *SelectTableConstraintsTableOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}

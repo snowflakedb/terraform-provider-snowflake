@@ -28,7 +28,7 @@ func (v *tables) DescribeSearchOptimization(ctx context.Context, request *Descri
 	return convertRows[tableSearchOptimizationDetailsRow, TableSearchOptimizationDetails](dbRows)
 }
 
-func (v *tables) ShowConstraints(ctx context.Context, request *ShowConstraintsTableRequest) ([]TableConstraintDetails, error) {
+func (v *tables) SelectTableConstraints(ctx context.Context, request *SelectTableConstraintsTableRequest) ([]TableConstraintDetails, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[tableConstraintDetailsRow](v.client, ctx, opts)
 	if err != nil {
@@ -59,8 +59,8 @@ func (r tableSearchOptimizationDetailsRow) convert() (*TableSearchOptimizationDe
 	return result, nil
 }
 
-func (r *ShowConstraintsTableRequest) toOpts() *ShowConstraintsTableOptions {
-	opts := &ShowConstraintsTableOptions{
+func (r *SelectTableConstraintsTableRequest) toOpts() *SelectTableConstraintsTableOptions {
+	opts := &SelectTableConstraintsTableOptions{
 		Database:    r.Database,
 		TableSchema: r.TableSchema,
 		TableName:   r.TableName,

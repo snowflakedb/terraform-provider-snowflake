@@ -162,7 +162,7 @@ var tablesDef = g.NewInterface(
 		tableDescribeSearchOptimization,
 	).
 	CustomShowOperationWithPairedStructs(
-		"ShowConstraints",
+		"SelectTableConstraints",
 		g.ShowMappingKindSlice,
 		"https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints",
 		tableConstraintDetails,

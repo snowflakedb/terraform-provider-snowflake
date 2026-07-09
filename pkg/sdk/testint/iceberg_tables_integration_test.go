@@ -502,7 +502,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertPolicyReference(t, references[2], projectionPolicyId, sdk.PolicyKindProjectionPolicy, id, new("FK_ID"))
 		assertPolicyReference(t, references[3], rowAccessPolicy.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
 
-		constraints, err := client.Tables.ShowConstraints(ctx, sdk.NewShowConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
 		require.NoError(t, err)
 		require.Len(t, constraints, 4)
 		// Sort the constraints because the order is not guaranteed.
