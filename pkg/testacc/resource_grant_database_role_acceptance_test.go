@@ -422,7 +422,8 @@ func TestAcc_GrantDatabaseRole_handleGrantsToApplication(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GrantDatabaseRoleResource(t, basic.ResourceReference()).
 						HasDatabaseRoleNameString(databaseRole.ID().FullyQualifiedName()).
 						HasParentRoleNameString(parentRole.ID().Name()),

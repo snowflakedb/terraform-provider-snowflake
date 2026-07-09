@@ -49,16 +49,17 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 		WithDependsOn(completeModel.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: sessionPoliciesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, completeModel, sessionPoliciesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(sessionPoliciesModel.DatasourceReference(), "session_policies.#", "1")),
-					resourceshowoutputassert.SessionPoliciesDatasourceShowOutput(t, "snowflake_session_policies.test").
+					resourceshowoutputassert.SessionPoliciesDatasourceShowOutput(t, sessionPoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -68,7 +69,7 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 						HasComment(comment).
 						HasOwnerRoleType("ROLE").
 						HasOptions(""),
-					resourceshowoutputassert.SessionPoliciesDatasourceDescribeOutput(t, "snowflake_session_policies.test").
+					resourceshowoutputassert.SessionPoliciesDatasourceDescribeOutput(t, sessionPoliciesModel.DatasourceReference()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(comment).
@@ -80,9 +81,10 @@ func TestAcc_SessionPolicies_BasicUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, completeModel, sessionPoliciesModelWithoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr(sessionPoliciesModelWithoutDescribe.DatasourceReference(), "session_policies.#", "1")),
-					resourceshowoutputassert.SessionPoliciesDatasourceShowOutput(t, "snowflake_session_policies.test").
+					resourceshowoutputassert.SessionPoliciesDatasourceShowOutput(t, sessionPoliciesModelWithoutDescribe.DatasourceReference()).
 						HasName(id.Name()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(id.DatabaseName()).
@@ -157,7 +159,7 @@ func TestAcc_SessionPolicies_Filtering(t *testing.T) {
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: sessionPoliciesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -210,7 +212,7 @@ func TestAcc_SessionPolicies_Filtering(t *testing.T) {
 
 func TestAcc_SessionPolicies_emptyIn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: sessionPoliciesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -226,7 +228,7 @@ func TestAcc_SessionPolicies_emptyIn(t *testing.T) {
 
 func TestAcc_SessionPolicies_emptyOn(t *testing.T) {
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: sessionPoliciesProviderFactory,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

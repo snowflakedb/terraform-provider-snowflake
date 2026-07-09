@@ -23,6 +23,9 @@ func (opts *CreateListingOptions) validate() error {
 	if !exactlyOneValueSet(opts.As, opts.From) {
 		errs = append(errs, errExactlyOneOf("CreateListingOptions", "As", "From"))
 	}
+	if opts.As != nil && containsDoubleDollarQuotes(*opts.As) {
+		errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateListingOptions", "As"))
+	}
 	if valueSet(opts.With) {
 		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
 			errs = append(errs, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
@@ -63,6 +66,11 @@ func (opts *AlterListingOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.Publish, opts.Unpublish, opts.Review, opts.AlterListingAs, opts.AddVersion, opts.RenameTo, opts.Set, opts.Unset) {
 		errs = append(errs, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"))
+	}
+	if valueSet(opts.AlterListingAs) {
+		if containsDoubleDollarQuotes(opts.AlterListingAs.As) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("AlterListingOptions.AlterListingAs", "As"))
+		}
 	}
 	return JoinErrors(errs...)
 }

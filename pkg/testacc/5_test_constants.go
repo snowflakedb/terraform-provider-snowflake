@@ -20,4 +20,30 @@ const (
 	// Git constants
 	gitAllowedPrefix = "https://github.com/my-org/"
 	gitBlockedPrefix = "https://github.com/my-org/blocked/"
+
+	// MCP constants
+	mcpAllowedPrefix    = "https://mcp.example.com/api/"
+	mcpBlockedPrefix    = "https://mcp.example.com/api/blocked/"
+	mcpOauthResourceUrl = "https://mcp.atlassian.com/v1/mcp"
+
+	// MCP OAuth2 constants
+	mcpOauth2AuthorizationEndpoint = "https://auth.example.com/authorize"
+	mcpOauth2TokenEndpoint         = "https://auth.example.com/token" //nolint:gosec
+	mcpOauth2ClientId              = "oauth-client-id-123"
+	mcpOauth2ClientSecret          = "oauth-client-secret-456" //nolint:gosec
+	mcpOauth2RefreshTokenValidity  = 7200
+
+	// Git OAuth2 constants
+	gitOauth2AuthorizationEndpoint         = "https://auth.example.com/authorize"
+	gitOauth2TokenEndpoint                 = "https://auth.example.com/token" //nolint:gosec
+	gitOauth2ClientId                      = "oauth-client-id-123"
+	gitOauth2ClientSecret                  = "oauth-client-secret-456" //nolint:gosec
+	gitOauth2ExternalAuthorizationEndpoint = "https://different.example.com/authorize"
+	gitOauth2ExternalTokenEndpoint         = "https://different.example.com/token" //nolint:gosec
+	gitOauth2ExternalClientId              = "different-client-id"
+	gitOauth2UpdatedAuthorizationEndpoint  = "https://updated.example.com/authorize"
+	gitOauth2UpdatedTokenEndpoint          = "https://updated.example.com/token" //nolint:gosec
+	gitOauth2AccessTokenValidity           = 3600
+	gitOauth2RefreshTokenValidity          = 86400
+	gitOauth2Username                      = "test_user"
 )

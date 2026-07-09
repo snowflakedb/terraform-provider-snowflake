@@ -61,15 +61,15 @@ lint-fix: ## Run linters and formatters. If linters or formatters support autofi
 	./bin/golangci-lint run -v --fix
 
 mod: ## add missing and remove unused modules
-	go mod tidy -compat=1.26.3
+	go mod tidy -compat=1.26.4
 
 mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
-	go mod tidy -compat=1.26.3 -diff
+	go mod tidy -compat=1.26.4 -diff
 
-pre-push: generate-all-config-model-builders generate-sdk-no-tests generate-sdk-examples mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: check-compilation generate-all-config-model-builders generate-sdk-no-tests generate-sdk-examples generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: generate-all-config-model-builders-check generate-sdk-no-tests-check generate-sdk-examples-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: check-compilation generate-all-config-model-builders-check generate-sdk-no-tests-check generate-sdk-examples-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -84,16 +84,21 @@ test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") $(ADDITIONAL_TEST_FLAGS)
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=180m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=210m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
 
 test-account-level-features: ## run integration and acceptance test modifying account
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=120m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
 test-integration: ## run SDK integration tests
-	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
+	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=75m ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
 	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional $(ADDITIONAL_TEST_FLAGS)
+
+check-compilation: ## check that the project compiles for all build tag combinations (no tags, non_account_level_tests, account_level_tests)
+	go vet ./pkg/provider/... ./pkg/resources/... ./pkg/datasources/... ./pkg/sdk/... ./pkg/sdk/testint/... ./pkg/testacc/...
+	go vet --tags=non_account_level_tests ./pkg/sdk/testint/... ./pkg/testacc/...
+	go vet --tags=account_level_tests ./pkg/sdk/testint/... ./pkg/testacc/...
 
 test-architecture: ## check architecture constraints between packages
 	go test ./pkg/architests/...
@@ -205,19 +210,28 @@ clean-snowflake-object-parameters-assertions: ## Clean snowflake object paramete
 generate-resource-assertions: ## Generate resource assertions
 	go generate ./pkg/acceptance/bettertestspoc/assert/resourceassert/generate.go
 
+generate-resource-assertions-check: clean-resource-assertions generate-resource-assertions ## check that generated config model builders are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/assert/resourceassert)
+
 clean-resource-assertions: ## Clean resource assertions
 	rm -f ./pkg/acceptance/bettertestspoc/assert/resourceassert/*_gen.go
 
 generate-resource-parameters-assertions: ## Generate resource parameters assertions
 	go generate ./pkg/acceptance/bettertestspoc/assert/resourceparametersassert/generate.go
 
+generate-resource-parameters-assertions-check: clean-resource-parameters-assertions generate-resource-parameters-assertions ## check that generated resource parameters assertions are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/assert/resourceparametersassert)
+
 clean-resource-parameters-assertions: ## Clean resource parameters assertions
 	rm -f ./pkg/acceptance/bettertestspoc/assert/resourceparametersassert/*_gen.go
 
-generate-resource-show-output-assertions: ## Generate resource parameters assertions
+generate-resource-show-output-assertions: ## Generate resource show output assertions
 	go generate ./pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/generate.go
 
-clean-resource-show-output-assertions: ## Clean resource parameters assertions
+generate-resource-show-output-assertions-check: clean-resource-show-output-assertions generate-resource-show-output-assertions ## check that generated resource show output assertions are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert)
+
+clean-resource-show-output-assertions: ## Clean resource show output assertions
 	rm -f ./pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert/*_gen.go
 
 generate-resource-model-builders: ## Generate resource model builders
@@ -260,4 +274,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-no-tests-check generate-sdk-examples-check
+.PHONY: build-local check-compilation dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-no-tests-check generate-sdk-examples-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check

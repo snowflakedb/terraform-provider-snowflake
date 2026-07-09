@@ -76,7 +76,8 @@ func TestAcc_AccountRoles_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, accountRoleModel, accountRolesModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.AccountRolesDatasourceShowOutput(t, accountRolesModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(roleName).

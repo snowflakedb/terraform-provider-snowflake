@@ -524,7 +524,8 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 			HasDefaultEnableUnredactedQuerySyntaxErrorValue()
 	})
 
-	t.Run("set / unset parameters",
+	t.Run(
+		"set / unset parameters",
 		setAndUnsetAccountParametersTest(
 			func(ctx context.Context, parameters sdk.AccountParameters) error {
 				return client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{

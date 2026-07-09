@@ -58,7 +58,7 @@ func GrantAccountRole() *schema.Resource {
 		DeleteContext: TrackingDeleteWrapper(resources.GrantAccountRole, DeleteGrantAccountRole),
 		Schema:        grantAccountRoleSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.GrantAccountRole, func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+			StateContext: TrackingImportWrapper(resources.GrantAccountRole, func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 				parts := strings.Split(d.Id(), helpers.IDDelimiter)
 				if len(parts) != 3 {
 					return nil, fmt.Errorf("invalid ID specified: %v, expected <role_name>|<grantee_object_type>|<grantee_identifier>", d.Id())
@@ -87,7 +87,7 @@ func GrantAccountRole() *schema.Resource {
 }
 
 // CreateGrantAccountRole implements schema.CreateFunc.
-func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	roleName := d.Get("role_name").(string)
@@ -102,9 +102,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		parentRoleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parentRoleName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleIdentifier.FullyQualifiedName())
 		if !safePublicRole {
-			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-				Role: &parentRoleIdentifier,
-			})
+			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithRole(parentRoleIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
@@ -113,9 +111,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		userIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(userName.(string))
 		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), userIdentifier.FullyQualifiedName())
 		if !safePublicRole {
-			req := sdk.NewGrantRoleRequest(roleIdentifier, sdk.GrantRole{
-				User: &userIdentifier,
-			})
+			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithUser(userIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
@@ -128,10 +124,19 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleSafePublicRole)
 		return nil
 	}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		// The trailing Read only re-confirms the grant we just created; this resource has no
+		// computed/server-default fields to populate, so the Read is redundant here. With caching
+		// enabled we skip it to avoid an extra SHOW GRANTS during apply. We still invalidate so any
+		// later Read for this role in the same plan observes the new grant.
+		providerCtx.GrantShowOfRoleCache.Invalidate(roleIdentifier.FullyQualifiedName())
+		log.Printf("[DEBUG] skipping trailing SHOW GRANTS read after create (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleShowCaching)
+		return nil
+	}
 	return ReadGrantAccountRole(ctx, d, meta)
 }
 
-func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
@@ -148,13 +153,25 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 		return nil
 	}
 
-	objectType := parts[1]
+	objectType, err := sdk.ToObjectType(parts[1])
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	targetIdentifier := parts[2]
-	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-		Of: &sdk.ShowGrantsOf{
-			Role: roleIdentifier,
-		},
-	})
+
+	var grants []sdk.Grant
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		cacheKey := roleIdentifier.FullyQualifiedName()
+		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func() ([]sdk.Grant, error) {
+			return client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+				Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+			})
+		})
+	} else {
+		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+		})
+	}
 	if err != nil {
 		log.Printf("[DEBUG] role (%s) not found", roleIdentifier.FullyQualifiedName())
 		d.SetId("")
@@ -163,7 +180,7 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 
 	var found bool
 	for _, grant := range grants {
-		if grant.GrantedTo == sdk.ObjectType(objectType) {
+		if grant.GrantedTo == objectType {
 			if grant.GranteeName.FullyQualifiedName() == targetIdentifier {
 				found = true
 				break
@@ -178,7 +195,7 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
@@ -205,14 +222,17 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta in
 	var err error
 	switch objectType {
 	case "ROLE":
-		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{Role: &granteeIdentifier}))
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, *sdk.NewRevokeRoleFromRequest().WithRole(granteeIdentifier)))
 	case "USER":
-		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, sdk.RevokeRole{User: &granteeIdentifier}))
+		err = revokeFunc(ctx, sdk.NewRevokeRoleRequest(id, *sdk.NewRevokeRoleFromRequest().WithUser(granteeIdentifier)))
 	default:
 		return diag.FromErr(fmt.Errorf("invalid object type specified: %v, expected ROLE or USER", objectType))
 	}
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		providerCtx.GrantShowOfRoleCache.Invalidate(id.FullyQualifiedName())
 	}
 	d.SetId("")
 	return nil

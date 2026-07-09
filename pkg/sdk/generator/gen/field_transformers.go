@@ -30,6 +30,7 @@ type KeywordTransformer struct {
 	sqlPrefix   string
 	quotes      string
 	parentheses string
+	comma       string
 }
 
 func KeywordOptions() *KeywordTransformer {
@@ -76,6 +77,11 @@ func (v *KeywordTransformer) MustParentheses() *KeywordTransformer {
 	return v
 }
 
+func (v *KeywordTransformer) NoComma() *KeywordTransformer {
+	v.comma = "no_comma"
+	return v
+}
+
 func (v *KeywordTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "ddl", "keyword")
 	if v.required {
@@ -84,6 +90,7 @@ func (v *KeywordTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "sql", v.sqlPrefix)
 	addTagIfMissing(f.Tags, "ddl", v.quotes)
 	addTagIfMissing(f.Tags, "ddl", v.parentheses)
+	addTagIfMissing(f.Tags, "ddl", v.comma)
 	return f
 }
 
@@ -139,6 +146,9 @@ func (v *ParameterTransformer) DoubleQuotes() *ParameterTransformer {
 	return v
 }
 
+// Warning: Double dollar quotes tag assumes that passed input is sanitated.
+// Double dollar quotes cannot be escaped in Snowflake.
+// This is why the caller is resposible to allow only sanitized input for fields with this tag.
 func (v *ParameterTransformer) DoubleDollarQuotes() *ParameterTransformer {
 	v.quotes = "double_dollar_quotes"
 	return v

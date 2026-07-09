@@ -73,9 +73,35 @@ var ShowIcebergTableSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	// Adjusted manually: auto_refresh_status is returned as a JSON blob and parsed into a struct in the SDK,
+	// so it is represented here as a nested object instead of the generator's default string field.
 	"auto_refresh_status": {
-		Type:     schema.TypeString,
+		Type:     schema.TypeList,
 		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"current_snapshot_id": {
+					Type:     schema.TypeInt,
+					Computed: true,
+				},
+				"last_snapshot_time": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"pending_snapshot_count": {
+					Type:     schema.TypeInt,
+					Computed: true,
+				},
+				"execution_state": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+				"last_updated_time": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
+			},
+		},
 	},
 	"partition_specs": {
 		Type:     schema.TypeString,
@@ -127,7 +153,19 @@ func IcebergTableToSchema(icebergTable *sdk.IcebergTable) map[string]any {
 	}
 	icebergTableSchema["owner_role_type"] = icebergTable.OwnerRoleType
 	icebergTableSchema["catalog_sync_name"] = icebergTable.CatalogSyncName
-	icebergTableSchema["auto_refresh_status"] = icebergTable.AutoRefreshStatus
+	// Adjusted manually: map the parsed auto_refresh_status struct into a nested object (empty list when absent).
+	if icebergTable.AutoRefreshStatus != nil {
+		autoRefreshStatus := map[string]any{
+			"current_snapshot_id":    icebergTable.AutoRefreshStatus.CurrentSnapshotId,
+			"pending_snapshot_count": icebergTable.AutoRefreshStatus.PendingSnapshotCount,
+			"execution_state":        icebergTable.AutoRefreshStatus.ExecutionState,
+			"last_updated_time":      icebergTable.AutoRefreshStatus.LastUpdatedTime,
+		}
+		if icebergTable.AutoRefreshStatus.LastSnapshotTime != nil {
+			autoRefreshStatus["last_snapshot_time"] = *icebergTable.AutoRefreshStatus.LastSnapshotTime
+		}
+		icebergTableSchema["auto_refresh_status"] = []map[string]any{autoRefreshStatus}
+	}
 	icebergTableSchema["partition_specs"] = icebergTable.PartitionSpecs
 	icebergTableSchema["current_partition_spec_id"] = icebergTable.CurrentPartitionSpecId
 	icebergTableSchema["iceberg_table_format_version"] = icebergTable.IcebergTableFormatVersion

@@ -16,7 +16,7 @@ func TagAssociationResource(t *testing.T, name string) *TagAssociationResourceAs
 	t.Helper()
 
 	return &TagAssociationResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedTagAssociationResource(t *testing.T, id string) *TagAssociationReso
 	t.Helper()
 
 	return &TagAssociationResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -62,22 +62,22 @@ func (t *TagAssociationResourceAssert) HasTagValue(expected string) *TagAssociat
 ///////////////////////////////////
 
 func (t *TagAssociationResourceAssert) HasObjectTypeString(expected string) *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("object_type", expected))
+	t.ValueSet("object_type", expected)
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasSkipValidationString(expected string) *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("skip_validation", expected))
+	t.ValueSet("skip_validation", expected)
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasTagIdString(expected string) *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("tag_id", expected))
+	t.ValueSet("tag_id", expected)
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasTagValueString(expected string) *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("tag_value", expected))
+	t.ValueSet("tag_value", expected)
 	return t
 }
 
@@ -86,22 +86,22 @@ func (t *TagAssociationResourceAssert) HasTagValueString(expected string) *TagAs
 ///////////////////////////////
 
 func (t *TagAssociationResourceAssert) HasNoObjectType() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("object_type"))
+	t.ValueNotSet("object_type")
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasNoSkipValidation() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("skip_validation"))
+	t.ValueNotSet("skip_validation")
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasNoTagId() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("tag_id"))
+	t.ValueNotSet("tag_id")
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasNoTagValue() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueNotSet("tag_value"))
+	t.ValueNotSet("tag_value")
 	return t
 }
 
@@ -110,7 +110,7 @@ func (t *TagAssociationResourceAssert) HasNoTagValue() *TagAssociationResourceAs
 ////////////////////////////
 
 func (t *TagAssociationResourceAssert) HasSkipValidationEmpty() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValueSet("skip_validation", ""))
+	t.ValueSet("skip_validation", "")
 	return t
 }
 
@@ -119,21 +119,21 @@ func (t *TagAssociationResourceAssert) HasSkipValidationEmpty() *TagAssociationR
 ///////////////////////////////
 
 func (t *TagAssociationResourceAssert) HasObjectTypeNotEmpty() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValuePresent("object_type"))
+	t.ValuePresent("object_type")
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasSkipValidationNotEmpty() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValuePresent("skip_validation"))
+	t.ValuePresent("skip_validation")
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasTagIdNotEmpty() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValuePresent("tag_id"))
+	t.ValuePresent("tag_id")
 	return t
 }
 
 func (t *TagAssociationResourceAssert) HasTagValueNotEmpty() *TagAssociationResourceAssert {
-	t.AddAssertion(assert.ValuePresent("tag_value"))
+	t.ValuePresent("tag_value")
 	return t
 }

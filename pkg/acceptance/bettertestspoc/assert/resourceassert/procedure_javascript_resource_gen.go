@@ -16,7 +16,7 @@ func ProcedureJavascriptResource(t *testing.T, name string) *ProcedureJavascript
 	t.Helper()
 
 	return &ProcedureJavascriptResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedProcedureJavascriptResource(t *testing.T, id string) *ProcedureJava
 	t.Helper()
 
 	return &ProcedureJavascriptResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -119,82 +119,82 @@ func (p *ProcedureJavascriptResourceAssert) HasTraceLevel(expected string) *Proc
 ///////////////////////////////////
 
 func (p *ProcedureJavascriptResourceAssert) HasDatabaseString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("database", expected))
+	p.ValueSet("database", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasSchemaString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("schema", expected))
+	p.ValueSet("schema", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNameString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("name", expected))
+	p.ValueSet("name", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasCommentString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", expected))
+	p.ValueSet("comment", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasEnableConsoleOutputString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("enable_console_output", expected))
+	p.ValueSet("enable_console_output", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasExecuteAsString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("execute_as", expected))
+	p.ValueSet("execute_as", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasFullyQualifiedNameString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	p.ValueSet("fully_qualified_name", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasIsSecureString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("is_secure", expected))
+	p.ValueSet("is_secure", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasLogEventLevelString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_event_level", expected))
+	p.ValueSet("log_event_level", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasLogLevelString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_level", expected))
+	p.ValueSet("log_level", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasMetricLevelString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("metric_level", expected))
+	p.ValueSet("metric_level", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNullInputBehaviorString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("null_input_behavior", expected))
+	p.ValueSet("null_input_behavior", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasProcedureDefinitionString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_definition", expected))
+	p.ValueSet("procedure_definition", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasProcedureLanguageString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_language", expected))
+	p.ValueSet("procedure_language", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasReturnTypeString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("return_type", expected))
+	p.ValueSet("return_type", expected)
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasTraceLevelString(expected string) *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("trace_level", expected))
+	p.ValueSet("trace_level", expected)
 	return p
 }
 
@@ -203,82 +203,82 @@ func (p *ProcedureJavascriptResourceAssert) HasTraceLevelString(expected string)
 ///////////////////////////////
 
 func (p *ProcedureJavascriptResourceAssert) HasNoDatabase() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("database"))
+	p.ValueNotSet("database")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoSchema() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("schema"))
+	p.ValueNotSet("schema")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoName() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoComment() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("comment"))
+	p.ValueNotSet("comment")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoEnableConsoleOutput() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("enable_console_output"))
+	p.ValueNotSet("enable_console_output")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoExecuteAs() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("execute_as"))
+	p.ValueNotSet("execute_as")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoFullyQualifiedName() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	p.ValueNotSet("fully_qualified_name")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoIsSecure() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("is_secure"))
+	p.ValueNotSet("is_secure")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoLogEventLevel() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("log_event_level"))
+	p.ValueNotSet("log_event_level")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoLogLevel() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("log_level"))
+	p.ValueNotSet("log_level")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoMetricLevel() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("metric_level"))
+	p.ValueNotSet("metric_level")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoNullInputBehavior() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("null_input_behavior"))
+	p.ValueNotSet("null_input_behavior")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoProcedureDefinition() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("procedure_definition"))
+	p.ValueNotSet("procedure_definition")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoProcedureLanguage() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("procedure_language"))
+	p.ValueNotSet("procedure_language")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoReturnType() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("return_type"))
+	p.ValueNotSet("return_type")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNoTraceLevel() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueNotSet("trace_level"))
+	p.ValueNotSet("trace_level")
 	return p
 }
 
@@ -287,62 +287,62 @@ func (p *ProcedureJavascriptResourceAssert) HasNoTraceLevel() *ProcedureJavascri
 ////////////////////////////
 
 func (p *ProcedureJavascriptResourceAssert) HasArgumentsEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("arguments.#", "0"))
+	p.ValueSet("arguments.#", "0")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasCommentEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("comment", ""))
+	p.ValueSet("comment", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasEnableConsoleOutputEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("enable_console_output", ""))
+	p.ValueSet("enable_console_output", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasExecuteAsEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("execute_as", ""))
+	p.ValueSet("execute_as", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasFullyQualifiedNameEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	p.ValueSet("fully_qualified_name", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasIsSecureEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("is_secure", ""))
+	p.ValueSet("is_secure", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasLogEventLevelEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_event_level", ""))
+	p.ValueSet("log_event_level", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasLogLevelEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("log_level", ""))
+	p.ValueSet("log_level", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasMetricLevelEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("metric_level", ""))
+	p.ValueSet("metric_level", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNullInputBehaviorEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("null_input_behavior", ""))
+	p.ValueSet("null_input_behavior", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasProcedureLanguageEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("procedure_language", ""))
+	p.ValueSet("procedure_language", "")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasTraceLevelEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValueSet("trace_level", ""))
+	p.ValueSet("trace_level", "")
 	return p
 }
 
@@ -351,81 +351,81 @@ func (p *ProcedureJavascriptResourceAssert) HasTraceLevelEmpty() *ProcedureJavas
 ///////////////////////////////
 
 func (p *ProcedureJavascriptResourceAssert) HasDatabaseNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("database"))
+	p.ValuePresent("database")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasSchemaNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("schema"))
+	p.ValuePresent("schema")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNameNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("name"))
+	p.ValuePresent("name")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasCommentNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("comment"))
+	p.ValuePresent("comment")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasEnableConsoleOutputNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("enable_console_output"))
+	p.ValuePresent("enable_console_output")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasExecuteAsNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("execute_as"))
+	p.ValuePresent("execute_as")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasFullyQualifiedNameNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	p.ValuePresent("fully_qualified_name")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasIsSecureNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("is_secure"))
+	p.ValuePresent("is_secure")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasLogEventLevelNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("log_event_level"))
+	p.ValuePresent("log_event_level")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasLogLevelNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("log_level"))
+	p.ValuePresent("log_level")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasMetricLevelNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("metric_level"))
+	p.ValuePresent("metric_level")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasNullInputBehaviorNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("null_input_behavior"))
+	p.ValuePresent("null_input_behavior")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasProcedureDefinitionNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("procedure_definition"))
+	p.ValuePresent("procedure_definition")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasProcedureLanguageNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("procedure_language"))
+	p.ValuePresent("procedure_language")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasReturnTypeNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("return_type"))
+	p.ValuePresent("return_type")
 	return p
 }
 
 func (p *ProcedureJavascriptResourceAssert) HasTraceLevelNotEmpty() *ProcedureJavascriptResourceAssert {
-	p.AddAssertion(assert.ValuePresent("trace_level"))
+	p.ValuePresent("trace_level")
 	return p
 }

@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -95,10 +94,10 @@ func StorageIntegrationAzure() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationAzureResource), TrackingCreateWrapper(resources.StorageIntegrationAzure, CreateStorageIntegrationAzure)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationAzureResource), TrackingReadWrapper(resources.StorageIntegrationAzure, GetReadStorageIntegrationAzureFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationAzureResource), TrackingUpdateWrapper(resources.StorageIntegrationAzure, UpdateStorageIntegrationAzure)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationAzureResource), TrackingDeleteWrapper(resources.StorageIntegrationAzure, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.StorageIntegrationAzure, CreateStorageIntegrationAzure),
+		ReadContext:   TrackingReadWrapper(resources.StorageIntegrationAzure, GetReadStorageIntegrationAzureFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.StorageIntegrationAzure, UpdateStorageIntegrationAzure),
+		DeleteContext: TrackingDeleteWrapper(resources.StorageIntegrationAzure, deleteFunc),
 		Description:   "Resource used to manage Azure storage integration objects. For more information, check [storage integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration).",
 
 		Schema: storageIntegrationAzureSchema,
@@ -168,7 +167,8 @@ func GetReadStorageIntegrationAzureFunc(withExternalChangesMarking bool) schema.
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"use_privatelink_endpoint", "use_privatelink_endpoint", azureDetails.UsePrivatelinkEndpoint, booleanStringFromBool(azureDetails.UsePrivatelinkEndpoint), nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -186,7 +186,8 @@ func GetReadStorageIntegrationAzureFunc(withExternalChangesMarking bool) schema.
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)
 
-		errs = errors.Join(errs,
+		errs = errors.Join(
+			errs,
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StorageIntegrationToSchema(s)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StorageIntegrationAzureDetailsToSchema(azureDetails)}),
 		)

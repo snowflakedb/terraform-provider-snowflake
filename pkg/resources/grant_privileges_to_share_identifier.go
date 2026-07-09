@@ -50,7 +50,11 @@ func ParseGrantPrivilegesToShareId(idString string) (grantPrivilegesToShareId Gr
 	if len(privileges) == 0 || (len(privileges) == 1 && privileges[0] == "") {
 		return grantPrivilegesToShareId, sdk.NewError(fmt.Sprintf(`invalid Privileges value: %s, should be comma separated list of privileges`, privileges))
 	}
-	grantPrivilegesToShareId.Privileges = privileges
+	privilegeNames, err := toPrivileges(privileges)
+	if err != nil {
+		return grantPrivilegesToShareId, err
+	}
+	grantPrivilegesToShareId.Privileges = privilegeNames
 	grantPrivilegesToShareId.Kind = ShareGrantKind(parts[2])
 
 	switch grantPrivilegesToShareId.Kind {

@@ -9,8 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// file edited manually; all ShowOutput changed to DescribeOutput
-
 type SessionPolicyDescribeOutputAssert struct {
 	*assert.ResourceAssert
 }
@@ -19,9 +17,8 @@ func SessionPolicyDescribeOutput(t *testing.T, name string) *SessionPolicyDescri
 	t.Helper()
 
 	sessionPolicyAssert := SessionPolicyDescribeOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "describe_output"),
+		ResourceAssert: assert.NewResourceDescribeOutputAssert(name),
 	}
-	sessionPolicyAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
 	return &sessionPolicyAssert
 }
 
@@ -29,9 +26,23 @@ func ImportedSessionPolicyDescribeOutput(t *testing.T, id string) *SessionPolicy
 	t.Helper()
 
 	sessionPolicyAssert := SessionPolicyDescribeOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "describe_output"),
+		ResourceAssert: assert.NewImportedResourceDescribeOutputAssert(id),
 	}
-	sessionPolicyAssert.AddAssertion(assert.ValueSet("describe_output.#", "1"))
+	return &sessionPolicyAssert
+}
+
+func SessionPoliciesDatasourceDescribeOutput(t *testing.T, name string) *SessionPolicyDescribeOutputAssert {
+	t.Helper()
+
+	return SessionPoliciesDatasourceDescribeOutputOnIdx(t, name, 0)
+}
+
+func SessionPoliciesDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx int) *SessionPolicyDescribeOutputAssert {
+	t.Helper()
+
+	sessionPolicyAssert := SessionPolicyDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceDescribeOutputAssert(name, "session_policies", idx),
+	}
 	return &sessionPolicyAssert
 }
 
@@ -40,32 +51,32 @@ func ImportedSessionPolicyDescribeOutput(t *testing.T, id string) *SessionPolicy
 ////////////////////////////
 
 func (s *SessionPolicyDescribeOutputAssert) HasId(expected sdk.SchemaObjectIdentifier) *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueSet("id", expected.FullyQualifiedName()))
+	s.StringValueSet("id", expected.FullyQualifiedName())
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasOwner(expected string) *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasOwnerRoleType(expected string) *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasComment(expected string) *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasSessionIdleTimeoutMins(expected int) *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputIntValueSet("session_idle_timeout_mins", expected))
+	s.IntValueSet("session_idle_timeout_mins", expected)
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasSessionUiIdleTimeoutMins(expected int) *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputIntValueSet("session_ui_idle_timeout_mins", expected))
+	s.IntValueSet("session_ui_idle_timeout_mins", expected)
 	return s
 }
 
@@ -74,41 +85,41 @@ func (s *SessionPolicyDescribeOutputAssert) HasSessionUiIdleTimeoutMins(expected
 ///////////////////////////////
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoId() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputStringUnderlyingValueNotSet("id"))
+	s.ValueNotSet("id")
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoOwner() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoOwnerRoleType() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoComment() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoSessionIdleTimeoutMins() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputIntValueNotSet("session_idle_timeout_mins"))
+	s.ValueNotSet("session_idle_timeout_mins")
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoSessionUiIdleTimeoutMins() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputIntValueNotSet("session_ui_idle_timeout_mins"))
+	s.ValueNotSet("session_ui_idle_timeout_mins")
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoAllowedSecondaryRoles() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("allowed_secondary_roles.#", "0"))
+	s.ValueSet("allowed_secondary_roles.#", "0")
 	return s
 }
 
 func (s *SessionPolicyDescribeOutputAssert) HasNoBlockedSecondaryRoles() *SessionPolicyDescribeOutputAssert {
-	s.AddAssertion(assert.ResourceDescribeOutputValueSet("blocked_secondary_roles.#", "0"))
+	s.ValueSet("blocked_secondary_roles.#", "0")
 	return s
 }

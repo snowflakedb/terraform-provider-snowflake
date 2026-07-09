@@ -125,7 +125,8 @@ func TestInt_ExternalTables(t *testing.T) {
 			).
 				WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithName(fileFormat.ID().FullyQualifiedName())).
 				WithQuery(query).
-				WithAutoRefresh(false))
+				WithAutoRefresh(false),
+		)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().ExternalTable.DropFunc(t, id))
 

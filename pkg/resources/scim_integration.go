@@ -184,7 +184,7 @@ func ImportScimIntegration(ctx context.Context, d *schema.ResourceData, meta any
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
@@ -322,7 +322,8 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 				return diag.FromErr(err)
 			}
 
-			if err = handleExternalChangesToObjectInDescribe(d,
+			if err = handleExternalChangesToObjectInDescribe(
+				d,
 				describeMapping{"network_policy", "network_policy", networkPolicyProperty.Value, networkPolicyProperty.Value, nil},
 			); err != nil {
 				return diag.FromErr(err)
@@ -333,7 +334,8 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				if err = handleExternalChangesToObjectInDescribe(d,
+				if err = handleExternalChangesToObjectInDescribe(
+					d,
 					describeMapping{"sync_password", "sync_password", syncPasswordProperty.Value, syncPasswordProperty.Value, nil},
 				); err != nil {
 					return diag.FromErr(err)
@@ -360,7 +362,7 @@ func ReadContextSCIMIntegration(withExternalChangesMarking bool) schema.ReadCont
 	}
 }
 
-func UpdateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

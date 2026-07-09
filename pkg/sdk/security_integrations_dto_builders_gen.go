@@ -333,6 +333,11 @@ func (s *CreateOauthForPartnerApplicationsSecurityIntegrationRequest) WithOauthU
 	return s
 }
 
+func (s *CreateOauthForPartnerApplicationsSecurityIntegrationRequest) WithAllowedRolesList(allowedRolesList AllowedRolesListRequest) *CreateOauthForPartnerApplicationsSecurityIntegrationRequest {
+	s.AllowedRolesList = &allowedRolesList
+	return s
+}
+
 func (s *CreateOauthForPartnerApplicationsSecurityIntegrationRequest) WithBlockedRolesList(blockedRolesList BlockedRolesListRequest) *CreateOauthForPartnerApplicationsSecurityIntegrationRequest {
 	s.BlockedRolesList = &blockedRolesList
 	return s
@@ -387,6 +392,11 @@ func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithOauthUseSeco
 
 func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithPreAuthorizedRolesList(preAuthorizedRolesList PreAuthorizedRolesListRequest) *CreateOauthForCustomClientsSecurityIntegrationRequest {
 	s.PreAuthorizedRolesList = &preAuthorizedRolesList
+	return s
+}
+
+func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithAllowedRolesList(allowedRolesList AllowedRolesListRequest) *CreateOauthForCustomClientsSecurityIntegrationRequest {
+	s.AllowedRolesList = &allowedRolesList
 	return s
 }
 
@@ -1073,6 +1083,11 @@ func (s *OauthForPartnerApplicationsIntegrationSetRequest) WithOauthUseSecondary
 	return s
 }
 
+func (s *OauthForPartnerApplicationsIntegrationSetRequest) WithAllowedRolesList(allowedRolesList AllowedRolesListRequest) *OauthForPartnerApplicationsIntegrationSetRequest {
+	s.AllowedRolesList = &allowedRolesList
+	return s
+}
+
 func (s *OauthForPartnerApplicationsIntegrationSetRequest) WithBlockedRolesList(blockedRolesList BlockedRolesListRequest) *OauthForPartnerApplicationsIntegrationSetRequest {
 	s.BlockedRolesList = &blockedRolesList
 	return s
@@ -1158,6 +1173,11 @@ func (s *OauthForCustomClientsIntegrationSetRequest) WithOauthEnforcePkce(oauthE
 
 func (s *OauthForCustomClientsIntegrationSetRequest) WithPreAuthorizedRolesList(preAuthorizedRolesList PreAuthorizedRolesListRequest) *OauthForCustomClientsIntegrationSetRequest {
 	s.PreAuthorizedRolesList = &preAuthorizedRolesList
+	return s
+}
+
+func (s *OauthForCustomClientsIntegrationSetRequest) WithAllowedRolesList(allowedRolesList AllowedRolesListRequest) *OauthForCustomClientsIntegrationSetRequest {
+	s.AllowedRolesList = &allowedRolesList
 	return s
 }
 

@@ -50,10 +50,19 @@ type alterDynamicTableOptions struct {
 	dynamicTable bool                   `ddl:"static" sql:"DYNAMIC TABLE"`
 	name         SchemaObjectIdentifier `ddl:"identifier"`
 
-	Suspend *bool            `ddl:"keyword" sql:"SUSPEND"`
-	Resume  *bool            `ddl:"keyword" sql:"RESUME"`
-	Refresh *bool            `ddl:"keyword" sql:"REFRESH"`
-	Set     *DynamicTableSet `ddl:"keyword" sql:"SET"`
+	Suspend                    *bool                                  `ddl:"keyword" sql:"SUSPEND"`
+	Resume                     *bool                                  `ddl:"keyword" sql:"RESUME"`
+	Refresh                    *bool                                  `ddl:"keyword" sql:"REFRESH"`
+	Set                        *DynamicTableSet                       `ddl:"keyword" sql:"SET"`
+	SetComment                 *string                                `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
+	AddStorageLifecyclePolicy  *DynamicTableAddStorageLifecyclePolicy `ddl:"keyword"`
+	DropStorageLifecyclePolicy *bool                                  `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
+}
+
+type DynamicTableAddStorageLifecyclePolicy struct {
+	add                    bool                   `ddl:"static" sql:"ADD"`
+	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"STORAGE LIFECYCLE POLICY"`
+	On                     []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
 // dropDynamicTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-dynamic-table

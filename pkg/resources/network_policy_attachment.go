@@ -230,7 +230,7 @@ func unsetOnAccount(ctx context.Context, d *schema.ResourceData, meta any) error
 }
 
 // setOnUsers sets the network policy for list of users.
-func setOnUsers(ctx context.Context, users []string, data *schema.ResourceData, meta interface{}) error {
+func setOnUsers(ctx context.Context, users []string, data *schema.ResourceData, meta any) error {
 	policyName := data.Get("network_policy_name").(string)
 	for _, user := range users {
 		if err := setOnUser(ctx, user, data, meta); err != nil {
@@ -242,12 +242,12 @@ func setOnUsers(ctx context.Context, users []string, data *schema.ResourceData, 
 }
 
 // setOnUser sets the network policy for a given user.
-func setOnUser(ctx context.Context, user string, data *schema.ResourceData, meta interface{}) error {
+func setOnUser(ctx context.Context, user string, data *schema.ResourceData, meta any) error {
 	client := meta.(*provider.Context).Client
 
 	policyName := data.Get("network_policy_name").(string)
 
-	err := client.Users.Alter(ctx, sdk.NewAccountObjectIdentifier(user), &sdk.AlterUserOptions{Set: &sdk.UserSet{ObjectParameters: &sdk.UserObjectParameters{NetworkPolicy: sdk.Pointer(sdk.NewAccountObjectIdentifier(policyName))}}})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(sdk.NewAccountObjectIdentifier(user)).WithSet(*sdk.NewUserSetRequest().WithObjectParameters(*sdk.NewUserObjectParametersRequest().WithNetworkPolicy(sdk.NewAccountObjectIdentifier(policyName)))))
 	if err != nil {
 		return fmt.Errorf("error setting network policy %v on user %v err = %w", policyName, user, err)
 	}
@@ -256,7 +256,7 @@ func setOnUser(ctx context.Context, user string, data *schema.ResourceData, meta
 }
 
 // unsetOnUsers unsets the network policy for list of users.
-func unsetOnUsers(ctx context.Context, users []string, data *schema.ResourceData, meta interface{}) error {
+func unsetOnUsers(ctx context.Context, users []string, data *schema.ResourceData, meta any) error {
 	policyName := data.Get("network_policy_name").(string)
 	for _, user := range users {
 		if err := unsetOnUser(ctx, user, data, meta); err != nil {
@@ -268,12 +268,12 @@ func unsetOnUsers(ctx context.Context, users []string, data *schema.ResourceData
 }
 
 // unsetOnUser sets the network policy for a given user.
-func unsetOnUser(ctx context.Context, user string, data *schema.ResourceData, meta interface{}) error {
+func unsetOnUser(ctx context.Context, user string, data *schema.ResourceData, meta any) error {
 	client := meta.(*provider.Context).Client
 
 	policyName := data.Get("network_policy_name").(string)
 
-	err := client.Users.Alter(ctx, sdk.NewAccountObjectIdentifier(user), &sdk.AlterUserOptions{Unset: &sdk.UserUnset{ObjectParameters: &sdk.UserObjectParametersUnset{NetworkPolicy: sdk.Bool(true)}}})
+	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(sdk.NewAccountObjectIdentifier(user)).WithUnset(*sdk.NewUserUnsetRequest().WithObjectParameters(*sdk.NewUserObjectParametersUnsetRequest().WithNetworkPolicy(true))))
 	if err != nil {
 		return fmt.Errorf("error unsetting network policy %v on user %v err = %w", policyName, user, err)
 	}
@@ -282,11 +282,11 @@ func unsetOnUser(ctx context.Context, user string, data *schema.ResourceData, me
 }
 
 // ensureUserAlterPrivileges ensures the executing Snowflake user can alter each user in the set of users.
-func ensureUserAlterPrivileges(ctx context.Context, users []string, meta interface{}) error {
+func ensureUserAlterPrivileges(ctx context.Context, users []string, meta any) error {
 	client := meta.(*provider.Context).Client
 
 	for _, user := range users {
-		_, err := client.Users.Describe(ctx, sdk.NewAccountObjectIdentifier(user))
+		_, err := client.Users.DescribeDetails(ctx, sdk.NewAccountObjectIdentifier(user))
 		if err != nil {
 			return fmt.Errorf("error describing user %v err = %w", user, err)
 		}

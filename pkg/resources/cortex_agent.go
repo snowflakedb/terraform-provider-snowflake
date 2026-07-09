@@ -43,9 +43,9 @@ var cortexAgentSchema = map[string]*schema.Schema{
 	"specification": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      "Specifies a YAML object containing the settings for the Cortex agent.",
+		Description:      joinWithSpace("Specifies a YAML object containing the settings for the Cortex agent.", doubleDollarQuotesDescription()),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.NormalizeCortexAgentSpecification),
-		ValidateFunc:     validation.StringIsNotEmpty,
+		ValidateDiagFunc: validation.AllDiag(validation.ToDiagFunc(validation.StringIsNotEmpty), forbidDoubleDollarQuotes),
 	},
 	"comment": {
 		Type:        schema.TypeString,

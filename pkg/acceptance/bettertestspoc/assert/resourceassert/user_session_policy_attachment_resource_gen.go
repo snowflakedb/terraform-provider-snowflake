@@ -16,7 +16,7 @@ func UserSessionPolicyAttachmentResource(t *testing.T, name string) *UserSession
 	t.Helper()
 
 	return &UserSessionPolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedUserSessionPolicyAttachmentResource(t *testing.T, id string) *UserS
 	t.Helper()
 
 	return &UserSessionPolicyAttachmentResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -47,12 +47,12 @@ func (u *UserSessionPolicyAttachmentResourceAssert) HasUserName(expected string)
 ///////////////////////////////////
 
 func (u *UserSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameString(expected string) *UserSessionPolicyAttachmentResourceAssert {
-	u.AddAssertion(assert.ValueSet("session_policy_name", expected))
+	u.ValueSet("session_policy_name", expected)
 	return u
 }
 
 func (u *UserSessionPolicyAttachmentResourceAssert) HasUserNameString(expected string) *UserSessionPolicyAttachmentResourceAssert {
-	u.AddAssertion(assert.ValueSet("user_name", expected))
+	u.ValueSet("user_name", expected)
 	return u
 }
 
@@ -61,12 +61,12 @@ func (u *UserSessionPolicyAttachmentResourceAssert) HasUserNameString(expected s
 ///////////////////////////////
 
 func (u *UserSessionPolicyAttachmentResourceAssert) HasNoSessionPolicyName() *UserSessionPolicyAttachmentResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("session_policy_name"))
+	u.ValueNotSet("session_policy_name")
 	return u
 }
 
 func (u *UserSessionPolicyAttachmentResourceAssert) HasNoUserName() *UserSessionPolicyAttachmentResourceAssert {
-	u.AddAssertion(assert.ValueNotSet("user_name"))
+	u.ValueNotSet("user_name")
 	return u
 }
 
@@ -79,11 +79,11 @@ func (u *UserSessionPolicyAttachmentResourceAssert) HasNoUserName() *UserSession
 ///////////////////////////////
 
 func (u *UserSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameNotEmpty() *UserSessionPolicyAttachmentResourceAssert {
-	u.AddAssertion(assert.ValuePresent("session_policy_name"))
+	u.ValuePresent("session_policy_name")
 	return u
 }
 
 func (u *UserSessionPolicyAttachmentResourceAssert) HasUserNameNotEmpty() *UserSessionPolicyAttachmentResourceAssert {
-	u.AddAssertion(assert.ValuePresent("user_name"))
+	u.ValuePresent("user_name")
 	return u
 }

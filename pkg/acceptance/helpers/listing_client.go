@@ -39,10 +39,11 @@ func (c *ListingClient) CreateWithId(t *testing.T, id sdk.AccountObjectIdentifie
 	ctx := context.Background()
 
 	manifest, _ := c.BasicManifest(t)
-	err := c.client().Create(ctx, sdk.NewCreateListingRequest(id).
-		WithAs(manifest).
-		WithReview(false).
-		WithPublish(false),
+	err := c.client().Create(
+		ctx, sdk.NewCreateListingRequest(id).
+			WithAs(manifest).
+			WithReview(false).
+			WithPublish(false),
 	)
 	assert.NoError(t, err)
 

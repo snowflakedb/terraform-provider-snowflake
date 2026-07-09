@@ -213,7 +213,8 @@ func ReadStorageLifecyclePolicy(ctx context.Context, d *schema.ResourceData, met
 
 	errs := errors.Join(
 		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-		HandleNestedDataTypeSet(d, "argument", "type", storageLifecyclePolicyDescription.Signature,
+		HandleNestedDataTypeSet(
+			d, "argument", "type", storageLifecyclePolicyDescription.Signature,
 			func(signature sdk.TableColumnSignature) datatypes.DataType { return signature.Type },
 			func(signature sdk.TableColumnSignature, arg map[string]any, _ map[string]any) {
 				arg["name"] = signature.Name

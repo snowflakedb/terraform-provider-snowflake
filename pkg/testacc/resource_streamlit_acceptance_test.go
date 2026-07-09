@@ -228,7 +228,8 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.StreamlitDoesNotExist(t, id),
 				),
 			},

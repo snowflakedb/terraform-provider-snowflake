@@ -249,6 +249,11 @@ func (r *CreateOauthForPartnerApplicationsSecurityIntegrationRequest) toOpts() *
 		OauthUseSecondaryRoles:    r.OauthUseSecondaryRoles,
 		Comment:                   r.Comment,
 	}
+	if r.AllowedRolesList != nil {
+		opts.AllowedRolesList = &AllowedRolesList{
+			AllowedRolesList: r.AllowedRolesList.AllowedRolesList,
+		}
+	}
 	if r.BlockedRolesList != nil {
 		opts.BlockedRolesList = &BlockedRolesList{
 			BlockedRolesList: r.BlockedRolesList.BlockedRolesList,
@@ -278,6 +283,11 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 	if r.PreAuthorizedRolesList != nil {
 		opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{
 			PreAuthorizedRolesList: r.PreAuthorizedRolesList.PreAuthorizedRolesList,
+		}
+	}
+	if r.AllowedRolesList != nil {
+		opts.AllowedRolesList = &AllowedRolesList{
+			AllowedRolesList: r.AllowedRolesList.AllowedRolesList,
 		}
 	}
 	if r.BlockedRolesList != nil {
@@ -483,6 +493,11 @@ func (r *AlterOauthForPartnerApplicationsSecurityIntegrationRequest) toOpts() *A
 			OauthUseSecondaryRoles:    r.Set.OauthUseSecondaryRoles,
 			Comment:                   r.Set.Comment,
 		}
+		if r.Set.AllowedRolesList != nil {
+			opts.Set.AllowedRolesList = &AllowedRolesList{
+				AllowedRolesList: r.Set.AllowedRolesList.AllowedRolesList,
+			}
+		}
 		if r.Set.BlockedRolesList != nil {
 			opts.Set.BlockedRolesList = &BlockedRolesList{
 				BlockedRolesList: r.Set.BlockedRolesList.BlockedRolesList,
@@ -522,6 +537,11 @@ func (r *AlterOauthForCustomClientsSecurityIntegrationRequest) toOpts() *AlterOa
 		if r.Set.PreAuthorizedRolesList != nil {
 			opts.Set.PreAuthorizedRolesList = &PreAuthorizedRolesList{
 				PreAuthorizedRolesList: r.Set.PreAuthorizedRolesList.PreAuthorizedRolesList,
+			}
+		}
+		if r.Set.AllowedRolesList != nil {
+			opts.Set.AllowedRolesList = &AllowedRolesList{
+				AllowedRolesList: r.Set.AllowedRolesList.AllowedRolesList,
 			}
 		}
 		if r.Set.BlockedRolesList != nil {

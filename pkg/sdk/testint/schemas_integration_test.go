@@ -37,9 +37,7 @@ func TestInt_Schemas(t *testing.T) {
 
 	t.Run("create: minimal", func(t *testing.T) {
 		schemaId := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
-		err := client.Schemas.Create(ctx, schemaId, &sdk.CreateSchemaOptions{
-			OrReplace: sdk.Bool(true),
-		})
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schemaId).WithOrReplace(true))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Schema.DropSchemaFunc(t, schemaId))
 
@@ -54,7 +52,7 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterExternalVolume)
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, testClientHelper().Database.TestDatabaseCatalog().Name())
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDDLCollation)
+		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
@@ -73,14 +71,13 @@ func TestInt_Schemas(t *testing.T) {
 		schema, cleanupSchema := testClientHelper().Schema.CreateSchema(t)
 		t.Cleanup(cleanupSchema)
 		comment := "replaced"
-		err := client.Schemas.Create(ctx, schema.ID(), &sdk.CreateSchemaOptions{
-			OrReplace:                  sdk.Bool(true),
-			DataRetentionTimeInDays:    sdk.Int(10),
-			MaxDataExtensionTimeInDays: sdk.Int(10),
-			DefaultDDLCollation:        sdk.Pointer(sdk.StringAllowEmpty{Value: "en_US-trim"}),
-			WithManagedAccess:          sdk.Bool(true),
-			Comment:                    sdk.String(comment),
-		})
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schema.ID()).
+			WithOrReplace(true).
+			WithDataRetentionTimeInDays(10).
+			WithMaxDataExtensionTimeInDays(10).
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US-trim"}).
+			WithWithManagedAccess(true).
+			WithComment(comment))
 		require.NoError(t, err)
 		s, err := client.Schemas.ShowByID(ctx, schema.ID())
 		require.NoError(t, err)
@@ -93,10 +90,9 @@ func TestInt_Schemas(t *testing.T) {
 		schema, cleanupSchema := testClientHelper().Schema.CreateSchema(t)
 		t.Cleanup(cleanupSchema)
 		comment := "some_comment"
-		err := client.Schemas.Create(ctx, schema.ID(), &sdk.CreateSchemaOptions{
-			IfNotExists: sdk.Bool(true),
-			Comment:     sdk.String(comment),
-		})
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schema.ID()).
+			WithIfNotExists(true).
+			WithComment(comment))
 		require.NoError(t, err)
 		s, err := client.Schemas.ShowByID(ctx, schema.ID())
 		require.NoError(t, err)
@@ -106,18 +102,13 @@ func TestInt_Schemas(t *testing.T) {
 	t.Run("create: clone", func(t *testing.T) {
 		comment := "some_comment"
 		schemaID := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
-		err := client.Schemas.Create(ctx, schemaID, &sdk.CreateSchemaOptions{
-			Comment: sdk.String(comment),
-		})
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schemaID).WithComment(comment))
 		require.NoError(t, err)
 
 		clonedSchemaID := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
-		err = client.Schemas.Create(ctx, clonedSchemaID, &sdk.CreateSchemaOptions{
-			Comment: sdk.String(comment),
-			Clone: &sdk.Clone{
-				SourceObject: schemaID,
-			},
-		})
+		err = client.Schemas.Clone(ctx, sdk.NewCloneSchemaRequest(clonedSchemaID).WithClone(sdk.Clone{
+			SourceObject: schemaID,
+		}))
 		require.NoError(t, err)
 
 		s, err := client.Schemas.ShowByID(ctx, schemaID)
@@ -128,9 +119,9 @@ func TestInt_Schemas(t *testing.T) {
 		assert.Equal(t, s.Comment, cs.Comment)
 
 		t.Cleanup(func() {
-			err = client.Schemas.Drop(ctx, schemaID, nil)
+			err = client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(schemaID))
 			require.NoError(t, err)
-			err = client.Schemas.Drop(ctx, clonedSchemaID, nil)
+			err = client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(clonedSchemaID))
 			require.NoError(t, err)
 		})
 	})
@@ -141,17 +132,11 @@ func TestInt_Schemas(t *testing.T) {
 
 		schemaID := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
 		tagValue := random.String()
-		err := client.Schemas.Create(ctx, schemaID, &sdk.CreateSchemaOptions{
-			Tag: []sdk.TagAssociation{
-				{
-					Name:  tag.ID(),
-					Value: tagValue,
-				},
-			},
-		})
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schemaID).
+			WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: tagValue}}))
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err = client.Schemas.Drop(ctx, schemaID, nil)
+			err = client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(schemaID))
 			require.NoError(t, err)
 		})
 
@@ -182,39 +167,32 @@ func TestInt_Schemas(t *testing.T) {
 		t.Cleanup(catalogCleanup)
 
 		comment := random.Comment()
-		err := client.Schemas.Create(ctx, schemaId, &sdk.CreateSchemaOptions{
-			Transient:                               sdk.Bool(true),
-			IfNotExists:                             sdk.Bool(true),
-			DataRetentionTimeInDays:                 sdk.Int(0),
-			MaxDataExtensionTimeInDays:              sdk.Int(10),
-			ExternalVolume:                          &externalVolume,
-			Catalog:                                 &catalog,
-			ReplaceInvalidCharacters:                sdk.Bool(true),
-			DefaultDDLCollation:                     sdk.Pointer(sdk.StringAllowEmpty{Value: "en_US"}),
-			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
-			LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-			LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
-			TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
-			SuspendTaskAfterNumFailures:             sdk.Int(10),
-			TaskAutoRetryAttempts:                   sdk.Int(10),
-			UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
-			UserTaskTimeoutMs:                       sdk.Int(12_000),
-			UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(30),
-			QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-			EnableConsoleOutput:                     sdk.Bool(true),
-			PipeExecutionPaused:                     sdk.Bool(true),
-			Comment:                                 sdk.String(comment),
-			Tag: []sdk.TagAssociation{
-				{
-					Name:  tagTest.ID(),
-					Value: "v1",
-				},
-				{
-					Name:  tag2Test.ID(),
-					Value: "v2",
-				},
-			},
-		})
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schemaId).
+			WithTransient(true).
+			WithIfNotExists(true).
+			WithDataRetentionTimeInDays(0).
+			WithMaxDataExtensionTimeInDays(10).
+			WithExternalVolume(externalVolume).
+			WithCatalog(catalog).
+			WithReplaceInvalidCharacters(true).
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
+			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+			WithLogLevel(sdk.LogLevelInfo).
+			WithLogEventLevel(sdk.LogLevelInfo).
+			WithTraceLevel(sdk.TraceLevelPropagate).
+			WithSuspendTaskAfterNumFailures(10).
+			WithTaskAutoRetryAttempts(10).
+			WithUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeMedium).
+			WithUserTaskTimeoutMs(12_000).
+			WithUserTaskMinimumTriggerIntervalInSeconds(30).
+			WithQuotedIdentifiersIgnoreCase(true).
+			WithEnableConsoleOutput(true).
+			WithPipeExecutionPaused(true).
+			WithComment(comment).
+			WithTag([]sdk.TagAssociation{
+				{Name: tagTest.ID(), Value: "v1"},
+				{Name: tag2Test.ID(), Value: "v2"},
+			}))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Schema.DropSchemaFunc(t, schemaId))
 
@@ -232,7 +210,7 @@ func TestInt_Schemas(t *testing.T) {
 
 		assertParameterEquals(t, sdk.AccountParameterDataRetentionTimeInDays, "0")
 		assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
-		assertParameterEquals(t, sdk.AccountParameterDefaultDDLCollation, "en_US")
+		assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
@@ -266,15 +244,13 @@ func TestInt_Schemas(t *testing.T) {
 			require.NoError(t, err)
 		})
 		newID := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
-		err := client.Schemas.Alter(ctx, schema.ID(), &sdk.AlterSchemaOptions{
-			NewName: sdk.Pointer(newID),
-		})
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schema.ID()).WithNewName(newID))
 		require.NoError(t, err)
 		s, err := client.Schemas.ShowByID(ctx, newID)
 		require.NoError(t, err)
 		assert.Equal(t, newID, s.ID())
 		t.Cleanup(func() {
-			err = client.Schemas.Drop(ctx, newID, nil)
+			err = client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(newID))
 			require.NoError(t, err)
 		})
 	})
@@ -289,13 +265,11 @@ func TestInt_Schemas(t *testing.T) {
 		table, _ := testClientHelper().Table.CreateInSchema(t, schema.ID())
 		t.Cleanup(func() {
 			newId := sdk.NewSchemaObjectIdentifierInSchema(swapSchema.ID(), table.Name)
-			err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(newId))
+			err := client.TablesLegacy.Drop(ctx, sdk.NewDropTableRequest(newId))
 			require.NoError(t, err)
 		})
 
-		err := client.Schemas.Alter(ctx, schema.ID(), &sdk.AlterSchemaOptions{
-			SwapWith: sdk.Pointer(swapSchema.ID()),
-		})
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schema.ID()).WithSwapWith(swapSchema.ID()))
 		require.NoError(t, err)
 
 		schemaDetails, err := client.Schemas.Describe(ctx, swapSchema.ID())
@@ -316,28 +290,26 @@ func TestInt_Schemas(t *testing.T) {
 		catalogIntegrationTest, catalogIntegrationTestCleanup := testClientHelper().CatalogIntegration.Create(t)
 		t.Cleanup(catalogIntegrationTestCleanup)
 
-		err := client.Schemas.Alter(ctx, schemaTest.ID(), &sdk.AlterSchemaOptions{
-			Set: &sdk.SchemaSet{
-				DataRetentionTimeInDays:                 sdk.Int(42),
-				MaxDataExtensionTimeInDays:              sdk.Int(42),
-				ExternalVolume:                          &externalVolumeTest,
-				Catalog:                                 &catalogIntegrationTest,
-				ReplaceInvalidCharacters:                sdk.Bool(true),
-				DefaultDDLCollation:                     sdk.Pointer(sdk.StringAllowEmpty{Value: "en_US"}),
-				StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
-				LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
-				LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
-				TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
-				SuspendTaskAfterNumFailures:             sdk.Int(10),
-				TaskAutoRetryAttempts:                   sdk.Int(10),
-				UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
-				UserTaskTimeoutMs:                       sdk.Int(12_000),
-				UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(30),
-				QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-				EnableConsoleOutput:                     sdk.Bool(true),
-				PipeExecutionPaused:                     sdk.Bool(true),
-			},
-		})
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schemaTest.ID()).WithSet(sdk.SchemaSetRequest{
+			DataRetentionTimeInDays:                 sdk.Int(42),
+			MaxDataExtensionTimeInDays:              sdk.Int(42),
+			ExternalVolume:                          &externalVolumeTest,
+			Catalog:                                 &catalogIntegrationTest,
+			ReplaceInvalidCharacters:                sdk.Bool(true),
+			DefaultDdlCollation:                     sdk.Pointer(sdk.StringAllowEmpty{Value: "en_US"}),
+			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
+			LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
+			LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
+			TraceLevel:                              sdk.Pointer(sdk.TraceLevelPropagate),
+			SuspendTaskAfterNumFailures:             sdk.Int(10),
+			TaskAutoRetryAttempts:                   sdk.Int(10),
+			UserTaskManagedInitialWarehouseSize:     sdk.Pointer(sdk.WarehouseSizeMedium),
+			UserTaskTimeoutMs:                       sdk.Int(12_000),
+			UserTaskMinimumTriggerIntervalInSeconds: sdk.Int(30),
+			QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
+			EnableConsoleOutput:                     sdk.Bool(true),
+			PipeExecutionPaused:                     sdk.Bool(true),
+		}))
 		require.NoError(t, err)
 
 		params, err := client.Schemas.ShowParameters(ctx, schemaTest.ID())
@@ -347,7 +319,7 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, params, sdk.AccountParameterExternalVolume, externalVolumeTest.Name())
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.Name())
 		assertParameterEquals(t, params, sdk.AccountParameterReplaceInvalidCharacters, "true")
-		assertParameterEquals(t, params, sdk.AccountParameterDefaultDDLCollation, "en_US")
+		assertParameterEquals(t, params, sdk.AccountParameterDefaultDdlCollation, "en_US")
 		assertParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 		assertParameterEquals(t, params, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
 		assertParameterEquals(t, params, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelInfo))
@@ -361,28 +333,26 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, params, sdk.AccountParameterEnableConsoleOutput, "true")
 		assertParameterEquals(t, params, sdk.AccountParameterPipeExecutionPaused, "true")
 
-		err = client.Schemas.Alter(ctx, schemaTest.ID(), &sdk.AlterSchemaOptions{
-			Unset: &sdk.SchemaUnset{
-				DataRetentionTimeInDays:                 sdk.Bool(true),
-				MaxDataExtensionTimeInDays:              sdk.Bool(true),
-				ExternalVolume:                          sdk.Bool(true),
-				Catalog:                                 sdk.Bool(true),
-				ReplaceInvalidCharacters:                sdk.Bool(true),
-				DefaultDDLCollation:                     sdk.Bool(true),
-				StorageSerializationPolicy:              sdk.Bool(true),
-				LogLevel:                                sdk.Bool(true),
-				LogEventLevel:                           sdk.Bool(true),
-				TraceLevel:                              sdk.Bool(true),
-				SuspendTaskAfterNumFailures:             sdk.Bool(true),
-				TaskAutoRetryAttempts:                   sdk.Bool(true),
-				UserTaskManagedInitialWarehouseSize:     sdk.Bool(true),
-				UserTaskTimeoutMs:                       sdk.Bool(true),
-				UserTaskMinimumTriggerIntervalInSeconds: sdk.Bool(true),
-				QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
-				EnableConsoleOutput:                     sdk.Bool(true),
-				PipeExecutionPaused:                     sdk.Bool(true),
-			},
-		})
+		err = client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schemaTest.ID()).WithUnset(sdk.SchemaUnsetRequest{
+			DataRetentionTimeInDays:                 sdk.Bool(true),
+			MaxDataExtensionTimeInDays:              sdk.Bool(true),
+			ExternalVolume:                          sdk.Bool(true),
+			Catalog:                                 sdk.Bool(true),
+			ReplaceInvalidCharacters:                sdk.Bool(true),
+			DefaultDdlCollation:                     sdk.Bool(true),
+			StorageSerializationPolicy:              sdk.Bool(true),
+			LogLevel:                                sdk.Bool(true),
+			LogEventLevel:                           sdk.Bool(true),
+			TraceLevel:                              sdk.Bool(true),
+			SuspendTaskAfterNumFailures:             sdk.Bool(true),
+			TaskAutoRetryAttempts:                   sdk.Bool(true),
+			UserTaskManagedInitialWarehouseSize:     sdk.Bool(true),
+			UserTaskTimeoutMs:                       sdk.Bool(true),
+			UserTaskMinimumTriggerIntervalInSeconds: sdk.Bool(true),
+			QuotedIdentifiersIgnoreCase:             sdk.Bool(true),
+			EnableConsoleOutput:                     sdk.Bool(true),
+			PipeExecutionPaused:                     sdk.Bool(true),
+		}))
 		require.NoError(t, err)
 
 		params, err = client.Schemas.ShowParameters(ctx, schemaTest.ID())
@@ -392,7 +362,7 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterExternalVolume)
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, testClientHelper().Database.TestDatabaseCatalog().Name())
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDDLCollation)
+		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
@@ -410,14 +380,12 @@ func TestInt_Schemas(t *testing.T) {
 	t.Run("alter: set non-parameters", func(t *testing.T) {
 		schemaID := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
 		comment := random.Comment()
-		err := client.Schemas.Create(ctx, schemaID, nil)
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schemaID))
 		require.NoError(t, err)
 
-		err = client.Schemas.Alter(ctx, schemaID, &sdk.AlterSchemaOptions{
-			Set: &sdk.SchemaSet{
-				Comment: sdk.Pointer(comment),
-			},
-		})
+		err = client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schemaID).WithSet(sdk.SchemaSetRequest{
+			Comment: sdk.Pointer(comment),
+		}))
 		require.NoError(t, err)
 
 		s, err := client.Schemas.ShowByID(ctx, schemaID)
@@ -425,7 +393,7 @@ func TestInt_Schemas(t *testing.T) {
 		assert.Equal(t, comment, s.Comment)
 
 		t.Cleanup(func() {
-			err := client.Schemas.Drop(ctx, schemaID, nil)
+			err := client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(schemaID))
 			require.NoError(t, err)
 		})
 	})
@@ -433,16 +401,12 @@ func TestInt_Schemas(t *testing.T) {
 	t.Run("alter: unset non-parameters", func(t *testing.T) {
 		schemaID := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
 		comment := random.Comment()
-		err := client.Schemas.Create(ctx, schemaID, &sdk.CreateSchemaOptions{
-			Comment: sdk.String(comment),
-		})
+		err := client.Schemas.Create(ctx, sdk.NewCreateSchemaRequest(schemaID).WithComment(comment))
 		require.NoError(t, err)
 
-		err = client.Schemas.Alter(ctx, schemaID, &sdk.AlterSchemaOptions{
-			Unset: &sdk.SchemaUnset{
-				Comment: sdk.Bool(true),
-			},
-		})
+		err = client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schemaID).WithUnset(sdk.SchemaUnsetRequest{
+			Comment: sdk.Bool(true),
+		}))
 		require.NoError(t, err)
 
 		s, err := client.Schemas.ShowByID(ctx, schemaID)
@@ -450,7 +414,7 @@ func TestInt_Schemas(t *testing.T) {
 		assert.Empty(t, s.Comment)
 
 		t.Cleanup(func() {
-			err := client.Schemas.Drop(ctx, schemaID, nil)
+			err := client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(schemaID))
 			require.NoError(t, err)
 		})
 	})
@@ -459,9 +423,7 @@ func TestInt_Schemas(t *testing.T) {
 		schema, cleanupSchema := testClientHelper().Schema.CreateSchema(t)
 		t.Cleanup(cleanupSchema)
 
-		err := client.Schemas.Alter(ctx, schema.ID(), &sdk.AlterSchemaOptions{
-			EnableManagedAccess: sdk.Bool(true),
-		})
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schema.ID()).WithEnableManagedAccess(true))
 		require.NoError(t, err)
 
 		s, err := client.Schemas.ShowByID(ctx, schema.ID())
@@ -472,14 +434,10 @@ func TestInt_Schemas(t *testing.T) {
 
 	t.Run("alter: disable managed access", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
-		schema, cleanupSchema := testClientHelper().Schema.CreateSchemaWithOpts(t, id, &sdk.CreateSchemaOptions{
-			WithManagedAccess: sdk.Pointer(true),
-		})
+		schema, cleanupSchema := testClientHelper().Schema.CreateSchemaWithRequest(t, id, sdk.NewCreateSchemaRequest(id).WithWithManagedAccess(true))
 		t.Cleanup(cleanupSchema)
 
-		err := client.Schemas.Alter(ctx, schema.ID(), &sdk.AlterSchemaOptions{
-			DisableManagedAccess: sdk.Bool(true),
-		})
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schema.ID()).WithDisableManagedAccess(true))
 		require.NoError(t, err)
 
 		s, err := client.Schemas.ShowByID(ctx, schema.ID())
@@ -489,7 +447,7 @@ func TestInt_Schemas(t *testing.T) {
 	})
 
 	t.Run("show: no options", func(t *testing.T) {
-		schemas, err := client.Schemas.Show(ctx, nil)
+		schemas, err := client.Schemas.Show(ctx, sdk.NewShowSchemaRequest())
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(schemas), 2)
 		schemaIds := make([]sdk.DatabaseObjectIdentifier, len(schemas))
@@ -501,12 +459,9 @@ func TestInt_Schemas(t *testing.T) {
 	})
 
 	t.Run("show: with terse", func(t *testing.T) {
-		schemas, err := client.Schemas.Show(ctx, &sdk.ShowSchemaOptions{
-			Terse: sdk.Bool(true),
-			Like: &sdk.Like{
-				Pattern: sdk.String(schema1.Name),
-			},
-		})
+		schemas, err := client.Schemas.Show(ctx, sdk.NewShowSchemaRequest().
+			WithTerse(true).
+			WithLike(sdk.Like{Pattern: sdk.String(schema1.Name)}))
 		require.NoError(t, err)
 
 		schema, err := collections.FindFirst(schemas, func(schema sdk.Schema) bool { return schema.Name == schema1.Name })
@@ -520,12 +475,9 @@ func TestInt_Schemas(t *testing.T) {
 	t.Run("show: with history", func(t *testing.T) {
 		schema3, cleanupSchema3 := testClientHelper().Schema.CreateSchema(t)
 		cleanupSchema3()
-		schemas, err := client.Schemas.Show(ctx, &sdk.ShowSchemaOptions{
-			History: sdk.Bool(true),
-			Like: &sdk.Like{
-				Pattern: sdk.String(schema3.Name),
-			},
-		})
+		schemas, err := client.Schemas.Show(ctx, sdk.NewShowSchemaRequest().
+			WithHistory(true).
+			WithLike(sdk.Like{Pattern: sdk.String(schema3.Name)}))
 		require.NoError(t, err)
 
 		droppedSchema, err := collections.FindFirst(schemas, func(schema sdk.Schema) bool { return schema.Name == schema3.Name })
@@ -536,20 +488,13 @@ func TestInt_Schemas(t *testing.T) {
 	})
 
 	t.Run("show: with options", func(t *testing.T) {
-		schemas, err := client.Schemas.Show(ctx, &sdk.ShowSchemaOptions{
-			Terse:   sdk.Bool(true),
-			History: sdk.Bool(true),
-			Like: &sdk.Like{
-				Pattern: sdk.String(schema1.Name),
-			},
-			In: &sdk.SchemaIn{
-				Account: sdk.Bool(true),
-			},
-			StartsWith: sdk.String(schema1.Name),
-			LimitFrom: &sdk.LimitFrom{
-				Rows: sdk.Int(1),
-			},
-		})
+		schemas, err := client.Schemas.Show(ctx, sdk.NewShowSchemaRequest().
+			WithTerse(true).
+			WithHistory(true).
+			WithLike(sdk.Like{Pattern: sdk.String(schema1.Name)}).
+			WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}).
+			WithStartsWith(schema1.Name).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
 		schemaNames := make([]string, len(schemas))
 		for i, s := range schemas {
@@ -604,7 +549,7 @@ func TestInt_Schemas(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, schema.Name, s.Name)
 
-		err = client.Schemas.Drop(ctx, schema.ID(), nil)
+		err = client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(schema.ID()))
 		require.NoError(t, err)
 
 		_, err = client.Schemas.ShowByID(ctx, schema.ID())
@@ -619,13 +564,13 @@ func TestInt_Schemas(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, schema.Name, before.Name)
 
-		err = client.Schemas.Drop(ctx, schema.ID(), nil)
+		err = client.Schemas.Drop(ctx, sdk.NewDropSchemaRequest(schema.ID()))
 		require.NoError(t, err)
 
 		_, err = client.Schemas.ShowByID(ctx, schema.ID())
 		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 
-		err = client.Schemas.Undrop(ctx, schema.ID())
+		err = client.Schemas.Undrop(ctx, sdk.NewUndropSchemaRequest(schema.ID()))
 		require.NoError(t, err)
 
 		after, err := client.Schemas.ShowByID(ctx, schema.ID())

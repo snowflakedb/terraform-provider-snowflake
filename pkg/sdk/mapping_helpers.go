@@ -137,5 +137,5 @@ func ParseAccountObjectIdentifierExcludingExplicitNullString(identifier string) 
 	if identifier == "null" {
 		return AccountObjectIdentifier{}, nil
 	}
-	return ParseAccountObjectIdentifier(identifier)
+	return NewAccountObjectIdentifierFromFullyQualifiedName(identifier), nil
 }

@@ -20,6 +20,7 @@ type HybridTableModel struct {
 	DataRetentionTimeInDays    tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
 	ForeignKey                 tfconfig.Variable `json:"foreign_key,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Index                      tfconfig.Variable `json:"index,omitempty"`
 	MaxDataExtensionTimeInDays tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
 	PrimaryKey                 tfconfig.Variable `json:"primary_key,omitempty"`
 	UniqueConstraint           tfconfig.Variable `json:"unique_constraint,omitempty"`
@@ -136,6 +137,8 @@ func (h *HybridTableModel) WithFullyQualifiedName(fullyQualifiedName string) *Hy
 	return h
 }
 
+// index attribute type is not yet supported, so WithIndex can't be generated
+
 func (h *HybridTableModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *HybridTableModel {
 	h.MaxDataExtensionTimeInDays = tfconfig.IntegerVariable(maxDataExtensionTimeInDays)
 	return h
@@ -186,6 +189,11 @@ func (h *HybridTableModel) WithForeignKeyValue(value tfconfig.Variable) *HybridT
 
 func (h *HybridTableModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *HybridTableModel {
 	h.FullyQualifiedName = value
+	return h
+}
+
+func (h *HybridTableModel) WithIndexValue(value tfconfig.Variable) *HybridTableModel {
+	h.Index = value
 	return h
 }
 

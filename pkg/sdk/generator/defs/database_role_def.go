@@ -35,14 +35,16 @@ var databaseRolesDef = g.NewInterface(
 		IfExists().
 		Name().
 		OptionalIdentifier("Rename", g.KindOfT[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
-		OptionalQueryStructField("Set", g.NewQueryStruct("DatabaseRoleSet").
-			OptionalComment().
-			WithValidation(g.AtLeastOneValueSet, "Comment"),
+		OptionalQueryStructField(
+			"Set", g.NewQueryStruct("DatabaseRoleSet").
+				OptionalComment().
+				WithValidation(g.AtLeastOneValueSet, "Comment"),
 			g.ListOptions().NoParentheses().SQL("SET"),
 		).
-		OptionalQueryStructField("Unset", g.NewQueryStruct("DatabaseRoleUnset").
-			OptionalSQL("COMMENT").
-			WithValidation(g.AtLeastOneValueSet, "Comment"),
+		OptionalQueryStructField(
+			"Unset", g.NewQueryStruct("DatabaseRoleUnset").
+				OptionalSQL("COMMENT").
+				WithValidation(g.AtLeastOneValueSet, "Comment"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		OptionalSetTags().

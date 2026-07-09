@@ -34,7 +34,7 @@ func (c *SchemaClient) CreateSchema(t *testing.T) (*sdk.Schema, func()) {
 // It's created only if it does not exist already.
 func (c *SchemaClient) CreateTestSchemaIfNotExists(t *testing.T) (*sdk.Schema, func()) {
 	t.Helper()
-	return c.CreateSchemaWithOpts(t, c.ids.SchemaId(), &sdk.CreateSchemaOptions{IfNotExists: sdk.Bool(true)})
+	return c.CreateSchemaWithRequest(t, c.ids.SchemaId(), sdk.NewCreateSchemaRequest(c.ids.SchemaId()).WithIfNotExists(true))
 }
 
 func (c *SchemaClient) CreateSchemaInDatabase(t *testing.T, databaseId sdk.AccountObjectIdentifier) (*sdk.Schema, func()) {
@@ -49,14 +49,14 @@ func (c *SchemaClient) CreateSchemaWithName(t *testing.T, name string) (*sdk.Sch
 
 func (c *SchemaClient) CreateSchemaWithIdentifier(t *testing.T, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, func()) {
 	t.Helper()
-	return c.CreateSchemaWithOpts(t, id, nil)
+	return c.CreateSchemaWithRequest(t, id, sdk.NewCreateSchemaRequest(id))
 }
 
-func (c *SchemaClient) CreateSchemaWithOpts(t *testing.T, id sdk.DatabaseObjectIdentifier, opts *sdk.CreateSchemaOptions) (*sdk.Schema, func()) {
+func (c *SchemaClient) CreateSchemaWithRequest(t *testing.T, id sdk.DatabaseObjectIdentifier, req *sdk.CreateSchemaRequest) (*sdk.Schema, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, id, opts)
+	err := c.client().Create(ctx, req)
 	require.NoError(t, err)
 	schema, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
@@ -68,7 +68,7 @@ func (c *SchemaClient) DropSchemaFunc(t *testing.T, id sdk.DatabaseObjectIdentif
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropSchemaOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, sdk.NewDropSchemaRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 		err = c.context.client.Sessions.UseSchema(ctx, c.ids.SchemaId())
 		require.NoError(t, err)
@@ -86,43 +86,25 @@ func (c *SchemaClient) UseDefaultSchema(t *testing.T) {
 func (c *SchemaClient) UpdateDataRetentionTime(t *testing.T, id sdk.DatabaseObjectIdentifier, days int) {
 	t.Helper()
 
-	c.Alter(t, id, &sdk.AlterSchemaOptions{
-		Set: &sdk.SchemaSet{
-			DataRetentionTimeInDays: sdk.Int(days),
-		},
-	})
+	c.Alter(t, sdk.NewAlterSchemaRequest(id).WithSet(sdk.SchemaSetRequest{DataRetentionTimeInDays: sdk.Int(days)}))
 }
 
 func (c *SchemaClient) UpdateLogLevel(t *testing.T, id sdk.DatabaseObjectIdentifier, level sdk.LogLevel) {
 	t.Helper()
-	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, &sdk.AlterSchemaOptions{
-		Set: &sdk.SchemaSet{
-			LogLevel: &level,
-		},
-	})
-	require.NoError(t, err)
+	c.Alter(t, sdk.NewAlterSchemaRequest(id).WithSet(sdk.SchemaSetRequest{LogLevel: &level}))
 }
 
 func (c *SchemaClient) UnsetDataRetentionTime(t *testing.T, id sdk.DatabaseObjectIdentifier) {
 	t.Helper()
 
-	c.Alter(t, id, &sdk.AlterSchemaOptions{
-		Unset: &sdk.SchemaUnset{
-			DataRetentionTimeInDays: sdk.Bool(true),
-		},
-	})
+	c.Alter(t, sdk.NewAlterSchemaRequest(id).WithUnset(sdk.SchemaUnsetRequest{DataRetentionTimeInDays: sdk.Bool(true)}))
 }
 
 func (c *SchemaClient) UnsetLogLevel(t *testing.T, id sdk.DatabaseObjectIdentifier) {
 	t.Helper()
 
-	c.Alter(t, id, &sdk.AlterSchemaOptions{
-		Unset: &sdk.SchemaUnset{
-			LogLevel: sdk.Bool(true),
-		},
-	})
+	c.Alter(t, sdk.NewAlterSchemaRequest(id).WithUnset(sdk.SchemaUnsetRequest{LogLevel: sdk.Bool(true)}))
 }
 
 func (c *SchemaClient) Show(t *testing.T, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, error) {
@@ -139,20 +121,20 @@ func (c *SchemaClient) ShowParameters(t *testing.T, id sdk.DatabaseObjectIdentif
 	return c.client().ShowParameters(ctx, id)
 }
 
-func (c *SchemaClient) ShowWithOptions(t *testing.T, opts *sdk.ShowSchemaOptions) []sdk.Schema {
+func (c *SchemaClient) ShowWithOptions(t *testing.T, req *sdk.ShowSchemaRequest) []sdk.Schema {
 	t.Helper()
 	ctx := context.Background()
 
-	schemas, err := c.client().Show(ctx, opts)
+	schemas, err := c.client().Show(ctx, req)
 	require.NoError(t, err)
 	return schemas
 }
 
-func (c *SchemaClient) Alter(t *testing.T, id sdk.DatabaseObjectIdentifier, opts *sdk.AlterSchemaOptions) {
+func (c *SchemaClient) Alter(t *testing.T, req *sdk.AlterSchemaRequest) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, id, opts)
+	err := c.client().Alter(ctx, req)
 	require.NoError(t, err)
 }
 

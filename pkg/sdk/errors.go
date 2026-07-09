@@ -24,6 +24,7 @@ var (
 	ErrAccountIsEmpty                           = NewError("account is empty")
 	ErrGrantPartiallyExecuted                   = NewError("grant partially executed")
 	ErrPatNotFound                              = NewError("programmatic access token not found")
+	ErrTableNotClustered                        = NewError("table is not clustered")
 
 	// snowflake-sdk errors.
 	ErrInvalidObjectIdentifier = NewError("invalid object identifier")
@@ -31,6 +32,14 @@ var (
 	ErrDifferentSchema         = NewError("schema must be the same")
 
 	ErrPolicyNotAttachedToAccount = NewError("policy kind is not attached to account")
+
+	// postgres instance errors.
+
+	// ErrPostgresOperationMustBeComplete is a substring of the Snowflake error message returned when an
+	// ALTER is issued while a previous CREATE/ALTER is still in progress.
+	// Note: this is a fragile substring match — Snowflake may change the message in future versions,
+	// or an unrelated error could accidentally match. Treat retries as best-effort.
+	ErrPostgresOperationMustBeComplete = errors.New("must be complete before issuing ALTER")
 )
 
 type IntErrType string
@@ -83,6 +92,13 @@ func errInvalidValue(structName string, fieldName string, invalidValue string) e
 	return newError(fmt.Sprintf("invalid value %s of struct %s field: %s", invalidValue, structName, fieldName), 2)
 }
 
+// errDoubleDollarQuotesNotAllowed is returned when a field rendered with double dollar quoting ($$...$$) contains
+// the `$$` sequence. Snowflake dollar-quoted string constants are interpreted literally and do not support escaping,
+// so any embedded `$$` would terminate the constant and allow SQL injection. Such input is therefore rejected.
+func errDoubleDollarQuotesNotAllowed(structName string, fieldName string) error {
+	return newError(fmt.Sprintf("%s field: %s must not contain the '$$' sequence, because it is not supported by Snowflake's dollar-quoted string constants", structName, fieldName), 2)
+}
+
 var errorRegexes = map[*regexp.Regexp]error{
 	regexp.MustCompile(`Programmatic access token .* not found`):                   ErrPatNotFound,
 	regexp.MustCompile(`Any policy of kind [a-zA-z_]+ is not attached to ACCOUNT`): ErrPolicyNotAttachedToAccount,
@@ -98,6 +114,7 @@ func decodeDriverError(err error) error {
 		"does not exist or not authorized":                        ErrObjectNotExistOrAuthorized,
 		"account is empty":                                        ErrAccountIsEmpty,
 		"Grant partially executed":                                ErrGrantPartiallyExecuted,
+		"is not clustered":                                        ErrTableNotClustered,
 	}
 	for k, v := range m {
 		if strings.Contains(err.Error(), k) {

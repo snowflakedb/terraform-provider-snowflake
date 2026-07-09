@@ -18,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -31,6 +32,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 
 	preAuthorizedRole, preauthorizedRoleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(preauthorizedRoleCleanup)
+
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
 
 	validUrl := "https://example.com/callback"
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -48,8 +52,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
+		WithAllowedRoles(allowedRole.ID()).
 		WithComment(comment)
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -71,6 +76,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasOauthIssueRefreshTokensString(resources.BooleanDefault).
 			HasOauthAllowNonTlsRedirectUriString(resources.BooleanDefault).
 			HasPreAuthorizedRolesList().
+			HasAllowedRolesListEmpty().
 			HasRelatedParametersNotEmpty().
 			HasRelatedParametersOauthAddPrivilegedRolesToBlockedList(resources.BooleanTrue).
 			HasBlockedRolesListEmpty(),
@@ -90,6 +96,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", "")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000")),
@@ -122,8 +129,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasOauthEnforcePkceString(resources.BooleanTrue).
 			HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 			HasOauthRefreshTokenValidityString("86400").
-			HasOauthUseSecondaryRolesString("IMPLICIT").
+			HasOauthUseSecondaryRolesString("NONE").
 			HasPreAuthorizedRolesList(preAuthorizedRole.ID().Name()).
+			HasAllowedRolesList(allowedRole.ID().Name()).
 			HasNetworkPolicyString(networkPolicy.ID().Name()).
 			HasOauthClientRsaPublicKeyString(key).
 			HasOauthClientRsaPublicKey2String(key).
@@ -145,8 +153,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", allowedRole.ID().Name())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
@@ -234,8 +243,9 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 							WithOauthEnforcePkce(true).
 							WithOauthIssueRefreshTokens(true).
 							WithOauthRefreshTokenValidity(86400).
-							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit).
+							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone).
 							WithPreAuthorizedRolesList(*sdk.NewPreAuthorizedRolesListRequest().WithPreAuthorizedRolesList([]sdk.AccountObjectIdentifier{preAuthorizedRole.ID()})).
+							WithAllowedRolesList(*sdk.NewAllowedRolesListRequest([]sdk.AccountObjectIdentifier{allowedRole.ID()})).
 							WithComment(comment),
 					))
 				},
@@ -251,7 +261,8 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.SecurityIntegrationDoesNotExist(t, id),
 				),
 			},
@@ -276,6 +287,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 	preAuthorizedRole, preauthorizedRoleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(preauthorizedRoleCleanup)
 
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
+
 	validUrl := "https://example.com/callback"
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	key, _ := random.GenerateRSAPublicKey(t)
@@ -290,8 +304,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
-		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
 		WithPreAuthorizedRoles(preAuthorizedRole.ID()).
+		WithAllowedRoles(allowedRole.ID()).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -304,7 +319,8 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 			// Create - with all optionals (including optional ForceNew parameters)
 			{
 				Config: accconfig.FromModels(t, complete),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.SecurityIntegration(t, id).
 						HasName(id.Name()).
 						HasIntegrationType("OAUTH - CUSTOM").
@@ -322,8 +338,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 						HasOauthEnforcePkceString(resources.BooleanTrue).
 						HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 						HasOauthRefreshTokenValidityString("86400").
-						HasOauthUseSecondaryRolesString("IMPLICIT").
+						HasOauthUseSecondaryRolesString("NONE").
 						HasPreAuthorizedRolesList(preAuthorizedRole.ID().Name()).
+						HasAllowedRolesList(allowedRole.ID().Name()).
 						HasNetworkPolicyString(networkPolicy.ID().Name()).
 						HasOauthClientRsaPublicKeyString(key).
 						HasOauthClientRsaPublicKey2String(key).
@@ -345,8 +362,9 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
-					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "IMPLICIT")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", allowedRole.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
@@ -444,6 +462,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", ""),
+					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", ""),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000"),
@@ -493,6 +512,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", ""),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", ""),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_issue_refresh_tokens.0.value", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_refresh_token_validity.0.value", "7776000"),
@@ -519,6 +539,12 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 		WithOauthUseSecondaryRoles("invalid")
 	invalidClientTypesModel := model.OauthIntegrationForCustomClients("test", id.Name(), "invalid", validUrl)
 
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
+	allowedRolesWithImplicitModel := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
+		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit)).
+		WithAllowedRoles(allowedRole.ID())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -534,6 +560,11 @@ func TestAcc_OauthIntegrationForCustomClients_Invalid(t *testing.T) {
 				Config:      accconfig.FromModels(t, invalidClientTypesModel),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Error: invalid oauth security integration client type option: INVALID`),
+			},
+			{
+				Config:      accconfig.FromModels(t, allowedRolesWithImplicitModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`allowed_roles_list can only be set when oauth_use_secondary_roles is set to\s+NONE`),
 			},
 		},
 	})
@@ -567,6 +598,74 @@ func TestAcc_OauthIntegrationForCustomClients_migrateFromV0941_ensureSmoothUpgra
 				Config:                   accconfig.FromModels(t, basicModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_OauthIntegrationForCustomClients_AllowedRolesListDriftDetection
+// verifies that when an integration is created with v2.17.0 (before
+// allowed_roles_list was supported) and the list is then set externally,
+// the new provider version detects the drift and reconciles it.
+func TestAcc_OauthIntegrationForCustomClients_AllowedRolesListDriftDetection(t *testing.T) {
+	allowedRole, allowedRoleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(allowedRoleCleanup)
+
+	validUrl := "https://example.com/callback"
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerConfig := accconfig.FromModels(t, providermodel.SnowflakeProvider())
+
+	basicModel := model.OauthIntegrationForCustomClients(
+		"test", id.Name(),
+		string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential),
+		validUrl,
+	).WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone))
+
+	fixedModel := model.OauthIntegrationForCustomClients(
+		"test", id.Name(),
+		string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential),
+		validUrl,
+	).WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
+		WithAllowedRoles(allowedRole.ID())
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForCustomClients),
+		Steps: []resource.TestStep{
+			// Step 1: create with v2.17.0 (no allowed_roles_list support)
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.17.0"),
+				Config:            providerConfig + accconfig.FromModels(t, basicModel),
+			},
+			// Step 2: set allowed_roles_list externally; the new provider detects
+			// the drift, but the customer fixes their config to match, so the
+			// plan is empty.
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.UpdateOauthForClients(t,
+						sdk.NewAlterOauthForCustomClientsSecurityIntegrationRequest(id).WithSet(
+							*sdk.NewOauthForCustomClientsIntegrationSetRequest().
+								WithAllowedRolesList(*sdk.NewAllowedRolesListRequest(
+									[]sdk.AccountObjectIdentifier{allowedRole.ID()},
+								)),
+						))
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, fixedModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						planchecks.ExpectDrift(fixedModel.ResourceReference(), "allowed_roles_list.0", nil, new(allowedRole.ID().Name())),
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.OauthIntegrationForCustomClientsResource(
+						t, fixedModel.ResourceReference(),
+					).HasAllowedRolesList(allowedRole.ID().Name()),
 				),
 			},
 		},

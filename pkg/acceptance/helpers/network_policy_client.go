@@ -32,9 +32,34 @@ func (c *NetworkPolicyClient) CreateNetworkPolicy(t *testing.T) (*sdk.NetworkPol
 // CreateNetworkPolicyNotEmpty tackles SF Error: 098519 (22023): Empty network policy [id] cannot be active.
 func (c *NetworkPolicyClient) CreateNetworkPolicyNotEmpty(t *testing.T) (*sdk.NetworkPolicy, func()) {
 	t.Helper()
-	return c.CreateNetworkPolicyWithRequest(t, sdk.NewCreateNetworkPolicyRequest(c.ids.RandomAccountObjectIdentifier()).
-		WithBlockedIpList([]sdk.IPRequest{*sdk.NewIPRequest("1.1.1.1")}),
+	return c.CreateNetworkPolicyWithRequest(
+		t, sdk.NewCreateNetworkPolicyRequest(c.ids.RandomAccountObjectIdentifier()).
+			WithBlockedIpList([]sdk.IPRequest{*sdk.NewIPRequest("1.1.1.1")}),
 	)
+}
+
+// CreateNetworkPolicyForPostgres creates a network policy that satisfies the Snowflake requirement
+// for Postgres instances: the policy must contain at least one network rule with mode POSTGRES_INGRESS.
+func (c *NetworkPolicyClient) CreateNetworkPolicyForPostgres(t *testing.T, networkRuleClient *NetworkRuleClient) (*sdk.NetworkPolicy, func()) {
+	t.Helper()
+	networkRule, networkRuleCleanup := networkRuleClient.CreateWithRequest(
+		t,
+		sdk.NewCreateNetworkRuleRequest(
+			c.ids.RandomSchemaObjectIdentifier(),
+			sdk.NetworkRuleTypeIpv4,
+			[]sdk.NetworkRuleValue{},
+			sdk.NetworkRuleModePostgresIngress,
+		),
+	)
+	policy, policyCleanup := c.CreateNetworkPolicyWithRequest(
+		t,
+		sdk.NewCreateNetworkPolicyRequest(c.ids.RandomAccountObjectIdentifier()).
+			WithAllowedNetworkRuleList([]sdk.SchemaObjectIdentifier{networkRule.ID()}),
+	)
+	return policy, func() {
+		defer networkRuleCleanup()
+		policyCleanup()
+	}
 }
 
 func (c *NetworkPolicyClient) CreateNetworkPolicyWithRequest(t *testing.T, request *sdk.CreateNetworkPolicyRequest) (*sdk.NetworkPolicy, func()) {

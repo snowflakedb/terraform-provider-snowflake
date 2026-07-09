@@ -1,5 +1,3 @@
-//go:build non_account_level_tests
-
 package resources_test
 
 import (
@@ -52,7 +50,7 @@ func Test_GetPropertyAsPointer(t *testing.T) {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
-	}, map[string]interface{}{
+	}, map[string]any{
 		"integer":        123,
 		"second_integer": 0,
 		"string":         "some string",
@@ -119,7 +117,7 @@ func Test_GetConfigPropertyAsPointerAllowingZeroValue(t *testing.T) {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
-	}, map[string]interface{}{
+	}, map[string]any{
 		"integer":        123,
 		"second_integer": 0,
 		"string":         "some string",

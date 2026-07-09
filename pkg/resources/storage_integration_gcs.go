@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -80,10 +79,10 @@ func StorageIntegrationGcs() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageIntegrationGcsResource), TrackingCreateWrapper(resources.StorageIntegrationGcs, CreateStorageIntegrationGcs)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageIntegrationGcsResource), TrackingReadWrapper(resources.StorageIntegrationGcs, GetReadStorageIntegrationGcsFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageIntegrationGcsResource), TrackingUpdateWrapper(resources.StorageIntegrationGcs, UpdateStorageIntegrationGcs)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageIntegrationGcsResource), TrackingDeleteWrapper(resources.StorageIntegrationGcs, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.StorageIntegrationGcs, CreateStorageIntegrationGcs),
+		ReadContext:   TrackingReadWrapper(resources.StorageIntegrationGcs, GetReadStorageIntegrationGcsFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.StorageIntegrationGcs, UpdateStorageIntegrationGcs),
+		DeleteContext: TrackingDeleteWrapper(resources.StorageIntegrationGcs, deleteFunc),
 		Description:   "Resource used to manage GCS storage integration objects. For more information, check [storage integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-integration).",
 
 		Schema: storageIntegrationGcsSchema,
@@ -160,7 +159,8 @@ func GetReadStorageIntegrationGcsFunc(withExternalChangesMarking bool) schema.Re
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)
 
-		errs = errors.Join(errs,
+		errs = errors.Join(
+			errs,
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.StorageIntegrationToSchema(s)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.StorageIntegrationGcsDetailsToSchema(gcsDetails)}),
 		)

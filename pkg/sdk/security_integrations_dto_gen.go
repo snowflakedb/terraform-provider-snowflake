@@ -117,6 +117,7 @@ type CreateOauthForPartnerApplicationsSecurityIntegrationRequest struct {
 	OauthIssueRefreshTokens   *bool
 	OauthRefreshTokenValidity *int
 	OauthUseSecondaryRoles    *OauthSecurityIntegrationUseSecondaryRolesOption
+	AllowedRolesList          *AllowedRolesListRequest
 	BlockedRolesList          *BlockedRolesListRequest
 	Comment                   *string
 }
@@ -132,6 +133,7 @@ type CreateOauthForCustomClientsSecurityIntegrationRequest struct {
 	OauthEnforcePkce            *bool
 	OauthUseSecondaryRoles      *OauthSecurityIntegrationUseSecondaryRolesOption
 	PreAuthorizedRolesList      *PreAuthorizedRolesListRequest
+	AllowedRolesList            *AllowedRolesListRequest
 	BlockedRolesList            *BlockedRolesListRequest
 	OauthIssueRefreshTokens     *bool
 	OauthRefreshTokenValidity   *int
@@ -309,6 +311,7 @@ type OauthForPartnerApplicationsIntegrationSetRequest struct {
 	OauthRedirectUri          *string
 	OauthRefreshTokenValidity *int
 	OauthUseSecondaryRoles    *OauthSecurityIntegrationUseSecondaryRolesOption
+	AllowedRolesList          *AllowedRolesListRequest
 	BlockedRolesList          *BlockedRolesListRequest
 	Comment                   *StringAllowEmpty
 }
@@ -333,6 +336,7 @@ type OauthForCustomClientsIntegrationSetRequest struct {
 	OauthAllowNonTlsRedirectUri *bool
 	OauthEnforcePkce            *bool
 	PreAuthorizedRolesList      *PreAuthorizedRolesListRequest
+	AllowedRolesList            *AllowedRolesListRequest
 	BlockedRolesList            *BlockedRolesListRequest
 	OauthIssueRefreshTokens     *bool
 	OauthRefreshTokenValidity   *int

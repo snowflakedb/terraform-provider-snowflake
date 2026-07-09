@@ -24,7 +24,8 @@ func TestAcc_TerraformPluginFrameworkPoc_InitialSetup(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: someResourceConfig(id),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_some.test", "id", id.FullyQualifiedName())),
 				),
 			},

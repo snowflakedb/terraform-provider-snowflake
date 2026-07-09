@@ -16,7 +16,7 @@ func NetworkPolicyResource(t *testing.T, name string) *NetworkPolicyResourceAsse
 	t.Helper()
 
 	return &NetworkPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedNetworkPolicyResource(t *testing.T, id string) *NetworkPolicyResour
 	t.Helper()
 
 	return &NetworkPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -72,17 +72,17 @@ func (n *NetworkPolicyResourceAssert) HasFullyQualifiedName(expected string) *Ne
 ///////////////////////////////////
 
 func (n *NetworkPolicyResourceAssert) HasNameString(expected string) *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("name", expected))
+	n.ValueSet("name", expected)
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasCommentString(expected string) *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("comment", expected))
+	n.ValueSet("comment", expected)
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameString(expected string) *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	n.ValueSet("fully_qualified_name", expected)
 	return n
 }
 
@@ -91,17 +91,17 @@ func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameString(expected strin
 ///////////////////////////////
 
 func (n *NetworkPolicyResourceAssert) HasNoName() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("name"))
+	n.ValueNotSet("name")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasNoComment() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("comment"))
+	n.ValueNotSet("comment")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasNoFullyQualifiedName() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	n.ValueNotSet("fully_qualified_name")
 	return n
 }
 
@@ -110,32 +110,32 @@ func (n *NetworkPolicyResourceAssert) HasNoFullyQualifiedName() *NetworkPolicyRe
 ////////////////////////////
 
 func (n *NetworkPolicyResourceAssert) HasAllowedIpListEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("allowed_ip_list.#", "0"))
+	n.ValueSet("allowed_ip_list.#", "0")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasAllowedNetworkRuleListEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("allowed_network_rule_list.#", "0"))
+	n.ValueSet("allowed_network_rule_list.#", "0")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasBlockedIpListEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("blocked_ip_list.#", "0"))
+	n.ValueSet("blocked_ip_list.#", "0")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasBlockedNetworkRuleListEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("blocked_network_rule_list.#", "0"))
+	n.ValueSet("blocked_network_rule_list.#", "0")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasCommentEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("comment", ""))
+	n.ValueSet("comment", "")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	n.ValueSet("fully_qualified_name", "")
 	return n
 }
 
@@ -144,16 +144,16 @@ func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameEmpty() *NetworkPolic
 ///////////////////////////////
 
 func (n *NetworkPolicyResourceAssert) HasNameNotEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValuePresent("name"))
+	n.ValuePresent("name")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasCommentNotEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValuePresent("comment"))
+	n.ValuePresent("comment")
 	return n
 }
 
 func (n *NetworkPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *NetworkPolicyResourceAssert {
-	n.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	n.ValuePresent("fully_qualified_name")
 	return n
 }

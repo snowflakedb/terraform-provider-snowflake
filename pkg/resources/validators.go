@@ -63,7 +63,7 @@ func StringInSlice(valid []string, ignoreCase bool) schema.SchemaValidateDiagFun
 
 // IntInSlice has the same implementation as validation.StringInSlice, but adapted to schema.SchemaValidateDiagFunc
 func IntInSlice(valid []int) schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i any, path cty.Path) diag.Diagnostics {
 		v, ok := i.(int)
 		if !ok {
 			return diag.Errorf("expected type of %v to be integer", path)
@@ -137,5 +137,23 @@ func IsValidListingName(i any, path cty.Path) diag.Diagnostics {
 		return diag.Errorf("Listing name must start with an alphabetic character and cannot contain spaces or special characters except for underscores and hyphens.")
 	}
 
+	return nil
+}
+
+// forbidDoubleDollarQuotes rejects string values that contain $$.
+// Fields that Snowflake wraps in double-dollar quotes ($$...$$) must not embed $$ because it would terminate the outer quotes.
+func forbidDoubleDollarQuotes(val any, path cty.Path) diag.Diagnostics {
+	v, ok := val.(string)
+	if !ok {
+		return diag.Errorf("expected string type, got %T", val)
+	}
+	if strings.Contains(v, "$$") {
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       "Invalid value",
+			Detail:        `The value cannot contain the $$ sequence. The provider wraps the input automatically.`,
+			AttributePath: path,
+		}}
+	}
 	return nil
 }

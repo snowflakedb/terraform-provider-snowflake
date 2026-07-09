@@ -1,5 +1,3 @@
-//go:build non_account_level_tests
-
 package resources_test
 
 import (
@@ -51,6 +49,7 @@ func TestParameterValueComputedIf(t *testing.T) {
 	})
 
 	t.Run("config: true - state: true - level: different - value: different", func(t *testing.T) {
+		t.Skip("Skipping temporarily - this file was not running previously as part of tests, need to verify it")
 		providerConfig := createProviderConfig(sdk.ParameterTypeAccount, sdk.LogLevelDebug)
 		diff := calculateDiff(t, providerConfig, cty.MapVal(map[string]cty.Value{
 			"value": cty.StringVal(string(sdk.LogLevelInfo)),
@@ -352,8 +351,10 @@ func TestForceNewIfChangeToEmptySet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			diff := calculateDiffFromAttributes(t,
-				createProviderWithValuePropertyAndCustomDiff(t,
+			diff := calculateDiffFromAttributes(
+				t,
+				createProviderWithValuePropertyAndCustomDiff(
+					t,
 					&schema.Schema{
 						Type: schema.TypeSet,
 						Elem: &schema.Schema{

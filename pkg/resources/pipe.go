@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -124,32 +125,30 @@ func CreatePipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 
 	objectIdentifier := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	opts := &sdk.CreatePipeOptions{}
-
 	copyStatement := d.Get("copy_statement").(string)
+	req := sdk.NewCreatePipeRequest(objectIdentifier, copyStatement)
 
-	// Set optionals
 	if v, ok := d.GetOk("comment"); ok {
-		opts.Comment = sdk.String(v.(string))
+		req.WithComment(v.(string))
 	}
 
 	if v, ok := d.GetOk("auto_ingest"); ok && v.(bool) {
-		opts.AutoIngest = sdk.Bool(true)
+		req.WithAutoIngest(true)
 	}
 
 	if v, ok := d.GetOk("aws_sns_topic_arn"); ok {
-		opts.AwsSnsTopic = sdk.String(v.(string))
+		req.WithAwsSnsTopic(v.(string))
 	}
 
 	if v, ok := d.GetOk("integration"); ok {
-		opts.Integration = sdk.String(v.(string))
+		req.WithIntegration(v.(string))
 	}
 
 	if v, ok := d.GetOk("error_integration"); ok {
-		opts.ErrorIntegration = sdk.String(v.(string))
+		req.WithErrorIntegration(v.(string))
 	}
 
-	err := client.Pipes.Create(ctx, objectIdentifier, copyStatement, opts)
+	err := client.Pipes.Create(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -233,42 +232,34 @@ func UpdatePipe(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	client := meta.(*provider.Context).Client
 	objectIdentifier := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	pipeSet := &sdk.PipeSet{}
-	pipeUnset := &sdk.PipeUnset{}
-	var runSetStatement bool
-	var runUnsetStatement bool
+	set := sdk.NewPipeSetRequest()
+	unset := sdk.NewPipeUnsetRequest()
 
 	if d.HasChange("comment") {
 		if comment, ok := d.GetOk("comment"); ok {
-			runSetStatement = true
-			pipeSet.Comment = sdk.String(comment.(string))
+			set.WithComment(comment.(string))
 		} else {
-			runUnsetStatement = true
-			pipeUnset.Comment = sdk.Bool(true)
+			unset.WithComment(true)
 		}
 	}
 
 	if d.HasChange("error_integration") {
 		if errorIntegration, ok := d.GetOk("error_integration"); ok {
-			runSetStatement = true
-			pipeSet.ErrorIntegration = sdk.String(errorIntegration.(string))
+			set.WithErrorIntegration(errorIntegration.(string))
 		} else {
-			runUnsetStatement = true
-			pipeUnset.ErrorIntegration = sdk.Bool(true)
+			unset.WithErrorIntegration(true)
 		}
 	}
 
-	if runSetStatement {
-		options := &sdk.AlterPipeOptions{Set: pipeSet}
-		err := client.Pipes.Alter(ctx, objectIdentifier, options)
+	if !reflect.DeepEqual(set, sdk.NewPipeSetRequest()) {
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(objectIdentifier).WithSet(*set))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating pipe %v: %w", objectIdentifier.Name(), err))
 		}
 	}
 
-	if runUnsetStatement {
-		options := &sdk.AlterPipeOptions{Unset: pipeUnset}
-		err := client.Pipes.Alter(ctx, objectIdentifier, options)
+	if !reflect.DeepEqual(unset, sdk.NewPipeUnsetRequest()) {
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(objectIdentifier).WithUnset(*unset))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating pipe %v: %w", objectIdentifier.Name(), err))
 		}

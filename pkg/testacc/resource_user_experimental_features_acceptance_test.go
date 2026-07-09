@@ -39,7 +39,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_UpdateExisting(t *testing
 			{
 				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				Config:                   config.FromModels(t, providerModel, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceparametersassert.UserResourceParameters(t, userModel.ResourceReference()).
@@ -60,7 +61,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_UpdateExisting(t *testing
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceparametersassert.UserResourceParameters(t, userModel.ResourceReference()).
@@ -80,7 +82,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_UpdateExisting(t *testing
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceparametersassert.UserResourceParameters(t, userModel.ResourceReference()).
@@ -103,7 +106,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_UpdateExisting(t *testing
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceparametersassert.UserResourceParameters(t, userModel.ResourceReference()).
@@ -123,7 +127,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_UpdateExisting(t *testing
 						plancheck.ExpectResourceAction(userModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceparametersassert.UserResourceParameters(t, userModel.ResourceReference()).
@@ -155,7 +160,8 @@ func TestAcc_Experimental_User_ParametersReducedOutput_CreateNew(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: config.FromModels(t, providerModelWithExperimentEnabled, userModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.UserResource(t, userModel.ResourceReference()).
 						HasNameString(userId.Name()),
 					resourceparametersassert.UserResourceParameters(t, userModel.ResourceReference()).

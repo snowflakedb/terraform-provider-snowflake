@@ -190,7 +190,22 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ApiIntegrationAzureApiManagement: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
+	resources.ApiIntegrationExternalMcpDynamicClient: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
+	resources.ApiIntegrationExternalMcpOAuth2: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
 	resources.ApiIntegrationGitRepositoryGithubApp: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
+	resources.ApiIntegrationGitRepositoryOauth2: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
+	resources.ApiIntegrationGitRepositoryPrivateLink: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
+	},
+	resources.ApiIntegrationGitRepositoryToken: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ApiIntegrations.ShowByID)
 	},
 	resources.ApiIntegrationGoogleCloudApiGateway: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
@@ -283,7 +298,16 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.GitRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.GitRepositories.ShowByID)
 	},
+	resources.IcebergTableFromDeltaFiles: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
 	resources.IcebergTableFromFiles: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
+	resources.IcebergTableFromAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
+	resources.IcebergTableFromRest: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.IcebergTables.ShowByID)
 	},
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
@@ -336,6 +360,12 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.Pipe: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Pipes.ShowByID)
+	},
+	resources.PostgresFork: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.PostgresInstances.ShowByID)
+	},
+	resources.PostgresInstance: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.PostgresInstances.ShowByID)
 	},
 	resources.ProcedureJava: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Procedures.ShowByID)
@@ -440,7 +470,7 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.Streamlits.ShowByID)
 	},
 	resources.Table: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
-		return runShowById(ctx, id, client.Tables.ShowByID)
+		return runShowById(ctx, id, client.TablesLegacy.ShowByID)
 	},
 	resources.Tag: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Tags.ShowByID)
@@ -646,6 +676,14 @@ func CheckUserSessionPolicyAttachmentDestroy(t *testing.T) func(*terraform.State
 	return checkUserPolicyAttachmentDestroy(t, resources.UserSessionPolicyAttachment, sdk.PolicyKindSessionPolicy)
 }
 
+// CheckTableStorageLifecyclePolicyAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy
+func CheckTableStorageLifecyclePolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkPolicyAttachmentDestroy(t, resources.TableStorageLifecyclePolicyAttachment, func(rs *terraform.ResourceState) (sdk.ObjectIdentifier, error) {
+		return sdk.ParseSchemaObjectIdentifier(rs.Primary.Attributes["table_name"])
+	}, sdk.PolicyEntityDomainTable, sdk.PolicyKindStorageLifecyclePolicy)
+}
+
 // CheckResourceTagUnset is a custom check that should be later incorporated into generic CheckDestroy
 func CheckResourceTagUnset(t *testing.T) func(*terraform.State) error {
 	t.Helper()
@@ -802,15 +840,26 @@ func CheckUserProgrammaticAccessTokenDestroy(t *testing.T) func(*terraform.State
 
 func checkUserPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, policyKind sdk.PolicyKind) func(*terraform.State) error {
 	t.Helper()
+	return checkPolicyAttachmentDestroy(t, resource, func(rs *terraform.ResourceState) (sdk.ObjectIdentifier, error) {
+		return sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), nil
+	}, sdk.PolicyEntityDomainUser, policyKind)
+}
+
+func checkPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, getEntityId func(rs *terraform.ResourceState) (sdk.ObjectIdentifier, error), entityDomain sdk.PolicyEntityDomain, policyKind sdk.PolicyKind) func(*terraform.State) error {
+	t.Helper()
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
 			if rs.Type != resource.String() {
 				continue
 			}
-			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), sdk.PolicyEntityDomainUser)
+			entityId, err := getEntityId(rs)
+			if err != nil {
+				return err
+			}
+			policyReferences, err := testClient().PolicyReferences.GetPolicyReferences(t, entityId, entityDomain)
 			if err != nil {
 				if strings.Contains(err.Error(), "does not exist or not authorized") {
-					// Note: this can happen if the Policy Reference or the User has been deleted as well; in this case, ignore the error
+					// Note: this can happen if the policy reference or the referenced entity has been deleted as well; in this case, ignore the error
 					continue
 				}
 				return err
@@ -818,7 +867,7 @@ func checkUserPolicyAttachmentDestroy(t *testing.T, resource resources.Resource,
 
 			for _, ref := range policyReferences {
 				if ref.PolicyKind == policyKind {
-					return fmt.Errorf("user %s attachment %v still exists", policyKind, policyReferences[0].PolicyName)
+					return fmt.Errorf("%s attachment on %s still exists (policy %s)", policyKind, entityId.FullyQualifiedName(), ref.PolicyName)
 				}
 			}
 		}

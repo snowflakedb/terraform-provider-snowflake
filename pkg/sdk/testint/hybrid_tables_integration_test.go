@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -404,6 +405,34 @@ func TestInt_HybridTables(t *testing.T) {
 				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithMaxDataExtensionTimeInDays(28)))
 			require.NoError(t, err)
 			assertThatObject(t, objectparametersassert.HybridTableParameters(t, id).HasMaxDataExtensionTimeInDays(28))
+		})
+
+		t.Run("set both retention parameters in single ALTER", func(t *testing.T) {
+			id, cleanup := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup)
+
+			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().
+					WithDataRetentionTimeInDays(5).
+					WithMaxDataExtensionTimeInDays(14)))
+			require.NoError(t, err, "ALTER SET with both retention parameters must succeed")
+
+			params, err := client.HybridTables.ShowParameters(ctx, id)
+			require.NoError(t, err)
+
+			retention, err := collections.FindFirst(params, func(p *sdk.Parameter) bool {
+				return p.Key == string(sdk.ObjectParameterDataRetentionTimeInDays)
+			})
+			require.NoError(t, err, "DATA_RETENTION_TIME_IN_DAYS must be present in ShowParameters")
+			require.Equal(t, "5", (*retention).Value)
+			require.Equal(t, sdk.ParameterTypeTable, (*retention).Level)
+
+			maxExtension, err := collections.FindFirst(params, func(p *sdk.Parameter) bool {
+				return p.Key == string(sdk.ObjectParameterMaxDataExtensionTimeInDays)
+			})
+			require.NoError(t, err, "MAX_DATA_EXTENSION_TIME_IN_DAYS must be present in ShowParameters")
+			require.Equal(t, "14", (*maxExtension).Value)
+			require.Equal(t, sdk.ParameterTypeTable, (*maxExtension).Level)
 		})
 
 		t.Run("show parameters", func(t *testing.T) {
@@ -891,4 +920,206 @@ func TestInt_HybridTables(t *testing.T) {
 	// NOTE: INDEX operations (CREATE INDEX, DROP INDEX, SHOW INDEXES) are blocked by an SDK design
 	// issue — Snowflake expects unqualified index names but the SDK generates fully qualified
 	// identifiers. Index tests are omitted until the SDK identifier handling is resolved.
+}
+
+func TestInt_HybridTableConstraints(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	// Create a parent hybrid table: PK on id.
+	parentId, parentCleanup := testClientHelper().HybridTable.CreateWithRequest(
+		t,
+		testClientHelper().Ids.RandomSchemaObjectIdentifier(),
+		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+			Columns: []sdk.HybridTableColumnRequest{
+				{
+					Name:     "ID",
+					DataType: sdk.DataType("NUMBER NOT NULL"),
+					InlineConstraint: &sdk.ColumnInlineConstraint{
+						Name: sdk.String("pk_parent"),
+						Type: sdk.ColumnConstraintTypePrimaryKey,
+					},
+				},
+				{
+					Name:     "CODE",
+					DataType: sdk.DataType("VARCHAR(50)"),
+				},
+			},
+		},
+	)
+	t.Cleanup(parentCleanup)
+
+	// Create the child table via SDK, controlling exact constraint names,
+	// including an anonymous UNIQUE which Snowflake will assign a SYS_CONSTRAINT_* name.
+	childId, childCleanup := testClientHelper().HybridTable.CreateWithRequest(
+		t,
+		testClientHelper().Ids.RandomSchemaObjectIdentifier(),
+		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+			Columns: []sdk.HybridTableColumnRequest{
+				{Name: "ID", DataType: sdk.DataType("NUMBER NOT NULL")},
+				{Name: "PARENT_ID", DataType: sdk.DataType("NUMBER NOT NULL")},
+				{Name: "COL_A", DataType: sdk.DataType("VARCHAR(50)")},
+				{Name: "COL_B", DataType: sdk.DataType("VARCHAR(50)")},
+			},
+			OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
+				{
+					Name:                 sdk.String("pk_child"),
+					ColumnConstraintType: sdk.ColumnConstraintTypePrimaryKey,
+					Columns:              []string{"ID"},
+				},
+				{
+					Name:                 sdk.String("uq_named"),
+					ColumnConstraintType: sdk.ColumnConstraintTypeUnique,
+					Columns:              []string{"COL_A"},
+				},
+				{
+					// No Name → Snowflake assigns a SYS_CONSTRAINT_* name.
+					ColumnConstraintType: sdk.ColumnConstraintTypeUnique,
+					Columns:              []string{"COL_B"},
+				},
+				{
+					Name:                 sdk.String("fk_named"),
+					ColumnConstraintType: sdk.ColumnConstraintTypeForeignKey,
+					Columns:              []string{"PARENT_ID"},
+					ForeignKey:           &sdk.OutOfLineForeignKey{TableName: parentId, ColumnNames: []string{"ID"}},
+				},
+			},
+		},
+	)
+	t.Cleanup(childCleanup)
+
+	constraints, err := client.HybridTables.GetConstraints(ctx, childId)
+	require.NoError(t, err)
+
+	t.Run("primary key", func(t *testing.T) {
+		pks := collections.Filter(constraints, func(c sdk.HybridTableConstraint) bool { return c.Kind == sdk.ColumnConstraintTypePrimaryKey })
+		require.Len(t, pks, 1, "expected exactly one PRIMARY KEY constraint")
+		require.Equal(t, "pk_child", pks[0].Name)
+		require.Equal(t, []string{"ID"}, pks[0].Columns)
+	})
+
+	t.Run("unique keys", func(t *testing.T) {
+		uqs := collections.Filter(constraints, func(c sdk.HybridTableConstraint) bool { return c.Kind == sdk.ColumnConstraintTypeUnique })
+		require.Len(t, uqs, 2, "expected exactly two UNIQUE constraints")
+
+		// Named UNIQUE
+		namedUQ, err := collections.FindFirst(uqs, func(c sdk.HybridTableConstraint) bool { return c.Name == "uq_named" })
+		require.NoError(t, err, "expected UNIQUE constraint uq_named")
+		require.Equal(t, []string{"COL_A"}, namedUQ.Columns)
+
+		// Anonymous UNIQUE — Snowflake assigns a SYS_CONSTRAINT_* name.
+		var anonUQ *sdk.HybridTableConstraint
+		for i := range uqs {
+			if strings.HasPrefix(uqs[i].Name, "SYS_CONSTRAINT_") {
+				anonUQ = &uqs[i]
+				break
+			}
+		}
+		require.NotNil(t, anonUQ, "expected an anonymous UNIQUE constraint with SYS_CONSTRAINT_* name")
+		require.Equal(t, []string{"COL_B"}, anonUQ.Columns)
+	})
+
+	t.Run("foreign keys", func(t *testing.T) {
+		fks := collections.Filter(constraints, func(c sdk.HybridTableConstraint) bool { return c.Kind == sdk.ColumnConstraintTypeForeignKey })
+		require.Len(t, fks, 1, "expected exactly one FOREIGN KEY constraint")
+		require.Equal(t, "fk_named", fks[0].Name)
+		require.Equal(t, []string{"PARENT_ID"}, fks[0].Columns)
+		require.Equal(t, []string{"ID"}, fks[0].ReferencedColumns)
+		require.Equal(t, parentId.DatabaseName(), fks[0].ReferencedTable.DatabaseName())
+		require.Equal(t, parentId.SchemaName(), fks[0].ReferencedTable.SchemaName())
+		require.Equal(t, parentId.Name(), fks[0].ReferencedTable.Name())
+	})
+}
+
+// TestInt_HybridTableShowIndexes proves the existing ShowIndexes method returns the
+// shapes the resource Read path relies on (settled in the design's step-1 e2e capture):
+//   - user secondary indexes report is_unique = "N" (IsUnique points to false);
+//   - the PK- and UNIQUE-backed indexes report "Y" (IsUnique points to true);
+//   - columns / included_columns are bracketed, uppercase, comma-space lists.
+//
+// No SDK production code is exercised beyond the already-generated ShowIndexes.
+func TestInt_HybridTableShowIndexes(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	id, cleanup := testClientHelper().HybridTable.CreateWithRequest(
+		t,
+		testClientHelper().Ids.RandomSchemaObjectIdentifier(),
+		sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+			Columns: []sdk.HybridTableColumnRequest{
+				{
+					Name:     "ID",
+					DataType: sdk.DataType("NUMBER NOT NULL"),
+					InlineConstraint: &sdk.ColumnInlineConstraint{
+						Name: sdk.String("pk_fixture"),
+						Type: sdk.ColumnConstraintTypePrimaryKey,
+					},
+				},
+				{
+					Name:     "EMAIL",
+					DataType: sdk.DataType("VARCHAR(256)"),
+					InlineConstraint: &sdk.ColumnInlineConstraint{
+						Name: sdk.String("uq_email"),
+						Type: sdk.ColumnConstraintTypeUnique,
+					},
+				},
+				{
+					Name:     "STATUS",
+					DataType: sdk.DataType("VARCHAR(50)"),
+				},
+				{
+					Name:     "REGION",
+					DataType: sdk.DataType("VARCHAR(50)"),
+				},
+				{
+					Name:     "SCORE",
+					DataType: sdk.DataType("NUMBER(38,0)"),
+				},
+			},
+			OutOfLineIndex: []sdk.HybridTableOutOfLineIndexRequest{
+				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_STATUS", []string{"STATUS"}),
+				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_REGION_INC", []string{"REGION"}).
+					WithIncludeColumns([]string{"SCORE"}),
+			},
+		},
+	)
+	t.Cleanup(cleanup)
+
+	indexes, err := client.HybridTables.ShowIndexes(ctx,
+		sdk.NewShowIndexesHybridTableRequest().WithIn(sdk.TableIn{Table: id}))
+	require.NoError(t, err)
+
+	t.Run("user secondary indexes report is_unique false", func(t *testing.T) {
+		secondary := collections.Filter(indexes, func(i sdk.HybridTableIndex) bool {
+			return i.IsUnique != nil && !*i.IsUnique
+		})
+		require.Len(t, secondary, 2, "expected exactly two user secondary indexes (is_unique=N)")
+
+		status, err := collections.FindFirst(secondary, func(i sdk.HybridTableIndex) bool { return i.Name == "IDX_STATUS" })
+		require.NoError(t, err, "expected secondary index IDX_STATUS")
+		require.NotNil(t, status.Columns)
+		require.Equal(t, "[STATUS]", *status.Columns)
+		// Snowflake returns the literal "[]" (not NULL/empty) when an index has no INCLUDE columns.
+		require.Equal(t, "[]", status.IncludedColumns)
+
+		regionInc, err := collections.FindFirst(secondary, func(i sdk.HybridTableIndex) bool { return i.Name == "IDX_REGION_INC" })
+		require.NoError(t, err, "expected secondary index IDX_REGION_INC")
+		require.NotNil(t, regionInc.Columns)
+		require.Equal(t, "[REGION]", *regionInc.Columns)
+		require.Equal(t, "[SCORE]", regionInc.IncludedColumns)
+	})
+
+	t.Run("PK- and UNIQUE-backed indexes report is_unique true", func(t *testing.T) {
+		unique := collections.Filter(indexes, func(i sdk.HybridTableIndex) bool {
+			return i.IsUnique != nil && *i.IsUnique
+		})
+		// At least the PK-backed and the UNIQUE-backed indexes. Assert the discriminator
+		// excludes them from the secondary-index set rather than an exact count, because
+		// constraint-backed index naming is not part of this feature's contract.
+		require.GreaterOrEqual(t, len(unique), 2, "expected PK- and UNIQUE-backed indexes to report is_unique=Y")
+		for _, i := range unique {
+			require.NotEqual(t, "IDX_STATUS", i.Name)
+			require.NotEqual(t, "IDX_REGION_INC", i.Name)
+		}
+	})
 }

@@ -16,7 +16,7 @@ func ApiIntegrationGoogleCloudApiGatewayResource(t *testing.T, name string) *Api
 	t.Helper()
 
 	return &ApiIntegrationGoogleCloudApiGatewayResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedApiIntegrationGoogleCloudApiGatewayResource(t *testing.T, id string
 	t.Helper()
 
 	return &ApiIntegrationGoogleCloudApiGatewayResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -72,27 +72,27 @@ func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasGoogleAudience(ex
 ///////////////////////////////////
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNameString(expected string) *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("name", expected))
+	a.ValueSet("name", expected)
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasCommentString(expected string) *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", expected))
+	a.ValueSet("comment", expected)
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasEnabledString(expected string) *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("enabled", expected))
+	a.ValueSet("enabled", expected)
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasFullyQualifiedNameString(expected string) *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	a.ValueSet("fully_qualified_name", expected)
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasGoogleAudienceString(expected string) *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("google_audience", expected))
+	a.ValueSet("google_audience", expected)
 	return a
 }
 
@@ -101,27 +101,27 @@ func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasGoogleAudienceStr
 ///////////////////////////////
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNoName() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNoComment() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNoEnabled() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("enabled"))
+	a.ValueNotSet("enabled")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNoFullyQualifiedName() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	a.ValueNotSet("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNoGoogleAudience() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueNotSet("google_audience"))
+	a.ValueNotSet("google_audience")
 	return a
 }
 
@@ -130,17 +130,17 @@ func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNoGoogleAudience(
 ////////////////////////////
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasApiBlockedPrefixesEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("api_blocked_prefixes.#", "0"))
+	a.ValueSet("api_blocked_prefixes.#", "0")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasCommentEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("comment", ""))
+	a.ValueSet("comment", "")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasFullyQualifiedNameEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	a.ValueSet("fully_qualified_name", "")
 	return a
 }
 
@@ -149,26 +149,26 @@ func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasFullyQualifiedNam
 ///////////////////////////////
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasNameNotEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("name"))
+	a.ValuePresent("name")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasCommentNotEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("comment"))
+	a.ValuePresent("comment")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasEnabledNotEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("enabled"))
+	a.ValuePresent("enabled")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasFullyQualifiedNameNotEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	a.ValuePresent("fully_qualified_name")
 	return a
 }
 
 func (a *ApiIntegrationGoogleCloudApiGatewayResourceAssert) HasGoogleAudienceNotEmpty() *ApiIntegrationGoogleCloudApiGatewayResourceAssert {
-	a.AddAssertion(assert.ValuePresent("google_audience"))
+	a.ValuePresent("google_audience")
 	return a
 }

@@ -89,7 +89,7 @@ func parseFunctionOrProcedureSignature(signature string) ([]NormalizedArgument, 
 	if !strings.HasPrefix(trimmed, "(") || !strings.HasSuffix(trimmed, ")") {
 		return normalizedArguments, fmt.Errorf("could not parse signature from Snowflake: %s, wrapping parentheses not found", trimmed)
 	}
-	raw := (trimmed)[1 : len(trimmed)-1]
+	raw := trimmed[1 : len(trimmed)-1]
 	args := strings.Split(raw, ",")
 
 	for _, arg := range args {

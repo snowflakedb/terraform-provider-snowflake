@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -40,8 +41,11 @@ var grantPrivilegesToShareSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Required:    true,
 		Description: "The privileges to grant on the share. See available list of privileges: https://docs.snowflake.com/en/sql-reference/sql/grant-privilege-share#syntax",
-		Elem:        &schema.Schema{Type: schema.TypeString},
-		MinItems:    1,
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: validators.NormalizeValidation(sdk.ToPrivilege),
+		},
+		MinItems: 1,
 	},
 	"on_database": {
 		Type:             schema.TypeString,
@@ -122,8 +126,8 @@ func GrantPrivilegesToShare() *schema.Resource {
 	}
 }
 
-func ImportGrantPrivilegesToShare() func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
-	return func(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func ImportGrantPrivilegesToShare() func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	return func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 		id, err := ParseGrantPrivilegesToShareId(d.Id())
 		if err != nil {
 			return nil, err

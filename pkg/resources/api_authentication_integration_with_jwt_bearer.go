@@ -40,13 +40,15 @@ func ApiAuthenticationIntegrationWithJwtBearer() *schema.Resource {
 		Description:   "Resource used to manage api authentication security integration objects with jwt bearer. For more information, check [security integrations documentation](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-api-auth).",
 
 		Schema: apiAuthJwtBearerSchema,
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.ApiAuthenticationIntegrationWithJwtBearer, customdiff.All(
-			ForceNewIfChangeToEmptyString("oauth_token_endpoint"),
-			ForceNewIfChangeToEmptyString("oauth_authorization_endpoint"),
-			ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
-			ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, ShowOutputAttributeName, "enabled", "comment"),
-			ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
-				"oauth_client_auth_method", "oauth_authorization_endpoint", "oauth_token_endpoint", "oauth_assertion_issuer")),
+		CustomizeDiff: TrackingCustomDiffWrapper(
+			resources.ApiAuthenticationIntegrationWithJwtBearer, customdiff.All(
+				ForceNewIfChangeToEmptyString("oauth_token_endpoint"),
+				ForceNewIfChangeToEmptyString("oauth_authorization_endpoint"),
+				ForceNewIfChangeToEmptyString("oauth_client_auth_method"),
+				ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, ShowOutputAttributeName, "enabled", "comment"),
+				ComputedIfAnyAttributeChanged(apiAuthJwtBearerSchema, DescribeOutputAttributeName, "enabled", "comment", "oauth_access_token_validity", "oauth_refresh_token_validity",
+					"oauth_client_auth_method", "oauth_authorization_endpoint", "oauth_token_endpoint", "oauth_assertion_issuer"),
+			),
 		),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.ApiAuthenticationIntegrationWithJwtBearer, ImportApiAuthenticationWithJwtBearer),
@@ -92,7 +94,7 @@ func ImportApiAuthenticationWithJwtBearer(ctx context.Context, d *schema.Resourc
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextApiAuthenticationIntegrationWithJwtBearer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextApiAuthenticationIntegrationWithJwtBearer(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	commonCreate, err := handleApiAuthCreate(d)
 	if err != nil {
@@ -125,7 +127,7 @@ func CreateContextApiAuthenticationIntegrationWithJwtBearer(ctx context.Context,
 }
 
 func ReadContextApiAuthenticationIntegrationWithJwtBearer(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
@@ -181,7 +183,7 @@ func ReadContextApiAuthenticationIntegrationWithJwtBearer(withExternalChangesMar
 	}
 }
 
-func UpdateContextApiAuthenticationIntegrationWithJwtBearer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextApiAuthenticationIntegrationWithJwtBearer(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -53,15 +52,16 @@ var catalogIntegrationAwsGlueSchema = func() map[string]*schema.Schema {
 		},
 	}
 	return collections.MergeMaps(
-		catalogIntegrationCommonSchema(schemas.DescribeCatalogIntegrationAwsGlueDetailsSchema), awsGlueSchema)
+		catalogIntegrationCommonSchema(schemas.DescribeCatalogIntegrationAwsGlueDetailsSchema), awsGlueSchema,
+	)
 }()
 
 func CatalogIntegrationAwsGlue() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingCreateWrapper(resources.CatalogIntegrationAwsGlue, CreateCatalogIntegrationAwsGlue)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlueFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingUpdateWrapper(resources.CatalogIntegrationAwsGlue, UpdateCatalogIntegrationAwsGlue)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CatalogIntegrationAwsGlueResource), TrackingDeleteWrapper(resources.CatalogIntegrationAwsGlue, deleteCatalogIntegrationFunc())),
+		CreateContext: TrackingCreateWrapper(resources.CatalogIntegrationAwsGlue, CreateCatalogIntegrationAwsGlue),
+		ReadContext:   TrackingReadWrapper(resources.CatalogIntegrationAwsGlue, ReadCatalogIntegrationAwsGlueFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.CatalogIntegrationAwsGlue, UpdateCatalogIntegrationAwsGlue),
+		DeleteContext: TrackingDeleteWrapper(resources.CatalogIntegrationAwsGlue, deleteCatalogIntegrationFunc()),
 		Description:   "Resource used to manage AWS Glue catalog integration objects. For more information, check [catalog integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-glue).",
 
 		Schema: catalogIntegrationAwsGlueSchema,
@@ -155,7 +155,8 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) schema.R
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInFlatDescribe(d,
+			if err = handleExternalChangesToObjectInFlatDescribe(
+				d,
 				outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
 				outputMapping{"glue_region", "glue_region", details.GlueRegion, details.GlueRegion, nil},
 			); err != nil {

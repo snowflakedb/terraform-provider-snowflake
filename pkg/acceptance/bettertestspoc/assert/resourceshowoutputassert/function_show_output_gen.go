@@ -17,9 +17,8 @@ func FunctionShowOutput(t *testing.T, name string) *FunctionShowOutputAssert {
 	t.Helper()
 
 	functionAssert := FunctionShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	functionAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &functionAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedFunctionShowOutput(t *testing.T, id string) *FunctionShowOutputAsse
 	t.Helper()
 
 	functionAssert := FunctionShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	functionAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &functionAssert
 }
 
@@ -38,107 +36,107 @@ func ImportedFunctionShowOutput(t *testing.T, id string) *FunctionShowOutputAsse
 ////////////////////////////
 
 func (f *FunctionShowOutputAssert) HasCreatedOn(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	f.StringValueSet("created_on", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasName(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	f.StringValueSet("name", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasSchemaName(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	f.StringValueSet("schema_name", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsBuiltin(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_builtin", expected))
+	f.BoolValueSet("is_builtin", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsAggregate(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_aggregate", expected))
+	f.BoolValueSet("is_aggregate", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsAnsi(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_ansi", expected))
+	f.BoolValueSet("is_ansi", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasMinNumArguments(expected int) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputIntValueSet("min_num_arguments", expected))
+	f.IntValueSet("min_num_arguments", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasMaxNumArguments(expected int) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputIntValueSet("max_num_arguments", expected))
-	return f
-}
-
-func (f *FunctionShowOutputAssert) HasReturnTypeOld(expected sdk.DataType) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("return_type_old", expected))
+	f.IntValueSet("max_num_arguments", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasArgumentsRaw(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("arguments_raw", expected))
+	f.StringValueSet("arguments_raw", expected)
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasReturnTypeOld(expected sdk.DataType) *FunctionShowOutputAssert {
+	f.StringValueSet("return_type_old", string(expected))
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasDescription(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("description", expected))
+	f.StringValueSet("description", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasCatalogName(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("catalog_name", expected))
+	f.StringValueSet("catalog_name", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsTableFunction(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_table_function", expected))
+	f.BoolValueSet("is_table_function", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasValidForClustering(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("valid_for_clustering", expected))
+	f.BoolValueSet("valid_for_clustering", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsSecure(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_secure", expected))
+	f.BoolValueSet("is_secure", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasSecrets(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("secrets", expected))
+	f.StringValueSet("secrets", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasExternalAccessIntegrations(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("external_access_integrations", expected))
+	f.StringValueSet("external_access_integrations", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsExternalFunction(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_external_function", expected))
+	f.BoolValueSet("is_external_function", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasLanguage(expected string) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("language", expected))
+	f.StringValueSet("language", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsMemoizable(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_memoizable", expected))
+	f.BoolValueSet("is_memoizable", expected)
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasIsDataMetric(expected bool) *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_data_metric", expected))
+	f.BoolValueSet("is_data_metric", expected)
 	return f
 }
 
@@ -147,111 +145,111 @@ func (f *FunctionShowOutputAssert) HasIsDataMetric(expected bool) *FunctionShowO
 ///////////////////////////////
 
 func (f *FunctionShowOutputAssert) HasNoCreatedOn() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	f.ValueNotSet("created_on")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoName() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	f.ValueNotSet("name")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoSchemaName() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	f.ValueNotSet("schema_name")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsBuiltin() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_builtin"))
+	f.ValueNotSet("is_builtin")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsAggregate() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_aggregate"))
+	f.ValueNotSet("is_aggregate")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsAnsi() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_ansi"))
+	f.ValueNotSet("is_ansi")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoMinNumArguments() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_num_arguments"))
+	f.ValueNotSet("min_num_arguments")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoMaxNumArguments() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_num_arguments"))
-	return f
-}
-
-func (f *FunctionShowOutputAssert) HasNoArgumentsOld() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueSet("arguments_old.#", "0"))
-	return f
-}
-
-func (f *FunctionShowOutputAssert) HasNoReturnTypeOld() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("return_type_old"))
+	f.ValueNotSet("max_num_arguments")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoArgumentsRaw() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("arguments_raw"))
+	f.ValueNotSet("arguments_raw")
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoArgumentsOld() *FunctionShowOutputAssert {
+	f.ValueSet("arguments_old.#", "0")
+	return f
+}
+
+func (f *FunctionShowOutputAssert) HasNoReturnTypeOld() *FunctionShowOutputAssert {
+	f.ValueNotSet("return_type_old")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoDescription() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("description"))
+	f.ValueNotSet("description")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoCatalogName() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("catalog_name"))
+	f.ValueNotSet("catalog_name")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsTableFunction() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_table_function"))
+	f.ValueNotSet("is_table_function")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoValidForClustering() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("valid_for_clustering"))
+	f.ValueNotSet("valid_for_clustering")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsSecure() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_secure"))
+	f.ValueNotSet("is_secure")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoSecrets() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("secrets"))
+	f.ValueNotSet("secrets")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoExternalAccessIntegrations() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("external_access_integrations"))
+	f.ValueNotSet("external_access_integrations")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsExternalFunction() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_external_function"))
+	f.ValueNotSet("is_external_function")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoLanguage() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputValueNotSet("language"))
+	f.ValueNotSet("language")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsMemoizable() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_memoizable"))
+	f.ValueNotSet("is_memoizable")
 	return f
 }
 
 func (f *FunctionShowOutputAssert) HasNoIsDataMetric() *FunctionShowOutputAssert {
-	f.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_data_metric"))
+	f.ValueNotSet("is_data_metric")
 	return f
 }

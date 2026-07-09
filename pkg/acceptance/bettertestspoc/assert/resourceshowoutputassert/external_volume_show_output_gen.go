@@ -16,9 +16,8 @@ func ExternalVolumeShowOutput(t *testing.T, name string) *ExternalVolumeShowOutp
 	t.Helper()
 
 	externalVolumeAssert := ExternalVolumeShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	externalVolumeAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &externalVolumeAssert
 }
 
@@ -26,9 +25,23 @@ func ImportedExternalVolumeShowOutput(t *testing.T, id string) *ExternalVolumeSh
 	t.Helper()
 
 	externalVolumeAssert := ExternalVolumeShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	externalVolumeAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &externalVolumeAssert
+}
+
+func ExternalVolumesDatasourceShowOutput(t *testing.T, name string) *ExternalVolumeShowOutputAssert {
+	t.Helper()
+
+	return ExternalVolumesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ExternalVolumesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ExternalVolumeShowOutputAssert {
+	t.Helper()
+
+	externalVolumeAssert := ExternalVolumeShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "external_volumes", idx),
+	}
 	return &externalVolumeAssert
 }
 
@@ -37,17 +50,17 @@ func ImportedExternalVolumeShowOutput(t *testing.T, id string) *ExternalVolumeSh
 ////////////////////////////
 
 func (e *ExternalVolumeShowOutputAssert) HasName(expected string) *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	e.StringValueSet("name", expected)
 	return e
 }
 
 func (e *ExternalVolumeShowOutputAssert) HasAllowWrites(expected bool) *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputBoolValueSet("allow_writes", expected))
+	e.BoolValueSet("allow_writes", expected)
 	return e
 }
 
 func (e *ExternalVolumeShowOutputAssert) HasComment(expected string) *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	e.StringValueSet("comment", expected)
 	return e
 }
 
@@ -56,16 +69,16 @@ func (e *ExternalVolumeShowOutputAssert) HasComment(expected string) *ExternalVo
 ///////////////////////////////
 
 func (e *ExternalVolumeShowOutputAssert) HasNoName() *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	e.ValueNotSet("name")
 	return e
 }
 
 func (e *ExternalVolumeShowOutputAssert) HasNoAllowWrites() *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("allow_writes"))
+	e.ValueNotSet("allow_writes")
 	return e
 }
 
 func (e *ExternalVolumeShowOutputAssert) HasNoComment() *ExternalVolumeShowOutputAssert {
-	e.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	e.ValueNotSet("comment")
 	return e
 }

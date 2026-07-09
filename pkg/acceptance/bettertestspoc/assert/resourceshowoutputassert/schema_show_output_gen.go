@@ -17,9 +17,8 @@ func SchemaShowOutput(t *testing.T, name string) *SchemaShowOutputAssert {
 	t.Helper()
 
 	schemaAssert := SchemaShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	schemaAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &schemaAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedSchemaShowOutput(t *testing.T, id string) *SchemaShowOutputAssert {
 	t.Helper()
 
 	schemaAssert := SchemaShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	schemaAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &schemaAssert
+}
+
+func SchemasDatasourceShowOutput(t *testing.T, name string) *SchemaShowOutputAssert {
+	t.Helper()
+
+	return SchemasDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func SchemasDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *SchemaShowOutputAssert {
+	t.Helper()
+
+	schemaAssert := SchemaShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "schemas", idx),
+	}
 	return &schemaAssert
 }
 
@@ -38,57 +51,57 @@ func ImportedSchemaShowOutput(t *testing.T, id string) *SchemaShowOutputAssert {
 ////////////////////////////
 
 func (s *SchemaShowOutputAssert) HasCreatedOn(expected time.Time) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasDroppedOn(expected time.Time) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("dropped_on", expected.String()))
+	s.StringValueSet("dropped_on", expected.String())
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasName(expected string) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasIsDefault(expected bool) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_default", expected))
+	s.BoolValueSet("is_default", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasIsCurrent(expected bool) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_current", expected))
+	s.BoolValueSet("is_current", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasDatabaseName(expected string) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasOwner(expected string) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasComment(expected string) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasOptions(expected string) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	s.StringValueSet("options", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasRetentionTime(expected string) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("retention_time", expected))
+	s.StringValueSet("retention_time", expected)
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasOwnerRoleType(expected string) *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
@@ -97,56 +110,56 @@ func (s *SchemaShowOutputAssert) HasOwnerRoleType(expected string) *SchemaShowOu
 ///////////////////////////////
 
 func (s *SchemaShowOutputAssert) HasNoCreatedOn() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoDroppedOn() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("dropped_on"))
+	s.ValueNotSet("dropped_on")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoName() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoIsDefault() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_default"))
+	s.ValueNotSet("is_default")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoIsCurrent() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_current"))
+	s.ValueNotSet("is_current")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoDatabaseName() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoOwner() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoComment() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoOptions() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
+	s.ValueNotSet("options")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoRetentionTime() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("retention_time"))
+	s.ValueNotSet("retention_time")
 	return s
 }
 
 func (s *SchemaShowOutputAssert) HasNoOwnerRoleType() *SchemaShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }

@@ -33,7 +33,8 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 	complete := model.DatabaseRole("test", newId.DatabaseName(), newId.Name()).
 		WithComment(comment)
 
-	assertBasic := assertThat(t,
+	assertBasic := assertThat(
+		t,
 		objectassert.DatabaseRole(t, id).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -68,7 +69,8 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 			HasOwnerRoleTypeNotEmpty(),
 	)
 
-	assertComplete := assertThat(t,
+	assertComplete := assertThat(
+		t,
 		objectassert.DatabaseRole(t, newId).
 			HasName(newId.Name()).
 			HasDatabaseName(newId.DatabaseName()).
@@ -120,7 +122,8 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 				Config:       config.FromModels(t, basic),
 				ResourceName: basic.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedDatabaseRoleResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
 						HasCommentString(""),
@@ -144,7 +147,8 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 				Config:       config.FromModels(t, complete),
 				ResourceName: complete.ResourceReference(),
 				ImportState:  true,
-				ImportStateCheck: assertThatImport(t,
+				ImportStateCheck: assertThatImport(
+					t,
 					resourceassert.ImportedDatabaseRoleResource(t, helpers.EncodeResourceIdentifier(newId)).
 						HasNameString(newId.Name()).
 						HasCommentString(comment),
@@ -180,7 +184,8 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.DatabaseRoleDoesNotExist(t, id),
 				),
 			},

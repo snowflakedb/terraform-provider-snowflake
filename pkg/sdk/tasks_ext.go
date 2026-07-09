@@ -34,10 +34,13 @@ func (opts *CreateOrAlterTaskOptions) additionalValidations() error {
 }
 
 func (s *TaskSet) additionalValidations() error {
+	var errs []error
 	if valueSet(s.SessionParameters) {
-		return s.SessionParameters.validate()
+		if err := s.SessionParameters.validate(); err != nil {
+			errs = append(errs, err)
+		}
 	}
-	return nil
+	return JoinErrors(errs...)
 }
 
 func (s *TaskUnset) additionalValidations() error {

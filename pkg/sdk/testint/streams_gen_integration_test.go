@@ -49,14 +49,15 @@ func TestInt_Streams(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, sdk.Pointer("v1"), tag1Value)
 
-		assertThatObject(t, objectassert.Stream(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("some comment").
-			HasSourceType(sdk.StreamSourceTypeTable).
-			HasMode(sdk.StreamModeAppendOnly).
-			HasTableName(tableId),
+		assertThatObject(
+			t, objectassert.Stream(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("some comment").
+				HasSourceType(sdk.StreamSourceTypeTable).
+				HasMode(sdk.StreamModeAppendOnly).
+				HasTableName(tableId),
 		)
 
 		// at stream
@@ -124,14 +125,15 @@ func TestInt_Streams(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stream.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.Stream(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("some comment").
-			HasSourceType(sdk.StreamSourceTypeExternalTable).
-			HasMode(sdk.StreamModeInsertOnly).
-			HasTableName(externalTableId),
+		assertThatObject(
+			t, objectassert.Stream(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("some comment").
+				HasSourceType(sdk.StreamSourceTypeExternalTable).
+				HasMode(sdk.StreamModeInsertOnly).
+				HasTableName(externalTableId),
 		)
 	})
 
@@ -145,15 +147,16 @@ func TestInt_Streams(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stream.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.Stream(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("some comment").
-			HasSourceType(sdk.StreamSourceTypeStage).
-			HasMode(sdk.StreamModeDefault).
-			HasTableName(stage.ID()).
-			HasBaseTables(stage.ID()),
+		assertThatObject(
+			t, objectassert.Stream(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("some comment").
+				HasSourceType(sdk.StreamSourceTypeStage).
+				HasMode(sdk.StreamModeDefault).
+				HasTableName(stage.ID()).
+				HasBaseTables(stage.ID()),
 		)
 	})
 
@@ -173,14 +176,15 @@ func TestInt_Streams(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stream.DropFunc(t, id))
 
-		assertThatObject(t, objectassert.Stream(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("some comment").
-			HasSourceType(sdk.StreamSourceTypeView).
-			HasMode(sdk.StreamModeAppendOnly).
-			HasTableName(view.ID()),
+		assertThatObject(
+			t, objectassert.Stream(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("some comment").
+				HasSourceType(sdk.StreamSourceTypeView).
+				HasMode(sdk.StreamModeAppendOnly).
+				HasTableName(view.ID()),
 		)
 	})
 
@@ -199,14 +203,15 @@ func TestInt_Streams(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Stream.DropFunc(t, cloneId))
 
-		assertThatObject(t, objectassert.Stream(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("some comment").
-			HasSourceType(sdk.StreamSourceTypeTable).
-			HasMode(sdk.StreamModeDefault).
-			HasTableName(table.ID()),
+		assertThatObject(
+			t, objectassert.Stream(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("some comment").
+				HasSourceType(sdk.StreamSourceTypeTable).
+				HasMode(sdk.StreamModeDefault).
+				HasTableName(table.ID()),
 		)
 	})
 
@@ -316,14 +321,15 @@ func TestInt_Streams(t *testing.T) {
 		_, err = collections.FindFirst[sdk.Stream](s, func(stream sdk.Stream) bool { return id.Name() == stream.Name })
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.Stream(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("some comment").
-			HasSourceType(sdk.StreamSourceTypeTable).
-			HasMode(sdk.StreamModeDefault).
-			HasTableName(table.ID()),
+		assertThatObject(
+			t, objectassert.Stream(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("some comment").
+				HasSourceType(sdk.StreamSourceTypeTable).
+				HasMode(sdk.StreamModeDefault).
+				HasTableName(table.ID()),
 		)
 	})
 
@@ -407,14 +413,15 @@ func TestInt_Streams(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, s)
 
-		assertThatObject(t, objectassert.Stream(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasComment("some comment").
-			HasSourceType(sdk.StreamSourceTypeTable).
-			HasMode(sdk.StreamModeDefault).
-			HasTableName(table.ID()),
+		assertThatObject(
+			t, objectassert.Stream(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasComment("some comment").
+				HasSourceType(sdk.StreamSourceTypeTable).
+				HasMode(sdk.StreamModeDefault).
+				HasTableName(table.ID()),
 		)
 	})
 
@@ -427,7 +434,7 @@ func TestInt_Streams(t *testing.T) {
 		_, cleanupStream := testClientHelper().Stream.CreateOnTableWithRequest(t, sdk.NewCreateOnTableStreamRequest(id, table.ID()))
 		t.Cleanup(cleanupStream)
 
-		err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(table.ID()))
+		err := client.TablesLegacy.Drop(ctx, sdk.NewDropTableRequest(table.ID()))
 		require.NoError(t, err)
 
 		_, err = client.Streams.ShowByID(ctx, id)

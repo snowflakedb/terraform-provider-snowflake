@@ -127,7 +127,8 @@ func TestAcc_MaskingPolicies_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, maskingPolicyModel, withoutDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.MaskingPoliciesDatasourceShowOutput(t, withoutDescribe.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(maskingPolicyId.DatabaseName()).
@@ -144,7 +145,8 @@ func TestAcc_MaskingPolicies_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, maskingPolicyModel, withDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.MaskingPoliciesDatasourceShowOutput(t, withDescribe.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasDatabaseName(maskingPolicyId.DatabaseName()).

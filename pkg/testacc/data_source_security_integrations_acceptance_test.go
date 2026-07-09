@@ -206,7 +206,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			// SCIM without describe
 			{
 				Config: accconfig.FromModels(t, scimModel, scimNoDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, scimNoDescribe.DatasourceReference()).
 						HasName(scimIntegrationId.Name()).
 						HasIntegrationType("SCIM - GENERIC").
@@ -221,7 +222,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			// SCIM with describe
 			{
 				Config: accconfig.FromModels(t, scimModel, scimWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, scimWithDescribe.DatasourceReference()).
 						HasName(scimIntegrationId.Name()).
 						HasIntegrationType("SCIM - GENERIC").
@@ -240,7 +242,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			// OAuth Partner Applications with describe
 			{
 				Config: accconfig.FromModels(t, oauthPartnerModel, oauthPartnerWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, oauthPartnerWithDescribe.DatasourceReference()).
 						HasName(oauthPartnerIntegrationId.Name()).
 						HasIntegrationType("OAUTH - TABLEAU_SERVER").
@@ -253,6 +256,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_type.0.value", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic))),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.enabled.0.value", "true")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionImplicit))),
+					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.allowed_roles_list.0.value", "")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.blocked_roles_list.0.value", "ACCOUNTADMIN,SECURITYADMIN")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_issue_refresh_tokens.0.value", "false")),
 					assert.Check(resource.TestCheckResourceAttr(oauthPartnerWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
@@ -266,7 +270,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			// OAuth Custom Clients with describe
 			{
 				Config: accconfig.FromModels(t, oauthCustomModel, oauthCustomWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, oauthCustomWithDescribe.DatasourceReference()).
 						HasName(oauthCustomIntegrationId.Name()).
 						HasIntegrationType("OAUTH - CUSTOM").
@@ -281,6 +286,7 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_use_secondary_roles.0.value", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone))),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_refresh_token_validity.0.value", "86400")),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
+					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.allowed_roles_list.0.value", "")),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.network_policy.0.value", networkPolicy.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.comment.0.value", comment)),
 					assert.Check(resource.TestCheckResourceAttrSet(oauthCustomWithDescribe.DatasourceReference(), "security_integrations.0.describe_output.0.oauth_client_rsa_public_key_fp.0.value")),
@@ -291,7 +297,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			// External OAuth with describe
 			{
 				Config: accconfig.FromModels(t, externalOauthModel, externalOauthWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, externalOauthWithDescribe.DatasourceReference()).
 						HasName(externalOauthIntegrationId.Name()).
 						HasIntegrationType("EXTERNAL_OAUTH - CUSTOM").
@@ -317,7 +324,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, saml2Model, saml2WithDescribe, saml2TemporaryVariableModel),
 				ConfigVariables: saml2ConfigVariables,
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, saml2WithDescribe.DatasourceReference()).
 						HasName(saml2IntegrationId.Name()).
 						HasIntegrationType("SAML2").
@@ -336,7 +344,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			// API Auth Authorization Code with describe
 			{
 				Config: accconfig.FromModels(t, apiAuthAuthCodeModel, apiAuthAuthCodeWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, apiAuthAuthCodeWithDescribe.DatasourceReference()).
 						HasName(apiAuthAuthCodeIntegrationId.Name()).
 						HasIntegrationType("API_AUTHENTICATION").
@@ -361,7 +370,8 @@ func TestAcc_SecurityIntegrations_CompleteUseCase(t *testing.T) {
 			// API Auth Client Credentials with describe
 			{
 				Config: accconfig.FromModels(t, apiAuthClientCredsModel, apiAuthClientCredentialsWithDescribe),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceshowoutputassert.SecurityIntegrationsDatasourceShowOutput(t, apiAuthClientCredentialsWithDescribe.DatasourceReference()).
 						HasName(apiAuthClientCredentialsIntegrationId.Name()).
 						HasIntegrationType("API_AUTHENTICATION").

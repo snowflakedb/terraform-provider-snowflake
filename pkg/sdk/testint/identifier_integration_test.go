@@ -45,20 +45,23 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 		// lower case
 		{Name: identifierLowercase(`abc`), ShowName: identifierLowercase(`abc`)},
 		{Name: identifierLowercase(`ab.c`), ShowName: identifierLowercase(`ab.c`)},
-		{Name: identifierLowercase(`a"bc`), Error: `unexpected '"`},
-		{Name: wrapInDoubleQuotes(identifierLowercase(`a""bc`)), ShowName: identifierLowercase(`a"bc`)},
+		{Name: identifierLowercase(`a"bc`), ShowName: identifierLowercase(`a"bc`)},
+		{Name: wrapInDoubleQuotes(identifierLowercase(`a"bc`)), ShowName: identifierLowercase(`a"bc`)},
 
 		// upper case
 		{Name: identifier(`ABC`), ShowName: identifier(`ABC`)},
 		{Name: identifier(`AB.C`), ShowName: identifier(`AB.C`)},
-		{Name: identifier(`A"BC`), Error: `unexpected '"`},
-		{Name: wrapInDoubleQuotes(identifier(`A""BC`)), ShowName: identifier(`A"BC`)},
+		{Name: identifier(`A"BC`), ShowName: identifier(`A"BC`)},
+		{Name: wrapInDoubleQuotes(identifier(`A"BC`)), ShowName: identifier(`A"BC`)},
 
 		// mixed case
 		{Name: identifier(`AbC`), ShowName: identifier(`AbC`)},
 		{Name: identifier(`Ab.C`), ShowName: identifier(`Ab.C`)},
-		{Name: identifier(`A"bC`), Error: `unexpected '"`},
-		{Name: wrapInDoubleQuotes(identifier(`A""bC`)), ShowName: identifier(`A"bC`)},
+		{Name: identifier(`A"bC`), ShowName: identifier(`A"bC`)},
+		{Name: wrapInDoubleQuotes(identifier(`A"bC`)), ShowName: identifier(`A"bC`)},
+
+		// injection attempts
+		{Name: `a"; DROP TABLE t; --`, ShowName: `a"; DROP TABLE t; --`},
 	}
 
 	for _, testCase := range testCases {
@@ -68,7 +71,7 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 			ctx := context.Background()
 
 			id := sdk.NewAccountObjectIdentifier(testCase.Name)
-			err := testClient(t).ResourceMonitors.Create(ctx, id, new(sdk.CreateResourceMonitorOptions))
+			err := testClient(t).ResourceMonitors.Create(ctx, sdk.NewCreateResourceMonitorRequest(id))
 			if err == nil {
 				t.Cleanup(testClientHelper().ResourceMonitor.DropResourceMonitorFunc(t, id))
 			}
@@ -78,8 +81,9 @@ func TestInt_IdentifiersForOnePartIdentifierAsNameAndReference(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = testClient(t).Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).
-				WithResourceMonitor(id),
+			err = testClient(t).Warehouses.Create(
+				ctx, sdk.NewCreateWarehouseRequest(id).
+					WithResourceMonitor(id),
 			)
 			if err == nil {
 				t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
@@ -139,20 +143,20 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 		// lower case
 		{Name: identifierLowercase(`abc`)},
 		{Name: identifierLowercase(`ab.c`)},
-		{Name: identifierLowercase(`a"bc`), Error: `unexpected '"`},
-		{Name: wrapInDoubleQuotes(identifierLowercase(`a""bc`))},
+		{Name: identifierLowercase(`a"bc`)},
+		{Name: wrapInDoubleQuotes(identifierLowercase(`a"bc`))},
 
 		// upper case
 		{Name: identifier(`ABC`), OverrideExpectedSnowflakeOutput: identifier(`ABC`) + "." + identifier(`ABC`)},
 		{Name: identifier(`AB.C`)},
-		{Name: identifier(`A"BC`), Error: `unexpected '"`},
-		{Name: wrapInDoubleQuotes(identifier(`A""BC`))},
+		{Name: identifier(`A"BC`)},
+		{Name: wrapInDoubleQuotes(identifier(`A"BC`))},
 
 		// mixed case
 		{Name: identifier(`AbC`)},
 		{Name: identifier(`Ab.C`)},
-		{Name: identifier(`A"bC`), Error: `unexpected '"`},
-		{Name: wrapInDoubleQuotes(identifier(`A""bC`))},
+		{Name: identifier(`A"bC`)},
+		{Name: wrapInDoubleQuotes(identifier(`A"bC`))},
 	}
 
 	role, roleCleanup := testClientHelper().Role.CreateRole(t)
@@ -173,7 +177,7 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			err = testClient(t).Schemas.Create(ctx, id, new(sdk.CreateSchemaOptions))
+			err = testClient(t).Schemas.Create(ctx, sdk.NewCreateSchemaRequest(id))
 			if err == nil {
 				t.Cleanup(testClientHelper().Schema.DropSchemaFunc(t, id))
 			}
@@ -185,7 +189,7 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 				testClientHelper().Grant.GrantOnSchemaToAccountRole(t, id, role.ID(), sdk.SchemaPrivilegeCreateTable)
 
 				var grants []RawGrantOutput
-				err = testClient(t).QueryForTests(ctx, &grants, fmt.Sprintf("SHOW GRANTS ON SCHEMA %s", id.FullyQualifiedName()))
+				err = testClient(t).QueryForTests(ctx, &grants, fmt.Sprintf("SHOW GRANTS ON SCHEMA %s", id.FullyQualifiedNameEscaped()))
 				require.NoError(t, err)
 
 				createTableGrant, err := collections.FindFirst(grants, func(output RawGrantOutput) bool { return output.Privilege == sdk.SchemaPrivilegeCreateTable.String() })
@@ -196,7 +200,7 @@ func TestInt_IdentifiersForTwoPartIdentifierAsReference(t *testing.T) {
 				if testCase.OverrideExpectedSnowflakeOutput != "" {
 					assert.Equal(t, testCase.OverrideExpectedSnowflakeOutput, createTableGrant.Name)
 				} else {
-					assert.Equal(t, id.FullyQualifiedName(), createTableGrant.Name)
+					assert.Equal(t, id.FullyQualifiedNameEscaped(), createTableGrant.Name)
 				}
 			}
 		})

@@ -1,5 +1,3 @@
-//go:build sdk_generation
-
 package defs
 
 import (
@@ -7,11 +5,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var warehouseTypeEnum = g.NewEnum("WarehouseType", "WarehouseTypes",
+var warehouseTypeEnum = g.NewEnum(
+	"WarehouseType", "WarehouseTypes",
 	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE",
 )
 
-var warehouseSizeEnum = g.NewEnum("WarehouseSize", "WarehouseSizes",
+var warehouseSizeEnum = g.NewEnum(
+	"WarehouseSize", "WarehouseSizes",
 	"XSMALL", "SMALL", "MEDIUM", "LARGE", "XLARGE", "XXLARGE", "XXXLARGE", "X4LARGE", "X5LARGE", "X6LARGE",
 ).WithAliases("XSMALL", "X-SMALL").
 	WithAliases("XLARGE", "X-LARGE").
@@ -21,15 +21,18 @@ var warehouseSizeEnum = g.NewEnum("WarehouseSize", "WarehouseSizes",
 	WithAliases("X5LARGE", "5X-LARGE").
 	WithAliases("X6LARGE", "6X-LARGE")
 
-var scalingPolicyEnum = g.NewEnum("ScalingPolicy", "ScalingPolicies",
+var scalingPolicyEnum = g.NewEnum(
+	"ScalingPolicy", "ScalingPolicies",
 	"STANDARD", "ECONOMY",
 )
 
-var warehouseResourceConstraintEnum = g.NewEnum("WarehouseResourceConstraint", "WarehouseResourceConstraints",
+var warehouseResourceConstraintEnum = g.NewEnum(
+	"WarehouseResourceConstraint", "WarehouseResourceConstraints",
 	"MEMORY_1X", "MEMORY_1X_x86", "MEMORY_16X", "MEMORY_16X_x86", "MEMORY_64X", "MEMORY_64X_x86",
 )
 
-var maxQueryPerformanceLevelEnum = g.NewEnum("MaxQueryPerformanceLevel", "MaxQueryPerformanceLevels",
+var maxQueryPerformanceLevelEnum = g.NewEnum(
+	"MaxQueryPerformanceLevel", "MaxQueryPerformanceLevels",
 	"XSMALL", "SMALL", "MEDIUM", "LARGE", "XLARGE", "XXLARGE", "XXXLARGE", "X4LARGE",
 ).WithAliases("XSMALL", "X-SMALL").
 	WithAliases("XLARGE", "X-LARGE").
@@ -37,7 +40,8 @@ var maxQueryPerformanceLevelEnum = g.NewEnum("MaxQueryPerformanceLevel", "MaxQue
 	WithAliases("XXXLARGE", "3X-LARGE").
 	WithAliases("X4LARGE", "4X-LARGE")
 
-var warehouseStateEnum = g.NewEnum("WarehouseState", "WarehouseStates",
+var warehouseStateEnum = g.NewEnum(
+	"WarehouseState", "WarehouseStates",
 	"SUSPENDED", "SUSPENDING", "STARTED", "RESIZING", "RESUMING",
 )
 

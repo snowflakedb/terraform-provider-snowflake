@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -24,7 +25,7 @@ func ValidObjectIdentifier(objectIdentifier ObjectIdentifier) bool {
 	return ValidObjectName(objectIdentifier.Name())
 }
 
-func anyValueSet(values ...interface{}) bool {
+func anyValueSet(values ...any) bool {
 	for _, v := range values {
 		if valueSet(v) {
 			return true
@@ -33,7 +34,7 @@ func anyValueSet(values ...interface{}) bool {
 	return false
 }
 
-func exactlyOneValueSet(values ...interface{}) bool {
+func exactlyOneValueSet(values ...any) bool {
 	var count int
 	for _, v := range values {
 		if valueSet(v) {
@@ -43,7 +44,7 @@ func exactlyOneValueSet(values ...interface{}) bool {
 	return count == 1
 }
 
-func moreThanOneValueSet(values ...interface{}) bool {
+func moreThanOneValueSet(values ...any) bool {
 	var count int
 	for _, v := range values {
 		if valueSet(v) {
@@ -53,7 +54,7 @@ func moreThanOneValueSet(values ...interface{}) bool {
 	return count > 1
 }
 
-func everyValueSet(values ...interface{}) bool {
+func everyValueSet(values ...any) bool {
 	for _, v := range values {
 		if !valueSet(v) {
 			return false
@@ -62,7 +63,7 @@ func everyValueSet(values ...interface{}) bool {
 	return true
 }
 
-func everyValueNil(values ...interface{}) bool {
+func everyValueNil(values ...any) bool {
 	for _, v := range values {
 		if valueSet(v) {
 			return false
@@ -71,7 +72,7 @@ func everyValueNil(values ...interface{}) bool {
 	return true
 }
 
-func valueSet(value interface{}) bool {
+func valueSet(value any) bool {
 	if value == nil {
 		return false
 	}
@@ -106,4 +107,11 @@ func validateIntGreaterThan(value int, min int) bool {
 
 func validateIntGreaterThanOrEqual(value int, min int) bool {
 	return value >= min
+}
+
+// containsDoubleDollarQuotes reports whether the given value contains the `$$` sequence. It is used to reject user
+// input for fields rendered with double dollar quoting, because Snowflake's dollar-quoted string constants are
+// interpreted literally (no escaping) and an embedded `$$` would terminate the constant, enabling SQL injection.
+func containsDoubleDollarQuotes(value string) bool {
+	return strings.Contains(value, "$$")
 }

@@ -28,26 +28,27 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, err := client.ComputePools.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateStarting).
-			HasMinNodes(1).
-			HasMaxNodes(2).
-			HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
-			HasNumServices(0).
-			HasNumJobs(0).
-			HasAutoSuspendSecs(3600).
-			HasAutoResume(true).
-			HasActiveNodes(0).
-			HasIdleNodes(0).
-			HasTargetNodes(1).
-			HasCreatedOnNotEmpty().
-			HasResumedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoComment().
-			HasIsExclusive(false).
-			HasNoApplication(),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateStarting).
+				HasMinNodes(1).
+				HasMaxNodes(2).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
+				HasNumServices(0).
+				HasNumJobs(0).
+				HasAutoSuspendSecs(3600).
+				HasAutoResume(true).
+				HasActiveNodes(0).
+				HasIdleNodes(0).
+				HasTargetNodes(1).
+				HasCreatedOnNotEmpty().
+				HasResumedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasNoComment().
+				HasIsExclusive(false).
+				HasNoApplication(),
 		)
 	})
 
@@ -72,26 +73,27 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, err := client.ComputePools.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateSuspended).
-			HasMinNodes(1).
-			HasMaxNodes(2).
-			HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
-			HasNumServices(0).
-			HasNumJobs(0).
-			HasAutoSuspendSecs(6767).
-			HasAutoResume(true).
-			HasActiveNodes(0).
-			HasIdleNodes(0).
-			HasTargetNodes(0).
-			HasCreatedOnNotEmpty().
-			HasResumedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(comment).
-			HasIsExclusive(true).
-			HasApplication(application.ID()),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateSuspended).
+				HasMinNodes(1).
+				HasMaxNodes(2).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
+				HasNumServices(0).
+				HasNumJobs(0).
+				HasAutoSuspendSecs(6767).
+				HasAutoResume(true).
+				HasActiveNodes(0).
+				HasIdleNodes(0).
+				HasTargetNodes(0).
+				HasCreatedOnNotEmpty().
+				HasResumedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(comment).
+				HasIsExclusive(true).
+				HasApplication(application.ID()),
 		)
 	})
 
@@ -118,26 +120,27 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, err := client.ComputePools.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateStarting).
-			HasMinNodes(4).
-			HasMaxNodes(5).
-			HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
-			HasNumServices(0).
-			HasNumJobs(0).
-			HasAutoSuspendSecs(3600).
-			HasAutoResume(true).
-			HasActiveNodes(0).
-			HasIdleNodes(0).
-			HasTargetNodes(4).
-			HasCreatedOnNotEmpty().
-			HasResumedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(comment).
-			HasIsExclusive(false).
-			HasNoApplication(),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateStarting).
+				HasMinNodes(4).
+				HasMaxNodes(5).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
+				HasNumServices(0).
+				HasNumJobs(0).
+				HasAutoSuspendSecs(3600).
+				HasAutoResume(true).
+				HasActiveNodes(0).
+				HasIdleNodes(0).
+				HasTargetNodes(4).
+				HasCreatedOnNotEmpty().
+				HasResumedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(comment).
+				HasIsExclusive(false).
+				HasNoApplication(),
 		)
 	})
 
@@ -162,26 +165,27 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, err := client.ComputePools.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateStarting).
-			HasMinNodes(1).
-			HasMaxNodes(2).
-			HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
-			HasNumServices(0).
-			HasNumJobs(0).
-			HasAutoSuspendSecs(3600).
-			HasAutoResume(true).
-			HasActiveNodes(0).
-			HasIdleNodes(0).
-			HasTargetNodes(1).
-			HasCreatedOnNotEmpty().
-			HasResumedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoComment().
-			HasIsExclusive(false).
-			HasNoApplication(),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateStarting).
+				HasMinNodes(1).
+				HasMaxNodes(2).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
+				HasNumServices(0).
+				HasNumJobs(0).
+				HasAutoSuspendSecs(3600).
+				HasAutoResume(true).
+				HasActiveNodes(0).
+				HasIdleNodes(0).
+				HasTargetNodes(1).
+				HasCreatedOnNotEmpty().
+				HasResumedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasNoComment().
+				HasIsExclusive(false).
+				HasNoApplication(),
 		)
 	})
 
@@ -193,9 +197,10 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, cleanup := testClientHelper().ComputePool.CreateWithRequest(t, request)
 		t.Cleanup(cleanup)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateStarting),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateStarting),
 		)
 		err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSuspend(true))
 		require.NoError(t, err)
@@ -203,9 +208,10 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, err = client.ComputePools.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateSuspended),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateSuspended),
 		)
 	})
 
@@ -217,9 +223,10 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, cleanup := testClientHelper().ComputePool.CreateWithRequest(t, request)
 		t.Cleanup(cleanup)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateSuspended),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateSuspended),
 		)
 		err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithResume(true))
 		require.NoError(t, err)
@@ -227,9 +234,10 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, err = client.ComputePools.ShowByID(ctx, id)
 		require.NoError(t, err)
 
-		assertThatObject(t, objectassert.ComputePoolFromObject(t, computePool).
-			HasName(id.Name()).
-			HasState(sdk.ComputePoolStateStarting),
+		assertThatObject(
+			t, objectassert.ComputePoolFromObject(t, computePool).
+				HasName(id.Name()).
+				HasState(sdk.ComputePoolStateStarting),
 		)
 	})
 
@@ -250,28 +258,29 @@ func TestInt_ComputePools(t *testing.T) {
 		computePool, funcCleanup := testClientHelper().ComputePool.Create(t)
 		t.Cleanup(funcCleanup)
 
-		assertThatObject(t, objectassert.ComputePoolDetails(t, computePool.ID()).
-			HasName(computePool.ID().Name()).
-			HasState(sdk.ComputePoolStateStarting).
-			HasMinNodes(1).
-			HasMaxNodes(1).
-			HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
-			HasNumServices(0).
-			HasNumJobs(0).
-			HasAutoSuspendSecs(3600).
-			HasAutoResume(true).
-			HasActiveNodes(0).
-			HasIdleNodes(0).
-			HasTargetNodes(1).
-			HasCreatedOnNotEmpty().
-			HasResumedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoComment().
-			HasIsExclusive(false).
-			HasNoApplication().
-			HasErrorCode("").
-			HasStatusMessage("Compute pool is starting for last 0 minutes"),
+		assertThatObject(
+			t, objectassert.ComputePoolDetails(t, computePool.ID()).
+				HasName(computePool.ID().Name()).
+				HasState(sdk.ComputePoolStateStarting).
+				HasMinNodes(1).
+				HasMaxNodes(1).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
+				HasNumServices(0).
+				HasNumJobs(0).
+				HasAutoSuspendSecs(3600).
+				HasAutoResume(true).
+				HasActiveNodes(0).
+				HasIdleNodes(0).
+				HasTargetNodes(1).
+				HasCreatedOnNotEmpty().
+				HasResumedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasNoComment().
+				HasIsExclusive(false).
+				HasNoApplication().
+				HasErrorCode("").
+				HasStatusMessage("Compute pool is starting for last 0 minutes"),
 		)
 	})
 
@@ -283,28 +292,29 @@ func TestInt_ComputePools(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, computePools, 1)
 		require.NotNil(t, computePool)
-		assertThatObject(t, objectassert.ComputePoolDetails(t, computePool.ID()).
-			HasName(computePool.ID().Name()).
-			HasState(sdk.ComputePoolStateStarting).
-			HasMinNodes(1).
-			HasMaxNodes(1).
-			HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
-			HasNumServices(0).
-			HasNumJobs(0).
-			HasAutoSuspendSecs(3600).
-			HasAutoResume(true).
-			HasActiveNodes(0).
-			HasIdleNodes(0).
-			HasTargetNodes(1).
-			HasCreatedOnNotEmpty().
-			HasResumedOnNotEmpty().
-			HasUpdatedOnNotEmpty().
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasNoComment().
-			HasIsExclusive(false).
-			HasNoApplication().
-			HasErrorCode("").
-			HasStatusMessage("Compute pool is starting for last 0 minutes"),
+		assertThatObject(
+			t, objectassert.ComputePoolDetails(t, computePool.ID()).
+				HasName(computePool.ID().Name()).
+				HasState(sdk.ComputePoolStateStarting).
+				HasMinNodes(1).
+				HasMaxNodes(1).
+				HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64XS).
+				HasNumServices(0).
+				HasNumJobs(0).
+				HasAutoSuspendSecs(3600).
+				HasAutoResume(true).
+				HasActiveNodes(0).
+				HasIdleNodes(0).
+				HasTargetNodes(1).
+				HasCreatedOnNotEmpty().
+				HasResumedOnNotEmpty().
+				HasUpdatedOnNotEmpty().
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasNoComment().
+				HasIsExclusive(false).
+				HasNoApplication().
+				HasErrorCode("").
+				HasStatusMessage("Compute pool is starting for last 0 minutes"),
 		)
 	})
 

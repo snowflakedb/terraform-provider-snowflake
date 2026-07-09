@@ -17,9 +17,8 @@ func StorageLifecyclePolicyShowOutput(t *testing.T, name string) *StorageLifecyc
 	t.Helper()
 
 	storageLifecyclePolicyAssert := StorageLifecyclePolicyShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	storageLifecyclePolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &storageLifecyclePolicyAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedStorageLifecyclePolicyShowOutput(t *testing.T, id string) *StorageL
 	t.Helper()
 
 	storageLifecyclePolicyAssert := StorageLifecyclePolicyShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	storageLifecyclePolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &storageLifecyclePolicyAssert
+}
+
+func StorageLifecyclePoliciesDatasourceShowOutput(t *testing.T, name string) *StorageLifecyclePolicyShowOutputAssert {
+	t.Helper()
+
+	return StorageLifecyclePoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func StorageLifecyclePoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *StorageLifecyclePolicyShowOutputAssert {
+	t.Helper()
+
+	storageLifecyclePolicyAssert := StorageLifecyclePolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "storage_lifecycle_policies", idx),
+	}
 	return &storageLifecyclePolicyAssert
 }
 
@@ -38,47 +51,47 @@ func ImportedStorageLifecyclePolicyShowOutput(t *testing.T, id string) *StorageL
 ////////////////////////////
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasCreatedOn(expected time.Time) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	s.StringValueSet("created_on", expected.String())
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasName(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	s.StringValueSet("name", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasDatabaseName(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	s.StringValueSet("database_name", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasSchemaName(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	s.StringValueSet("schema_name", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasKind(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	s.StringValueSet("kind", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasOwner(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	s.StringValueSet("owner", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasComment(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	s.StringValueSet("comment", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasOwnerRoleType(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	s.StringValueSet("owner_role_type", expected)
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasOptions(expected string) *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	s.StringValueSet("options", expected)
 	return s
 }
 
@@ -87,46 +100,46 @@ func (s *StorageLifecyclePolicyShowOutputAssert) HasOptions(expected string) *St
 ///////////////////////////////
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoCreatedOn() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	s.ValueNotSet("created_on")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoName() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoDatabaseName() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	s.ValueNotSet("database_name")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoSchemaName() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	s.ValueNotSet("schema_name")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoKind() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	s.ValueNotSet("kind")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoOwner() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	s.ValueNotSet("owner")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoComment() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoOwnerRoleType() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	s.ValueNotSet("owner_role_type")
 	return s
 }
 
 func (s *StorageLifecyclePolicyShowOutputAssert) HasNoOptions() *StorageLifecyclePolicyShowOutputAssert {
-	s.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
+	s.ValueNotSet("options")
 	return s
 }

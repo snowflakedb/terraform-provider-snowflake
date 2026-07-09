@@ -35,10 +35,10 @@ func (c *PipeClient) CreatePipeInSchema(t *testing.T, schemaId sdk.DatabaseObjec
 
 	id := c.ids.RandomSchemaObjectIdentifierInSchema(schemaId)
 
-	err := c.client().Create(ctx, id, copyStatement, &sdk.CreatePipeOptions{})
+	err := c.client().Create(ctx, sdk.NewCreatePipeRequest(id, copyStatement))
 	require.NoError(t, err)
 
-	pipe, err := c.client().Describe(ctx, id)
+	pipe, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 
 	return pipe, c.DropPipeFunc(t, id)
@@ -55,7 +55,7 @@ func (c *PipeClient) DropPipeFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropPipeOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, sdk.NewDropPipeRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }

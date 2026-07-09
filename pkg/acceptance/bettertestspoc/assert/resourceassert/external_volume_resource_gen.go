@@ -16,7 +16,7 @@ func ExternalVolumeResource(t *testing.T, name string) *ExternalVolumeResourceAs
 	t.Helper()
 
 	return &ExternalVolumeResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalVolumeResource(t *testing.T, id string) *ExternalVolumeReso
 	t.Helper()
 
 	return &ExternalVolumeResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -59,22 +59,22 @@ func (e *ExternalVolumeResourceAssert) HasFullyQualifiedName(expected string) *E
 ///////////////////////////////////
 
 func (e *ExternalVolumeResourceAssert) HasNameString(expected string) *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("name", expected))
+	e.ValueSet("name", expected)
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasAllowWritesString(expected string) *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("allow_writes", expected))
+	e.ValueSet("allow_writes", expected)
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasCommentString(expected string) *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("comment", expected))
+	e.ValueSet("comment", expected)
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	e.ValueSet("fully_qualified_name", expected)
 	return e
 }
 
@@ -83,22 +83,22 @@ func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameString(expected stri
 ///////////////////////////////
 
 func (e *ExternalVolumeResourceAssert) HasNoName() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("name"))
+	e.ValueNotSet("name")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasNoAllowWrites() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("allow_writes"))
+	e.ValueNotSet("allow_writes")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasNoComment() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("comment"))
+	e.ValueNotSet("comment")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasNoFullyQualifiedName() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	e.ValueNotSet("fully_qualified_name")
 	return e
 }
 
@@ -107,17 +107,17 @@ func (e *ExternalVolumeResourceAssert) HasNoFullyQualifiedName() *ExternalVolume
 ////////////////////////////
 
 func (e *ExternalVolumeResourceAssert) HasAllowWritesEmpty() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("allow_writes", ""))
+	e.ValueSet("allow_writes", "")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasCommentEmpty() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("comment", ""))
+	e.ValueSet("comment", "")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameEmpty() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	e.ValueSet("fully_qualified_name", "")
 	return e
 }
 
@@ -126,21 +126,21 @@ func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameEmpty() *ExternalVol
 ///////////////////////////////
 
 func (e *ExternalVolumeResourceAssert) HasNameNotEmpty() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValuePresent("name"))
+	e.ValuePresent("name")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasAllowWritesNotEmpty() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValuePresent("allow_writes"))
+	e.ValuePresent("allow_writes")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasCommentNotEmpty() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValuePresent("comment"))
+	e.ValuePresent("comment")
 	return e
 }
 
 func (e *ExternalVolumeResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalVolumeResourceAssert {
-	e.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	e.ValuePresent("fully_qualified_name")
 	return e
 }

@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	_ Tables                             = (*tables)(nil)
+	_ TablesLegacy                       = (*tablesLegacy)(nil)
 	_ convertibleRow[TableColumnDetails] = new(tableColumnDetailsRow)
 	_ convertibleRow[TableStageDetails]  = new(tableStageDetailsRow)
 	_ convertibleRow[Table]              = new(tableDBRow)
@@ -31,50 +31,50 @@ var (
 	_ optionsProvider[TableSet]                            = new(TableSetRequest)
 )
 
-type tables struct {
+type tablesLegacy struct {
 	client *Client
 }
 
-func (v *tables) Create(ctx context.Context, request *CreateTableRequest) error {
+func (v *tablesLegacy) Create(ctx context.Context, request *CreateTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) CreateAsSelect(ctx context.Context, request *CreateTableAsSelectRequest) error {
+func (v *tablesLegacy) CreateAsSelect(ctx context.Context, request *CreateTableAsSelectRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) CreateUsingTemplate(ctx context.Context, request *CreateTableUsingTemplateRequest) error {
+func (v *tablesLegacy) CreateUsingTemplate(ctx context.Context, request *CreateTableUsingTemplateRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) CreateLike(ctx context.Context, request *CreateTableLikeRequest) error {
+func (v *tablesLegacy) CreateLike(ctx context.Context, request *CreateTableLikeRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) CreateClone(ctx context.Context, request *CreateTableCloneRequest) error {
+func (v *tablesLegacy) CreateClone(ctx context.Context, request *CreateTableCloneRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) Alter(ctx context.Context, request *AlterTableRequest) error {
+func (v *tablesLegacy) Alter(ctx context.Context, request *AlterTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) Drop(ctx context.Context, request *DropTableRequest) error {
+func (v *tablesLegacy) Drop(ctx context.Context, request *DropTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
+func (v *tablesLegacy) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropTableRequest(id).WithIfExists(Bool(true))) }, ctx, id)
 }
 
-func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
+func (v *tablesLegacy) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[tableDBRow](v.client, ctx, opts)
 	if err != nil {
@@ -84,7 +84,7 @@ func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, 
 	return convertRows[tableDBRow, Table](dbRows)
 }
 
-func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
+func (v *tablesLegacy) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	request := NewShowTableRequest().WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
 		WithLike(Like{Pattern: String(id.Name())})
 	returnedTables, err := v.Show(ctx, request)
@@ -94,11 +94,11 @@ func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tabl
 	return collections.FindFirst(returnedTables, func(r Table) bool { return r.Name == id.Name() })
 }
 
-func (v *tables) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
+func (v *tablesLegacy) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *tables) DescribeColumns(ctx context.Context, req *DescribeTableColumnsRequest) ([]TableColumnDetails, error) {
+func (v *tablesLegacy) DescribeColumns(ctx context.Context, req *DescribeTableColumnsRequest) ([]TableColumnDetails, error) {
 	rows, err := validateAndQuery[tableColumnDetailsRow](v.client, ctx, req.toOpts())
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (v *tables) DescribeColumns(ctx context.Context, req *DescribeTableColumnsR
 	return convertRows[tableColumnDetailsRow, TableColumnDetails](rows)
 }
 
-func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error) {
+func (v *tablesLegacy) DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error) {
 	rows, err := validateAndQuery[tableStageDetailsRow](v.client, ctx, req.toOpts())
 	if err != nil {
 		return nil, err
@@ -198,25 +198,34 @@ func (s *AlterTableRequest) toOpts() *alterTableOptions {
 			Add:  add,
 		}
 	}
+	var addStorageLifecyclePolicy *TableAddStorageLifecyclePolicy
+	if s.AddStorageLifecyclePolicy != nil {
+		addStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+			StorageLifecyclePolicy: s.AddStorageLifecyclePolicy.StorageLifecyclePolicy,
+			On:                     s.AddStorageLifecyclePolicy.On,
+		}
+	}
 
 	return &alterTableOptions{
-		IfExists:                  s.IfExists,
-		name:                      s.name,
-		NewName:                   s.NewName,
-		SwapWith:                  s.SwapWith,
-		ClusteringAction:          clusteringAction,
-		ColumnAction:              columnAction,
-		ConstraintAction:          constraintAction,
-		ExternalTableAction:       externalTableAction,
-		SearchOptimizationAction:  searchOptimizationAction,
-		Set:                       tableSet,
-		SetTags:                   tagAssociations,
-		UnsetTags:                 s.UnsetTags,
-		Unset:                     tableUnset,
-		AddRowAccessPolicy:        addRowAccessPolicy,
-		DropRowAccessPolicy:       dropRowAccessPolicy,
-		DropAndAddRowAccessPolicy: dropAndAddRowAccessPolicy,
-		DropAllAccessRowPolicies:  s.DropAllAccessRowPolicies,
+		IfExists:                   s.IfExists,
+		name:                       s.name,
+		NewName:                    s.NewName,
+		SwapWith:                   s.SwapWith,
+		ClusteringAction:           clusteringAction,
+		ColumnAction:               columnAction,
+		ConstraintAction:           constraintAction,
+		ExternalTableAction:        externalTableAction,
+		SearchOptimizationAction:   searchOptimizationAction,
+		Set:                        tableSet,
+		SetTags:                    tagAssociations,
+		UnsetTags:                  s.UnsetTags,
+		Unset:                      tableUnset,
+		AddRowAccessPolicy:         addRowAccessPolicy,
+		DropRowAccessPolicy:        dropRowAccessPolicy,
+		DropAndAddRowAccessPolicy:  dropAndAddRowAccessPolicy,
+		DropAllAccessRowPolicies:   s.DropAllAccessRowPolicies,
+		AddStorageLifecyclePolicy:  addStorageLifecyclePolicy,
+		DropStorageLifecyclePolicy: s.DropStorageLifecyclePolicy,
 	}
 }
 
@@ -374,12 +383,18 @@ func (r *TableColumnActionRequest) toOpts() *TableColumnAction {
 	if r.Add != nil {
 		var defaultValue *ColumnDefaultValue
 		if r.Add.DefaultValue != nil {
-			defaultValue = &ColumnDefaultValue{
-				r.Add.DefaultValue.expression,
-				&ColumnIdentity{
+			var columnIdentity *ColumnIdentity
+			if r.Add.DefaultValue.identity != nil {
+				columnIdentity = &ColumnIdentity{
 					Start:     r.Add.DefaultValue.identity.Start,
 					Increment: r.Add.DefaultValue.identity.Increment,
-				},
+					Order:     r.Add.DefaultValue.identity.Order,
+					Noorder:   r.Add.DefaultValue.identity.Noorder,
+				}
+			}
+			defaultValue = &ColumnDefaultValue{
+				r.Add.DefaultValue.expression,
+				columnIdentity,
 			}
 		}
 		var inlineConstraint *TableColumnAddInlineConstraint

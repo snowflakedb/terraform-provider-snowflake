@@ -35,6 +35,10 @@ var (
 		"StorageSerializationPolicy", "StorageSerializationPolicies",
 		"COMPATIBLE", "OPTIMIZED",
 	)
+	IcebergTableIcebergMergeOnReadBehaviorEnumDef = g.NewEnum(
+		"IcebergTableIcebergMergeOnReadBehavior", "IcebergTableIcebergMergeOnReadBehaviors",
+		"AUTO", "ENABLED", "DISABLED",
+	)
 )
 
 var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
@@ -185,6 +189,10 @@ var icebergTablesDef = g.NewInterface(
 		QueryStructField("ColumnsAndConstraints", icebergTableColumnsAndConstraints, g.ListOptions().Parentheses().Required()).
 		ListQueryStructField("PartitionBy", icebergTablePartitionExpression, g.KeywordOptions().Parentheses().SQL("PARTITION BY")).
 		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+		// TODO [next PRs]: report docs discrepancy to Snowflake - the CREATE ICEBERG TABLE docs list both PARTITION BY and
+		// CLUSTER BY as available options without noting they are mutually exclusive, but Snowflake rejects setting both with
+		// error 099207 (0A000): "Partition by and Cluster by cannot be specified together for Iceberg tables." This is enforced
+		// by the ConflictingFields validation below.
 		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
 		OptionalAssignment("CATALOG", IcebergTableCatalogEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
@@ -207,6 +215,7 @@ var icebergTablesDef = g.NewInterface(
 		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithValidation(g.ConflictingFields, "PartitionBy", "ClusterBy").
 		WithAdditionalValidations(),
 ).CustomOperation(
 	"CreateFromIcebergFiles",
@@ -238,6 +247,51 @@ var icebergTablesDef = g.NewInterface(
 		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
 		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
 		TextAssignment("BASE_LOCATION", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
+		OptionalComment().
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	"CreateFromIcebergRest",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest",
+	g.NewQueryStruct("CreateFromIcebergRest").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("CATALOG_TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()).
+		OptionalAssignment("PATH_LAYOUT", IcebergTablePathLayoutEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+		OptionalAssignment("TARGET_FILE_SIZE", IcebergTableTargetFileSizeEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
+		OptionalComment().
+		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", StorageSerializationPolicyEnumDef.KindPtr(), g.ParameterOptions().NoQuotes()).
+		OptionalAssignment("ICEBERG_MERGE_ON_READ_BEHAVIOR", IcebergTableIcebergMergeOnReadBehaviorEnumDef.KindPtr(), g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("ENABLE_ICEBERG_MERGE_ON_READ", g.ParameterOptions()).
+		OptionalTags().
+		PredefinedQueryStructField("Contact", "[]TableContact", g.KeywordOptions().Parentheses().SQL("WITH CONTACT")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).CustomOperation(
+	"CreateFromAwsGlue",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue",
+	g.NewQueryStruct("CreateFromAwsGlue").
+		Create().
+		OrReplace().
+		SQL("ICEBERG TABLE").
+		IfNotExists().
+		Name().
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalIdentifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+		TextAssignment("CATALOG_TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
+		OptionalTextAssignment("CATALOG_NAMESPACE", g.ParameterOptions().SingleQuotes()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 		OptionalBooleanAssignment("AUTO_REFRESH", g.ParameterOptions()).
 		OptionalComment().
@@ -366,7 +420,7 @@ var icebergTablesDef = g.NewInterface(
 		OptionalText("name_mapping").
 		Text("owner_role_type").
 		Text("catalog_sync_name").
-		Text("auto_refresh_status").
+		JsonField("auto_refresh_status", "*IcebergTableAutoRefreshStatus").
 		Text("partition_specs").
 		Number("current_partition_spec_id").
 		Number("iceberg_table_format_version"),
@@ -416,4 +470,5 @@ var icebergTablesDef = g.NewInterface(
 	IcebergTableTypeEnumDef,
 	IcebergTableCatalogEnumDef,
 	StorageSerializationPolicyEnumDef,
+	IcebergTableIcebergMergeOnReadBehaviorEnumDef,
 )

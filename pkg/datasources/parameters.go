@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
@@ -36,9 +37,10 @@ var parametersSchema = map[string]*schema.Schema{
 		Description: "If parameter_type is set to \"SESSION\" then user is the name of the user to display session parameters for.",
 	},
 	"object_type": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "If parameter_type is set to \"OBJECT\" then object_type is the type of object to display object parameters for. Valid values are any object supported by the IN clause of the [SHOW PARAMETERS](https://docs.snowflake.com/en/sql-reference/sql/show-parameters.html#parameters) statement, including: WAREHOUSE | DATABASE | SCHEMA | TASK | TABLE",
+		Type:             schema.TypeString,
+		Optional:         true,
+		Description:      "If parameter_type is set to \"OBJECT\" then object_type is the type of object to display object parameters for. Valid values are any object supported by the IN clause of the [SHOW PARAMETERS](https://docs.snowflake.com/en/sql-reference/sql/show-parameters.html#parameters) statement, including: WAREHOUSE | DATABASE | SCHEMA | TASK | TABLE",
+		ValidateDiagFunc: validators.NormalizeValidation(sdk.ToObjectType),
 	},
 	"object_name": {
 		Type:        schema.TypeString,
@@ -114,7 +116,10 @@ func ReadParameters(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 		opts.In.User = sdk.NewAccountObjectIdentifier(user)
 	case "OBJECT":
-		objectType := sdk.ObjectType(d.Get("object_type").(string))
+		objectType, err := sdk.ToObjectType(d.Get("object_type").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		objectName := d.Get("object_name").(string)
 		switch objectType {
 		case sdk.ObjectTypeWarehouse:
@@ -137,9 +142,9 @@ func ReadParameters(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	d.SetId("parameters")
 
-	params := []map[string]interface{}{}
+	params := []map[string]any{}
 	for _, param := range parameters {
-		paramMap := map[string]interface{}{}
+		paramMap := map[string]any{}
 
 		paramMap["key"] = param.Key
 		paramMap["value"] = param.Value

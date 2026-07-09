@@ -173,13 +173,16 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 			// Update - detect external changes
 			{
 				PreConfig: func() {
-					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(*sdk.NewSecretSetRequest().
-						WithComment(comment).
-						WithSetForFlow(*sdk.NewSetForFlowRequest().
-							WithSetForOAuthAuthorization(*sdk.NewSetForOAuthAuthorizationRequest().
-								WithOauthRefreshTokenExpiryTime(time.Now().Add(24 * time.Hour).Format(time.DateOnly)),
+					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).WithSet(
+						*sdk.NewSecretSetRequest().
+							WithComment(comment).
+							WithSetForFlow(
+								*sdk.NewSetForFlowRequest().
+									WithSetForOAuthAuthorization(
+										*sdk.NewSetForOAuthAuthorizationRequest().
+											WithOauthRefreshTokenExpiryTime(time.Now().Add(24 * time.Hour).Format(time.DateOnly)),
+									),
 							),
-						),
 					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -194,7 +197,8 @@ func TestAcc_SecretWithOauthAuthorizationCodeGrant_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  config.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.SecretDoesNotExist(t, id),
 				),
 			},
@@ -240,7 +244,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_CompleteUseCase_DifferentTimeForma
 			{
 				Config: config.FromModels(t, secretModelDateOnly),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModelDateOnly.ResourceReference()).
 							HasOauthRefreshTokenExpiryTimeString(refreshTokenExpiryDateOnly),
 						assert.Check(resource.TestCheckResourceAttrSet(secretModelDateOnly.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time")),
@@ -251,7 +256,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_CompleteUseCase_DifferentTimeForma
 			{
 				Config: config.FromModels(t, secretModelWithoutSeconds),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModelWithoutSeconds.ResourceReference()).
 							HasOauthRefreshTokenExpiryTimeString(refreshTokenExpiryWithoutSeconds),
 						assert.Check(resource.TestCheckResourceAttrSet(secretModelWithoutSeconds.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time")),
@@ -262,7 +268,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_CompleteUseCase_DifferentTimeForma
 			{
 				Config: config.FromModels(t, secretModelDateTime),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModelDateTime.ResourceReference()).
 							HasOauthRefreshTokenExpiryTimeString(refreshTokenExpiryDateTime),
 						assert.Check(resource.TestCheckResourceAttrSet(secretModelDateTime.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time")),
@@ -273,7 +280,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_CompleteUseCase_DifferentTimeForma
 			{
 				Config: config.FromModels(t, secretModelWithPDT),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModelWithPDT.ResourceReference()).
 							HasOauthRefreshTokenExpiryTimeString(refreshTokenExpiryWithPDT),
 						assert.Check(resource.TestCheckResourceAttrSet(secretModelWithPDT.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time")),
@@ -308,7 +316,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalRefreshTokenExpiryTimeChan
 			{
 				Config: config.FromModels(t, secretModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModel.ResourceReference()).
 							HasNameString(name).
 							HasDatabaseString(id.DatabaseName()).
@@ -329,14 +338,18 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalRefreshTokenExpiryTimeChan
 			},
 			{
 				PreConfig: func() {
-					testClient().Secret.Alter(t, sdk.NewAlterSecretRequest(id).
-						WithSet(*sdk.NewSecretSetRequest().
-							WithSetForFlow(*sdk.NewSetForFlowRequest().
-								WithSetForOAuthAuthorization(*sdk.NewSetForOAuthAuthorizationRequest().
-									WithOauthRefreshTokenExpiryTime(externalRefreshTokenExpiryTime.Format(time.DateOnly)),
-								),
+					testClient().Secret.Alter(
+						t, sdk.NewAlterSecretRequest(id).
+							WithSet(
+								*sdk.NewSecretSetRequest().
+									WithSetForFlow(
+										*sdk.NewSetForFlowRequest().
+											WithSetForOAuthAuthorization(
+												*sdk.NewSetForOAuthAuthorizationRequest().
+													WithOauthRefreshTokenExpiryTime(externalRefreshTokenExpiryTime.Format(time.DateOnly)),
+											),
+									),
 							),
-						),
 					)
 				},
 				Config: config.FromModels(t, secretModel),
@@ -347,7 +360,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalRefreshTokenExpiryTimeChan
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModel.ResourceReference()).
 							HasOauthRefreshTokenExpiryTimeString(refreshTokenExpiryDateTime),
 						assert.Check(resource.TestCheckResourceAttrSet(secretModel.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time")),
@@ -378,7 +392,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChange(t *testin
 			{
 				Config: config.FromModels(t, secretModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
@@ -400,7 +415,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChange(t *testin
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
@@ -414,7 +430,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChange(t *testin
 
 func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChangeToOAuthClientCredentials(t *testing.T) {
 	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
-	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(t,
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
 		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
 			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "foo"}, {Scope: "bar"}, {Scope: "test"}}),
 	)
@@ -436,7 +453,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChangeToOAuthCli
 			{
 				Config: config.FromModels(t, secretModel),
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).
@@ -460,7 +478,8 @@ func TestAcc_SecretWithAuthorizationCodeGrant_ExternalSecretTypeChangeToOAuthCli
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					assertThat(t,
+					assertThat(
+						t,
 						resourceassert.SecretWithAuthorizationCodeGrantResource(t, secretModel.ResourceReference()).
 							HasSecretTypeString(string(sdk.SecretTypeOAuth2)),
 						resourceshowoutputassert.SecretShowOutput(t, secretModel.ResourceReference()).

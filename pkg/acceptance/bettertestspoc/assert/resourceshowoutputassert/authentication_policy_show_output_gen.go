@@ -17,9 +17,8 @@ func AuthenticationPolicyShowOutput(t *testing.T, name string) *AuthenticationPo
 	t.Helper()
 
 	authenticationPolicyAssert := AuthenticationPolicyShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	authenticationPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &authenticationPolicyAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedAuthenticationPolicyShowOutput(t *testing.T, id string) *Authentica
 	t.Helper()
 
 	authenticationPolicyAssert := AuthenticationPolicyShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	authenticationPolicyAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
+	return &authenticationPolicyAssert
+}
+
+func AuthenticationPoliciesDatasourceShowOutput(t *testing.T, name string) *AuthenticationPolicyShowOutputAssert {
+	t.Helper()
+
+	return AuthenticationPoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func AuthenticationPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *AuthenticationPolicyShowOutputAssert {
+	t.Helper()
+
+	authenticationPolicyAssert := AuthenticationPolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "authentication_policies", idx),
+	}
 	return &authenticationPolicyAssert
 }
 
@@ -38,47 +51,47 @@ func ImportedAuthenticationPolicyShowOutput(t *testing.T, id string) *Authentica
 ////////////////////////////
 
 func (a *AuthenticationPolicyShowOutputAssert) HasCreatedOn(expected time.Time) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected.String()))
+	a.StringValueSet("created_on", expected.String())
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasName(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	a.StringValueSet("name", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasComment(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("comment", expected))
+	a.StringValueSet("comment", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasDatabaseName(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("database_name", expected))
+	a.StringValueSet("database_name", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasSchemaName(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	a.StringValueSet("schema_name", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasKind(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("kind", expected))
+	a.StringValueSet("kind", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasOwner(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("owner", expected))
+	a.StringValueSet("owner", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasOwnerRoleType(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("owner_role_type", expected))
+	a.StringValueSet("owner_role_type", expected)
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasOptions(expected string) *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueSet("options", expected))
+	a.StringValueSet("options", expected)
 	return a
 }
 
@@ -87,46 +100,46 @@ func (a *AuthenticationPolicyShowOutputAssert) HasOptions(expected string) *Auth
 ///////////////////////////////
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoCreatedOn() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	a.ValueNotSet("created_on")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoName() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	a.ValueNotSet("name")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoComment() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("comment"))
+	a.ValueNotSet("comment")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoDatabaseName() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("database_name"))
+	a.ValueNotSet("database_name")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoSchemaName() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	a.ValueNotSet("schema_name")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoKind() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("kind"))
+	a.ValueNotSet("kind")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoOwner() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("owner"))
+	a.ValueNotSet("owner")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoOwnerRoleType() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("owner_role_type"))
+	a.ValueNotSet("owner_role_type")
 	return a
 }
 
 func (a *AuthenticationPolicyShowOutputAssert) HasNoOptions() *AuthenticationPolicyShowOutputAssert {
-	a.AddAssertion(assert.ResourceShowOutputValueNotSet("options"))
+	a.ValueNotSet("options")
 	return a
 }

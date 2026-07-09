@@ -33,6 +33,9 @@ func (opts *CreateServiceOptions) validate() error {
 		if everyValueSet(opts.FromSpecification.Location, opts.FromSpecification.Specification) {
 			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecification", "Location", "Specification"))
 		}
+		if opts.FromSpecification.Specification != nil && containsDoubleDollarQuotes(*opts.FromSpecification.Specification) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecification", "Specification"))
+		}
 	}
 	if valueSet(opts.FromSpecificationTemplate) {
 		if !exactlyOneValueSet(opts.FromSpecificationTemplate.SpecificationTemplateFile, opts.FromSpecificationTemplate.SpecificationTemplate) {
@@ -40,6 +43,9 @@ func (opts *CreateServiceOptions) validate() error {
 		}
 		if everyValueSet(opts.FromSpecificationTemplate.Location, opts.FromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errOneOf("CreateServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"))
+		}
+		if opts.FromSpecificationTemplate.SpecificationTemplate != nil && containsDoubleDollarQuotes(*opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplate"))
 		}
 	}
 	return JoinErrors(errs...)
@@ -63,6 +69,9 @@ func (opts *AlterServiceOptions) validate() error {
 		if everyValueSet(opts.FromSpecification.Location, opts.FromSpecification.Specification) {
 			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecification", "Location", "Specification"))
 		}
+		if opts.FromSpecification.Specification != nil && containsDoubleDollarQuotes(*opts.FromSpecification.Specification) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("AlterServiceOptions.FromSpecification", "Specification"))
+		}
 	}
 	if valueSet(opts.FromSpecificationTemplate) {
 		if !exactlyOneValueSet(opts.FromSpecificationTemplate.SpecificationTemplateFile, opts.FromSpecificationTemplate.SpecificationTemplate) {
@@ -70,6 +79,9 @@ func (opts *AlterServiceOptions) validate() error {
 		}
 		if everyValueSet(opts.FromSpecificationTemplate.Location, opts.FromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errOneOf("AlterServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"))
+		}
+		if opts.FromSpecificationTemplate.SpecificationTemplate != nil && containsDoubleDollarQuotes(*opts.FromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplate"))
 		}
 	}
 	if valueSet(opts.Restore) {
@@ -151,6 +163,9 @@ func (opts *ExecuteJobServiceOptions) validate() error {
 		if !exactlyOneValueSet(opts.JobServiceFromSpecification.Location, opts.JobServiceFromSpecification.Specification) {
 			errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "Location", "Specification"))
 		}
+		if opts.JobServiceFromSpecification.Specification != nil && containsDoubleDollarQuotes(*opts.JobServiceFromSpecification.Specification) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecification", "Specification"))
+		}
 	}
 	if valueSet(opts.JobServiceFromSpecificationTemplate) {
 		if !exactlyOneValueSet(opts.JobServiceFromSpecificationTemplate.SpecificationTemplateFile, opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
@@ -158,6 +173,9 @@ func (opts *ExecuteJobServiceOptions) validate() error {
 		}
 		if !exactlyOneValueSet(opts.JobServiceFromSpecificationTemplate.Location, opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
 			errs = append(errs, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"))
+		}
+		if opts.JobServiceFromSpecificationTemplate.SpecificationTemplate != nil && containsDoubleDollarQuotes(*opts.JobServiceFromSpecificationTemplate.SpecificationTemplate) {
+			errs = append(errs, errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplate"))
 		}
 	}
 	return JoinErrors(errs...)

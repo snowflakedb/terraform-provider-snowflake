@@ -29,17 +29,20 @@ func (c *NotificationIntegrationClient) client() sdk.NotificationIntegrations {
 
 func (c *NotificationIntegrationClient) CreateWithGcpPubSub(t *testing.T) (*sdk.NotificationIntegration, func()) {
 	t.Helper()
-	return c.CreateWithRequest(t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
-		WithAutomatedDataLoadsParams(*sdk.NewAutomatedDataLoadsParamsRequest().
-			WithGoogleAutoParams(*sdk.NewGoogleAutoParamsRequest(gcpPubsubSubscriptionName)),
-		),
+	return c.CreateWithRequest(
+		t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
+			WithAutomatedDataLoadsParams(
+				*sdk.NewAutomatedDataLoadsParamsRequest().
+					WithGoogleAutoParams(*sdk.NewGoogleAutoParamsRequest(gcpPubsubSubscriptionName)),
+			),
 	)
 }
 
 func (c *NotificationIntegrationClient) CreateWebhook(t *testing.T, webhookUrl string) (*sdk.NotificationIntegration, func()) {
 	t.Helper()
-	return c.CreateWithRequest(t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
-		WithWebhookParams(*sdk.NewWebhookParamsRequest(webhookUrl)),
+	return c.CreateWithRequest(
+		t, sdk.NewCreateNotificationIntegrationRequest(c.ids.RandomAccountObjectIdentifier(), true).
+			WithWebhookParams(*sdk.NewWebhookParamsRequest(webhookUrl)),
 	)
 }
 

@@ -105,7 +105,8 @@ func WarehouseAdaptive() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseAdaptive, customdiff.All(
 			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier"),
-			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ParametersAttributeName,
+			ComputedIfAnyAttributeChanged(
+				warehouseAdaptiveSchema, ParametersAttributeName,
 				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
 				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
 			),
@@ -219,7 +220,8 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadConte
 				maxQueryPerformanceLevel = string(*w.MaxQueryPerformanceLevel)
 			}
 			queryThroughputMultiplier := optionalIntOutputMappingIntDefault(w.QueryThroughputMultiplier)
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"max_query_performance_level", "max_query_performance_level", maxQueryPerformanceLevel, maxQueryPerformanceLevel, nil},
 				outputMapping{"query_throughput_multiplier", "query_throughput_multiplier", queryThroughputMultiplier, queryThroughputMultiplier, nil},
 			); err != nil {

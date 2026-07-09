@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -132,7 +133,7 @@ func Alert() *schema.Resource {
 }
 
 // ReadAlert implements schema.ReadContextFunc.
-func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadAlert(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
@@ -174,8 +175,8 @@ func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = d.Set("alert_schedule", []interface{}{
-				map[string]interface{}{
+			err = d.Set("alert_schedule", []any{
+				map[string]any{
 					"interval": interval,
 				},
 			})
@@ -186,10 +187,10 @@ func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 			repScheduleParts := strings.Split(alertSchedule, " ")
 			timeZone := repScheduleParts[len(repScheduleParts)-1]
 			expression := strings.TrimSuffix(strings.TrimPrefix(alertSchedule, "USING CRON "), " "+timeZone)
-			err = d.Set("alert_schedule", []interface{}{
-				map[string]interface{}{
-					"cron": []interface{}{
-						map[string]interface{}{
+			err = d.Set("alert_schedule", []any{
+				map[string]any{
+					"cron": []any{
+						map[string]any{
 							"expression": expression,
 							"time_zone":  timeZone,
 						},
@@ -225,7 +226,7 @@ func ReadAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 }
 
 // CreateAlert implements schema.CreateContextFunc.
-func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateAlert(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	databaseName := d.Get("database").(string)
@@ -239,17 +240,15 @@ func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	warehouseName := d.Get("warehouse").(string)
 	warehouse := sdk.NewAccountObjectIdentifier(warehouseName)
 
-	opts := &sdk.CreateAlertOptions{}
-
-	if v, ok := d.GetOk("comment"); ok {
-		opts.Comment = sdk.String(v.(string))
-	}
-
 	condition := d.Get("condition").(string)
-
 	action := d.Get("action").(string)
 
-	err := client.Alerts.Create(ctx, objectIdentifier, warehouse, alertSchedule, condition, action, opts)
+	req := sdk.NewCreateAlertRequest(objectIdentifier, warehouse, alertSchedule, sdk.NewAlertConditionFromString(condition), action)
+	if v, ok := d.GetOk("comment"); ok {
+		req.WithComment(v.(string))
+	}
+
+	err := client.Alerts.Create(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -259,8 +258,7 @@ func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	enabled := d.Get("enabled").(bool)
 	var diags diag.Diagnostics
 	if enabled {
-		opts := sdk.AlterAlertOptions{Action: &sdk.AlertActionResume}
-		err := client.Alerts.Alter(ctx, objectIdentifier, &opts)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithAction(sdk.AlertActionResume))
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
@@ -271,13 +269,13 @@ func CreateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	return append(diags, ReadAlert(ctx, d, meta)...)
 }
 
-func getAlertSchedule(v interface{}) string {
+func getAlertSchedule(v any) string {
 	var alertSchedule string
-	schedule := v.([]interface{})[0].(map[string]interface{})
+	schedule := v.([]any)[0].(map[string]any)
 	if v, ok := schedule["cron"]; ok {
-		c := v.([]interface{})
+		c := v.([]any)
 		if len(c) > 0 {
-			cron := c[0].(map[string]interface{})
+			cron := c[0].(map[string]any)
 			cronExpression := cron["expression"].(string)
 			timeZone := cron["time_zone"].(string)
 			alertSchedule = fmt.Sprintf("USING CRON %s %s", cronExpression, timeZone)
@@ -293,7 +291,7 @@ func getAlertSchedule(v interface{}) string {
 }
 
 // UpdateAlert implements schema.UpdateContextFunc.
-func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	objectIdentifier := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
@@ -304,37 +302,25 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 		}
 	}
 
-	opts := &sdk.AlterAlertOptions{
-		Set:   &sdk.AlertSet{},
-		Unset: &sdk.AlertUnset{},
-	}
-	runSetStatement := false
+	set := sdk.NewAlertSetRequest()
 
 	if d.HasChange("warehouse") {
-		runSetStatement = true
 		_, v := d.GetChange("warehouse")
-		warehouseName := v.(string)
-		warehouse := sdk.NewAccountObjectIdentifier(warehouseName)
-		opts.Set.Warehouse = &warehouse
+		set.WithWarehouse(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
 
 	if d.HasChange("alert_schedule") {
-		runSetStatement = true
 		_, v := d.GetChange("alert_schedule")
-		alertSchedule := getAlertSchedule(v)
-		opts.Set.Schedule = &alertSchedule
+		set.WithSchedule(getAlertSchedule(v))
 	}
 
 	if d.HasChange("comment") {
 		_, v := d.GetChange("comment")
-		runSetStatement = true
-		newComment := v.(string)
-		opts.Set.Comment = &newComment
+		set.WithComment(v.(string))
 	}
 
-	if runSetStatement {
-		setOptions := &sdk.AlterAlertOptions{Set: opts.Set}
-		err := client.Alerts.Alter(ctx, objectIdentifier, setOptions)
+	if !reflect.DeepEqual(set, sdk.NewAlertSetRequest()) {
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithSet(*set))
 		if err != nil {
 			return diag.Errorf("error updating alert %v: %v", objectIdentifier.Name(), err)
 		}
@@ -342,9 +328,7 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("condition") {
 		condition := d.Get("condition").(string)
-		alterOptions := &sdk.AlterAlertOptions{}
-		alterOptions.ModifyCondition = &[]string{condition}
-		err := client.Alerts.Alter(ctx, objectIdentifier, alterOptions)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithModifyCondition([]string{condition}))
 		if err != nil {
 			return diag.Errorf("error updating schedule on condition %v: %v", objectIdentifier.Name(), err)
 		}
@@ -352,9 +336,7 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 	if d.HasChange("action") {
 		action := d.Get("action").(string)
-		alterOptions := &sdk.AlterAlertOptions{}
-		alterOptions.ModifyAction = &action
-		err := client.Alerts.Alter(ctx, objectIdentifier, alterOptions)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(objectIdentifier).WithModifyAction(action))
 		if err != nil {
 			return diag.Errorf("error updating schedule on action %v: %v", objectIdentifier.Name(), err)
 		}
@@ -380,8 +362,7 @@ func UpdateAlert(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 
 func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
 	resumeAlert := func() (error, bool) {
-		opts := sdk.AlterAlertOptions{Action: &sdk.AlertActionResume}
-		err := client.Alerts.Alter(ctx, id, &opts)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithAction(sdk.AlertActionResume))
 		if err != nil {
 			return fmt.Errorf("error resuming alert %v err = %w", id.Name(), err), false
 		}
@@ -396,8 +377,7 @@ func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjec
 
 func waitSuspendAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
 	suspendAlert := func() (error, bool) {
-		opts := sdk.AlterAlertOptions{Action: &sdk.AlertActionSuspend}
-		err := client.Alerts.Alter(ctx, id, &opts)
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithAction(sdk.AlertActionSuspend))
 		if err != nil {
 			return fmt.Errorf("error suspending alert %v err = %w", id.Name(), err), false
 		}

@@ -16,7 +16,7 @@ func SemanticViewResource(t *testing.T, name string) *SemanticViewResourceAssert
 	t.Helper()
 
 	return &SemanticViewResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSemanticViewResource(t *testing.T, id string) *SemanticViewResource
 	t.Helper()
 
 	return &SemanticViewResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -72,27 +72,27 @@ func (s *SemanticViewResourceAssert) HasFullyQualifiedName(expected string) *Sem
 ///////////////////////////////////
 
 func (s *SemanticViewResourceAssert) HasDatabaseString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasSchemaString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasNameString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasCommentString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasFullyQualifiedNameString(expected string) *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
@@ -101,27 +101,27 @@ func (s *SemanticViewResourceAssert) HasFullyQualifiedNameString(expected string
 ///////////////////////////////
 
 func (s *SemanticViewResourceAssert) HasNoDatabase() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasNoSchema() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasNoName() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasNoComment() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasNoFullyQualifiedName() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
@@ -130,32 +130,32 @@ func (s *SemanticViewResourceAssert) HasNoFullyQualifiedName() *SemanticViewReso
 ////////////////////////////
 
 func (s *SemanticViewResourceAssert) HasCommentEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasDimensionsEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("dimensions.#", "0"))
+	s.ValueSet("dimensions.#", "0")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasFactsEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("facts.#", "0"))
+	s.ValueSet("facts.#", "0")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasFullyQualifiedNameEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasMetricsEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("metrics.#", "0"))
+	s.ValueSet("metrics.#", "0")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasRelationshipsEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValueSet("relationships.#", "0"))
+	s.ValueSet("relationships.#", "0")
 	return s
 }
 
@@ -164,26 +164,26 @@ func (s *SemanticViewResourceAssert) HasRelationshipsEmpty() *SemanticViewResour
 ///////////////////////////////
 
 func (s *SemanticViewResourceAssert) HasDatabaseNotEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasSchemaNotEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasNameNotEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasCommentNotEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *SemanticViewResourceAssert) HasFullyQualifiedNameNotEmpty() *SemanticViewResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }

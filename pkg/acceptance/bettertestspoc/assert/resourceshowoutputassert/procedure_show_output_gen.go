@@ -17,9 +17,8 @@ func ProcedureShowOutput(t *testing.T, name string) *ProcedureShowOutputAssert {
 	t.Helper()
 
 	procedureAssert := ProcedureShowOutputAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "show_output"),
+		ResourceAssert: assert.NewResourceShowOutputAssert(name),
 	}
-	procedureAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &procedureAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedProcedureShowOutput(t *testing.T, id string) *ProcedureShowOutputAs
 	t.Helper()
 
 	procedureAssert := ProcedureShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "show_output"),
+		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
 	}
-	procedureAssert.AddAssertion(assert.ValueSet("show_output.#", "1"))
 	return &procedureAssert
 }
 
@@ -38,87 +36,87 @@ func ImportedProcedureShowOutput(t *testing.T, id string) *ProcedureShowOutputAs
 ////////////////////////////
 
 func (p *ProcedureShowOutputAssert) HasCreatedOn(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("created_on", expected))
+	p.StringValueSet("created_on", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasName(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("name", expected))
+	p.StringValueSet("name", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasSchemaName(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("schema_name", expected))
+	p.StringValueSet("schema_name", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasIsBuiltin(expected bool) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_builtin", expected))
+	p.BoolValueSet("is_builtin", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasIsAggregate(expected bool) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_aggregate", expected))
+	p.BoolValueSet("is_aggregate", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasIsAnsi(expected bool) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_ansi", expected))
+	p.BoolValueSet("is_ansi", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasMinNumArguments(expected int) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueSet("min_num_arguments", expected))
+	p.IntValueSet("min_num_arguments", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasMaxNumArguments(expected int) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueSet("max_num_arguments", expected))
-	return p
-}
-
-func (p *ProcedureShowOutputAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueSet("return_type_old", expected))
+	p.IntValueSet("max_num_arguments", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasArgumentsRaw(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("arguments_raw", expected))
+	p.StringValueSet("arguments_raw", expected)
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureShowOutputAssert {
+	p.StringValueSet("return_type_old", string(expected))
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasDescription(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("description", expected))
+	p.StringValueSet("description", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasCatalogName(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("catalog_name", expected))
+	p.StringValueSet("catalog_name", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasIsTableFunction(expected bool) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_table_function", expected))
+	p.BoolValueSet("is_table_function", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasValidForClustering(expected bool) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("valid_for_clustering", expected))
+	p.BoolValueSet("valid_for_clustering", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasIsSecure(expected bool) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueSet("is_secure", expected))
+	p.BoolValueSet("is_secure", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasSecrets(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("secrets", expected))
+	p.StringValueSet("secrets", expected)
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasExternalAccessIntegrations(expected string) *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("external_access_integrations", expected))
+	p.StringValueSet("external_access_integrations", expected)
 	return p
 }
 
@@ -127,91 +125,91 @@ func (p *ProcedureShowOutputAssert) HasExternalAccessIntegrations(expected strin
 ///////////////////////////////
 
 func (p *ProcedureShowOutputAssert) HasNoCreatedOn() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("created_on"))
+	p.ValueNotSet("created_on")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoName() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("name"))
+	p.ValueNotSet("name")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoSchemaName() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("schema_name"))
+	p.ValueNotSet("schema_name")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoIsBuiltin() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_builtin"))
+	p.ValueNotSet("is_builtin")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoIsAggregate() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_aggregate"))
+	p.ValueNotSet("is_aggregate")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoIsAnsi() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_ansi"))
+	p.ValueNotSet("is_ansi")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoMinNumArguments() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("min_num_arguments"))
+	p.ValueNotSet("min_num_arguments")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoMaxNumArguments() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputIntValueNotSet("max_num_arguments"))
-	return p
-}
-
-func (p *ProcedureShowOutputAssert) HasNoArgumentsOld() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueSet("arguments_old.#", "0"))
-	return p
-}
-
-func (p *ProcedureShowOutputAssert) HasNoReturnTypeOld() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputStringUnderlyingValueNotSet("return_type_old"))
+	p.ValueNotSet("max_num_arguments")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoArgumentsRaw() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("arguments_raw"))
+	p.ValueNotSet("arguments_raw")
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoArgumentsOld() *ProcedureShowOutputAssert {
+	p.ValueSet("arguments_old.#", "0")
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoReturnTypeOld() *ProcedureShowOutputAssert {
+	p.ValueNotSet("return_type_old")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoDescription() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("description"))
+	p.ValueNotSet("description")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoCatalogName() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("catalog_name"))
+	p.ValueNotSet("catalog_name")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoIsTableFunction() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_table_function"))
+	p.ValueNotSet("is_table_function")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoValidForClustering() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("valid_for_clustering"))
+	p.ValueNotSet("valid_for_clustering")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoIsSecure() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputBoolValueNotSet("is_secure"))
+	p.ValueNotSet("is_secure")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoSecrets() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("secrets"))
+	p.ValueNotSet("secrets")
 	return p
 }
 
 func (p *ProcedureShowOutputAssert) HasNoExternalAccessIntegrations() *ProcedureShowOutputAssert {
-	p.AddAssertion(assert.ResourceShowOutputValueNotSet("external_access_integrations"))
+	p.ValueNotSet("external_access_integrations")
 	return p
 }

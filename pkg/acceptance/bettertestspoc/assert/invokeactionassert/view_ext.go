@@ -15,5 +15,6 @@ func ViewDoesNotExist(t *testing.T, id sdk.SchemaObjectIdentifier) assert.TestCh
 		id,
 		func(testClient *helpers.TestClient) showByIDFunc[*sdk.View, sdk.SchemaObjectIdentifier] {
 			return testClient.View.Show
-		})
+		},
+	)
 }

@@ -121,7 +121,7 @@ func NetworkRule() *schema.Resource {
 	}
 }
 
-func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	name := d.Get("name").(string)
 	databaseName := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
@@ -163,7 +163,7 @@ func CreateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta 
 	return ReadContextNetworkRule(ctx, d, meta)
 }
 
-func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
@@ -215,7 +215,7 @@ func ReadContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta in
 	return diags
 }
 
-func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextNetworkRule(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {

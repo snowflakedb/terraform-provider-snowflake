@@ -28,11 +28,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		user, userCleanup := testClientHelper().User.CreateUser(t)
 		t.Cleanup(userCleanup)
 
-		err = client.Users.Alter(ctx, user.ID(), &sdk.AlterUserOptions{
-			Set: &sdk.UserSet{
-				PasswordPolicy: &passwordPolicyId,
-			},
-		})
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithSet(*sdk.NewUserSetRequest().WithPasswordPolicy(passwordPolicyId)))
 		require.NoError(t, err)
 
 		policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(user.ID(), sdk.PolicyEntityDomainUser))
@@ -55,7 +51,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		t.Cleanup(tagCleanup)
 
 		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).WithSet(
-			*sdk.NewTagSetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}),
+			*sdk.NewTagSetRequest().WithMaskingPolicies(*sdk.NewTagSetMaskingPoliciesRequest().WithMaskingPolicies([]sdk.TagMaskingPolicyRequest{*sdk.NewTagMaskingPolicyRequest(maskingPolicy.ID())})),
 		))
 		require.NoError(t, err)
 
@@ -66,7 +62,7 @@ func TestInt_PolicyReferences(t *testing.T) {
 		require.Equal(t, sdk.PolicyKindMaskingPolicy, policyReferences[0].PolicyKind)
 
 		err = client.Tags.Alter(ctx, sdk.NewAlterTagRequest(tag.ID()).WithUnset(
-			*sdk.NewTagUnsetRequest().WithMaskingPolicies([]sdk.SchemaObjectIdentifier{maskingPolicy.ID()}),
+			*sdk.NewTagUnsetRequest().WithMaskingPolicies(*sdk.NewTagUnsetMaskingPoliciesRequest().WithMaskingPolicies([]sdk.TagMaskingPolicyRequest{*sdk.NewTagMaskingPolicyRequest(maskingPolicy.ID())})),
 		))
 		require.NoError(t, err)
 	})

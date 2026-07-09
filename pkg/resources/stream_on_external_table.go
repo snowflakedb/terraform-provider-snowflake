@@ -166,7 +166,8 @@ func ReadStreamOnExternalTable(withExternalChangesMarking bool) schema.ReadConte
 			if stream.Mode != nil {
 				mode = *stream.Mode
 			}
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"mode", "insert_only", string(mode), booleanStringFromBool(stream.IsInsertOnly()), nil},
 			); err != nil {
 				return diag.FromErr(err)

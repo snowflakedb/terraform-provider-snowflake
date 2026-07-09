@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -35,11 +36,12 @@ var objectParameterSchema = map[string]*schema.Schema{
 		Description: "If true, the object parameter will be set on the account level.",
 	},
 	"object_type": {
-		Type:         schema.TypeString,
-		Optional:     true,
-		ForceNew:     true,
-		Description:  "Type of object to which the parameter applies. Valid values are those in [object types](https://docs.snowflake.com/en/sql-reference/parameters.html#object-types). If no value is provided, then the resource will default to setting the object parameter at account level.",
-		RequiredWith: []string{"object_identifier"},
+		Type:             schema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		Description:      "Type of object to which the parameter applies. Valid values are those in [object types](https://docs.snowflake.com/en/sql-reference/parameters.html#object-types). If no value is provided, then the resource will default to setting the object parameter at account level.",
+		RequiredWith:     []string{"object_identifier"},
+		ValidateDiagFunc: validators.NormalizeValidation(sdk.ToObjectType),
 	},
 	"object_identifier": {
 		Type:         schema.TypeList,
@@ -97,11 +99,15 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 
 	o := sdk.Object{}
 	if v, ok := d.GetOk("object_identifier"); ok {
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]interface{}))
+		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
 		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
 		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
 		o.Name = sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier)
-		o.ObjectType = sdk.ObjectType(d.Get("object_type").(string))
+		objectType, err := sdk.ToObjectType(d.Get("object_type").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		o.ObjectType = objectType
 	}
 
 	onAccount := d.Get("on_account").(bool)
@@ -160,7 +166,11 @@ func ReadObjectParameter(ctx context.Context, d *schema.ResourceData, meta any) 
 	if parts[1] == "" {
 		p, err = client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(key))
 	} else {
-		objectType := sdk.ObjectType(parts[1])
+		var objectType sdk.ObjectType
+		objectType, err = sdk.ToObjectType(parts[1])
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		objectIdentifier := parts[2]
 		objectIdentifier = strings.Trim(objectIdentifier, "\"")
 		p, err = client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameter(key), sdk.Object{
@@ -201,11 +211,15 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 		}
 	} else {
 		v := d.Get("object_identifier")
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]interface{}))
+		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
 		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
 		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
+		objectType, err := sdk.ToObjectType(d.Get("object_type").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		o := sdk.Object{
-			ObjectType: sdk.ObjectType(d.Get("object_type").(string)),
+			ObjectType: objectType,
 			Name:       sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier),
 		}
 		objectParameter := sdk.ObjectParameter(key)

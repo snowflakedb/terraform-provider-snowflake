@@ -25,12 +25,10 @@ func TestAcc_Provider_OauthWithClientCredentials(t *testing.T) {
 	oauthJwsKeysUrl := oauthIssuerUrl + "/v1/keys"
 	oauthTokenRequestUrl := oauthIssuerUrl + "/v1/token"
 
-	user, userCleanup := testClient().User.CreateUserWithOptions(t, sdk.NewAccountObjectIdentifier(oauthClientId), &sdk.CreateUserOptions{
-		ObjectProperties: &sdk.UserObjectProperties{
-			Type:      sdk.Pointer(sdk.UserTypeService),
-			LoginName: sdk.String(oauthClientId),
-		},
-	})
+	user, userCleanup := testClient().User.CreateUserWithRequest(t, sdk.NewCreateUserRequest(sdk.NewAccountObjectIdentifier(oauthClientId)).
+		WithObjectProperties(*sdk.NewUserObjectPropertiesRequest().
+			WithUserType(sdk.UserTypeService).
+			WithLoginName(oauthClientId)))
 	t.Cleanup(userCleanup)
 	testClient().Role.GrantRoleToUser(t, snowflakeroles.Restricted, user.ID())
 

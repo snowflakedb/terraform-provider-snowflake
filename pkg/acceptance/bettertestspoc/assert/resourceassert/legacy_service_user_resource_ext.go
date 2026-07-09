@@ -3,17 +3,16 @@ package resourceassert
 import (
 	"strconv"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 func (u *LegacyServiceUserResourceAssert) HasDisabledBool(expected bool) *LegacyServiceUserResourceAssert {
-	u.AddAssertion(assert.ValueSet("disabled", strconv.FormatBool(expected)))
+	u.ValueSet("disabled", strconv.FormatBool(expected))
 	return u
 }
 
 func (u *LegacyServiceUserResourceAssert) HasMustChangePasswordBool(expected bool) *LegacyServiceUserResourceAssert {
-	u.AddAssertion(assert.ValueSet("must_change_password", strconv.FormatBool(expected)))
+	u.ValueSet("must_change_password", strconv.FormatBool(expected))
 	return u
 }
 
@@ -22,29 +21,21 @@ func (u *LegacyServiceUserResourceAssert) HasDefaultSecondaryRolesOptionEnum(exp
 }
 
 func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityOidc(issuer, subject string, audienceList ...string) *LegacyServiceUserResourceAssert {
-	for _, assertion := range UserHasDefaultWorkloadIdentityOidcAssertions(issuer, subject, audienceList...) {
-		u.AddAssertion(assertion)
-	}
+	userApplyDefaultWorkloadIdentityOidcChecks(u.ResourceAssert, issuer, subject, audienceList...)
 	return u
 }
 
 func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityAws(arn string) *LegacyServiceUserResourceAssert {
-	for _, assertion := range UserHasDefaultWorkloadIdentityAwsAssertions(arn) {
-		u.AddAssertion(assertion)
-	}
+	userApplyDefaultWorkloadIdentityAwsChecks(u.ResourceAssert, arn)
 	return u
 }
 
 func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityAzure(issuer, subject string) *LegacyServiceUserResourceAssert {
-	for _, assertion := range UserHasDefaultWorkloadIdentityAzureAssertions(issuer, subject) {
-		u.AddAssertion(assertion)
-	}
+	userApplyDefaultWorkloadIdentityAzureChecks(u.ResourceAssert, issuer, subject)
 	return u
 }
 
 func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityGcp(subject string) *LegacyServiceUserResourceAssert {
-	for _, assertion := range UserHasDefaultWorkloadIdentityGcpAssertions(subject) {
-		u.AddAssertion(assertion)
-	}
+	userApplyDefaultWorkloadIdentityGcpChecks(u.ResourceAssert, subject)
 	return u
 }

@@ -16,7 +16,7 @@ func SessionPolicyResource(t *testing.T, name string) *SessionPolicyResourceAsse
 	t.Helper()
 
 	return &SessionPolicyResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedSessionPolicyResource(t *testing.T, id string) *SessionPolicyResour
 	t.Helper()
 
 	return &SessionPolicyResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -76,37 +76,37 @@ func (s *SessionPolicyResourceAssert) HasSessionUiIdleTimeoutMins(expected int) 
 ///////////////////////////////////
 
 func (s *SessionPolicyResourceAssert) HasDatabaseString(expected string) *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("database", expected))
+	s.ValueSet("database", expected)
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSchemaString(expected string) *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("schema", expected))
+	s.ValueSet("schema", expected)
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNameString(expected string) *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("name", expected))
+	s.ValueSet("name", expected)
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasCommentString(expected string) *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", expected))
+	s.ValueSet("comment", expected)
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasFullyQualifiedNameString(expected string) *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	s.ValueSet("fully_qualified_name", expected)
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSessionIdleTimeoutMinsString(expected string) *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("session_idle_timeout_mins", expected))
+	s.ValueSet("session_idle_timeout_mins", expected)
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSessionUiIdleTimeoutMinsString(expected string) *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("session_ui_idle_timeout_mins", expected))
+	s.ValueSet("session_ui_idle_timeout_mins", expected)
 	return s
 }
 
@@ -115,37 +115,37 @@ func (s *SessionPolicyResourceAssert) HasSessionUiIdleTimeoutMinsString(expected
 ///////////////////////////////
 
 func (s *SessionPolicyResourceAssert) HasNoDatabase() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("database"))
+	s.ValueNotSet("database")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNoSchema() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("schema"))
+	s.ValueNotSet("schema")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNoName() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("name"))
+	s.ValueNotSet("name")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNoComment() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("comment"))
+	s.ValueNotSet("comment")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNoFullyQualifiedName() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	s.ValueNotSet("fully_qualified_name")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNoSessionIdleTimeoutMins() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("session_idle_timeout_mins"))
+	s.ValueNotSet("session_idle_timeout_mins")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNoSessionUiIdleTimeoutMins() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueNotSet("session_ui_idle_timeout_mins"))
+	s.ValueNotSet("session_ui_idle_timeout_mins")
 	return s
 }
 
@@ -154,32 +154,32 @@ func (s *SessionPolicyResourceAssert) HasNoSessionUiIdleTimeoutMins() *SessionPo
 ////////////////////////////
 
 func (s *SessionPolicyResourceAssert) HasAllowedSecondaryRolesEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("allowed_secondary_roles.#", "0"))
+	s.ValueSet("allowed_secondary_roles.#", "0")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasBlockedSecondaryRolesEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("blocked_secondary_roles.#", "0"))
+	s.ValueSet("blocked_secondary_roles.#", "0")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasCommentEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("comment", ""))
+	s.ValueSet("comment", "")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasFullyQualifiedNameEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	s.ValueSet("fully_qualified_name", "")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSessionIdleTimeoutMinsEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("session_idle_timeout_mins", ""))
+	s.ValueSet("session_idle_timeout_mins", "")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSessionUiIdleTimeoutMinsEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValueSet("session_ui_idle_timeout_mins", ""))
+	s.ValueSet("session_ui_idle_timeout_mins", "")
 	return s
 }
 
@@ -188,36 +188,36 @@ func (s *SessionPolicyResourceAssert) HasSessionUiIdleTimeoutMinsEmpty() *Sessio
 ///////////////////////////////
 
 func (s *SessionPolicyResourceAssert) HasDatabaseNotEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("database"))
+	s.ValuePresent("database")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSchemaNotEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("schema"))
+	s.ValuePresent("schema")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasNameNotEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("name"))
+	s.ValuePresent("name")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasCommentNotEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("comment"))
+	s.ValuePresent("comment")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	s.ValuePresent("fully_qualified_name")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSessionIdleTimeoutMinsNotEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("session_idle_timeout_mins"))
+	s.ValuePresent("session_idle_timeout_mins")
 	return s
 }
 
 func (s *SessionPolicyResourceAssert) HasSessionUiIdleTimeoutMinsNotEmpty() *SessionPolicyResourceAssert {
-	s.AddAssertion(assert.ValuePresent("session_ui_idle_timeout_mins"))
+	s.ValuePresent("session_ui_idle_timeout_mins")
 	return s
 }

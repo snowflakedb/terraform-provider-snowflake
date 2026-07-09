@@ -84,8 +84,8 @@ var externalOauthIntegrationSchema = map[string]*schema.Schema{
 		Type:             schema.TypeSet,
 		Elem:             &schema.Schema{Type: schema.TypeString},
 		Optional:         true,
-		Description:      relatedResourceDescription(withPrivilegedRolesDescription("Specifies the list of roles that a client cannot set as the primary role.", string(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList)), resources.AccountRole),
-		DiffSuppressFunc: IgnoreValuesFromSetIfParamSet("external_oauth_blocked_roles_list", string(sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList), privilegedRoles),
+		Description:      relatedResourceDescription(withPrivilegedRolesDescription("Specifies the list of roles that a client cannot set as the primary role.", string(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList)), resources.AccountRole),
+		DiffSuppressFunc: IgnoreValuesFromSetIfParamSet("external_oauth_blocked_roles_list", string(sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList), privilegedRoles),
 		ConflictsWith:    []string{"external_oauth_allowed_roles_list"},
 	},
 	"external_oauth_allowed_roles_list": {
@@ -306,7 +306,7 @@ func ImportExternalOauthIntegration(ctx context.Context, d *schema.ResourceData,
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	enabled := d.Get("enabled").(bool)
 	externalOauthIssuer := d.Get("external_oauth_issuer").(string)
@@ -407,7 +407,7 @@ func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 }
 
 func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -519,7 +519,8 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err = handleExternalChangesToObjectInDescribe(d,
+			if err = handleExternalChangesToObjectInDescribe(
+				d,
 				describeMapping{"external_oauth_issuer", "external_oauth_issuer", externalOauthIssuer.Value, externalOauthIssuer.Value, nil},
 				describeMapping{"external_oauth_jws_keys_url", "external_oauth_jws_keys_url", externalOauthJwsKeysUrl.Value, sdk.ParseCommaSeparatedStringArray(externalOauthJwsKeysUrl.Value, false), nil},
 				describeMapping{"external_oauth_any_role_mode", "external_oauth_any_role_mode", externalOauthAnyRoleMode.Value, externalOauthAnyRoleMode.Value, nil},
@@ -558,7 +559,7 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 			return diag.FromErr(err)
 		}
 
-		param, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterExternalOAuthAddPrivilegedRolesToBlockedList)
+		param, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterExternalOauthAddPrivilegedRolesToBlockedList)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -569,7 +570,7 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 	}
 }
 
-func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

@@ -111,24 +111,25 @@ func UserProgrammaticAccessToken() *schema.Resource {
 			"See [Using programmatic access tokens for authentication](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens) user guide for more details.",
 		),
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.UserProgrammaticAccessToken, customdiff.All(
-			ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "disabled", "mins_to_bypass_network_policy_requirement", "comment"),
-			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
-				o, n := diff.GetChange("keeper")
-				// If the key is being rotated, mark the `token` and `rotated_token_name` as computed to inform that these values will change.
-				if shouldRotateToken(o.(string), n.(string), diff.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
-					errs := errors.Join(
-						diff.SetNewComputed("token"),
-						diff.SetNewComputed("rotated_token_name"),
-					)
-					if errs != nil {
-						return errs
+		CustomizeDiff: TrackingCustomDiffWrapper(
+			resources.UserProgrammaticAccessToken, customdiff.All(
+				ComputedIfAnyAttributeChanged(userProgrammaticAccessTokenSchema, ShowOutputAttributeName, "disabled", "mins_to_bypass_network_policy_requirement", "comment"),
+				func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+					o, n := diff.GetChange("keeper")
+					// If the key is being rotated, mark the `token` and `rotated_token_name` as computed to inform that these values will change.
+					if shouldRotateToken(o.(string), n.(string), diff.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
+						errs := errors.Join(
+							diff.SetNewComputed("token"),
+							diff.SetNewComputed("rotated_token_name"),
+						)
+						if errs != nil {
+							return errs
+						}
 					}
-				}
 
-				return nil
-			},
-		),
+					return nil
+				},
+			),
 		),
 
 		Schema: userProgrammaticAccessTokenSchema,
@@ -241,7 +242,8 @@ func ReadUserProgrammaticAccessToken(withExternalChangesMarking bool) schema.Rea
 		}
 
 		if withExternalChangesMarking {
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"status", "disabled", string(token.Status), booleanStringFromBool(token.Status == sdk.ProgrammaticAccessTokenStatusDisabled), nil},
 			); err != nil {
 				return diag.FromErr(err)

@@ -199,7 +199,8 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 			{
 				Destroy: true,
 				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					invokeactionassert.RowAccessPolicyDoesNotExist(t, id),
 				),
 			},
@@ -251,7 +252,8 @@ func TestAcc_RowAccessPolicy_CompleteUseCase_ExternalChangeDetectionForArguments
 			// Create - with original arguments
 			{
 				Config: accconfig.FromModels(t, policyModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.RowAccessPolicy(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -275,7 +277,8 @@ func TestAcc_RowAccessPolicy_CompleteUseCase_ExternalChangeDetectionForArguments
 					},
 				},
 				Config: accconfig.FromModels(t, policyModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.RowAccessPolicy(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -333,9 +336,10 @@ func TestAcc_RowAccessPolicy_Issue2053(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasBodyString(`case
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasBodyString(`case
   when current_role() in ('ANALYST') then true
   else false
 end`),
@@ -388,9 +392,10 @@ func TestAcc_RowAccessPolicy_Rename(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicy/basic"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 				),
 			},
 			// rename
@@ -402,9 +407,10 @@ func TestAcc_RowAccessPolicy_Rename(t *testing.T) {
 						plancheck.ExpectResourceAction(renamedPolicyModel.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, renamedPolicyModel.ResourceReference()).
-					HasNameString(newId.Name()).
-					HasFullyQualifiedNameString(newId.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, renamedPolicyModel.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()),
 				),
 			},
 		},
@@ -462,14 +468,15 @@ func TestAcc_RowAccessPolicy_DataTypeAliases(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_RowAccessPolicy/basic"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeText,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeText,
+							},
+						}),
 				),
 			},
 		},
@@ -507,11 +514,12 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 					},
 				},
 				ExpectNonEmptyPlan: true,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "row_access_expression", body)),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.A", string(sdk.DataTypeVARCHAR))),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.B", string(sdk.DataTypeVARCHAR))),
@@ -529,12 +537,13 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasBodyString(body),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", string(sdk.DataTypeVARCHAR))),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.name", "b")),
@@ -576,11 +585,12 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 					},
 				},
 				ExpectNonEmptyPlan: true,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "row_access_expression", body)),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.A", string(sdk.DataTypeVARCHAR))),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.B", string(sdk.DataTypeVARCHAR))),
@@ -595,12 +605,13 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasNameString(id.Name()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasBodyString(body),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasBodyString(body),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", string(sdk.DataTypeVARCHAR))),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.name", "B")),
@@ -651,8 +662,9 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("1.2.1"),
 				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
@@ -668,14 +680,15 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionNoop),
 					},
 				},
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 		},
@@ -708,8 +721,9 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("1.2.1"),
 				Config:            accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables:   commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
@@ -727,14 +741,15 @@ func TestAcc_RowAccessPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 						plancheck.ExpectResourceAction(policyModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar_100,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar_100,
+							},
+						}),
 				),
 			},
 		},
@@ -775,14 +790,15 @@ func TestAcc_RowAccessPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 			{
@@ -793,14 +809,15 @@ func TestAcc_RowAccessPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: updatedDataType,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar_100,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar_100,
+							},
+						}),
 				),
 			},
 		},
@@ -837,14 +854,15 @@ func TestAcc_RowAccessPolicy_dataType_externalChange(t *testing.T) {
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 			{
@@ -860,14 +878,15 @@ func TestAcc_RowAccessPolicy_dataType_externalChange(t *testing.T) {
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 		},
@@ -904,14 +923,15 @@ func TestAcc_RowAccessPolicy_dataType_argumentExternalChangeSuppressed(t *testin
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 			{
@@ -927,14 +947,15 @@ func TestAcc_RowAccessPolicy_dataType_argumentExternalChangeSuppressed(t *testin
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 		},
@@ -972,14 +993,15 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeMoreArguments(t *testing.T) 
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 			{
@@ -995,14 +1017,15 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeMoreArguments(t *testing.T) 
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 		},
@@ -1043,18 +1066,19 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T)
 			{
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-						{
-							Name: "B",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+							{
+								Name: "B",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 			{
@@ -1070,18 +1094,19 @@ func TestAcc_RowAccessPolicy_dataType_externalChangeFewerArguments(t *testing.T)
 				},
 				Config:          accconfig.FromModels(t, variableModel, policyModel),
 				ConfigVariables: commonVariables,
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasArguments([]sdk.TableColumnSignature{
-						{
-							Name: "A",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-						{
-							Name: "B",
-							Type: testdatatypes.DataTypeVarchar,
-						},
-					}),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, policyModel.ResourceReference()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasArguments([]sdk.TableColumnSignature{
+							{
+								Name: "A",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+							{
+								Name: "B",
+								Type: testdatatypes.DataTypeVarchar,
+							},
+						}),
 				),
 			},
 		},
@@ -1111,14 +1136,15 @@ func TestAcc_RowAccessPolicy_Decfloat(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, basic),
-				Check: assertThat(t, resourceassert.RowAccessPolicyResource(t, basic.ResourceReference()).
-					HasNameString(id.Name()).
-					HasFullyQualifiedNameString(id.FullyQualifiedName()).
-					HasDatabaseString(id.DatabaseName()).
-					HasSchemaString(id.SchemaName()).
-					HasBodyString(body).
-					HasCommentString("").
-					HasArguments(argument),
+				Check: assertThat(
+					t, resourceassert.RowAccessPolicyResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasBodyString(body).
+						HasCommentString("").
+						HasArguments(argument),
 					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.name", "A")),
 					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DataTypeDecfloat.ToSql())),

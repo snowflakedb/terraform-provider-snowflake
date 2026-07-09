@@ -16,7 +16,7 @@ func JobServiceResource(t *testing.T, name string) *JobServiceResourceAssert {
 	t.Helper()
 
 	return &JobServiceResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedJobServiceResource(t *testing.T, id string) *JobServiceResourceAsse
 	t.Helper()
 
 	return &JobServiceResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -86,42 +86,42 @@ func (j *JobServiceResourceAssert) HasServiceType(expected string) *JobServiceRe
 ///////////////////////////////////
 
 func (j *JobServiceResourceAssert) HasDatabaseString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("database", expected))
+	j.ValueSet("database", expected)
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasSchemaString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("schema", expected))
+	j.ValueSet("schema", expected)
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNameString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("name", expected))
+	j.ValueSet("name", expected)
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasCommentString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("comment", expected))
+	j.ValueSet("comment", expected)
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasComputePoolString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("compute_pool", expected))
+	j.ValueSet("compute_pool", expected)
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasFullyQualifiedNameString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	j.ValueSet("fully_qualified_name", expected)
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasQueryWarehouseString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("query_warehouse", expected))
+	j.ValueSet("query_warehouse", expected)
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasServiceTypeString(expected string) *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("service_type", expected))
+	j.ValueSet("service_type", expected)
 	return j
 }
 
@@ -130,42 +130,42 @@ func (j *JobServiceResourceAssert) HasServiceTypeString(expected string) *JobSer
 ///////////////////////////////
 
 func (j *JobServiceResourceAssert) HasNoDatabase() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("database"))
+	j.ValueNotSet("database")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNoSchema() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("schema"))
+	j.ValueNotSet("schema")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNoName() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("name"))
+	j.ValueNotSet("name")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNoComment() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("comment"))
+	j.ValueNotSet("comment")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNoComputePool() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("compute_pool"))
+	j.ValueNotSet("compute_pool")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNoFullyQualifiedName() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	j.ValueNotSet("fully_qualified_name")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNoQueryWarehouse() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("query_warehouse"))
+	j.ValueNotSet("query_warehouse")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNoServiceType() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueNotSet("service_type"))
+	j.ValueNotSet("service_type")
 	return j
 }
 
@@ -174,37 +174,37 @@ func (j *JobServiceResourceAssert) HasNoServiceType() *JobServiceResourceAssert 
 ////////////////////////////
 
 func (j *JobServiceResourceAssert) HasCommentEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("comment", ""))
+	j.ValueSet("comment", "")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasExternalAccessIntegrationsEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("external_access_integrations.#", "0"))
+	j.ValueSet("external_access_integrations.#", "0")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasFromSpecificationEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("from_specification.#", "0"))
+	j.ValueSet("from_specification.#", "0")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasFromSpecificationTemplateEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("from_specification_template.#", "0"))
+	j.ValueSet("from_specification_template.#", "0")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasFullyQualifiedNameEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	j.ValueSet("fully_qualified_name", "")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasQueryWarehouseEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("query_warehouse", ""))
+	j.ValueSet("query_warehouse", "")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasServiceTypeEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValueSet("service_type", ""))
+	j.ValueSet("service_type", "")
 	return j
 }
 
@@ -213,41 +213,41 @@ func (j *JobServiceResourceAssert) HasServiceTypeEmpty() *JobServiceResourceAsse
 ///////////////////////////////
 
 func (j *JobServiceResourceAssert) HasDatabaseNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("database"))
+	j.ValuePresent("database")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasSchemaNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("schema"))
+	j.ValuePresent("schema")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasNameNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("name"))
+	j.ValuePresent("name")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasCommentNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("comment"))
+	j.ValuePresent("comment")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasComputePoolNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("compute_pool"))
+	j.ValuePresent("compute_pool")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasFullyQualifiedNameNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	j.ValuePresent("fully_qualified_name")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasQueryWarehouseNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("query_warehouse"))
+	j.ValuePresent("query_warehouse")
 	return j
 }
 
 func (j *JobServiceResourceAssert) HasServiceTypeNotEmpty() *JobServiceResourceAssert {
-	j.AddAssertion(assert.ValuePresent("service_type"))
+	j.ValuePresent("service_type")
 	return j
 }

@@ -17,9 +17,8 @@ func FunctionResourceParameters(t *testing.T, name string) *FunctionResourcePara
 	t.Helper()
 
 	resourceParameterAssert := FunctionResourceParametersAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -27,9 +26,8 @@ func ImportedFunctionResourceParameters(t *testing.T, id string) *FunctionResour
 	t.Helper()
 
 	resourceParameterAssert := FunctionResourceParametersAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -38,27 +36,27 @@ func ImportedFunctionResourceParameters(t *testing.T, id string) *FunctionResour
 ////////////////////////////
 
 func (f *FunctionResourceParametersAssert) HasEnableConsoleOutput(expected bool) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterBoolValueSet(sdk.FunctionParameterEnableConsoleOutput, expected))
+	f.ParameterBoolValueSet(string(sdk.FunctionParameterEnableConsoleOutput), expected)
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.FunctionParameterLogLevel, expected))
+	f.ParameterValueSet(string(sdk.FunctionParameterLogLevel), string(expected))
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.FunctionParameterLogEventLevel, expected))
+	f.ParameterValueSet(string(sdk.FunctionParameterLogEventLevel), string(expected))
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.FunctionParameterMetricLevel, expected))
+	f.ParameterValueSet(string(sdk.FunctionParameterMetricLevel), string(expected))
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterStringUnderlyingValueSet(sdk.FunctionParameterTraceLevel, expected))
+	f.ParameterValueSet(string(sdk.FunctionParameterTraceLevel), string(expected))
 	return f
 }
 
@@ -67,26 +65,26 @@ func (f *FunctionResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel
 ////////////////////////////
 
 func (f *FunctionResourceParametersAssert) HasEnableConsoleOutputLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterLevelSet(sdk.FunctionParameterEnableConsoleOutput, expected))
+	f.ParameterLevelSet(string(sdk.FunctionParameterEnableConsoleOutput), expected)
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterLevelSet(sdk.FunctionParameterLogLevel, expected))
+	f.ParameterLevelSet(string(sdk.FunctionParameterLogLevel), expected)
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterLevelSet(sdk.FunctionParameterLogEventLevel, expected))
+	f.ParameterLevelSet(string(sdk.FunctionParameterLogEventLevel), expected)
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasMetricLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterLevelSet(sdk.FunctionParameterMetricLevel, expected))
+	f.ParameterLevelSet(string(sdk.FunctionParameterMetricLevel), expected)
 	return f
 }
 
 func (f *FunctionResourceParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *FunctionResourceParametersAssert {
-	f.AddAssertion(assert.ResourceParameterLevelSet(sdk.FunctionParameterTraceLevel, expected))
+	f.ParameterLevelSet(string(sdk.FunctionParameterTraceLevel), expected)
 	return f
 }

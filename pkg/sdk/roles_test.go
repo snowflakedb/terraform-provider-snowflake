@@ -136,7 +136,7 @@ func TestRolesAlter(t *testing.T) {
 		opts := &AlterRoleOptions{
 			name: randomAccountObjectIdentifier(),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterRoleOptions", "RenameTo", "SetComment", "UnsetComment", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterRoleOptions", "RenameTo", "SetComment", "SetTags", "UnsetComment", "UnsetTags"))
 	})
 
 	t.Run("validation: more than one alter action specified", func(t *testing.T) {
@@ -145,7 +145,7 @@ func TestRolesAlter(t *testing.T) {
 			SetComment:   String("comment"),
 			UnsetComment: Bool(true),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterRoleOptions", "RenameTo", "SetComment", "UnsetComment", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterRoleOptions", "RenameTo", "SetComment", "SetTags", "UnsetComment", "UnsetTags"))
 	})
 }
 
@@ -164,13 +164,13 @@ func TestRolesShow(t *testing.T) {
 	})
 
 	t.Run("in class", func(t *testing.T) {
-		class := NewAccountObjectIdentifier("some_class")
+		class := randomSchemaObjectIdentifier()
 		opts := &ShowRoleOptions{
 			InClass: &RolesInClass{
-				Class: &class,
+				Class: class,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW ROLES IN CLASS "some_class"`)
+		assertOptsValidAndSQLEquals(t, opts, `SHOW ROLES IN CLASS %s`, class.FullyQualifiedName())
 	})
 
 	t.Run("validation: like with no pattern", func(t *testing.T) {
@@ -181,10 +181,9 @@ func TestRolesShow(t *testing.T) {
 	})
 
 	t.Run("validation: invalid class name", func(t *testing.T) {
-		class := emptyAccountObjectIdentifier
 		opts := &ShowRoleOptions{
 			InClass: &RolesInClass{
-				Class: &class,
+				Class: emptySchemaObjectIdentifier,
 			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
@@ -195,7 +194,7 @@ func TestRolesGrant(t *testing.T) {
 	t.Run("user grant", func(t *testing.T) {
 		opts := &GrantRoleOptions{
 			name: NewAccountObjectIdentifier("new_role"),
-			Grant: GrantRole{
+			Grant: GrantRoleTo{
 				User: &AccountObjectIdentifier{name: "some_user"},
 			},
 		}
@@ -205,7 +204,7 @@ func TestRolesGrant(t *testing.T) {
 	t.Run("role grant", func(t *testing.T) {
 		opts := &GrantRoleOptions{
 			name: NewAccountObjectIdentifier("new_role"),
-			Grant: GrantRole{
+			Grant: GrantRoleTo{
 				Role: &AccountObjectIdentifier{name: "parent_role"},
 			},
 		}
@@ -216,14 +215,14 @@ func TestRolesGrant(t *testing.T) {
 		opts := &GrantRoleOptions{
 			name: emptyAccountObjectIdentifier,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("GrantRoleOptions.Grant", "Role", "User"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errExactlyOneOf("GrantRoleOptions.Grant", "Role", "User"))
 	})
 
 	t.Run("validation: invalid object identifier for granted role", func(t *testing.T) {
 		id := emptyAccountObjectIdentifier
 		opts := &GrantRoleOptions{
 			name: randomAccountObjectIdentifier(),
-			Grant: GrantRole{
+			Grant: GrantRoleTo{
 				Role: &id,
 			},
 		}
@@ -234,7 +233,7 @@ func TestRolesGrant(t *testing.T) {
 		id := emptyAccountObjectIdentifier
 		opts := &GrantRoleOptions{
 			name: randomAccountObjectIdentifier(),
-			Grant: GrantRole{
+			Grant: GrantRoleTo{
 				User: &id,
 			},
 		}
@@ -246,7 +245,7 @@ func TestRolesRevoke(t *testing.T) {
 	t.Run("revoke user", func(t *testing.T) {
 		opts := &RevokeRoleOptions{
 			name: NewAccountObjectIdentifier("new_role"),
-			Revoke: RevokeRole{
+			Revoke: RevokeRoleFrom{
 				User: &AccountObjectIdentifier{name: "some_user"},
 			},
 		}
@@ -256,7 +255,7 @@ func TestRolesRevoke(t *testing.T) {
 	t.Run("revoke role", func(t *testing.T) {
 		opts := &RevokeRoleOptions{
 			name: NewAccountObjectIdentifier("new_role"),
-			Revoke: RevokeRole{
+			Revoke: RevokeRoleFrom{
 				Role: &AccountObjectIdentifier{name: "parent_role"},
 			},
 		}
@@ -267,6 +266,6 @@ func TestRolesRevoke(t *testing.T) {
 		opts := &RevokeRoleOptions{
 			name: emptyAccountObjectIdentifier,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errOneOf("RevokeRoleOptions.Revoke", "Role", "User"))
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier, errExactlyOneOf("RevokeRoleOptions.Revoke", "Role", "User"))
 	})
 }

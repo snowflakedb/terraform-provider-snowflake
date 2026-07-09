@@ -52,11 +52,19 @@ func (opts *alterDynamicTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if ok := exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Refresh, opts.Set); !ok {
-		errs = append(errs, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set"))
+	if ok := exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Refresh, opts.Set, opts.SetComment, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy); !ok {
+		errs = append(errs, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	}
 	if valueSet(opts.Set) && valueSet(opts.Set.TargetLag) {
 		errs = append(errs, opts.Set.TargetLag.validate())
+	}
+	if addStorageLifecyclePolicy := opts.AddStorageLifecyclePolicy; valueSet(addStorageLifecyclePolicy) {
+		if !ValidObjectIdentifier(addStorageLifecyclePolicy.StorageLifecyclePolicy) {
+			errs = append(errs, errInvalidIdentifier("DynamicTableAddStorageLifecyclePolicy", "StorageLifecyclePolicy"))
+		}
+		if len(addStorageLifecyclePolicy.On) == 0 {
+			errs = append(errs, errNotSet("DynamicTableAddStorageLifecyclePolicy", "On"))
+		}
 	}
 	return JoinErrors(errs...)
 }

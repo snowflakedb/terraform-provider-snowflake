@@ -16,7 +16,7 @@ func ExternalOauthSecurityIntegrationResource(t *testing.T, name string) *Extern
 	t.Helper()
 
 	return &ExternalOauthSecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedExternalOauthSecurityIntegrationResource(t *testing.T, id string) *
 	t.Helper()
 
 	return &ExternalOauthSecurityIntegrationResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -124,62 +124,62 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedName(e
 ///////////////////////////////////
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNameString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("name", expected))
+	e.ValueSet("name", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasCommentString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("comment", expected))
+	e.ValueSet("comment", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasEnabledString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("enabled", expected))
+	e.ValueSet("enabled", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAnyRoleModeString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_any_role_mode", expected))
+	e.ValueSet("external_oauth_any_role_mode", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthIssuerString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_issuer", expected))
+	e.ValueSet("external_oauth_issuer", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKeyString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_rsa_public_key", expected))
+	e.ValueSet("external_oauth_rsa_public_key", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKey2String(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_rsa_public_key_2", expected))
+	e.ValueSet("external_oauth_rsa_public_key_2", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeDelimiterString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_scope_delimiter", expected))
+	e.ValueSet("external_oauth_scope_delimiter", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeMappingAttributeString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_scope_mapping_attribute", expected))
+	e.ValueSet("external_oauth_scope_mapping_attribute", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthSnowflakeUserMappingAttributeString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_snowflake_user_mapping_attribute", expected))
+	e.ValueSet("external_oauth_snowflake_user_mapping_attribute", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTypeString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_type", expected))
+	e.ValueSet("external_oauth_type", expected)
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	e.ValueSet("fully_qualified_name", expected)
 	return e
 }
 
@@ -188,62 +188,62 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameSt
 ///////////////////////////////
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoName() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("name"))
+	e.ValueNotSet("name")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoComment() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("comment"))
+	e.ValueNotSet("comment")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoEnabled() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("enabled"))
+	e.ValueNotSet("enabled")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthAnyRoleMode() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_any_role_mode"))
+	e.ValueNotSet("external_oauth_any_role_mode")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthIssuer() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_issuer"))
+	e.ValueNotSet("external_oauth_issuer")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthRsaPublicKey() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_rsa_public_key"))
+	e.ValueNotSet("external_oauth_rsa_public_key")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthRsaPublicKey2() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_rsa_public_key_2"))
+	e.ValueNotSet("external_oauth_rsa_public_key_2")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthScopeDelimiter() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_scope_delimiter"))
+	e.ValueNotSet("external_oauth_scope_delimiter")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthScopeMappingAttribute() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_scope_mapping_attribute"))
+	e.ValueNotSet("external_oauth_scope_mapping_attribute")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthSnowflakeUserMappingAttribute() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_snowflake_user_mapping_attribute"))
+	e.ValueNotSet("external_oauth_snowflake_user_mapping_attribute")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoExternalOauthType() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("external_oauth_type"))
+	e.ValueNotSet("external_oauth_type")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoFullyQualifiedName() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	e.ValueNotSet("fully_qualified_name")
 	return e
 }
 
@@ -252,62 +252,62 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoFullyQualifiedName
 ////////////////////////////
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasCommentEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("comment", ""))
+	e.ValueSet("comment", "")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAllowedRolesListEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_allowed_roles_list.#", "0"))
+	e.ValueSet("external_oauth_allowed_roles_list.#", "0")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAnyRoleModeEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_any_role_mode", ""))
+	e.ValueSet("external_oauth_any_role_mode", "")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAudienceListEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_audience_list.#", "0"))
+	e.ValueSet("external_oauth_audience_list.#", "0")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthBlockedRolesListEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_blocked_roles_list.#", "0"))
+	e.ValueSet("external_oauth_blocked_roles_list.#", "0")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthJwsKeysUrlEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_jws_keys_url.#", "0"))
+	e.ValueSet("external_oauth_jws_keys_url.#", "0")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKeyEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_rsa_public_key", ""))
+	e.ValueSet("external_oauth_rsa_public_key", "")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKey2Empty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_rsa_public_key_2", ""))
+	e.ValueSet("external_oauth_rsa_public_key_2", "")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeDelimiterEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_scope_delimiter", ""))
+	e.ValueSet("external_oauth_scope_delimiter", "")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeMappingAttributeEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("external_oauth_scope_mapping_attribute", ""))
+	e.ValueSet("external_oauth_scope_mapping_attribute", "")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	e.ValueSet("fully_qualified_name", "")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasRelatedParametersEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValueSet("related_parameters.#", "0"))
+	e.ValueSet("related_parameters.#", "0")
 	return e
 }
 
@@ -316,61 +316,61 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasRelatedParametersEmp
 ///////////////////////////////
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNameNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("name"))
+	e.ValuePresent("name")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasCommentNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("comment"))
+	e.ValuePresent("comment")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasEnabledNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("enabled"))
+	e.ValuePresent("enabled")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthAnyRoleModeNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_any_role_mode"))
+	e.ValuePresent("external_oauth_any_role_mode")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthIssuerNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_issuer"))
+	e.ValuePresent("external_oauth_issuer")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKeyNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_rsa_public_key"))
+	e.ValuePresent("external_oauth_rsa_public_key")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthRsaPublicKey2NotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_rsa_public_key_2"))
+	e.ValuePresent("external_oauth_rsa_public_key_2")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeDelimiterNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_scope_delimiter"))
+	e.ValuePresent("external_oauth_scope_delimiter")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeMappingAttributeNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_scope_mapping_attribute"))
+	e.ValuePresent("external_oauth_scope_mapping_attribute")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthSnowflakeUserMappingAttributeNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_snowflake_user_mapping_attribute"))
+	e.ValuePresent("external_oauth_snowflake_user_mapping_attribute")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTypeNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("external_oauth_type"))
+	e.ValuePresent("external_oauth_type")
 	return e
 }
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
-	e.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	e.ValuePresent("fully_qualified_name")
 	return e
 }

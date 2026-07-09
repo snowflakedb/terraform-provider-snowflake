@@ -42,7 +42,7 @@ func AccountPasswordPolicyAttachment() *schema.Resource {
 }
 
 // CreateAccountPasswordPolicyAttachment implements schema.CreateFunc.
-func CreateAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	passwordPolicy, ok := sdk.NewObjectIdentifierFromFullyQualifiedName(d.Get("password_policy").(string)).(sdk.SchemaObjectIdentifier)
@@ -64,7 +64,7 @@ func CreateAccountPasswordPolicyAttachment(ctx context.Context, d *schema.Resour
 	return ReadAccountPasswordPolicyAttachment(ctx, d, meta)
 }
 
-func ReadAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	passwordPolicy := helpers.DecodeSnowflakeIDLegacy(d.Id())
 	if err := d.Set("password_policy", passwordPolicy.FullyQualifiedName()); err != nil {
 		return diag.FromErr(err)
@@ -74,7 +74,7 @@ func ReadAccountPasswordPolicyAttachment(ctx context.Context, d *schema.Resource
 }
 
 // DeleteAccountPasswordPolicyAttachment implements schema.DeleteFunc.
-func DeleteAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DeleteAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{

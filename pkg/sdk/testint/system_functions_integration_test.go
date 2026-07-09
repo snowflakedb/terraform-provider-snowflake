@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -75,11 +76,7 @@ func TestInt_PipeStatus(t *testing.T) {
 
 	// Pause the pipe
 	ctx := context.Background()
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(true),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 	require.NoError(t, err)
 
 	pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
@@ -87,11 +84,7 @@ func TestInt_PipeStatus(t *testing.T) {
 	require.Equal(t, sdk.PausedPipeExecutionState, pipeExecutionState)
 
 	// Unpause the pipe
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(false),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 	require.NoError(t, err)
 
 	pipeExecutionState, err = client.SystemFunctions.PipeStatus(pipe.ID())
@@ -123,11 +116,7 @@ func TestInt_PipeForceResume(t *testing.T) {
 	require.Equal(t, sdk.RunningPipeExecutionState, pipeExecutionState)
 
 	ctx := context.Background()
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(true),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 	require.NoError(t, err)
 
 	// Move the ownership to the role and back to the currently used role by the client
@@ -164,11 +153,7 @@ func TestInt_PipeForceResume(t *testing.T) {
 	require.NoError(t, err)
 
 	// Try to resume with ALTER (error)
-	err = client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-		Set: &sdk.PipeSet{
-			PipeExecutionPaused: sdk.Bool(false),
-		},
-	})
+	err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 	require.ErrorContains(t, err, fmt.Sprintf("Pipe %s cannot be resumed as ownership had changed. Resuming pipe may load files inserted by previous owner into table. To forceresume pipe use SYSTEM$PIPE_FORCE_RESUME('%s')", pipe.Name, pipe.Name))
 
 	// Resume with system func (success)
@@ -199,6 +184,62 @@ func TestInt_GetIcebergTableInformation(t *testing.T) {
 	t.Run("get iceberg table information fails when the table does not exist", func(t *testing.T) {
 		_, err := client.SystemFunctions.GetIcebergTableInformation(ctx, testClientHelper().Ids.RandomSchemaObjectIdentifier())
 		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+}
+
+func TestInt_GetClusteringInformation(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	t.Run("clustered table - using the defined clustering key", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}).WithClusterBy([]string{"REGION"}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.NoError(t, err)
+		require.NotNil(t, info)
+		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
+		assert.NotNil(t, info.PartitionDepthHistogram)
+		assert.Empty(t, info.ClusteringErrors)
+	})
+
+	t.Run("unclustered table - using explicit columns", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "region", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id, "region")
+		require.NoError(t, err)
+		require.NotNil(t, info)
+		assert.Equal(t, `LINEAR("region")`, info.ClusterByKeys)
+	})
+
+	t.Run("unclustered table - without columns returns an error", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		_, err = client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrTableNotClustered)
 	})
 }
 

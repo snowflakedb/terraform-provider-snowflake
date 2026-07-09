@@ -27,7 +27,7 @@
 {{ range .Attributes }}
     {{ if not .IsCollection -}}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}String(expected string) *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", expected))
+        {{ $assertVar }}.ValueSet("{{ .Name }}", expected)
         return {{ $assertVar }}
     }
 
@@ -41,7 +41,7 @@
 {{ range .Attributes }}
     {{ if not .IsCollection -}}
     func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ SnakeCaseToCamel .Name }}() *{{ $assertName }} {
-        {{ $assertVar }}.AddAssertion(assert.ValueNotSet("{{ .Name }}"))
+        {{ $assertVar }}.ValueNotSet("{{ .Name }}")
         return {{ $assertVar }}
     }
 
@@ -56,10 +56,10 @@
     {{ if not .IsRequired }}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}Empty() *{{ $assertName }} {
             {{ if .IsCollection -}}
-                {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}.#", "0"))
+                {{ $assertVar }}.ValueSet("{{ .Name }}.#", "0")
                 return {{ $assertVar }}
             {{ else -}}
-                {{ $assertVar }}.AddAssertion(assert.ValueSet("{{ .Name }}", ""))
+                {{ $assertVar }}.ValueSet("{{ .Name }}", "")
                 return {{ $assertVar }}
             {{ end -}}
         }
@@ -74,7 +74,7 @@
 {{ range .Attributes -}}
     {{ if not .IsCollection }}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}NotEmpty() *{{ $assertName }} {
-            {{ $assertVar }}.AddAssertion(assert.ValuePresent("{{ .Name }}"))
+            {{ $assertVar }}.ValuePresent("{{ .Name }}")
             return {{ $assertVar }}
         }
     {{ end }}

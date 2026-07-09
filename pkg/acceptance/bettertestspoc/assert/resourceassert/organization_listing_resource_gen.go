@@ -16,7 +16,7 @@ func OrganizationListingResource(t *testing.T, name string) *OrganizationListing
 	t.Helper()
 
 	return &OrganizationListingResourceAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "resource"),
+		ResourceAssert: assert.NewResourceAssert(name),
 	}
 }
 
@@ -24,7 +24,7 @@ func ImportedOrganizationListingResource(t *testing.T, id string) *OrganizationL
 	t.Helper()
 
 	return &OrganizationListingResourceAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported resource"),
+		ResourceAssert: assert.NewImportedResourceAssert(id),
 	}
 }
 
@@ -69,32 +69,32 @@ func (o *OrganizationListingResourceAssert) HasShare(expected string) *Organizat
 ///////////////////////////////////
 
 func (o *OrganizationListingResourceAssert) HasNameString(expected string) *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("name", expected))
+	o.ValueSet("name", expected)
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasApplicationPackageString(expected string) *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("application_package", expected))
+	o.ValueSet("application_package", expected)
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasCommentString(expected string) *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("comment", expected))
+	o.ValueSet("comment", expected)
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasFullyQualifiedNameString(expected string) *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("fully_qualified_name", expected))
+	o.ValueSet("fully_qualified_name", expected)
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasPublishString(expected string) *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("publish", expected))
+	o.ValueSet("publish", expected)
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasShareString(expected string) *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("share", expected))
+	o.ValueSet("share", expected)
 	return o
 }
 
@@ -103,32 +103,32 @@ func (o *OrganizationListingResourceAssert) HasShareString(expected string) *Org
 ///////////////////////////////
 
 func (o *OrganizationListingResourceAssert) HasNoName() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("name"))
+	o.ValueNotSet("name")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasNoApplicationPackage() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("application_package"))
+	o.ValueNotSet("application_package")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasNoComment() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("comment"))
+	o.ValueNotSet("comment")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasNoFullyQualifiedName() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("fully_qualified_name"))
+	o.ValueNotSet("fully_qualified_name")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasNoPublish() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("publish"))
+	o.ValueNotSet("publish")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasNoShare() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueNotSet("share"))
+	o.ValueNotSet("share")
 	return o
 }
 
@@ -137,27 +137,27 @@ func (o *OrganizationListingResourceAssert) HasNoShare() *OrganizationListingRes
 ////////////////////////////
 
 func (o *OrganizationListingResourceAssert) HasApplicationPackageEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("application_package", ""))
+	o.ValueSet("application_package", "")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasCommentEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("comment", ""))
+	o.ValueSet("comment", "")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasFullyQualifiedNameEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("fully_qualified_name", ""))
+	o.ValueSet("fully_qualified_name", "")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasPublishEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("publish", ""))
+	o.ValueSet("publish", "")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasShareEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValueSet("share", ""))
+	o.ValueSet("share", "")
 	return o
 }
 
@@ -166,31 +166,31 @@ func (o *OrganizationListingResourceAssert) HasShareEmpty() *OrganizationListing
 ///////////////////////////////
 
 func (o *OrganizationListingResourceAssert) HasNameNotEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValuePresent("name"))
+	o.ValuePresent("name")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasApplicationPackageNotEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValuePresent("application_package"))
+	o.ValuePresent("application_package")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasCommentNotEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValuePresent("comment"))
+	o.ValuePresent("comment")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasFullyQualifiedNameNotEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValuePresent("fully_qualified_name"))
+	o.ValuePresent("fully_qualified_name")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasPublishNotEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValuePresent("publish"))
+	o.ValuePresent("publish")
 	return o
 }
 
 func (o *OrganizationListingResourceAssert) HasShareNotEmpty() *OrganizationListingResourceAssert {
-	o.AddAssertion(assert.ValuePresent("share"))
+	o.ValuePresent("share")
 	return o
 }

@@ -1685,11 +1685,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(false),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
@@ -1747,11 +1743,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(false),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
@@ -1802,11 +1794,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 			pipeCleanup()
 		})
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(false),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(false)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
@@ -1848,11 +1836,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 			pipeCleanup()
 		})
 
-		err := client.Pipes.Alter(ctx, pipe.ID(), &sdk.AlterPipeOptions{
-			Set: &sdk.PipeSet{
-				PipeExecutionPaused: sdk.Bool(true),
-			},
-		})
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
 		require.NoError(t, err)
 
 		pipeExecutionState, err := client.SystemFunctions.PipeStatus(pipe.ID())
@@ -2124,6 +2108,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 	})
 
 	t.Run("on all tasks - with operate", func(t *testing.T) {
+		currentRole := testClientHelper().Context.CurrentRole(t)
+
 		taskRole, taskRoleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
 		t.Cleanup(taskRoleCleanup)
 
@@ -2135,14 +2121,11 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		// grantTaskRole grants the necessary privileges to a role to be able to create task
 		grantTaskRole(t, taskRole.ID())
-
-		currentRole := testClientHelper().Context.CurrentRole(t)
-
 		grantTaskRole(t, role.ID())
-		grantTaskRole(t, currentRole)
 
 		// Use a previously prepared role to create a task
 		usePreviousRole := testClientHelper().Role.UseRole(t, taskRole.ID())
+		t.Cleanup(usePreviousRole)
 
 		task, taskCleanup := testClientHelper().Task.CreateWithSchedule(t)
 		t.Cleanup(taskCleanup)
@@ -2195,14 +2178,12 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Cleanup(func() {
-			currentRole := testClientHelper().Context.CurrentRole(t)
-			usePreviousRole := testClientHelper().Role.UseRole(t, role.ID())
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(task), sdk.Pointer(sdk.Revoke))
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(secondTask), sdk.Pointer(sdk.Revoke))
-			usePreviousRole()
 		})
 
 		usePreviousRole = testClientHelper().Role.UseRole(t, taskRole.ID())
+		t.Cleanup(usePreviousRole)
 		currentTask, err := client.Tasks.ShowByID(ctx, task.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, currentTask.State)
@@ -2236,6 +2217,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnTask(secondTask), role.ID())
 
 		usePreviousRole = testClientHelper().Role.UseRole(t, role.ID())
+		t.Cleanup(usePreviousRole)
 		currentTask, err = client.Tasks.ShowByID(ctx, task.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateSuspended, currentTask.State)
@@ -2243,7 +2225,126 @@ func TestInt_GrantOwnership(t *testing.T) {
 		currentSecondTask, err = client.Tasks.ShowByID(ctx, secondTask.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateSuspended, currentSecondTask.State)
-		usePreviousRole()
+	})
+}
+
+func TestInt_RevokeOwnership(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	// Snowflake only allows revoking OWNERSHIP of future grants (ownership of existing objects can only be
+	// transferred with GRANT OWNERSHIP), so all cases below operate on future grants.
+
+	findFutureOwnershipGrant := func(t *testing.T, grants []sdk.Grant, grantee sdk.ObjectIdentifier) (*sdk.Grant, error) {
+		t.Helper()
+		return collections.FindFirst(grants, func(g sdk.Grant) bool {
+			return g.Privilege == sdk.SchemaObjectOwnership.String() && g.GranteeName.Name() == grantee.Name()
+		})
+	}
+
+	t.Run("validation: revoke on non-future is rejected", func(t *testing.T) {
+		err := client.Grants.RevokeOwnership(ctx, sdk.RevokeOwnershipGrantOn{}, sdk.OwnershipGrantTo{
+			AccountRoleName: sdk.Pointer(testClientHelper().Ids.RandomAccountObjectIdentifier()),
+		}, new(sdk.RevokeOwnershipOptions))
+		require.Error(t, err)
+	})
+
+	t.Run("on future schema object in database from role", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+		roleId := role.ID()
+
+		futureExternalTablesInDatabase := &sdk.GrantOnSchemaObjectIn{
+			PluralObjectType: sdk.PluralObjectTypeExternalTables,
+			InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
+		}
+
+		err := client.Grants.GrantOwnership(ctx, sdk.OwnershipGrantOn{Future: futureExternalTablesInDatabase}, sdk.OwnershipGrantTo{AccountRoleName: &roleId}, nil)
+		require.NoError(t, err)
+
+		grants, err := testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
+		require.NoError(t, err)
+		ownershipGrant, err := findFutureOwnershipGrant(t, grants, roleId)
+		require.NoError(t, err)
+		assert.Equal(t, sdk.ObjectTypeExternalTable, ownershipGrant.GrantOn)
+
+		err = client.Grants.RevokeOwnership(
+			ctx,
+			sdk.RevokeOwnershipGrantOn{Future: futureExternalTablesInDatabase},
+			sdk.OwnershipGrantTo{AccountRoleName: &roleId},
+			new(sdk.RevokeOwnershipOptions),
+		)
+		require.NoError(t, err)
+
+		grants, err = testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
+		require.NoError(t, err)
+		_, err = findFutureOwnershipGrant(t, grants, roleId)
+		assert.Error(t, err)
+	})
+
+	t.Run("on future schema object in schema from role with cascade", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+		roleId := role.ID()
+
+		futureExternalTablesInSchema := &sdk.GrantOnSchemaObjectIn{
+			PluralObjectType: sdk.PluralObjectTypeExternalTables,
+			InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
+		}
+
+		err := client.Grants.GrantOwnership(ctx, sdk.OwnershipGrantOn{Future: futureExternalTablesInSchema}, sdk.OwnershipGrantTo{AccountRoleName: &roleId}, nil)
+		require.NoError(t, err)
+
+		grants, err := testClientHelper().Grant.ShowFutureGrantsInSchema(t, testClientHelper().Ids.SchemaId())
+		require.NoError(t, err)
+		_, err = findFutureOwnershipGrant(t, grants, roleId)
+		require.NoError(t, err)
+
+		err = client.Grants.RevokeOwnership(
+			ctx,
+			sdk.RevokeOwnershipGrantOn{Future: futureExternalTablesInSchema},
+			sdk.OwnershipGrantTo{AccountRoleName: &roleId},
+			&sdk.RevokeOwnershipOptions{Cascade: sdk.Bool(true)},
+		)
+		require.NoError(t, err)
+
+		grants, err = testClientHelper().Grant.ShowFutureGrantsInSchema(t, testClientHelper().Ids.SchemaId())
+		require.NoError(t, err)
+		_, err = findFutureOwnershipGrant(t, grants, roleId)
+		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
+	})
+
+	t.Run("on future schema object in database from database role with restrict", func(t *testing.T) {
+		databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(databaseRoleCleanup)
+		databaseRoleId := testClientHelper().Ids.NewDatabaseObjectIdentifier(databaseRole.Name)
+
+		futureExternalTablesInDatabase := &sdk.GrantOnSchemaObjectIn{
+			PluralObjectType: sdk.PluralObjectTypeExternalTables,
+			InDatabase:       sdk.Pointer(testClientHelper().Ids.DatabaseId()),
+		}
+
+		err := client.Grants.GrantOwnership(ctx, sdk.OwnershipGrantOn{Future: futureExternalTablesInDatabase}, sdk.OwnershipGrantTo{DatabaseRoleName: &databaseRoleId}, nil)
+		require.NoError(t, err)
+
+		grants, err := testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
+		require.NoError(t, err)
+		ownershipGrant, err := findFutureOwnershipGrant(t, grants, databaseRoleId)
+		require.NoError(t, err)
+		assert.Equal(t, sdk.ObjectTypeExternalTable, ownershipGrant.GrantOn)
+
+		err = client.Grants.RevokeOwnership(
+			ctx,
+			sdk.RevokeOwnershipGrantOn{Future: futureExternalTablesInDatabase},
+			sdk.OwnershipGrantTo{DatabaseRoleName: &databaseRoleId},
+			&sdk.RevokeOwnershipOptions{Restrict: sdk.Bool(true)},
+		)
+		require.NoError(t, err)
+
+		grants, err = testClientHelper().Grant.ShowFutureGrantsInDatabase(t, testClientHelper().Ids.DatabaseId())
+		require.NoError(t, err)
+		_, err = findFutureOwnershipGrant(t, grants, databaseRoleId)
+		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 }
 

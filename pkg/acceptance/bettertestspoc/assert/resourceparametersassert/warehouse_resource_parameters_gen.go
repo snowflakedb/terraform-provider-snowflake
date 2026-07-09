@@ -17,9 +17,8 @@ func WarehouseResourceParameters(t *testing.T, name string) *WarehouseResourcePa
 	t.Helper()
 
 	resourceParameterAssert := WarehouseResourceParametersAssert{
-		ResourceAssert: assert.NewResourceAssert(name, "parameters"),
+		ResourceAssert: assert.NewResourceParametersAssert(name),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
 	return &resourceParameterAssert
 }
 
@@ -27,9 +26,23 @@ func ImportedWarehouseResourceParameters(t *testing.T, id string) *WarehouseReso
 	t.Helper()
 
 	resourceParameterAssert := WarehouseResourceParametersAssert{
-		ResourceAssert: assert.NewImportedResourceAssert(id, "imported parameters"),
+		ResourceAssert: assert.NewImportedResourceParametersAssert(id),
 	}
-	resourceParameterAssert.AddAssertion(assert.ValueSet("parameters.#", "1"))
+	return &resourceParameterAssert
+}
+
+func WarehousesDatasourceParameters(t *testing.T, name string) *WarehouseResourceParametersAssert {
+	t.Helper()
+
+	return WarehousesDatasourceParametersOnIdx(t, name, 0)
+}
+
+func WarehousesDatasourceParametersOnIdx(t *testing.T, name string, idx int) *WarehouseResourceParametersAssert {
+	t.Helper()
+
+	resourceParameterAssert := WarehouseResourceParametersAssert{
+		ResourceAssert: assert.NewDatasourceParametersAssert(name, "warehouses", idx),
+	}
 	return &resourceParameterAssert
 }
 
@@ -38,17 +51,17 @@ func ImportedWarehouseResourceParameters(t *testing.T, id string) *WarehouseReso
 ////////////////////////////
 
 func (w *WarehouseResourceParametersAssert) HasMaxConcurrencyLevel(expected int) *WarehouseResourceParametersAssert {
-	w.AddAssertion(assert.ResourceParameterIntValueSet(sdk.WarehouseParameterMaxConcurrencyLevel, expected))
+	w.ParameterIntValueSet(string(sdk.WarehouseParameterMaxConcurrencyLevel), expected)
 	return w
 }
 
 func (w *WarehouseResourceParametersAssert) HasStatementQueuedTimeoutInSeconds(expected int) *WarehouseResourceParametersAssert {
-	w.AddAssertion(assert.ResourceParameterIntValueSet(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, expected))
+	w.ParameterIntValueSet(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), expected)
 	return w
 }
 
 func (w *WarehouseResourceParametersAssert) HasStatementTimeoutInSeconds(expected int) *WarehouseResourceParametersAssert {
-	w.AddAssertion(assert.ResourceParameterIntValueSet(sdk.WarehouseParameterStatementTimeoutInSeconds, expected))
+	w.ParameterIntValueSet(string(sdk.WarehouseParameterStatementTimeoutInSeconds), expected)
 	return w
 }
 
@@ -57,16 +70,16 @@ func (w *WarehouseResourceParametersAssert) HasStatementTimeoutInSeconds(expecte
 ////////////////////////////
 
 func (w *WarehouseResourceParametersAssert) HasMaxConcurrencyLevelLevel(expected sdk.ParameterType) *WarehouseResourceParametersAssert {
-	w.AddAssertion(assert.ResourceParameterLevelSet(sdk.WarehouseParameterMaxConcurrencyLevel, expected))
+	w.ParameterLevelSet(string(sdk.WarehouseParameterMaxConcurrencyLevel), expected)
 	return w
 }
 
 func (w *WarehouseResourceParametersAssert) HasStatementQueuedTimeoutInSecondsLevel(expected sdk.ParameterType) *WarehouseResourceParametersAssert {
-	w.AddAssertion(assert.ResourceParameterLevelSet(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, expected))
+	w.ParameterLevelSet(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), expected)
 	return w
 }
 
 func (w *WarehouseResourceParametersAssert) HasStatementTimeoutInSecondsLevel(expected sdk.ParameterType) *WarehouseResourceParametersAssert {
-	w.AddAssertion(assert.ResourceParameterLevelSet(sdk.WarehouseParameterStatementTimeoutInSeconds, expected))
+	w.ParameterLevelSet(string(sdk.WarehouseParameterStatementTimeoutInSeconds), expected)
 	return w
 }
