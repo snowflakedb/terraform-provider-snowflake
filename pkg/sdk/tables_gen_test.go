@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableConstraintType]{"TableConstraintType", AllTableConstraintTypes, ToTableConstraintType})
+}
+
 func TestTables_DescribeSearchOptimization(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	// Minimal valid DescribeSearchOptimizationTableOptions

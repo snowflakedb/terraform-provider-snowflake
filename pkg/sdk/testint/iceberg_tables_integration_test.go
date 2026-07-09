@@ -511,7 +511,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		})
 		assertConstraint(t, sdk.TableConstraintDetails{
 			ConstraintName:    "fk_out_ref",
-			ConstraintType:    "FOREIGN KEY",
+			ConstraintType:    sdk.TableConstraintTypeForeignKey,
 			Enforced:          false,
 			Rely:              false,
 			IsDeferrable:      false,
@@ -525,7 +525,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		}, constraints[0])
 		assertConstraint(t, sdk.TableConstraintDetails{
 			ConstraintName:    "fk_ref",
-			ConstraintType:    "FOREIGN KEY",
+			ConstraintType:    sdk.TableConstraintTypeForeignKey,
 			Enforced:          false,
 			Rely:              false,
 			IsDeferrable:      false,
@@ -539,7 +539,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		}, constraints[1])
 		assertConstraint(t, sdk.TableConstraintDetails{
 			ConstraintName:    "pk_id",
-			ConstraintType:    "PRIMARY KEY",
+			ConstraintType:    sdk.TableConstraintTypePrimaryKey,
 			Enforced:          false,
 			Rely:              false,
 			IsDeferrable:      false,
@@ -553,7 +553,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		}, constraints[2])
 		assertConstraint(t, sdk.TableConstraintDetails{
 			ConstraintName:    "uq_region",
-			ConstraintType:    "UNIQUE",
+			ConstraintType:    sdk.TableConstraintTypeUnique,
 			Enforced:          false,
 			Rely:              false,
 			IsDeferrable:      false,

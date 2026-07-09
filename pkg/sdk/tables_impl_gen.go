@@ -76,7 +76,6 @@ func (r tableConstraintDetailsRow) convert() (*TableConstraintDetails, error) {
 		TableCatalog:      r.TableCatalog,
 		TableSchema:       r.TableSchema,
 		TableName:         r.TableName,
-		ConstraintType:    r.ConstraintType,
 		IsDeferrable:      r.IsDeferrable == "YES",
 		InitiallyDeferred: r.InitiallyDeferred == "YES",
 		Created:           r.Created,
@@ -84,6 +83,7 @@ func (r tableConstraintDetailsRow) convert() (*TableConstraintDetails, error) {
 		Enforced:          r.Enforced == "YES",
 		Rely:              r.Rely == "YES",
 	}
+	mapStringWithMapping(&result.ConstraintType, r.ConstraintType, ToTableConstraintType)
 	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }

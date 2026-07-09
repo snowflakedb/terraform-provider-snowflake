@@ -117,6 +117,11 @@ var tableDescribeSearchOptimization = g.NewQueryStruct("DescribeSearchOptimizati
 	Name().
 	WithValidation(g.ValidIdentifier, "name")
 
+var TableConstraintTypeDef = g.NewEnum(
+	"TableConstraintType", "TableConstraintTypes",
+	"PRIMARY KEY", "UNIQUE", "FOREIGN KEY",
+)
+
 var tableConstraintDetails = g.StructPair("tableConstraintDetailsRow", "TableConstraintDetails").
 	Text("CONSTRAINT_CATALOG").
 	Text("CONSTRAINT_SCHEMA").
@@ -124,7 +129,7 @@ var tableConstraintDetails = g.StructPair("tableConstraintDetailsRow", "TableCon
 	Text("TABLE_CATALOG").
 	Text("TABLE_SCHEMA").
 	Text("TABLE_NAME").
-	Text("CONSTRAINT_TYPE").
+	Enum("CONSTRAINT_TYPE", TableConstraintTypeDef).
 	BoolFromText("IS_DEFERRABLE", g.WithBoolTrueValue("YES")).
 	BoolFromText("INITIALLY_DEFERRED", g.WithBoolTrueValue("YES")).
 	OptionalText("COMMENT").
@@ -162,7 +167,8 @@ var tablesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints",
 		tableConstraintDetails,
 		tableShowConstraints,
-	)
+	).
+	WithEnums(TableConstraintTypeDef)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").

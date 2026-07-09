@@ -75,7 +75,7 @@ type TableConstraintDetails struct {
 	TableCatalog      string
 	TableSchema       string
 	TableName         string
-	ConstraintType    string
+	ConstraintType    TableConstraintType
 	IsDeferrable      bool
 	InitiallyDeferred bool
 	Comment           *string
