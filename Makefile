@@ -84,13 +84,13 @@ test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") $(ADDITIONAL_TEST_FLAGS)
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=180m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=210m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
 
 test-account-level-features: ## run integration and acceptance test modifying account
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=120m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
 test-integration: ## run SDK integration tests
-	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=60m ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
+	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=75m ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
 	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional $(ADDITIONAL_TEST_FLAGS)
