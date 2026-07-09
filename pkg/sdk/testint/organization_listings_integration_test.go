@@ -29,13 +29,13 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("create from manifest inlined: no optionals", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithAs(manifest).
 			WithPublish(false))
 		require.NoError(t, err)
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		assertThatObject(t,
 			objectassert.Listing(t, id).
@@ -49,14 +49,14 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("create from manifest inlined: with share", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
 			WithAs(manifest).
 			WithPublish(false))
 		require.NoError(t, err)
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		listing, err := client.Listings.ShowByID(ctx, id)
 		require.NoError(t, err)
@@ -65,13 +65,13 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("alter: publish and unpublish", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		require.NoError(t, client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
 			WithAs(manifest).
 			WithPublish(false)))
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		require.NoError(t, client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithPublish(true)))
 		listing, err := client.Listings.ShowByID(ctx, id)
@@ -86,13 +86,13 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("alter: update manifest via AS", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
-		updatedManifest, _ := testClientHelper().OrganizationListing.BasicManifestWithDifferentSubtitle(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
+		updatedManifest, _ := testClientHelper().Listing.OrganizationBasicManifestWithDifferentSubtitle(t)
 
 		require.NoError(t, client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithAs(manifest).
 			WithPublish(false)))
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		require.NoError(t, client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).
 			WithAlterListingAs(*sdk.NewAlterListingAsRequest(updatedManifest))))
@@ -100,12 +100,12 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("alter: set and unset comment", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		require.NoError(t, client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithAs(manifest).
 			WithPublish(false)))
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		require.NoError(t, client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).
 			WithSet(*sdk.NewListingSetRequest().WithComment(comment))))
@@ -127,12 +127,12 @@ func TestInt_OrganizationListings(t *testing.T) {
 	t.Run("alter: rename to", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		newId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		require.NoError(t, client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithAs(manifest).
 			WithPublish(false)))
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, newId))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, newId))
 
 		require.NoError(t, client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithRenameTo(newId)))
 
@@ -142,12 +142,12 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("show: with like filter", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		require.NoError(t, client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithAs(manifest).
 			WithPublish(false)))
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		listings, err := client.Listings.Show(ctx, sdk.NewShowListingRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
@@ -158,12 +158,12 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("describe", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		require.NoError(t, client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithAs(manifest).
 			WithPublish(false)))
-		t.Cleanup(testClientHelper().OrganizationListing.DropFunc(t, id))
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
 
 		details, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
 		require.NoError(t, err)
@@ -173,7 +173,7 @@ func TestInt_OrganizationListings(t *testing.T) {
 
 	t.Run("drop safely: published listing is unpublished first", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		manifest, _ := testClientHelper().OrganizationListing.BasicManifest(t)
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
 
 		require.NoError(t, client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
 			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).

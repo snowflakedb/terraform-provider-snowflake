@@ -23,7 +23,7 @@ import (
 func TestAcc_OrganizationListing_Basic_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	basicManifest, _ := testClient().OrganizationListing.BasicManifest(t)
+	basicManifest, _ := testClient().Listing.OrganizationBasicManifest(t)
 
 	comment, newComment := random.Comment(), random.Comment()
 
@@ -133,7 +133,7 @@ func TestAcc_OrganizationListing_Rename(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	manifest, _ := testClient().OrganizationListing.BasicManifest(t)
+	manifest, _ := testClient().Listing.OrganizationBasicManifest(t)
 
 	modelOriginal := model.OrganizationListingWithInlineManifest("test", id.Name(), manifest).
 		WithPublish(r.BooleanFalse)
@@ -176,7 +176,7 @@ func TestAcc_OrganizationListing_Rename(t *testing.T) {
 
 func TestAcc_OrganizationListing_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	manifest, _ := testClient().OrganizationListing.BasicManifest(t)
+	manifest, _ := testClient().Listing.OrganizationBasicManifest(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

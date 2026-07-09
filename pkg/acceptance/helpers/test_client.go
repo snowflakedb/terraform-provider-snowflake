@@ -53,7 +53,6 @@ type TestClient struct {
 	InformationSchema            *InformationSchemaClient
 	JoinPolicy                   *JoinPolicyClient
 	Listing                      *ListingClient
-	OrganizationListing          *OrganizationListingClient
 	MaskingPolicy                *MaskingPolicyClient
 	MaterializedView             *MaterializedViewClient
 	McpServer                    *McpServerClient
@@ -158,7 +157,6 @@ func NewTestClient(
 		InformationSchema:            NewInformationSchemaClient(context, idsGenerator),
 		JoinPolicy:                   NewJoinPolicyClient(context, idsGenerator),
 		Listing:                      NewListingClient(context, idsGenerator),
-		OrganizationListing:          NewOrganizationListingClient(context, idsGenerator),
 		MaskingPolicy:                NewMaskingPolicyClient(context, idsGenerator),
 		MaterializedView:             NewMaterializedViewClient(context, idsGenerator),
 		McpServer:                    NewMcpServerClient(context, idsGenerator),
