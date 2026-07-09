@@ -25,7 +25,7 @@ func targetLagDef() *g.QueryStruct {
 	return g.NewQueryStruct("TargetLag").
 		OptionalText("MaximumDuration", g.KeywordOptions().SingleQuotes()).
 		OptionalSQL("DOWNSTREAM").
-		WithAdditionalValidations()
+		WithValidation(g.ConflictingFields, "MaximumDuration", "Downstream")
 }
 
 // dynamicTableSetDef wraps DynamicTableSet to avoid "Field already has a parent" panic.
@@ -123,7 +123,8 @@ var dynamicTablesDef = g.NewInterface(
 			OptionalLike().
 			OptionalIn().
 			OptionalStartsWith().
-			OptionalLimitFrom(),
+			OptionalLimitFrom().
+			WithAdditionalValidations(),
 		g.ShowByIDInFiltering,
 		g.ShowByIDLikeFiltering,
 	).
