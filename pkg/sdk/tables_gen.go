@@ -4,12 +4,15 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type Tables interface {
 	DescribeSearchOptimization(ctx context.Context, request *DescribeSearchOptimizationTableRequest) ([]TableSearchOptimizationDetails, error)
+	ShowConstraints(ctx context.Context, request *ShowConstraintsTableRequest) ([]TableConstraintDetails, error)
 }
 
 // DescribeSearchOptimizationTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization.
@@ -34,4 +37,50 @@ type TableSearchOptimizationDetails struct {
 	Target         string
 	TargetDataType datatypes.DataType
 	Active         bool
+}
+
+// ShowConstraintsTableOptions is based on https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints.
+type ShowConstraintsTableOptions struct {
+	selectAll                         bool                    `ddl:"static" sql:"SELECT * FROM"`
+	Database                          AccountObjectIdentifier `ddl:"identifier"`
+	dot                               bool                    `ddl:"static" sql:"."`
+	informationSchemaTableConstraints bool                    `ddl:"static" sql:"INFORMATION_SCHEMA.TABLE_CONSTRAINTS"`
+	where                             bool                    `ddl:"static" sql:"WHERE"`
+	TableSchema                       string                  `ddl:"parameter,single_quotes" sql:"TABLE_SCHEMA"`
+	and                               bool                    `ddl:"static" sql:"AND"`
+	TableName                         string                  `ddl:"parameter,single_quotes" sql:"TABLE_NAME"`
+}
+
+type tableConstraintDetailsRow struct {
+	ConstraintCatalog string         `db:"CONSTRAINT_CATALOG"`
+	ConstraintSchema  string         `db:"CONSTRAINT_SCHEMA"`
+	ConstraintName    string         `db:"CONSTRAINT_NAME"`
+	TableCatalog      string         `db:"TABLE_CATALOG"`
+	TableSchema       string         `db:"TABLE_SCHEMA"`
+	TableName         string         `db:"TABLE_NAME"`
+	ConstraintType    string         `db:"CONSTRAINT_TYPE"`
+	IsDeferrable      string         `db:"IS_DEFERRABLE"`
+	InitiallyDeferred string         `db:"INITIALLY_DEFERRED"`
+	Comment           sql.NullString `db:"COMMENT"`
+	Created           time.Time      `db:"CREATED"`
+	LastAltered       time.Time      `db:"LAST_ALTERED"`
+	Enforced          string         `db:"ENFORCED"`
+	Rely              string         `db:"RELY"`
+}
+
+type TableConstraintDetails struct {
+	ConstraintCatalog string
+	ConstraintSchema  string
+	ConstraintName    string
+	TableCatalog      string
+	TableSchema       string
+	TableName         string
+	ConstraintType    string
+	IsDeferrable      bool
+	InitiallyDeferred bool
+	Comment           *string
+	Created           time.Time
+	LastAltered       time.Time
+	Enforced          bool
+	Rely              bool
 }

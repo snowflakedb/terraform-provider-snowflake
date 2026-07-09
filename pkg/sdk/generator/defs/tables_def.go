@@ -117,6 +117,33 @@ var tableDescribeSearchOptimization = g.NewQueryStruct("DescribeSearchOptimizati
 	Name().
 	WithValidation(g.ValidIdentifier, "name")
 
+var tableConstraintDetails = g.StructPair("tableConstraintDetailsRow", "TableConstraintDetails").
+	Text("CONSTRAINT_CATALOG").
+	Text("CONSTRAINT_SCHEMA").
+	Text("CONSTRAINT_NAME").
+	Text("TABLE_CATALOG").
+	Text("TABLE_SCHEMA").
+	Text("TABLE_NAME").
+	Text("CONSTRAINT_TYPE").
+	BoolFromText("IS_DEFERRABLE", g.WithBoolTrueValue("YES")).
+	BoolFromText("INITIALLY_DEFERRED", g.WithBoolTrueValue("YES")).
+	OptionalText("COMMENT").
+	Time("CREATED").
+	Time("LAST_ALTERED").
+	BoolFromText("ENFORCED", g.WithBoolTrueValue("YES")).
+	BoolFromText("RELY", g.WithBoolTrueValue("YES"))
+
+var tableShowConstraints = g.NewQueryStruct("ShowTableConstraints").
+	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
+	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+	SQLWithCustomFieldName("dot", ".").
+	SQLWithCustomFieldName("informationSchemaTableConstraints", "INFORMATION_SCHEMA.TABLE_CONSTRAINTS").
+	SQLWithCustomFieldName("where", "WHERE").
+	TextAssignment("TABLE_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
+	SQLWithCustomFieldName("and", "AND").
+	TextAssignment("TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
+	WithValidation(g.ValidIdentifier, "Database")
+
 var tablesDef = g.NewInterface(
 	"Tables",
 	"Table",
@@ -128,6 +155,13 @@ var tablesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization",
 		tableSearchOptimizationDetails,
 		tableDescribeSearchOptimization,
+	).
+	CustomShowOperationWithPairedStructs(
+		"ShowConstraints",
+		g.ShowMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints",
+		tableConstraintDetails,
+		tableShowConstraints,
 	)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").

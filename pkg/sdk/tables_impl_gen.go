@@ -12,6 +12,7 @@ import (
 var (
 	_ Tables                                         = (*tables)(nil)
 	_ convertibleRow[TableSearchOptimizationDetails] = new(tableSearchOptimizationDetailsRow)
+	_ convertibleRow[TableConstraintDetails]         = new(tableConstraintDetailsRow)
 )
 
 type tables struct {
@@ -25,6 +26,15 @@ func (v *tables) DescribeSearchOptimization(ctx context.Context, request *Descri
 		return nil, err
 	}
 	return convertRows[tableSearchOptimizationDetailsRow, TableSearchOptimizationDetails](dbRows)
+}
+
+func (v *tables) ShowConstraints(ctx context.Context, request *ShowConstraintsTableRequest) ([]TableConstraintDetails, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tableConstraintDetailsRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tableConstraintDetailsRow, TableConstraintDetails](dbRows)
 }
 
 func (r *DescribeSearchOptimizationTableRequest) toOpts() *DescribeSearchOptimizationTableOptions {
@@ -46,5 +56,34 @@ func (r tableSearchOptimizationDetailsRow) convert() (*TableSearchOptimizationDe
 	} else {
 		result.TargetDataType = v
 	}
+	return result, nil
+}
+
+func (r *ShowConstraintsTableRequest) toOpts() *ShowConstraintsTableOptions {
+	opts := &ShowConstraintsTableOptions{
+		Database:    r.Database,
+		TableSchema: r.TableSchema,
+		TableName:   r.TableName,
+	}
+	return opts
+}
+
+func (r tableConstraintDetailsRow) convert() (*TableConstraintDetails, error) {
+	result := &TableConstraintDetails{
+		ConstraintCatalog: r.ConstraintCatalog,
+		ConstraintSchema:  r.ConstraintSchema,
+		ConstraintName:    r.ConstraintName,
+		TableCatalog:      r.TableCatalog,
+		TableSchema:       r.TableSchema,
+		TableName:         r.TableName,
+		ConstraintType:    r.ConstraintType,
+		IsDeferrable:      r.IsDeferrable == "YES",
+		InitiallyDeferred: r.InitiallyDeferred == "YES",
+		Created:           r.Created,
+		LastAltered:       r.LastAltered,
+		Enforced:          r.Enforced == "YES",
+		Rely:              r.Rely == "YES",
+	}
+	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }

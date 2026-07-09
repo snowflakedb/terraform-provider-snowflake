@@ -2,7 +2,10 @@
 
 package sdk
 
-var _ validatable = new(DescribeSearchOptimizationTableOptions)
+var (
+	_ validatable = new(DescribeSearchOptimizationTableOptions)
+	_ validatable = new(ShowConstraintsTableOptions)
+)
 
 func (opts *DescribeSearchOptimizationTableOptions) validate() error {
 	if opts == nil {
@@ -10,6 +13,17 @@ func (opts *DescribeSearchOptimizationTableOptions) validate() error {
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowConstraintsTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.Database) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	return JoinErrors(errs...)

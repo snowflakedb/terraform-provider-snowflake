@@ -31,3 +31,31 @@ func TestTables_DescribeSearchOptimization(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SEARCH OPTIMIZATION ON %s", id.FullyQualifiedName())
 	})
 }
+
+func TestTables_ShowConstraints(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid ShowConstraintsTableOptions
+	defaultOpts := func() *ShowConstraintsTableOptions {
+		return &ShowConstraintsTableOptions{
+			Database:    NewAccountObjectIdentifier(id.DatabaseName()),
+			TableSchema: id.SchemaName(),
+			TableName:   id.Name(),
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*ShowConstraintsTableOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.Database]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Database = NewAccountObjectIdentifier("")
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "SELECT * FROM %s . INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'", opts.Database.FullyQualifiedName(), id.SchemaName(), id.Name())
+	})
+}

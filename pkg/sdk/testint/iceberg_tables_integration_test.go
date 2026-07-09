@@ -87,6 +87,22 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertThatObject(t, ass)
 	}
 
+	assertConstraint := func(t *testing.T, expected sdk.TableConstraintDetails, actual sdk.TableConstraintDetails) {
+		t.Helper()
+		assert.Equal(t, expected.ConstraintName, actual.ConstraintName)
+		assert.Equal(t, expected.ConstraintType, actual.ConstraintType)
+		assert.Equal(t, expected.Enforced, actual.Enforced)
+		assert.Equal(t, expected.Rely, actual.Rely)
+		assert.Equal(t, expected.IsDeferrable, actual.IsDeferrable)
+		assert.Equal(t, expected.InitiallyDeferred, actual.InitiallyDeferred)
+		assert.Equal(t, expected.Comment, actual.Comment)
+		assert.Equal(t, expected.ConstraintCatalog, actual.ConstraintCatalog)
+		assert.Equal(t, expected.ConstraintSchema, actual.ConstraintSchema)
+		assert.Equal(t, expected.TableCatalog, actual.TableCatalog)
+		assert.Equal(t, expected.TableSchema, actual.TableSchema)
+		assert.Equal(t, expected.TableName, actual.TableName)
+	}
+
 	snowflakeCatalog := sdk.IcebergTableCatalogSnowflake
 	snowflakeManagedExternalVolume := sdk.NewAccountObjectIdentifier("SNOWFLAKE_MANAGED")
 
@@ -319,7 +335,6 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasNoNameMapping().
 				HasNoWriteDefault(),
 		)
-		// TODO (next PRs): add assertions for the out-of-line constraints.
 	}
 
 	t.Run("create Snowflake managed: basic", func(t *testing.T) {
@@ -486,6 +501,73 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertPolicyReference(t, references[1], maskingPolicy.ID(), sdk.PolicyKindMaskingPolicy, id, new("REGION"))
 		assertPolicyReference(t, references[2], projectionPolicyId, sdk.PolicyKindProjectionPolicy, id, new("FK_ID"))
 		assertPolicyReference(t, references[3], rowAccessPolicy.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
+
+		constraints, err := client.Tables.ShowConstraints(ctx, sdk.NewShowConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, constraints, 4)
+		// Sort the constraints because the order is not guaranteed.
+		slices.SortFunc(constraints, func(x, y sdk.TableConstraintDetails) int {
+			return strings.Compare(x.ConstraintName, y.ConstraintName)
+		})
+		assertConstraint(t, sdk.TableConstraintDetails{
+			ConstraintName:    "fk_out_ref",
+			ConstraintType:    "FOREIGN KEY",
+			Enforced:          false,
+			Rely:              false,
+			IsDeferrable:      false,
+			InitiallyDeferred: true,
+			Comment:           nil,
+			ConstraintCatalog: id.DatabaseName(),
+			ConstraintSchema:  id.SchemaName(),
+			TableCatalog:      id.DatabaseName(),
+			TableSchema:       id.SchemaName(),
+			TableName:         id.Name(),
+		}, constraints[0])
+		assertConstraint(t, sdk.TableConstraintDetails{
+			ConstraintName:    "fk_ref",
+			ConstraintType:    "FOREIGN KEY",
+			Enforced:          false,
+			Rely:              false,
+			IsDeferrable:      false,
+			InitiallyDeferred: true,
+			Comment:           nil,
+			ConstraintCatalog: id.DatabaseName(),
+			ConstraintSchema:  id.SchemaName(),
+			TableCatalog:      id.DatabaseName(),
+			TableSchema:       id.SchemaName(),
+			TableName:         id.Name(),
+		}, constraints[1])
+		assertConstraint(t, sdk.TableConstraintDetails{
+			ConstraintName:    "pk_id",
+			ConstraintType:    "PRIMARY KEY",
+			Enforced:          false,
+			Rely:              false,
+			IsDeferrable:      false,
+			InitiallyDeferred: true,
+			Comment:           nil,
+			ConstraintCatalog: id.DatabaseName(),
+			ConstraintSchema:  id.SchemaName(),
+			TableCatalog:      id.DatabaseName(),
+			TableSchema:       id.SchemaName(),
+			TableName:         id.Name(),
+		}, constraints[2])
+		assertConstraint(t, sdk.TableConstraintDetails{
+			ConstraintName:    "uq_region",
+			ConstraintType:    "UNIQUE",
+			Enforced:          false,
+			Rely:              false,
+			IsDeferrable:      false,
+			InitiallyDeferred: true,
+			Comment:           nil,
+			ConstraintCatalog: id.DatabaseName(),
+			ConstraintSchema:  id.SchemaName(),
+			TableCatalog:      id.DatabaseName(),
+			TableSchema:       id.SchemaName(),
+			TableName:         id.Name(),
+		}, constraints[3])
+
+		// TODO (next PRs): add assertions for CHECK constraints
+		// like SELECT * FROM "A" . INFORMATION_SCHEMA.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'B' AND CONSTRAINT_TABLE = 'C'
 
 		assertThatObject(
 			t, objectparametersassert.IcebergTableParameters(t, id).
