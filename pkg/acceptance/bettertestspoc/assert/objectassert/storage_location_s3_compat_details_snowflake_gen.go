@@ -14,8 +14,6 @@ type StorageLocationS3CompatDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.StorageLocationS3CompatDetails, sdk.AccountObjectIdentifier]
 }
 
-// StorageLocationS3CompatDetails removed manually
-
 func StorageLocationS3CompatDetailsFromObject(t *testing.T, storageLocationS3CompatDetails *sdk.StorageLocationS3CompatDetails) *StorageLocationS3CompatDetailsAssert {
 	t.Helper()
 	return &StorageLocationS3CompatDetailsAssert{
@@ -23,11 +21,11 @@ func StorageLocationS3CompatDetailsFromObject(t *testing.T, storageLocationS3Com
 	}
 }
 
-func (s *StorageLocationS3CompatDetailsAssert) HasStorageEndpoint(expected string) *StorageLocationS3CompatDetailsAssert {
+func (s *StorageLocationS3CompatDetailsAssert) HasEndpoint(expected string) *StorageLocationS3CompatDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3CompatDetails) error {
 		t.Helper()
 		if o.Endpoint != expected {
-			return fmt.Errorf("expected storage endpoint: %v; got: %v", expected, o.Endpoint)
+			return fmt.Errorf("expected endpoint: %v; got: %v", expected, o.Endpoint)
 		}
 		return nil
 	})

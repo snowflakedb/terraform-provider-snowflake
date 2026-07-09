@@ -9,6 +9,7 @@ type SdkObjectDef struct {
 	IdType             string
 	ObjectStruct       any
 	IsDataSourceOutput bool
+	IsSubStruct        bool
 }
 
 var allStructs = []SdkObjectDef{
@@ -210,22 +211,27 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
+		IsSubStruct:  true,
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.StorageLocationS3Details{},
+		IsSubStruct:  true,
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.StorageLocationGcsDetails{},
+		IsSubStruct:  true,
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.StorageLocationAzureDetails{},
+		IsSubStruct:  true,
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.StorageLocationS3CompatDetails{},
+		IsSubStruct:  true,
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -294,21 +300,25 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
 		IsDataSourceOutput: true,
+		IsSubStruct:        true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.IcebergRestRestConfigDetails{},
 		IsDataSourceOutput: true,
+		IsSubStruct:        true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.OAuthRestAuthenticationDetails{},
 		IsDataSourceOutput: true,
+		IsSubStruct:        true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
 		IsDataSourceOutput: true,
+		IsSubStruct:        true,
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -328,11 +338,13 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.SchemaObjectIdentifier",
 		ObjectStruct:       sdk.IcebergTableDetails{},
 		IsDataSourceOutput: true,
+		IsSubStruct:        true,
 	},
 	{
 		IdType:             "sdk.SchemaObjectIdentifier",
 		ObjectStruct:       sdk.TableSearchOptimizationDetails{},
 		IsDataSourceOutput: true,
+		IsSubStruct:        true,
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -382,6 +394,7 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 			IdType:             d.IdType,
 			StructDetails:      structDetails,
 			IsDataSourceOutput: d.IsDataSourceOutput,
+			IsSubStruct:        d.IsSubStruct,
 		}
 	}
 	return allSdkObjectsDetails

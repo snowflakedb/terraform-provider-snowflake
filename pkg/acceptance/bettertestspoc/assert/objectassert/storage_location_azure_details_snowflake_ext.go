@@ -29,20 +29,6 @@ func (s *StorageLocationAzureDetailsAssert) HasAzureConsentUrlNotEmpty() *Storag
 	return s
 }
 
-func (s *StorageLocationAzureDetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageLocationAzureDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
-		t.Helper()
-		if o.UsePrivatelinkEndpoint == nil {
-			return fmt.Errorf("expected use privatelink endpoint: %v; got: nil", expected)
-		}
-		if *o.UsePrivatelinkEndpoint != expected {
-			return fmt.Errorf("expected use privatelink endpoint: %v; got: %v", expected, *o.UsePrivatelinkEndpoint)
-		}
-		return nil
-	})
-	return s
-}
-
 func (s *StorageLocationAzureDetailsAssert) HasUsePrivatelinkEndpointEmpty() *StorageLocationAzureDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
 		t.Helper()
