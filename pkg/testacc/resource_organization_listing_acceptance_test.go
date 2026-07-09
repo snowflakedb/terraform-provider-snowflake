@@ -20,26 +20,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// orgListingManifest returns a minimal valid organization listing manifest for acceptance tests; see
-// https://docs.snowflake.com/en/user-guide/collaboration/listings/organizational/org-listing-manifest-reference.
-func orgListingManifest(title string) string {
-	return `title: "` + title + `"
-subtitle: "subtitle"
-description: "description"
-organization_targets:
-  access:
-  - all_internal_accounts: true
-locations:
-  access_regions:
-  - name: "ALL"
-`
-}
-
 func TestAcc_OrganizationListing_Basic_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	basicManifest := orgListingManifest(id.Name())
-	listingTitle := id.Name()
+	basicManifest, _ := testClient().OrganizationListing.BasicManifest(t)
 
 	comment, newComment := random.Comment(), random.Comment()
 
@@ -50,18 +34,17 @@ func TestAcc_OrganizationListing_Basic_Inlined(t *testing.T) {
 	t.Cleanup(shareCleanup)
 	t.Cleanup(testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 
-	manifestWithShare := orgListingManifest(listingTitle)
-	modelComplete := model.OrganizationListingWithInlineManifest("test", id.Name(), manifestWithShare).
+	modelComplete := model.OrganizationListingWithInlineManifest("test", id.Name(), basicManifest).
 		WithShare(share.ID().Name()).
 		WithPublish(r.BooleanFalse).
 		WithComment(comment)
 
-	modelCompleteUpdated := model.OrganizationListingWithInlineManifest("test", id.Name(), manifestWithShare).
+	modelCompleteUpdated := model.OrganizationListingWithInlineManifest("test", id.Name(), basicManifest).
 		WithShare(share.ID().Name()).
 		WithPublish(r.BooleanFalse).
 		WithComment(newComment)
 
-	modelUnset := model.OrganizationListingWithInlineManifest("test", id.Name(), manifestWithShare).
+	modelUnset := model.OrganizationListingWithInlineManifest("test", id.Name(), basicManifest).
 		WithShare(share.ID().Name()).
 		WithPublish(r.BooleanFalse)
 
@@ -150,7 +133,7 @@ func TestAcc_OrganizationListing_Rename(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	manifest := orgListingManifest(id.Name())
+	manifest, _ := testClient().OrganizationListing.BasicManifest(t)
 
 	modelOriginal := model.OrganizationListingWithInlineManifest("test", id.Name(), manifest).
 		WithPublish(r.BooleanFalse)
@@ -193,7 +176,7 @@ func TestAcc_OrganizationListing_Rename(t *testing.T) {
 
 func TestAcc_OrganizationListing_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	manifest := orgListingManifest(id.Name())
+	manifest, _ := testClient().OrganizationListing.BasicManifest(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
