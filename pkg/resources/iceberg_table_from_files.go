@@ -31,10 +31,10 @@ var icebergTableFromFilesSchema = collections.MergeMaps(
 			Type:        schema.TypeList,
 			Computed:    true,
 			Description: "Outputs the result of `SHOW PARAMETERS IN ICEBERG TABLE` for the given Iceberg table.",
-			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableParametersSchema},
+			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableExternallyManagedParametersSchema},
 		},
 	},
-	icebergTableParametersSchema(),
+	icebergTableExternalManagedParametersSchema(),
 )
 
 func IcebergTableFromFiles() *schema.Resource {
@@ -54,7 +54,7 @@ func IcebergTableFromFiles() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(icebergTableFromFilesSchema, ShowOutputAttributeName, "comment"),
 			ComputedIfAnyAttributeChanged(icebergTableFromFilesSchema, ParametersAttributeName, "external_volume", "catalog", "replace_invalid_characters"),
-			icebergTableParametersCustomDiff,
+			icebergTableExternalManagedParametersCustomDiff,
 		),
 	}
 }

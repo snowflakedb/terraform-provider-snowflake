@@ -240,6 +240,21 @@ func suppressIdentifierQuoting(_, oldValue, newValue string, _ *schema.ResourceD
 	return slices.Equal(oldId, newId)
 }
 
+// suppressIcebergTableBaseLocationSuffix suppresses the diff for base_location when Snowflake appends a
+// generated suffix to the configured value (starting from the last dot). It strips that suffix from the
+// old (state) value and compares the result with the new (config) value.
+func suppressIcebergTableBaseLocationSuffix(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	return NormalizeIcebergTableBaseLocation(oldValue) == NormalizeIcebergTableBaseLocation(newValue)
+}
+
+func NormalizeIcebergTableBaseLocation(value string) string {
+	idx := strings.LastIndex(value, ".")
+	if idx == -1 {
+		return value
+	}
+	return value[:idx]
+}
+
 // IgnoreNewEmptyListOrSubfields suppresses the diff if `new` list is empty or compared subfield is ignored. Subfields can be nested.
 func IgnoreNewEmptyListOrSubfields(ignoredSubfields ...string) schema.SchemaDiffSuppressFunc {
 	return func(k, old, new string, _ *schema.ResourceData) bool {
