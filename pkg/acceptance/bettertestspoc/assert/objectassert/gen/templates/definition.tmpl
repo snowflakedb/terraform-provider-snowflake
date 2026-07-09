@@ -27,7 +27,7 @@ func {{ .Name }}FromObject(t *testing.T, {{ $nameLowerCase }} *{{ .SdkType }}) *
         {{- if .IsSubStruct }}
         assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .Name }}"), {{ .PlaceholderIdentifier }}, {{ $nameLowerCase }}),
         {{- else }}
-        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType{{ .Name }}, {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
+        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType{{ .ObjectTypeName }}, {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
         {{- end }}
     }
 }

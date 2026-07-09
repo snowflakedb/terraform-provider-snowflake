@@ -28,7 +28,6 @@ func CortexAgent(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgentAssert
 func CortexAgentFromObject(t *testing.T, cortexAgent *sdk.CortexAgent) *CortexAgentAssert {
 	t.Helper()
 	return &CortexAgentAssert{
-		// object type adjusted manually
 		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAgent, cortexAgent.ID(), cortexAgent),
 	}
 }
