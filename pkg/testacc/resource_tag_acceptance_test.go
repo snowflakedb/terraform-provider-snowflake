@@ -1510,7 +1510,8 @@ func TestAcc_Tag_OrderedAllowedValues_ExternalOrderMatchesConfig(t *testing.T) {
 			// Create with initial ordering
 			{
 				Config: config.FromModels(t, withoutOrdering),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValues("a", "b", "c"),
 					resourceassert.TagResource(t, ref).HasAllowedValues("a", "b", "c"),
 				),
@@ -1530,7 +1531,8 @@ func TestAcc_Tag_OrderedAllowedValues_ExternalOrderMatchesConfig(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, withOrdering),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					objectassert.Tag(t, id).HasAllowedValues("c", "b", "a"),
 					resourceassert.TagResource(t, ref).HasOrderedAllowedValues("c", "b", "a"),
 				),
