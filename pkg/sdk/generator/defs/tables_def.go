@@ -103,6 +103,33 @@ var tableSearchOptimizationAction = g.NewQueryStruct("TableSearchOptimizationAct
 	).
 	WithValidation(g.ExactlyOneValueSet, "Add", "Drop")
 
+var tableSearchOptimizationDetails = g.StructPair("tableSearchOptimizationDetailsRow", "TableSearchOptimizationDetails").
+	Number("expression_id").
+	Text("method").
+	Text("target").
+	DataType("target_data_type").
+	BoolFromText("active", g.WithBoolTrueValue("true"))
+
+var tableDescribeSearchOptimization = g.NewQueryStruct("DescribeSearchOptimization").
+	Describe().
+	SQL("SEARCH OPTIMIZATION").
+	SQL("ON").
+	Name().
+	WithValidation(g.ValidIdentifier, "name")
+
+var tablesDef = g.NewInterface(
+	"Tables",
+	"Table",
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
+).
+	CustomShowOperationWithPairedStructs(
+		"DescribeSearchOptimization",
+		g.ShowMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization",
+		tableSearchOptimizationDetails,
+		tableDescribeSearchOptimization,
+	)
+
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
