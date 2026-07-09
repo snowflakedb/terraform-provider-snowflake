@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -178,6 +179,27 @@ func TestAcc_OrganizationListing_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	manifest, _ := testClient().Listing.OrganizationBasicManifest(t)
 
+	organizationListingModelWithoutManifest := func(resourceName string, name string) *model.OrganizationListingModel {
+		l := &model.OrganizationListingModel{ResourceModelMeta: accconfig.Meta(resourceName, resources.OrganizationListing)}
+		l.WithName(name)
+		return l
+	}
+
+	modelWithBothShareAndApplicationPackage := model.OrganizationListingWithInlineManifest("test", id.Name(), manifest).
+		WithShare("test_share").
+		WithApplicationPackage("test_app_package")
+
+	modelWithInvalidStageId := organizationListingModelWithoutManifest("test", id.Name()).
+		WithManifestValue(tfconfig.ListVariable(
+			tfconfig.MapVariable(map[string]tfconfig.Variable{
+				"from_stage": tfconfig.ListVariable(
+					tfconfig.MapVariable(map[string]tfconfig.Variable{
+						"stage": tfconfig.StringVariable("invalid.stage.identifier.name"),
+					}),
+				),
+			}),
+		))
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -186,42 +208,21 @@ func TestAcc_OrganizationListing_Validations(t *testing.T) {
 		Steps: []resource.TestStep{
 			// share and application_package are mutually exclusive
 			{
-				Config:      organizationListingConfigWithShareAndAppPackage(id.Name(), manifest),
-				ExpectError: regexp.MustCompile(`conflicts with`),
+				Config:      accconfig.FromModels(t, modelWithBothShareAndApplicationPackage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"application_package": conflicts with share`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelWithBothShareAndApplicationPackage),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`"share": conflicts with application_package`),
 			},
 			// invalid stage identifier
 			{
-				Config:      organizationListingConfigWithInvalidStage(id.Name()),
-				ExpectError: regexp.MustCompile(`is not a valid identifier`),
+				Config:      accconfig.FromModels(t, modelWithInvalidStageId),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Expected SchemaObjectIdentifier identifier type`),
 			},
 		},
 	})
-}
-
-func organizationListingConfigWithShareAndAppPackage(name, manifest string) string {
-	return `
-resource "snowflake_organization_listing" "test" {
-  name = "` + name + `"
-  manifest {
-    from_string = <<-EOT
-` + manifest + `
-EOT
-  }
-  share               = "my_share"
-  application_package = "my_app_package"
-}
-`
-}
-
-func organizationListingConfigWithInvalidStage(name string) string {
-	return `
-resource "snowflake_organization_listing" "test" {
-  name = "` + name + `"
-  manifest {
-    from_stage {
-      stage = "not..a..valid..stage"
-    }
-  }
-}
-`
 }
