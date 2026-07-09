@@ -1,7 +1,5 @@
 package sdk
 
-//go:generate go run ./dto-builder-generator/main.go
-
 var (
 	_ optionsProvider[createDynamicTableOptions] = new(CreateDynamicTableRequest)
 	_ optionsProvider[alterDynamicTableOptions]  = new(AlterDynamicTableRequest)
