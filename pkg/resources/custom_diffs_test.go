@@ -17,100 +17,103 @@ import (
 )
 
 func TestParameterValueComputedIf(t *testing.T) {
-	createProviderConfig := func(parameterLevel sdk.ParameterType, parameterValue sdk.LogLevel) *schema.Provider {
-		customDiff := resources.ParameterValueComputedIf(
-			"value",
-			[]*sdk.Parameter{
-				{
-					Key:   string(sdk.AccountParameterLogLevel),
-					Level: parameterLevel,
-					Value: string(parameterValue),
-				},
-			},
-			sdk.ParameterTypeDatabase,
-			sdk.AccountParameterLogLevel,
-			func(v any) string { return v.(string) },
-		)
-		return createProviderWithValuePropertyAndCustomDiff(t, &schema.Schema{
-			Type:     schema.TypeString,
-			Computed: true,
-			Optional: true,
-		}, customDiff)
+	tests := []struct {
+		name            string
+		parameterLevel  sdk.ParameterType
+		parameterValue  sdk.LogLevel
+		rawConfigValue  cty.Value
+		stateValue      map[string]any
+		wantNewComputed bool
+	}{
+		{
+			name:            "config: true - state: true - level: different - value: same",
+			parameterLevel:  sdk.ParameterTypeAccount,
+			parameterValue:  sdk.LogLevelInfo,
+			rawConfigValue:  cty.MapVal(map[string]cty.Value{"value": cty.StringVal(string(sdk.LogLevelInfo))}),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: true,
+		},
+		{
+			name:            "config: true - state: true - level: different - value: different",
+			parameterLevel:  sdk.ParameterTypeAccount,
+			parameterValue:  sdk.LogLevelDebug,
+			rawConfigValue:  cty.MapVal(map[string]cty.Value{"value": cty.StringVal(string(sdk.LogLevelInfo))}),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: true,
+		},
+		{
+			name:            "config: true - state: true - level: same - value: same",
+			parameterLevel:  sdk.ParameterTypeDatabase,
+			parameterValue:  sdk.LogLevelInfo,
+			rawConfigValue:  cty.MapVal(map[string]cty.Value{"value": cty.StringVal(string(sdk.LogLevelInfo))}),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: false,
+		},
+		{
+			name:            "config: true - state: true - level: same - value: different",
+			parameterLevel:  sdk.ParameterTypeDatabase,
+			parameterValue:  sdk.LogLevelDebug,
+			rawConfigValue:  cty.MapVal(map[string]cty.Value{"value": cty.StringVal(string(sdk.LogLevelInfo))}),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: false,
+		},
+		{
+			name:            "config: false - state: true - level: different - value: same",
+			parameterLevel:  sdk.ParameterTypeAccount,
+			parameterValue:  sdk.LogLevelInfo,
+			rawConfigValue:  cty.MapValEmpty(cty.String),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: false,
+		},
+		{
+			name:            "config: false - state: true - level: different - value: different",
+			parameterLevel:  sdk.ParameterTypeAccount,
+			parameterValue:  sdk.LogLevelDebug,
+			rawConfigValue:  cty.MapValEmpty(cty.String),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: true,
+		},
+		{
+			name:            "config: false - state: true - level: same - value: same",
+			parameterLevel:  sdk.ParameterTypeAccount,
+			parameterValue:  sdk.LogLevelInfo,
+			rawConfigValue:  cty.MapValEmpty(cty.String),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: false,
+		},
+		{
+			name:            "config: false - state: true - level: same - value: different",
+			parameterLevel:  sdk.ParameterTypeAccount,
+			parameterValue:  sdk.LogLevelDebug,
+			rawConfigValue:  cty.MapValEmpty(cty.String),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: true,
+		},
 	}
-
-	t.Run("config: true - state: true - level: different - value: same", func(t *testing.T) {
-		providerConfig := createProviderConfig(sdk.ParameterTypeAccount, sdk.LogLevelInfo)
-		diff := calculateDiff(t, providerConfig, cty.MapVal(map[string]cty.Value{
-			"value": cty.StringVal(string(sdk.LogLevelInfo)),
-		}), map[string]any{
-			"value": string(sdk.LogLevelInfo),
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			customDiff := resources.ParameterValueComputedIf(
+				"value",
+				[]*sdk.Parameter{
+					{
+						Key:   string(sdk.AccountParameterLogLevel),
+						Level: tt.parameterLevel,
+						Value: string(tt.parameterValue),
+					},
+				},
+				sdk.ParameterTypeDatabase,
+				sdk.AccountParameterLogLevel,
+				func(v any) string { return v.(string) },
+			)
+			providerConfig := createProviderWithValuePropertyAndCustomDiff(t, &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+			}, customDiff)
+			diff := calculateDiff(t, providerConfig, tt.rawConfigValue, tt.stateValue)
+			assert.Equal(t, tt.wantNewComputed, diff.Attributes["value"].NewComputed)
 		})
-		assert.True(t, diff.Attributes["value"].NewComputed)
-	})
-
-	t.Run("config: true - state: true - level: different - value: different", func(t *testing.T) {
-		t.Skip("Skipping temporarily - this file was not running previously as part of tests, need to verify it")
-		providerConfig := createProviderConfig(sdk.ParameterTypeAccount, sdk.LogLevelDebug)
-		diff := calculateDiff(t, providerConfig, cty.MapVal(map[string]cty.Value{
-			"value": cty.StringVal(string(sdk.LogLevelInfo)),
-		}), map[string]any{
-			"value": string(sdk.LogLevelInfo),
-		})
-		assert.False(t, diff.Attributes["value"].NewComputed)
-	})
-
-	t.Run("config: true - state: true - level: same - value: same", func(t *testing.T) {
-		providerConfig := createProviderConfig(sdk.ParameterTypeDatabase, sdk.LogLevelInfo)
-		diff := calculateDiff(t, providerConfig, cty.MapVal(map[string]cty.Value{
-			"value": cty.StringVal(string(sdk.LogLevelInfo)),
-		}), map[string]any{
-			"value": string(sdk.LogLevelInfo),
-		})
-		assert.False(t, diff.Attributes["value"].NewComputed)
-	})
-
-	t.Run("config: true - state: true - level: same - value: different", func(t *testing.T) {
-		providerConfig := createProviderConfig(sdk.ParameterTypeDatabase, sdk.LogLevelDebug)
-		diff := calculateDiff(t, providerConfig, cty.MapVal(map[string]cty.Value{
-			"value": cty.StringVal(string(sdk.LogLevelInfo)),
-		}), map[string]any{
-			"value": string(sdk.LogLevelInfo),
-		})
-		assert.False(t, diff.Attributes["value"].NewComputed)
-	})
-
-	t.Run("config: false - state: true - level: different - value: same", func(t *testing.T) {
-		providerConfig := createProviderConfig(sdk.ParameterTypeAccount, sdk.LogLevelInfo)
-		diff := calculateDiff(t, providerConfig, cty.MapValEmpty(cty.String), map[string]any{
-			"value": string(sdk.LogLevelInfo),
-		})
-		assert.False(t, diff.Attributes["value"].NewComputed)
-	})
-
-	t.Run("config: false - state: true - level: different - value: different", func(t *testing.T) {
-		providerConfig := createProviderConfig(sdk.ParameterTypeAccount, sdk.LogLevelDebug)
-		diff := calculateDiff(t, providerConfig, cty.MapValEmpty(cty.String), map[string]any{
-			"value": string(sdk.LogLevelInfo),
-		})
-		assert.True(t, diff.Attributes["value"].NewComputed)
-	})
-
-	t.Run("config: false - state: true - level: same - value: same", func(t *testing.T) {
-		providerConfig := createProviderConfig(sdk.ParameterTypeAccount, sdk.LogLevelInfo)
-		diff := calculateDiff(t, providerConfig, cty.MapValEmpty(cty.String), map[string]any{
-			"value": string(sdk.LogLevelInfo),
-		})
-		assert.False(t, diff.Attributes["value"].NewComputed)
-	})
-
-	t.Run("config: false - state: true - level: same - value: different", func(t *testing.T) {
-		providerConfig := createProviderConfig(sdk.ParameterTypeAccount, sdk.LogLevelDebug)
-		diff := calculateDiff(t, providerConfig, cty.MapValEmpty(cty.String), map[string]any{
-			"value": string(sdk.LogLevelInfo),
-		})
-		assert.True(t, diff.Attributes["value"].NewComputed)
-	})
-
+	}
 	// Tests for filled config and empty state were not added as the only way
 	// of getting into this situation would be in create operation for which custom diffs are skipped.
 }
