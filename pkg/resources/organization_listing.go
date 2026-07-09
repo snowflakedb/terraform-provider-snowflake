@@ -198,15 +198,6 @@ func CreateOrganizationListing(ctx context.Context, d *schema.ResourceData, meta
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
-	// CREATE ORGANIZATION LISTING defaults PUBLISH to TRUE. Explicitly unpublish when publish = false
-	// because Snowflake may not honor PUBLISH = FALSE in the CREATE statement.
-	if publishString := d.Get("publish").(string); publishString == BooleanFalse {
-		if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true)); err != nil {
-			d.Partial(true)
-			return diag.FromErr(err)
-		}
-	}
-
 	// CREATE ORGANIZATION LISTING does not support the COMMENT option. Organization listings also do not support
 	// ALTER LISTING ... SET COMMENT (old API). Instead, comment is set via ALTER LISTING ... AS $$manifest$$ COMMENT.
 	if comment := d.Get("comment").(string); comment != "" {
