@@ -87,22 +87,6 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertThatObject(t, ass)
 	}
 
-	assertConstraint := func(t *testing.T, expected sdk.TableConstraintDetails, actual sdk.TableConstraintDetails) {
-		t.Helper()
-		assert.Equal(t, expected.ConstraintName, actual.ConstraintName)
-		assert.Equal(t, expected.ConstraintType, actual.ConstraintType)
-		assert.Equal(t, expected.Enforced, actual.Enforced)
-		assert.Equal(t, expected.Rely, actual.Rely)
-		assert.Equal(t, expected.IsDeferrable, actual.IsDeferrable)
-		assert.Equal(t, expected.InitiallyDeferred, actual.InitiallyDeferred)
-		assert.Equal(t, expected.Comment, actual.Comment)
-		assert.Equal(t, expected.ConstraintCatalog, actual.ConstraintCatalog)
-		assert.Equal(t, expected.ConstraintSchema, actual.ConstraintSchema)
-		assert.Equal(t, expected.TableCatalog, actual.TableCatalog)
-		assert.Equal(t, expected.TableSchema, actual.TableSchema)
-		assert.Equal(t, expected.TableName, actual.TableName)
-	}
-
 	snowflakeCatalog := sdk.IcebergTableCatalogSnowflake
 	snowflakeManagedExternalVolume := sdk.NewAccountObjectIdentifier("SNOWFLAKE_MANAGED")
 
@@ -509,62 +493,66 @@ func TestInt_IcebergTables(t *testing.T) {
 		slices.SortFunc(constraints, func(x, y sdk.TableConstraintDetails) int {
 			return strings.Compare(x.ConstraintName, y.ConstraintName)
 		})
-		assertConstraint(t, sdk.TableConstraintDetails{
-			ConstraintName:    "fk_out_ref",
-			ConstraintType:    sdk.TableConstraintTypeForeignKey,
-			Enforced:          false,
-			Rely:              false,
-			IsDeferrable:      false,
-			InitiallyDeferred: true,
-			Comment:           nil,
-			ConstraintCatalog: id.DatabaseName(),
-			ConstraintSchema:  id.SchemaName(),
-			TableCatalog:      id.DatabaseName(),
-			TableSchema:       id.SchemaName(),
-			TableName:         id.Name(),
-		}, constraints[0])
-		assertConstraint(t, sdk.TableConstraintDetails{
-			ConstraintName:    "fk_ref",
-			ConstraintType:    sdk.TableConstraintTypeForeignKey,
-			Enforced:          false,
-			Rely:              false,
-			IsDeferrable:      false,
-			InitiallyDeferred: true,
-			Comment:           nil,
-			ConstraintCatalog: id.DatabaseName(),
-			ConstraintSchema:  id.SchemaName(),
-			TableCatalog:      id.DatabaseName(),
-			TableSchema:       id.SchemaName(),
-			TableName:         id.Name(),
-		}, constraints[1])
-		assertConstraint(t, sdk.TableConstraintDetails{
-			ConstraintName:    "pk_id",
-			ConstraintType:    sdk.TableConstraintTypePrimaryKey,
-			Enforced:          false,
-			Rely:              false,
-			IsDeferrable:      false,
-			InitiallyDeferred: true,
-			Comment:           nil,
-			ConstraintCatalog: id.DatabaseName(),
-			ConstraintSchema:  id.SchemaName(),
-			TableCatalog:      id.DatabaseName(),
-			TableSchema:       id.SchemaName(),
-			TableName:         id.Name(),
-		}, constraints[2])
-		assertConstraint(t, sdk.TableConstraintDetails{
-			ConstraintName:    "uq_region",
-			ConstraintType:    sdk.TableConstraintTypeUnique,
-			Enforced:          false,
-			Rely:              false,
-			IsDeferrable:      false,
-			InitiallyDeferred: true,
-			Comment:           nil,
-			ConstraintCatalog: id.DatabaseName(),
-			ConstraintSchema:  id.SchemaName(),
-			TableCatalog:      id.DatabaseName(),
-			TableSchema:       id.SchemaName(),
-			TableName:         id.Name(),
-		}, constraints[3])
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[0]).
+				HasConstraintName("fk_out_ref").
+				HasConstraintType(sdk.TableConstraintTypeForeignKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[1]).
+				HasConstraintName("fk_ref").
+				HasConstraintType(sdk.TableConstraintTypeForeignKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[2]).
+				HasConstraintName("pk_id").
+				HasConstraintType(sdk.TableConstraintTypePrimaryKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[3]).
+				HasConstraintName("uq_region").
+				HasConstraintType(sdk.TableConstraintTypeUnique).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
 
 		// TODO (next PRs): add assertions for CHECK constraints
 		// like SELECT * FROM "A" . INFORMATION_SCHEMA.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'B' AND CONSTRAINT_TABLE = 'C'
@@ -1487,18 +1475,24 @@ func TestInt_IcebergTables(t *testing.T) {
 		details, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
 		require.NoError(t, err)
 		require.Len(t, details, 2)
-		objectassert.TableSearchOptimizationDetailsFromObject(t, &details[0]).
-			HasExpressionId(1).
-			HasActive(true).
-			HasMethod(string(sdk.TableSearchMethodEquality)).
-			HasTarget("REGION").
-			HasTargetDataType(testdatatypes.DataTypeVarcharIceberg)
-		objectassert.TableSearchOptimizationDetailsFromObject(t, &details[1]).
-			HasExpressionId(2).
-			HasActive(true).
-			HasMethod(string(sdk.TableSearchMethodFullText)).
-			HasTarget("REGION").
-			HasTargetDataType(testdatatypes.DataTypeVarcharIceberg)
+		assertThatObject(
+			t,
+			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[0]).
+				HasExpressionId(1).
+				HasActive(true).
+				HasMethod(string(sdk.TableSearchMethodEquality)).
+				HasTarget("REGION").
+				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
+		)
+		assertThatObject(
+			t,
+			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[1]).
+				HasExpressionId(2).
+				HasActive(true).
+				HasMethod(string(sdk.TableSearchMethodFullText)+" DEFAULT_ANALYZER").
+				HasTarget("REGION").
+				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
+		)
 
 		// Drop by method/target: removes only the EQUALITY entry. The analyzer is not part of the matcher.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
