@@ -230,6 +230,46 @@ func TestInt_Listings(t *testing.T) {
 		assertCompleteWithApplicationPackage(t, id)
 	})
 
+	// Organization listings only add a dedicated CREATE command (CREATE ORGANIZATION LISTING);
+	// all the other operations (ALTER, DROP, SHOW, DESCRIBE) are shared with regular listings
+	// and are already covered by the tests above/below.
+	t.Run("create organization listing from manifest: no optionals", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		manifest, title := testClientHelper().Listing.OrganizationBasicManifest(t)
+
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(manifest).
+			WithPublish(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertThatObject(t,
+			objectassert.Listing(t, id).
+				HasName(id.Name()).
+				HasGlobalNameNotEmpty().
+				HasTitle(title).
+				HasState(sdk.ListingStateDraft).
+				HasNoComment().
+				HasNoPublishedOn(),
+		)
+	})
+
+	t.Run("create organization listing from manifest: with share", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		manifest, _ := testClientHelper().Listing.OrganizationBasicManifest(t)
+
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithAs(manifest).
+			WithPublish(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
+		assert.NoError(t, err)
+		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
+	})
+
 	t.Run("alter: change state", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
