@@ -142,6 +142,7 @@ const (
 	View                                                   resource = "snowflake_view"
 	Warehouse                                              resource = "snowflake_warehouse"
 	WarehouseAdaptive                                      resource = "snowflake_warehouse_adaptive"
+	WarehouseInteractive                                   resource = "snowflake_warehouse_interactive"
 )
 
 type Resource interface {

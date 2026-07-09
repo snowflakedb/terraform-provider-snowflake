@@ -90,6 +90,22 @@ Note that this error can still legitimately occur if your configuration change a
 
 ## v2.17.x ➞ v2.18.0
 
+### *(new preview resource)* New interactive warehouse resource
+
+We have added a new preview resource for managing interactive warehouses: [snowflake_warehouse_interactive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) ([Snowflake docs](https://docs.snowflake.com/en/user-guide/warehouses-interactive)).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_warehouse_interactive_resource` to the `preview_features_enabled` field in the provider configuration.
+
+A few interactive-specific constraints apply:
+
+- `auto_suspend` must be at least `86400` (enforced at plan time; Snowflake rejects lower values).
+
+Table associations (`tables`) are applied incrementally with `ADD TABLES` / `DROP TABLES` (only the changed entries), and `fallback_warehouse` is managed via `SET`/`UNSET FALLBACK_WAREHOUSE` (read back from `SHOW PARAMETERS`). Unsupported warehouse parameters (`scaling_policy`, `enable_query_acceleration`, `query_acceleration_max_scale_factor`, `resource_constraint`, `generation`) are intentionally omitted from the schema, so configuring them yields a plan-time "unsupported argument" error. Type transitions to/from interactive are not supported and result in resource re-creation.
+
+The `show_output` field in the `snowflake_warehouses` data source now includes an additional computed `tables` attribute surfacing interactive warehouse table associations.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### Multiple resources and data sources promoted to stable
 
 The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration if present.
