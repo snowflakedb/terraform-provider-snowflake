@@ -2108,6 +2108,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 	})
 
 	t.Run("on all tasks - with operate", func(t *testing.T) {
+		currentRole := testClientHelper().Context.CurrentRole(t)
+
 		taskRole, taskRoleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
 		t.Cleanup(taskRoleCleanup)
 
@@ -2119,14 +2121,11 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		// grantTaskRole grants the necessary privileges to a role to be able to create task
 		grantTaskRole(t, taskRole.ID())
-
-		currentRole := testClientHelper().Context.CurrentRole(t)
-
 		grantTaskRole(t, role.ID())
-		grantTaskRole(t, currentRole)
 
 		// Use a previously prepared role to create a task
 		usePreviousRole := testClientHelper().Role.UseRole(t, taskRole.ID())
+		t.Cleanup(usePreviousRole)
 
 		task, taskCleanup := testClientHelper().Task.CreateWithSchedule(t)
 		t.Cleanup(taskCleanup)
@@ -2179,14 +2178,12 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Cleanup(func() {
-			currentRole := testClientHelper().Context.CurrentRole(t)
-			usePreviousRole := testClientHelper().Role.UseRole(t, role.ID())
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(task), sdk.Pointer(sdk.Revoke))
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(secondTask), sdk.Pointer(sdk.Revoke))
-			usePreviousRole()
 		})
 
 		usePreviousRole = testClientHelper().Role.UseRole(t, taskRole.ID())
+		t.Cleanup(usePreviousRole)
 		currentTask, err := client.Tasks.ShowByID(ctx, task.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, currentTask.State)
@@ -2220,6 +2217,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnTask(secondTask), role.ID())
 
 		usePreviousRole = testClientHelper().Role.UseRole(t, role.ID())
+		t.Cleanup(usePreviousRole)
 		currentTask, err = client.Tasks.ShowByID(ctx, task.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateSuspended, currentTask.State)
@@ -2227,7 +2225,6 @@ func TestInt_GrantOwnership(t *testing.T) {
 		currentSecondTask, err = client.Tasks.ShowByID(ctx, secondTask.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateSuspended, currentSecondTask.State)
-		usePreviousRole()
 	})
 }
 
