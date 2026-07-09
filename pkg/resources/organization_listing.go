@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -127,10 +126,11 @@ func OrganizationListing() *schema.Resource {
 	return &schema.Resource{
 		Description: "Resource used to manage organization listing objects. For more information, check [organization listing documentation](https://docs.snowflake.com/en/user-guide/collaboration/listings/organizational/org-listing-create).",
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingCreateWrapper(resources.OrganizationListing, CreateOrganizationListing)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingReadWrapper(resources.OrganizationListing, ReadOrganizationListing)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingUpdateWrapper(resources.OrganizationListing, UpdateOrganizationListing)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingDeleteWrapper(resources.OrganizationListing, deleteFunc)),
+		// TODO(SNOW-2236968): Add PreviewFeatureCreateContextWrapper (and the Read/Update/Delete equivalents) when this resource is moved to the production provider.
+		CreateContext: TrackingCreateWrapper(resources.OrganizationListing, CreateOrganizationListing),
+		ReadContext:   TrackingReadWrapper(resources.OrganizationListing, ReadOrganizationListing),
+		UpdateContext: TrackingUpdateWrapper(resources.OrganizationListing, UpdateOrganizationListing),
+		DeleteContext: TrackingDeleteWrapper(resources.OrganizationListing, deleteFunc),
 
 		Schema: organizationListingSchema,
 		Importer: &schema.ResourceImporter{

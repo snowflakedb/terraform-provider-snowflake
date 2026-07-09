@@ -66,14 +66,15 @@ const (
 	GitRepositoriesDatasource                     feature = "snowflake_git_repositories_datasource"
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource                           feature = "snowflake_hybrid_table_resource"
-	IcebergTableFromFilesResource               feature = "snowflake_iceberg_table_from_files_resource"
-	ImageRepositoryResource                     feature = "snowflake_image_repository_resource"
-	ImageRepositoriesDatasource                 feature = "snowflake_image_repositories_datasource"
-	InternalStageResource                       feature = "snowflake_stage_internal_resource"
-	JobServiceResource                          feature = "snowflake_job_service_resource"
-	ListingResource                             feature = "snowflake_listing_resource"
-	ListingsDatasource                          feature = "snowflake_listings_datasource"
-	OrganizationListingResource                 feature = "snowflake_organization_listing_resource"
+	IcebergTableFromFilesResource feature = "snowflake_iceberg_table_from_files_resource"
+	ImageRepositoryResource       feature = "snowflake_image_repository_resource"
+	ImageRepositoriesDatasource   feature = "snowflake_image_repositories_datasource"
+	InternalStageResource         feature = "snowflake_stage_internal_resource"
+	JobServiceResource            feature = "snowflake_job_service_resource"
+	ListingResource               feature = "snowflake_listing_resource"
+	ListingsDatasource            feature = "snowflake_listings_datasource"
+	// Currently, the organization listing resource is added to the test provider.
+	// OrganizationListingResource                   feature = "snowflake_organization_listing_resource"
 	ManagedAccountResource                      feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                    feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                 feature = "snowflake_materialized_views_datasource"
@@ -187,7 +188,6 @@ var allPreviewFeatures = []feature{
 	InternalStageResource,
 	JobServiceResource,
 	ListingsDatasource,
-	OrganizationListingResource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
