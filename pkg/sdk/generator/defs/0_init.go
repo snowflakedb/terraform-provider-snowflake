@@ -25,6 +25,7 @@ func init() {
 		cortexSearchServicesDef,
 		databaseRolesDef,
 		databasesDef,
+		dynamicTablesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
 		externalFunctionsDef,
