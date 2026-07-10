@@ -178,7 +178,7 @@ var hybridTablesDef = g.NewInterface(
 		SQL("TABLE").
 		IfExists().
 		Name().
-		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField(
 			"AddColumnAction",
 			hybridTableAddColumnAction,

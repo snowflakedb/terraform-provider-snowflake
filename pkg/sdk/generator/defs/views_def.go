@@ -222,7 +222,7 @@ var viewsDef = g.NewInterface(
 			SQL("VIEW").
 			IfExists().
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalSQL("UNSET COMMENT").
 			OptionalSQL("SET SECURE").

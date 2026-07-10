@@ -41,7 +41,7 @@ var passwordPoliciesDef = g.NewInterface(
 			SQL("PASSWORD POLICY").
 			IfExists().
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("PasswordPolicySet").

@@ -46,7 +46,7 @@ var maskingPoliciesDef = g.NewInterface(
 			SQL("MASKING POLICY").
 			IfExists().
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			OptionalSetBodyWithPrecedingArrow().
 			SetComment().
 			OptionalSQL("UNSET BODY").

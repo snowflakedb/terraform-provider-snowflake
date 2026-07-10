@@ -136,7 +136,7 @@ var schemasDef = g.NewInterface(
 		SQL("SCHEMA").
 		IfExists().
 		Name().
-		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		Identifier("SwapWith", g.KindOfTPointer[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("SWAP WITH")).
 		OptionalQueryStructField("Set", schemaSetStruct, g.ListOptions().NoParentheses().SQL("SET")).
 		OptionalQueryStructField("Unset", schemaUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).

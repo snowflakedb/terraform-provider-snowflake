@@ -212,7 +212,7 @@ var databasesDef = g.NewInterface(
 		SQL("DATABASE").
 		IfExists().
 		Name().
-		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		Identifier("SwapWith", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("SWAP WITH")).
 		OptionalQueryStructField("Set", databaseSetStruct, g.ListOptions().NoParentheses().SQL("SET")).
 		OptionalQueryStructField("Unset", databaseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).

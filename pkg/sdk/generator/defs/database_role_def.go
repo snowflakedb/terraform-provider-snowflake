@@ -34,7 +34,7 @@ var databaseRolesDef = g.NewInterface(
 		SQL("DATABASE ROLE").
 		IfExists().
 		Name().
-		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField(
 			"Set", g.NewQueryStruct("DatabaseRoleSet").
 				OptionalComment().

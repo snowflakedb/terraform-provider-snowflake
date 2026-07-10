@@ -121,7 +121,7 @@ var tagsDef = g.NewInterface(
 		OptionalQueryStructField("Drop", tagDrop(), g.KeywordOptions().SQL("DROP")).
 		OptionalQueryStructField("Set", tagSet(), g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", tagUnset(), g.KeywordOptions().SQL("UNSET")).
-		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ExactlyOneValueSet, "Add", "Drop", "Set", "Unset", "RenameTo"),

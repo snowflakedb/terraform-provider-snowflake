@@ -263,7 +263,7 @@ var usersDef = g.NewInterface(
 		SQL("USER").
 		IfExists().
 		Name().
-		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalSQL("RESET PASSWORD").
 		OptionalSQL("ABORT ALL QUERIES").
 		OptionalQueryStructField("AddDelegatedAuthorization", addDelegatedAuthorizationStruct(), g.KeywordOptions()).
