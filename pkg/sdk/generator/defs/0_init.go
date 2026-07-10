@@ -37,6 +37,7 @@ func init() {
 		imageRepositoriesDef,
 		listingsDef,
 		managedAccountsDef,
+		maskingPoliciesDef,
 		materializedViewsDef,
 		networkPoliciesDef,
 		networkRulesDef,

@@ -8,14 +8,14 @@ import (
 
 func TestMaskingPolicyCreate(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	signature := []TableColumnSignature{
+	signature := []CreateMaskingPolicySignature{
 		{
-			Name: "col1",
-			Type: dataTypeVarchar,
+			Name:     "col1",
+			DataType: dataTypeVarchar,
 		},
 		{
-			Name: "col2",
-			Type: dataTypeVarchar,
+			Name:     "col2",
+			DataType: dataTypeVarchar,
 		},
 	}
 	expression := "REPLACE('X', 1, 2)"
@@ -98,7 +98,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name: id,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaskingPolicyOptions", "Set", "Unset", "SetTag", "UnsetTag", "NewName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaskingPolicyOptions", "NewName", "SetBody", "SetComment", "UnsetBody", "UnsetComment", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: incorrect identifier", func(t *testing.T) {
@@ -121,32 +121,26 @@ func TestMaskingPolicyAlter(t *testing.T) {
 	t.Run("validation: only 1 option allowed at the same time", func(t *testing.T) {
 		newID := randomSchemaObjectIdentifierInSchema(id.SchemaId())
 		opts := &AlterMaskingPolicyOptions{
-			name:    id,
-			NewName: &newID,
-			Set: &MaskingPolicySet{
-				Comment: String("foo"),
-			},
+			name:       id,
+			NewName:    &newID,
+			SetComment: new("foo"),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaskingPolicyOptions", "Set", "Unset", "SetTag", "UnsetTag", "NewName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaskingPolicyOptions", "NewName", "SetBody", "SetComment", "UnsetBody", "UnsetComment", "SetTags", "UnsetTags"))
 	})
 
-	t.Run("with set", func(t *testing.T) {
+	t.Run("with set comment", func(t *testing.T) {
 		newComment := random.Comment()
 		opts := &AlterMaskingPolicyOptions{
-			name: id,
-			Set: &MaskingPolicySet{
-				Comment: String(newComment),
-			},
+			name:       id,
+			SetComment: new(newComment),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER MASKING POLICY %s SET COMMENT = '%s'", id.FullyQualifiedName(), newComment)
 	})
 
-	t.Run("with unset", func(t *testing.T) {
+	t.Run("with unset comment", func(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
-			name: id,
-			Unset: &MaskingPolicyUnset{
-				Comment: Bool(true),
-			},
+			name:         id,
+			UnsetComment: new(true),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER MASKING POLICY %s UNSET COMMENT", id.FullyQualifiedName())
 	})
@@ -162,10 +156,8 @@ func TestMaskingPolicyAlter(t *testing.T) {
 
 	t.Run("set body", func(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
-			name: id,
-			Set: &MaskingPolicySet{
-				Body: Pointer("body"),
-			},
+			name:    id,
+			SetBody: new("body"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER MASKING POLICY %s SET BODY -> body", id.FullyQualifiedName())
 	})
@@ -174,7 +166,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name:     id,
 			IfExists: Pointer(true),
-			SetTag: []TagAssociation{
+			SetTags: []TagAssociation{
 				{
 					Name:  NewAccountObjectIdentifier("123"),
 					Value: "value-123",
@@ -192,7 +184,7 @@ func TestMaskingPolicyAlter(t *testing.T) {
 		opts := &AlterMaskingPolicyOptions{
 			name:     id,
 			IfExists: Pointer(true),
-			UnsetTag: []ObjectIdentifier{
+			UnsetTags: []ObjectIdentifier{
 				NewAccountObjectIdentifier("123"),
 				NewAccountObjectIdentifier("456"),
 			},
@@ -307,12 +299,12 @@ func TestMaskingPolicyDescribe(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
 	t.Run("validation: empty options", func(t *testing.T) {
-		opts := &describeMaskingPolicyOptions{}
+		opts := &DescribeMaskingPolicyOptions{}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
 	t.Run("only name", func(t *testing.T) {
-		opts := &describeMaskingPolicyOptions{
+		opts := &DescribeMaskingPolicyOptions{
 			name: id,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE MASKING POLICY %s", id.FullyQualifiedName())

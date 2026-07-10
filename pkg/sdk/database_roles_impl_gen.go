@@ -125,6 +125,9 @@ func (r databaseRoleDBRow) convert() (*DatabaseRole, error) {
 	mapNullStringToRequiredBool(&result.IsInherited, r.IsInherited)
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 
