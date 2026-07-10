@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -415,7 +416,6 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
 	set := sdk.NewFailoverGroupSetRequest()
-	runSet := false
 
 	if d.HasChange("object_types") {
 		_, n := d.GetChange("object_types")
@@ -437,7 +437,6 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			}
 			set.WithAllowedIntegrationTypes(allowedIntegrationTypes)
 		}
-		runSet = true
 	}
 
 	if d.HasChange("allowed_integration_types") {
@@ -448,9 +447,8 @@ func UpdateFailoverGroup(ctx context.Context, d *schema.ResourceData, meta any) 
 			allowedIntegrationTypes[i] = sdk.IntegrationType(v)
 		}
 		set.WithAllowedIntegrationTypes(allowedIntegrationTypes)
-		runSet = true
 	}
-	if runSet {
+	if !reflect.DeepEqual(set, sdk.NewFailoverGroupSetRequest()) {
 		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithSet(*set)
 		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
 			return diag.FromErr(err)
