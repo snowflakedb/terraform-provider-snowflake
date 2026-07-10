@@ -29,6 +29,7 @@ func init() {
 		eventTablesDef,
 		externalFunctionsDef,
 		externalVolumesDef,
+		failoverGroupsDef,
 		fileFormatsDef,
 		functionsDef,
 		gitRepositoriesDef,

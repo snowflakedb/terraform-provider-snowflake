@@ -762,11 +762,9 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 		}
 
 		accountLocator := client.GetAccountLocator()
-		opts := &sdk.ShowFailoverGroupOptions{
-			InAccount: sdk.NewAccountIdentifierFromAccountLocator(accountLocator),
-		}
+		req := sdk.NewShowFailoverGroupRequest().WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(accountLocator))
 
-		fgs, err := client.FailoverGroups.Show(ctx, opts)
+		fgs, err := client.FailoverGroups.Show(ctx, req)
 		if err != nil {
 			return fmt.Errorf("SHOW FAILOVER GROUPS ended with error, err = %w", err)
 		}

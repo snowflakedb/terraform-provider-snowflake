@@ -41,6 +41,10 @@ func (v *QueryStruct) ListAssignment(sqlPrefix string, listItemKind string, tran
 	return v.Assignment(sqlPrefix, KindOfSlice(listItemKind), transformer)
 }
 
+func (v *QueryStruct) ListAssignmentWithFieldName(sqlPrefix string, listItemKind string, transformer *ParameterTransformer, fieldName string) *QueryStruct {
+	return v.AssignmentWithFieldName(sqlPrefix, KindOfSlice(listItemKind), transformer, fieldName)
+}
+
 func (v *QueryStruct) NumberAssignment(sqlPrefix string, transformer *ParameterTransformer) *QueryStruct {
 	return v.Assignment(sqlPrefix, "int", transformer)
 }
