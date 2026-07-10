@@ -87,7 +87,8 @@ func IcebergTable() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(icebergTableSchema, ShowOutputAttributeName, "comment"),
 			ComputedIfAnyAttributeChanged(icebergTableSchema, DescribeOutputAttributeName, "column"),
-			ComputedIfAnyAttributeChanged(icebergTableSchema, ParametersAttributeName,
+			ComputedIfAnyAttributeChanged(
+				icebergTableSchema, ParametersAttributeName,
 				"external_volume", "catalog", "target_file_size", "storage_serialization_policy",
 				"catalog_sync", "data_retention_time_in_days", "max_data_extension_time_in_days", "enable_data_compaction",
 				"enable_iceberg_merge_on_read",

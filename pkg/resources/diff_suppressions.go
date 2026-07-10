@@ -244,7 +244,7 @@ func suppressIdentifierQuoting(_, oldValue, newValue string, _ *schema.ResourceD
 // generated suffix to the configured value (starting from the last dot). It strips that suffix from the
 // old (state) value and compares the result with the new (config) value.
 func suppressIcebergTableBaseLocationSuffix(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-	return NormalizeIcebergTableBaseLocation(oldValue) == NormalizeIcebergTableBaseLocation(newValue)
+	return NormalizeIcebergTableBaseLocation(oldValue) == newValue
 }
 
 func NormalizeIcebergTableBaseLocation(value string) string {
