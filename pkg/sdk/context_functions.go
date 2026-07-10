@@ -163,9 +163,9 @@ func (c *contextFunctions) CurrentSecondaryRoles(ctx context.Context) (*CurrentS
 	var value SecondaryRoleOption
 	switch jsonRoles.Value {
 	case "ALL":
-		value = SecondaryRolesAll
+		value = SecondaryRoleOptionAll
 	default:
-		value = SecondaryRolesNone
+		value = SecondaryRoleOptionNone
 	}
 	secondaryRoles := &CurrentSecondaryRoles{
 		Roles: roles,

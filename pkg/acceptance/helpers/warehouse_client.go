@@ -27,10 +27,10 @@ func (c *WarehouseClient) client() sdk.Warehouses {
 func (c *WarehouseClient) UseWarehouse(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
-	err := c.context.client.Sessions.UseWarehouse(ctx, id)
+	err := c.context.client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(id))
 	require.NoError(t, err)
 	return func() {
-		err = c.context.client.Sessions.UseWarehouse(ctx, c.ids.WarehouseId())
+		err = c.context.client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(c.ids.WarehouseId()))
 		require.NoError(t, err)
 	}
 }
@@ -68,7 +68,7 @@ func (c *WarehouseClient) DropWarehouseFunc(t *testing.T, id sdk.AccountObjectId
 	return func() {
 		err := c.client().Drop(ctx, sdk.NewDropWarehouseRequest(id).WithIfExists(true))
 		require.NoError(t, err)
-		err = c.context.client.Sessions.UseWarehouse(ctx, c.ids.WarehouseId())
+		err = c.context.client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(c.ids.WarehouseId()))
 		require.NoError(t, err)
 	}
 }

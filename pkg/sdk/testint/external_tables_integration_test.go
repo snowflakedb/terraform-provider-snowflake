@@ -112,7 +112,7 @@ func TestInt_ExternalTables(t *testing.T) {
 		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
 		t.Cleanup(fileFormatCleanup)
 
-		err := client.Sessions.UseWarehouse(ctx, testClientHelper().Ids.WarehouseId())
+		err := client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(testClientHelper().Ids.WarehouseId()))
 		require.NoError(t, err)
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()

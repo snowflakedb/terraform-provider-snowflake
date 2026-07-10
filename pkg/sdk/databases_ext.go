@@ -47,7 +47,7 @@ func (v *Database) SetTransient(value string) {
 // Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-database.
 func (v *databases) Use(ctx context.Context, id AccountObjectIdentifier) error {
 	// proxy to sessions
-	return v.client.Sessions.UseDatabase(ctx, id)
+	return v.client.Sessions.UseDatabase(ctx, NewUseDatabaseSessionRequest(id))
 }
 
 func (v *databases) ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error) {
