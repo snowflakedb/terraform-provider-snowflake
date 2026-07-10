@@ -29,22 +29,15 @@ type CreateMaskingPolicySignatureRequest struct {
 }
 
 type AlterMaskingPolicyRequest struct {
-	IfExists  *bool
-	name      SchemaObjectIdentifier // required
-	NewName   *SchemaObjectIdentifier
-	Set       *MaskingPolicySetRequest
-	Unset     *MaskingPolicyUnsetRequest
-	SetTags   []TagAssociation
-	UnsetTags []ObjectIdentifier
-}
-
-type MaskingPolicySetRequest struct {
-	Body    *string
-	Comment *string
-}
-
-type MaskingPolicyUnsetRequest struct {
-	Comment *bool
+	IfExists     *bool
+	name         SchemaObjectIdentifier // required
+	NewName      *SchemaObjectIdentifier
+	SetBody      *string
+	SetComment   *string
+	UnsetBody    *bool
+	UnsetComment *bool
+	SetTags      []TagAssociation
+	UnsetTags    []ObjectIdentifier
 }
 
 type DropMaskingPolicyRequest struct {

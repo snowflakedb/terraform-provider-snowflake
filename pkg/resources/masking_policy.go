@@ -347,7 +347,7 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	if d.HasChange("body") {
 		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).
-			WithSet(*sdk.NewMaskingPolicySetRequest().WithBody(d.Get("body").(string))))
+			WithSetBody(d.Get("body").(string)))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -356,13 +356,13 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	if d.HasChange("comment") {
 		if v, ok := d.GetOk("comment"); ok {
 			err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).
-				WithSet(*sdk.NewMaskingPolicySetRequest().WithComment(v.(string))))
+				WithSetComment(v.(string)))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
 			err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).
-				WithUnset(*sdk.NewMaskingPolicyUnsetRequest().WithComment(true)))
+				WithUnsetComment(true))
 			if err != nil {
 				return diag.FromErr(err)
 			}

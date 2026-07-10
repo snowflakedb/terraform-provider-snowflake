@@ -66,13 +66,23 @@ func (s *AlterMaskingPolicyRequest) WithNewName(newName SchemaObjectIdentifier) 
 	return s
 }
 
-func (s *AlterMaskingPolicyRequest) WithSet(set MaskingPolicySetRequest) *AlterMaskingPolicyRequest {
-	s.Set = &set
+func (s *AlterMaskingPolicyRequest) WithSetBody(setBody string) *AlterMaskingPolicyRequest {
+	s.SetBody = &setBody
 	return s
 }
 
-func (s *AlterMaskingPolicyRequest) WithUnset(unset MaskingPolicyUnsetRequest) *AlterMaskingPolicyRequest {
-	s.Unset = &unset
+func (s *AlterMaskingPolicyRequest) WithSetComment(setComment string) *AlterMaskingPolicyRequest {
+	s.SetComment = &setComment
+	return s
+}
+
+func (s *AlterMaskingPolicyRequest) WithUnsetBody(unsetBody bool) *AlterMaskingPolicyRequest {
+	s.UnsetBody = &unsetBody
+	return s
+}
+
+func (s *AlterMaskingPolicyRequest) WithUnsetComment(unsetComment bool) *AlterMaskingPolicyRequest {
+	s.UnsetComment = &unsetComment
 	return s
 }
 
@@ -83,31 +93,6 @@ func (s *AlterMaskingPolicyRequest) WithSetTags(setTags []TagAssociation) *Alter
 
 func (s *AlterMaskingPolicyRequest) WithUnsetTags(unsetTags []ObjectIdentifier) *AlterMaskingPolicyRequest {
 	s.UnsetTags = unsetTags
-	return s
-}
-
-func NewMaskingPolicySetRequest() *MaskingPolicySetRequest {
-	s := MaskingPolicySetRequest{}
-	return &s
-}
-
-func (s *MaskingPolicySetRequest) WithBody(body string) *MaskingPolicySetRequest {
-	s.Body = &body
-	return s
-}
-
-func (s *MaskingPolicySetRequest) WithComment(comment string) *MaskingPolicySetRequest {
-	s.Comment = &comment
-	return s
-}
-
-func NewMaskingPolicyUnsetRequest() *MaskingPolicyUnsetRequest {
-	s := MaskingPolicyUnsetRequest{}
-	return &s
-}
-
-func (s *MaskingPolicyUnsetRequest) WithComment(comment bool) *MaskingPolicyUnsetRequest {
-	s.Comment = &comment
 	return s
 }
 

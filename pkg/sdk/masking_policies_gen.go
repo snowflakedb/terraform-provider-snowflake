@@ -48,19 +48,12 @@ type AlterMaskingPolicyOptions struct {
 	IfExists      *bool                   `ddl:"keyword" sql:"IF EXISTS"`
 	name          SchemaObjectIdentifier  `ddl:"identifier"`
 	NewName       *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
-	Set           *MaskingPolicySet       `ddl:"keyword" sql:"SET"`
-	Unset         *MaskingPolicyUnset     `ddl:"keyword" sql:"UNSET"`
+	SetBody       *string                 `ddl:"parameter,no_quotes,no_equals" sql:"SET BODY ->"`
+	SetComment    *string                 `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
+	UnsetBody     *bool                   `ddl:"keyword" sql:"UNSET BODY"`
+	UnsetComment  *bool                   `ddl:"keyword" sql:"UNSET COMMENT"`
 	SetTags       []TagAssociation        `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags     []ObjectIdentifier      `ddl:"keyword" sql:"UNSET TAG"`
-}
-
-type MaskingPolicySet struct {
-	Body    *string `ddl:"parameter,no_quotes,no_equals" sql:"BODY ->"`
-	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
-}
-
-type MaskingPolicyUnset struct {
-	Comment *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropMaskingPolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-masking-policy.

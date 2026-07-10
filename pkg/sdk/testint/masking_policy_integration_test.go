@@ -247,7 +247,7 @@ func TestInt_MaskingPolicyAlter(t *testing.T) {
 		t.Cleanup(maskingPolicyCleanup)
 		comment := random.Comment()
 		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(maskingPolicy.ID()).
-			WithSet(*sdk.NewMaskingPolicySetRequest().WithComment(comment)))
+			WithSetComment(comment))
 		require.NoError(t, err)
 		maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(maskingPolicy.Name)}).
@@ -257,10 +257,10 @@ func TestInt_MaskingPolicyAlter(t *testing.T) {
 		assert.Equal(t, comment, maskingPolicies[0].Comment)
 
 		err = client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(maskingPolicy.ID()).
-			WithSet(*sdk.NewMaskingPolicySetRequest().WithComment(comment)))
+			WithSetComment(comment))
 		require.NoError(t, err)
 		err = client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(maskingPolicy.ID()).
-			WithUnset(*sdk.NewMaskingPolicyUnsetRequest().WithComment(true)))
+			WithUnsetComment(true))
 		require.NoError(t, err)
 		maskingPolicies, err = client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(maskingPolicy.Name)}).
@@ -292,7 +292,7 @@ func TestInt_MaskingPolicyAlter(t *testing.T) {
 		t.Cleanup(maskingPolicyCleanup)
 
 		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).
-			WithSet(*sdk.NewMaskingPolicySetRequest().WithBody(newBody)))
+			WithSetBody(newBody))
 		require.NoError(t, err)
 		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, id)
 		require.NoError(t, err)

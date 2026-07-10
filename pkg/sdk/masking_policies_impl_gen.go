@@ -100,22 +100,15 @@ func (r *CreateMaskingPolicyRequest) toOpts() *CreateMaskingPolicyOptions {
 
 func (r *AlterMaskingPolicyRequest) toOpts() *AlterMaskingPolicyOptions {
 	opts := &AlterMaskingPolicyOptions{
-		IfExists:  r.IfExists,
-		name:      r.name,
-		NewName:   r.NewName,
-		SetTags:   r.SetTags,
-		UnsetTags: r.UnsetTags,
-	}
-	if r.Set != nil {
-		opts.Set = &MaskingPolicySet{
-			Body:    r.Set.Body,
-			Comment: r.Set.Comment,
-		}
-	}
-	if r.Unset != nil {
-		opts.Unset = &MaskingPolicyUnset{
-			Comment: r.Unset.Comment,
-		}
+		IfExists:     r.IfExists,
+		name:         r.name,
+		NewName:      r.NewName,
+		SetBody:      r.SetBody,
+		SetComment:   r.SetComment,
+		UnsetBody:    r.UnsetBody,
+		UnsetComment: r.UnsetComment,
+		SetTags:      r.SetTags,
+		UnsetTags:    r.UnsetTags,
 	}
 	return opts
 }

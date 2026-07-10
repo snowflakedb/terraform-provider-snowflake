@@ -191,7 +191,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
 					testClient().MaskingPolicy.Alter(t, sdk.NewAlterMaskingPolicyRequest(id).
-						WithSet(*sdk.NewMaskingPolicySetRequest().WithBody(changedBody)))
+						WithSetBody(changedBody))
 				},
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
@@ -216,7 +216,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithComment("")),
 				PreConfig: func() {
 					testClient().MaskingPolicy.Alter(t, sdk.NewAlterMaskingPolicyRequest(id).
-						WithUnset(*sdk.NewMaskingPolicyUnsetRequest().WithComment(true)))
+						WithUnsetComment(true))
 				},
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
