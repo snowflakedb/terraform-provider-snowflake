@@ -47,6 +47,8 @@ func (i *IcebergTableResourceAssert) HasName(expected string) *IcebergTableResou
 	return i
 }
 
+// typed assert for "aggregation_policy" (type: List, subtype: Map) is not currently supported
+
 func (i *IcebergTableResourceAssert) HasBaseLocation(expected string) *IcebergTableResourceAssert {
 	i.StringValueSet("base_location", expected)
 	return i
@@ -118,6 +120,8 @@ func (i *IcebergTableResourceAssert) HasPathLayout(expected string) *IcebergTabl
 	i.StringValueSet("path_layout", expected)
 	return i
 }
+
+// typed assert for "row_access_policy" (type: List, subtype: Map) is not currently supported
 
 func (i *IcebergTableResourceAssert) HasStorageSerializationPolicy(expected string) *IcebergTableResourceAssert {
 	i.StringValueSet("storage_serialization_policy", expected)
@@ -331,6 +335,11 @@ func (i *IcebergTableResourceAssert) HasNoTargetFileSize() *IcebergTableResource
 // Attribute empty checks //
 ////////////////////////////
 
+func (i *IcebergTableResourceAssert) HasAggregationPolicyEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("aggregation_policy.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasBaseLocationEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("base_location", "")
 	return i
@@ -398,6 +407,11 @@ func (i *IcebergTableResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *Icebe
 
 func (i *IcebergTableResourceAssert) HasPathLayoutEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("path_layout", "")
+	return i
+}
+
+func (i *IcebergTableResourceAssert) HasRowAccessPolicyEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("row_access_policy.#", "0")
 	return i
 }
 

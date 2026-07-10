@@ -19,7 +19,6 @@ import (
 
 // TODO (next PRs): the following CreateIcebergTableOptions fields are not yet supported by this resource:
 //   - structure/layout: PartitionBy, ClusterBy
-//   - attached policies: RowAccessPolicy, AggregationPolicy
 //   - CopyGrants and CopyTags
 //   - ICEBERG_MERGE_ON_READ_BEHAVIOR (needs to be added to SDK)
 //   - column-level extras (part of ColumnsAndConstraints): out-of-line constraints, and per-column
@@ -28,7 +27,9 @@ import (
 var icebergTableSchema = collections.MergeMaps(
 	icebergTableCommonSchema(),
 	map[string]*schema.Schema{
-		"column": basicColumnSchema(),
+		"column":             basicColumnSchema(),
+		"row_access_policy":  rowAccessPolicyFieldSchema("Iceberg table"),
+		"aggregation_policy": aggregationPolicySchema("Iceberg table"),
 		"base_location": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -129,6 +130,26 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
+	if v := d.Get("row_access_policy"); len(v.([]any)) > 0 {
+		policyId, columns, err := extractPolicyWithColumnsSet(v, "on")
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.WithRowAccessPolicy(*sdk.NewIcebergTableRowAccessPolicyRequest(policyId, columns))
+	}
+
+	if v := d.Get("aggregation_policy"); len(v.([]any)) > 0 {
+		id, columns, err := extractPolicyWithColumnsSet(v, "entity_key")
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		aggregationPolicyReq := sdk.NewIcebergTableAggregationPolicyRequest(id)
+		if len(columns) > 0 {
+			aggregationPolicyReq.WithEntityKey(columns)
+		}
+		req.WithAggregationPolicy(*aggregationPolicyReq)
+	}
+
 	diags := handleIcebergTableSnowflakeManagedParametersCreate(d, req)
 	if diags.HasError() {
 		return diags
@@ -144,6 +165,7 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 
 func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+		client := meta.(*provider.Context).Client
 		return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableSnowflakeManagedParameterRead, schemas.IcebergTableSnowflakeManagedParametersToSchema, func(d *schema.ResourceData, table *sdk.IcebergTable, details []sdk.IcebergTableDetails) error {
 			if withExternalChangesMarking {
 				var baseLocation string
@@ -160,6 +182,18 @@ func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFun
 				); err != nil {
 					return err
 				}
+			}
+
+			id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+			if err != nil {
+				return err
+			}
+			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTable))
+			if err != nil {
+				return err
+			}
+			if err := handlePolicyReferences(policyRefs, d); err != nil {
+				return err
 			}
 
 			// path_layout is not exposed by SHOW or DESCRIBE, so it is not read back (external changes are not detected).
@@ -203,6 +237,54 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 	if err := applyIcebergTableAlter(ctx, client, id, set, unset); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("row_access_policy") {
+		var addReq *sdk.ViewAddRowAccessPolicyRequest
+		var dropReq *sdk.ViewDropRowAccessPolicyRequest
+		err := rowAccessPolicyAlterRequests(d, func(id sdk.SchemaObjectIdentifier, columns []sdk.Column) {
+			addReq = sdk.NewViewAddRowAccessPolicyRequest(id, columns)
+		}, func(id sdk.SchemaObjectIdentifier) {
+			dropReq = sdk.NewViewDropRowAccessPolicyRequest(id)
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		alterReq := sdk.NewAlterIcebergTableRequest(id)
+		switch {
+		case addReq != nil && dropReq != nil:
+			alterReq.WithDropAndAddRowAccessPolicy(*sdk.NewIcebergTableDropAndAddRowAccessPolicyRequest(
+				*sdk.NewIcebergTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy),
+				*sdk.NewIcebergTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
+			))
+		case addReq != nil:
+			alterReq.WithAddRowAccessPolicy(*sdk.NewViewAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On))
+		case dropReq != nil:
+			alterReq.WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(dropReq.RowAccessPolicy))
+		}
+		if err := client.IcebergTables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating row access policy on %v err = %w", d.Id(), err))
+		}
+	}
+
+	if d.HasChange("aggregation_policy") {
+		newId, newColumns, isSet, err := aggregationPolicyAlterState(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if isSet {
+			aggregationPolicyReq := sdk.NewViewSetAggregationPolicyRequest(newId)
+			if len(newColumns) > 0 {
+				aggregationPolicyReq.WithEntityKey(newColumns)
+			}
+			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSetAggregationPolicy(*aggregationPolicyReq.WithForce(true))); err != nil {
+				return diag.FromErr(fmt.Errorf("error setting aggregation policy for view %v: %w", d.Id(), err))
+			}
+		} else {
+			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest())); err != nil {
+				return diag.FromErr(fmt.Errorf("error unsetting aggregation policy for view %v", d.Id()))
+			}
+		}
 	}
 
 	return ReadIcebergTableFunc(false)(ctx, d, meta)

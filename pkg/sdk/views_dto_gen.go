@@ -111,8 +111,8 @@ type ViewDropRowAccessPolicyRequest struct {
 }
 
 type ViewDropAndAddRowAccessPolicyRequest struct {
-	Drop ViewDropRowAccessPolicyRequest // required
-	Add  ViewAddRowAccessPolicyRequest  // required
+	Drop *ViewDropRowAccessPolicyRequest // required
+	Add  *ViewAddRowAccessPolicyRequest  // required
 }
 
 type ViewSetAggregationPolicyRequest struct {

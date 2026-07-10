@@ -15,6 +15,7 @@ type IcebergTableModel struct {
 	Database                   tfconfig.Variable `json:"database,omitempty"`
 	Schema                     tfconfig.Variable `json:"schema,omitempty"`
 	Name                       tfconfig.Variable `json:"name,omitempty"`
+	AggregationPolicy          tfconfig.Variable `json:"aggregation_policy,omitempty"`
 	BaseLocation               tfconfig.Variable `json:"base_location,omitempty"`
 	Catalog                    tfconfig.Variable `json:"catalog,omitempty"`
 	CatalogSync                tfconfig.Variable `json:"catalog_sync,omitempty"`
@@ -30,6 +31,7 @@ type IcebergTableModel struct {
 	IcebergVersion             tfconfig.Variable `json:"iceberg_version,omitempty"`
 	MaxDataExtensionTimeInDays tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
 	PathLayout                 tfconfig.Variable `json:"path_layout,omitempty"`
+	RowAccessPolicy            tfconfig.Variable `json:"row_access_policy,omitempty"`
 	StorageSerializationPolicy tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
 	TargetFileSize             tfconfig.Variable `json:"target_file_size,omitempty"`
 
@@ -122,6 +124,8 @@ func (i *IcebergTableModel) WithName(name string) *IcebergTableModel {
 	return i
 }
 
+// aggregation_policy attribute type is not yet supported, so WithAggregationPolicy can't be generated
+
 func (i *IcebergTableModel) WithBaseLocation(baseLocation string) *IcebergTableModel {
 	i.BaseLocation = tfconfig.StringVariable(baseLocation)
 	return i
@@ -194,6 +198,8 @@ func (i *IcebergTableModel) WithPathLayout(pathLayout string) *IcebergTableModel
 	return i
 }
 
+// row_access_policy attribute type is not yet supported, so WithRowAccessPolicy can't be generated
+
 func (i *IcebergTableModel) WithStorageSerializationPolicy(storageSerializationPolicy string) *IcebergTableModel {
 	i.StorageSerializationPolicy = tfconfig.StringVariable(storageSerializationPolicy)
 	return i
@@ -220,6 +226,11 @@ func (i *IcebergTableModel) WithSchemaValue(value tfconfig.Variable) *IcebergTab
 
 func (i *IcebergTableModel) WithNameValue(value tfconfig.Variable) *IcebergTableModel {
 	i.Name = value
+	return i
+}
+
+func (i *IcebergTableModel) WithAggregationPolicyValue(value tfconfig.Variable) *IcebergTableModel {
+	i.AggregationPolicy = value
 	return i
 }
 
@@ -295,6 +306,11 @@ func (i *IcebergTableModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.V
 
 func (i *IcebergTableModel) WithPathLayoutValue(value tfconfig.Variable) *IcebergTableModel {
 	i.PathLayout = value
+	return i
+}
+
+func (i *IcebergTableModel) WithRowAccessPolicyValue(value tfconfig.Variable) *IcebergTableModel {
+	i.RowAccessPolicy = value
 	return i
 }
 

@@ -149,8 +149,8 @@ type ViewDropRowAccessPolicy struct {
 }
 
 type ViewDropAndAddRowAccessPolicy struct {
-	Drop ViewDropRowAccessPolicy `ddl:"keyword"`
-	Add  ViewAddRowAccessPolicy  `ddl:"keyword"`
+	Drop *ViewDropRowAccessPolicy `ddl:"keyword"`
+	Add  *ViewAddRowAccessPolicy  `ddl:"keyword"`
 }
 
 type ViewSetAggregationPolicy struct {
