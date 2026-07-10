@@ -15,7 +15,6 @@ type TableSearchOptimizationDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.TableSearchOptimizationDetails, sdk.SchemaObjectIdentifier]
 }
 
-// TableSearchOptimizationDetails removed manually
 func TableSearchOptimizationDetailsFromObject(t *testing.T, tableSearchOptimizationDetails *sdk.TableSearchOptimizationDetails) *TableSearchOptimizationDetailsAssert {
 	t.Helper()
 	return &TableSearchOptimizationDetailsAssert{

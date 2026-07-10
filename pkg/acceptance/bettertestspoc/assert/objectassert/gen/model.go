@@ -11,6 +11,7 @@ type SnowflakeObjectAssertionsModel struct {
 	SdkType            string
 	IdType             string
 	IsDataSourceOutput bool
+	IsSubStruct        bool
 	Fields             []SnowflakeObjectFieldAssertion
 
 	*genhelpers.PreambleModel
@@ -25,6 +26,19 @@ type SnowflakeObjectFieldAssertion struct {
 	ExpectedValueMapper   genhelpers.Mapper
 }
 
+func (m SnowflakeObjectAssertionsModel) PlaceholderIdentifier() string {
+	switch m.IdType {
+	case "sdk.AccountObjectIdentifier":
+		return `sdk.NewAccountObjectIdentifier("")`
+	case "sdk.SchemaObjectIdentifier":
+		return `sdk.NewSchemaObjectIdentifier("", "", "")`
+	case "sdk.DatabaseObjectIdentifier":
+		return `sdk.NewDatabaseObjectIdentifier("", "")`
+	default:
+		return `sdk.NewAccountObjectIdentifier("")`
+	}
+}
+
 func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *genhelpers.PreambleModel) SnowflakeObjectAssertionsModel {
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
 	fields := make([]SnowflakeObjectFieldAssertion, len(sdkObject.Fields))
@@ -37,6 +51,7 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 		SdkType:            sdkObject.Name,
 		IdType:             sdkObject.IdType,
 		IsDataSourceOutput: sdkObject.IsDataSourceOutput,
+		IsSubStruct:        sdkObject.IsSubStruct,
 		Fields:             fields,
 		PreambleModel:      preamble,
 	}

@@ -14,12 +14,10 @@ type OpenCatalogRestConfigDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.OpenCatalogRestConfigDetails, sdk.AccountObjectIdentifier]
 }
 
-// OpenCatalogRestConfigDetails removed manually
-
 func OpenCatalogRestConfigDetailsFromObject(t *testing.T, openCatalogRestConfigDetails *sdk.OpenCatalogRestConfigDetails) *OpenCatalogRestConfigDetailsAssert {
 	t.Helper()
 	return &OpenCatalogRestConfigDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject("OpenCatalogRestConfigDetails", sdk.NewAccountObjectIdentifier(""), openCatalogRestConfigDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("OpenCatalogRestConfigDetails"), sdk.NewAccountObjectIdentifier(""), openCatalogRestConfigDetails),
 	}
 }
 
