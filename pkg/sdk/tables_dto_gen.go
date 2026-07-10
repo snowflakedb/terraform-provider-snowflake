@@ -2,8 +2,17 @@
 
 package sdk
 
-var _ optionsProvider[DescribeSearchOptimizationTableOptions] = new(DescribeSearchOptimizationTableRequest)
+var (
+	_ optionsProvider[DescribeSearchOptimizationTableOptions] = new(DescribeSearchOptimizationTableRequest)
+	_ optionsProvider[SelectTableConstraintsTableOptions]     = new(SelectTableConstraintsTableRequest)
+)
 
 type DescribeSearchOptimizationTableRequest struct {
 	name SchemaObjectIdentifier // required
+}
+
+type SelectTableConstraintsTableRequest struct {
+	Database    AccountObjectIdentifier // required
+	TableSchema string                  // required
+	TableName   string                  // required
 }
