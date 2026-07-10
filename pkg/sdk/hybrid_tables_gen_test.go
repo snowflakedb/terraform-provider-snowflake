@@ -144,7 +144,7 @@ func TestHybridTables_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one field from alter actions should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterHybridTableOptions", "RenameTo", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"))
 	})
 
 	t.Run("validation: constraint action - exactly one of Rename, Drop required", func(t *testing.T) {
@@ -348,7 +348,7 @@ func TestHybridTables_Alter(t *testing.T) {
 	t.Run("alter: rename to", func(t *testing.T) {
 		newID := randomSchemaObjectIdentifierInSchema(id.SchemaId())
 		opts := defaultOpts()
-		opts.NewName = &newID
+		opts.RenameTo = &newID
 		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s RENAME TO %s`, id.FullyQualifiedName(), newID.FullyQualifiedName())
 	})
 

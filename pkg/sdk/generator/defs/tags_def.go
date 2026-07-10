@@ -123,6 +123,7 @@ var tagsDef = g.NewInterface(
 		OptionalQueryStructField("Unset", tagUnset(), g.KeywordOptions().SQL("UNSET")).
 		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ExactlyOneValueSet, "Add", "Drop", "Set", "Unset", "RenameTo"),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-tags",

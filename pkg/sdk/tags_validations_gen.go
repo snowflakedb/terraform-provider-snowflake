@@ -44,6 +44,9 @@ func (opts *AlterTagOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	if !exactlyOneValueSet(opts.Add, opts.Drop, opts.Set, opts.Unset, opts.RenameTo) {
 		errs = append(errs, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "RenameTo"))
 	}
