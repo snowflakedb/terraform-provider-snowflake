@@ -56,7 +56,7 @@ type AlterSourceFailoverGroupOptions struct {
 	failoverGroup bool                     `ddl:"static" sql:"FAILOVER GROUP"`
 	IfExists      *bool                    `ddl:"keyword" sql:"IF EXISTS"`
 	name          AccountObjectIdentifier  `ddl:"identifier"`
-	NewName       *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo      *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set           *FailoverGroupSet        `ddl:"keyword" sql:"SET"`
 	Unset         *FailoverGroupUnset      `ddl:"keyword" sql:"UNSET"`
 	Add           *FailoverGroupAdd        `ddl:"keyword" sql:"ADD"`

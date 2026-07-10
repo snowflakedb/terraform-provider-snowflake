@@ -34,7 +34,7 @@ type CreateSecondaryReplicationGroupFailoverGroupRequest struct {
 type AlterSourceFailoverGroupRequest struct {
 	IfExists *bool
 	name     AccountObjectIdentifier // required
-	NewName  *AccountObjectIdentifier
+	RenameTo *AccountObjectIdentifier
 	Set      *FailoverGroupSetRequest
 	Unset    *FailoverGroupUnsetRequest
 	Add      *FailoverGroupAddRequest

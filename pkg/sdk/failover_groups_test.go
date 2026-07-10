@@ -75,8 +75,8 @@ func TestFailoverGroupAlterSource(t *testing.T) {
 
 	t.Run("rename", func(t *testing.T) {
 		opts := &AlterSourceFailoverGroupOptions{
-			name:    id,
-			NewName: Pointer(NewAccountObjectIdentifier("myfg1")),
+			name:     id,
+			RenameTo: Pointer(NewAccountObjectIdentifier("myfg1")),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FAILOVER GROUP "fg1" RENAME TO "myfg1"`)
 	})

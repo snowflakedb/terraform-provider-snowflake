@@ -267,7 +267,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 		t.Cleanup(failoverGroupCleanup)
 		oldID := failoverGroup.ID()
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(oldID).WithNewName(newID))
+		err := client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(oldID).WithRenameTo(newID))
 		require.NoError(t, err)
 		failoverGroup, err = client.FailoverGroups.ShowByID(ctx, newID)
 		require.NoError(t, err)

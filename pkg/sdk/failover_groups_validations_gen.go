@@ -46,8 +46,8 @@ func (opts *AlterSourceFailoverGroupOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.Set, opts.Unset, opts.Add, opts.Move, opts.Remove) {
-		errs = append(errs, errExactlyOneOf("AlterSourceFailoverGroupOptions", "NewName", "Set", "Unset", "Add", "Move", "Remove"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.Add, opts.Move, opts.Remove) {
+		errs = append(errs, errExactlyOneOf("AlterSourceFailoverGroupOptions", "RenameTo", "Set", "Unset", "Add", "Move", "Remove"))
 	}
 	if valueSet(opts.Set) {
 		errs = append(errs, opts.Set.additionalValidations())

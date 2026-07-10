@@ -72,8 +72,8 @@ func (s *AlterSourceFailoverGroupRequest) WithIfExists(ifExists bool) *AlterSour
 	return s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithNewName(newName AccountObjectIdentifier) *AlterSourceFailoverGroupRequest {
-	s.NewName = &newName
+func (s *AlterSourceFailoverGroupRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterSourceFailoverGroupRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

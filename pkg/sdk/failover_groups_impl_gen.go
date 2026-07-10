@@ -118,7 +118,7 @@ func (r *AlterSourceFailoverGroupRequest) toOpts() *AlterSourceFailoverGroupOpti
 	opts := &AlterSourceFailoverGroupOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
-		NewName:  r.NewName,
+		RenameTo: r.RenameTo,
 	}
 	if r.Set != nil {
 		opts.Set = &FailoverGroupSet{

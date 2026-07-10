@@ -44,8 +44,7 @@ var failoverGroupsDef = g.NewInterface(
 		SQL("FAILOVER GROUP").
 		IfExists().
 		Name().
-		OptionalIdentifier("NewName", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](),
-			g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField("Set",
 			g.NewQueryStruct("FailoverGroupSet").
 				ListAssignment("OBJECT_TYPES", "PluralObjectType", g.ParameterOptions()).
@@ -79,7 +78,7 @@ var failoverGroupsDef = g.NewInterface(
 				ListAssignmentWithFieldName("FROM ALLOWED_ACCOUNTS", "AccountIdentifier", g.ParameterOptions().Reverse(), "AllowedAccounts"),
 			g.KeywordOptions().SQL("REMOVE")).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "Set", "Unset", "Add", "Move", "Remove"),
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "Add", "Move", "Remove"),
 ).CustomOperation(
 	"AlterTarget",
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-failover-group",
