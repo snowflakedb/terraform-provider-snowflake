@@ -72,18 +72,22 @@ func (i *IcebergTableParametersAssert) HasAllDefaults() *IcebergTableParametersA
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterCatalog, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterCatalogSync, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterDataMetricSchedule, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterDataRetentionTimeInDays, sdk.ParameterTypeDatabase).
+		HasDataRetentionTimeInDays(1).
+		HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeDatabase).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterEnableDataCompaction, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterEnableIcebergMergeOnRead, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterExternalVolume, sdk.ParameterTypeTable).
+		HasExternalVolume("SNOWFLAKE_MANAGED").
+		HasExternalVolumeLevel(sdk.ParameterTypeTable).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterIcebergMergeOnReadBehavior, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterMaxDataExtensionTimeInDays, sdk.ParameterTypeDatabase).
+		HasMaxDataExtensionTimeInDays(1).
+		HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeDatabase).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterOptimizeDataLayout, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterReplaceInvalidCharacters, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterStorageSerializationPolicy, sdk.ParameterTypeTable).
+		HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+		HasStorageSerializationPolicyLevel(sdk.ParameterTypeTable).
 		HasDefaultParameterValueOnLevel(sdk.IcebergTableParameterTargetFileSize, sdk.ParameterTypeSnowflakeDefault)
 }
 
@@ -137,8 +141,8 @@ func (i *IcebergTableParametersAssert) HasDataRetentionTimeInDays(expected int) 
 	return i
 }
 
-func (i *IcebergTableParametersAssert) HasDefaultDdlCollation(expected string) *IcebergTableParametersAssert { // Adjusted manually
-	i.AddAssertion(assert.SnowflakeParameterValueSet(sdk.IcebergTableParameterDefaultDdlCollation, expected)) // Adjusted manually
+func (i *IcebergTableParametersAssert) HasDefaultDdlCollation(expected string) *IcebergTableParametersAssert {
+	i.AddAssertion(assert.SnowflakeParameterValueSet(sdk.IcebergTableParameterDefaultDdlCollation, expected))
 	return i
 }
 
@@ -226,8 +230,8 @@ func (i *IcebergTableParametersAssert) HasDataRetentionTimeInDaysLevel(expected 
 	return i
 }
 
-func (i *IcebergTableParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *IcebergTableParametersAssert { // Adjusted manually
-	i.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.IcebergTableParameterDefaultDdlCollation, expected)) // Adjusted manually
+func (i *IcebergTableParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *IcebergTableParametersAssert {
+	i.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.IcebergTableParameterDefaultDdlCollation, expected))
 	return i
 }
 
@@ -310,8 +314,8 @@ func (i *IcebergTableParametersAssert) HasDefaultDataRetentionTimeInDaysValue() 
 	return i.HasDefaultParameterValue(sdk.IcebergTableParameterDataRetentionTimeInDays)
 }
 
-func (i *IcebergTableParametersAssert) HasDefaultDefaultDdlCollationValue() *IcebergTableParametersAssert { // Adjusted manually
-	return i.HasDefaultParameterValue(sdk.IcebergTableParameterDefaultDdlCollation) // Adjusted manually
+func (i *IcebergTableParametersAssert) HasDefaultDefaultDdlCollationValue() *IcebergTableParametersAssert {
+	return i.HasDefaultParameterValue(sdk.IcebergTableParameterDefaultDdlCollation)
 }
 
 func (i *IcebergTableParametersAssert) HasDefaultEnableDataCompactionValue() *IcebergTableParametersAssert {
