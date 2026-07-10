@@ -2,6 +2,12 @@ package sdk
 
 import "strings"
 
+func (r describeStorageLifecyclePolicyDBRow) additionalConvert(_ *StorageLifecyclePolicyDetails) error {
+	// additionalConvert is generated as DatabaseName and SchemaName are plain only fields.
+	// They can't be set here as they are not returned by DESCRIBE; they are populated from the ID in the test helper.
+	return nil
+}
+
 func (d *StorageLifecyclePolicyDetails) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(d.DatabaseName, d.SchemaName, d.Name)
 }
