@@ -35,9 +35,9 @@ func (c *AccountClient) UseOrgadmin(t *testing.T) func() {
 	t.Helper()
 	currentRole, err := c.context.client.ContextFunctions.CurrentRole(context.Background())
 	assert.NoError(t, err)
-	assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), snowflakeroles.Orgadmin))
+	assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(snowflakeroles.Orgadmin)))
 	return func() {
-		assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), currentRole))
+		assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(currentRole)))
 	}
 }
 

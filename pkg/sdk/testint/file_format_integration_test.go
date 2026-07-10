@@ -515,9 +515,9 @@ func TestInt_FileFormatsShowById(t *testing.T) {
 	t.Cleanup(cleanupSchema2)
 
 	t.Run("show format in different schema", func(t *testing.T) {
-		err := client.Sessions.UseDatabase(ctx, databaseTest2.ID())
+		err := client.Sessions.UseDatabase(ctx, sdk.NewUseDatabaseSessionRequest(databaseTest2.ID()))
 		require.NoError(t, err)
-		err = client.Sessions.UseSchema(ctx, schemaTest2.ID())
+		err = client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(schemaTest2.ID()))
 		require.NoError(t, err)
 
 		fileFormat, err := client.FileFormats.ShowByID(ctx, fileFormatTest.ID())
