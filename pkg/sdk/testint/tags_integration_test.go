@@ -216,7 +216,7 @@ func TestInt_Tags(t *testing.T) {
 		id := tag.ID()
 
 		nid := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRename(*sdk.NewTagRenameRequest(nid)))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRenameTo(nid))
 		if err != nil {
 			t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 		} else {

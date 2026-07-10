@@ -117,10 +117,10 @@ func (opts *AlterDatabaseOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.Set, opts.Unset, opts.SwapWith, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterDatabaseOptions", "NewName", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SwapWith, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterDatabaseOptions", "RenameTo", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags"))
 	}
-	if opts.NewName != nil && !ValidObjectIdentifier(opts.NewName) {
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {

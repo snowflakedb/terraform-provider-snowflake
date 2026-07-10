@@ -109,7 +109,7 @@ type CreateFromListingDatabaseRequest struct {
 type AlterDatabaseRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required
-	NewName   *AccountObjectIdentifier
+	RenameTo  *AccountObjectIdentifier
 	SwapWith  *AccountObjectIdentifier
 	Set       *DatabaseSetRequest
 	Unset     *DatabaseUnsetRequest

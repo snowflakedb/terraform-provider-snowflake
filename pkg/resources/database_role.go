@@ -160,7 +160,7 @@ func UpdateDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) d
 	if d.HasChange("name") {
 		newId := sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), d.Get("name").(string))
 
-		err = client.DatabaseRoles.Alter(ctx, sdk.NewAlterDatabaseRoleRequest(id).WithRename(newId))
+		err = client.DatabaseRoles.Alter(ctx, sdk.NewAlterDatabaseRoleRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}

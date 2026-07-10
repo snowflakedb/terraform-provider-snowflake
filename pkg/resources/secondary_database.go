@@ -121,7 +121,7 @@ func UpdateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 			return diag.FromErr(err)
 		}
 
-		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(secondaryDatabaseId).WithNewName(newId))
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(secondaryDatabaseId).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}

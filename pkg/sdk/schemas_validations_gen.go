@@ -55,10 +55,10 @@ func (opts *AlterSchemaOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.SwapWith, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.EnableManagedAccess, opts.DisableManagedAccess) {
-		errs = append(errs, errExactlyOneOf("AlterSchemaOptions", "NewName", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.EnableManagedAccess, opts.DisableManagedAccess) {
+		errs = append(errs, errExactlyOneOf("AlterSchemaOptions", "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
 	}
-	if opts.NewName != nil && !ValidObjectIdentifier(opts.NewName) {
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {

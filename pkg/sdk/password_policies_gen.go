@@ -47,7 +47,7 @@ type AlterPasswordPolicyOptions struct {
 	passwordPolicy bool                    `ddl:"static" sql:"PASSWORD POLICY"`
 	IfExists       *bool                   `ddl:"keyword" sql:"IF EXISTS"`
 	name           SchemaObjectIdentifier  `ddl:"identifier"`
-	NewName        *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo       *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set            *PasswordPolicySet      `ddl:"list,no_parentheses" sql:"SET"`
 	Unset          *PasswordPolicyUnset    `ddl:"list,no_parentheses" sql:"UNSET"`
 }

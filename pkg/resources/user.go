@@ -595,7 +595,7 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		if d.HasChange("name") {
 			newID := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
-			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithNewName(newID))
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithRenameTo(newID))
 			if err != nil {
 				return diag.FromErr(err)
 			}

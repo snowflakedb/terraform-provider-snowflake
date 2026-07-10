@@ -282,7 +282,7 @@ func TestInt_HybridTables(t *testing.T) {
 			t.Cleanup(cleanup)
 
 			newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithNewName(newId))
+			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithRenameTo(newId))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().HybridTable.DropFunc(t, newId))
 

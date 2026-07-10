@@ -136,7 +136,7 @@ var schemasDef = g.NewInterface(
 		SQL("SCHEMA").
 		IfExists().
 		Name().
-		Identifier("NewName", g.KindOfTPointer[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		Identifier("SwapWith", g.KindOfTPointer[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("SWAP WITH")).
 		OptionalQueryStructField("Set", schemaSetStruct, g.ListOptions().NoParentheses().SQL("SET")).
 		OptionalQueryStructField("Unset", schemaUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
@@ -145,8 +145,8 @@ var schemasDef = g.NewInterface(
 		OptionalSQL("ENABLE MANAGED ACCESS").
 		OptionalSQL("DISABLE MANAGED ACCESS").
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess").
-		WithValidation(g.ValidIdentifierIfSet, "NewName").
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess").
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ValidIdentifierIfSet, "SwapWith"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-schema",

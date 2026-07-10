@@ -14,15 +14,15 @@ func (r maskingPolicyDBRow) additionalConvert(result *MaskingPolicy) error {
 
 // additionalValidations checks that NewName stays within the same database and schema.
 func (opts *AlterMaskingPolicyOptions) additionalValidations() error {
-	if opts.NewName != nil {
+	if opts.RenameTo != nil {
 		var errs []error
-		if !ValidObjectIdentifier(opts.NewName) {
-			errs = append(errs, errInvalidIdentifier("AlterMaskingPolicyOptions", "NewName"))
+		if !ValidObjectIdentifier(opts.RenameTo) {
+			errs = append(errs, errInvalidIdentifier("AlterMaskingPolicyOptions", "RenameTo"))
 		}
-		if opts.name.DatabaseName() != opts.NewName.DatabaseName() {
+		if opts.name.DatabaseName() != opts.RenameTo.DatabaseName() {
 			errs = append(errs, ErrDifferentDatabase)
 		}
-		if opts.name.SchemaName() != opts.NewName.SchemaName() {
+		if opts.name.SchemaName() != opts.RenameTo.SchemaName() {
 			errs = append(errs, ErrDifferentSchema)
 		}
 		return JoinErrors(errs...)

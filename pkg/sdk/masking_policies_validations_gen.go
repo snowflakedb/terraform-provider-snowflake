@@ -41,8 +41,8 @@ func (opts *AlterMaskingPolicyOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.SetBody, opts.SetComment, opts.UnsetBody, opts.UnsetComment, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterMaskingPolicyOptions", "NewName", "SetBody", "SetComment", "UnsetBody", "UnsetComment", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.SetBody, opts.SetComment, opts.UnsetBody, opts.UnsetComment, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterMaskingPolicyOptions", "RenameTo", "SetBody", "SetComment", "UnsetBody", "UnsetComment", "SetTags", "UnsetTags"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)

@@ -195,7 +195,7 @@ var warehousesDef = g.NewInterface(
 		OptionalSQL("RESUME").
 		OptionalSQL("IF SUSPENDED").
 		OptionalSQL("ABORT ALL QUERIES").
-		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField("Set", warehouseSetStruct, g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", warehouseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
 		OptionalSetTags().

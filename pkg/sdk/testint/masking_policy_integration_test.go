@@ -275,13 +275,13 @@ func TestInt_MaskingPolicyAlter(t *testing.T) {
 		oldID := maskingPolicy.ID()
 		t.Cleanup(maskingPolicyCleanup)
 		newID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(oldID).WithNewName(newID))
+		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(oldID).WithRenameTo(newID))
 		require.NoError(t, err)
 		maskingPolicyDetails, err := client.MaskingPolicies.Describe(ctx, newID)
 		require.NoError(t, err)
 		assert.Equal(t, newID.Name(), maskingPolicyDetails.Name)
 		// rename back to original name, so it can be cleaned up
-		err = client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(newID).WithNewName(oldID))
+		err = client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(newID).WithRenameTo(oldID))
 		require.NoError(t, err)
 	})
 

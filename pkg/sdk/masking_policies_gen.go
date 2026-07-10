@@ -47,7 +47,7 @@ type AlterMaskingPolicyOptions struct {
 	maskingPolicy bool                    `ddl:"static" sql:"MASKING POLICY"`
 	IfExists      *bool                   `ddl:"keyword" sql:"IF EXISTS"`
 	name          SchemaObjectIdentifier  `ddl:"identifier"`
-	NewName       *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo      *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	SetBody       *string                 `ddl:"parameter,no_quotes,no_equals" sql:"SET BODY ->"`
 	SetComment    *string                 `ddl:"parameter,single_quotes" sql:"SET COMMENT"`
 	UnsetBody     *bool                   `ddl:"keyword" sql:"UNSET BODY"`

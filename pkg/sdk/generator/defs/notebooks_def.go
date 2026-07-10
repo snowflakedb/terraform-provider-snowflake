@@ -87,7 +87,7 @@ var notebooksDef = g.NewInterface(
 		SQL("NOTEBOOK").
 		IfExists().
 		Name().
-		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("NotebookSet").

@@ -336,7 +336,7 @@ func TestDatabasesAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &DatabaseSet{}
 		opts.Unset = &DatabaseUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseOptions", "NewName", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseOptions", "RenameTo", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: at least one set option", func(t *testing.T) {
@@ -407,9 +407,9 @@ func TestDatabasesAlter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: invalid NewName identifier", func(t *testing.T) {
+	t.Run("validation: invalid RenameTo identifier", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.NewName = Pointer(emptyAccountObjectIdentifier)
+		opts.RenameTo = Pointer(emptyAccountObjectIdentifier)
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -422,8 +422,8 @@ func TestDatabasesAlter(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
-		opts.NewName = Pointer(randomAccountObjectIdentifier())
-		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE IF EXISTS %s RENAME TO %s`, opts.name.FullyQualifiedName(), opts.NewName.FullyQualifiedName())
+		opts.RenameTo = Pointer(randomAccountObjectIdentifier())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE IF EXISTS %s RENAME TO %s`, opts.name.FullyQualifiedName(), opts.RenameTo.FullyQualifiedName())
 	})
 
 	t.Run("swap with", func(t *testing.T) {

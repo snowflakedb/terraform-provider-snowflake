@@ -102,7 +102,7 @@ func (r *AlterMaskingPolicyRequest) toOpts() *AlterMaskingPolicyOptions {
 	opts := &AlterMaskingPolicyOptions{
 		IfExists:     r.IfExists,
 		name:         r.name,
-		NewName:      r.NewName,
+		RenameTo:     r.RenameTo,
 		SetBody:      r.SetBody,
 		SetComment:   r.SetComment,
 		UnsetBody:    r.UnsetBody,

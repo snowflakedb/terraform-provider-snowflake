@@ -61,8 +61,8 @@ func (s *AlterMaskingPolicyRequest) WithIfExists(ifExists bool) *AlterMaskingPol
 	return s
 }
 
-func (s *AlterMaskingPolicyRequest) WithNewName(newName SchemaObjectIdentifier) *AlterMaskingPolicyRequest {
-	s.NewName = &newName
+func (s *AlterMaskingPolicyRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterMaskingPolicyRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

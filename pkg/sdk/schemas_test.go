@@ -145,7 +145,7 @@ func TestSchemasAlter(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name: schemaId,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSchemaOptions", "NewName", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSchemaOptions", "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
 	})
 
 	t.Run("validation: exactly one of actions", func(t *testing.T) {
@@ -154,7 +154,7 @@ func TestSchemasAlter(t *testing.T) {
 			Set:   &SchemaSet{},
 			Unset: &SchemaUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSchemaOptions", "NewName", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSchemaOptions", "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
 	})
 
 	t.Run("validation: at least one set option", func(t *testing.T) {
@@ -235,10 +235,10 @@ func TestSchemasAlter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: invalid NewName identifier", func(t *testing.T) {
+	t.Run("validation: invalid RenameTo identifier", func(t *testing.T) {
 		opts := &AlterSchemaOptions{
-			name:    schemaId,
-			NewName: Pointer(emptyDatabaseObjectIdentifier),
+			name:     schemaId,
+			RenameTo: Pointer(emptyDatabaseObjectIdentifier),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
@@ -254,7 +254,7 @@ func TestSchemasAlter(t *testing.T) {
 		opts := &AlterSchemaOptions{
 			name:     schemaId,
 			IfExists: Bool(true),
-			NewName:  Pointer(newSchemaId),
+			RenameTo: Pointer(newSchemaId),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA IF EXISTS %s RENAME TO %s`, schemaId.FullyQualifiedName(), newSchemaId.FullyQualifiedName())
 	})

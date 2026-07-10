@@ -31,7 +31,7 @@ type CreateMaskingPolicySignatureRequest struct {
 type AlterMaskingPolicyRequest struct {
 	IfExists     *bool
 	name         SchemaObjectIdentifier // required
-	NewName      *SchemaObjectIdentifier
+	RenameTo     *SchemaObjectIdentifier
 	SetBody      *string
 	SetComment   *string
 	UnsetBody    *bool

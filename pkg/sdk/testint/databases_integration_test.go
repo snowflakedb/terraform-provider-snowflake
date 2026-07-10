@@ -418,7 +418,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			t.Cleanup(databaseTestCleanup)
 			newName := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithNewName(newName))
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithRenameTo(newName))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, newName))
 

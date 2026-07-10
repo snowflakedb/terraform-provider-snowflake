@@ -205,9 +205,6 @@ func newNoSqlOperation(kind string) *Operation {
 
 // TODO [next PRs]: add functional options to modify the operation on creation
 func (i *Interface) newSimpleOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
-	if queryStruct.identifierField != nil {
-		queryStruct.identifierField.Kind = i.IdentifierKind
-	}
 	f := make([]*Field, len(helperStructs))
 	if len(f) > 0 {
 		for i, hs := range helperStructs {
@@ -222,9 +219,6 @@ func (i *Interface) newSimpleOperation(kind string, doc string, queryStruct *Que
 }
 
 func (i *Interface) newSimpleScalarOperation(kind string, doc string, queryStruct *QueryStruct, scalarReturnType string, helperStructs ...IntoField) *Interface {
-	if queryStruct.identifierField != nil {
-		queryStruct.identifierField.Kind = i.IdentifierKind
-	}
 	f := make([]*Field, len(helperStructs))
 	if len(f) > 0 {
 		for i, hs := range helperStructs {
@@ -250,9 +244,6 @@ func (i *Interface) newOperationWithDBMapping(
 ) *Operation {
 	db := dbRepresentation.IntoField()
 	res := resourceRepresentation.IntoField()
-	if queryStruct.identifierField != nil {
-		queryStruct.identifierField.Kind = i.IdentifierKind
-	}
 	f := make([]*Field, len(helperStructs))
 	if len(f) > 0 {
 		for i, hs := range helperStructs {

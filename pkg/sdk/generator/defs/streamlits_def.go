@@ -63,7 +63,7 @@ var streamlitsDef = g.NewInterface(
 			streamlitUnset,
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
-		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset"),

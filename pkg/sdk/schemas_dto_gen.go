@@ -51,7 +51,7 @@ type CloneSchemaRequest struct {
 type AlterSchemaRequest struct {
 	IfExists             *bool
 	name                 DatabaseObjectIdentifier // required
-	NewName              *DatabaseObjectIdentifier
+	RenameTo             *DatabaseObjectIdentifier
 	SwapWith             *DatabaseObjectIdentifier
 	Set                  *SchemaSetRequest
 	Unset                *SchemaUnsetRequest

@@ -55,8 +55,8 @@ func (s *RevokeDatabaseRoleRequest) WithDatabaseRole(databaseRole DatabaseObject
 }
 
 func (opts *AlterDatabaseRoleOptions) additionalValidations() error {
-	if opts.Rename != nil {
-		if opts.name.DatabaseName() != opts.Rename.DatabaseName() {
+	if opts.RenameTo != nil {
+		if opts.name.DatabaseName() != opts.RenameTo.DatabaseName() {
 			return errors.Join(ErrDifferentDatabase)
 		}
 	}

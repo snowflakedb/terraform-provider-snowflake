@@ -23,7 +23,7 @@ type CreateDatabaseRoleRequest struct {
 type AlterDatabaseRoleRequest struct {
 	IfExists  *bool
 	name      DatabaseObjectIdentifier // required
-	Rename    *DatabaseObjectIdentifier
+	RenameTo  *DatabaseObjectIdentifier
 	Set       *DatabaseRoleSetRequest
 	Unset     *DatabaseRoleUnsetRequest
 	SetTags   []TagAssociation
