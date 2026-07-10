@@ -9,3 +9,15 @@ func NewDescribeSearchOptimizationTableRequest(
 	s.name = name
 	return &s
 }
+
+func NewSelectTableConstraintsTableRequest(
+	database AccountObjectIdentifier,
+	tableSchema string,
+	tableName string,
+) *SelectTableConstraintsTableRequest {
+	s := SelectTableConstraintsTableRequest{}
+	s.Database = database
+	s.TableSchema = tableSchema
+	s.TableName = tableName
+	return &s
+}
