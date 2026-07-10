@@ -26,14 +26,8 @@ func TestInt_GetTag(t *testing.T) {
 		t.Cleanup(maskingPolicyCleanup)
 
 		tagValue := random.String()
-		err := client.MaskingPolicies.Alter(ctx, maskingPolicyTest.ID(), &sdk.AlterMaskingPolicyOptions{
-			SetTag: []sdk.TagAssociation{
-				{
-					Name:  tagTest.ID(),
-					Value: tagValue,
-				},
-			},
-		})
+		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(maskingPolicyTest.ID()).
+			WithSetTags([]sdk.TagAssociation{{Name: tagTest.ID(), Value: tagValue}}))
 		require.NoError(t, err)
 		s, err := client.SystemFunctions.GetTag(ctx, tagTest.ID(), maskingPolicyTest.ID(), sdk.ObjectTypeMaskingPolicy)
 		require.NoError(t, err)
