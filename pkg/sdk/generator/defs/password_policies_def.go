@@ -41,7 +41,7 @@ var passwordPoliciesDef = g.NewInterface(
 			SQL("PASSWORD POLICY").
 			IfExists().
 			Name().
-			OptionalIdentifier("NewName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("PasswordPolicySet").
@@ -79,7 +79,7 @@ var passwordPoliciesDef = g.NewInterface(
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "NewName"),
+			WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-password-policy",

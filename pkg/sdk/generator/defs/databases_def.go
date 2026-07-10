@@ -212,15 +212,15 @@ var databasesDef = g.NewInterface(
 		SQL("DATABASE").
 		IfExists().
 		Name().
-		Identifier("NewName", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		Identifier("SwapWith", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("SWAP WITH")).
 		OptionalQueryStructField("Set", databaseSetStruct, g.ListOptions().NoParentheses().SQL("SET")).
 		OptionalQueryStructField("Unset", databaseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags").
-		WithValidation(g.ValidIdentifierIfSet, "NewName").
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags").
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ValidIdentifierIfSet, "SwapWith"),
 ).CustomOperation(
 	"AlterReplication",

@@ -34,7 +34,7 @@ var databaseRolesDef = g.NewInterface(
 		SQL("DATABASE ROLE").
 		IfExists().
 		Name().
-		OptionalIdentifier("Rename", g.KindOfT[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField(
 			"Set", g.NewQueryStruct("DatabaseRoleSet").
 				OptionalComment().
@@ -50,8 +50,8 @@ var databaseRolesDef = g.NewInterface(
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Rename", "Set", "Unset", "SetTags", "UnsetTags").
-		WithValidation(g.ValidIdentifierIfSet, "Rename").
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "SetTags", "UnsetTags").
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.AdditionalValidations),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-database-role",

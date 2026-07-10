@@ -79,12 +79,6 @@ func unsetTagQueryStruct() *g.QueryStruct {
 		WithAdditionalValidations()
 }
 
-func tagRename() *g.QueryStruct {
-	return g.NewQueryStruct("TagRename").
-		Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-		WithValidation(g.ValidIdentifier, "Name")
-}
-
 func tagSet() *g.QueryStruct {
 	return g.NewQueryStruct("TagSet").
 		OptionalQueryStructField("MaskingPolicies", tagSetMaskingPolicies(), g.KeywordOptions()).
@@ -127,9 +121,9 @@ var tagsDef = g.NewInterface(
 		OptionalQueryStructField("Drop", tagDrop(), g.KeywordOptions().SQL("DROP")).
 		OptionalQueryStructField("Set", tagSet(), g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", tagUnset(), g.KeywordOptions().SQL("UNSET")).
-		OptionalQueryStructField("Rename", tagRename(), g.KeywordOptions().SQL("RENAME TO")).
+		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Add", "Drop", "Set", "Unset", "Rename"),
+		WithValidation(g.ExactlyOneValueSet, "Add", "Drop", "Set", "Unset", "RenameTo"),
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-tags",
 	g.StructPair("tagRow", "Tag").
