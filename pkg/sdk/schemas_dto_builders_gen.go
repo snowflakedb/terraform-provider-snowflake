@@ -171,8 +171,8 @@ func (s *AlterSchemaRequest) WithIfExists(ifExists bool) *AlterSchemaRequest {
 	return s
 }
 
-func (s *AlterSchemaRequest) WithNewName(newName DatabaseObjectIdentifier) *AlterSchemaRequest {
-	s.NewName = &newName
+func (s *AlterSchemaRequest) WithRenameTo(renameTo DatabaseObjectIdentifier) *AlterSchemaRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

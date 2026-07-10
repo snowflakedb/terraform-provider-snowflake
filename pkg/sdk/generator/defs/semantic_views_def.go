@@ -57,7 +57,7 @@ var semanticViewsDef = g.NewInterface(
 			Name().
 			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalSQL("UNSET COMMENT").
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment", "RenameTo"),
 	).

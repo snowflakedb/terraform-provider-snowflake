@@ -388,7 +388,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRename(*sdk.NewTagRenameRequest(newId)))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming tag %v err = %w", d.Id(), err))
 		}

@@ -45,8 +45,8 @@ func (opts *AlterUserOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.NewName, opts.ResetPassword, opts.AbortAllQueries, opts.AddDelegatedAuthorization, opts.RemoveDelegatedAuthorization, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
-		errs = append(errs, errExactlyOneOf("AlterUserOptions", "NewName", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.ResetPassword, opts.AbortAllQueries, opts.AddDelegatedAuthorization, opts.RemoveDelegatedAuthorization, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterUserOptions", "RenameTo", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.RemoveDelegatedAuthorization) {
 		if !exactlyOneValueSet(opts.RemoveDelegatedAuthorization.RemoveDelegatedAuthorizationOfRole, opts.RemoveDelegatedAuthorization.Authorizations) {

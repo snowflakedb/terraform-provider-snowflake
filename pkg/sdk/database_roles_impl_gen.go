@@ -77,7 +77,7 @@ func (r *AlterDatabaseRoleRequest) toOpts() *AlterDatabaseRoleOptions {
 	opts := &AlterDatabaseRoleOptions{
 		IfExists:  r.IfExists,
 		name:      r.name,
-		Rename:    r.Rename,
+		RenameTo:  r.RenameTo,
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,
 	}

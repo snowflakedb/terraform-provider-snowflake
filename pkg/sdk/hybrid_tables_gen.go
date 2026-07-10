@@ -76,7 +76,7 @@ type AlterHybridTableOptions struct {
 	table             bool                           `ddl:"static" sql:"TABLE"`
 	IfExists          *bool                          `ddl:"keyword" sql:"IF EXISTS"`
 	name              SchemaObjectIdentifier         `ddl:"identifier"`
-	NewName           *SchemaObjectIdentifier        `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo          *SchemaObjectIdentifier        `ddl:"identifier" sql:"RENAME TO"`
 	AddColumnAction   *HybridTableAddColumnAction    `ddl:"keyword"`
 	ConstraintAction  *HybridTableConstraintAction   `ddl:"keyword"`
 	AlterColumnAction []HybridTableAlterColumnAction `ddl:"keyword"`

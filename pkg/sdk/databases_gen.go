@@ -141,7 +141,7 @@ type AlterDatabaseOptions struct {
 	database  bool                     `ddl:"static" sql:"DATABASE"`
 	IfExists  *bool                    `ddl:"keyword" sql:"IF EXISTS"`
 	name      AccountObjectIdentifier  `ddl:"identifier"`
-	NewName   *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo  *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	SwapWith  *AccountObjectIdentifier `ddl:"identifier" sql:"SWAP WITH"`
 	Set       *DatabaseSet             `ddl:"list,no_parentheses" sql:"SET"`
 	Unset     *DatabaseUnset           `ddl:"list,no_parentheses" sql:"UNSET"`
