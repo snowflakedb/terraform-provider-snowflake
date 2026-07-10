@@ -132,6 +132,8 @@ type describeStorageLifecyclePolicyDBRow struct {
 
 type StorageLifecyclePolicyDetails struct {
 	Name           string
+	DatabaseName   string
+	SchemaName     string
 	Signature      []TableColumnSignature
 	ReturnType     datatypes.DataType
 	Body           string

@@ -95,5 +95,11 @@ func (c *StorageLifecyclePolicyClient) Describe(t *testing.T, id sdk.SchemaObjec
 	t.Helper()
 	ctx := context.Background()
 
-	return c.client().Describe(ctx, id)
+	details, err := c.client().Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details.DatabaseName = id.DatabaseName()
+	details.SchemaName = id.SchemaName()
+	return details, nil
 }

@@ -11,6 +11,7 @@ type SdkObjectDef struct {
 	IsDataSourceOutput bool
 	IsSubStruct        bool
 	ObjectTypeName     string
+	NoShowById         bool
 }
 
 var allStructs = []SdkObjectDef{
@@ -386,6 +387,7 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.TagReference{},
+		NoShowById:   true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -395,6 +397,7 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PolicyReference{},
+		NoShowById:   true,
 	},
 }
 
@@ -408,6 +411,7 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 			IsDataSourceOutput: d.IsDataSourceOutput,
 			IsSubStruct:        d.IsSubStruct,
 			ObjectTypeName:     d.ObjectTypeName,
+			NoShowById:         d.NoShowById,
 		}
 	}
 	return allSdkObjectsDetails

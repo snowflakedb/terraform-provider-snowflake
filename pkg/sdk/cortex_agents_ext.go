@@ -11,6 +11,10 @@ func (r *CreateCortexAgentRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }
 
+func (d *CortexAgentDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(d.DatabaseName, d.SchemaName, d.Name)
+}
+
 type CortexAgentProfile struct {
 	DisplayName *string `json:"display_name,omitempty"`
 	Avatar      *string `json:"avatar,omitempty"`

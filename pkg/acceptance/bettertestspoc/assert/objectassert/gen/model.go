@@ -13,6 +13,7 @@ type SnowflakeObjectAssertionsModel struct {
 	IsDataSourceOutput bool
 	IsSubStruct        bool
 	ObjectTypeName     string
+	NoShowById         bool
 	Fields             []SnowflakeObjectFieldAssertion
 
 	*genhelpers.PreambleModel
@@ -59,6 +60,7 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 		IsDataSourceOutput: sdkObject.IsDataSourceOutput,
 		IsSubStruct:        sdkObject.IsSubStruct,
 		ObjectTypeName:     objectTypeName,
+		NoShowById:         sdkObject.NoShowById,
 		Fields:             fields,
 		PreambleModel:      preamble,
 	}

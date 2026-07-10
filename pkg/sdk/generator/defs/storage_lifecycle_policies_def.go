@@ -106,6 +106,8 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-storage-lifecycle-policy",
 		g.StructPair("describeStorageLifecyclePolicyDBRow", "StorageLifecyclePolicyDetails").
 			Text("name").
+			PlainOnlyField("DatabaseName", "string").
+			PlainOnlyField("SchemaName", "string").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignatureWithVectorSupport")).
 			DataType("return_type").
 			Text("body").

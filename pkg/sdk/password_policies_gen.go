@@ -156,6 +156,8 @@ type PasswordPolicyProperty struct {
 
 type PasswordPolicyDetails struct {
 	Name                      string
+	DatabaseName              string
+	SchemaName                string
 	Owner                     string
 	Comment                   string
 	PasswordMinLength         int

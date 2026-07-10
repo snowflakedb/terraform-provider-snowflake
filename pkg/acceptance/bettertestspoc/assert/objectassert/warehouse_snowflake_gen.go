@@ -334,6 +334,61 @@ func (w *WarehouseAssert) HasResourceMonitor(expected sdk.AccountObjectIdentifie
 	return w
 }
 
+func (w *WarehouseAssert) HasActives(expected string) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Actives != expected {
+			return fmt.Errorf("expected actives: %v; got: %v", expected, o.Actives)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasPendings(expected string) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Pendings != expected {
+			return fmt.Errorf("expected pendings: %v; got: %v", expected, o.Pendings)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasFailed(expected string) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Failed != expected {
+			return fmt.Errorf("expected failed: %v; got: %v", expected, o.Failed)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasSuspended(expected string) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Suspended != expected {
+			return fmt.Errorf("expected suspended: %v; got: %v", expected, o.Suspended)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasUuid(expected string) *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Uuid != expected {
+			return fmt.Errorf("expected uuid: %v; got: %v", expected, o.Uuid)
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasScalingPolicy(expected sdk.ScalingPolicy) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()

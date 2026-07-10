@@ -2,6 +2,10 @@ package sdk
 
 import "strings"
 
+func (d *StorageLifecyclePolicyDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(d.DatabaseName, d.SchemaName, d.Name)
+}
+
 var StorageLifecyclePolicySupportedTableTypes = []PolicyEntityDomain{
 	PolicyEntityDomainTable,
 	PolicyEntityDomainDynamicTable,

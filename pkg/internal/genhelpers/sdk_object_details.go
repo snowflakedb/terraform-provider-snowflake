@@ -5,5 +5,6 @@ type SdkObjectDetails struct {
 	IsDataSourceOutput bool
 	IsSubStruct        bool
 	ObjectTypeName     string
+	NoShowById         bool
 	StructDetails
 }

@@ -19,7 +19,7 @@ type CortexAgentAssert struct {
 func CortexAgent(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgentAssert {
 	t.Helper()
 	return &CortexAgentAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("CortexAgent"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CortexAgent, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeAgent, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CortexAgent, sdk.SchemaObjectIdentifier] {
 			return testClient.CortexAgent.Show
 		}),
 	}
