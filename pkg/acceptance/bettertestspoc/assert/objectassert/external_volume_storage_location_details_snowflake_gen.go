@@ -16,8 +16,6 @@ type ExternalVolumeStorageLocationDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.ExternalVolumeStorageLocationDetails, sdk.AccountObjectIdentifier]
 }
 
-// ExternalVolumeStorageLocationDetails removed manually
-
 func ExternalVolumeStorageLocationDetailsFromObject(t *testing.T, externalVolumeStorageLocationDetails *sdk.ExternalVolumeStorageLocationDetails) *ExternalVolumeStorageLocationDetailsAssert {
 	t.Helper()
 	return &ExternalVolumeStorageLocationDetailsAssert{
