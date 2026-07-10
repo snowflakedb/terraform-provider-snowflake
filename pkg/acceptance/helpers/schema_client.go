@@ -70,7 +70,7 @@ func (c *SchemaClient) DropSchemaFunc(t *testing.T, id sdk.DatabaseObjectIdentif
 	return func() {
 		err := c.client().Drop(ctx, sdk.NewDropSchemaRequest(id).WithIfExists(true))
 		require.NoError(t, err)
-		err = c.context.client.Sessions.UseSchema(ctx, c.ids.SchemaId())
+		err = c.context.client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(c.ids.SchemaId()))
 		require.NoError(t, err)
 	}
 }
@@ -79,7 +79,7 @@ func (c *SchemaClient) UseDefaultSchema(t *testing.T) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.context.client.Sessions.UseSchema(ctx, c.ids.SchemaId())
+	err := c.context.client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(c.ids.SchemaId()))
 	require.NoError(t, err)
 }
 

@@ -137,11 +137,13 @@ func (itc *integrationTestContext) initialize() error {
 
 	// TODO(SNOW-1842271): Adjust test setup to work properly with Accountadmin role for object tests and Orgadmin for account tests
 	if os.Getenv(string(testenvs.TestAccountCreate)) != "" {
-		err = c.Sessions.UseRole(context.Background(), snowflakeroles.Accountadmin)
+		err = c.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(snowflakeroles.Accountadmin))
 		if err != nil {
 			return err
 		}
-		defer func() { _ = c.Sessions.UseRole(context.Background(), snowflakeroles.Orgadmin) }()
+		defer func() {
+			_ = c.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(snowflakeroles.Orgadmin))
+		}()
 	}
 
 	// TODO [SNOW-1763603]: we can't use test client because of the testing.T parameter that is not present here; discuss
