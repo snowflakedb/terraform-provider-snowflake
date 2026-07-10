@@ -588,7 +588,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 		if suffix != "" {
 			log.Printf("[DEBUG] Sweeping shares with suffix %s", suffix)
 			shareDropCondition = func(s sdk.Share) bool {
-				return strings.HasSuffix(s.Name.Name(), suffix)
+				return strings.HasSuffix(s.Name, suffix)
 			}
 		} else {
 			log.Println("[DEBUG] Sweeping stale shares")
@@ -597,7 +597,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
-		shares, err := client.Shares.Show(ctx, new(sdk.ShowShareOptions))
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW SHARES ended with error, err = %w", err)
 		}
@@ -608,7 +608,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 		for idx, share := range shares {
 			log.Printf("[DEBUG] Processing share [%d/%d]: %s...", idx+1, len(shares), share.ID().FullyQualifiedName())
 
-			if !slices.Contains(protectedShares, share.Name.Name()) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
+			if !slices.Contains(protectedShares, share.Name) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
 				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
 				if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))

@@ -56,6 +56,7 @@ func init() {
 		secretsDef,
 		schemasDef,
 		securityIntegrationsDef,
+		sharesDef,
 		semanticViewsDef,
 		sequencesDef,
 		servicesDef,

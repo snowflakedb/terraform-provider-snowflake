@@ -30,7 +30,7 @@ func TestShareAlter(t *testing.T) {
 		opts := &AlterShareOptions{
 			name: NewAccountObjectIdentifier("myshare"),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterShareOptions", "Add", "Remove", "Set", "Unset", "SetTag", "UnsetTag"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterShareOptions", "Add", "Remove", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("with add", func(t *testing.T) {
@@ -77,7 +77,7 @@ func TestShareAlter(t *testing.T) {
 		opts := &AlterShareOptions{
 			IfExists: Bool(true),
 			name:     NewAccountObjectIdentifier("myshare"),
-			SetTag: []TagAssociation{
+			SetTags: []TagAssociation{
 				{
 					Name:  tagId,
 					Value: "v1",
@@ -103,7 +103,7 @@ func TestShareAlter(t *testing.T) {
 		opts := &AlterShareOptions{
 			IfExists: Bool(true),
 			name:     NewAccountObjectIdentifier("myshare"),
-			UnsetTag: []ObjectIdentifier{
+			UnsetTags: []ObjectIdentifier{
 				tagId,
 			},
 		}
@@ -146,14 +146,14 @@ func TestShareDrop(t *testing.T) {
 
 func TestShareDescribe(t *testing.T) {
 	t.Run("describe provider", func(t *testing.T) {
-		opts := &describeShareOptions{
+		opts := &DescribeShareOptions{
 			name: NewAccountObjectIdentifier("myprovider"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE SHARE "myprovider"`)
 	})
 
 	t.Run("describe consumer", func(t *testing.T) {
-		opts := &describeShareOptions{
+		opts := &DescribeShareOptions{
 			name: NewAccountObjectIdentifier("myconsumer"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE SHARE "myconsumer"`)

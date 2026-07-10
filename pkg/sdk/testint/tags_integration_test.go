@@ -650,14 +650,10 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return createShare(t, ctx, client)
 			},
 			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
-				return client.Shares.Alter(ctx, id, &sdk.AlterShareOptions{
-					SetTag: tags,
-				})
+				return client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithSetTags(tags))
 			},
 			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
-				return client.Shares.Alter(ctx, id, &sdk.AlterShareOptions{
-					UnsetTag: tags,
-				})
+				return client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithUnsetTags(tags))
 			},
 		},
 		{
