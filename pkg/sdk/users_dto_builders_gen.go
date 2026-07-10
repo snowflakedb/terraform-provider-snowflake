@@ -293,8 +293,8 @@ func (s *AlterUserRequest) WithIfExists(ifExists bool) *AlterUserRequest {
 	return s
 }
 
-func (s *AlterUserRequest) WithNewName(newName AccountObjectIdentifier) *AlterUserRequest {
-	s.NewName = &newName
+func (s *AlterUserRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterUserRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

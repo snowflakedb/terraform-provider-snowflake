@@ -161,7 +161,7 @@ func (r *AlterUserRequest) toOpts() *AlterUserOptions {
 	opts := &AlterUserOptions{
 		IfExists:        r.IfExists,
 		name:            r.name,
-		NewName:         r.NewName,
+		RenameTo:        r.RenameTo,
 		ResetPassword:   r.ResetPassword,
 		AbortAllQueries: r.AbortAllQueries,
 		SetTags:         r.SetTags,

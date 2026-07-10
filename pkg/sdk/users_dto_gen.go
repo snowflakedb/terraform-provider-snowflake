@@ -88,7 +88,7 @@ type UserObjectParametersRequest struct {
 type AlterUserRequest struct {
 	IfExists                     *bool
 	name                         AccountObjectIdentifier // required
-	NewName                      *AccountObjectIdentifier
+	RenameTo                     *AccountObjectIdentifier
 	ResetPassword                *bool
 	AbortAllQueries              *bool
 	AddDelegatedAuthorization    *AddDelegatedAuthorizationRequest
