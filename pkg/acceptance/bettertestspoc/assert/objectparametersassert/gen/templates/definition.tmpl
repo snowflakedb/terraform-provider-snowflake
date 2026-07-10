@@ -8,8 +8,14 @@ type {{ $assertName }} struct {
 func {{ .Name }}Parameters(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
-        assert.NewSnowflakeParametersAssertWithTestClientParametersProvider(id, sdk.ObjectType{{ .Name }}, func(testClient *helpers.TestClient) assert.ParametersProvider[{{ .IdType }}] {
-            return testClient.Parameter.Show{{ .Name }}Parameters
+        assert.NewSnowflakeParametersAssertWithTestClientParametersProvider(id, sdk.ObjectType{{ .ObjectTypeName }}, func(testClient *helpers.TestClient) assert.ParametersProvider[{{ .IdType }}] {
+            {{- if .IgnoreIdInProvider }}
+            return func(t *testing.T, _ {{ .IdType }}) []*sdk.Parameter {
+                return testClient.Parameter.Show{{ .ObjectTypeName }}Parameters(t)
+            }
+            {{- else }}
+            return testClient.Parameter.Show{{ .ObjectTypeName }}Parameters
+            {{- end }}
         }),
     }
 }
@@ -17,6 +23,6 @@ func {{ .Name }}Parameters(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
 func {{ .Name }}ParametersPrefetched(t *testing.T, id {{ .IdType }}, parameters []*sdk.Parameter) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
-        assert.NewSnowflakeParametersAssertWithParameters(id, sdk.ObjectType{{ .Name }}, parameters),
+        assert.NewSnowflakeParametersAssertWithParameters(id, sdk.ObjectType{{ .ObjectTypeName }}, parameters),
     }
 }
