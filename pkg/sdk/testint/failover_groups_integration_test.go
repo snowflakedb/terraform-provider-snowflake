@@ -80,7 +80,7 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 	t.Run("test with identifier containing a dot", func(t *testing.T) {
 		shareId := testClientHelper().Ids.RandomAccountObjectIdentifierContaining(".")
 
-		shareWithDot, shareWithDotCleanup := testClientHelper().Share.CreateShareWithOptions(t, shareId, &sdk.CreateShareOptions{})
+		shareWithDot, shareWithDotCleanup := testClientHelper().Share.CreateShareWithRequest(t, shareId, sdk.NewCreateShareRequest(shareId))
 		t.Cleanup(shareWithDotCleanup)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()

@@ -22,41 +22,26 @@ func TestInt_SharesShow(t *testing.T) {
 	t.Cleanup(shareCleanup2)
 
 	t.Run("without show options", func(t *testing.T) {
-		shares, err := client.Shares.Show(ctx, nil)
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest())
 		require.NoError(t, err)
 		assert.LessOrEqual(t, 2, len(shares))
 	})
 
 	t.Run("with show options", func(t *testing.T) {
-		showOptions := &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(shareTest.Name.Name()),
-			},
-		}
-		shares, err := client.Shares.Show(ctx, showOptions)
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(shareTest.Name)}))
 		require.NoError(t, err)
 		assert.Len(t, shares, 1)
 		assert.Contains(t, shares, *shareTest)
 	})
 
 	t.Run("when searching a non-existent share", func(t *testing.T) {
-		showOptions := &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String("non-existent"),
-			},
-		}
-		shares, err := client.Shares.Show(ctx, showOptions)
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String("non-existent")}))
 		require.NoError(t, err)
 		assert.Empty(t, shares)
 	})
 
 	t.Run("when limiting the number of results", func(t *testing.T) {
-		showOptions := &sdk.ShowShareOptions{
-			Limit: &sdk.LimitFrom{
-				Rows: sdk.Int(1),
-			},
-		}
-		shares, err := client.Shares.Show(ctx, showOptions)
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
 		assert.Len(t, shares, 1)
 	})
@@ -68,35 +53,24 @@ func TestInt_SharesCreate(t *testing.T) {
 
 	t.Run("test complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Shares.Create(ctx, id, &sdk.CreateShareOptions{
-			OrReplace: sdk.Bool(true),
-			Comment:   sdk.String("test comment"),
-		})
+		err := client.Shares.Create(ctx, sdk.NewCreateShareRequest(id).WithOrReplace(true).WithComment("test comment"))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Share.DropShareFunc(t, id))
-		shares, err := client.Shares.Show(ctx, &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(id.Name()),
-			},
-			Limit: &sdk.LimitFrom{
-				Rows: sdk.Int(1),
-			},
-		})
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().
+			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
 		assert.Len(t, shares, 1)
-		assert.Equal(t, id.Name(), shares[0].Name.Name())
+		assert.Equal(t, id.Name(), shares[0].Name)
 		assert.Equal(t, "test comment", shares[0].Comment)
 	})
 
 	t.Run("test no options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Shares.Create(ctx, id, &sdk.CreateShareOptions{
-			OrReplace: sdk.Bool(true),
-			Comment:   sdk.String("test comment"),
-		})
+		err := client.Shares.Create(ctx, sdk.NewCreateShareRequest(id).WithOrReplace(true).WithComment("test comment"))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Share.DropShareFunc(t, id))
-		shares, err := client.Shares.Show(ctx, nil)
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest())
 		require.NoError(t, err)
 		assert.GreaterOrEqual(t, len(shares), 1)
 	})
@@ -109,12 +83,12 @@ func TestInt_SharesDrop(t *testing.T) {
 	t.Run("when share exists", func(t *testing.T) {
 		shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
 		t.Cleanup(shareCleanup)
-		err := client.Shares.Drop(ctx, shareTest.ID(), &sdk.DropShareOptions{})
+		err := client.Shares.Drop(ctx, sdk.NewDropShareRequest(shareTest.ID()))
 		require.NoError(t, err)
 	})
 
 	t.Run("when share does not exist", func(t *testing.T) {
-		err := client.Shares.Drop(ctx, NonExistingAccountObjectIdentifier, &sdk.DropShareOptions{})
+		err := client.Shares.Drop(ctx, sdk.NewDropShareRequest(NonExistingAccountObjectIdentifier))
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 }
@@ -141,37 +115,23 @@ func TestInt_SharesAlter(t *testing.T) {
 			secondaryTestClientHelper().Account.GetAccountIdentifier(t),
 		}
 		// first add the account.
-		err = client.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-			IfExists: sdk.Bool(true),
-			Add: &sdk.ShareAdd{
-				Accounts:          accountsToAdd,
-				ShareRestrictions: sdk.Bool(false),
-			},
-		})
+		err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithAdd(sdk.ShareAddRequest{
+			Accounts:          accountsToAdd,
+			ShareRestrictions: sdk.Bool(false),
+		}))
 		require.NoError(t, err)
-		shares, err := client.Shares.Show(ctx, &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(shareTest.Name.Name()),
-			},
-		})
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(shareTest.Name)}))
 		require.NoError(t, err)
 		assert.Len(t, shares, 1)
 		share := shares[0]
 		assert.Equal(t, accountsToAdd, share.To)
 
 		// now remove the account that was added.
-		err = client.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-			IfExists: sdk.Bool(true),
-			Remove: &sdk.ShareRemove{
-				Accounts: accountsToAdd,
-			},
-		})
+		err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithRemove(sdk.ShareRemoveRequest{
+			Accounts: accountsToAdd,
+		}))
 		require.NoError(t, err)
-		shares, err = client.Shares.Show(ctx, &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(shareTest.Name.Name()),
-			},
-		})
+		shares, err = client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(shareTest.Name)}))
 		require.NoError(t, err)
 		assert.Len(t, shares, 1)
 		share = shares[0]
@@ -201,19 +161,12 @@ func TestInt_SharesAlter(t *testing.T) {
 		}
 
 		// first add the account.
-		err = secondaryClient.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-			IfExists: sdk.Bool(true),
-			Set: &sdk.ShareSet{
-				Accounts: accountsToSet,
-			},
-		})
+		err = secondaryClient.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithSet(sdk.ShareSetRequest{
+			Accounts: accountsToSet,
+		}))
 		require.NoError(t, err)
 
-		shares, err := secondaryClient.Shares.Show(ctx, &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(shareTest.Name.Name()),
-			},
-		})
+		shares, err := secondaryClient.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(shareTest.Name)}))
 		require.NoError(t, err)
 
 		assert.Len(t, shares, 1)
@@ -237,19 +190,12 @@ func TestInt_SharesAlter(t *testing.T) {
 		})
 
 		comment := random.Comment()
-		err = client.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-			IfExists: sdk.Bool(true),
-			Set: &sdk.ShareSet{
-				Comment: sdk.String(comment),
-			},
-		})
+		err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithSet(sdk.ShareSetRequest{
+			Comment: sdk.String(comment),
+		}))
 		require.NoError(t, err)
 
-		shares, err := client.Shares.Show(ctx, &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(shareTest.Name.Name()),
-			},
-		})
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(shareTest.Name)}))
 		require.NoError(t, err)
 
 		assert.Len(t, shares, 1)
@@ -257,19 +203,12 @@ func TestInt_SharesAlter(t *testing.T) {
 		assert.Equal(t, comment, share.Comment)
 
 		// reset comment
-		err = client.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-			IfExists: sdk.Bool(true),
-			Unset: &sdk.ShareUnset{
-				Comment: sdk.Bool(true),
-			},
-		})
+		err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithUnset(sdk.ShareUnsetRequest{
+			Comment: sdk.Bool(true),
+		}))
 		require.NoError(t, err)
 
-		shares, err = client.Shares.Show(ctx, &sdk.ShowShareOptions{
-			Like: &sdk.Like{
-				Pattern: sdk.String(shareTest.Name.Name()),
-			},
-		})
+		shares, err = client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(shareTest.Name)}))
 		require.NoError(t, err)
 
 		assert.Len(t, shares, 1)
@@ -297,11 +236,11 @@ func TestInt_ShareDescribeProvider(t *testing.T) {
 			require.NoError(t, err)
 		})
 
-		shareDetails, err := client.Shares.DescribeProvider(ctx, shareTest.ID())
+		shareInfos, err := client.Shares.DescribeProvider(ctx, shareTest.ID())
 		require.NoError(t, err)
 
-		assert.Len(t, shareDetails.SharedObjects, 1)
-		sharedObject := shareDetails.SharedObjects[0]
+		assert.Len(t, shareInfos, 1)
+		sharedObject := shareInfos[0]
 		assert.Equal(t, sdk.ObjectTypeDatabase, sharedObject.Kind)
 		assert.Equal(t, testClientHelper().Ids.DatabaseId(), sharedObject.Name)
 	})
@@ -331,20 +270,18 @@ func TestInt_ShareDescribeConsumer(t *testing.T) {
 		})
 
 		// add a consumer account to share.
-		err = providerClient.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-			Add: &sdk.ShareAdd{
-				Accounts: []sdk.AccountIdentifier{
-					testClientHelper().Account.GetAccountIdentifier(t),
-				},
+		err = providerClient.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithAdd(sdk.ShareAddRequest{
+			Accounts: []sdk.AccountIdentifier{
+				testClientHelper().Account.GetAccountIdentifier(t),
 			},
-		})
+		}))
 		require.NoError(t, err)
 
-		shareDetails, err := consumerClient.Shares.DescribeConsumer(ctx, shareTest.ExternalID())
+		shareInfos, err := consumerClient.Shares.DescribeConsumer(ctx, shareTest.ExternalID())
 		require.NoError(t, err)
 
-		assert.Len(t, shareDetails.SharedObjects, 1)
-		sharedObject := shareDetails.SharedObjects[0]
+		assert.Len(t, shareInfos, 1)
+		sharedObject := shareInfos[0]
 		assert.Equal(t, sdk.ObjectTypeDatabase, sharedObject.Kind)
 		assert.Equal(t, ids.DatabasePlaceholder, sharedObject.Name)
 	})
