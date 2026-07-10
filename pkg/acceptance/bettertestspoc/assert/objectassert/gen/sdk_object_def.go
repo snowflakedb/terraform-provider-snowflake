@@ -347,6 +347,11 @@ var allStructs = []SdkObjectDef{
 		IsSubStruct:        true,
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.TableConstraintDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PasswordPolicy{},
 	},

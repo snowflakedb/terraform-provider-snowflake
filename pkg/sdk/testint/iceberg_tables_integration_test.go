@@ -319,7 +319,6 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasNoNameMapping().
 				HasNoWriteDefault(),
 		)
-		// TODO (next PRs): add assertions for the out-of-line constraints.
 	}
 
 	t.Run("create Snowflake managed: basic", func(t *testing.T) {
@@ -486,6 +485,77 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertPolicyReference(t, references[1], maskingPolicy.ID(), sdk.PolicyKindMaskingPolicy, id, new("REGION"))
 		assertPolicyReference(t, references[2], projectionPolicyId, sdk.PolicyKindProjectionPolicy, id, new("FK_ID"))
 		assertPolicyReference(t, references[3], rowAccessPolicy.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
+
+		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, constraints, 4)
+		// Sort the constraints because the order is not guaranteed.
+		slices.SortFunc(constraints, func(x, y sdk.TableConstraintDetails) int {
+			return strings.Compare(x.ConstraintName, y.ConstraintName)
+		})
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[0]).
+				HasConstraintName("fk_out_ref").
+				HasConstraintType(sdk.TableConstraintTypeForeignKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[1]).
+				HasConstraintName("fk_ref").
+				HasConstraintType(sdk.TableConstraintTypeForeignKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[2]).
+				HasConstraintName("pk_id").
+				HasConstraintType(sdk.TableConstraintTypePrimaryKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[3]).
+				HasConstraintName("uq_region").
+				HasConstraintType(sdk.TableConstraintTypeUnique).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+
+		// TODO (next PRs): add assertions for CHECK constraints
+		// like SELECT * FROM "A" . INFORMATION_SCHEMA.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'B' AND CONSTRAINT_TABLE = 'C'
 
 		assertThatObject(
 			t, objectparametersassert.IcebergTableParameters(t, id).
@@ -1405,18 +1475,24 @@ func TestInt_IcebergTables(t *testing.T) {
 		details, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
 		require.NoError(t, err)
 		require.Len(t, details, 2)
-		objectassert.TableSearchOptimizationDetailsFromObject(t, &details[0]).
-			HasExpressionId(1).
-			HasActive(true).
-			HasMethod(string(sdk.TableSearchMethodEquality)).
-			HasTarget("REGION").
-			HasTargetDataType(testdatatypes.DataTypeVarcharIceberg)
-		objectassert.TableSearchOptimizationDetailsFromObject(t, &details[1]).
-			HasExpressionId(2).
-			HasActive(true).
-			HasMethod(string(sdk.TableSearchMethodFullText)).
-			HasTarget("REGION").
-			HasTargetDataType(testdatatypes.DataTypeVarcharIceberg)
+		assertThatObject(
+			t,
+			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[0]).
+				HasExpressionId(1).
+				HasActive(true).
+				HasMethod(string(sdk.TableSearchMethodEquality)).
+				HasTarget("REGION").
+				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
+		)
+		assertThatObject(
+			t,
+			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[1]).
+				HasExpressionId(2).
+				HasActive(true).
+				HasMethod(string(sdk.TableSearchMethodFullText)+" DEFAULT_ANALYZER").
+				HasTarget("REGION").
+				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
+		)
 
 		// Drop by method/target: removes only the EQUALITY entry. The analyzer is not part of the matcher.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
