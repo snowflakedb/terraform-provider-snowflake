@@ -1285,3 +1285,435 @@ func TestGrantShow(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "SHOW GRANTS OF SHARE %s", shareID.FullyQualifiedName())
 	})
 }
+
+func TestGrantInheritedPrivilegesToAccountRole(t *testing.T) {
+	dbId := randomAccountObjectIdentifier()
+	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
+	roleId := randomAccountObjectIdentifier()
+
+	defaultOpts := func() *grantInheritedPrivilegesToAccountRoleOptions {
+		return &grantInheritedPrivilegesToAccountRoleOptions{
+			privileges: InheritedAccountRoleGrantPrivileges{
+				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+			},
+			onAll:       PluralObjectTypeTables,
+			in:          InheritedAccountRoleGrantIn{Database: new(dbId)},
+			accountRole: roleId,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *grantInheritedPrivilegesToAccountRoleOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{
+			AccountObjectPrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeOperate},
+			SchemaObjectPrivileges:  []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.onAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("grantInheritedPrivilegesToAccountRoleOptions", "onAll"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{
+			Account:  new(true),
+			Database: new(dbId),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{
+			Database: new(emptyAccountObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{
+			Schema: new(emptyDatabaseObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.accountRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.accountRole = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("on all tables in account", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{Account: new(true)}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN ACCOUNT TO ROLE %s`, roleId.FullyQualifiedName())
+	})
+
+	t.Run("on all tables in database", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN DATABASE %s TO ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("on all tables in schema", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{Schema: new(schemaId)}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN SCHEMA %s TO ROLE %s`, schemaId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("multiple privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s TO ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedNameEscaped())
+	})
+
+	t.Run("all privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{AllPrivileges: new(true)}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s TO ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+}
+
+func TestRevokeInheritedPrivilegesFromAccountRole(t *testing.T) {
+	dbId := randomAccountObjectIdentifier()
+	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
+	roleId := randomAccountObjectIdentifier()
+
+	defaultOpts := func() *revokeInheritedPrivilegesFromAccountRoleOptions {
+		return &revokeInheritedPrivilegesFromAccountRoleOptions{
+			privileges: InheritedAccountRoleGrantPrivileges{
+				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+			},
+			onAll:       PluralObjectTypeTables,
+			in:          InheritedAccountRoleGrantIn{Database: new(dbId)},
+			accountRole: roleId,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *revokeInheritedPrivilegesFromAccountRoleOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.AccountObjectPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{
+			AccountObjectPrivileges: []AccountObjectPrivilege{AccountObjectPrivilegeOperate},
+			SchemaObjectPrivileges:  []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.onAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("revokeInheritedPrivilegesFromAccountRoleOptions", "onAll"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Account opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{
+			Account:  new(true),
+			Database: new(dbId),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{
+			Database: new(emptyAccountObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{
+			Schema: new(emptyDatabaseObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.accountRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.accountRole = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("on all tables in account", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{Account: new(true)}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN ACCOUNT FROM ROLE %s`, roleId.FullyQualifiedName())
+	})
+
+	t.Run("on all tables in database", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN DATABASE %s FROM ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("on all tables in schema", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedAccountRoleGrantIn{Schema: new(schemaId)}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN SCHEMA %s FROM ROLE %s`, schemaId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+
+	t.Run("multiple privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s FROM ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedNameEscaped())
+	})
+
+	t.Run("all privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedAccountRoleGrantPrivileges{AllPrivileges: new(true)}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s FROM ROLE %s`, dbId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	})
+}
+
+func TestGrantInheritedPrivilegesToDatabaseRole(t *testing.T) {
+	dbId := randomAccountObjectIdentifier()
+	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
+	databaseRoleId := randomDatabaseObjectIdentifier()
+
+	defaultOpts := func() *grantInheritedPrivilegesToDatabaseRoleOptions {
+		return &grantInheritedPrivilegesToDatabaseRoleOptions{
+			privileges: InheritedDatabaseRoleGrantPrivileges{
+				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+			},
+			onAll:        PluralObjectTypeTables,
+			in:           InheritedDatabaseRoleGrantIn{Database: new(dbId)},
+			databaseRole: databaseRoleId,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *grantInheritedPrivilegesToDatabaseRoleOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+			SchemaPrivileges:       []SchemaPrivilege{SchemaPrivilegeCreateTable},
+			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.onAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("grantInheritedPrivilegesToDatabaseRoleOptions", "onAll"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{
+			Database: new(dbId),
+			Schema:   new(schemaId),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{
+			Database: new(emptyAccountObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{
+			Schema: new(emptyDatabaseObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.databaseRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.databaseRole = emptyDatabaseObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("on all tables in database", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN DATABASE %s TO DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+
+	t.Run("on all tables in schema", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED SELECT ON ALL TABLES IN SCHEMA %s TO DATABASE ROLE %s`, schemaId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+
+	t.Run("multiple privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s TO DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedNameEscaped())
+	})
+
+	t.Run("all privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{AllPrivileges: new(true)}
+		assertOptsValidAndSQLEquals(t, opts, `GRANT INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s TO DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+}
+
+func TestRevokeInheritedPrivilegesFromDatabaseRole(t *testing.T) {
+	dbId := randomAccountObjectIdentifier()
+	schemaId := randomDatabaseObjectIdentifierInDatabase(dbId)
+	databaseRoleId := randomDatabaseObjectIdentifier()
+
+	defaultOpts := func() *revokeInheritedPrivilegesFromDatabaseRoleOptions {
+		return &revokeInheritedPrivilegesFromDatabaseRoleOptions{
+			privileges: InheritedDatabaseRoleGrantPrivileges{
+				SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+			},
+			onAll:        PluralObjectTypeTables,
+			in:           InheritedDatabaseRoleGrantIn{Database: new(dbId)},
+			databaseRole: databaseRoleId,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *revokeInheritedPrivilegesFromDatabaseRoleOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.privileges.AllPrivileges opts.privileges.SchemaPrivileges opts.privileges.SchemaObjectPrivileges] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+			SchemaPrivileges:       []SchemaPrivilege{SchemaPrivilegeCreateTable},
+			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges"))
+	})
+
+	t.Run("validation: [opts.onAll] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.onAll = ""
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("revokeInheritedPrivilegesFromDatabaseRoleOptions", "onAll"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.in.Database opts.in.Schema] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{
+			Database: new(dbId),
+			Schema:   new(schemaId),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Database]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{
+			Database: new(emptyAccountObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.in.Schema]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{
+			Schema: new(emptyDatabaseObjectIdentifier),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: valid identifier for [opts.databaseRole]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.databaseRole = emptyDatabaseObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("on all tables in database", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN DATABASE %s FROM DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+
+	t.Run("on all tables in schema", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.in = InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED SELECT ON ALL TABLES IN SCHEMA %s FROM DATABASE ROLE %s`, schemaId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+
+	t.Run("multiple privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{
+			SchemaObjectPrivileges: []SchemaObjectPrivilege{SchemaObjectPrivilegeSelect, SchemaObjectPrivilegeInsert},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED SELECT, INSERT ON ALL TABLES IN DATABASE %s FROM DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedNameEscaped())
+	})
+
+	t.Run("all privileges", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.privileges = InheritedDatabaseRoleGrantPrivileges{AllPrivileges: new(true)}
+		assertOptsValidAndSQLEquals(t, opts, `REVOKE INHERITED ALL PRIVILEGES ON ALL TABLES IN DATABASE %s FROM DATABASE ROLE %s`, dbId.FullyQualifiedName(), databaseRoleId.FullyQualifiedName())
+	})
+}
