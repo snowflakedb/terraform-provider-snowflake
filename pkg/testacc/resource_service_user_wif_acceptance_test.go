@@ -169,7 +169,8 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 
 func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", random.NumericN(12))
+	accountNumber := random.NumericN(12)
+	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber)
 	issuer := "https://sts.amazonaws.com"
 
 	providerModelWithWIF := providermodel.SnowflakeProvider().
@@ -207,7 +208,13 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 						HasType(sdk.WIFTypeAws).
 						HasNoComment().
 						HasLastUsedNotEmpty().
-						HasCreatedOnNotEmpty(),
+						HasCreatedOnNotEmpty().
+						HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+							IamRole:      "test-role",
+							Type:         "IAM_ROLE",
+							AwsAccount:   accountNumber,
+							AwsPartition: "aws",
+						}),
 				),
 			},
 			// IMPORT
@@ -232,7 +239,14 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 						HasType(sdk.WIFTypeAws).
 						HasNoComment().
 						HasLastUsedNotEmpty().
-						HasCreatedOnNotEmpty(),
+						HasCreatedOnNotEmpty().
+						HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
+							IamRole:      "test-role",
+							Type:         "IAM_ROLE",
+							AwsAccount:   accountNumber,
+							AwsPartition: "aws",
+							Issuer:       issuer,
+						}),
 				),
 			},
 			// UPDATE - REMOVE WIF
