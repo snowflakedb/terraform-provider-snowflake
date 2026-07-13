@@ -274,6 +274,25 @@ func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 		}
 	}
 
+	// Tables - only present for interactive warehouses; may be NULL. SHOW WAREHOUSES returns the
+	// associated tables as a comma-separated list of fully-qualified names. Identifiers can contain
+	// commas when quoted, so we split in a quote-aware manner rather than using strings.Split.
+	if r.Tables.Valid {
+		if tables := strings.TrimSpace(r.Tables.String); tables != "" {
+			for _, raw := range splitCommaSeparatedIdentifiers(tables) {
+				raw = strings.TrimSpace(raw)
+				if raw == "" {
+					continue
+				}
+				id, err := ParseSchemaObjectIdentifier(raw)
+				if err != nil {
+					return fmt.Errorf("parsing table identifier %q: %w", raw, err)
+				}
+				wh.Tables = append(wh.Tables, id)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -297,6 +316,15 @@ func (opts *CreateAdaptiveWarehouseOptions) additionalValidations() error {
 	var errs []error
 	if valueSet(opts.QueryThroughputMultiplier) && !validateIntGreaterThanOrEqual(*opts.QueryThroughputMultiplier, 0) {
 		errs = append(errs, fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0"))
+	}
+	return JoinErrors(errs...)
+}
+
+// additionalValidations for CreateInteractiveWarehouseOptions.
+func (opts *CreateInteractiveWarehouseOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.MinClusterCount) && valueSet(opts.MaxClusterCount) && !validateIntGreaterThanOrEqual(*opts.MaxClusterCount, *opts.MinClusterCount) {
+		errs = append(errs, fmt.Errorf("MinClusterCount must be less than or equal to MaxClusterCount"))
 	}
 	return JoinErrors(errs...)
 }
@@ -345,5 +373,9 @@ func (s *CreateWarehouseRequest) ID() AccountObjectIdentifier {
 }
 
 func (s *CreateAdaptiveWarehouseRequest) ID() AccountObjectIdentifier {
+	return s.name
+}
+
+func (s *CreateInteractiveWarehouseRequest) ID() AccountObjectIdentifier {
 	return s.name
 }

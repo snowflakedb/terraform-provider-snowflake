@@ -9,7 +9,7 @@ import (
 
 var warehouseTypeEnum = g.NewEnum(
 	"WarehouseType", "WarehouseTypes",
-	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE",
+	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE", "INTERACTIVE",
 )
 
 var warehouseSizeEnum = g.NewEnum(
@@ -83,7 +83,8 @@ var warehousePairs = g.StructPair("warehouseDBRow", "Warehouse").
 	OptionalEnum("resource_constraint", warehouseResourceConstraintEnum, g.WithManualConvert()).
 	Field("generation", "sql.NullString", "*WarehouseGeneration", g.WithManualConvert()).
 	OptionalEnum("max_query_performance_level", maxQueryPerformanceLevelEnum).
-	OptionalNumber("query_throughput_multiplier")
+	OptionalNumber("query_throughput_multiplier").
+	Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", g.WithManualConvert())
 
 var warehouseDetailsPairs = g.StructPair("warehouseDetailsRow", "WarehouseDetails").
 	Time("created_on").
@@ -110,7 +111,8 @@ var warehouseSetStruct = g.NewQueryStruct("WarehouseSet").
 	OptionalNumberAssignment("MAX_CONCURRENCY_LEVEL", g.ParameterOptions()).
 	OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
 	OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-	WithValidation(g.AtLeastOneValueSet, "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds").
+	OptionalIdentifier("FallbackWarehouse", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FALLBACK_WAREHOUSE").Equals()).
+	WithValidation(g.AtLeastOneValueSet, "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "FallbackWarehouse").
 	WithAdditionalValidations()
 
 var warehouseUnsetStruct = g.NewQueryStruct("WarehouseUnset").
@@ -132,7 +134,8 @@ var warehouseUnsetStruct = g.NewQueryStruct("WarehouseUnset").
 	OptionalSQL("STATEMENT_TIMEOUT_IN_SECONDS").
 	OptionalSQL("QUERY_THROUGHPUT_MULTIPLIER").
 	OptionalSQL("MAX_QUERY_PERFORMANCE_LEVEL").
-	WithValidation(g.AtLeastOneValueSet, "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel")
+	OptionalSQL("FALLBACK_WAREHOUSE").
+	WithValidation(g.AtLeastOneValueSet, "WarehouseType", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "QueryThroughputMultiplier", "MaxQueryPerformanceLevel", "FallbackWarehouse")
 
 var warehousesDef = g.NewInterface(
 	"Warehouses",
@@ -186,6 +189,31 @@ var warehousesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
 		WithAdditionalValidations(),
+).CustomOperation(
+	"CreateInteractive",
+	"https://docs.snowflake.com/en/user-guide/warehouses-interactive",
+	g.NewQueryStruct("CreateInteractiveWarehouse").
+		Create().
+		OrReplace().
+		SQL("INTERACTIVE WAREHOUSE").
+		IfNotExists().
+		Name().
+		ListAssignment("TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
+		OptionalEnumAssignment("WAREHOUSE_SIZE", warehouseSizeEnum, g.ParameterOptions().SingleQuotes()).
+		OptionalNumberAssignment("MAX_CLUSTER_COUNT", g.ParameterOptions()).
+		OptionalNumberAssignment("MIN_CLUSTER_COUNT", g.ParameterOptions()).
+		OptionalNumberAssignment("AUTO_SUSPEND", g.ParameterOptions()).
+		OptionalBooleanAssignment("AUTO_RESUME", nil).
+		OptionalBooleanAssignment("INITIALLY_SUSPENDED", nil).
+		OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
+		OptionalComment().
+		OptionalNumberAssignment("MAX_CONCURRENCY_LEVEL", g.ParameterOptions()).
+		OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
+		OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
+		OptionalTags().
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
+		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
 	g.NewQueryStruct("AlterWarehouse").
@@ -200,10 +228,12 @@ var warehousesDef = g.NewInterface(
 		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField("Set", warehouseSetStruct, g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", warehouseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
+		ListAssignment("ADD TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
+		ListAssignment("DROP TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags").
+		WithValidation(g.ExactlyOneValueSet, "Suspend", "Resume", "AbortAllQueries", "RenameTo", "Set", "Unset", "AddTables", "DropTables", "SetTags", "UnsetTags").
 		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-warehouse",
