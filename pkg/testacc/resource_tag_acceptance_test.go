@@ -1516,7 +1516,7 @@ func TestAcc_Tag_OrderedAllowedValues_ExternalOrderMatchesConfig(t *testing.T) {
 					resourceassert.TagResource(t, ref).HasAllowedValues("a", "b", "c"),
 				),
 			},
-			// Validate that going from unordered to ordered allowed values results in no changes planned when the ordering is correct on the Snowflake side
+			// Validate that going from unordered to ordered allowed values results in an update-in-place plan even when the ordering is correct on the Snowflake side
 			{
 				PreConfig: func() {
 					testClient().Tag.Alter(t, sdk.NewAlterTagRequest(id).WithSet(
