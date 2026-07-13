@@ -215,6 +215,11 @@ func (s *UserObjectWorkloadIdentityAwsRequest) WithArn(arn string) *UserObjectWo
 	return s
 }
 
+func (s *UserObjectWorkloadIdentityAwsRequest) WithIssuer(issuer string) *UserObjectWorkloadIdentityAwsRequest {
+	s.Issuer = &issuer
+	return s
+}
+
 func NewUserObjectWorkloadIdentityAzureRequest() *UserObjectWorkloadIdentityAzureRequest {
 	s := UserObjectWorkloadIdentityAzureRequest{}
 	return &s

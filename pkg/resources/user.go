@@ -771,9 +771,13 @@ func parseWorkloadIdentityConfig(v any) (sdk.UserObjectWorkloadIdentityPropertie
 
 	if awsConfig, ok := config["aws"].([]any); ok && len(awsConfig) > 0 {
 		aws := awsConfig[0].(map[string]any)
-		wif.AwsType = &sdk.UserObjectWorkloadIdentityAwsRequest{
+		awsReq := &sdk.UserObjectWorkloadIdentityAwsRequest{
 			Arn: sdk.String(aws["arn"].(string)),
 		}
+		if issuer, ok := aws["issuer"].(string); ok && issuer != "" {
+			awsReq.Issuer = sdk.String(issuer)
+		}
+		wif.AwsType = awsReq
 	}
 
 	if gcpConfig, ok := config["gcp"].([]any); ok && len(gcpConfig) > 0 {
