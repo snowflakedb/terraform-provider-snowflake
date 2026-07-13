@@ -126,6 +126,110 @@ func TestWarehouseCreateAdaptive(t *testing.T) {
 	})
 }
 
+func TestWarehouseCreateInteractive(t *testing.T) {
+	t.Run("only name", func(t *testing.T) {
+		opts := &CreateInteractiveWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE INTERACTIVE WAREHOUSE "mywarehouse"`)
+	})
+
+	t.Run("with tables and options", func(t *testing.T) {
+		tableId1 := randomSchemaObjectIdentifier()
+		tableId2 := randomSchemaObjectIdentifierInSchema(tableId1.SchemaId())
+		opts := &CreateInteractiveWarehouseOptions{
+			OrReplace:                       Bool(true),
+			name:                            NewAccountObjectIdentifier("myinteractivewh"),
+			Tables:                          []SchemaObjectIdentifier{tableId1, tableId2},
+			WarehouseSize:                   Pointer(WarehouseSizeXSmall),
+			MaxClusterCount:                 Int(2),
+			MinClusterCount:                 Int(1),
+			AutoSuspend:                     Int(86400),
+			AutoResume:                      Bool(true),
+			InitiallySuspended:              Bool(true),
+			ResourceMonitor:                 Pointer(NewAccountObjectIdentifier("resmon")),
+			Comment:                         String("interactive warehouse"),
+			MaxConcurrencyLevel:             Int(8),
+			StatementQueuedTimeoutInSeconds: Int(30),
+			StatementTimeoutInSeconds:       Int(5),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE INTERACTIVE WAREHOUSE "myinteractivewh" TABLES (%s, %s) WAREHOUSE_SIZE = 'XSMALL' MAX_CLUSTER_COUNT = 2 MIN_CLUSTER_COUNT = 1 AUTO_SUSPEND = 86400 AUTO_RESUME = true INITIALLY_SUSPENDED = true RESOURCE_MONITOR = "resmon" COMMENT = 'interactive warehouse' MAX_CONCURRENCY_LEVEL = 8 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 5`,
+			tableId1.FullyQualifiedName(), tableId2.FullyQualifiedName())
+	})
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		var opts *CreateInteractiveWarehouseOptions
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: invalid identifier", func(t *testing.T) {
+		opts := &CreateInteractiveWarehouseOptions{
+			name: emptyAccountObjectIdentifier,
+		}
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: conflicting OrReplace and IfNotExists", func(t *testing.T) {
+		opts := &CreateInteractiveWarehouseOptions{
+			name:        NewAccountObjectIdentifier("mywarehouse"),
+			OrReplace:   Bool(true),
+			IfNotExists: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateInteractiveWarehouseOptions", "OrReplace", "IfNotExists"))
+	})
+
+	t.Run("validation: min bigger than max cluster count", func(t *testing.T) {
+		opts := &CreateInteractiveWarehouseOptions{
+			name:            NewAccountObjectIdentifier("mywarehouse"),
+			MaxClusterCount: Int(1),
+			MinClusterCount: Int(2),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("MinClusterCount must be less than or equal to MaxClusterCount"))
+	})
+}
+
+func TestWarehouseAlterInteractiveTablesAndFallback(t *testing.T) {
+	t.Run("add tables", func(t *testing.T) {
+		tableId1 := randomSchemaObjectIdentifier()
+		tableId2 := randomSchemaObjectIdentifierInSchema(tableId1.SchemaId())
+		opts := &AlterWarehouseOptions{
+			name:      NewAccountObjectIdentifier("mywarehouse"),
+			AddTables: []SchemaObjectIdentifier{tableId1, tableId2},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" ADD TABLES (%s, %s)`,
+			tableId1.FullyQualifiedName(), tableId2.FullyQualifiedName())
+	})
+
+	t.Run("drop tables", func(t *testing.T) {
+		tableId1 := randomSchemaObjectIdentifier()
+		opts := &AlterWarehouseOptions{
+			name:       NewAccountObjectIdentifier("mywarehouse"),
+			DropTables: []SchemaObjectIdentifier{tableId1},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" DROP TABLES (%s)`, tableId1.FullyQualifiedName())
+	})
+
+	t.Run("set fallback warehouse", func(t *testing.T) {
+		opts := &AlterWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+			Set: &WarehouseSet{
+				FallbackWarehouse: Pointer(NewAccountObjectIdentifier("fallbackwh")),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" SET FALLBACK_WAREHOUSE = "fallbackwh"`)
+	})
+
+	t.Run("unset fallback warehouse", func(t *testing.T) {
+		opts := &AlterWarehouseOptions{
+			name: NewAccountObjectIdentifier("mywarehouse"),
+			Unset: &WarehouseUnset{
+				FallbackWarehouse: Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER WAREHOUSE "mywarehouse" UNSET FALLBACK_WAREHOUSE`)
+	})
+}
+
 func TestWarehouseSizing(t *testing.T) {
 	t.Run("validation: Min bigger than Max", func(t *testing.T) {
 		opts := &CreateWarehouseOptions{

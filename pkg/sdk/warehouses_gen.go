@@ -11,6 +11,7 @@ import (
 type Warehouses interface {
 	Create(ctx context.Context, request *CreateWarehouseRequest) error
 	CreateAdaptive(ctx context.Context, request *CreateAdaptiveWarehouseRequest) error
+	CreateInteractive(ctx context.Context, request *CreateInteractiveWarehouseRequest) error
 	Alter(ctx context.Context, request *AlterWarehouseRequest) error
 	Drop(ctx context.Context, request *DropWarehouseRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
@@ -69,6 +70,28 @@ type CreateAdaptiveWarehouseOptions struct {
 	StatementTimeoutInSeconds       *int                      `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 }
 
+// CreateInteractiveWarehouseOptions is based on https://docs.snowflake.com/en/user-guide/warehouses-interactive.
+type CreateInteractiveWarehouseOptions struct {
+	create                          bool                     `ddl:"static" sql:"CREATE"`
+	OrReplace                       *bool                    `ddl:"keyword" sql:"OR REPLACE"`
+	interactiveWarehouse            bool                     `ddl:"static" sql:"INTERACTIVE WAREHOUSE"`
+	IfNotExists                     *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                            AccountObjectIdentifier  `ddl:"identifier"`
+	Tables                          []SchemaObjectIdentifier `ddl:"parameter,parentheses,no_equals" sql:"TABLES"`
+	WarehouseSize                   *WarehouseSize           `ddl:"parameter,single_quotes" sql:"WAREHOUSE_SIZE"`
+	MaxClusterCount                 *int                     `ddl:"parameter" sql:"MAX_CLUSTER_COUNT"`
+	MinClusterCount                 *int                     `ddl:"parameter" sql:"MIN_CLUSTER_COUNT"`
+	AutoSuspend                     *int                     `ddl:"parameter" sql:"AUTO_SUSPEND"`
+	AutoResume                      *bool                    `ddl:"parameter" sql:"AUTO_RESUME"`
+	InitiallySuspended              *bool                    `ddl:"parameter" sql:"INITIALLY_SUSPENDED"`
+	ResourceMonitor                 *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
+	Comment                         *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	MaxConcurrencyLevel             *int                     `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
+	StatementQueuedTimeoutInSeconds *int                     `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
+	StatementTimeoutInSeconds       *int                     `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	Tag                             []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
+}
+
 // AlterWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse.
 type AlterWarehouseOptions struct {
 	alter           bool                     `ddl:"static" sql:"ALTER"`
@@ -82,6 +105,8 @@ type AlterWarehouseOptions struct {
 	RenameTo        *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set             *WarehouseSet            `ddl:"keyword" sql:"SET"`
 	Unset           *WarehouseUnset          `ddl:"list,no_parentheses" sql:"UNSET"`
+	AddTables       []SchemaObjectIdentifier `ddl:"parameter,parentheses,no_equals" sql:"ADD TABLES"`
+	DropTables      []SchemaObjectIdentifier `ddl:"parameter,parentheses,no_equals" sql:"DROP TABLES"`
 	SetTags         []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags       []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
 }
@@ -106,6 +131,7 @@ type WarehouseSet struct {
 	MaxConcurrencyLevel             *int                         `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int                         `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                         `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	FallbackWarehouse               *AccountObjectIdentifier     `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 }
 
 type WarehouseUnset struct {
@@ -127,6 +153,7 @@ type WarehouseUnset struct {
 	StatementTimeoutInSeconds       *bool `ddl:"keyword" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
 	QueryThroughputMultiplier       *bool `ddl:"keyword" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
 	MaxQueryPerformanceLevel        *bool `ddl:"keyword" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
+	FallbackWarehouse               *bool `ddl:"keyword" sql:"FALLBACK_WAREHOUSE"`
 }
 
 // DropWarehouseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-warehouse.
@@ -183,6 +210,7 @@ type warehouseDBRow struct {
 	Generation                      sql.NullString `db:"generation"`
 	MaxQueryPerformanceLevel        sql.NullString `db:"max_query_performance_level"`
 	QueryThroughputMultiplier       sql.NullInt64  `db:"query_throughput_multiplier"`
+	Tables                          sql.NullString `db:"tables"`
 }
 
 type Warehouse struct {
@@ -222,6 +250,7 @@ type Warehouse struct {
 	Generation                      *WarehouseGeneration
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel
 	QueryThroughputMultiplier       *int
+	Tables                          []SchemaObjectIdentifier
 }
 
 func (v *Warehouse) ID() AccountObjectIdentifier {

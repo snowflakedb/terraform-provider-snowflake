@@ -348,3 +348,24 @@ func TestParseCommaSeparatedAccountIdentifierArray_Invalid(t *testing.T) {
 		})
 	}
 }
+
+func TestSplitCommaSeparatedIdentifiers(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected []string
+	}{
+		{"", []string{""}},
+		{"A.B.C", []string{"A.B.C"}},
+		{"A.B.C,D.E.F", []string{"A.B.C", "D.E.F"}},
+		{`TESTDB.TESTSCHEMA.IT1,TESTDB.TESTSCHEMA."I,T2"`, []string{"TESTDB.TESTSCHEMA.IT1", `TESTDB.TESTSCHEMA."I,T2"`}},
+		{`A."x,y",B."z,w"`, []string{`A."x,y"`, `B."z,w"`}},
+		// doubled quotes ("") escape a quote inside a quoted identifier; the comma inside stays protected
+		{`A.B."a""b,c",D.E.F`, []string{`A.B."a""b,c"`, "D.E.F"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.input, func(t *testing.T) {
+			result := splitCommaSeparatedIdentifiers(tt.input)
+			require.Equal(t, tt.expected, result)
+		})
+	}
+}

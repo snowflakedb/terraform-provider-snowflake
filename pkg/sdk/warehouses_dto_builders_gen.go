@@ -158,6 +158,89 @@ func (s *CreateAdaptiveWarehouseRequest) WithStatementTimeoutInSeconds(statement
 	return s
 }
 
+func NewCreateInteractiveWarehouseRequest(
+	name AccountObjectIdentifier,
+) *CreateInteractiveWarehouseRequest {
+	s := CreateInteractiveWarehouseRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithOrReplace(orReplace bool) *CreateInteractiveWarehouseRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithIfNotExists(ifNotExists bool) *CreateInteractiveWarehouseRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithTables(tables []SchemaObjectIdentifier) *CreateInteractiveWarehouseRequest {
+	s.Tables = tables
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithWarehouseSize(warehouseSize WarehouseSize) *CreateInteractiveWarehouseRequest {
+	s.WarehouseSize = &warehouseSize
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithMaxClusterCount(maxClusterCount int) *CreateInteractiveWarehouseRequest {
+	s.MaxClusterCount = &maxClusterCount
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithMinClusterCount(minClusterCount int) *CreateInteractiveWarehouseRequest {
+	s.MinClusterCount = &minClusterCount
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithAutoSuspend(autoSuspend int) *CreateInteractiveWarehouseRequest {
+	s.AutoSuspend = &autoSuspend
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithAutoResume(autoResume bool) *CreateInteractiveWarehouseRequest {
+	s.AutoResume = &autoResume
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithInitiallySuspended(initiallySuspended bool) *CreateInteractiveWarehouseRequest {
+	s.InitiallySuspended = &initiallySuspended
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithResourceMonitor(resourceMonitor AccountObjectIdentifier) *CreateInteractiveWarehouseRequest {
+	s.ResourceMonitor = &resourceMonitor
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithComment(comment string) *CreateInteractiveWarehouseRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithMaxConcurrencyLevel(maxConcurrencyLevel int) *CreateInteractiveWarehouseRequest {
+	s.MaxConcurrencyLevel = &maxConcurrencyLevel
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *CreateInteractiveWarehouseRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *CreateInteractiveWarehouseRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithTag(tag []TagAssociation) *CreateInteractiveWarehouseRequest {
+	s.Tag = tag
+	return s
+}
+
 func NewAlterWarehouseRequest(
 	name AccountObjectIdentifier,
 ) *AlterWarehouseRequest {
@@ -203,6 +286,16 @@ func (s *AlterWarehouseRequest) WithSet(set WarehouseSetRequest) *AlterWarehouse
 
 func (s *AlterWarehouseRequest) WithUnset(unset WarehouseUnsetRequest) *AlterWarehouseRequest {
 	s.Unset = &unset
+	return s
+}
+
+func (s *AlterWarehouseRequest) WithAddTables(addTables []SchemaObjectIdentifier) *AlterWarehouseRequest {
+	s.AddTables = addTables
+	return s
+}
+
+func (s *AlterWarehouseRequest) WithDropTables(dropTables []SchemaObjectIdentifier) *AlterWarehouseRequest {
+	s.DropTables = dropTables
 	return s
 }
 
@@ -316,6 +409,11 @@ func (s *WarehouseSetRequest) WithStatementTimeoutInSeconds(statementTimeoutInSe
 	return s
 }
 
+func (s *WarehouseSetRequest) WithFallbackWarehouse(fallbackWarehouse AccountObjectIdentifier) *WarehouseSetRequest {
+	s.FallbackWarehouse = &fallbackWarehouse
+	return s
+}
+
 func NewWarehouseUnsetRequest() *WarehouseUnsetRequest {
 	s := WarehouseUnsetRequest{}
 	return &s
@@ -408,6 +506,11 @@ func (s *WarehouseUnsetRequest) WithQueryThroughputMultiplier(queryThroughputMul
 
 func (s *WarehouseUnsetRequest) WithMaxQueryPerformanceLevel(maxQueryPerformanceLevel bool) *WarehouseUnsetRequest {
 	s.MaxQueryPerformanceLevel = &maxQueryPerformanceLevel
+	return s
+}
+
+func (s *WarehouseUnsetRequest) WithFallbackWarehouse(fallbackWarehouse bool) *WarehouseUnsetRequest {
+	s.FallbackWarehouse = &fallbackWarehouse
 	return s
 }
 

@@ -110,3 +110,27 @@ func emptyIfNull(s string) string {
 	}
 	return s
 }
+
+// splitCommaSeparatedIdentifiers splits a comma-separated list of identifiers, treating commas
+// enclosed in double quotes as part of an identifier rather than separators. Snowflake identifiers
+// may contain commas when quoted (e.g. `DB.SCHEMA."a,b"`), so a naive strings.Split(",") would break
+// such identifiers apart. The returned parts are raw (not trimmed or parsed).
+func splitCommaSeparatedIdentifiers(s string) []string {
+	var parts []string
+	var current strings.Builder
+	inQuotes := false
+	for _, r := range s {
+		switch {
+		case r == '"':
+			inQuotes = !inQuotes
+			current.WriteRune(r)
+		case r == ',' && !inQuotes:
+			parts = append(parts, current.String())
+			current.Reset()
+		default:
+			current.WriteRune(r)
+		}
+	}
+	parts = append(parts, current.String())
+	return parts
+}
