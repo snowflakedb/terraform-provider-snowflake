@@ -86,6 +86,7 @@ type UserObjectWorkloadIdentityProperties struct {
 type UserObjectWorkloadIdentityAws struct {
 	wifType string  `ddl:"static" sql:"TYPE = AWS"`
 	Arn     *string `ddl:"parameter,single_quotes" sql:"ARN"`
+	Issuer  *string `ddl:"parameter,single_quotes" sql:"ISSUER"`
 }
 
 type UserObjectWorkloadIdentityAzure struct {

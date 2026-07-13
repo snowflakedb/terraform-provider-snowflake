@@ -87,7 +87,8 @@ func secondaryRolesStruct() *g.QueryStruct {
 func userObjectWorkloadIdentityAwsStruct() *g.QueryStruct {
 	return g.NewQueryStruct("UserObjectWorkloadIdentityAws").
 		PredefinedQueryStructField("wifType", "string", g.StaticOptions().SQL("TYPE = AWS")).
-		OptionalTextAssignment("ARN", g.ParameterOptions().SingleQuotes())
+		OptionalTextAssignment("ARN", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("ISSUER", g.ParameterOptions().SingleQuotes())
 }
 
 func userObjectWorkloadIdentityAzureStruct() *g.QueryStruct {

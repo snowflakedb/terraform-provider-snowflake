@@ -135,13 +135,25 @@ variable "password" {
   sensitive = true
 }
 
-# with AWS workload identity
+# with AWS workload identity (GetCallerIdentity attestation)
 resource "snowflake_legacy_service_user" "with_aws_wif" {
   name = "legacy_service_user_aws"
 
   default_workload_identity {
     aws {
       arn = "arn:aws:iam::123456789012:role/snowflake-service-role"
+    }
+  }
+}
+
+# with AWS workload identity (JWT-based / GetWebIdentityToken attestation)
+resource "snowflake_legacy_service_user" "with_aws_jwt_wif" {
+  name = "legacy_service_user_aws_jwt"
+
+  default_workload_identity {
+    aws {
+      arn    = "arn:aws:iam::123456789012:role/snowflake-service-role"
+      issuer = "https://sts.amazonaws.com" # optional field, required for JWT-based (GetWebIdentityToken) workload identity federation
     }
   }
 }
@@ -296,6 +308,10 @@ Optional:
 Required:
 
 - `arn` (String) The ARN of the AWS IAM role to use for workload identity federation.
+
+Optional:
+
+- `issuer` (String) The AWS issuer URL. Required for JWT-based (GetWebIdentityToken) workload identity federation.
 
 
 <a id="nestedblock--default_workload_identity--azure"></a>

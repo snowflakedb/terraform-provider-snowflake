@@ -276,16 +276,21 @@ func (c *UserClient) SetAzureWorkloadIdentity(t *testing.T, userId sdk.AccountOb
 }
 
 // SetAwsWorkloadIdentity sets the AWS workload identity configuration for a user.
-func (c *UserClient) SetAwsWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier, arn string) {
+// issuer is optional (used for JWT-based / GetWebIdentityToken workload identity federation).
+func (c *UserClient) SetAwsWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier, arn string, issuer ...string) {
 	t.Helper()
 	ctx := context.Background()
+
+	awsRequest := sdk.NewUserObjectWorkloadIdentityAwsRequest().WithArn(arn)
+	if len(issuer) > 0 {
+		awsRequest = awsRequest.WithIssuer(issuer[0])
+	}
 
 	err := c.client().Alter(ctx, sdk.NewAlterUserRequest(userId).
 		WithSet(*sdk.NewUserSetRequest().
 			WithObjectProperties(*sdk.NewUserAlterObjectPropertiesRequest().
 				WithWorkloadIdentity(*sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
-					WithAwsType(*sdk.NewUserObjectWorkloadIdentityAwsRequest().
-						WithArn(arn))))))
+					WithAwsType(*awsRequest)))))
 	require.NoError(t, err)
 }
 

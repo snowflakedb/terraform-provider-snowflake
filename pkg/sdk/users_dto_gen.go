@@ -61,7 +61,8 @@ type UserObjectWorkloadIdentityPropertiesRequest struct {
 }
 
 type UserObjectWorkloadIdentityAwsRequest struct {
-	Arn *string
+	Arn    *string
+	Issuer *string
 }
 
 type UserObjectWorkloadIdentityAzureRequest struct {
