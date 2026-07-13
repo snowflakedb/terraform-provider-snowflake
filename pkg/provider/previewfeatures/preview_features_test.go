@@ -81,6 +81,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_iceberg_table_from_files_resource", want: IcebergTableFromFilesResource},
 		{input: "snowflake_iceberg_table_from_aws_glue_resource", want: IcebergTableFromAwsGlueResource},
 		{input: "snowflake_iceberg_table_from_rest_resource", want: IcebergTableFromRestResource},
+		{input: "snowflake_iceberg_tables_datasource", want: IcebergTablesDatasource},
 		{input: "snowflake_image_repository_resource", want: ImageRepositoryResource},
 		{input: "snowflake_image_repositories_datasource", want: ImageRepositoriesDatasource},
 		{input: "snowflake_stage_internal_resource", want: InternalStageResource},

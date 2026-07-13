@@ -32,6 +32,21 @@ func ImportedIcebergTableShowOutput(t *testing.T, id string) *IcebergTableShowOu
 	return &icebergTableAssert
 }
 
+func IcebergTablesDatasourceShowOutput(t *testing.T, name string) *IcebergTableShowOutputAssert {
+	t.Helper()
+
+	return IcebergTablesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func IcebergTablesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *IcebergTableShowOutputAssert {
+	t.Helper()
+
+	icebergTableAssert := IcebergTableShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "iceberg_tables", idx),
+	}
+	return &icebergTableAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

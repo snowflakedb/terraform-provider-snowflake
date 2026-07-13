@@ -83,6 +83,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Grants().Schema,
 	},
 	{
+		name:   "IcebergTables",
+		schema: datasources.IcebergTables().Schema,
+	},
+	{
 		name:   "ImageRepositories",
 		schema: datasources.ImageRepositories().Schema,
 	},
