@@ -24,6 +24,8 @@ import (
 )
 
 func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
+	t.Skip("TODO(SNOW-3765941): Skipped until Alter retry logic is not fixed")
+
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()

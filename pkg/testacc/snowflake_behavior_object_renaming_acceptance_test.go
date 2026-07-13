@@ -276,7 +276,7 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally(t *testing.T) {
 					},
 					{
 						PreConfig: func() {
-							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithNewName(newDatabaseId))
+							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithRenameTo(newDatabaseId))
 							t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 						},
 						ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -319,7 +319,7 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally_WithoutDependency_Aft
 				// This step has inconsistent results, and it depends on the Terraform execution order which seems to be non-deterministic in this case
 				PreConfig: func() {
 					newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
-					testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithNewName(newDatabaseId))
+					testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithRenameTo(newDatabaseId))
 					t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -360,7 +360,7 @@ func TestAcc_ShallowHierarchy_IsInConfig_RenamedExternally_WithoutDependency_Aft
 			{
 				PreConfig: func() {
 					newDatabaseId := testClient().Ids.RandomAccountObjectIdentifier()
-					testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithNewName(newDatabaseId))
+					testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithRenameTo(newDatabaseId))
 					t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -416,7 +416,7 @@ func TestAcc_ShallowHierarchy_IsNotInConfig_RenamedExternally(t *testing.T) {
 					},
 					{
 						PreConfig: func() {
-							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithNewName(newDatabaseId))
+							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithRenameTo(newDatabaseId))
 							t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 						},
 						ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -636,7 +636,7 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 				testSteps = append(
 					testSteps, resource.TestStep{
 						PreConfig: func() {
-							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithNewName(newDatabaseId))
+							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(databaseId).WithRenameTo(newDatabaseId))
 						},
 						Config: config.FromModels(t, databaseConfigModelWithNewId) +
 							configSchemaWithReferences(t, databaseConfigModelWithNewId.ResourceReference(), testCase.DatabaseInSchemaDependency, newDatabaseId.Name(), schemaName) +
@@ -703,7 +703,7 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 				testSteps = append(
 					testSteps, resource.TestStep{
 						PreConfig: func() {
-							testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schemaId).WithNewName(newSchemaId))
+							testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schemaId).WithRenameTo(newSchemaId))
 						},
 						Config: config.FromModels(t, databaseConfigModel) +
 							configSchemaWithReferences(t, databaseConfigModel.ResourceReference(), testCase.DatabaseInSchemaDependency, databaseId.Name(), newSchemaId.Name()) +
@@ -766,7 +766,7 @@ func TestAcc_DeepHierarchy_AreNotInConfig_DatabaseRenamedExternally(t *testing.T
 					},
 					{
 						PreConfig: func() {
-							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(database.ID()).WithNewName(newDatabaseId))
+							testClient().Database.Alter(t, sdk.NewAlterDatabaseRequest(database.ID()).WithRenameTo(newDatabaseId))
 							t.Cleanup(testClient().Database.DropDatabaseFunc(t, newDatabaseId))
 						},
 						Config:      configTableWithReferences(t, "", NoDependency, "", NoDependency, secondStepDatabaseName, schema.ID().Name(), tableName),
@@ -819,7 +819,7 @@ func TestAcc_DeepHierarchy_AreNotInConfig_SchemaRenamedExternally(t *testing.T) 
 					},
 					{
 						PreConfig: func() {
-							testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithNewName(newSchemaId))
+							testClient().Schema.Alter(t, sdk.NewAlterSchemaRequest(schema.ID()).WithRenameTo(newSchemaId))
 						},
 						Config:      configTableWithReferences(t, "", NoDependency, "", NoDependency, database.ID().Name(), secondStepSchemaName, tableName),
 						ExpectError: testCase.ExpectedSecondStepError,

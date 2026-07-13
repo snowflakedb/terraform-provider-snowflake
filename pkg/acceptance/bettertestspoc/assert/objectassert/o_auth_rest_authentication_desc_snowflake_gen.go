@@ -16,12 +16,10 @@ type OAuthRestAuthenticationDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.OAuthRestAuthenticationDetails, sdk.AccountObjectIdentifier]
 }
 
-// OAuthRestAuthenticationDetails removed manually
-
 func OAuthRestAuthenticationDetailsFromObject(t *testing.T, oAuthRestAuthenticationDetails *sdk.OAuthRestAuthenticationDetails) *OAuthRestAuthenticationDetailsAssert {
 	t.Helper()
 	return &OAuthRestAuthenticationDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject("OAuthRestAuthenticationDetails", sdk.NewAccountObjectIdentifier(""), oAuthRestAuthenticationDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("OAuthRestAuthenticationDetails"), sdk.NewAccountObjectIdentifier(""), oAuthRestAuthenticationDetails),
 	}
 }
 

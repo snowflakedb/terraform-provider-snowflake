@@ -34,8 +34,9 @@ resource "snowflake_oauth_integration_for_partner_applications" "test" {
   oauth_issue_refresh_tokens   = "true"
   oauth_refresh_token_validity = 3600
   oauth_redirect_uri           = "http://example.com"
-  oauth_use_secondary_roles    = "IMPLICIT"
-  blocked_roles_list           = ["ACCOUNTADMIN", "SECURITYADMIN", snowflake_role.one.fully_qualified_name, snowflake_role.two.fully_qualified_name]
+  oauth_use_secondary_roles    = "NONE"
+  allowed_roles_list           = [snowflake_role.one.fully_qualified_name]
+  blocked_roles_list           = ["ACCOUNTADMIN", "SECURITYADMIN", snowflake_role.two.fully_qualified_name]
   comment                      = "example oauth integration for partner applications"
 }
 ```
@@ -54,6 +55,7 @@ resource "snowflake_oauth_integration_for_partner_applications" "test" {
 
 ### Optional
 
+- `allowed_roles_list` (Set of String) A set of Snowflake roles that a user can explicitly consent to using after authenticating. Can only be set when oauth_use_secondary_roles is set to NONE. For more information about this resource, see [docs](./account_role).
 - `blocked_roles_list` (Set of String) A set of Snowflake roles that a user cannot explicitly consent to using after authenticating. By default, this list includes the ACCOUNTADMIN, ORGADMIN and SECURITYADMIN roles. To remove these privileged roles from the list, use the ALTER ACCOUNT command to set the OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST account parameter to FALSE. For more information about this resource, see [docs](./account_role).
 - `comment` (String) Specifies a comment for the OAuth integration.
 - `enabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether this OAuth integration is enabled or disabled. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
@@ -87,6 +89,7 @@ Optional:
 
 Read-Only:
 
+- `allowed_roles_list` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--allowed_roles_list))
 - `blocked_roles_list` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--blocked_roles_list))
 - `comment` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--comment))
 - `enabled` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--enabled))
@@ -104,6 +107,17 @@ Read-Only:
 - `oauth_token_endpoint` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_token_endpoint))
 - `oauth_use_secondary_roles` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_use_secondary_roles))
 - `pre_authorized_roles_list` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--pre_authorized_roles_list))
+
+<a id="nestedobjatt--describe_output--allowed_roles_list"></a>
+### Nested Schema for `describe_output.allowed_roles_list`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
 
 <a id="nestedobjatt--describe_output--blocked_roles_list"></a>
 ### Nested Schema for `describe_output.blocked_roles_list`

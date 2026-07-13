@@ -38,21 +38,17 @@ func TestInt_ContextQueryTags(t *testing.T) {
 
 	// set query_tag on session level
 	sessionQueryTag := "session query tag"
-	require.NoError(t, client.Sessions.AlterSession(ctx, &sdk.AlterSessionOptions{
-		Set: &sdk.SessionSet{
-			SessionParameters: &sdk.SessionParameters{
-				QueryTag: sdk.String(sessionQueryTag),
-			},
+	require.NoError(t, client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithSet(sdk.SessionSetRequest{
+		SessionParameters: &sdk.SessionParameters{
+			QueryTag: sdk.String(sessionQueryTag),
 		},
-	}))
+	})))
 	t.Cleanup(func() {
-		require.NoError(t, client.Sessions.AlterSession(ctx, &sdk.AlterSessionOptions{
-			Unset: &sdk.SessionUnset{
-				SessionParametersUnset: &sdk.SessionParametersUnset{
-					QueryTag: sdk.Bool(true),
-				},
+		require.NoError(t, client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithUnset(sdk.SessionUnsetRequest{
+			SessionParametersUnset: &sdk.SessionParametersUnset{
+				QueryTag: sdk.Bool(true),
 			},
-		}))
+		})))
 	})
 	queryId = executeQueryAndReturnQueryId(t, context.Background(), client)
 	queryTagResult = testClientHelper().InformationSchema.GetQueryHistoryByQueryId(t, 20, queryId)

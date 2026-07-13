@@ -37,6 +37,11 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasName(expected 
 	return o
 }
 
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasAllowedRolesList(expected ...string) *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.SetContainsExactlyStringValues("allowed_roles_list", expected...)
+	return o
+}
+
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasBlockedRolesList(expected ...string) *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.SetContainsExactlyStringValues("blocked_roles_list", expected...)
 	return o
@@ -185,6 +190,11 @@ func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasNoOauthUseSeco
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasAllowedRolesListEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
+	o.ValueSet("allowed_roles_list.#", "0")
+	return o
+}
 
 func (o *OauthIntegrationForPartnerApplicationsResourceAssert) HasBlockedRolesListEmpty() *OauthIntegrationForPartnerApplicationsResourceAssert {
 	o.ValueSet("blocked_roles_list.#", "0")

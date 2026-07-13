@@ -182,14 +182,11 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	err = secondaryClient.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
-		IfExists: sdk.Bool(true),
-		Set: &sdk.ShareSet{
-			Accounts: []sdk.AccountIdentifier{
-				testClientHelper().Account.GetAccountIdentifier(t),
-			},
+	err = secondaryClient.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithSet(sdk.ShareSetRequest{
+		Accounts: []sdk.AccountIdentifier{
+			testClientHelper().Account.GetAccountIdentifier(t),
 		},
-	})
+	}))
 	require.NoError(t, err)
 
 	comment := random.Comment()
@@ -421,7 +418,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			t.Cleanup(databaseTestCleanup)
 			newName := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithNewName(newName))
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithRenameTo(newName))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, newName))
 

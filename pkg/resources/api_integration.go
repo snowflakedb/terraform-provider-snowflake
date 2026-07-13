@@ -155,20 +155,20 @@ func toApiIntegrationEndpointPrefix(paths []string) []sdk.ApiIntegrationEndpoint
 }
 
 // CreateAPIIntegration implements schema.CreateFunc.
-func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	name := d.Get("name").(string)
 	id := sdk.NewAccountObjectIdentifier(name)
 	enabled := d.Get("enabled").(bool)
 
-	allowedPrefixesRaw := expandStringList(d.Get("api_allowed_prefixes").([]interface{}))
+	allowedPrefixesRaw := expandStringList(d.Get("api_allowed_prefixes").([]any))
 	allowedPrefixes := toApiIntegrationEndpointPrefix(allowedPrefixesRaw)
 
 	createRequest := sdk.NewCreateApiIntegrationRequest(id, allowedPrefixes, enabled)
 
 	if _, ok := d.GetOk("api_blocked_prefixes"); ok {
-		blockedPrefixesRaw := expandStringList(d.Get("api_blocked_prefixes").([]interface{}))
+		blockedPrefixesRaw := expandStringList(d.Get("api_blocked_prefixes").([]any))
 		createRequest.WithApiBlockedPrefixes(toApiIntegrationEndpointPrefix(blockedPrefixesRaw))
 	}
 
@@ -224,7 +224,7 @@ func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 // ReadAPIIntegration implements schema.ReadFunc.
-func ReadAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ReadAPIIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
@@ -339,7 +339,7 @@ func ReadAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 // UpdateAPIIntegration implements schema.UpdateFunc.
-func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.AccountObjectIdentifier)
 
@@ -352,7 +352,7 @@ func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 
 	if d.HasChange("api_allowed_prefixes") {
 		runSetStatement = true
-		setRequest.WithApiAllowedPrefixes(toApiIntegrationEndpointPrefix(expandStringList(d.Get("api_allowed_prefixes").([]interface{}))))
+		setRequest.WithApiAllowedPrefixes(toApiIntegrationEndpointPrefix(expandStringList(d.Get("api_allowed_prefixes").([]any))))
 	}
 
 	if d.HasChange("comment") {
@@ -362,7 +362,7 @@ func UpdateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// We need to UNSET this if we remove all api blocked prefixes.
 	if d.HasChange("api_blocked_prefixes") {
-		v := d.Get("api_blocked_prefixes").([]interface{})
+		v := d.Get("api_blocked_prefixes").([]any)
 		if len(v) == 0 {
 			err := client.ApiIntegrations.Alter(ctx, sdk.NewAlterApiIntegrationRequest(id).WithUnset(*sdk.NewApiIntegrationUnsetRequest().WithApiBlockedPrefixes(true)))
 			if err != nil {

@@ -14,12 +14,10 @@ type IcebergRestRestConfigDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.IcebergRestRestConfigDetails, sdk.AccountObjectIdentifier]
 }
 
-// IcebergRestRestConfigDetails removed manually
-
 func IcebergRestRestConfigDetailsFromObject(t *testing.T, icebergRestRestConfigDetails *sdk.IcebergRestRestConfigDetails) *IcebergRestRestConfigDetailsAssert {
 	t.Helper()
 	return &IcebergRestRestConfigDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject("IcebergRestRestConfigDetails", sdk.NewAccountObjectIdentifier(""), icebergRestRestConfigDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("IcebergRestRestConfigDetails"), sdk.NewAccountObjectIdentifier(""), icebergRestRestConfigDetails),
 	}
 }
 

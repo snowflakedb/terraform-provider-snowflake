@@ -37,7 +37,7 @@ func TestInt_ShowSchemaObjectInNonExistingDatabase(t *testing.T) {
 		ShowFn      func(context.Context, sdk.SchemaObjectIdentifier) error
 	}{
 		// Only object types that use IN SCHEMA in their ShowByID implementation
-		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).Tables.ShowByID)},
+		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).TablesLegacy.ShowByID)},
 		{ObjectType: sdk.ObjectTypeDynamicTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).DynamicTables.ShowByID)},
 		{ObjectType: sdk.ObjectTypeCortexSearchService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).CortexSearchServices.ShowByID)},
 		{ObjectType: sdk.ObjectTypeExternalTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).ExternalTables.ShowByID)},
@@ -98,7 +98,7 @@ func TestInt_ShowSchemaObjectInNonExistingSchema(t *testing.T) {
 		ShowFn      func(context.Context, sdk.SchemaObjectIdentifier) error
 	}{
 		// Only object types that use IN SCHEMA in their ShowByID implementation
-		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).Tables.ShowByID)},
+		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).TablesLegacy.ShowByID)},
 		{ObjectType: sdk.ObjectTypeDynamicTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).DynamicTables.ShowByID)},
 		{ObjectType: sdk.ObjectTypeCortexSearchService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, ShowFn: schemaObjectShowByIDWrapper(testClient(t).CortexSearchServices.ShowByID)},
 		{ObjectType: sdk.ObjectTypeExternalTable, ExpectedErr: sdk.ErrDoesNotExistOrOperationCannotBePerformed, ShowFn: schemaObjectShowByIDWrapper(testClient(t).ExternalTables.ShowByID)},
@@ -162,7 +162,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		DropFn      func(context.Context) error
 	}{
 		// Only object types that use IN SCHEMA in their ShowByID implementation
-		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tables.Drop, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).TablesLegacy.Drop, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))},
 		{ObjectType: sdk.ObjectTypeDynamicTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).DynamicTables.Drop, sdk.NewDropDynamicTableRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeCortexSearchService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).CortexSearchServices.Drop, sdk.NewDropCortexSearchServiceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeExternalTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ExternalTables.Drop, sdk.NewDropExternalTableRequest(id).WithIfExists(true))},
@@ -172,9 +172,7 @@ func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStream, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streams.Drop, sdk.NewDropStreamRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTask, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tasks.Drop, sdk.NewDropTaskRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).MaskingPolicies.Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaskingPolicies.Drop, sdk.NewDropMaskingPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTag, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tags.Drop, sdk.NewDropTagRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSecret, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Secrets.Drop, sdk.NewDropSecretRequest(id).WithIfExists(true))},
@@ -235,7 +233,7 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		DropFn      func(ctx context.Context) error
 	}{
 		// Only object types that use IN SCHEMA in their ShowByID implementation
-		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tables.Drop, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))},
+		{ObjectType: sdk.ObjectTypeTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).TablesLegacy.Drop, sdk.NewDropTableRequest(id).WithIfExists(sdk.Bool(true)))},
 		{ObjectType: sdk.ObjectTypeDynamicTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).DynamicTables.Drop, sdk.NewDropDynamicTableRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeCortexSearchService, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).CortexSearchServices.Drop, sdk.NewDropCortexSearchServiceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeExternalTable, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).ExternalTables.Drop, sdk.NewDropExternalTableRequest(id).WithIfExists(true))},
@@ -245,9 +243,7 @@ func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeSequence, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Sequences.Drop, sdk.NewDropSequenceRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeStream, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Streams.Drop, sdk.NewDropStreamRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTask, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tasks.Drop, sdk.NewDropTaskRequest(id).WithIfExists(true))},
-		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: func(ctx context.Context) error {
-			return testClient(t).MaskingPolicies.Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: sdk.Bool(true)})
-		}},
+		{ObjectType: sdk.ObjectTypeMaskingPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).MaskingPolicies.Drop, sdk.NewDropMaskingPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeRowAccessPolicy, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).RowAccessPolicies.Drop, sdk.NewDropRowAccessPolicyRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeTag, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Tags.Drop, sdk.NewDropTagRequest(id).WithIfExists(true))},
 		{ObjectType: sdk.ObjectTypeSecret, ExpectedErr: sdk.ErrObjectNotExistOrAuthorized, DropFn: schemaObjectDropWrapper(testClient(t).Secrets.Drop, sdk.NewDropSecretRequest(id).WithIfExists(true))},

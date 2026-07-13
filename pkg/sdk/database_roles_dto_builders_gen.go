@@ -38,8 +38,8 @@ func (s *AlterDatabaseRoleRequest) WithIfExists(ifExists bool) *AlterDatabaseRol
 	return s
 }
 
-func (s *AlterDatabaseRoleRequest) WithRename(rename DatabaseObjectIdentifier) *AlterDatabaseRoleRequest {
-	s.Rename = &rename
+func (s *AlterDatabaseRoleRequest) WithRenameTo(renameTo DatabaseObjectIdentifier) *AlterDatabaseRoleRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

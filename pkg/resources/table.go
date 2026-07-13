@@ -213,7 +213,9 @@ var tableSchema = map[string]*schema.Schema{
 func Table() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
 		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
-		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] { return client.Tables.DropSafely },
+		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+			return client.TablesLegacy.DropSafely
+		},
 	)
 
 	return &schema.Resource{
@@ -325,7 +327,7 @@ func (c columns) diffs(new columns) (removed columns, added columns, changed cha
 	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
 }
 
-func getColumnDefault(def map[string]interface{}) *columnDefault {
+func getColumnDefault(def map[string]any) *columnDefault {
 	if c, ok := def["constant"]; ok {
 		if constant, ok := c.(string); ok && len(constant) > 0 {
 			return &columnDefault{
@@ -353,7 +355,7 @@ func getColumnDefault(def map[string]interface{}) *columnDefault {
 	return nil
 }
 
-func getColumnIdentity(identity map[string]interface{}) *columnIdentity {
+func getColumnIdentity(identity map[string]any) *columnIdentity {
 	if len(identity) > 0 {
 		startNum := identity["start_num"].(int)
 		stepNum := identity["step_num"].(int)
@@ -363,19 +365,19 @@ func getColumnIdentity(identity map[string]interface{}) *columnIdentity {
 	return nil
 }
 
-func getColumn(from interface{}) (to column) {
-	c := from.(map[string]interface{})
+func getColumn(from any) (to column) {
+	c := from.(map[string]any)
 	var cd *columnDefault
 	var id *columnIdentity
 
-	_default := c["default"].([]interface{})
-	identity := c["identity"].([]interface{})
+	_default := c["default"].([]any)
+	identity := c["identity"].([]any)
 
 	if len(_default) == 1 {
-		cd = getColumnDefault(_default[0].(map[string]interface{}))
+		cd = getColumnDefault(_default[0].(map[string]any))
 	}
 	if len(identity) == 1 {
-		id = getColumnIdentity(identity[0].(map[string]interface{}))
+		id = getColumnIdentity(identity[0].(map[string]any))
 	}
 
 	return column{
@@ -390,8 +392,8 @@ func getColumn(from interface{}) (to column) {
 	}
 }
 
-func getColumns(from interface{}) (to columns) {
-	cols := from.([]interface{})
+func getColumns(from any) (to columns) {
+	cols := from.([]any)
 	to = make(columns, len(cols))
 	for i, c := range cols {
 		to[i] = getColumn(c)
@@ -399,8 +401,8 @@ func getColumns(from interface{}) (to columns) {
 	return to
 }
 
-func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
-	c := from.(map[string]interface{})
+func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
+	c := from.(map[string]any)
 	_type := c["type"].(string)
 	dataType, err := datatypes.ParseDataType(_type)
 	if err != nil {
@@ -410,10 +412,10 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 	nameInQuotes := fmt.Sprintf(`"%v"`, snowflake.EscapeString(c["name"].(string)))
 	request := sdk.NewTableColumnRequest(nameInQuotes, sdk.DataType(_type))
 
-	_default := c["default"].([]interface{})
+	_default := c["default"].([]any)
 	var expression string
 	if len(_default) == 1 {
-		if c, ok := _default[0].(map[string]interface{})["constant"]; ok {
+		if c, ok := _default[0].(map[string]any)["constant"]; ok {
 			if constant, ok := c.(string); ok && len(constant) > 0 {
 				if datatypes.IsTextDataType(dataType) {
 					expression = snowflake.EscapeSnowflakeString(constant)
@@ -423,13 +425,13 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 			}
 		}
 
-		if e, ok := _default[0].(map[string]interface{})["expression"]; ok {
+		if e, ok := _default[0].(map[string]any)["expression"]; ok {
 			if expr, ok := e.(string); ok && len(expr) > 0 {
 				expression = expr
 			}
 		}
 
-		if s, ok := _default[0].(map[string]interface{})["sequence"]; ok {
+		if s, ok := _default[0].(map[string]any)["sequence"]; ok {
 			if seq, ok2 := s.(string); ok2 && len(seq) > 0 {
 				expression = fmt.Sprintf(`%v.NEXTVAL`, seq)
 			}
@@ -437,9 +439,9 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		request.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithExpression(sdk.String(expression)))
 	}
 
-	identity := c["identity"].([]interface{})
+	identity := c["identity"].([]any)
 	if len(identity) == 1 {
-		identityProp := identity[0].(map[string]interface{})
+		identityProp := identity[0].(map[string]any)
 		startNum := identityProp["start_num"].(int)
 		stepNum := identityProp["step_num"].(int)
 		request.WithDefaultValue(sdk.NewColumnDefaultValueRequest().WithIdentity(sdk.NewColumnIdentityRequest(startNum, stepNum)))
@@ -459,8 +461,8 @@ func getTableColumnRequest(from interface{}) (*sdk.TableColumnRequest, error) {
 		WithComment(sdk.String(c["comment"].(string))), nil
 }
 
-func getTableColumnRequests(from interface{}) ([]sdk.TableColumnRequest, error) {
-	cols := from.([]interface{})
+func getTableColumnRequests(from any) ([]sdk.TableColumnRequest, error) {
+	cols := from.([]any)
 	to := make([]sdk.TableColumnRequest, len(cols))
 	for i, c := range cols {
 		cReq, err := getTableColumnRequest(c)
@@ -477,13 +479,13 @@ type primarykey struct {
 	keys []string
 }
 
-func getPrimaryKey(from interface{}) (to primarykey) {
-	pk := from.([]interface{})
+func getPrimaryKey(from any) (to primarykey) {
+	pk := from.([]any)
 	to = primarykey{}
 	if len(pk) > 0 {
-		pkDetails := pk[0].(map[string]interface{})
+		pkDetails := pk[0].(map[string]any)
 		to.name = pkDetails["name"].(string)
-		to.keys = expandStringList(pkDetails["keys"].([]interface{}))
+		to.keys = expandStringList(pkDetails["keys"].([]any))
 		return to
 	}
 	return to
@@ -596,7 +598,7 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	name := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]interface{}))
+	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -608,13 +610,13 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	if v, ok := d.GetOk("cluster_by"); ok {
-		createRequest.WithClusterBy(expandStringList(v.([]interface{})))
+		createRequest.WithClusterBy(expandStringList(v.([]any)))
 	}
 
 	if v, ok := d.GetOk("primary_key"); ok {
 		keysList := v.([]any)
 		if len(keysList) > 0 {
-			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]interface{}))
+			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]any))
 			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(snowflake.QuoteStringList(keys))
 
 			keyName, isPresent := keysList[0].(map[string]any)["name"]
@@ -642,7 +644,7 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		createRequest.WithTags(tagAssociationRequests)
 	}
 
-	err = client.Tables.Create(ctx, createRequest)
+	err = client.TablesLegacy.Create(ctx, createRequest)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating table %v err = %w", name, err))
 	}
@@ -657,7 +659,7 @@ func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
 
-	table, err := client.Tables.ShowByIDSafely(ctx, id)
+	table, err := client.TablesLegacy.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -695,13 +697,13 @@ func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		}
 	}
 
-	tableDescription, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(id))
+	tableDescription, err := client.TablesLegacy.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(id))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Set the relevant data in the state
-	toSet := map[string]interface{}{
+	toSet := map[string]any{
 		"name":            table.Name,
 		"owner":           table.Owner,
 		"database":        table.DatabaseName,
@@ -733,14 +735,14 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && (d.HasChange("database") || d.HasChange("schema")) {
 		tableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
 			return func() error {
-				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithNewName(&targetId))
+				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithNewName(&targetId))
 			}
 		}
 
 		if diags := handleThreeLevelHierarchyRename(
 			ctx, d, client, &id,
 			tableRenameFn,
-			client.Tables.ShowByID,
+			client.TablesLegacy.ShowByID,
 			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(id) },
 			"table",
 		); diags != nil {
@@ -751,7 +753,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newId))
+		err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithNewName(&newId))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming table %v err = %w", d.Id(), err))
 		}
@@ -793,29 +795,29 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	if runSetStatement {
-		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(setRequest))
+		err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(setRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 		}
 	}
 
 	if runUnsetStatement {
-		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(unsetRequest))
+		err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(unsetRequest))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 		}
 	}
 
 	if d.HasChange("cluster_by") {
-		cb := expandStringList(d.Get("cluster_by").([]interface{}))
+		cb := expandStringList(d.Get("cluster_by").([]any))
 
 		if len(cb) != 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithClusterBy(cb)))
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithClusterBy(cb)))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 			}
 		} else {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithDropClusteringKey(sdk.Bool(true))))
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(sdk.NewTableClusteringActionRequest().WithDropClusteringKey(sdk.Bool(true))))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 			}
@@ -831,7 +833,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			for i, r := range removed {
 				removedColumnNames[i] = r.name
 			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithDropColumns(snowflake.QuoteStringList(removedColumnNames))))
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithDropColumns(snowflake.QuoteStringList(removedColumnNames))))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
 			}
@@ -870,7 +872,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				addRequest.WithCollate(sdk.String(cA.collate))
 			}
 
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAdd(addRequest)))
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAdd(addRequest)))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error adding column: %w", err))
 			}
@@ -881,7 +883,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				if sdk.IsStringType(cA.newColumn.dataType) && cA.newColumn.collate != "" {
 					newCollation = sdk.String(cA.newColumn.collate)
 				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithType(sdk.Pointer(sdk.DataType(cA.newColumn.dataType))).WithCollate(newCollation)})))
+				err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithType(sdk.Pointer(sdk.DataType(cA.newColumn.dataType))).WithCollate(newCollation)})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
@@ -893,13 +895,13 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				} else {
 					nullabilityRequest.WithDrop(sdk.Bool(true))
 				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithNotNullConstraint(nullabilityRequest)})))
+				err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithNotNullConstraint(nullabilityRequest)})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
 			}
 			if cA.droppedDefault {
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithDropDefault(sdk.Bool(true))})))
+				err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name)).WithDropDefault(sdk.Bool(true))})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
@@ -912,7 +914,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 					columnAlterActionRequest.WithComment(sdk.String(cA.newColumn.comment))
 				}
 
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
+				err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
@@ -924,7 +926,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 				} else {
 					columnAction.WithSetMaskingPolicy(sdk.NewTableColumnAlterSetMaskingPolicyActionRequest(fmt.Sprintf("\"%s\"", cA.newColumn.name), sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.newColumn.maskingPolicy), []string{}).WithForce(sdk.Bool(true)))
 				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(columnAction))
+				err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(columnAction))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
@@ -940,7 +942,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 		if len(oldKey.keys) > 0 || len(newKey.keys) == 0 {
 			// drop our pk if there was an old primary key, or pk has been removed
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
 				sdk.NewTableConstraintActionRequest().
 					WithDrop(sdk.NewTableConstraintDropActionRequest().WithPrimaryKey(sdk.Bool(true))),
 			))
@@ -954,7 +956,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if newKey.name != "" {
 				constraint.WithName(sdk.String(newKey.name))
 			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
 				sdk.NewTableConstraintActionRequest().WithAdd(constraint),
 			))
 			if err != nil {
@@ -967,7 +969,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		unsetTags, setTags := GetTagsDiff(d, "tag")
 
 		if len(unsetTags) > 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(unsetTags))
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(unsetTags))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
 			}
@@ -978,7 +980,7 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			for i, t := range setTags {
 				tagAssociationRequests[i] = *sdk.NewTagAssociationRequest(t.Name, t.Value)
 			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(tagAssociationRequests))
+			err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(tagAssociationRequests))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
 			}

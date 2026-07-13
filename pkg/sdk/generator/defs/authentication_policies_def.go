@@ -157,7 +157,7 @@ var authenticationPoliciesDef = g.NewInterface(
 					WithValidation(g.AtLeastOneValueSet, "ClientTypes", "ClientPolicy", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
 				g.ListOptions().NoParentheses().SQL("UNSET"),
 			).
-			Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo").
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo"),

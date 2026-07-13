@@ -250,7 +250,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions", "NewName", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions", "RenameTo", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: no set", func(t *testing.T) {
@@ -525,8 +525,8 @@ func TestUserAlter(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		newID := randomAccountObjectIdentifier()
 		opts := &AlterUserOptions{
-			name:    id,
-			NewName: &newID,
+			name:     id,
+			RenameTo: &newID,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s RENAME TO %s", id.FullyQualifiedName(), newID.FullyQualifiedName())
 	})

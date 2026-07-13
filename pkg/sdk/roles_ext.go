@@ -45,9 +45,9 @@ func (v *roles) RevokeSafely(ctx context.Context, req *RevokeRoleRequest) error 
 }
 
 func (v *roles) Use(ctx context.Context, req *UseRoleRequest) error {
-	return v.client.Sessions.UseRole(ctx, req.id)
+	return v.client.Sessions.UseRole(ctx, NewUseRoleSessionRequest(req.id))
 }
 
 func (v *roles) UseSecondary(ctx context.Context, req *UseSecondaryRolesRequest) error {
-	return v.client.Sessions.UseSecondaryRoles(ctx, req.option)
+	return v.client.Sessions.UseSecondaryRoles(ctx, NewUseSecondaryRolesSessionRequest(req.option))
 }

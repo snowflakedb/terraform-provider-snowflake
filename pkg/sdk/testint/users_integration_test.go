@@ -1097,7 +1097,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(userCleanup)
 
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithNewName(newID))
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithRenameTo(newID))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, newID))
 
@@ -2364,7 +2364,7 @@ func TestInt_Users(t *testing.T) {
 
 		// we rename user
 		newId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithNewName(newId))
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithRenameTo(newId))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, newId)
 		require.NoError(t, err)

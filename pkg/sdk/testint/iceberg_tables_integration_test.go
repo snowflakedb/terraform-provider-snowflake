@@ -148,6 +148,18 @@ func TestInt_IcebergTables(t *testing.T) {
 			t, objectparametersassert.IcebergTableParameters(t, id).
 				HasAllDefaultsExplicit(),
 		)
+
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, checkConstraints, 0)
+
+		tableConstraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, tableConstraints, 0)
+
+		searchOptimization, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, searchOptimization, 0)
 	}
 
 	completeAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, policyId sdk.SchemaObjectIdentifier) {
@@ -319,7 +331,6 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasNoNameMapping().
 				HasNoWriteDefault(),
 		)
-		// TODO (next PRs): add assertions for the out-of-line constraints.
 	}
 
 	t.Run("create Snowflake managed: basic", func(t *testing.T) {
@@ -487,6 +498,97 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertPolicyReference(t, references[2], projectionPolicyId, sdk.PolicyKindProjectionPolicy, id, new("FK_ID"))
 		assertPolicyReference(t, references[3], rowAccessPolicy.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
 
+		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, constraints, 4)
+		// Sort the constraints because the order is not guaranteed.
+		slices.SortFunc(constraints, func(x, y sdk.TableConstraintDetails) int {
+			return strings.Compare(x.ConstraintName, y.ConstraintName)
+		})
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[0]).
+				HasConstraintName("fk_out_ref").
+				HasConstraintType(sdk.TableConstraintTypeForeignKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[1]).
+				HasConstraintName("fk_ref").
+				HasConstraintType(sdk.TableConstraintTypeForeignKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[2]).
+				HasConstraintName("pk_id").
+				HasConstraintType(sdk.TableConstraintTypePrimaryKey).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[3]).
+				HasConstraintName("uq_region").
+				HasConstraintType(sdk.TableConstraintTypeUnique).
+				HasEnforced(false).
+				HasRely(false).
+				HasIsDeferrable(false).
+				HasInitiallyDeferred(true).
+				HasNoComment().
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasTableCatalog(id.DatabaseName()).
+				HasTableSchema(id.SchemaName()).
+				HasTableName(id.Name()),
+		)
+
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, checkConstraints, 2)
+		slices.SortFunc(checkConstraints, func(x, y sdk.TableCheckConstraintDetails) int {
+			return strings.Compare(x.ConstraintName, y.ConstraintName)
+		})
+		assertThatObject(
+			t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[0]).
+				HasConstraintName("chk_id_positive").
+				HasCheckClause("ID > 0").
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasConstraintTable(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[1]).
+				HasConstraintName("chk_status").
+				HasCheckClause("STATUS IN ('active', 'inactive')").
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasConstraintTable(id.Name()),
+		)
+
 		assertThatObject(
 			t, objectparametersassert.IcebergTableParameters(t, id).
 				HasAllowRowTimestamp(false).
@@ -507,6 +609,26 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
 				HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb),
 		)
+	})
+
+	t.Run("create Snowflake managed: cluster by", func(t *testing.T) {
+		// PARTITION BY and CLUSTER BY are mutually exclusive for Iceberg tables (err 099207), so clustering is
+		// tested in a separate table from the partitioned "all options" one above.
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
+				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+			},
+		}).WithClusterBy([]string{"ID", "REGION"}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
+		clusteringInfo, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, "LINEAR(ID, REGION)", clusteringInfo.ClusterByKeys)
 	})
 
 	t.Run("create Snowflake managed: copy grants", func(t *testing.T) {
@@ -906,9 +1028,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		details, err := client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
-		statusIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
-		require.NotEqual(t, -1, statusIdx)
-		assert.False(t, details[statusIdx].IsNullable)
+		col, err := collections.FindFirst(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NoError(t, err)
+		assert.False(t, col.IsNullable)
 
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
@@ -918,9 +1040,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		details, err = client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
-		statusIdx = slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
-		require.NotEqual(t, -1, statusIdx)
-		assert.True(t, details[statusIdx].IsNullable)
+		col, err = collections.FindFirst(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NoError(t, err)
+		assert.True(t, col.IsNullable)
 	})
 
 	t.Run("alter: alter column set/unset comment", func(t *testing.T) {
@@ -1107,11 +1229,18 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithClusterBy([]string{"REGION"})))
 		require.NoError(t, err)
 
+		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
+		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.NoError(t, err)
+		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
+
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true)))
 		require.NoError(t, err)
 
-		// TODO (next PR): verify the clustering key with SYSTEM$CLUSTERING_INFORMATION, as it is not returned from SHOW/DESCRIBE.
+		// After dropping the clustering key, the table is no longer clustered.
+		_, err = client.SystemFunctions.GetClusteringInformation(ctx, id)
+		require.ErrorIs(t, err, sdk.ErrTableNotClustered)
 	})
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {
@@ -1375,7 +1504,27 @@ func TestInt_IcebergTables(t *testing.T) {
 					}))))
 		require.NoError(t, err)
 
-		// TODO (next PRs): Add support for DESCRIBE SEARCH OPTIMIZATION and assert the results.
+		details, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, details, 2)
+		assertThatObject(
+			t,
+			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[0]).
+				HasExpressionId(1).
+				HasActive(true).
+				HasMethod(string(sdk.TableSearchMethodEquality)).
+				HasTarget("REGION").
+				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
+		)
+		assertThatObject(
+			t,
+			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[1]).
+				HasExpressionId(2).
+				HasActive(true).
+				HasMethod(string(sdk.TableSearchMethodFullText)+" DEFAULT_ANALYZER").
+				HasTarget("REGION").
+				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
+		)
 
 		// Drop by method/target: removes only the EQUALITY entry. The analyzer is not part of the matcher.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
@@ -1387,6 +1536,10 @@ func TestInt_IcebergTables(t *testing.T) {
 					}))))
 		require.NoError(t, err)
 
+		details, err = client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, details, 1)
+
 		// Drop by column name: removes the remaining (FULL_TEXT) search optimization on the column.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
@@ -1395,6 +1548,10 @@ func TestInt_IcebergTables(t *testing.T) {
 						*sdk.NewTableDropSearchOptimizationOnRequest().WithColumnName("REGION"),
 					}))))
 		require.NoError(t, err)
+
+		details, err = client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Empty(t, details)
 	})
 
 	t.Run("alter: set and unset join policy", func(t *testing.T) {

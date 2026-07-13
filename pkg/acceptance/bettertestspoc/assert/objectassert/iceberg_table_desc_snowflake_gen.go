@@ -15,12 +15,10 @@ type IcebergTableDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.IcebergTableDetails, sdk.SchemaObjectIdentifier]
 }
 
-// IcebergTableDetails removed manually because DESC returns a slice of column details.
-
 func IcebergTableDetailsFromObject(t *testing.T, icebergTableDetails *sdk.IcebergTableDetails) *IcebergTableDetailsAssert {
 	t.Helper()
 	return &IcebergTableDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("IcebergTableDetails"), sdk.NewSchemaObjectIdentifier("DOES", "NOT", "MATTER"), icebergTableDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("IcebergTableDetails"), sdk.NewSchemaObjectIdentifier("", "", ""), icebergTableDetails),
 	}
 }
 
@@ -167,8 +165,8 @@ func (i *IcebergTableDetailsAssert) HasPolicyName(expected sdk.SchemaObjectIdent
 		if o.PolicyName == nil {
 			return fmt.Errorf("expected policy name to have value; got: nil")
 		}
-		if o.PolicyName.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected policy name: %v; got: %v", expected.FullyQualifiedName(), o.PolicyName.FullyQualifiedName())
+		if (*o.PolicyName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected policy name: %v; got: %v", expected.FullyQualifiedName(), (*o.PolicyName).FullyQualifiedName())
 		}
 		return nil
 	})

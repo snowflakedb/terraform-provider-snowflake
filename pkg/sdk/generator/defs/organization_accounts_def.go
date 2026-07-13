@@ -70,7 +70,7 @@ var organizationAccountsDef = g.NewInterface(
 			OptionalQueryStructField(
 				"RenameTo",
 				g.NewQueryStruct("OrganizationAccountRename").
-					Identifier("NewName", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required().SQL("RENAME TO")).
+					Identifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required().SQL("RENAME TO")).
 					OptionalBooleanAssignment("SAVE_OLD_URL", g.ParameterOptions()),
 				g.KeywordOptions(),
 			).

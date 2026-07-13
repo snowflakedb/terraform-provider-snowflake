@@ -23,7 +23,6 @@ resource "snowflake_saml2_integration" "test" {
   saml2_sign_request                  = true
   saml2_snowflake_acs_url             = "example.snowflakecomputing.com/fed/login"
   saml2_snowflake_issuer_url          = "example.snowflakecomputing.com/fed/login"
-  saml2_snowflake_x509_cert           = file("snowflake_cert.pem")
   saml2_sp_initiated_login_page_label = "foo"
   saml2_sso_url                       = "https://example.com"
   saml2_x509_cert                     = file("cert.pem")

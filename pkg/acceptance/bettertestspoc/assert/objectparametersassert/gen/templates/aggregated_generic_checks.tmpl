@@ -1,7 +1,7 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert/gen.SnowflakeObjectParametersAssertionsModel*/ -}}
 
 {{- $assertName := .Name | printf "%sParametersAssert" -}}
-{{- $sdkParameterName := .Name | printf "sdk.%sParameter" -}}
+{{- $sdkParameterName := .ParameterConstantName | printf "sdk.%sParameter" -}}
 {{- $nameLowerCase := FirstLetterLowercase .Name -}}
 {{- $assertVar := FirstLetter $nameLowerCase -}}
 {{- $parametersCount := len .Parameters }}
@@ -15,7 +15,12 @@
 func ({{ $assertVar }} *{{ $assertName }}) HasAllDefaults() *{{ $assertName }} {
     return {{ $assertVar }}.
     {{- range $index, $item := .Parameters }}
+        {{- if .IsSnowflakeDefault }}
         HasDefaultParameterValueOnLevel({{ $sdkParameterName }}{{ SnakeCaseToCamel .Name }}, {{ .DefaultLevel }}){{ if not (IsLastItem $index $parametersCount) }}.{{ end }}
+        {{- else }}
+        Has{{ SnakeCaseToCamel .Name }}({{ .DefaultValue }}).
+        Has{{ SnakeCaseToCamel .Name }}Level({{ .DefaultLevel }}){{ if not (IsLastItem $index $parametersCount) }}.{{ end }}
+        {{- end }}
     {{- end }}
 }
 

@@ -39,7 +39,7 @@ type AlterDatabaseRoleOptions struct {
 	databaseRole bool                      `ddl:"static" sql:"DATABASE ROLE"`
 	IfExists     *bool                     `ddl:"keyword" sql:"IF EXISTS"`
 	name         DatabaseObjectIdentifier  `ddl:"identifier"`
-	Rename       *DatabaseObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo     *DatabaseObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set          *DatabaseRoleSet          `ddl:"list,no_parentheses" sql:"SET"`
 	Unset        *DatabaseRoleUnset        `ddl:"list,no_parentheses" sql:"UNSET"`
 	SetTags      []TagAssociation          `ddl:"keyword" sql:"SET TAG"`

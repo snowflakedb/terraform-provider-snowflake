@@ -310,7 +310,7 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 	return ReadContextTagAssociation(ctx, d, meta)
 }
 
-func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	tagId, ids, objectType, err := TagIdentifierAndObjectIdentifier(d)
@@ -350,7 +350,7 @@ func skipColumnIfDoesNotExist(ctx context.Context, client *sdk.Client, id sdk.Ob
 		return false, errors.New("invalid column identifier")
 	}
 	// TODO [SNOW-1007542]: use SHOW COLUMNS
-	_, err := client.Tables.ShowByIDSafely(ctx, columnId.SchemaObjectId())
+	_, err := client.TablesLegacy.ShowByIDSafely(ctx, columnId.SchemaObjectId())
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			log.Printf("[DEBUG] table %s not found, skipping", columnId.SchemaObjectId())
@@ -358,7 +358,7 @@ func skipColumnIfDoesNotExist(ctx context.Context, client *sdk.Client, id sdk.Ob
 		}
 		return false, err
 	}
-	columns, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(columnId.SchemaObjectId()))
+	columns, err := client.TablesLegacy.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(columnId.SchemaObjectId()))
 	if err != nil {
 		return false, err
 	}
