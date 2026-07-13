@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.19.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.18.0...v2.19.0) (2026-07-13)
+
+
+### 🎉 **What's new:**
+
+* add interactive warehouse to the SDK ([#4987](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4987)) ([abf4a89](https://github.com/snowflakedb/terraform-provider-snowflake/commit/abf4a892302e082acf019bbf5a1a106cbec1c3c2))
+
 ## [2.18.0](https://github.com/snowflakedb/terraform-provider-snowflake/compare/v2.17.0...v2.18.0) (2026-07-07)
 
 
