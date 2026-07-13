@@ -148,6 +148,18 @@ func TestInt_IcebergTables(t *testing.T) {
 			t, objectparametersassert.IcebergTableParameters(t, id).
 				HasAllDefaultsExplicit(),
 		)
+
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, checkConstraints, 0)
+
+		tableConstraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, tableConstraints, 0)
+
+		searchOptimization, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, searchOptimization, 0)
 	}
 
 	completeAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, policyId sdk.SchemaObjectIdentifier) {
@@ -554,8 +566,28 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasTableName(id.Name()),
 		)
 
-		// TODO (next PRs): add assertions for CHECK constraints
-		// like SELECT * FROM "A" . INFORMATION_SCHEMA.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = 'B' AND CONSTRAINT_TABLE = 'C'
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, checkConstraints, 2)
+		slices.SortFunc(checkConstraints, func(x, y sdk.TableCheckConstraintDetails) int {
+			return strings.Compare(x.ConstraintName, y.ConstraintName)
+		})
+		assertThatObject(
+			t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[0]).
+				HasConstraintName("chk_id_positive").
+				HasCheckClause("ID > 0").
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasConstraintTable(id.Name()),
+		)
+		assertThatObject(
+			t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[1]).
+				HasConstraintName("chk_status").
+				HasCheckClause("STATUS IN ('active', 'inactive')").
+				HasConstraintCatalog(id.DatabaseName()).
+				HasConstraintSchema(id.SchemaName()).
+				HasConstraintTable(id.Name()),
+		)
 
 		assertThatObject(
 			t, objectparametersassert.IcebergTableParameters(t, id).
@@ -996,9 +1028,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		details, err := client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
-		statusIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
-		require.NotEqual(t, -1, statusIdx)
-		assert.False(t, details[statusIdx].IsNullable)
+		col, err := collections.FindFirst(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NoError(t, err)
+		assert.False(t, col.IsNullable)
 
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
@@ -1008,9 +1040,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		details, err = client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
-		statusIdx = slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
-		require.NotEqual(t, -1, statusIdx)
-		assert.True(t, details[statusIdx].IsNullable)
+		col, err = collections.FindFirst(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NoError(t, err)
+		assert.True(t, col.IsNullable)
 	})
 
 	t.Run("alter: alter column set/unset comment", func(t *testing.T) {

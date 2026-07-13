@@ -13,6 +13,7 @@ var (
 	_ Tables                                         = (*tables)(nil)
 	_ convertibleRow[TableSearchOptimizationDetails] = new(tableSearchOptimizationDetailsRow)
 	_ convertibleRow[TableConstraintDetails]         = new(tableConstraintDetailsRow)
+	_ convertibleRow[TableCheckConstraintDetails]    = new(tableCheckConstraintDetailsRow)
 )
 
 type tables struct {
@@ -35,6 +36,15 @@ func (v *tables) SelectTableConstraints(ctx context.Context, request *SelectTabl
 		return nil, err
 	}
 	return convertRows[tableConstraintDetailsRow, TableConstraintDetails](dbRows)
+}
+
+func (v *tables) SelectCheckConstraints(ctx context.Context, request *SelectCheckConstraintsTableRequest) ([]TableCheckConstraintDetails, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[tableCheckConstraintDetailsRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[tableCheckConstraintDetailsRow, TableCheckConstraintDetails](dbRows)
 }
 
 func (r *DescribeSearchOptimizationTableRequest) toOpts() *DescribeSearchOptimizationTableOptions {
@@ -85,5 +95,25 @@ func (r tableConstraintDetailsRow) convert() (*TableConstraintDetails, error) {
 	}
 	mapStringWithMapping(&result.ConstraintType, r.ConstraintType, ToTableConstraintType)
 	mapNullString(&result.Comment, r.Comment)
+	return result, nil
+}
+
+func (r *SelectCheckConstraintsTableRequest) toOpts() *SelectCheckConstraintsTableOptions {
+	opts := &SelectCheckConstraintsTableOptions{
+		Database:         r.Database,
+		ConstraintSchema: r.ConstraintSchema,
+		ConstraintTable:  r.ConstraintTable,
+	}
+	return opts
+}
+
+func (r tableCheckConstraintDetailsRow) convert() (*TableCheckConstraintDetails, error) {
+	result := &TableCheckConstraintDetails{
+		ConstraintCatalog: r.ConstraintCatalog,
+		ConstraintSchema:  r.ConstraintSchema,
+		ConstraintTable:   r.ConstraintTable,
+		ConstraintName:    r.ConstraintName,
+		CheckClause:       r.CheckClause,
+	}
 	return result, nil
 }
