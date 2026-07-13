@@ -187,7 +187,7 @@ jobs:
       # This step mirrors the job result onto the fork PR head SHA using a dedicated
       # synthetic check run that we own, reusing it across reruns to avoid duplicates.
       - name: Set fork job status
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         if: ${{ always() }}
         id: update_check_run
         env:
