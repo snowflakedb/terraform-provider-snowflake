@@ -5,6 +5,7 @@ package sdk
 var (
 	_ optionsProvider[DescribeSearchOptimizationTableOptions] = new(DescribeSearchOptimizationTableRequest)
 	_ optionsProvider[SelectTableConstraintsTableOptions]     = new(SelectTableConstraintsTableRequest)
+	_ optionsProvider[SelectCheckConstraintsTableOptions]     = new(SelectCheckConstraintsTableRequest)
 )
 
 type DescribeSearchOptimizationTableRequest struct {
@@ -15,4 +16,10 @@ type SelectTableConstraintsTableRequest struct {
 	Database    AccountObjectIdentifier // required
 	TableSchema string                  // required
 	TableName   string                  // required
+}
+
+type SelectCheckConstraintsTableRequest struct {
+	Database         AccountObjectIdentifier // required
+	ConstraintSchema string                  // required
+	ConstraintTable  string                  // required
 }

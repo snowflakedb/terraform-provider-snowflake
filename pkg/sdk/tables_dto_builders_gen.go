@@ -21,3 +21,15 @@ func NewSelectTableConstraintsTableRequest(
 	s.TableName = tableName
 	return &s
 }
+
+func NewSelectCheckConstraintsTableRequest(
+	database AccountObjectIdentifier,
+	constraintSchema string,
+	constraintTable string,
+) *SelectCheckConstraintsTableRequest {
+	s := SelectCheckConstraintsTableRequest{}
+	s.Database = database
+	s.ConstraintSchema = constraintSchema
+	s.ConstraintTable = constraintTable
+	return &s
+}

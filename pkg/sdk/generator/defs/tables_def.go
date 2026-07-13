@@ -149,6 +149,24 @@ var tableShowConstraints = g.NewQueryStruct("ShowTableConstraints").
 	TextAssignment("TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
 	WithValidation(g.ValidIdentifier, "Database")
 
+var tableCheckConstraintDetails = g.StructPair("tableCheckConstraintDetailsRow", "TableCheckConstraintDetails").
+	Text("CONSTRAINT_CATALOG").
+	Text("CONSTRAINT_SCHEMA").
+	Text("CONSTRAINT_TABLE").
+	Text("CONSTRAINT_NAME").
+	Text("CHECK_CLAUSE")
+
+var tableSelectCheckConstraints = g.NewQueryStruct("SelectCheckConstraints").
+	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
+	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+	SQLWithCustomFieldName("dot", ".").
+	SQLWithCustomFieldName("informationSchemaCheckConstraints", "INFORMATION_SCHEMA.CHECK_CONSTRAINTS").
+	SQLWithCustomFieldName("where", "WHERE").
+	TextAssignment("CONSTRAINT_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
+	SQLWithCustomFieldName("and", "AND").
+	TextAssignment("CONSTRAINT_TABLE", g.ParameterOptions().SingleQuotes().Required()).
+	WithValidation(g.ValidIdentifier, "Database")
+
 var tablesDef = g.NewInterface(
 	"Tables",
 	"Table",
@@ -167,6 +185,13 @@ var tablesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints",
 		tableConstraintDetails,
 		tableShowConstraints,
+	).
+	CustomShowOperationWithPairedStructs(
+		"SelectCheckConstraints",
+		g.ShowMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/info-schema/check_constraints",
+		tableCheckConstraintDetails,
+		tableSelectCheckConstraints,
 	).
 	WithEnums(TableConstraintTypeDef)
 
