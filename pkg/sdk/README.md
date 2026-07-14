@@ -2,6 +2,8 @@
 
 [secondary_test_account] credentials are required in the Snowflake profile if running integration tests that provision resources in multiple accounts:
 
+[azure_test_account] credentials are required in non-prod environments for integration tests that check for Azure-specific behavior.
+
 [snowflake_defaults_test_account] credentials are required in non-prod environments for integration tests that check for Snowflake default behavior (e.g. having the built-in account authentication policy when no user-defined policy is attached).
 
 Required environment variable to run sweepers (cleanup up resources created by integration tests):
