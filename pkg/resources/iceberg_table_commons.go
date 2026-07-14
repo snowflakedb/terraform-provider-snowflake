@@ -65,6 +65,16 @@ func icebergTableCommonSchema() map[string]*schema.Schema {
 	}
 }
 
+func icebergTablePathLayoutSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllIcebergTablePathLayouts), true),
+		Description:      externalChangesNotDetectedFieldDescription(fmt.Sprintf("Specifies the storage layout for the Iceberg table's Parquet files. Valid values are: %v. Cannot be changed after creation.", sdk.AllIcebergTablePathLayouts)),
+	}
+}
+
 func icebergTableDeleteFunc() schema.DeleteContextFunc {
 	return ResourceDeleteContextFunc(
 		sdk.ParseSchemaObjectIdentifier,
@@ -93,11 +103,11 @@ func importIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) (
 	return []*schema.ResourceData{d}, nil
 }
 
-func readIcebergTable(ctx context.Context, d *schema.ResourceData, meta any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable) error) diag.Diagnostics {
-	return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableParameterRead, schemas.IcebergTableParametersToSchema, setExtra)
+func readIcebergTable(ctx context.Context, d *schema.ResourceData, meta any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable, details []sdk.IcebergTableDetails) error) diag.Diagnostics {
+	return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableParameterRead, schemas.IcebergTableExternallyManagedParametersToSchema, setExtra)
 }
 
-func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.ResourceData, meta any, handleParameterRead func(d *schema.ResourceData, parameters []*sdk.Parameter) error, parametersToSchema func([]*sdk.Parameter, *provider.Context) map[string]any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable) error) diag.Diagnostics {
+func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.ResourceData, meta any, handleParameterRead func(d *schema.ResourceData, parameters []*sdk.Parameter) error, parametersToSchema func([]*sdk.Parameter, *provider.Context) map[string]any, setExtra func(d *schema.ResourceData, table *sdk.IcebergTable, details []sdk.IcebergTableDetails) error) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
@@ -136,7 +146,7 @@ func readIcebergTableWithParameterHandler(ctx context.Context, d *schema.Resourc
 
 	providerCtx := meta.(*provider.Context)
 	if setExtra != nil {
-		if err := setExtra(d, table); err != nil {
+		if err := setExtra(d, table, details); err != nil {
 			return diag.FromErr(err)
 		}
 	}

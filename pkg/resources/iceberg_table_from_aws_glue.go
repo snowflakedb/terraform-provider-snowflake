@@ -50,10 +50,10 @@ var icebergTableFromAwsGlueSchema = collections.MergeMaps(
 			Type:        schema.TypeList,
 			Computed:    true,
 			Description: "Outputs the result of `SHOW PARAMETERS IN ICEBERG TABLE` for the given Iceberg table.",
-			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableParametersSchema},
+			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableExternallyManagedParametersSchema},
 		},
 	},
-	icebergTableParametersSchema(),
+	icebergTableExternalManagedParametersSchema(),
 )
 
 func IcebergTableFromAwsGlue() *schema.Resource {
@@ -73,7 +73,7 @@ func IcebergTableFromAwsGlue() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(icebergTableFromAwsGlueSchema, ShowOutputAttributeName, "comment", "auto_refresh"),
 			ComputedIfAnyAttributeChanged(icebergTableFromAwsGlueSchema, ParametersAttributeName, "external_volume", "catalog", "replace_invalid_characters"),
-			icebergTableParametersCustomDiff,
+			icebergTableExternalManagedParametersCustomDiff,
 		),
 	}
 }
@@ -134,7 +134,7 @@ func CreateIcebergTableFromAwsGlue(ctx context.Context, d *schema.ResourceData, 
 
 func ReadIcebergTableFromAwsGlueFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		return readIcebergTable(ctx, d, meta, func(d *schema.ResourceData, table *sdk.IcebergTable) error {
+		return readIcebergTable(ctx, d, meta, func(d *schema.ResourceData, table *sdk.IcebergTable, _ []sdk.IcebergTableDetails) error {
 			var catalogTableName string
 			if table.CatalogTableName != nil {
 				catalogTableName = *table.CatalogTableName

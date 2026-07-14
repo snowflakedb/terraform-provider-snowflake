@@ -186,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.HybridTable().Schema,
 	},
 	{
+		name:   "IcebergTable",
+		schema: resources.IcebergTable().Schema,
+	},
+	{
 		name:   "IcebergTableFromAwsGlue",
 		schema: resources.IcebergTableFromAwsGlue().Schema,
 	},

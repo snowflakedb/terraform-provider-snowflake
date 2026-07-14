@@ -34,13 +34,7 @@ var icebergTableFromRestSchema = collections.MergeMaps(
 			ForceNew:    true,
 			Description: "Specifies the namespace (or database) in the external catalog that the table belongs to. If not specified, the catalog integration's default namespace is used.",
 		},
-		"path_layout": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllIcebergTablePathLayouts), true),
-			Description:      externalChangesNotDetectedFieldDescription(fmt.Sprintf("Specifies the storage layout for the Iceberg table's Parquet files. Valid values are: %v. Cannot be changed after creation.", sdk.AllIcebergTablePathLayouts)),
-		},
+		"path_layout": icebergTablePathLayoutSchema(),
 		"auto_refresh": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -155,7 +149,7 @@ func CreateIcebergTableFromRest(ctx context.Context, d *schema.ResourceData, met
 func ReadIcebergTableFromRestFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		// path_layout is not exposed by SHOW or DESCRIBE, so it is not read back (external changes are not detected).
-		return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableFromRestParameterRead, schemas.IcebergTableFromRestParametersToSchema, func(d *schema.ResourceData, table *sdk.IcebergTable) error {
+		return readIcebergTableWithParameterHandler(ctx, d, meta, handleIcebergTableFromRestParameterRead, schemas.IcebergTableFromRestParametersToSchema, func(d *schema.ResourceData, table *sdk.IcebergTable, _ []sdk.IcebergTableDetails) error {
 			var catalogTableName string
 			if table.CatalogTableName != nil {
 				catalogTableName = *table.CatalogTableName
