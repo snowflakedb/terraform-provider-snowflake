@@ -22,7 +22,7 @@ var SdkShowResultStructs = []any{
 	sdk.ExternalTable{},
 	sdk.ExternalVolume{},
 	sdk.FailoverGroup{},
-	sdk.FileFormat{},
+	sdk.FileFormatLegacy{},
 	sdk.Function{},
 	sdk.GitRepository{},
 	sdk.Grant{},

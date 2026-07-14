@@ -278,7 +278,7 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.FailoverGroups.ShowByID)
 	},
 	resources.FileFormat: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
-		return runShowById(ctx, id, client.FileFormats.ShowByID)
+		return runShowById(ctx, id, client.FileFormatsLegacy.ShowByID)
 	},
 	resources.FunctionJava: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Functions.ShowByID)

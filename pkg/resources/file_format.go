@@ -326,7 +326,7 @@ func FileFormat() *schema.Resource {
 			return sdk.NewSchemaObjectIdentifier(id.DatabaseName, id.SchemaName, id.FileFormatName), nil
 		},
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-			return client.FileFormats.DropSafely
+			return client.FileFormatsLegacy.DropSafely
 		},
 	)
 
@@ -357,9 +357,9 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	fileFormatName := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(dbName, schemaName, fileFormatName)
 
-	opts := sdk.CreateFileFormatOptions{
+	opts := sdk.CreateFileFormatOptionsLegacy{
 		Type:                        sdk.FileFormatType(d.Get("format_type").(string)),
-		LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{},
+		FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{},
 	}
 
 	switch opts.Type {
@@ -534,7 +534,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		opts.Comment = sdk.String(v.(string))
 	}
 
-	err := client.FileFormats.Create(ctx, id, &opts)
+	err := client.FileFormatsLegacy.Create(ctx, id, &opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -563,7 +563,7 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	id := sdk.NewSchemaObjectIdentifier(fileFormatID.DatabaseName, fileFormatID.SchemaName, fileFormatID.FileFormatName)
 
-	fileFormat, err := client.FileFormats.ShowByIDSafely(ctx, id)
+	fileFormat, err := client.FileFormatsLegacy.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -806,7 +806,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.FileFormats.Alter(ctx, id, &sdk.AlterFileFormatOptions{
+		err := client.FileFormatsLegacy.Alter(ctx, id, &sdk.AlterFileFormatOptionsLegacy{
 			Rename: &sdk.AlterFileFormatRenameOptions{
 				NewName: newId,
 			},
@@ -820,7 +820,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	runSet := false
-	opts := sdk.AlterFileFormatOptions{Set: &sdk.LegacyFileFormatTypeOptions{}}
+	opts := sdk.AlterFileFormatOptionsLegacy{Set: &sdk.FileFormatTypeOptionsLegacy{}}
 
 	switch sdk.FileFormatType(d.Get("format_type").(string)) {
 	case sdk.FileFormatTypeCsv:
@@ -1138,7 +1138,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	if runSet {
-		err = client.FileFormats.Alter(ctx, id, &opts)
+		err = client.FileFormatsLegacy.Alter(ctx, id, &opts)
 		if err != nil {
 			return diag.FromErr(err)
 		}

@@ -71,7 +71,7 @@ func ReadFileFormats(ctx context.Context, d *schema.ResourceData, meta any) diag
 	databaseName := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
 
-	result, err := client.FileFormats.Show(ctx, &sdk.ShowFileFormatsOptions{
+	result, err := client.FileFormatsLegacy.Show(ctx, &sdk.ShowFileFormatsOptionsLegacy{
 		In: &sdk.In{
 			Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName),
 		},
