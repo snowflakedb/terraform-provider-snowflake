@@ -15,13 +15,9 @@ func (i *IcebergTableResourceAssert) HasRowAccessPolicy(rowAccessPolicy sdk.Sche
 
 func (i *IcebergTableResourceAssert) HasAggregationPolicy(aggregationPolicy sdk.SchemaObjectIdentifier, entityKey ...string) *IcebergTableResourceAssert {
 	i.ValueSet("aggregation_policy.0.policy_name", aggregationPolicy.FullyQualifiedName())
-	if len(entityKey) > 0 {
-		i.CollectionLength("aggregation_policy.0.entity_key", len(entityKey))
-		for _, key := range entityKey {
-			i.SetContainsElem("aggregation_policy.0.entity_key", key)
-		}
-	} else {
-		i.CollectionLength("aggregation_policy.0.entity_key", 0)
+	i.CollectionLength("aggregation_policy.0.entity_key", len(entityKey))
+	for _, key := range entityKey {
+		i.SetContainsElem("aggregation_policy.0.entity_key", key)
 	}
 	return i
 }

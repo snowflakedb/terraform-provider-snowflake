@@ -1267,7 +1267,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 	maskingPolicyId := randomSchemaObjectIdentifier()
 	projectionPolicyId := randomSchemaObjectIdentifier()
 	rowAccessPolicy1Id := randomSchemaObjectIdentifier()
-	// rowAccessPolicy2Id := randomSchemaObjectIdentifier()
+	rowAccessPolicy2Id := randomSchemaObjectIdentifier()
 	tagId1 := randomSchemaObjectIdentifier()
 	tagId2 := randomSchemaObjectIdentifier()
 
@@ -1875,19 +1875,19 @@ func TestIcebergTables_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ROW ACCESS POLICY %s`, id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName())
 	})
 
-	// t.Run("alter: drop and add row access policy", func(t *testing.T) {
-	// 	opts := defaultOpts()
-	// 	opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-	// 		Drop: ViewDropRowAccessPolicy{
-	// 			RowAccessPolicy: rowAccessPolicy1Id,
-	// 		},
-	// 		Add: ViewAddRowAccessPolicy{
-	// 			RowAccessPolicy: rowAccessPolicy2Id,
-	// 			On:              []Column{{"col1"}, {"col2"}},
-	// 		},
-	// 	}
-	// 	assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON ("col1", "col2")`, id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName(), rowAccessPolicy2Id.FullyQualifiedName())
-	// })
+	t.Run("alter: drop and add row access policy", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{
+			Drop: IcebergTableDropRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy1Id,
+			},
+			Add: IcebergTableAddRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy2Id,
+				On:              []Column{{"col1"}, {"col2"}},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON ("col1", "col2")`, id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName(), rowAccessPolicy2Id.FullyQualifiedName())
+	})
 
 	t.Run("alter: drop all row access policies", func(t *testing.T) {
 		opts := defaultOpts()
