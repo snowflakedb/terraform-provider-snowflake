@@ -2,20 +2,26 @@
 
 # Contributing
 
-- [Setting up the development environment](#setting-up-the-development-environment)
-- [Repository structure](#repository-structure)
-- [Running the tests locally](#running-the-tests-locally)
-- [Making a contribution](#making-a-contribution)
-  - [Discuss a change with us!](#discuss-a-change-with-us)
-  - [Follow the code conventions inside the repository](#follow-the-code-conventions-inside-the-repository)
-  - [Test the change](#test-the-change)
-  - [Describe the breaking changes](#describe-the-breaking-changes)
-  - [Before submitting the PR](#before-submitting-the-pr)
-  - [Naming and describing the PR](#naming-and-describing-the-pr)
-  - [Requesting the review](#requesting-the-review)
-  - [Adding support for a new snowflake object](#adding-support-for-a-new-snowflake-object)
-- [Advanced Debugging](#advanced-debugging)
-- [Extending the migration script](#extending-the-migration-script)
+- [Contributing](#contributing)
+  - [Setting up the development environment](#setting-up-the-development-environment)
+  - [Repository structure](#repository-structure)
+  - [Running the tests locally](#running-the-tests-locally)
+  - [Making a contribution](#making-a-contribution)
+    - [Discuss a change with us!](#discuss-a-change-with-us)
+    - [Follow the code conventions inside the repository](#follow-the-code-conventions-inside-the-repository)
+    - [Test the change](#test-the-change)
+    - [Describe the breaking changes](#describe-the-breaking-changes)
+    - [Hide the changes behind the feature switch (if applies)](#hide-the-changes-behind-the-feature-switch-if-applies)
+    - [Before submitting the PR](#before-submitting-the-pr)
+    - [Naming and describing the PR](#naming-and-describing-the-pr)
+    - [Requesting the review](#requesting-the-review)
+    - [Adding Support for a new Snowflake Object](#adding-support-for-a-new-snowflake-object)
+      - [1. Add the object to the SDK](#1-add-the-object-to-the-sdk)
+      - [2. Add integration tests](#2-add-integration-tests)
+      - [3. Add resource](#3-add-resource)
+      - [4. Add data source](#4-add-data-source)
+  - [Advanced Debugging](#advanced-debugging)
+  - [Extending the migration script](#extending-the-migration-script)
 
 ## Setting up the development environment
 
@@ -80,6 +86,18 @@ user = "<your user on the Azure account>"
 password = "<your password on the Azure account>"
 role = "<your role on the Azure account>"
 host="<host of your Azure account, e.g. organisation-azure_account_name.snowflakecomputing.com>"
+```
+
+Some tests also require a Snowflake defaults account profile `[snowflake_defaults_test_account]`. This is only used in non-prod environments for tests that check for Snowflake default behavior (e.g. having the built-in account authentication policy on account when no user-defined policy is attached):
+
+```toml
+[snowflake_defaults_test_account]
+account_name = "<your Snowflake defaults account name>"
+organization_name = "<organization in which your Snowflake defaults account is located>"
+user = "<your user on the Snowflake defaults account>"
+password = "<your password on the Snowflake defaults account>"
+role = "<your role on the Snowflake defaults account>"
+host="<host of your Snowflake defaults account, e.g. organisation-defaults_account_name.snowflakecomputing.com>"
 ```
 
 **TIP**: check [how-can-i-get-my-organization-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-organization-name) and [how-can-i-get-my-account-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-account-name) sections in our guides if you have troubles setting the proper `organization_name` and `account_name`.
