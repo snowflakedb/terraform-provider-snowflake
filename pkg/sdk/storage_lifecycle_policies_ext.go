@@ -1,15 +1,28 @@
 package sdk
 
-import "strings"
+import (
+	"context"
+	"strings"
+)
 
 func (r describeStorageLifecyclePolicyDBRow) additionalConvert(_ *StorageLifecyclePolicyDetails) error {
 	// additionalConvert is generated as DatabaseName and SchemaName are plain only fields.
-	// They can't be set here as they are not returned by DESCRIBE; they are populated from the ID in the test helper.
+	// They can't be set here as they are not returned by DESCRIBE; they are populated from the ID in DescribeDetails.
 	return nil
 }
 
 func (d *StorageLifecyclePolicyDetails) ID() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(d.DatabaseName, d.SchemaName, d.Name)
+}
+
+func (v *storageLifecyclePolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error) {
+	details, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details.DatabaseName = id.DatabaseName()
+	details.SchemaName = id.SchemaName()
+	return details, nil
 }
 
 var StorageLifecyclePolicySupportedTableTypes = []PolicyEntityDomain{
