@@ -20,6 +20,7 @@ type IcebergTableModel struct {
 	Catalog                    tfconfig.Variable `json:"catalog,omitempty"`
 	CatalogSync                tfconfig.Variable `json:"catalog_sync,omitempty"`
 	ChangeTracking             tfconfig.Variable `json:"change_tracking,omitempty"`
+	ClusterBy                  tfconfig.Variable `json:"cluster_by,omitempty"`
 	Column                     tfconfig.Variable `json:"column,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
 	DataRetentionTimeInDays    tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
@@ -30,6 +31,7 @@ type IcebergTableModel struct {
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IcebergVersion             tfconfig.Variable `json:"iceberg_version,omitempty"`
 	MaxDataExtensionTimeInDays tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
+	PartitionBy                tfconfig.Variable `json:"partition_by,omitempty"`
 	PathLayout                 tfconfig.Variable `json:"path_layout,omitempty"`
 	RowAccessPolicy            tfconfig.Variable `json:"row_access_policy,omitempty"`
 	StorageSerializationPolicy tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
@@ -146,6 +148,8 @@ func (i *IcebergTableModel) WithChangeTracking(changeTracking string) *IcebergTa
 	return i
 }
 
+// cluster_by attribute type is not yet supported, so WithClusterBy can't be generated
+
 // column attribute type is not yet supported, so WithColumn can't be generated
 
 func (i *IcebergTableModel) WithComment(comment string) *IcebergTableModel {
@@ -192,6 +196,8 @@ func (i *IcebergTableModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeI
 	i.MaxDataExtensionTimeInDays = tfconfig.IntegerVariable(maxDataExtensionTimeInDays)
 	return i
 }
+
+// partition_by attribute type is not yet supported, so WithPartitionBy can't be generated
 
 func (i *IcebergTableModel) WithPathLayout(pathLayout string) *IcebergTableModel {
 	i.PathLayout = tfconfig.StringVariable(pathLayout)
@@ -254,6 +260,11 @@ func (i *IcebergTableModel) WithChangeTrackingValue(value tfconfig.Variable) *Ic
 	return i
 }
 
+func (i *IcebergTableModel) WithClusterByValue(value tfconfig.Variable) *IcebergTableModel {
+	i.ClusterBy = value
+	return i
+}
+
 func (i *IcebergTableModel) WithColumnValue(value tfconfig.Variable) *IcebergTableModel {
 	i.Column = value
 	return i
@@ -301,6 +312,11 @@ func (i *IcebergTableModel) WithIcebergVersionValue(value tfconfig.Variable) *Ic
 
 func (i *IcebergTableModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Variable) *IcebergTableModel {
 	i.MaxDataExtensionTimeInDays = value
+	return i
+}
+
+func (i *IcebergTableModel) WithPartitionByValue(value tfconfig.Variable) *IcebergTableModel {
+	i.PartitionBy = value
 	return i
 }
 

@@ -46,3 +46,62 @@ func (i *IcebergTableModel) WithAggregationPolicy(ap sdk.SchemaObjectIdentifier,
 		),
 	)
 }
+
+// WithClusterBy satisfies the generated constructor's call for the complex list `cluster_by` attribute.
+func (i *IcebergTableModel) WithClusterBy(clusterBy ...string) *IcebergTableModel {
+	return i.WithClusterByValue(tfconfig.ListVariable(collections.Map(clusterBy, func(s string) tfconfig.Variable {
+		return tfconfig.StringVariable(s)
+	})...))
+}
+
+// WithPartitionBy satisfies the generated constructor's call for the complex list `partition_by` attribute.
+// Build each entry with IcebergTablePartitionByIdentity/Bucket/Truncate/Year/Month/Day/Hour.
+func (i *IcebergTableModel) WithPartitionBy(entries ...tfconfig.Variable) *IcebergTableModel {
+	return i.WithPartitionByValue(tfconfig.ListVariable(entries...))
+}
+
+func IcebergTablePartitionByIdentity(column string) tfconfig.Variable {
+	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"identity": tfconfig.StringVariable(column),
+	})
+}
+
+func IcebergTablePartitionByBucket(numBuckets int, column string) tfconfig.Variable {
+	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"bucket": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"num_buckets": tfconfig.IntegerVariable(numBuckets),
+			"column":      tfconfig.StringVariable(column),
+		})),
+	})
+}
+
+func IcebergTablePartitionByTruncate(width int, column string) tfconfig.Variable {
+	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"truncate": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"width":  tfconfig.IntegerVariable(width),
+			"column": tfconfig.StringVariable(column),
+		})),
+	})
+}
+
+func IcebergTablePartitionByYear(column string) tfconfig.Variable {
+	return icebergTablePartitionByTimeVariable("year", column)
+}
+
+func IcebergTablePartitionByMonth(column string) tfconfig.Variable {
+	return icebergTablePartitionByTimeVariable("month", column)
+}
+
+func IcebergTablePartitionByDay(column string) tfconfig.Variable {
+	return icebergTablePartitionByTimeVariable("day", column)
+}
+
+func IcebergTablePartitionByHour(column string) tfconfig.Variable {
+	return icebergTablePartitionByTimeVariable("hour", column)
+}
+
+func icebergTablePartitionByTimeVariable(kind string, column string) tfconfig.Variable {
+	return tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		kind: tfconfig.StringVariable(column),
+	})
+}

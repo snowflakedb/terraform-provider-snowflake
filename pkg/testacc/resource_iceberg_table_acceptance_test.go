@@ -92,7 +92,11 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithEnableDataCompaction(false).
 		WithEnableIcebergMergeOnRead(false).
 		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-		WithAggregationPolicy(aggregationPolicy, "ID")
+		WithAggregationPolicy(aggregationPolicy, "ID").
+		WithPartitionBy(
+			model.IcebergTablePartitionByIdentity("NAME"),
+			model.IcebergTablePartitionByBucket(4, "ID"),
+		)
 
 	// modelWithAllOptionalChanged sets every optional field to a value different from modelWithAllOptional,
 	// so that reapplying it always forces a new resource (ForceNew fields changed).
@@ -114,8 +118,7 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
 		WithAggregationPolicy(aggregationPolicy, "ID")
 
-	// modelWithAllOptionalUnset starts from modelWithAllOptionalChanged's ForceNew field values (so no
-	// replace is triggered), but omits every alterable optional field from the config to exercise the
+	// modelWithAllOptionalUnset starts from modelWithAllOptionalChanged's ForceNew field values, but omits every alterable optional field from the config to exercise the
 	// UNSET code path in UpdateIcebergTable.
 	modelWithAllOptionalUnset := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
 		WithCatalog("SNOWFLAKE").
@@ -125,6 +128,18 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithIcebergVersion(3).
 		WithPathLayout(string(sdk.IcebergTablePathLayoutHierarchical)).
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible))
+
+	// modelWithClusterBy mirrors modelWithAllOptionalUnset (so no replace is triggered) but sets cluster_by
+	// instead of partition_by (the two are mutually exclusive).
+	modelWithClusterBy := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithCatalog("SNOWFLAKE").
+		WithBaseLocation(baseLocationChanged).
+		WithExternalVolume(externalVolumeId.Name()).
+		WithChangeTracking("true").
+		WithIcebergVersion(3).
+		WithPathLayout(string(sdk.IcebergTablePathLayoutHierarchical)).
+		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
+		WithClusterBy("ID", "NAME")
 
 	ref := modelBasic.ResourceReference()
 
@@ -225,7 +240,10 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 			HasEnableIcebergMergeOnRead(false).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-			HasAggregationPolicy(aggregationPolicy, "ID"),
+			HasAggregationPolicy(aggregationPolicy, "ID").
+			HasPartitionByLength(2).
+			HasPartitionByIdentity(0, "NAME").
+			HasPartitionByBucket(1, 4, "ID"),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -397,6 +415,44 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"change_tracking", "error_logging", "path_layout", "iceberg_version", "base_location"},
 			},
+			// The partition spec changes externally (CREATE OR REPLACE with a different partition_by) while
+			// the config keeps requesting the original partitioning.
+			{
+				PreConfig: func() {
+					req := sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+						Columns: []sdk.IcebergTableColumnRequest{
+							*sdk.NewIcebergTableColumnRequest(columns[0].Name, columns[0].Type),
+							*sdk.NewIcebergTableColumnRequest(columns[1].Name, columns[1].Type),
+						},
+					}).
+						WithOrReplace(true).
+						WithExternalVolume(externalVolumeId).
+						WithCatalog(sdk.IcebergTableCatalogSnowflake).
+						WithBaseLocation(baseLocation).
+						WithComment(comment).
+						WithChangeTracking(true).
+						WithIcebergVersion(2).
+						WithPathLayout(sdk.IcebergTablePathLayoutFlat).
+						WithErrorLogging(true).
+						WithTargetFileSize(sdk.IcebergTableTargetFileSize64mb).
+						WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+						WithDataRetentionTimeInDays(5).
+						WithMaxDataExtensionTimeInDays(10).
+						WithEnableDataCompaction(false).
+						WithEnableIcebergMergeOnRead(false).
+						WithPartitionBy([]sdk.IcebergTablePartitionExpressionRequest{
+							{Bucket: &sdk.IcebergTablePartitionBucketRequest{Args: sdk.IcebergTablePartitionBucketArgsRequest{NumBuckets: 4, Column: "NAME"}}},
+						})
+					testClient().IcebergTable.CreateWithRequest(t, req)
+				},
+				Config: accconfig.FromModels(t, modelWithAllOptional),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t, allOptionalAssertions...),
+			},
 			// The underlying table gets recreated externally (CREATE OR REPLACE) and every field is changed
 			// in the config at the same time - still expect Terraform to destroy and recreate the resource.
 			{
@@ -469,6 +525,24 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, unsetOptionalAssertions...),
 			},
+			// Switch from partition_by to cluster_by
+			{
+				Config: accconfig.FromModels(t, modelWithClusterBy),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.IcebergTableResource(t, ref).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasClusterBy("ID", "NAME").
+						HasPartitionByEmpty(),
+				),
+			},
 		},
 	})
 }
@@ -514,7 +588,11 @@ func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 		WithEnableDataCompaction(false).
 		WithEnableIcebergMergeOnRead(false).
 		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-		WithAggregationPolicy(aggregationPolicy, "ID")
+		WithAggregationPolicy(aggregationPolicy, "ID").
+		WithPartitionBy(
+			model.IcebergTablePartitionByBucket(4, "ID"),
+			model.IcebergTablePartitionByTruncate(10, "NAME"),
+		)
 
 	ref := modelComplete.ResourceReference()
 
@@ -548,7 +626,10 @@ func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 						HasEnableIcebergMergeOnRead(false).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-						HasAggregationPolicy(aggregationPolicy, "ID"),
+						HasAggregationPolicy(aggregationPolicy, "ID").
+						HasPartitionByLength(2).
+						HasPartitionByBucket(0, 4, "ID").
+						HasPartitionByTruncate(1, 10, "NAME"),
 					resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -630,6 +711,14 @@ func TestAcc_IcebergTable_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, baseModel().WithIcebergVersion(0)),
 				ExpectError: regexp.MustCompile(`expected .*iceberg_version.* to be at least \(1\), got 0`),
+			},
+			{
+				Config: accconfig.FromModels(
+					t, baseModel().
+						WithPartitionBy(model.IcebergTablePartitionByIdentity("ID")).
+						WithClusterBy("ID"),
+				),
+				ExpectError: regexp.MustCompile(`"cluster_by": conflicts with partition_by`),
 			},
 		},
 	})
