@@ -12,6 +12,9 @@ type SdkObjectDef struct {
 	IsSubStruct        bool
 	ObjectTypeName     string
 	NoShowById         bool
+	// ShowByParentId groups the fields needed to generate a constructor that fetches the object
+	// via a parent identifier (e.g. userId for ProgrammaticAccessToken). All three fields must be set together.
+	ShowByParentId *genhelpers.ShowByParentIdDef
 }
 
 var allStructs = []SdkObjectDef{
@@ -127,6 +130,11 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.ProgrammaticAccessToken{},
+		ShowByParentId: &genhelpers.ShowByParentIdDef{
+			ParentIdType:   "sdk.AccountObjectIdentifier",
+			ClientName:     "User",
+			ShowMethodName: "ShowProgrammaticAccessToken",
+		},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -192,6 +200,11 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.UserWorkloadIdentityAuthenticationMethod{},
+		ShowByParentId: &genhelpers.ShowByParentIdDef{
+			ParentIdType:   "sdk.AccountObjectIdentifier",
+			ClientName:     "User",
+			ShowMethodName: "ShowUserWorkloadIdentityAuthenticationMethod",
+		},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -421,6 +434,7 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 			IsSubStruct:        d.IsSubStruct,
 			ObjectTypeName:     d.ObjectTypeName,
 			NoShowById:         d.NoShowById,
+			ShowByParentId:     d.ShowByParentId,
 		}
 	}
 	return allSdkObjectsDetails
