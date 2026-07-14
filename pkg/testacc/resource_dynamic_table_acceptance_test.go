@@ -69,7 +69,8 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, tableModel, modelBasic),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.DynamicTableResource(t, modelBasic.ResourceReference()).
 						HasName(dynamicTableId.Name()).
 						HasFullyQualifiedName(dynamicTableId.FullyQualifiedName()).
@@ -100,7 +101,8 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 			// test target lag to downstream and change comment
 			{
 				Config: accconfig.FromModels(t, tableModel, modelWithDownstreamLag),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.DynamicTableResource(t, modelWithDownstreamLag.ResourceReference()).
 						HasName(dynamicTableId.Name()).
 						HasFullyQualifiedName(dynamicTableId.FullyQualifiedName()).
@@ -121,7 +123,8 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 			// test changing initialize setting
 			{
 				Config: accconfig.FromModels(t, tableModel, modelWithInitialize),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.DynamicTableResource(t, modelWithInitialize.ResourceReference()).
 						HasInitialize(string(sdk.DynamicTableInitializeOnSchedule)),
 					assert.Check(resource.TestCheckResourceAttrWith(modelWithInitialize.ResourceReference(), "created_on", func(value string) error {
@@ -136,7 +139,8 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 			// test changing refresh_mode setting
 			{
 				Config: accconfig.FromModels(t, tableModel, modelWithRefreshMode),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.DynamicTableResource(t, modelWithRefreshMode.ResourceReference()).
 						HasInitialize(string(sdk.DynamicTableInitializeOnSchedule)).
 						HasRefreshMode(string(sdk.DynamicTableRefreshModeFull)),
