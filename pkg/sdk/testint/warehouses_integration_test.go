@@ -973,11 +973,31 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		w, err := client.Warehouses.ShowByID(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, id.Name(), w.Name)
-		assert.True(t, w.IsInteractiveWarehouse())
-		assert.Empty(t, w.Tables)
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
+				HasName(id.Name()).
+				HasType(sdk.WarehouseTypeInteractive).
+				HasComment("").
+				HasSize(sdk.WarehouseSizeXSmall).
+				HasMaxClusterCount(1).
+				HasMinClusterCount(1).
+				HasAutoSuspend(86400).
+				HasAutoResume(true).
+				HasScalingPolicy(sdk.ScalingPolicyStandard).
+				HasEnableQueryAcceleration(false).
+				HasQueryAccelerationMaxScaleFactor(8).
+				HasNoResourceConstraint().
+				HasNoGeneration().
+				HasNoMaxQueryPerformanceLevel().
+				HasNoQueryThroughputMultiplier().
+				HasTables(),
+		)
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, id).
+				HasMaxConcurrencyLevel(8).
+				HasStatementQueuedTimeoutInSeconds(0).
+				HasStatementTimeoutInSeconds(172800),
+		)
 	})
 
 	t.Run("create interactive: with tables", func(t *testing.T) {
@@ -994,11 +1014,31 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		w, err := client.Warehouses.ShowByID(ctx, id)
-		require.NoError(t, err)
-		assert.True(t, w.IsInteractiveWarehouse())
-		assert.Equal(t, "interactive warehouse", w.Comment)
-		assert.ElementsMatch(t, []sdk.SchemaObjectIdentifier{table1, table2}, w.Tables)
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
+				HasName(id.Name()).
+				HasType(sdk.WarehouseTypeInteractive).
+				HasComment("interactive warehouse").
+				HasSize(sdk.WarehouseSizeXSmall).
+				HasMaxClusterCount(1).
+				HasMinClusterCount(1).
+				HasAutoSuspend(86400).
+				HasAutoResume(true).
+				HasScalingPolicy(sdk.ScalingPolicyStandard).
+				HasEnableQueryAcceleration(false).
+				HasQueryAccelerationMaxScaleFactor(8).
+				HasNoResourceConstraint().
+				HasNoGeneration().
+				HasNoMaxQueryPerformanceLevel().
+				HasNoQueryThroughputMultiplier().
+				HasTables(table1, table2),
+		)
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, id).
+				HasMaxConcurrencyLevel(8).
+				HasStatementQueuedTimeoutInSeconds(0).
+				HasStatementTimeoutInSeconds(172800),
+		)
 	})
 
 	t.Run("alter: add and drop tables", func(t *testing.T) {
@@ -1015,17 +1055,11 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2}))
 		require.NoError(t, err)
-
-		w, err := client.Warehouses.ShowByID(ctx, id)
-		require.NoError(t, err)
-		assert.ElementsMatch(t, []sdk.SchemaObjectIdentifier{table1, table2}, w.Tables)
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table1, table2))
 
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1}))
 		require.NoError(t, err)
-
-		w, err = client.Warehouses.ShowByID(ctx, id)
-		require.NoError(t, err)
-		assert.ElementsMatch(t, []sdk.SchemaObjectIdentifier{table2}, w.Tables)
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table2))
 	})
 
 	t.Run("alter: set and unset fallback warehouse", func(t *testing.T) {
