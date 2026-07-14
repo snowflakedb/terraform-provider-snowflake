@@ -171,7 +171,8 @@ func WarehouseInteractive() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseInteractive, customdiff.All(
 			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, ShowOutputAttributeName, "name", "warehouse_size", "max_cluster_count", "min_cluster_count", "auto_suspend", "auto_resume", "resource_monitor", "comment", "tables", "fallback_warehouse"),
-			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, ParametersAttributeName,
+			ComputedIfAnyAttributeChanged(
+				warehouseInteractiveSchema, ParametersAttributeName,
 				strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)),
 				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
 				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
@@ -183,9 +184,10 @@ func WarehouseInteractive() *schema.Resource {
 				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
 				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
 			),
-			// The effective warehouse_type is derived from is_interactive in Read; a warehouse that
-			// stops being interactive externally is restored to INTERACTIVE on the next apply.
-			HandleWarehouseExternalTypeChange(sdk.WarehouseTypeInteractive),
+			// Snowflake does not allow changing WAREHOUSE_TYPE via ALTER (to or from INTERACTIVE),
+			// so if the underlying object is no longer interactive the only way to reconcile is to
+			// recreate it.
+			RecreateWhenResourceTypeChangedExternally("warehouse_type", sdk.WarehouseTypeInteractive, sdk.ToWarehouseType),
 		)),
 		Timeouts: defaultTimeouts,
 	}
@@ -368,8 +370,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			return diag.FromErr(err)
 		}
 
-		// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE);
-		// there is no separate is_interactive column.
+		// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE)
 		effectiveType := string(sdk.WarehouseTypeStandard)
 		if w.IsInteractiveWarehouse() {
 			effectiveType = string(sdk.WarehouseTypeInteractive)
@@ -386,7 +387,8 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 		if withExternalChangesMarking {
 			sizeVal, sizeStr := optionalStringOutputMapping(w.Size)
 			autoResumeVal, autoResumeStr := w.AutoResume, booleanStringFromBool(w.AutoResume)
-			if err = handleExternalChangesToObjectInShow(d,
+			if err = handleExternalChangesToObjectInShow(
+				d,
 				outputMapping{"size", "warehouse_size", sizeStr, sizeVal, nil},
 				outputMapping{"auto_resume", "auto_resume", autoResumeVal, autoResumeStr, nil},
 				outputMapping{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},

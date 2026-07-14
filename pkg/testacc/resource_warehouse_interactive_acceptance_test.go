@@ -39,7 +39,8 @@ func TestAcc_WarehouseInteractive_Basic(t *testing.T) {
 			// create with only required fields
 			{
 				Config: accconfig.FromModels(t, warehouseModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasNameString(warehouseId.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeInteractive)).
@@ -59,7 +60,8 @@ func TestAcc_WarehouseInteractive_Basic(t *testing.T) {
 			// set optional fields
 			{
 				Config: accconfig.FromModels(t, warehouseModelWithComment),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasCommentString(comment).
 						HasWarehouseSizeString(string(sdk.WarehouseSizeXSmall)),
@@ -98,7 +100,8 @@ func TestAcc_WarehouseInteractive_TablesDelta(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelWithTwoTables),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasTables(table1.FullyQualifiedName(), table2.FullyQualifiedName()),
 				),
@@ -110,7 +113,8 @@ func TestAcc_WarehouseInteractive_TablesDelta(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasTables(table1.FullyQualifiedName(), table3.FullyQualifiedName()),
 				),
@@ -140,7 +144,8 @@ func TestAcc_WarehouseInteractive_FallbackWarehouse(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelWithFallback),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasFallbackWarehouseString(fallback.ID().Name()),
 				),
@@ -152,7 +157,8 @@ func TestAcc_WarehouseInteractive_FallbackWarehouse(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasFallbackWarehouseEmpty(),
 				),
