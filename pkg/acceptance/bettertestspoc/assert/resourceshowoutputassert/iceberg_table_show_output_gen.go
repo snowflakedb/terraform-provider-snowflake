@@ -116,11 +116,6 @@ func (i *IcebergTableShowOutputAssert) HasCatalogSyncName(expected string) *Iceb
 	return i
 }
 
-func (i *IcebergTableShowOutputAssert) HasPartitionSpecs(expected string) *IcebergTableShowOutputAssert {
-	i.StringValueSet("partition_specs", expected)
-	return i
-}
-
 func (i *IcebergTableShowOutputAssert) HasCurrentPartitionSpecId(expected int) *IcebergTableShowOutputAssert {
 	i.IntValueSet("current_partition_spec_id", expected)
 	return i
@@ -221,7 +216,7 @@ func (i *IcebergTableShowOutputAssert) HasNoAutoRefreshStatus() *IcebergTableSho
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoPartitionSpecs() *IcebergTableShowOutputAssert {
-	i.ValueNotSet("partition_specs")
+	i.ValueSet("partition_specs.#", "0")
 	return i
 }
 

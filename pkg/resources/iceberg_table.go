@@ -126,6 +126,10 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 			}
 			return &pathLayout, nil
 		}),
+		attributeMappedValueCreateBuilderNested(d, "partition_by", req.WithPartitionBy, parseIcebergTablePartitionBy),
+		attributeMappedValueCreateBuilder(d, "cluster_by", req.WithClusterBy, func(value []any) ([]string, error) {
+			return expandStringList(value), nil
+		}),
 	); err != nil {
 		return diag.FromErr(err)
 	}
@@ -196,7 +200,13 @@ func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFun
 				return err
 			}
 
+			// TODO (next PRs):
 			// path_layout is not exposed by SHOW or DESCRIBE, so it is not read back (external changes are not detected).
+			// cluster_by is not read back either. SHOW/DESCRIBE ICEBERG TABLE do not expose the
+			// clustering key, and even for regular tables Snowflake returns a transformed clustering expression
+			// rather than the original DDL text, so external changes cannot be reliably detected. See
+			// https://docs.snowflake.com/en/user-guide/tables-clustering-keys#defining-a-clustering-key-for-a-table
+			// add these limitations to the documentation and report this to Snowflake
 			return errors.Join(
 				d.Set("column", icebergTableColumnsToSchema(details)),
 			)

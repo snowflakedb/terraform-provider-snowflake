@@ -444,7 +444,7 @@ var icebergTablesDef = g.NewInterface(
 		Text("owner_role_type").
 		Text("catalog_sync_name").
 		JsonField("auto_refresh_status", "*IcebergTableAutoRefreshStatus").
-		Text("partition_specs").
+		JsonField("partition_specs", "[]IcebergTablePartitionSpec").
 		Number("current_partition_spec_id").
 		Number("iceberg_table_format_version"),
 	g.NewQueryStruct("ShowIcebergTables").
