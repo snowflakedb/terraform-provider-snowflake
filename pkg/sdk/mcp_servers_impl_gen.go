@@ -73,6 +73,7 @@ func (r *CreateMcpServerRequest) toOpts() *CreateMcpServerOptions {
 		OrReplace:         r.OrReplace,
 		IfNotExists:       r.IfNotExists,
 		name:              r.name,
+		Comment:           r.Comment,
 		FromSpecification: r.FromSpecification,
 	}
 	return opts

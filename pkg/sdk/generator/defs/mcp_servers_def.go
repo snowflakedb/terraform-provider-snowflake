@@ -19,6 +19,7 @@ var mcpServersDef = g.NewInterface(
 			SQL("MCP SERVER").
 			IfNotExists().
 			Name().
+			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 			TextAssignment("FROM SPECIFICATION", g.ParameterOptions().NoEquals().DoubleDollarQuotes()).
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").

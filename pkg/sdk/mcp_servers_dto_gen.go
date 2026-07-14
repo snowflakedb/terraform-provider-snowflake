@@ -13,7 +13,8 @@ type CreateMcpServerRequest struct {
 	OrReplace         *bool
 	IfNotExists       *bool
 	name              SchemaObjectIdentifier // required
-	FromSpecification string                 // required
+	Comment           *string
+	FromSpecification string // required
 }
 
 type DropMcpServerRequest struct {

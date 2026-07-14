@@ -20,6 +20,7 @@ func NormalizeMcpServerSpecification(spec string) (string, error) {
 	}
 	delete(m, "version")
 
+	// json.Marshal sorts the keys alphabetically for maps
 	json, err := json.Marshal(m)
 	if err != nil {
 		return "", err

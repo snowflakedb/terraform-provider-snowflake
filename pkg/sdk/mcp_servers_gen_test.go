@@ -55,7 +55,10 @@ func TestMcpServers_Create(t *testing.T) {
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE MCP SERVER %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec)
+		opts.Comment = String("some comment")
+		assertOptsValidAndSQLEquals(t, opts,
+			"CREATE OR REPLACE MCP SERVER %s COMMENT = 'some comment' FROM SPECIFICATION $$%s$$",
+			id.FullyQualifiedName(), spec)
 	})
 }
 

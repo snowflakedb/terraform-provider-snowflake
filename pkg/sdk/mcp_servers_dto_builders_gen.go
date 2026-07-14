@@ -22,6 +22,11 @@ func (s *CreateMcpServerRequest) WithIfNotExists(ifNotExists bool) *CreateMcpSer
 	return s
 }
 
+func (s *CreateMcpServerRequest) WithComment(comment string) *CreateMcpServerRequest {
+	s.Comment = &comment
+	return s
+}
+
 func NewDropMcpServerRequest(
 	name SchemaObjectIdentifier,
 ) *DropMcpServerRequest {

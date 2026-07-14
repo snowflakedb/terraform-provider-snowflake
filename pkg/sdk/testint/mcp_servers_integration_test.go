@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -66,9 +67,11 @@ func TestInt_McpServers(t *testing.T) {
 
 	t.Run("create: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		comment := random.Comment()
 
 		cleanup := testClientHelper().McpServer.CreateWithRequest(t, sdk.NewCreateMcpServerRequest(id, complexSpec).
-			WithIfNotExists(true))
+			WithIfNotExists(true).
+			WithComment(comment))
 		t.Cleanup(cleanup)
 
 		assertThatObject(
@@ -78,7 +81,7 @@ func TestInt_McpServers(t *testing.T) {
 				HasDatabaseName(id.DatabaseName()).
 				HasSchemaName(id.SchemaName()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
-				HasComment(""),
+				HasComment(comment),
 		)
 		assertThatObject(
 			t, objectassert.McpServerDetails(t, id).
@@ -86,7 +89,7 @@ func TestInt_McpServers(t *testing.T) {
 				HasDatabaseName(id.DatabaseName()).
 				HasSchemaName(id.SchemaName()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
-				HasComment("").
+				HasComment(comment).
 				HasServerSpec(normalizedComplexSpec).
 				HasCreatedOnNotEmpty(),
 		)

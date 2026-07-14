@@ -25,6 +25,7 @@ type CreateMcpServerOptions struct {
 	mcpServer         bool                   `ddl:"static" sql:"MCP SERVER"`
 	IfNotExists       *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name              SchemaObjectIdentifier `ddl:"identifier"`
+	Comment           *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	FromSpecification string                 `ddl:"parameter,double_dollar_quotes,no_equals" sql:"FROM SPECIFICATION"`
 }
 
