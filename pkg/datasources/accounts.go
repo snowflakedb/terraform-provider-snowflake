@@ -65,7 +65,6 @@ func ReadAccounts(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	flattenedAccounts := make([]map[string]any, len(accounts))
 	for i, account := range accounts {
-		account := account
 		flattenedAccounts[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.AccountToSchema(&account)},
 		}

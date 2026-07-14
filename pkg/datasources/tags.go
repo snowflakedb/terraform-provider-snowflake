@@ -62,7 +62,6 @@ func ReadTags(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 
 	flattenedTags := make([]map[string]any, len(tags))
 	for i, tag := range tags {
-		tag := tag
 		flattenedTags[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.TagToSchema(&tag)},
 		}
