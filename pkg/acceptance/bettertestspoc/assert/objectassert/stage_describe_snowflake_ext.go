@@ -111,6 +111,7 @@ func (s *StageDetailsAssert) HasDirectoryTableAwsSnsTopic(expected string) *Stag
 		}
 		return nil
 	})
+	return s
 }
 
 func (s *StageDetailsAssert) HasDirectoryTableNotificationChannelEmpty() *StageDetailsAssert {

@@ -327,7 +327,7 @@ Required:
 Optional:
 
 - `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.
-- `aws_sns_topic` (String) Specifies the AWS SNS topic ARN used for directory table auto-refresh notifications.
+- `aws_sns_topic` (String) Specifies the AWS SNS topic ARN used for directory table auto-refresh notifications. Note: Snowflake does not return the original SNS topic ARN in DESCRIBE STAGE output; external changes to this field cannot be detected by the provider. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
 - `refresh_on_create` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to automatically refresh the directory table metadata once, immediately after the stage is created.This field is used only when creating the object. Changes on this field are ignored after creation.
 
 
