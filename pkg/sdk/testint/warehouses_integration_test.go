@@ -962,3 +962,135 @@ func TestInt_Warehouses_Experimental(t *testing.T) {
 		assert.Equal(t, warehouseId2.Name(), warehouses[0].Name)
 	})
 }
+
+func TestInt_Warehouses_Interactive(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	t.Run("create interactive: minimal", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
+
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
+				HasName(id.Name()).
+				HasType(sdk.WarehouseTypeInteractive).
+				HasComment("").
+				HasSize(sdk.WarehouseSizeXSmall).
+				HasMaxClusterCount(1).
+				HasMinClusterCount(1).
+				HasAutoSuspend(86400).
+				HasAutoResume(true).
+				HasScalingPolicy(sdk.ScalingPolicyStandard).
+				HasEnableQueryAcceleration(false).
+				HasQueryAccelerationMaxScaleFactor(8).
+				HasNoResourceConstraint().
+				HasNoGeneration().
+				HasNoMaxQueryPerformanceLevel().
+				HasNoQueryThroughputMultiplier().
+				HasTables(),
+		)
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, id).
+				HasMaxConcurrencyLevel(8).
+				HasStatementQueuedTimeoutInSeconds(0).
+				HasStatementTimeoutInSeconds(172800),
+		)
+	})
+
+	t.Run("create interactive: with tables", func(t *testing.T) {
+		table1, table1Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table2Cleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
+			WithTables([]sdk.SchemaObjectIdentifier{table1, table2}).
+			WithWarehouseSize(sdk.WarehouseSizeXSmall).
+			WithComment("interactive warehouse"))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
+
+		assertThatObject(
+			t, objectassert.Warehouse(t, id).
+				HasName(id.Name()).
+				HasType(sdk.WarehouseTypeInteractive).
+				HasComment("interactive warehouse").
+				HasSize(sdk.WarehouseSizeXSmall).
+				HasMaxClusterCount(1).
+				HasMinClusterCount(1).
+				HasAutoSuspend(86400).
+				HasAutoResume(true).
+				HasScalingPolicy(sdk.ScalingPolicyStandard).
+				HasEnableQueryAcceleration(false).
+				HasQueryAccelerationMaxScaleFactor(8).
+				HasNoResourceConstraint().
+				HasNoGeneration().
+				HasNoMaxQueryPerformanceLevel().
+				HasNoQueryThroughputMultiplier().
+				HasTables(table1, table2),
+		)
+		assertThatObject(
+			t, objectparametersassert.WarehouseParameters(t, id).
+				HasMaxConcurrencyLevel(8).
+				HasStatementQueuedTimeoutInSeconds(0).
+				HasStatementTimeoutInSeconds(172800),
+		)
+	})
+
+	t.Run("alter: add and drop tables", func(t *testing.T) {
+		table1, table1Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table2Cleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
+			WithTables([]sdk.SchemaObjectIdentifier{table1}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
+
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2}))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table1, table2))
+
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1}))
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table2))
+	})
+
+	t.Run("alter: set and unset fallback warehouse", func(t *testing.T) {
+		fallback, fallbackCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(fallbackCleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
+
+		// FALLBACK_WAREHOUSE is exposed as a warehouse parameter, not a SHOW WAREHOUSES column.
+		fallbackParam := func() string {
+			parameters, err := client.Warehouses.ShowParameters(ctx, id)
+			require.NoError(t, err)
+			for _, p := range parameters {
+				if p.Key == "FALLBACK_WAREHOUSE" {
+					return p.Value
+				}
+			}
+			return ""
+		}
+
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
+			WithSet(*sdk.NewWarehouseSetRequest().WithFallbackWarehouse(fallback.ID())))
+		require.NoError(t, err)
+		assert.Equal(t, fallback.ID().Name(), fallbackParam())
+
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
+			WithUnset(*sdk.NewWarehouseUnsetRequest().WithFallbackWarehouse(true)))
+		require.NoError(t, err)
+		assert.Empty(t, fallbackParam())
+	})
+}
