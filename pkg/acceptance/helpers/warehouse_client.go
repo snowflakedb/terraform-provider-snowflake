@@ -206,3 +206,22 @@ func (c *WarehouseClient) CreateAdaptiveWithRequest(t *testing.T, request *sdk.C
 
 	return warehouse, c.DropWarehouseFunc(t, id)
 }
+
+func (c *WarehouseClient) CreateInteractive(t *testing.T) (*sdk.Warehouse, func()) {
+	t.Helper()
+	return c.CreateInteractiveWithRequest(t, sdk.NewCreateInteractiveWarehouseRequest(c.ids.RandomAccountObjectIdentifier()))
+}
+
+func (c *WarehouseClient) CreateInteractiveWithRequest(t *testing.T, request *sdk.CreateInteractiveWarehouseRequest) (*sdk.Warehouse, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := request.ID()
+	err := c.client().CreateInteractive(ctx, request)
+	require.NoError(t, err)
+
+	warehouse, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return warehouse, c.DropWarehouseFunc(t, id)
+}

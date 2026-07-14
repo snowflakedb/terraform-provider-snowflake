@@ -32,6 +32,20 @@ func (c *TableClient) Create(t *testing.T) (*sdk.Table, func()) {
 	return c.CreateInSchema(t, c.ids.SchemaId())
 }
 
+// CreateInteractiveTable creates an interactive table (required for associating with interactive warehouses)
+// via raw SQL, since the SDK does not model interactive tables. It returns the table id and a cleanup.
+func (c *TableClient) CreateInteractiveTable(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+	t.Helper()
+	ctx := context.Background()
+	id := c.ids.RandomSchemaObjectIdentifier()
+	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`CREATE INTERACTIVE TABLE %s (id INT) CLUSTER BY (id)`, id.FullyQualifiedName()))
+	require.NoError(t, err)
+	return id, func() {
+		_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`DROP TABLE IF EXISTS %s`, id.FullyQualifiedName()))
+		require.NoError(t, err)
+	}
+}
+
 func (c *TableClient) CreateWithName(t *testing.T, name string) (*sdk.Table, func()) {
 	t.Helper()
 
