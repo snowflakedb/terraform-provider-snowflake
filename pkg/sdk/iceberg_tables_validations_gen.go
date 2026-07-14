@@ -139,6 +139,34 @@ func (opts *AlterIcebergTableOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
 		}
 	}
+	if valueSet(opts.AddRowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+		if !valueSet(opts.AddRowAccessPolicy.On) {
+			errs = append(errs, errNotSet("AlterIcebergTableOptions.AddRowAccessPolicy", "On"))
+		}
+	}
+	if valueSet(opts.DropRowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.DropRowAccessPolicy.RowAccessPolicy) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+	}
+	if valueSet(opts.DropAndAddRowAccessPolicy) {
+		if valueSet(opts.DropAndAddRowAccessPolicy.Drop) {
+			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy) {
+				errs = append(errs, ErrInvalidObjectIdentifier)
+			}
+		}
+		if valueSet(opts.DropAndAddRowAccessPolicy.Add) {
+			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
+				errs = append(errs, ErrInvalidObjectIdentifier)
+			}
+			if !valueSet(opts.DropAndAddRowAccessPolicy.Add.On) {
+				errs = append(errs, errNotSet("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Add", "On"))
+			}
+		}
+	}
 	if valueSet(opts.SetAggregationPolicy) {
 		if !ValidObjectIdentifier(opts.SetAggregationPolicy.AggregationPolicy) {
 			errs = append(errs, ErrInvalidObjectIdentifier)

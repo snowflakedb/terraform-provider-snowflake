@@ -234,6 +234,7 @@ type IcebergTableRowAccessPolicyRequest struct {
 
 type IcebergTableAggregationPolicyRequest struct {
 	AggregationPolicy SchemaObjectIdentifier // required
+	EntityKey         []Column
 }
 
 type CreateFromIcebergFilesIcebergTableRequest struct {
@@ -316,12 +317,12 @@ type AlterIcebergTableRequest struct {
 	Unset                         *IcebergTableUnsetPropertiesRequest
 	SetTags                       []TagAssociation
 	UnsetTags                     []ObjectIdentifier
-	AddRowAccessPolicy            *ViewAddRowAccessPolicy
-	DropRowAccessPolicy           *ViewDropRowAccessPolicy
-	DropAndAddRowAccessPolicy     *ViewDropAndAddRowAccessPolicy
+	AddRowAccessPolicy            *ViewAddRowAccessPolicyRequest
+	DropRowAccessPolicy           *ViewDropRowAccessPolicyRequest
+	DropAndAddRowAccessPolicy     *IcebergTableDropAndAddRowAccessPolicyRequest
 	DropAllRowAccessPolicies      *bool
-	SetAggregationPolicy          *TableSetAggregationPolicyRequest
-	UnsetAggregationPolicy        *TableUnsetAggregationPolicyRequest
+	SetAggregationPolicy          *ViewSetAggregationPolicyRequest
+	UnsetAggregationPolicy        *ViewUnsetAggregationPolicyRequest
 	SetJoinPolicy                 *TableSetJoinPolicyRequest
 	UnsetJoinPolicy               *TableUnsetJoinPolicyRequest
 	SearchOptimizationAction      *TableSearchOptimizationActionRequest
@@ -428,13 +429,19 @@ type IcebergTableUnsetPropertiesRequest struct {
 	Comment                    *bool
 }
 
-type TableSetAggregationPolicyRequest struct {
-	AggregationPolicy SchemaObjectIdentifier // required
-	EntityKey         []Column
-	Force             *bool
+type IcebergTableDropAndAddRowAccessPolicyRequest struct {
+	Drop IcebergTableDropRowAccessPolicyRequest // required
+	Add  IcebergTableAddRowAccessPolicyRequest  // required
 }
 
-type TableUnsetAggregationPolicyRequest struct{}
+type IcebergTableDropRowAccessPolicyRequest struct {
+	RowAccessPolicy SchemaObjectIdentifier // required
+}
+
+type IcebergTableAddRowAccessPolicyRequest struct {
+	RowAccessPolicy SchemaObjectIdentifier // required
+	On              []Column               // required
+}
 
 type TableSetJoinPolicyRequest struct {
 	JoinPolicy SchemaObjectIdentifier // required

@@ -408,6 +408,7 @@ func TestIcebergTables_Create(t *testing.T) {
 		}
 		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
 			AggregationPolicy: aggregationPolicyId,
+			EntityKey:         []Column{{"ID"}},
 		}
 		opts.Tag = []TagAssociation{
 			{Name: tagId1, Value: "v1"},
@@ -440,7 +441,7 @@ func TestIcebergTables_Create(t *testing.T) {
 				`ICEBERG_VERSION = 2 `+
 				`ENABLE_ICEBERG_MERGE_ON_READ = true `+
 				`ROW ACCESS POLICY %s ON ("ID", "NAME") `+
-				`AGGREGATION POLICY %s `+
+				`AGGREGATION POLICY %s ENTITY KEY ("ID") `+
 				`TAG (%s = 'v1', %s = 'v2') `+
 				`ENABLE_DATA_COMPACTION = true `+
 				`WITH CONTACT (SUPPORT = %s, ACCESS_APPROVAL = %s)`,
@@ -1325,7 +1326,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("validation: valid identifier for [opts.SetAggregationPolicy.AggregationPolicy]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+		opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
 			AggregationPolicy: emptySchemaObjectIdentifier,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
@@ -1876,11 +1877,11 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("alter: drop and add row access policy", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-			Drop: ViewDropRowAccessPolicy{
+		opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{
+			Drop: IcebergTableDropRowAccessPolicy{
 				RowAccessPolicy: rowAccessPolicy1Id,
 			},
-			Add: ViewAddRowAccessPolicy{
+			Add: IcebergTableAddRowAccessPolicy{
 				RowAccessPolicy: rowAccessPolicy2Id,
 				On:              []Column{{"col1"}, {"col2"}},
 			},
@@ -1896,7 +1897,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("alter: set aggregation policy", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+		opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
 			AggregationPolicy: aggregationPolicyId,
 			EntityKey:         []Column{{"col1"}, {"col2"}},
 			Force:             Bool(true),
@@ -1906,7 +1907,7 @@ func TestIcebergTables_Alter(t *testing.T) {
 
 	t.Run("alter: unset aggregation policy", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{}
+		opts.UnsetAggregationPolicy = &ViewUnsetAggregationPolicy{}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ICEBERG TABLE %s UNSET AGGREGATION POLICY`, id.FullyQualifiedName())
 	})
 

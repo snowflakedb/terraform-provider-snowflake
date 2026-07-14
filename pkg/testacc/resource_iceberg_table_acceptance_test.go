@@ -54,6 +54,12 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 	commentChanged := random.Comment()
 	externalComment := random.Comment()
 
+	rowAccessPolicy, rowAccessPolicyCleanup := testClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
+	t.Cleanup(rowAccessPolicyCleanup)
+
+	aggregationPolicy, aggregationPolicyCleanup := testClient().AggregationPolicy.CreateAggregationPolicy(t)
+	t.Cleanup(aggregationPolicyCleanup)
+
 	// modelBasic relies on defaults for all the alterable optional fields.
 	modelBasic := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
 
@@ -65,7 +71,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(5).
 		WithMaxDataExtensionTimeInDays(10).
 		WithEnableDataCompaction(false).
-		WithEnableIcebergMergeOnRead(false)
+		WithEnableIcebergMergeOnRead(false).
+		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+		WithAggregationPolicy(aggregationPolicy, "ID")
 
 	// modelWithAllOptional sets every optional field explicitly, including the ForceNew ones.
 	modelWithAllOptional := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
@@ -82,7 +90,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(5).
 		WithMaxDataExtensionTimeInDays(10).
 		WithEnableDataCompaction(false).
-		WithEnableIcebergMergeOnRead(false)
+		WithEnableIcebergMergeOnRead(false).
+		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+		WithAggregationPolicy(aggregationPolicy, "ID")
 
 	// modelWithAllOptionalChanged sets every optional field to a value different from modelWithAllOptional,
 	// so that reapplying it always forces a new resource (ForceNew fields changed).
@@ -100,7 +110,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(3).
 		WithMaxDataExtensionTimeInDays(7).
 		WithEnableDataCompaction(true).
-		WithEnableIcebergMergeOnRead(true)
+		WithEnableIcebergMergeOnRead(true).
+		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+		WithAggregationPolicy(aggregationPolicy, "ID")
 
 	// modelWithAllOptionalUnset starts from modelWithAllOptionalChanged's ForceNew field values (so no
 	// replace is triggered), but omits every alterable optional field from the config to exercise the
@@ -125,7 +137,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 			HasChangeTrackingString("default").
 			HasErrorLoggingString("default").
 			HasStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasNoRowAccessPolicy().
+			HasNoAggregationPolicy(),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -164,7 +178,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 			HasMaxDataExtensionTimeInDays(10).
 			HasEnableDataCompaction(false).
 			HasEnableIcebergMergeOnRead(false).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+			HasAggregationPolicy(aggregationPolicy, "ID"),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -207,7 +223,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 			HasMaxDataExtensionTimeInDays(10).
 			HasEnableDataCompaction(false).
 			HasEnableIcebergMergeOnRead(false).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+			HasAggregationPolicy(aggregationPolicy, "ID"),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -253,7 +271,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 			HasMaxDataExtensionTimeInDays(7).
 			HasEnableDataCompaction(true).
 			HasEnableIcebergMergeOnRead(true).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+			HasAggregationPolicy(aggregationPolicy, "ID"),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -297,7 +317,9 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 			HasErrorLoggingString("default").
 			HasTargetFileSize(string(sdk.IcebergTableTargetFileSizeAuto)).
 			HasStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasNoRowAccessPolicy().
+			HasNoAggregationPolicy(),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -423,6 +445,10 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 							WithEnableDataCompaction(false).
 							WithEnableIcebergMergeOnRead(false),
 					))
+					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).
+						WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
+					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).
+						WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest()))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -466,6 +492,12 @@ func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 	}
 	comment := random.Comment()
 
+	rowAccessPolicy, rowAccessPolicyCleanup := testClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
+	t.Cleanup(rowAccessPolicyCleanup)
+
+	aggregationPolicy, aggregationPolicyCleanup := testClient().AggregationPolicy.CreateAggregationPolicy(t)
+	t.Cleanup(aggregationPolicyCleanup)
+
 	modelComplete := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
 		WithCatalog("SNOWFLAKE").
 		WithBaseLocation(baseLocation).
@@ -480,7 +512,9 @@ func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(5).
 		WithMaxDataExtensionTimeInDays(10).
 		WithEnableDataCompaction(false).
-		WithEnableIcebergMergeOnRead(false)
+		WithEnableIcebergMergeOnRead(false).
+		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+		WithAggregationPolicy(aggregationPolicy, "ID")
 
 	ref := modelComplete.ResourceReference()
 
@@ -512,7 +546,9 @@ func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 						HasMaxDataExtensionTimeInDays(10).
 						HasEnableDataCompaction(false).
 						HasEnableIcebergMergeOnRead(false).
-						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+						HasAggregationPolicy(aggregationPolicy, "ID"),
 					resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
