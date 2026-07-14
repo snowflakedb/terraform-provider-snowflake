@@ -967,18 +967,6 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	// createInteractiveTable creates an interactive table fixture and returns its id with a cleanup.
-	createInteractiveTable := func(t *testing.T) sdk.SchemaObjectIdentifier {
-		t.Helper()
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		_, err := client.ExecForTests(ctx, fmt.Sprintf(`CREATE INTERACTIVE TABLE %s (id INT) CLUSTER BY (id)`, id.FullyQualifiedName()))
-		require.NoError(t, err)
-		t.Cleanup(func() {
-			_, _ = client.ExecForTests(ctx, fmt.Sprintf(`DROP TABLE IF EXISTS %s`, id.FullyQualifiedName()))
-		})
-		return id
-	}
-
 	t.Run("create interactive: minimal", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id))
@@ -993,8 +981,10 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 	})
 
 	t.Run("create interactive: with tables", func(t *testing.T) {
-		table1 := createInteractiveTable(t)
-		table2 := createInteractiveTable(t)
+		table1, table1Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table2Cleanup)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
@@ -1012,8 +1002,10 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 	})
 
 	t.Run("alter: add and drop tables", func(t *testing.T) {
-		table1 := createInteractiveTable(t)
-		table2 := createInteractiveTable(t)
+		table1, table1Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table1Cleanup)
+		table2, table2Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(table2Cleanup)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
