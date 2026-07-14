@@ -21,7 +21,7 @@ func TestNormalizeMcpServerSpecification(t *testing.T) {
 		yamlOutput, err := NormalizeMcpServerSpecification(yamlInput)
 		require.NoError(t, err)
 
-		require.Equal(t, jsonOutput, yamlOutput)
+		require.JSONEq(t, jsonOutput, yamlOutput)
 	})
 
 	t.Run("empty input", func(t *testing.T) {

@@ -43,22 +43,24 @@ func TestInt_McpServers(t *testing.T) {
 		cleanup := testClientHelper().McpServer.CreateWithRequest(t, sdk.NewCreateMcpServerRequest(id, defaultSpec))
 		t.Cleanup(cleanup)
 
-		assertThatObject(t, objectassert.McpServer(t, id).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(""),
+		assertThatObject(
+			t, objectassert.McpServer(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(""),
 		)
-		assertThatObject(t, objectassert.McpServerDetails(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment("").
-			HasServerSpec(normalizedDefaultSpec).
-			HasCreatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.McpServerDetails(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment("").
+				HasServerSpec(normalizedDefaultSpec).
+				HasCreatedOnNotEmpty(),
 		)
 	})
 
@@ -69,22 +71,24 @@ func TestInt_McpServers(t *testing.T) {
 			WithIfNotExists(true))
 		t.Cleanup(cleanup)
 
-		assertThatObject(t, objectassert.McpServer(t, id).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(""),
+		assertThatObject(
+			t, objectassert.McpServer(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(""),
 		)
-		assertThatObject(t, objectassert.McpServerDetails(t, id).
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment("").
-			HasServerSpec(normalizedComplexSpec).
-			HasCreatedOnNotEmpty(),
+		assertThatObject(
+			t, objectassert.McpServerDetails(t, id).
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment("").
+				HasServerSpec(normalizedComplexSpec).
+				HasCreatedOnNotEmpty(),
 		)
 	})
 
