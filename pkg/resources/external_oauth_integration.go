@@ -537,20 +537,6 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, externalOauthIntegrationSchema, []string{
-			"external_oauth_jws_keys_url",
-			"external_oauth_rsa_public_key",
-			"external_oauth_rsa_public_key_2",
-			"external_oauth_blocked_roles_list",
-			"external_oauth_allowed_roles_list",
-			"external_oauth_audience_list",
-			"external_oauth_any_role_mode",
-			"external_oauth_scope_delimiter",
-			"external_oauth_scope_mapping_attribute",
-			"comment",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
 		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.SecurityIntegrationToSchema(integration)}); err != nil {
 			return diag.FromErr(err)
 		}

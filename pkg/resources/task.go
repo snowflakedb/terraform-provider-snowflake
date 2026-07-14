@@ -664,12 +664,6 @@ func ReadTask(withExternalChangesMarking bool) schema.ReadContextFunc {
 			); err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
-			if err = setStateToValuesFromConfig(d, taskSchema, []string{
-				"allow_overlapping_execution",
-			}); err != nil {
-				return diag.FromErr(err)
-			}
 		}
 
 		if errs := errors.Join(

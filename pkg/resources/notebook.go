@@ -251,12 +251,6 @@ func GetReadNotebookFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, notebookSchema, []string{
-			"warehouse",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.NotebookToSchema(notebook)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.NotebookDetailsToSchema(notebookDetails)}),

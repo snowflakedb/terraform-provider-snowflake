@@ -234,13 +234,6 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, computePoolSchema, []string{
-			"for_application",
-			"auto_resume",
-			"auto_suspend_secs",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ComputePoolToSchema(computePool)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ComputePoolDetailsToSchema(*computePoolDetails)}),

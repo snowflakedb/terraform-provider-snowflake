@@ -622,19 +622,6 @@ func ReadContextSAML2Integration(withExternalChangesMarking bool) schema.ReadCon
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, saml2IntegrationSchema, []string{
-			"enabled",
-			"saml2_enable_sp_initiated",
-			"saml2_sign_request",
-			"saml2_requested_nameid_format",
-			"saml2_force_authn",
-			"saml2_snowflake_acs_url",
-			"saml2_snowflake_issuer_url",
-			"saml2_sp_initiated_login_page_label",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.SecurityIntegrationToSchema(integration)}); err != nil {
 			return diag.FromErr(err)
 		}

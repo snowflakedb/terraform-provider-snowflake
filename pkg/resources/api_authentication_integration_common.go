@@ -344,16 +344,6 @@ func handleApiAuthRead(d *schema.ResourceData,
 			return err
 		}
 	}
-	if err := setStateToValuesFromConfig(d, apiAuthCommonSchema, []string{
-		"oauth_access_token_validity",
-		"oauth_refresh_token_validity",
-		"oauth_client_id",
-		"oauth_client_auth_method",
-		"oauth_token_endpoint",
-	}); err != nil {
-		return err
-	}
-
 	if err := d.Set(ShowOutputAttributeName, []map[string]any{schemas.SecurityIntegrationToSchema(integration)}); err != nil {
 		return err
 	}

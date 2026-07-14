@@ -289,18 +289,6 @@ func ReadResourceMonitor(withExternalChangesMarking bool) schema.ReadContextFunc
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, warehouseSchema, []string{
-			"credit_quota",
-			"frequency",
-			"start_timestamp",
-			"end_timestamp",
-			"notify_triggers",
-			"suspend_trigger",
-			"suspend_immediate_trigger",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.ResourceMonitorToSchema(resourceMonitor)}); err != nil {
 			return diag.FromErr(err)
 		}

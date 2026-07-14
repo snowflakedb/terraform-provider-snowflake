@@ -501,12 +501,7 @@ func ReadObjectRenamingListsAndSets(withExternalChangesMarking bool) schema.Read
 			return diag.FromErr(errors.New("detected external changes in manually_ordered_list"))
 		}
 
-		if d.GetRawState().IsNull() {
-			// For the first read, let's "copy-paste" config into state
-			if err := resources.SetStateToValuesFromConfig(d, objectRenamingListsAndSetsSchema, []string{"manually_ordered_list"}); err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
+		if !d.GetRawState().IsNull() {
 			// For later reads, let's put external changes into the state. Because we don't get the information order
 			// from the external source, we have to guess it. We do it by matching first with state, later with config (if not found).
 			// To correctly find items and their order, you have to match by using fields that uniquely identify a given item (name + type in this case).

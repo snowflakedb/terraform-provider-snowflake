@@ -218,7 +218,7 @@ func ImportServiceFunc(customFieldsHandler func(d *schema.ResourceData, service 
 	}
 }
 
-func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsFunc func(service *sdk.Service) []outputMapping, extraSetStateToValuesFromConfigFields []string) schema.ReadContextFunc {
+func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsFunc func(service *sdk.Service) []outputMapping) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
@@ -258,9 +258,6 @@ func ReadServiceCommonFunc(withExternalChangesMarking bool, extraOutputMappingsF
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, serviceSchema, append(extraSetStateToValuesFromConfigFields, "query_warehouse")); err != nil {
-			return diag.FromErr(err)
-		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ServiceToSchema(service)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ServiceDetailsToSchema(serviceDetails)}),

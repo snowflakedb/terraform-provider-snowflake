@@ -638,14 +638,6 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 				return diag.FromErr(err)
 			}
 		}
-		if err = setStateToValuesFromConfig(d, viewSchema, []string{
-			"change_tracking",
-			"is_recursive",
-			"is_secure",
-			"is_temporary",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
 		policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainView))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("getting policy references for view: %w", err))

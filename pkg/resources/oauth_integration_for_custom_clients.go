@@ -565,18 +565,6 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, oauthIntegrationForCustomClientsSchema, []string{
-			"enabled",
-			"oauth_allow_non_tls_redirect_uri",
-			"oauth_enforce_pkce",
-			"oauth_use_secondary_roles",
-			"oauth_issue_refresh_tokens",
-			"oauth_refresh_token_validity",
-			"blocked_roles_list",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err = d.Set(ShowOutputAttributeName, []map[string]any{schemas.SecurityIntegrationToSchema(integration)}); err != nil {
 			return diag.FromErr(err)
 		}
