@@ -305,12 +305,8 @@ func (r *ViewDropRowAccessPolicyRequest) toOpts() *ViewDropRowAccessPolicy {
 
 func (r *ViewDropAndAddRowAccessPolicyRequest) toOpts() *ViewDropAndAddRowAccessPolicy {
 	opts := &ViewDropAndAddRowAccessPolicy{}
-	if r.Drop != nil {
-		opts.Drop = r.Drop.toOpts()
-	}
-	if r.Add != nil {
-		opts.Add = r.Add.toOpts()
-	}
+	opts.Drop = *r.Drop.toOpts()
+	opts.Add = *r.Add.toOpts()
 	return opts
 }
 

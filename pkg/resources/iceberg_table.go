@@ -278,11 +278,11 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 				aggregationPolicyReq.WithEntityKey(newColumns)
 			}
 			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSetAggregationPolicy(*aggregationPolicyReq.WithForce(true))); err != nil {
-				return diag.FromErr(fmt.Errorf("error setting aggregation policy for view %v: %w", d.Id(), err))
+				return diag.FromErr(fmt.Errorf("error setting aggregation policy for iceberg table %v: %w", d.Id(), err))
 			}
 		} else {
 			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest())); err != nil {
-				return diag.FromErr(fmt.Errorf("error unsetting aggregation policy for view %v", d.Id()))
+				return diag.FromErr(fmt.Errorf("error unsetting aggregation policy for iceberg table %v", d.Id()))
 			}
 		}
 	}

@@ -468,8 +468,8 @@ func TestInt_Views(t *testing.T) {
 
 		// drop and add other policy simultaneously
 		alterRequest = sdk.NewAlterViewRequest(id).WithDropAndAddRowAccessPolicy(*sdk.NewViewDropAndAddRowAccessPolicyRequest(
-			sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID()),
-			sdk.NewViewAddRowAccessPolicyRequest(rowAccessPolicy2.ID(), []sdk.Column{{Value: "ID"}}),
+			*sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID()),
+			*sdk.NewViewAddRowAccessPolicyRequest(rowAccessPolicy2.ID(), []sdk.Column{{Value: "ID"}}),
 		))
 		err = client.Views.Alter(ctx, alterRequest)
 		require.NoError(t, err)

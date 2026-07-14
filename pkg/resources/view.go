@@ -939,7 +939,7 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 		req := sdk.NewAlterViewRequest(id)
 		if addReq != nil && dropReq != nil { // nolint
-			req.WithDropAndAddRowAccessPolicy(*sdk.NewViewDropAndAddRowAccessPolicyRequest(dropReq, addReq))
+			req.WithDropAndAddRowAccessPolicy(*sdk.NewViewDropAndAddRowAccessPolicyRequest(*dropReq, *addReq))
 		} else if addReq != nil {
 			req.WithAddRowAccessPolicy(*addReq)
 		} else if dropReq != nil {

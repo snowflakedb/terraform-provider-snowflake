@@ -191,10 +191,10 @@ func TestViews_Alter(t *testing.T) {
 	t.Run("validation: valid identifier for [opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-			Drop: &ViewDropRowAccessPolicy{
+			Drop: ViewDropRowAccessPolicy{
 				RowAccessPolicy: emptySchemaObjectIdentifier,
 			},
-			Add: &ViewAddRowAccessPolicy{
+			Add: ViewAddRowAccessPolicy{
 				RowAccessPolicy: randomSchemaObjectIdentifier(),
 			},
 		}
@@ -204,10 +204,10 @@ func TestViews_Alter(t *testing.T) {
 	t.Run("validation: valid identifier for [opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-			Drop: &ViewDropRowAccessPolicy{
+			Drop: ViewDropRowAccessPolicy{
 				RowAccessPolicy: randomSchemaObjectIdentifier(),
 			},
-			Add: &ViewAddRowAccessPolicy{
+			Add: ViewAddRowAccessPolicy{
 				RowAccessPolicy: emptySchemaObjectIdentifier,
 			},
 		}
@@ -372,10 +372,10 @@ func TestViews_Alter(t *testing.T) {
 
 		opts := defaultOpts()
 		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-			Drop: &ViewDropRowAccessPolicy{
+			Drop: ViewDropRowAccessPolicy{
 				RowAccessPolicy: rowAccessPolicy1Id,
 			},
-			Add: &ViewAddRowAccessPolicy{
+			Add: ViewAddRowAccessPolicy{
 				RowAccessPolicy: rowAccessPolicy2Id,
 				On:              []Column{{"a"}, {"b"}},
 			},

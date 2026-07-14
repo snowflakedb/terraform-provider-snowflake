@@ -333,8 +333,8 @@ func NewViewDropRowAccessPolicyRequest(
 }
 
 func NewViewDropAndAddRowAccessPolicyRequest(
-	drop *ViewDropRowAccessPolicyRequest,
-	add *ViewAddRowAccessPolicyRequest,
+	drop ViewDropRowAccessPolicyRequest,
+	add ViewAddRowAccessPolicyRequest,
 ) *ViewDropAndAddRowAccessPolicyRequest {
 	s := ViewDropAndAddRowAccessPolicyRequest{}
 	s.Drop = drop

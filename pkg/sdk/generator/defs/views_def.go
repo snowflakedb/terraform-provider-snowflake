@@ -128,8 +128,8 @@ var viewDropRowAccessPolicy = g.NewQueryStruct("ViewDropRowAccessPolicy").
 	WithSharedToOpts()
 
 var viewDropAndAddRowAccessPolicy = g.NewQueryStruct("ViewDropAndAddRowAccessPolicy").
-	OptionalSharedQueryStructField("Drop", viewDropRowAccessPolicy, g.KeywordOptions().Required()).
-	OptionalSharedQueryStructField("Add", viewAddRowAccessPolicy, g.KeywordOptions().Required()).
+	SharedQueryStructField("Drop", viewDropRowAccessPolicy, g.KeywordOptions().Required()).
+	SharedQueryStructField("Add", viewAddRowAccessPolicy, g.KeywordOptions().Required()).
 	WithSharedToOpts()
 
 var viewSetAggregationPolicy = g.NewQueryStruct("ViewSetAggregationPolicy").
