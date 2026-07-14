@@ -48,7 +48,7 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			Alter().
 			SQL("STORAGE LIFECYCLE POLICY").
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			OptionalSetBodyWithPrecedingArrow().
 			OptionalQueryStructField(
 				"Set",

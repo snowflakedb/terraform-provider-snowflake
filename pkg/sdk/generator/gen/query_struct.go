@@ -7,11 +7,10 @@ package gen
 //		...additional fields that are not present in the Field
 //	}
 type QueryStruct struct {
-	name            string
-	fields          []*Field
-	identifierField *Field
-	validations     []*Validation
-	sharedToOpts    bool
+	name         string
+	fields       []*Field
+	validations  []*Validation
+	sharedToOpts bool
 }
 
 func NewQueryStruct(name string) *QueryStruct {

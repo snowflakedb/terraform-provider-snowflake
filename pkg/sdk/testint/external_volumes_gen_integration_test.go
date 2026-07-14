@@ -453,7 +453,7 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			HasEncryptionType("NONE"))
 
 		assertThatObject(t, objectassert.StorageLocationS3CompatDetailsFromObject(t, externalVolumeDetails.StorageLocations[0].S3CompatStorageLocation).
-			HasStorageEndpoint(s3CompatEndpoint).
+			HasEndpoint(s3CompatEndpoint).
 			HasAwsAccessKeyId(awsKmsKeyId))
 	})
 

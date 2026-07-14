@@ -13,6 +13,7 @@ import (
 type Tables interface {
 	DescribeSearchOptimization(ctx context.Context, request *DescribeSearchOptimizationTableRequest) ([]TableSearchOptimizationDetails, error)
 	SelectTableConstraints(ctx context.Context, request *SelectTableConstraintsTableRequest) ([]TableConstraintDetails, error)
+	SelectCheckConstraints(ctx context.Context, request *SelectCheckConstraintsTableRequest) ([]TableCheckConstraintDetails, error)
 }
 
 // DescribeSearchOptimizationTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization.
@@ -83,4 +84,32 @@ type TableConstraintDetails struct {
 	LastAltered       time.Time
 	Enforced          bool
 	Rely              bool
+}
+
+// SelectCheckConstraintsTableOptions is based on https://docs.snowflake.com/en/sql-reference/info-schema/check_constraints.
+type SelectCheckConstraintsTableOptions struct {
+	selectAll                         bool                    `ddl:"static" sql:"SELECT * FROM"`
+	Database                          AccountObjectIdentifier `ddl:"identifier"`
+	dot                               bool                    `ddl:"static" sql:"."`
+	informationSchemaCheckConstraints bool                    `ddl:"static" sql:"INFORMATION_SCHEMA.CHECK_CONSTRAINTS"`
+	where                             bool                    `ddl:"static" sql:"WHERE"`
+	ConstraintSchema                  string                  `ddl:"parameter,single_quotes" sql:"CONSTRAINT_SCHEMA"`
+	and                               bool                    `ddl:"static" sql:"AND"`
+	ConstraintTable                   string                  `ddl:"parameter,single_quotes" sql:"CONSTRAINT_TABLE"`
+}
+
+type tableCheckConstraintDetailsRow struct {
+	ConstraintCatalog string `db:"CONSTRAINT_CATALOG"`
+	ConstraintSchema  string `db:"CONSTRAINT_SCHEMA"`
+	ConstraintTable   string `db:"CONSTRAINT_TABLE"`
+	ConstraintName    string `db:"CONSTRAINT_NAME"`
+	CheckClause       string `db:"CHECK_CLAUSE"`
+}
+
+type TableCheckConstraintDetails struct {
+	ConstraintCatalog string
+	ConstraintSchema  string
+	ConstraintTable   string
+	ConstraintName    string
+	CheckClause       string
 }

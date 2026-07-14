@@ -32,8 +32,8 @@ func (opts *AlterPasswordPolicyOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.NewName) {
-		errs = append(errs, errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "NewName"))
+	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.RenameTo) {
+		errs = append(errs, errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.PasswordMinLength, opts.Set.PasswordMaxLength, opts.Set.PasswordMinUpperCaseChars, opts.Set.PasswordMinLowerCaseChars, opts.Set.PasswordMinNumericChars, opts.Set.PasswordMinSpecialChars, opts.Set.PasswordMinAgeDays, opts.Set.PasswordMaxAgeDays, opts.Set.PasswordMaxRetries, opts.Set.PasswordLockoutTimeMins, opts.Set.PasswordHistory, opts.Set.Comment) {

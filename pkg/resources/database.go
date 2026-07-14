@@ -246,7 +246,7 @@ func UpdateDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			return diag.FromErr(err)
 		}
 
-		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithNewName(newId))
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}

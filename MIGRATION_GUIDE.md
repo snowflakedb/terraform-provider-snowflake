@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
+
+The `default_workload_identity.aws` nested block on the [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) resources now supports an optional `issuer` attribute, which maps to the `ISSUER` parameter of Snowflake's `WORKLOAD_IDENTITY` user property. It is required when configuring JWT-based (`GetWebIdentityToken`) AWS workload identity federation; existing configurations using only `arn` (the `GetCallerIdentity` attestation method) continue to work unchanged.
+
+This is a non-breaking, additive change; no action is required unless you want to adopt JWT-based AWS workload identity federation.
+
 ### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 
 The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) and [`snowflake_oauth_integration_for_partner_applications`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_partner_applications) resources now support the `allowed_roles_list` attribute, which maps to the `ALLOWED_ROLES_LIST` Snowflake property. This attribute specifies Snowflake roles that a user can explicitly consent to using after authenticating. It can only be set when `oauth_use_secondary_roles` is `NONE` (the Snowflake default).

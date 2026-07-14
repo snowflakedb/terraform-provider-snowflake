@@ -116,7 +116,7 @@ var postgresInstancesDef = g.NewInterface(
 		SQL("POSTGRES INSTANCE").
 		IfExists().
 		Name().
-		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("PostgresInstanceSet").
