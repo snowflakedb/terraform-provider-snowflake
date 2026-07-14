@@ -20,7 +20,6 @@ var DynamicTableSchedulingStateEnumDef = g.NewEnum(
 	"ACTIVE", "SUSPENDED",
 )
 
-// targetLagDef wraps TargetLag to avoid "Field already has a parent" panic when reused across Create and Set.
 func targetLagDef() *g.QueryStruct {
 	return g.NewQueryStruct("TargetLag").
 		OptionalText("MaximumDuration", g.KeywordOptions().SingleQuotes()).
@@ -28,7 +27,6 @@ func targetLagDef() *g.QueryStruct {
 		WithValidation(g.ConflictingFields, "MaximumDuration", "Downstream")
 }
 
-// dynamicTableSetDef wraps DynamicTableSet to avoid "Field already has a parent" panic.
 func dynamicTableSetDef() *g.QueryStruct {
 	return g.NewQueryStruct("DynamicTableSet").
 		OptionalQueryStructField("TargetLag", targetLagDef(), g.ParameterOptions().SQL("TARGET_LAG").NoQuotes()).
@@ -36,7 +34,6 @@ func dynamicTableSetDef() *g.QueryStruct {
 		WithAdditionalValidations()
 }
 
-// dynamicTableAddStorageLifecyclePolicyDef wraps DynamicTableAddStorageLifecyclePolicy to avoid "Field already has a parent" panic.
 func dynamicTableAddStorageLifecyclePolicyDef() *g.QueryStruct {
 	return g.NewQueryStruct("DynamicTableAddStorageLifecyclePolicy").
 		SQL("ADD").
