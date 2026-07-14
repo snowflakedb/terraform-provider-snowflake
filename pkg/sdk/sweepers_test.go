@@ -104,7 +104,8 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	allClients := []*sdk.Client{client, secondaryClient, thirdClient, fourthClient}
 
 	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
-		allClients = append(allClients,
+		allClients = append(
+			allClients,
 			snowflakeDefaultsTestClient(t),
 			azureTestClient(t),
 		)
