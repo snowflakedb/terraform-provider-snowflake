@@ -156,7 +156,7 @@ func (e *IncorrectIdentifierError) Error() string {
 
 func asId[T supportedIdentifierTypes](id sdk.ObjectIdentifier) (*T, error) {
 	if idCast, ok := id.(T); !ok {
-		return nil, &IncorrectIdentifierError{reflect.TypeOf(new(T)).Elem().Name(), id}
+		return nil, &IncorrectIdentifierError{reflect.TypeFor[T]().Name(), id}
 	} else {
 		return &idCast, nil
 	}
@@ -705,7 +705,7 @@ func CheckResourceTagUnset(t *testing.T) func(*terraform.State) error {
 			if err != nil {
 				return err
 			}
-			for i := 0; i < idLen; i++ {
+			for i := range idLen {
 				idRaw := rs.Primary.Attributes[fmt.Sprintf("object_identifiers.%d", i)]
 				var id sdk.ObjectIdentifier
 				// TODO(SNOW-1229218): Use a common mapper to get object id.

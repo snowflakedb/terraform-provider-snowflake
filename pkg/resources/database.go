@@ -406,7 +406,7 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		replicationAllowedToAccounts := make([]sdk.AccountIdentifier, 0)
 		failoverAllowedToAccounts := make([]sdk.AccountIdentifier, 0)
 
-		for _, allowedAccount := range strings.Split(replicationDatabases[0].ReplicationAllowedToAccounts, ",") {
+		for allowedAccount := range strings.SplitSeq(replicationDatabases[0].ReplicationAllowedToAccounts, ",") {
 			allowedAccountIdentifier := sdk.NewAccountIdentifierFromFullyQualifiedName(strings.TrimSpace(allowedAccount))
 			if currentAccountIdentifier.FullyQualifiedName() == allowedAccountIdentifier.FullyQualifiedName() {
 				continue
@@ -414,7 +414,7 @@ func ReadDatabase(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 			replicationAllowedToAccounts = append(replicationAllowedToAccounts, allowedAccountIdentifier)
 		}
 
-		for _, allowedAccount := range strings.Split(replicationDatabases[0].FailoverAllowedToAccounts, ",") {
+		for allowedAccount := range strings.SplitSeq(replicationDatabases[0].FailoverAllowedToAccounts, ",") {
 			allowedAccountIdentifier := sdk.NewAccountIdentifierFromFullyQualifiedName(strings.TrimSpace(allowedAccount))
 			if currentAccountIdentifier.FullyQualifiedName() == allowedAccountIdentifier.FullyQualifiedName() {
 				continue

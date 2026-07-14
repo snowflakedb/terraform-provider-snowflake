@@ -122,7 +122,6 @@ func ReadSecrets(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 	flattenedSecrets := make([]map[string]any, len(secrets))
 	for i, secret := range secrets {
-		secret := secret
 		var secretDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.Secrets.Describe(ctx, secret.ID())

@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -69,10 +70,8 @@ func IntInSlice(valid []int) schema.SchemaValidateDiagFunc {
 			return diag.Errorf("expected type of %v to be integer", path)
 		}
 
-		for _, validInt := range valid {
-			if v == validInt {
-				return nil
-			}
+		if slices.Contains(valid, v) {
+			return nil
 		}
 
 		return diag.Errorf("expected %v to be one of %v, got %d", path, valid, v)

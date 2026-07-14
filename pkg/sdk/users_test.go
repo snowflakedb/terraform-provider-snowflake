@@ -1207,7 +1207,6 @@ func Test_User_ToSecondaryRolesOption(t *testing.T) {
 	}
 
 	for _, tc := range valid {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToSecondaryRolesOption(tc.input)
 			require.NoError(t, err)
@@ -1216,7 +1215,6 @@ func Test_User_ToSecondaryRolesOption(t *testing.T) {
 	}
 
 	for _, tc := range invalid {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToSecondaryRolesOption(tc.input)
 			require.Error(t, err)
@@ -1240,7 +1238,6 @@ func Test_User_GetSecondaryRolesOptionFrom(t *testing.T) {
 	}
 
 	for _, tc := range valid {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got := GetSecondaryRolesOptionFrom(tc.input)
 			require.Equal(t, tc.want, got)
@@ -1248,7 +1245,6 @@ func Test_User_GetSecondaryRolesOptionFrom(t *testing.T) {
 	}
 
 	for _, tc := range valid {
-		tc := tc
 		t.Run(fmt.Sprintf("invoked from user: %s", tc.input), func(t *testing.T) {
 			user := User{DefaultSecondaryRoles: tc.input}
 			got := user.GetSecondaryRolesOption()

@@ -6,6 +6,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -1181,10 +1182,8 @@ func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption st
 }
 
 func validateFormatTypeOptions(formatType, formatTypeOption string, validFormatTypeOptions []string) error {
-	for _, f := range validFormatTypeOptions {
-		if f == formatTypeOption {
-			return nil
-		}
+	if slices.Contains(validFormatTypeOptions, formatTypeOption) {
+		return nil
 	}
 	return fmt.Errorf("%v is an invalid format type option for format type %v", formatTypeOption, formatType)
 }

@@ -196,7 +196,6 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 
 	var replicationPrimaryDatabase *sdk.ReplicationDatabase
 	for _, replicationDatabase := range replicationDatabases {
-		replicationDatabase := replicationDatabase
 		if !replicationDatabase.IsPrimary &&
 			replicationDatabase.AccountLocator == client.GetAccountLocator() &&
 			replicationDatabase.Name == secondaryDatabaseId.Name() {

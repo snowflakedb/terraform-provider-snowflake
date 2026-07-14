@@ -13,7 +13,7 @@ import (
 // - Add unit tests.
 // - Handle error history.
 func Retry(attempts int, sleepDuration time.Duration, f func() (error, bool)) error {
-	for i := 0; i < attempts; i++ {
+	for range attempts {
 		err, done := f()
 		if err != nil {
 			return err

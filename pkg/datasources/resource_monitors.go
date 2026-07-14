@@ -66,7 +66,6 @@ func ReadResourceMonitors(ctx context.Context, d *schema.ResourceData, meta any)
 
 	flattenedResourceMonitors := make([]map[string]any, len(resourceMonitors))
 	for i, resourceMonitor := range resourceMonitors {
-		resourceMonitor := resourceMonitor
 		flattenedResourceMonitors[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.ResourceMonitorToSchema(&resourceMonitor)},
 		}

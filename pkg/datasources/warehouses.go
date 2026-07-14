@@ -95,7 +95,6 @@ func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	flattenedWarehouses := make([]map[string]any, len(warehouses))
 
 	for i, warehouse := range warehouses {
-		warehouse := warehouse
 		var warehouseDescription []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Warehouses.Describe(ctx, warehouse.ID())

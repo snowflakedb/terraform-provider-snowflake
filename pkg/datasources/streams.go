@@ -80,7 +80,6 @@ func ReadStreams(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 	flattenedStreams := make([]map[string]any, len(streams))
 	for i, stream := range streams {
-		stream := stream
 		var streamDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.Streams.Describe(ctx, stream.ID())

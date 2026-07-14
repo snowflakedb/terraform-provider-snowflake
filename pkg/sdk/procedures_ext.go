@@ -150,8 +150,8 @@ func procedureDetailsFromRows(rows []ProcedureDetail) (*ProcedureDetails, error)
 				var found bool
 				for _, o := range p {
 					o := strings.TrimSpace(o)
-					if strings.HasPrefix(o, JavaSnowparkPackageString) {
-						v.SnowparkVersion = strings.TrimPrefix(o, JavaSnowparkPackageString)
+					if after, ok := strings.CutPrefix(o, JavaSnowparkPackageString); ok {
+						v.SnowparkVersion = after
 						found = true
 					} else {
 						filtered = append(filtered, o)
@@ -166,8 +166,8 @@ func procedureDetailsFromRows(rows []ProcedureDetail) (*ProcedureDetails, error)
 				var found bool
 				for _, o := range p {
 					o := strings.TrimSpace(o)
-					if strings.HasPrefix(o, PythonSnowparkPackageString) {
-						v.SnowparkVersion = strings.TrimPrefix(o, PythonSnowparkPackageString)
+					if after, ok := strings.CutPrefix(o, PythonSnowparkPackageString); ok {
+						v.SnowparkVersion = after
 						found = true
 					} else {
 						filtered = append(filtered, o)

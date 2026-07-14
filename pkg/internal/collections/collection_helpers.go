@@ -2,6 +2,7 @@ package collections
 
 import (
 	"errors"
+	"maps"
 	"reflect"
 	"strings"
 )
@@ -55,9 +56,7 @@ func MapErr[T any, R any](collection []T, mapper func(T) (R, error)) ([]R, error
 func MergeMaps[M ~map[K]V, K comparable, V any](src ...M) M {
 	merged := make(M)
 	for _, m := range src {
-		for k, v := range m {
-			merged[k] = v
-		}
+		maps.Copy(merged, m)
 	}
 	return merged
 }

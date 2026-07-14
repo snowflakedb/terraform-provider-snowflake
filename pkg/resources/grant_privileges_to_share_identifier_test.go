@@ -137,7 +137,6 @@ func TestParseGrantPrivilegesToShareId(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			id, err := ParseGrantPrivilegesToShareId(tt.Identifier)
 			if tt.Error == "" {
@@ -220,7 +219,6 @@ func TestGrantPrivilegesToShareIdString(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			assert.Equal(t, tt.Expected, tt.Identifier.String())
 		})
@@ -279,7 +277,6 @@ func TestIsGrantedOnEquivalent(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			result := isGrantedOnEquivalent(tt.Expected, tt.Actual)
 			assert.Equal(t, tt.Result, result)

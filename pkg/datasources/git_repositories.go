@@ -78,7 +78,6 @@ func ReadGitRepositories(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	flattenedGitRepositories := make([]map[string]any, len(gitRepositories))
 	for i, gitRepository := range gitRepositories {
-		gitRepository := gitRepository
 		var gitRepositoryDetails []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.GitRepositories.Describe(ctx, gitRepository.ID())

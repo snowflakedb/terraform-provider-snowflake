@@ -46,7 +46,6 @@ var ExternalOauthPropertiesNames = []string{
 func ExternalOauthSecurityIntegrationPropertiesToSchema(securityIntegrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
 	securityIntegrationSchema := make(map[string]any)
 	for _, securityIntegrationProperty := range securityIntegrationProperties {
-		securityIntegrationProperty := securityIntegrationProperty
 		if slices.Contains(ExternalOauthPropertiesNames, securityIntegrationProperty.Name) {
 			securityIntegrationSchema[strings.ToLower(securityIntegrationProperty.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&securityIntegrationProperty)}
 		} else {

@@ -55,7 +55,6 @@ var OauthIntegrationForCustomClientsPropertiesNames = []string{
 func DescribeOauthIntegrationForCustomClientsToSchema(integrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
 	propsSchema := make(map[string]any)
 	for _, property := range integrationProperties {
-		property := property
 		if slices.Contains(OauthIntegrationForCustomClientsPropertiesNames, property.Name) {
 			propsSchema[strings.ToLower(property.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&property)}
 		} else {

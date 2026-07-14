@@ -76,7 +76,7 @@ func IsValidIdentifier[T sdk.AccountObjectIdentifier | sdk.DatabaseObjectIdentif
 					Summary:  "Invalid identifier type",
 					Detail: fmt.Sprintf(
 						"Expected %s identifier type, but got: %T. The correct form of the fully qualified name for this field is: %s, but was %s",
-						reflect.TypeOf(new(T)).Elem().Name(),
+						reflect.TypeFor[T]().Name(),
 						id,
 						getExpectedIdentifierRepresentationFromGeneric[T](),
 						getExpectedIdentifierRepresentationFromParam(id),
