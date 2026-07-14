@@ -22,9 +22,12 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 		t.Skip("Missing snowflake defaults configuration on prod environment")
 	}
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithProfile(testprofiles.SnowflakeDefaults).
+		WithPreviewFeaturesEnabled("snowflake_authentication_policies_datasource")
+
 	basicModel := datasourcemodel.AuthenticationPolicies("test").
 		WithOnAccount()
-	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.SnowflakeDefaults)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -41,10 +44,8 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 				Config:                   accconfig.FromModels(t, providerModel, basicModel),
 				Check: assertThat(
 					t,
+					// Due to custom SHOW query logic the BUILT-IN authentication policy is not populated in the data source
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.0.database_name", "")),
-					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.0.schema_name", "")),
-					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.0.name", "BUILT-IN")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.describe_output.#", "0")),
 				),
 			},
