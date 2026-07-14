@@ -426,7 +426,8 @@ func (w *WarehouseAssert) HasTables(expected ...sdk.SchemaObjectIdentifier) *War
 		slices.Sort(mapped)
 		slices.Sort(mappedExpected)
 		if !slices.Equal(mapped, mappedExpected) {
-			return fmt.Errorf("expected tables: %v; got: %v", expected, o.Tables)
+			return fmt.Errorf("expected tables: %v; got: %v", mappedExpected, mapped)
+
 		}
 		return nil
 	})
