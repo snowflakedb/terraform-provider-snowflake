@@ -4,10 +4,192 @@ package sdk
 
 import (
 	"context"
+	"time"
 )
 
 type FileFormats interface {
+	Create(ctx context.Context, request *CreateFileFormatRequest) error
+	Alter(ctx context.Context, request *AlterFileFormatRequest) error
+	Drop(ctx context.Context, request *DropFileFormatRequest) error
+	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
+	Show(ctx context.Context, request *ShowFileFormatRequest) ([]FileFormat, error)
+	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error)
+	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]FileFormatProperty, error)
 	DummyOperation(ctx context.Context, request *DummyOperationFileFormatRequest) error
+	// DescribeDetails returns the parsed, type-specific file format options.
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error)
+}
+
+// CreateFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-file-format.
+type CreateFileFormatOptions struct {
+	create                  bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace               *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	fileFormat              bool                    `ddl:"static" sql:"FILE FORMAT"`
+	IfNotExists             *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                    SchemaObjectIdentifier  `ddl:"identifier"`
+	FileFormatType          FileFormatType          `ddl:"parameter,no_quotes" sql:"TYPE"`
+	FileFormatObjectOptions FileFormatObjectOptions `ddl:"list,no_parentheses,no_comma"`
+	Comment                 *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type FileFormatObjectOptions struct {
+	Comment                         *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	CsvCompression                  *CsvCompression              `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	CsvRecordDelimiter              *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"RECORD_DELIMITER ="`
+	CsvFieldDelimiter               *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"FIELD_DELIMITER ="`
+	CsvMultiLine                    *bool                        `ddl:"parameter" sql:"MULTI_LINE"`
+	CsvFileExtension                *string                      `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
+	CsvParseHeader                  *bool                        `ddl:"parameter" sql:"PARSE_HEADER"`
+	CsvSkipHeader                   *int                         `ddl:"parameter" sql:"SKIP_HEADER"`
+	CsvSkipBlankLines               *bool                        `ddl:"parameter" sql:"SKIP_BLANK_LINES"`
+	CsvDateFormat                   *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"DATE_FORMAT ="`
+	CsvTimeFormat                   *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"TIME_FORMAT ="`
+	CsvTimestampFormat              *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"TIMESTAMP_FORMAT ="`
+	CsvBinaryFormat                 *BinaryFormat                `ddl:"parameter,no_quotes" sql:"BINARY_FORMAT"`
+	CsvEscape                       *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"ESCAPE ="`
+	CsvEscapeUnenclosedField        *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"ESCAPE_UNENCLOSED_FIELD ="`
+	CsvTrimSpace                    *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
+	CsvFieldOptionallyEnclosedBy    *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"FIELD_OPTIONALLY_ENCLOSED_BY ="`
+	CsvNullIf                       []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	CsvErrorOnColumnCountMismatch   *bool                        `ddl:"parameter" sql:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
+	CsvReplaceInvalidCharacters     *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	CsvEmptyFieldAsNull             *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
+	CsvSkipByteOrderMark            *bool                        `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
+	CsvEncoding                     *CsvEncoding                 `ddl:"parameter,no_quotes" sql:"ENCODING"`
+	JsonCompression                 *JsonCompression             `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	JsonDateFormat                  *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"DATE_FORMAT ="`
+	JsonTimeFormat                  *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"TIME_FORMAT ="`
+	JsonTimestampFormat             *StageFileFormatStringOrAuto `ddl:"list,no_parentheses" sql:"TIMESTAMP_FORMAT ="`
+	JsonBinaryFormat                *BinaryFormat                `ddl:"parameter,no_quotes" sql:"BINARY_FORMAT"`
+	JsonTrimSpace                   *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
+	JsonMultiLine                   *bool                        `ddl:"parameter" sql:"MULTI_LINE"`
+	JsonNullIf                      []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	JsonFileExtension               *string                      `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
+	JsonEnableOctal                 *bool                        `ddl:"parameter" sql:"ENABLE_OCTAL"`
+	JsonAllowDuplicate              *bool                        `ddl:"parameter" sql:"ALLOW_DUPLICATE"`
+	JsonStripOuterArray             *bool                        `ddl:"parameter" sql:"STRIP_OUTER_ARRAY"`
+	JsonStripNullValues             *bool                        `ddl:"parameter" sql:"STRIP_NULL_VALUES"`
+	JsonReplaceInvalidCharacters    *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	JsonIgnoreUtf8Errors            *bool                        `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
+	JsonSkipByteOrderMark           *bool                        `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
+	AvroCompression                 *AvroCompression             `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	AvroTrimSpace                   *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
+	AvroReplaceInvalidCharacters    *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	AvroNullIf                      []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	OrcTrimSpace                    *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
+	OrcReplaceInvalidCharacters     *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	OrcNullIf                       []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	ParquetCompression              *ParquetCompression          `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	ParquetSnappyCompression        *bool                        `ddl:"parameter" sql:"SNAPPY_COMPRESSION"`
+	ParquetBinaryAsText             *bool                        `ddl:"parameter" sql:"BINARY_AS_TEXT"`
+	ParquetUseLogicalType           *bool                        `ddl:"parameter" sql:"USE_LOGICAL_TYPE"`
+	ParquetTrimSpace                *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
+	ParquetUseVectorizedScanner     *bool                        `ddl:"parameter" sql:"USE_VECTORIZED_SCANNER"`
+	ParquetReplaceInvalidCharacters *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	ParquetNullIf                   []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	XmlCompression                  *XmlCompression              `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
+	XmlIgnoreUtf8Errors             *bool                        `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
+	XmlPreserveSpace                *bool                        `ddl:"parameter" sql:"PRESERVE_SPACE"`
+	XmlStripOuterElement            *bool                        `ddl:"parameter" sql:"STRIP_OUTER_ELEMENT"`
+	XmlDisableAutoConvert           *bool                        `ddl:"parameter" sql:"DISABLE_AUTO_CONVERT"`
+	XmlReplaceInvalidCharacters     *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	XmlSkipByteOrderMark            *bool                        `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
+}
+
+type StageFileFormatStringOrNone struct {
+	Value *string `ddl:"keyword,single_quotes"`
+	None  *bool   `ddl:"keyword" sql:"NONE"`
+}
+
+type StageFileFormatStringOrAuto struct {
+	Value *string `ddl:"keyword,single_quotes"`
+	Auto  *bool   `ddl:"keyword" sql:"AUTO"`
+}
+
+// AlterFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-file-format.
+type AlterFileFormatOptions struct {
+	alter      bool                     `ddl:"static" sql:"ALTER"`
+	fileFormat bool                     `ddl:"static" sql:"FILE FORMAT"`
+	IfExists   *bool                    `ddl:"keyword" sql:"IF EXISTS"`
+	name       SchemaObjectIdentifier   `ddl:"identifier"`
+	RenameTo   *SchemaObjectIdentifier  `ddl:"identifier" sql:"RENAME TO"`
+	Set        *FileFormatObjectOptions `ddl:"list,no_parentheses,no_comma" sql:"SET"`
+}
+
+// DropFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-file-format.
+type DropFileFormatOptions struct {
+	drop       bool                   `ddl:"static" sql:"DROP"`
+	fileFormat bool                   `ddl:"static" sql:"FILE FORMAT"`
+	IfExists   *bool                  `ddl:"keyword" sql:"IF EXISTS"`
+	name       SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+// ShowFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-file-formats.
+type ShowFileFormatOptions struct {
+	show        bool  `ddl:"static" sql:"SHOW"`
+	fileFormats bool  `ddl:"static" sql:"FILE FORMATS"`
+	Like        *Like `ddl:"keyword" sql:"LIKE"`
+	In          *In   `ddl:"keyword" sql:"IN"`
+}
+
+type ShowFileFormatsRow struct {
+	CreatedOn     time.Time `db:"created_on"`
+	Name          string    `db:"name"`
+	DatabaseName  string    `db:"database_name"`
+	SchemaName    string    `db:"schema_name"`
+	Type          string    `db:"type"`
+	Owner         string    `db:"owner"`
+	Comment       string    `db:"comment"`
+	OwnerRoleType string    `db:"owner_role_type"`
+	FormatOptions string    `db:"format_options"`
+}
+
+type FileFormat struct {
+	CreatedOn     time.Time
+	Name          string
+	DatabaseName  string
+	SchemaName    string
+	Type          FileFormatType
+	Owner         string
+	Comment       string
+	OwnerRoleType string
+	FormatOptions string
+	Options       FileFormatObjectOptions // Adjusted manually: parsed from FormatOptions JSON.
+}
+
+func (v *FileFormat) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}
+
+func (v *FileFormat) ObjectType() ObjectType {
+	return ObjectTypeFileFormat
+}
+
+// DescribeFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-file-format.
+type DescribeFileFormatOptions struct {
+	describe   bool                   `ddl:"static" sql:"DESCRIBE"`
+	fileFormat bool                   `ddl:"static" sql:"FILE FORMAT"`
+	name       SchemaObjectIdentifier `ddl:"identifier"`
+}
+
+type descFileFormatsDbRow struct {
+	Property        string `db:"property"`
+	PropertyType    string `db:"property_type"`
+	PropertyValue   string `db:"property_value"`
+	PropertyDefault string `db:"property_default"`
+}
+
+type FileFormatProperty struct {
+	Name    string
+	Type    string
+	Value   string
+	Default string
+}
+
+type FileFormatDetails struct {
+	Type    FileFormatType
+	Options FileFormatObjectOptions
 }
 
 // DummyOperationFileFormatOptions is based on not available.
@@ -48,16 +230,6 @@ type FileFormatCsvOptions struct {
 	EmptyFieldAsNull           *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
 	SkipByteOrderMark          *bool                        `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 	Encoding                   *CsvEncoding                 `ddl:"parameter,no_quotes" sql:"ENCODING"`
-}
-
-type StageFileFormatStringOrNone struct {
-	Value *string `ddl:"keyword,single_quotes"`
-	None  *bool   `ddl:"keyword" sql:"NONE"`
-}
-
-type StageFileFormatStringOrAuto struct {
-	Value *string `ddl:"keyword,single_quotes"`
-	Auto  *bool   `ddl:"keyword" sql:"AUTO"`
 }
 
 type FileFormatJsonOptions struct {

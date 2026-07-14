@@ -2,7 +2,118 @@
 
 package sdk
 
-var _ optionsProvider[DummyOperationFileFormatOptions] = new(DummyOperationFileFormatRequest)
+var (
+	_ optionsProvider[CreateFileFormatOptions]         = new(CreateFileFormatRequest)
+	_ optionsProvider[AlterFileFormatOptions]          = new(AlterFileFormatRequest)
+	_ optionsProvider[DropFileFormatOptions]           = new(DropFileFormatRequest)
+	_ optionsProvider[ShowFileFormatOptions]           = new(ShowFileFormatRequest)
+	_ optionsProvider[DescribeFileFormatOptions]       = new(DescribeFileFormatRequest)
+	_ optionsProvider[DummyOperationFileFormatOptions] = new(DummyOperationFileFormatRequest)
+)
+
+type CreateFileFormatRequest struct {
+	OrReplace               *bool
+	IfNotExists             *bool
+	name                    SchemaObjectIdentifier // required
+	FileFormatType          FileFormatType         // required
+	FileFormatObjectOptions FileFormatObjectOptionsRequest
+	Comment                 *string
+}
+
+type FileFormatObjectOptionsRequest struct {
+	Comment                         *string
+	CsvCompression                  *CsvCompression
+	CsvRecordDelimiter              *StageFileFormatStringOrNoneRequest
+	CsvFieldDelimiter               *StageFileFormatStringOrNoneRequest
+	CsvMultiLine                    *bool
+	CsvFileExtension                *string
+	CsvParseHeader                  *bool
+	CsvSkipHeader                   *int
+	CsvSkipBlankLines               *bool
+	CsvDateFormat                   *StageFileFormatStringOrAutoRequest
+	CsvTimeFormat                   *StageFileFormatStringOrAutoRequest
+	CsvTimestampFormat              *StageFileFormatStringOrAutoRequest
+	CsvBinaryFormat                 *BinaryFormat
+	CsvEscape                       *StageFileFormatStringOrNoneRequest
+	CsvEscapeUnenclosedField        *StageFileFormatStringOrNoneRequest
+	CsvTrimSpace                    *bool
+	CsvFieldOptionallyEnclosedBy    *StageFileFormatStringOrNoneRequest
+	CsvNullIf                       []NullString
+	CsvErrorOnColumnCountMismatch   *bool
+	CsvReplaceInvalidCharacters     *bool
+	CsvEmptyFieldAsNull             *bool
+	CsvSkipByteOrderMark            *bool
+	CsvEncoding                     *CsvEncoding
+	JsonCompression                 *JsonCompression
+	JsonDateFormat                  *StageFileFormatStringOrAutoRequest
+	JsonTimeFormat                  *StageFileFormatStringOrAutoRequest
+	JsonTimestampFormat             *StageFileFormatStringOrAutoRequest
+	JsonBinaryFormat                *BinaryFormat
+	JsonTrimSpace                   *bool
+	JsonMultiLine                   *bool
+	JsonNullIf                      []NullString
+	JsonFileExtension               *string
+	JsonEnableOctal                 *bool
+	JsonAllowDuplicate              *bool
+	JsonStripOuterArray             *bool
+	JsonStripNullValues             *bool
+	JsonReplaceInvalidCharacters    *bool
+	JsonIgnoreUtf8Errors            *bool
+	JsonSkipByteOrderMark           *bool
+	AvroCompression                 *AvroCompression
+	AvroTrimSpace                   *bool
+	AvroReplaceInvalidCharacters    *bool
+	AvroNullIf                      []NullString
+	OrcTrimSpace                    *bool
+	OrcReplaceInvalidCharacters     *bool
+	OrcNullIf                       []NullString
+	ParquetCompression              *ParquetCompression
+	ParquetSnappyCompression        *bool
+	ParquetBinaryAsText             *bool
+	ParquetUseLogicalType           *bool
+	ParquetTrimSpace                *bool
+	ParquetUseVectorizedScanner     *bool
+	ParquetReplaceInvalidCharacters *bool
+	ParquetNullIf                   []NullString
+	XmlCompression                  *XmlCompression
+	XmlIgnoreUtf8Errors             *bool
+	XmlPreserveSpace                *bool
+	XmlStripOuterElement            *bool
+	XmlDisableAutoConvert           *bool
+	XmlReplaceInvalidCharacters     *bool
+	XmlSkipByteOrderMark            *bool
+}
+
+type StageFileFormatStringOrNoneRequest struct {
+	Value *string
+	None  *bool
+}
+
+type StageFileFormatStringOrAutoRequest struct {
+	Value *string
+	Auto  *bool
+}
+
+type AlterFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	RenameTo *SchemaObjectIdentifier
+	Set      *FileFormatObjectOptionsRequest
+}
+
+type DropFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+}
+
+type ShowFileFormatRequest struct {
+	Like *Like
+	In   *In
+}
+
+type DescribeFileFormatRequest struct {
+	name SchemaObjectIdentifier // required
+}
 
 type DummyOperationFileFormatRequest struct {
 	FileFormat *FileFormatOptionsRequest
@@ -40,16 +151,6 @@ type FileFormatCsvOptionsRequest struct {
 	EmptyFieldAsNull           *bool
 	SkipByteOrderMark          *bool
 	Encoding                   *CsvEncoding
-}
-
-type StageFileFormatStringOrNoneRequest struct {
-	Value *string
-	None  *bool
-}
-
-type StageFileFormatStringOrAutoRequest struct {
-	Value *string
-	Auto  *bool
 }
 
 type FileFormatJsonOptionsRequest struct {
