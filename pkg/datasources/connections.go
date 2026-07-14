@@ -57,7 +57,6 @@ func ReadConnections(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 	flattenedConnections := make([]map[string]any, len(connections))
 	for i, connection := range connections {
-		connection := connection
 		flattenedConnections[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.ConnectionToSchema(&connection)},
 		}

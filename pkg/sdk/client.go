@@ -45,7 +45,7 @@ type Client struct {
 	ExternalTables               ExternalTables
 	EventTables                  EventTables
 	FailoverGroups               FailoverGroups
-	FileFormats                  LegacyFileFormats
+	FileFormatsLegacy            FileFormatsLegacy
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants
@@ -189,7 +189,7 @@ func (c *Client) initialize() {
 	c.ExternalTables = &externalTables{client: c}
 	c.EventTables = &eventTables{client: c}
 	c.FailoverGroups = &failoverGroups{client: c}
-	c.FileFormats = &legacyFileFormats{client: c}
+	c.FileFormatsLegacy = &fileFormatsLegacy{client: c}
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}

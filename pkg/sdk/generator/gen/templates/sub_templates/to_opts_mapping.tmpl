@@ -11,9 +11,13 @@
     {{- if .ShouldBeInDto }}
         {{- if .HasAnyFields }}
             {{- if or .IsShared .GenerateSharedToOpts }}
+                {{- if .IsPointer }}
                 if {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} != nil {
                 {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}.toOpts()
                 }
+                {{- else }}
+                {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = *{{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}.toOpts()
+                {{- end }}
             {{- else }}
             {{- if or .IsPointer .IsSlice }}
                 if {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} != nil {

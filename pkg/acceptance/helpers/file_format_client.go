@@ -20,18 +20,18 @@ func NewFileFormatClient(context *TestClientContext, idsGenerator *IdsGenerator)
 	}
 }
 
-func (c *FileFormatClient) client() sdk.LegacyFileFormats {
-	return c.context.client.FileFormats
+func (c *FileFormatClient) client() sdk.FileFormatsLegacy {
+	return c.context.client.FileFormatsLegacy
 }
 
-func (c *FileFormatClient) CreateFileFormat(t *testing.T) (*sdk.FileFormat, func()) {
+func (c *FileFormatClient) CreateFileFormat(t *testing.T) (*sdk.FileFormatLegacy, func()) {
 	t.Helper()
-	return c.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptions{
+	return c.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptionsLegacy{
 		Type: sdk.FileFormatTypeCsv,
 	})
 }
 
-func (c *FileFormatClient) CreateFileFormatWithOptions(t *testing.T, opts *sdk.CreateFileFormatOptions) (*sdk.FileFormat, func()) {
+func (c *FileFormatClient) CreateFileFormatWithOptions(t *testing.T, opts *sdk.CreateFileFormatOptionsLegacy) (*sdk.FileFormatLegacy, func()) {
 	t.Helper()
 	ctx := context.Background()
 
@@ -51,7 +51,7 @@ func (c *FileFormatClient) DropFileFormatFunc(t *testing.T, id sdk.SchemaObjectI
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropFileFormatOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, id, &sdk.DropFileFormatOptionsLegacy{IfExists: sdk.Bool(true)})
 		require.NoError(t, err)
 	}
 }

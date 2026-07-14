@@ -73,7 +73,6 @@ func ReadComputePools(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	flattenedComputePools := make([]map[string]any, len(computePools))
 	for i, computePool := range computePools {
-		computePool := computePool
 		var computePoolDetails []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.ComputePools.Describe(ctx, computePool.ID())

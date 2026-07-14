@@ -371,32 +371,44 @@ func TestInt_ShowGrantsToNonExistingRole(t *testing.T) {
 	assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 }
 
-func TestInt_ShowFutureGrantsInNonExistingContainer(t *testing.T) {
+func TestInt_ShowFutureAndInheritedGrantsInNonExistingContainer(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
 
-	testCases := []struct {
+	containers := []struct {
 		Name string
 		In   *sdk.ShowGrantsIn
 	}{
 		{
 			Name: "in non-existing schema",
-			In:   &sdk.ShowGrantsIn{Schema: sdk.Pointer(NonExistingDatabaseObjectIdentifier)},
+			In:   &sdk.ShowGrantsIn{Schema: new(NonExistingDatabaseObjectIdentifier)},
 		},
 		{
 			Name: "in non-existing database",
-			In:   &sdk.ShowGrantsIn{Database: sdk.Pointer(NonExistingAccountObjectIdentifier)},
+			In:   &sdk.ShowGrantsIn{Database: new(NonExistingAccountObjectIdentifier)},
 		},
 	}
 
-	for _, tt := range testCases {
-		t.Run(tt.Name, func(t *testing.T) {
-			_, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-				Future: sdk.Bool(true),
-				In:     tt.In,
+	grantTypes := []struct {
+		Name      string
+		Future    *bool
+		Inherited *bool
+	}{
+		{Name: "future", Future: new(true)},
+		{Name: "inherited", Inherited: new(true)},
+	}
+
+	for _, grantType := range grantTypes {
+		for _, container := range containers {
+			t.Run(grantType.Name+" "+container.Name, func(t *testing.T) {
+				_, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+					Future:    grantType.Future,
+					Inherited: grantType.Inherited,
+					In:        container.In,
+				})
+				assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 			})
-			assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
-		})
+		}
 	}
 }
 
@@ -686,4 +698,70 @@ func TestInt_SafeRevokePrivilegesFromDatabaseRole_AllPipesWithMissingRole(t *tes
 		nil,
 	)
 	assert.NoError(t, err)
+}
+
+func TestInt_SafeRevokeInheritedPrivilegesFromAccountRole(t *testing.T) {
+	client := testClient(t)
+
+	role, roleCleanup := testClientHelper().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	ctx := context.Background()
+
+	databaseId := testClientHelper().Ids.DatabaseId()
+
+	privileges := sdk.InheritedAccountRoleGrantPrivileges{
+		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
+	}
+
+	testCases := []struct {
+		Name string
+		In   sdk.InheritedAccountRoleGrantIn
+		Role sdk.AccountObjectIdentifier
+	}{
+		{Name: "missing account role", In: sdk.InheritedAccountRoleGrantIn{Database: new(databaseId)}, Role: NonExistingAccountObjectIdentifier},
+		{Name: "missing database", In: sdk.InheritedAccountRoleGrantIn{Database: new(NonExistingAccountObjectIdentifier)}, Role: role.ID()},
+		{Name: "missing schema", In: sdk.InheritedAccountRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifier)}, Role: role.ID()},
+		{Name: "missing schema in missing database", In: sdk.InheritedAccountRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase)}, Role: role.ID()},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.Name, func(t *testing.T) {
+			err := client.Grants.RevokeInheritedPrivilegesFromAccountRoleSafely(ctx, privileges, sdk.PluralObjectTypeTables, tt.In, tt.Role)
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestInt_SafeRevokeInheritedPrivilegesFromDatabaseRole(t *testing.T) {
+	client := testClient(t)
+
+	dbRole, dbRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(dbRoleCleanup)
+
+	ctx := context.Background()
+
+	databaseId := testClientHelper().Ids.DatabaseId()
+
+	privileges := sdk.InheritedDatabaseRoleGrantPrivileges{
+		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
+	}
+
+	testCases := []struct {
+		Name string
+		In   sdk.InheritedDatabaseRoleGrantIn
+		Role sdk.DatabaseObjectIdentifier
+	}{
+		{Name: "missing database role", In: sdk.InheritedDatabaseRoleGrantIn{Database: new(databaseId)}, Role: NonExistingDatabaseObjectIdentifier},
+		{Name: "missing database", In: sdk.InheritedDatabaseRoleGrantIn{Database: new(NonExistingAccountObjectIdentifier)}, Role: dbRole.ID()},
+		{Name: "missing schema", In: sdk.InheritedDatabaseRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifier)}, Role: dbRole.ID()},
+		{Name: "missing schema in missing database", In: sdk.InheritedDatabaseRoleGrantIn{Schema: new(NonExistingDatabaseObjectIdentifierWithNonExistingDatabase)}, Role: dbRole.ID()},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.Name, func(t *testing.T) {
+			err := client.Grants.RevokeInheritedPrivilegesFromDatabaseRoleSafely(ctx, privileges, sdk.PluralObjectTypeTables, tt.In, tt.Role)
+			assert.NoError(t, err)
+		})
+	}
 }

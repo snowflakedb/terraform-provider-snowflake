@@ -677,7 +677,7 @@ func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *LegacyTableCopyOnErrorO
 func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRequest) []LegacyFileFormat {
 	fileFormats := make([]LegacyFileFormat, 0, len(stageFileFormatRequests))
 	for _, request := range stageFileFormatRequests {
-		var options *LegacyFileFormatTypeOptions
+		var options *FileFormatTypeOptionsLegacy
 		if request.Options != nil {
 			options = request.Options.toOpts()
 		}
@@ -691,11 +691,11 @@ func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRe
 	return fileFormats
 }
 
-func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *LegacyFileFormatTypeOptions {
+func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptionsLegacy {
 	if v == nil {
 		return nil
 	}
-	return &LegacyFileFormatTypeOptions{
+	return &FileFormatTypeOptionsLegacy{
 		CSVCompression:                  v.CSVCompression,
 		CSVRecordDelimiter:              v.CSVRecordDelimiter,
 		CSVFieldDelimiter:               v.CSVFieldDelimiter,
@@ -759,7 +759,6 @@ func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *LegacyFileFormatTypeOptio
 func convertColumns(columnRequests []TableColumnRequest) []TableColumn {
 	columns := make([]TableColumn, 0, len(columnRequests))
 	for _, columnRequest := range columnRequests {
-		columnRequest := columnRequest
 		var defaultValue *ColumnDefaultValue
 		if columnRequest.defaultValue != nil {
 			var columnIdentity *ColumnIdentity

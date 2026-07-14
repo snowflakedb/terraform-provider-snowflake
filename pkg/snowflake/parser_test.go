@@ -82,7 +82,6 @@ from bar;`
 		{"SNOW-3308280: masking policy on last column reaching end of input", args{snow3308280}, "SELECT col1 FROM DB.SCHEMA.SOURCE_TABLE", false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := NewViewSelectStatementExtractor(tt.args.input)
 			got, err := e.Extract()
@@ -145,7 +144,6 @@ from bar;`
 		{"full", args{full}, "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES", false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := NewViewSelectStatementExtractor(tt.args.input)
 			got, err := e.ExtractMaterializedView()
@@ -214,7 +212,6 @@ from bar;`
 		{"commentBeforeOtherParams", args{commentBeforeOtherParams}, "select * from bar;", false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := NewViewSelectStatementExtractor(tt.args.input)
 			got, err := e.ExtractDynamicTable()
@@ -248,7 +245,6 @@ func TestViewSelectStatementExtractor_consumeToken(t *testing.T) {
 		{"basic - not found", fields{[]rune("fob"), 0}, args{"foo"}, 0},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := &ViewSelectStatementExtractor{
 				input: tt.fields.input,
@@ -278,7 +274,6 @@ func TestViewSelectStatementExtractor_consumeSpace(t *testing.T) {
 		{"middle", fields{[]rune("foo \t\n bar"), 3}, 7},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := &ViewSelectStatementExtractor{
 				input: tt.fields.input,
@@ -307,7 +302,6 @@ func TestViewSelectStatementExtractor_consumeComment(t *testing.T) {
 		{"escaped", fields{[]rune(`comment='fo\'o'`), 0}, 15},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := &ViewSelectStatementExtractor{
 				input: tt.fields.input,
@@ -337,7 +331,6 @@ func TestViewSelectStatementExtractor_consumeClusterBy(t *testing.T) {
 		{"double", fields{[]rune("(c1, c2)"), 0}, 8},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			e := &ViewSelectStatementExtractor{
 				input: tt.fields.input,
