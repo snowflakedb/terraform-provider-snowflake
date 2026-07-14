@@ -3,20 +3,18 @@ package sdk
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
-	"strings"
 	"time"
 )
 
 type Accounts interface {
-	Create(ctx context.Context, id AccountObjectIdentifier, opts *CreateAccountOptions) (*AccountCreateResponse, error)
-	Alter(ctx context.Context, opts *AlterAccountOptions) error
-	Show(ctx context.Context, opts *ShowAccountOptions) ([]Account, error)
+	Create(ctx context.Context, request *CreateAccountRequest) error
+	Alter(ctx context.Context, request *AlterAccountRequest) error
+	Show(ctx context.Context, request *ShowAccountRequest) ([]Account, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*Account, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Account, error)
-	Drop(ctx context.Context, id AccountObjectIdentifier, gracePeriodInDays int, opts *DropAccountOptions) error
-	DropSafely(ctx context.Context, id AccountObjectIdentifier, gracePeriodInDays int) error
-	Undrop(ctx context.Context, id AccountObjectIdentifier) error
+	Drop(ctx context.Context, request *DropAccountRequest) error
+	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
+	Undrop(ctx context.Context, request *UndropAccountRequest) error
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
 	UnsetAllParameters(ctx context.Context) error
 	// UnsetAllPoliciesSafely calls UnsetPolicySafely for every policy that can be unset from the current account.
@@ -34,7 +32,6 @@ type CreateAccountOptions struct {
 	account bool                    `ddl:"static" sql:"ACCOUNT"`
 	name    AccountObjectIdentifier `ddl:"identifier"`
 
-	// Object properties
 	AdminName                string         `ddl:"parameter,single_quotes" sql:"ADMIN_NAME"`
 	AdminPassword            *string        `ddl:"parameter,single_quotes" sql:"ADMIN_PASSWORD"`
 	AdminRSAPublicKey        *string        `ddl:"parameter,single_quotes" sql:"ADMIN_RSA_PUBLIC_KEY"`
@@ -49,35 +46,6 @@ type CreateAccountOptions struct {
 	Comment                  *string        `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	ConsumptionBillingEntity *string        `ddl:"parameter,double_quotes" sql:"CONSUMPTION_BILLING_ENTITY"`
 	Polaris                  *bool          `ddl:"parameter" sql:"POLARIS"`
-}
-
-type AccountCreateResponse struct {
-	AccountLocator    string `json:"accountLocator,omitempty"`
-	AccountLocatorUrl string `json:"accountLocatorUrl,omitempty"`
-	OrganizationName  string
-	AccountName       string         `json:"accountName,omitempty"`
-	Url               string         `json:"url,omitempty"`
-	Edition           AccountEdition `json:"edition,omitempty"`
-	RegionGroup       string         `json:"regionGroup,omitempty"`
-	Cloud             string         `json:"cloud,omitempty"`
-	Region            string         `json:"region,omitempty"`
-}
-
-func ToAccountCreateResponse(v string) (*AccountCreateResponse, error) {
-	var res AccountCreateResponse
-	err := json.Unmarshal([]byte(v), &res)
-	if err != nil {
-		return nil, err
-	}
-	if len(res.Url) > 0 {
-		url := strings.TrimPrefix(res.Url, `https://`)
-		url = strings.TrimPrefix(url, `http://`)
-		parts := strings.SplitN(url, "-", 2)
-		if len(parts) == 2 {
-			res.OrganizationName = strings.ToUpper(parts[0])
-		}
-	}
-	return &res, nil
 }
 
 // AlterAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-account.
@@ -162,11 +130,27 @@ type ShowAccountOptions struct {
 	Like     *Like `ddl:"keyword" sql:"LIKE"`
 }
 
+// DropAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-account.
+type DropAccountOptions struct {
+	drop              bool                    `ddl:"static" sql:"DROP"`
+	account           bool                    `ddl:"static" sql:"ACCOUNT"`
+	IfExists          *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	name              AccountObjectIdentifier `ddl:"identifier"`
+	GracePeriodInDays *int                    `ddl:"parameter" sql:"GRACE_PERIOD_IN_DAYS"`
+}
+
+// UndropAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/undrop-account.
+type UndropAccountOptions struct {
+	undrop  bool                    `ddl:"static" sql:"UNDROP"`
+	account bool                    `ddl:"static" sql:"ACCOUNT"`
+	name    AccountObjectIdentifier `ddl:"identifier"`
+}
+
 type Account struct {
 	OrganizationName                     string
 	AccountName                          string
 	SnowflakeRegion                      string
-	RegionGroup                          *string // shows only for organizations that span multiple region groups
+	RegionGroup                          *string
 	Edition                              *AccountEdition
 	AccountURL                           *string
 	CreatedOn                            *time.Time
@@ -186,17 +170,12 @@ type Account struct {
 	OrganizationOldUrlLastUsed           *time.Time
 	IsEventsAccount                      *bool
 	IsOrganizationAccount                bool
-	// Available only with the History keyword set
-	DroppedOn                   *time.Time
-	ScheduledDeletionTime       *time.Time
-	RestoredOn                  *time.Time
-	MovedToOrganization         *string
-	MovedOn                     *string
-	OrganizationUrlExpirationOn *time.Time
-}
-
-func (v *Account) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(v.AccountName)
+	DroppedOn                            *time.Time
+	ScheduledDeletionTime                *time.Time
+	RestoredOn                           *time.Time
+	MovedToOrganization                  *string
+	MovedOn                              *string
+	OrganizationUrlExpirationOn          *time.Time
 }
 
 type accountDBRow struct {
@@ -223,27 +202,10 @@ type accountDBRow struct {
 	OrganizationOldUrlLastUsed           sql.NullTime   `db:"organization_old_url_last_used"`
 	IsEventsAccount                      sql.NullBool   `db:"is_events_account"`
 	IsOrganizationAccount                bool           `db:"is_organization_account"`
-	// Available only with the History keyword set
-	DroppedOn                   sql.NullTime   `db:"dropped_on"`
-	ScheduledDeletionTime       sql.NullTime   `db:"scheduled_deletion_time"`
-	RestoredOn                  sql.NullTime   `db:"restored_on"`
-	MovedToOrganization         sql.NullString `db:"moved_to_organization"`
-	MovedOn                     sql.NullString `db:"moved_on"`
-	OrganizationUrlExpirationOn sql.NullTime   `db:"organization_URL_expiration_on"`
-}
-
-// DropAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-account.
-type DropAccountOptions struct {
-	drop              bool                    `ddl:"static" sql:"DROP"`
-	account           bool                    `ddl:"static" sql:"ACCOUNT"`
-	IfExists          *bool                   `ddl:"keyword" sql:"IF EXISTS"`
-	name              AccountObjectIdentifier `ddl:"identifier"`
-	gracePeriodInDays int                     `ddl:"parameter" sql:"GRACE_PERIOD_IN_DAYS"`
-}
-
-// undropAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/undrop-account.
-type undropAccountOptions struct {
-	undrop  bool                    `ddl:"static" sql:"UNDROP"`
-	account bool                    `ddl:"static" sql:"ACCOUNT"`
-	name    AccountObjectIdentifier `ddl:"identifier"`
+	DroppedOn                            sql.NullTime   `db:"dropped_on"`
+	ScheduledDeletionTime                sql.NullTime   `db:"scheduled_deletion_time"`
+	RestoredOn                           sql.NullTime   `db:"restored_on"`
+	MovedToOrganization                  sql.NullString `db:"moved_to_organization"`
+	MovedOn                              sql.NullString `db:"moved_on"`
+	OrganizationUrlExpirationOn          sql.NullTime   `db:"organization_URL_expiration_on"`
 }
