@@ -26,6 +26,12 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(new feature)* `aws_sns_topic` added to `snowflake_stage_external_s3` directory table options
+
+The [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3) resource now supports the `aws_sns_topic` attribute inside the `directory` block. It specifies the AWS SNS topic ARN used to trigger automatic directory table refreshes. This attribute is S3-specific (not available on S3-compatible stages) and causes resource recreation when changed (`ForceNew`).
+
+In most cases no action is required; this is a non-breaking addition. Note that because Snowflake does not expose the original SNS topic ARN in `DESCRIBE STAGE` output, the provider cannot detect external changes to this field.
+
 ### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 
 The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) and [`snowflake_oauth_integration_for_partner_applications`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_partner_applications) resources now support the `allowed_roles_list` attribute, which maps to the `ALLOWED_ROLES_LIST` Snowflake property. This attribute specifies Snowflake roles that a user can explicitly consent to using after authenticating. It can only be set when `oauth_use_secondary_roles` is `NONE` (the Snowflake default).

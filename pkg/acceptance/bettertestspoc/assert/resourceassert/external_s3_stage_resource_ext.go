@@ -7,6 +7,7 @@ import (
 )
 
 // ExternalS3StageDirectoryTableAssert is used for S3 stage directory table assertions.
+// S3 stages don't have notification_integration like Azure stages.
 type ExternalS3StageDirectoryTableAssert struct {
 	Enable          bool
 	RefreshOnCreate *bool

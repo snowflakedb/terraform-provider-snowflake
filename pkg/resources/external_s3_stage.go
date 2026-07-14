@@ -182,7 +182,7 @@ var externalS3StageSchema = func() map[string]*schema.Schema {
 						Type:        schema.TypeString,
 						Optional:    true,
 						ForceNew:    true,
-						Description: "Specifies the AWS SNS topic ARN used for directory table auto-refresh notifications.",
+						Description: externalChangesNotDetectedFieldDescription("Specifies the AWS SNS topic ARN used for directory table auto-refresh notifications. Note: Snowflake does not return the original SNS topic ARN in DESCRIBE STAGE output; external changes to this field cannot be detected by the provider."),
 					},
 				},
 			},

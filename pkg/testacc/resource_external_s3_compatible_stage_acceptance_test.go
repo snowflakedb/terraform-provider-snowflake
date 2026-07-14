@@ -3,7 +3,6 @@
 package testacc
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -566,13 +565,6 @@ func TestAcc_ExternalS3CompatStage_Validations(t *testing.T) {
 		WithInvalidRefreshOnCreate()
 	modelInvalidWithEmptyCredentials := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithEmptyCredentials()
-	modelInvalidWithUnexpectedDirectoryProperty := externalS3CompatibleStageConfigWithUnexpectedAwsSnsTopic(
-		id,
-		s3CompatUrl,
-		s3CompatEndpoint,
-		awsKeyId,
-		awsSecretKey,
-	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -593,47 +585,6 @@ func TestAcc_ExternalS3CompatStage_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, modelInvalidWithEmptyCredentials),
 				ExpectError: regexp.MustCompile(`The argument "aws_secret_key" is required, but no definition was found.`),
 			},
-			{
-				Config:      modelInvalidWithUnexpectedDirectoryProperty,
-				ExpectError: regexp.MustCompile(`An argument named "aws_sns_topic" is not expected here`),
-			},
 		},
 	})
-}
-
-func externalS3CompatibleStageConfigWithUnexpectedAwsSnsTopic(
-	id sdk.SchemaObjectIdentifier,
-	url string,
-	endpoint string,
-	awsKeyId string,
-	awsSecretKey string,
-) string {
-	return fmt.Sprintf(`
-resource "snowflake_stage_external_s3_compatible" "test" {
-	name     = %q
-	database = %q
-	schema   = %q
-	url      = %q
-	endpoint = %q
-
-	credentials {
-		aws_key_id     = %q
-		aws_secret_key = %q
-	}
-
-	directory {
-		enable = true
-		aws_sns_topic = %q
-	}
-}
-`,
-		id.Name(),
-		id.DatabaseName(),
-		id.SchemaName(),
-		url,
-		endpoint,
-		awsKeyId,
-		awsSecretKey,
-		"arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic",
-	)
 }

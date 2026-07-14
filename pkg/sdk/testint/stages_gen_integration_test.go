@@ -494,6 +494,34 @@ func TestInt_Stages(t *testing.T) {
 			HasPrivateLinkUsePrivatelinkEndpoint(false))
 	})
 
+	t.Run("CreateOnS3 - with aws_sns_topic", func(t *testing.T) {
+		snsTopicArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSnsTopicArn)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
+
+		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
+			WithDirectoryTableOptions(*sdk.NewStageS3DirectoryTableOptionsRequest().
+				WithEnable(true).
+				WithAutoRefresh(true).
+				WithAwsSnsTopic(snsTopicArn))
+
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasType(sdk.StageTypeExternal).
+			HasDirectoryEnabled(true))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableAutoRefresh(true).
+			HasDirectoryTableAwsSnsTopic(snsTopicArn))
+	})
+
 	t.Run("CreateOnS3 - temporary and or replace", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
