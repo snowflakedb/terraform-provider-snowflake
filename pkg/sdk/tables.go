@@ -805,7 +805,7 @@ type LegacyTableCopyOnErrorOptions struct {
 }
 
 type LegacyFileFormat struct {
-	FormatName     *string                            `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
-	FileFormatType *FileFormatType                    `ddl:"parameter" sql:"TYPE"`
-	Options        *LegacyFileFormatTypeOptionsLegacy `ddl:"list,no_comma"`
+	FormatName     *string                      `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
+	FileFormatType *FileFormatType              `ddl:"parameter" sql:"TYPE"`
+	Options        *FileFormatTypeOptionsLegacy `ddl:"list,no_comma"`
 }

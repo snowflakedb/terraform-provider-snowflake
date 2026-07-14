@@ -20,7 +20,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeCsv,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				CSVCompression:                sdk.Pointer(sdk.CsvCompressionBz2),
 				CSVRecordDelimiter:            sdk.String("\\123"),
 				CSVFieldDelimiter:             sdk.String("0x42"),
@@ -110,7 +110,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeCsv,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				CSVFieldOptionallyEnclosedBy: sdk.String("NONE"),
 			},
 		})
@@ -129,7 +129,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeJson,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				JSONCompression:       sdk.Pointer(sdk.JsonCompressionBrotli),
 				JSONDateFormat:        sdk.String("a"),
 				JSONTimeFormat:        sdk.String("b"),
@@ -200,7 +200,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeAvro,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				AvroCompression:              sdk.Pointer(sdk.AvroCompressionGzip),
 				AvroTrimSpace:                sdk.Bool(true),
 				AvroReplaceInvalidCharacters: sdk.Bool(true),
@@ -241,7 +241,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeOrc,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				ORCTrimSpace:                sdk.Bool(true),
 				ORCReplaceInvalidCharacters: sdk.Bool(true),
 				ORCNullIf:                   &[]sdk.NullString{{S: "a"}, {S: "b"}},
@@ -279,7 +279,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeParquet,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				ParquetCompression:              sdk.Pointer(sdk.ParquetCompressionLzo),
 				ParquetBinaryAsText:             sdk.Bool(true),
 				ParquetTrimSpace:                sdk.Bool(true),
@@ -323,7 +323,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeXml,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				XMLCompression:          sdk.Pointer(sdk.XmlCompressionDeflate),
 				XMLIgnoreUTF8Errors:     sdk.Bool(true),
 				XMLPreserveSpace:        sdk.Bool(true),
@@ -407,7 +407,7 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 	t.Run("set + set comment", func(t *testing.T) {
 		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptionsLegacy{
 			Type: sdk.FileFormatTypeCsv,
-			LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
 				CSVCompression: sdk.Pointer(sdk.CsvCompressionAuto),
 				CSVParseHeader: sdk.Bool(false),
 			},
@@ -415,7 +415,7 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 		t.Cleanup(fileFormatCleanup)
 
 		err := client.FileFormatsLegacy.Alter(ctx, fileFormat.ID(), &sdk.AlterFileFormatOptionsLegacy{
-			Set: &sdk.LegacyFileFormatTypeOptionsLegacy{
+			Set: &sdk.FileFormatTypeOptionsLegacy{
 				Comment:        sdk.String("some comment"),
 				CSVCompression: sdk.Pointer(sdk.CsvCompressionBz2),
 				CSVParseHeader: sdk.Bool(true),

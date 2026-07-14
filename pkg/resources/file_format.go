@@ -358,8 +358,8 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	id := sdk.NewSchemaObjectIdentifier(dbName, schemaName, fileFormatName)
 
 	opts := sdk.CreateFileFormatOptionsLegacy{
-		Type:                              sdk.FileFormatType(d.Get("format_type").(string)),
-		LegacyFileFormatTypeOptionsLegacy: sdk.LegacyFileFormatTypeOptionsLegacy{},
+		Type:                        sdk.FileFormatType(d.Get("format_type").(string)),
+		FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{},
 	}
 
 	switch opts.Type {
@@ -820,7 +820,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	runSet := false
-	opts := sdk.AlterFileFormatOptionsLegacy{Set: &sdk.LegacyFileFormatTypeOptionsLegacy{}}
+	opts := sdk.AlterFileFormatOptionsLegacy{Set: &sdk.FileFormatTypeOptionsLegacy{}}
 
 	switch sdk.FileFormatType(d.Get("format_type").(string)) {
 	case sdk.FileFormatTypeCsv:

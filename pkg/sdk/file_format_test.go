@@ -23,7 +23,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeCsv,
 
-			LegacyFileFormatTypeOptionsLegacy: LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
 				CSVCompression:               Pointer(CsvCompressionBz2),
 				CSVRecordDelimiter:           String("-"),
 				CSVFieldDelimiter:            String(":"),
@@ -60,7 +60,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeJson,
 
-			LegacyFileFormatTypeOptionsLegacy: LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
 				JSONCompression:     Pointer(JsonCompressionBrotli),
 				JSONDateFormat:      String("YYYY-MM-DD"),
 				JSONTimeFormat:      String("HH:mm:SS"),
@@ -91,7 +91,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeAvro,
 
-			LegacyFileFormatTypeOptionsLegacy: LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
 				AvroCompression:              Pointer(AvroCompressionDeflate),
 				AvroTrimSpace:                Bool(true),
 				AvroReplaceInvalidCharacters: Bool(true),
@@ -109,7 +109,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeOrc,
 
-			LegacyFileFormatTypeOptionsLegacy: LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
 				ORCTrimSpace:                Bool(true),
 				ORCReplaceInvalidCharacters: Bool(true),
 				ORCNullIf:                   &[]NullString{{"nul"}},
@@ -126,7 +126,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeParquet,
 
-			LegacyFileFormatTypeOptionsLegacy: LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
 				ParquetCompression:              Pointer(ParquetCompressionLzo),
 				ParquetBinaryAsText:             Bool(true),
 				ParquetTrimSpace:                Bool(true),
@@ -144,7 +144,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			name:        id,
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeXml,
-			LegacyFileFormatTypeOptionsLegacy: LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
 				XMLCompression:          Pointer(XmlCompressionZstd),
 				XMLIgnoreUTF8Errors:     Bool(true),
 				XMLPreserveSpace:        Bool(true),
@@ -162,7 +162,7 @@ func TestFileFormatsCreate(t *testing.T) {
 		opts := &CreateFileFormatOptionsLegacy{
 			name: id,
 			Type: FileFormatTypeCsv,
-			LegacyFileFormatTypeOptionsLegacy: LegacyFileFormatTypeOptionsLegacy{
+			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
 				CSVNullIf:                     &[]NullString{{"NULL"}},
 				CSVSkipBlankLines:             Bool(false),
 				CSVTrimSpace:                  Bool(false),
@@ -196,7 +196,7 @@ func TestFileFormatsAlter(t *testing.T) {
 		opts := &AlterFileFormatOptionsLegacy{
 			IfExists: Bool(true),
 			name:     id,
-			Set: &LegacyFileFormatTypeOptionsLegacy{
+			Set: &FileFormatTypeOptionsLegacy{
 				AvroCompression:              Pointer(AvroCompressionBrotli),
 				AvroTrimSpace:                Bool(true),
 				AvroReplaceInvalidCharacters: Bool(true),
@@ -210,7 +210,7 @@ func TestFileFormatsAlter(t *testing.T) {
 		opts := &AlterFileFormatOptionsLegacy{
 			IfExists: Bool(true),
 			name:     id,
-			Set: &LegacyFileFormatTypeOptionsLegacy{
+			Set: &FileFormatTypeOptionsLegacy{
 				AvroCompression:              Pointer(AvroCompressionBrotli),
 				AvroTrimSpace:                Bool(true),
 				AvroReplaceInvalidCharacters: Bool(true),
