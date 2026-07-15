@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -133,6 +134,22 @@ func TestAcc_IcebergTables_Filtering(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelWithLimit.DatasourceReference(), "iceberg_tables.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelNoResults.DatasourceReference(), "iceberg_tables.#", "0")),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_IcebergTables_emptyIn(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, datasourcemodel.IcebergTables("test").WithEmptyIn()),
+				ExpectError: regexp.MustCompile("Invalid combination of arguments"),
 			},
 		},
 	})
