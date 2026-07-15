@@ -32,6 +32,7 @@ const (
 	Listings                       datasource = "snowflake_listings"
 	MaskingPolicies                datasource = "snowflake_masking_policies"
 	MaterializedViews              datasource = "snowflake_materialized_views"
+	McpServers                     datasource = "snowflake_mcp_servers"
 	NetworkPolicies                datasource = "snowflake_network_policies"
 	NetworkRules                   datasource = "snowflake_network_rules"
 	Notebooks                      datasource = "snowflake_notebooks"

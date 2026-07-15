@@ -31,6 +31,21 @@ func ImportedMcpServerShowOutput(t *testing.T, id string) *McpServerShowOutputAs
 	return &mcpServerAssert
 }
 
+func McpServersDatasourceShowOutput(t *testing.T, name string) *McpServerShowOutputAssert {
+	t.Helper()
+
+	return McpServersDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func McpServersDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *McpServerShowOutputAssert {
+	t.Helper()
+
+	mcpServerAssert := McpServerShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "mcp_servers", idx),
+	}
+	return &mcpServerAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

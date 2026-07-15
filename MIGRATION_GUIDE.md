@@ -54,6 +54,13 @@ The `partition_specs` field in the `show_output` of the Iceberg table resources 
 
 If you have existing state with the old string-based `partition_specs`, refresh the resource (e.g. `terraform apply` or `terraform refresh`) to update it to the new format. No changes to your resource configuration are required, as `partition_specs` is a computed, read-only field.
 
+### *(new feature)* New MCP Server data source
+
+We have added a new preview data source for MCP Servers:
+- [snowflake_mcp_servers](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/mcp_servers) for listing and filtering MCP Servers using `SHOW MCP SERVERS` and `DESCRIBE MCP SERVER` output.
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_mcp_servers_datasource` to the `preview_features_enabled` field in the provider configuration.
+
 ## v2.17.x ➞ v2.18.0
 
 ### Multiple resources and data sources promoted to stable
