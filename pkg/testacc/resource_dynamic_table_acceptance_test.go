@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -58,7 +60,6 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 		WithRefreshMode(string(sdk.DynamicTableRefreshModeFull)).
 		WithDependsOn(tableModel.ResourceReference())
 
-	resourceName := "snowflake_dynamic_table.dt"
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -68,95 +69,93 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, tableModel, modelBasic),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", dynamicTableId.Name()),
-					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", dynamicTableId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "database", TestDatabaseName),
-					resource.TestCheckResourceAttr(resourceName, "schema", TestSchemaName),
-					resource.TestCheckResourceAttr(resourceName, "warehouse", TestWarehouseName),
-					resource.TestCheckResourceAttr(resourceName, "initialize", string(sdk.DynamicTableInitializeOnCreate)),
-					resource.TestCheckResourceAttr(resourceName, "refresh_mode", string(sdk.DynamicTableRefreshModeAuto)),
-					resource.TestCheckResourceAttr(resourceName, "target_lag.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "target_lag.0.maximum_duration", "2 minutes"),
-					resource.TestCheckResourceAttr(resourceName, "query", fmt.Sprintf("select \"id\" from \"%v\".\"%v\".\"%v\"", TestDatabaseName, TestSchemaName, tableId.Name())),
-					resource.TestCheckResourceAttr(resourceName, "comment", comment),
-
-					// computed attributes
-
-					// - not used at this time
-					//  resource.TestCheckResourceAttrSet(resourceName, "cluster_by"),
-					resource.TestCheckResourceAttrSet(resourceName, "rows"),
-					resource.TestCheckResourceAttrSet(resourceName, "bytes"),
-					resource.TestCheckResourceAttrSet(resourceName, "owner"),
-					// - not used at this time
-					// resource.TestCheckResourceAttrSet(resourceName, "automatic_clustering"),
-					resource.TestCheckResourceAttrSet(resourceName, "scheduling_state"),
-					resource.TestCheckResourceAttrSet(resourceName, "last_suspended_on"),
-					resource.TestCheckResourceAttrSet(resourceName, "is_clone"),
-					resource.TestCheckResourceAttrSet(resourceName, "is_replica"),
-					resource.TestCheckResourceAttrSet(resourceName, "data_timestamp"),
-
-					resource.TestCheckResourceAttrWith(resourceName, "created_on", func(value string) error {
+				Check: assertThat(
+					t,
+					resourceassert.DynamicTableResource(t, modelBasic.ResourceReference()).
+						HasName(dynamicTableId.Name()).
+						HasFullyQualifiedName(dynamicTableId.FullyQualifiedName()).
+						HasDatabase(TestDatabaseName).
+						HasSchema(TestSchemaName).
+						HasWarehouse(TestWarehouseName).
+						HasInitialize(string(sdk.DynamicTableInitializeOnCreate)).
+						HasRefreshMode(string(sdk.DynamicTableRefreshModeAuto)).
+						HasQuery(fmt.Sprintf("select \"id\" from \"%v\".\"%v\".\"%v\"", TestDatabaseName, TestSchemaName, tableId.Name())).
+						HasComment(comment).
+						HasRowsNotEmpty().
+						HasBytesNotEmpty().
+						HasOwnerNotEmpty().
+						HasSchedulingStateNotEmpty().
+						HasNoLastSuspendedOn().
+						HasIsClone(false).
+						HasIsReplica(false).
+						HasDataTimestampNotEmpty(),
+					// target_lag has no typed assertion
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "target_lag.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "target_lag.0.maximum_duration", "2 minutes")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "created_on", func(value string) error {
 						createdOn = value
 						return nil
-					}),
+					})),
 				),
 			},
 			// test target lag to downstream and change comment
 			{
 				Config: accconfig.FromModels(t, tableModel, modelWithDownstreamLag),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", dynamicTableId.Name()),
-					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", dynamicTableId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "database", TestDatabaseName),
-					resource.TestCheckResourceAttr(resourceName, "schema", TestSchemaName),
-					resource.TestCheckResourceAttr(resourceName, "warehouse", newWarehouse.ID().Name()),
-					resource.TestCheckResourceAttr(resourceName, "target_lag.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "target_lag.0.downstream", "true"),
-					resource.TestCheckResourceAttr(resourceName, "comment", newComment),
-
-					resource.TestCheckResourceAttrWith(resourceName, "created_on", func(value string) error {
+				Check: assertThat(
+					t,
+					resourceassert.DynamicTableResource(t, modelWithDownstreamLag.ResourceReference()).
+						HasName(dynamicTableId.Name()).
+						HasFullyQualifiedName(dynamicTableId.FullyQualifiedName()).
+						HasDatabase(TestDatabaseName).
+						HasSchema(TestSchemaName).
+						HasWarehouse(newWarehouse.ID().Name()).
+						HasComment(newComment),
+					assert.Check(resource.TestCheckResourceAttr(modelWithDownstreamLag.ResourceReference(), "target_lag.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithDownstreamLag.ResourceReference(), "target_lag.0.downstream", "true")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelWithDownstreamLag.ResourceReference(), "created_on", func(value string) error {
 						if value != createdOn {
 							return fmt.Errorf("created_on changed from %v to %v", createdOn, value)
 						}
 						return nil
-					}),
+					})),
 				),
 			},
 			// test changing initialize setting
 			{
 				Config: accconfig.FromModels(t, tableModel, modelWithInitialize),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "initialize", string(sdk.DynamicTableInitializeOnSchedule)),
-
-					resource.TestCheckResourceAttrWith(resourceName, "created_on", func(value string) error {
+				Check: assertThat(
+					t,
+					resourceassert.DynamicTableResource(t, modelWithInitialize.ResourceReference()).
+						HasInitialize(string(sdk.DynamicTableInitializeOnSchedule)),
+					assert.Check(resource.TestCheckResourceAttrWith(modelWithInitialize.ResourceReference(), "created_on", func(value string) error {
 						if value == createdOn {
 							return fmt.Errorf("expected created_on to change but was not changed")
 						}
 						createdOn = value
 						return nil
-					}),
+					})),
 				),
 			},
 			// test changing refresh_mode setting
 			{
 				Config: accconfig.FromModels(t, tableModel, modelWithRefreshMode),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "initialize", string(sdk.DynamicTableInitializeOnSchedule)),
-					resource.TestCheckResourceAttr(resourceName, "refresh_mode", string(sdk.DynamicTableRefreshModeFull)),
-
-					resource.TestCheckResourceAttrWith(resourceName, "created_on", func(value string) error {
+				Check: assertThat(
+					t,
+					resourceassert.DynamicTableResource(t, modelWithRefreshMode.ResourceReference()).
+						HasInitialize(string(sdk.DynamicTableInitializeOnSchedule)).
+						HasRefreshMode(string(sdk.DynamicTableRefreshModeFull)),
+					assert.Check(resource.TestCheckResourceAttrWith(modelWithRefreshMode.ResourceReference(), "created_on", func(value string) error {
 						if value == createdOn {
 							return fmt.Errorf("expected created_on to change but was not changed")
 						}
 						return nil
-					}),
+					})),
 				),
 			},
 			// test import
 			{
 				Config:            accconfig.FromModels(t, tableModel, modelWithDownstreamLag),
-				ResourceName:      resourceName,
+				ResourceName:      modelWithDownstreamLag.ResourceReference(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
