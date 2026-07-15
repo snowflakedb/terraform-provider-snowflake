@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"reflect"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -26,12 +27,7 @@ func ValidObjectIdentifier(objectIdentifier ObjectIdentifier) bool {
 }
 
 func anyValueSet(values ...any) bool {
-	for _, v := range values {
-		if valueSet(v) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(values, valueSet)
 }
 
 func exactlyOneValueSet(values ...any) bool {
@@ -64,12 +60,7 @@ func everyValueSet(values ...any) bool {
 }
 
 func everyValueNil(values ...any) bool {
-	for _, v := range values {
-		if valueSet(v) {
-			return false
-		}
-	}
-	return true
+	return !slices.ContainsFunc(values, valueSet)
 }
 
 func valueSet(value any) bool {

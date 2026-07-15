@@ -41,7 +41,7 @@ var ShowFileFormatSchema = map[string]*schema.Schema{
 
 var _ = ShowFileFormatSchema
 
-func FileFormatToSchema(fileFormat *sdk.FileFormat) map[string]any {
+func FileFormatToSchema(fileFormat *sdk.FileFormatLegacy) map[string]any {
 	fileFormatSchema := make(map[string]any)
 	fileFormatSchema["name"] = fileFormat.Name.FullyQualifiedName()
 	fileFormatSchema["created_on"] = fileFormat.CreatedOn.String()

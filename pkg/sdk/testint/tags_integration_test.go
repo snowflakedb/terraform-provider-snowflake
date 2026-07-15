@@ -216,7 +216,7 @@ func TestInt_Tags(t *testing.T) {
 		id := tag.ID()
 
 		nid := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRename(*sdk.NewTagRenameRequest(nid)))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRenameTo(nid))
 		if err != nil {
 			t.Cleanup(testClientHelper().Tag.DropTagFunc(t, id))
 		} else {
@@ -1063,9 +1063,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		maskingPolicy, cleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicy(t)
 		t.Cleanup(cleanup)
 		id := maskingPolicy.ID()
-		err := client.MaskingPolicies.Alter(ctx, id, &sdk.AlterMaskingPolicyOptions{
-			SetTag: tags,
-		})
+		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).WithSetTags(tags))
 		require.NoError(t, err)
 
 		assertTagSet(id, sdk.ObjectTypeMaskingPolicy)
@@ -1075,9 +1073,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 		require.NoError(t, err)
 		assert.Empty(t, refs)
 
-		err = client.MaskingPolicies.Alter(ctx, id, &sdk.AlterMaskingPolicyOptions{
-			UnsetTag: unsetTags,
-		})
+		err = client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).WithUnsetTags(unsetTags))
 		require.NoError(t, err)
 
 		assertTagUnset(id, sdk.ObjectTypeMaskingPolicy)

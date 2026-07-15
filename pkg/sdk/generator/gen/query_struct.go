@@ -7,11 +7,10 @@ package gen
 //		...additional fields that are not present in the Field
 //	}
 type QueryStruct struct {
-	name            string
-	fields          []*Field
-	identifierField *Field
-	validations     []*Validation
-	sharedToOpts    bool
+	name         string
+	fields       []*Field
+	validations  []*Validation
+	sharedToOpts bool
 }
 
 func NewQueryStruct(name string) *QueryStruct {
@@ -61,6 +60,12 @@ func (v *QueryStruct) OptionalQueryStructField(name string, queryStruct *QuerySt
 // this object. The toOpts mapping calls the shared struct's standalone toOpts() method.
 func (v *QueryStruct) OptionalSharedQueryStructField(name string, queryStruct *QueryStruct, transformer FieldTransformer) *QueryStruct {
 	v.OptionalQueryStructField(name, queryStruct, transformer)
+	v.fields[len(v.fields)-1].IsShared = true
+	return v
+}
+
+func (v *QueryStruct) SharedQueryStructField(name string, queryStruct *QueryStruct, transformer FieldTransformer) *QueryStruct {
+	v.QueryStructField(name, queryStruct, transformer)
 	v.fields[len(v.fields)-1].IsShared = true
 	return v
 }

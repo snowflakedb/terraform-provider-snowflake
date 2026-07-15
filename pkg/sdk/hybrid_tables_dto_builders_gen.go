@@ -143,8 +143,8 @@ func (s *AlterHybridTableRequest) WithIfExists(ifExists bool) *AlterHybridTableR
 	return s
 }
 
-func (s *AlterHybridTableRequest) WithNewName(newName SchemaObjectIdentifier) *AlterHybridTableRequest {
-	s.NewName = &newName
+func (s *AlterHybridTableRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterHybridTableRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

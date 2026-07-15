@@ -40,6 +40,14 @@ func TestSweepAll(t *testing.T) {
 
 		err = SweepAfterAcceptanceTests(secondaryClient, acceptancetests.ObjectsSuffix)
 		assert.NoError(t, err)
+
+		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
+			err = SweepAfterAcceptanceTests(azureTestClient(t), acceptancetests.ObjectsSuffix)
+			assert.NoError(t, err)
+
+			err = SweepAfterAcceptanceTests(snowflakeDefaultsTestClient(t), acceptancetests.ObjectsSuffix)
+			assert.NoError(t, err)
+		}
 	})
 
 	t.Run("Send test results", SendTestResults)
@@ -94,6 +102,14 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	fourthClient := fourthTestClient(t)
 
 	allClients := []*sdk.Client{client, secondaryClient, thirdClient, fourthClient}
+
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
+		allClients = append(
+			allClients,
+			snowflakeDefaultsTestClient(t),
+			azureTestClient(t),
+		)
+	}
 
 	// can't use extracted IntegrationTestPrefix and AcceptanceTestPrefix until sweepers reside in the SDK package (cyclic)
 	const integrationTestPrefix = "int_test_"
@@ -762,11 +778,9 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 		}
 
 		accountLocator := client.GetAccountLocator()
-		opts := &sdk.ShowFailoverGroupOptions{
-			InAccount: sdk.NewAccountIdentifierFromAccountLocator(accountLocator),
-		}
+		req := sdk.NewShowFailoverGroupRequest().WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(accountLocator))
 
-		fgs, err := client.FailoverGroups.Show(ctx, opts)
+		fgs, err := client.FailoverGroups.Show(ctx, req)
 		if err != nil {
 			return fmt.Errorf("SHOW FAILOVER GROUPS ended with error, err = %w", err)
 		}
@@ -833,6 +847,16 @@ func thirdTestClient(t *testing.T) *sdk.Client {
 func fourthTestClient(t *testing.T) *sdk.Client {
 	t.Helper()
 	return testClient(t, testprofiles.Fourth)
+}
+
+func azureTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Azure)
+}
+
+func snowflakeDefaultsTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.SnowflakeDefaults)
 }
 
 func testClient(t *testing.T, profile string) *sdk.Client {

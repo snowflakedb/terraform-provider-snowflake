@@ -6,6 +6,7 @@ type {{ $assertName }} struct {
     *assert.SnowflakeObjectAssert[{{ .SdkType }}, {{ .IdType }}]
 }
 
+{{- if not .IsSubStruct }}
 func {{ .Name }}(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
@@ -18,10 +19,15 @@ func {{ .Name }}(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
         }),
     }
 }
+{{- end }}
 
 func {{ .Name }}FromObject(t *testing.T, {{ $nameLowerCase }} *{{ .SdkType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
+        {{- if .IsSubStruct }}
+        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .Name }}"), {{ .PlaceholderIdentifier }}, {{ $nameLowerCase }}),
+        {{- else }}
         assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType{{ .Name }}, {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
+        {{- end }}
     }
 }

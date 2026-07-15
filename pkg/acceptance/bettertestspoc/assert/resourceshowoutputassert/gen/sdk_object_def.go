@@ -97,6 +97,8 @@ var (
 		sdk.StorageLocationS3CompatDetails{},
 		sdk.StorageLocationS3Details{},
 		sdk.TagReference{},
+		sdk.TableCheckConstraintDetails{},
+		sdk.TableConstraintDetails{},
 		sdk.UserWorkloadIdentityAuthenticationMethod{},
 	}
 	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {

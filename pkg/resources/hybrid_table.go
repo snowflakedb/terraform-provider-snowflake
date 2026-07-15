@@ -877,7 +877,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			d.Get("name").(string),
 		)
 
-		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithNewName(newId)); err != nil {
+		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithRenameTo(newId)); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error renaming hybrid table from %v to %v: %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
 		}

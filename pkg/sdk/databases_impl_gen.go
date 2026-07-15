@@ -203,7 +203,7 @@ func (r *AlterDatabaseRequest) toOpts() *AlterDatabaseOptions {
 	opts := &AlterDatabaseOptions{
 		IfExists:  r.IfExists,
 		name:      r.name,
-		NewName:   r.NewName,
+		RenameTo:  r.RenameTo,
 		SwapWith:  r.SwapWith,
 		SetTags:   r.SetTags,
 		UnsetTags: r.UnsetTags,

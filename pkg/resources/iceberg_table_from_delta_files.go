@@ -45,10 +45,10 @@ var icebergTableFromDeltaFilesSchema = collections.MergeMaps(
 			Type:        schema.TypeList,
 			Computed:    true,
 			Description: "Outputs the result of `SHOW PARAMETERS IN ICEBERG TABLE` for the given Iceberg table.",
-			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableParametersSchema},
+			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableExternallyManagedParametersSchema},
 		},
 	},
-	icebergTableParametersSchema(),
+	icebergTableExternalManagedParametersSchema(),
 )
 
 func IcebergTableFromDeltaFiles() *schema.Resource {
@@ -68,7 +68,7 @@ func IcebergTableFromDeltaFiles() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(icebergTableFromDeltaFilesSchema, ShowOutputAttributeName, "comment", "auto_refresh"),
 			ComputedIfAnyAttributeChanged(icebergTableFromDeltaFilesSchema, ParametersAttributeName, "external_volume", "catalog", "replace_invalid_characters"),
-			icebergTableParametersCustomDiff,
+			icebergTableExternalManagedParametersCustomDiff,
 		),
 	}
 }
@@ -103,7 +103,7 @@ func CreateIcebergTableFromDeltaFiles(ctx context.Context, d *schema.ResourceDat
 
 func ReadIcebergTableFromDeltaFilesFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		return readIcebergTable(ctx, d, meta, func(d *schema.ResourceData, table *sdk.IcebergTable) error {
+		return readIcebergTable(ctx, d, meta, func(d *schema.ResourceData, table *sdk.IcebergTable, _ []sdk.IcebergTableDetails) error {
 			var baseLocation string
 			if table.BaseLocation != nil {
 				baseLocation = *table.BaseLocation

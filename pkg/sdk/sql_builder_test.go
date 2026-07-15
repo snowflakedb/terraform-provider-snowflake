@@ -778,7 +778,6 @@ func TestBuilder_DataType(t *testing.T) {
 	})
 
 	for _, tc := range nilTestCases {
-		tc := tc
 		t.Run(fmt.Sprintf(`test for nil data type "%s"`, reflect.TypeOf(tc)), func(t *testing.T) {
 			opts := dataTypeTestHelper{
 				DataType: tc,
@@ -792,7 +791,6 @@ func TestBuilder_DataType(t *testing.T) {
 	}
 
 	for _, tc := range dataTypes {
-		tc := tc
 		t.Run(fmt.Sprintf(`cheking building SQL for data type "%s, expecting "%s"`, tc.dataType, tc.expectedSql), func(t *testing.T) {
 			dataType, err := datatypes.ParseDataType(tc.dataType)
 			require.NoError(t, err)

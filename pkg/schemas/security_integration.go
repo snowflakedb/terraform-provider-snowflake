@@ -37,7 +37,6 @@ var (
 func SecurityIntegrationsDescriptionsToSchema(integrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
 	securityIntegrationProperties := make(map[string]any)
 	for _, desc := range integrationProperties {
-		desc := desc
 		if !slices.Contains(InvalidIntegrationPropertyNames, desc.Name) {
 			if slices.Contains(allSecurityIntegrationPropertiesNames, desc.Name) {
 				securityIntegrationProperties[strings.ToLower(desc.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&desc)}

@@ -228,7 +228,7 @@ func TestInt_PasswordPolicies(t *testing.T) {
 		id := passwordPolicy.ID()
 
 		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(id).WithNewName(newId))
+		err := client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(id).WithRenameTo(newId))
 		if err != nil {
 			t.Cleanup(testClientHelper().PasswordPolicy.DropPasswordPolicyFunc(t, id))
 		} else {

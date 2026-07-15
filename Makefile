@@ -67,9 +67,9 @@ mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
 	go mod tidy -compat=1.26.4 -diff
 
-pre-push: check-compilation generate-all-config-model-builders generate-sdk-no-tests generate-sdk-examples generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
+pre-push: check-compilation generate-all-config-model-builders generate-sdk-no-tests generate-sdk-examples generate-snowflake-object-parameters-assertions generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
-pre-push-check: check-compilation generate-all-config-model-builders-check generate-sdk-no-tests-check generate-sdk-examples-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
+pre-push-check: check-compilation generate-all-config-model-builders-check generate-sdk-no-tests-check generate-sdk-examples-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check mod-check fmt-check generate-docs-additional-files-check generate-issue-labels-check docs-check lint test-architecture ## Run checks before pushing a change (docs, fmt, mod, etc.)
 
 sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
@@ -204,6 +204,9 @@ clean-snowflake-object-assertions: ## Clean snowflake object assertions
 generate-snowflake-object-parameters-assertions: ## Generate snowflake object parameters assertions
 	go generate ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/generate.go
 
+generate-snowflake-object-parameters-assertions-check: clean-snowflake-object-parameters-assertions generate-snowflake-object-parameters-assertions ## check that generated snowflake object parameters assertions are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/assert/objectparametersassert)
+
 clean-snowflake-object-parameters-assertions: ## Clean snowflake object parameters assertions
 	rm -f ./pkg/acceptance/bettertestspoc/assert/objectparametersassert/*_gen.go
 
@@ -274,4 +277,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local check-compilation dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-no-tests-check generate-sdk-examples-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check
+.PHONY: build-local check-compilation dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-no-tests-check generate-sdk-examples-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check

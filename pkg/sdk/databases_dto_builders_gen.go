@@ -396,8 +396,8 @@ func (s *AlterDatabaseRequest) WithIfExists(ifExists bool) *AlterDatabaseRequest
 	return s
 }
 
-func (s *AlterDatabaseRequest) WithNewName(newName AccountObjectIdentifier) *AlterDatabaseRequest {
-	s.NewName = &newName
+func (s *AlterDatabaseRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterDatabaseRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

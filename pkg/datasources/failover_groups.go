@@ -131,11 +131,11 @@ func ReadFailoverGroups(ctx context.Context, d *schema.ResourceData, meta any) d
 	client := meta.(*provider.Context).Client
 
 	inAccount := d.Get("in_account").(string)
-	opts := sdk.ShowFailoverGroupOptions{}
+	req := sdk.NewShowFailoverGroupRequest()
 	if inAccount != "" {
-		opts.InAccount = sdk.NewAccountIdentifierFromAccountLocator(inAccount)
+		req.WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(inAccount))
 	}
-	failoverGroups, err := client.FailoverGroups.Show(ctx, &opts)
+	failoverGroups, err := client.FailoverGroups.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}

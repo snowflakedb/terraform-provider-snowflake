@@ -82,7 +82,6 @@ func Test_ParseDataType_Number(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -104,7 +103,6 @@ func Test_ParseDataType_Number(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -154,7 +152,6 @@ func Test_ParseDataType_Decfloat(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -171,7 +168,6 @@ func Test_ParseDataType_Decfloat(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -222,7 +218,6 @@ func Test_ParseDataType_Float(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -238,7 +233,6 @@ func Test_ParseDataType_Float(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -331,7 +325,6 @@ func Test_ParseDataType_Text(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -348,7 +341,6 @@ func Test_ParseDataType_Text(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -403,7 +395,6 @@ func Test_ParseDataType_Binary(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -420,7 +411,6 @@ func Test_ParseDataType_Binary(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -463,7 +453,6 @@ func Test_ParseDataType_Boolean(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -479,7 +468,6 @@ func Test_ParseDataType_Boolean(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -520,7 +508,6 @@ func Test_ParseDataType_Date(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -536,7 +523,6 @@ func Test_ParseDataType_Date(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -580,7 +566,6 @@ func Test_ParseDataType_Time(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -597,7 +582,6 @@ func Test_ParseDataType_Time(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -650,7 +634,6 @@ func Test_ParseDataType_TimestampLtz(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -667,7 +650,6 @@ func Test_ParseDataType_TimestampLtz(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -722,7 +704,6 @@ func Test_ParseDataType_TimestampNtz(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -739,7 +720,6 @@ func Test_ParseDataType_TimestampNtz(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -792,7 +772,6 @@ func Test_ParseDataType_TimestampTz(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -809,7 +788,6 @@ func Test_ParseDataType_TimestampTz(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -850,7 +828,6 @@ func Test_ParseDataType_Variant(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -866,7 +843,6 @@ func Test_ParseDataType_Variant(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -907,7 +883,6 @@ func Test_ParseDataType_Object(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -923,7 +898,6 @@ func Test_ParseDataType_Object(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -964,7 +938,6 @@ func Test_ParseDataType_Array(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -980,7 +953,6 @@ func Test_ParseDataType_Array(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1021,7 +993,6 @@ func Test_ParseDataType_Geography(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1037,7 +1008,6 @@ func Test_ParseDataType_Geography(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1078,7 +1048,6 @@ func Test_ParseDataType_Geometry(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1094,7 +1063,6 @@ func Test_ParseDataType_Geometry(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1136,7 +1104,6 @@ func Test_ParseDataType_Vector(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1154,7 +1121,6 @@ func Test_ParseDataType_Vector(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1212,7 +1178,6 @@ func Test_ParseDataType_Table(t *testing.T) {
 	}
 
 	for _, tc := range positiveTestCases {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1252,7 +1217,6 @@ func Test_ParseDataType_Table(t *testing.T) {
 	}
 
 	for _, tc := range negativeTestCases {
-		tc := tc
 		t.Run("negative: "+tc.input, func(t *testing.T) {
 			parsed, err := ParseDataType(tc.input)
 
@@ -1331,7 +1295,6 @@ func Test_AreTheSame(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(fmt.Sprintf(`compare "%s" with "%s" expecting %t`, tc.d1, tc.d2, tc.expectedOutcome), func(t *testing.T) {
 			var p1, p2 DataType
 			var err error
@@ -1425,7 +1388,6 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(fmt.Sprintf(`check if "%s" is definitely different than "%s", expecting %t`, tc.d1, tc.d2, tc.expectedOutcome), func(t *testing.T) {
 			var p1, p2 DataType
 			var err error
@@ -1489,7 +1451,6 @@ func Test_ToSqlWithoutUnknowns(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(fmt.Sprintf(`check if ToSqlWithoutUnknowns method works correctly for "%s"`, tc.dt), func(t *testing.T) {
 			parsed, err := ParseDataType(tc.dt)
 			require.NoError(t, err)

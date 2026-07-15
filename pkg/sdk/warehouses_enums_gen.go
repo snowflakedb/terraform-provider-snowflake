@@ -13,12 +13,14 @@ const (
 	WarehouseTypeStandard          WarehouseType = "STANDARD"
 	WarehouseTypeSnowparkOptimized WarehouseType = "SNOWPARK-OPTIMIZED"
 	WarehouseTypeAdaptive          WarehouseType = "ADAPTIVE"
+	WarehouseTypeInteractive       WarehouseType = "INTERACTIVE"
 )
 
 var AllWarehouseTypes = []WarehouseType{
 	WarehouseTypeStandard,
 	WarehouseTypeSnowparkOptimized,
 	WarehouseTypeAdaptive,
+	WarehouseTypeInteractive,
 }
 
 func ToWarehouseType(s string) (WarehouseType, error) {
@@ -30,6 +32,8 @@ func ToWarehouseType(s string) (WarehouseType, error) {
 		return WarehouseTypeSnowparkOptimized, nil
 	case string(WarehouseTypeAdaptive):
 		return WarehouseTypeAdaptive, nil
+	case string(WarehouseTypeInteractive):
+		return WarehouseTypeInteractive, nil
 	default:
 		return "", fmt.Errorf("invalid warehouse type: %s", s)
 	}
