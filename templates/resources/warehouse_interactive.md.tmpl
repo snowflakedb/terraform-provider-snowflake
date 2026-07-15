@@ -26,6 +26,16 @@ description: |-
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
+## Interactive warehouse limitations
+
+Interactive warehouses differ from standard warehouses in a few ways that affect how this resource behaves:
+
+- `auto_suspend` has a Snowflake-enforced minimum for interactive warehouses (currently `86400` seconds). The provider does not validate this on the client side (the limit is server-side and may change), so Snowflake will reject values below the current minimum at apply time.
+- `tables` associations are applied incrementally with `ADD TABLES` / `DROP TABLES` (only the changed entries), rather than by re-associating the full set on every change.
+- `fallback_warehouse` is managed via `SET` / `UNSET FALLBACK_WAREHOUSE` and read back from `SHOW PARAMETERS`, because it is exposed as a warehouse parameter rather than a `SHOW WAREHOUSES` column.
+- Standard-warehouse-only properties (`scaling_policy`, `enable_query_acceleration`, `query_acceleration_max_scale_factor`, `resource_constraint`, `generation`) are intentionally omitted from the schema; configuring them yields a plan-time "unsupported argument" error.
+- The warehouse type cannot be changed to or from `INTERACTIVE` with `ALTER`. If the underlying warehouse type changes externally, the only way to reconcile is to recreate the resource.
+
 {{ .SchemaMarkdown | trimspace }}
 {{- if .HasImport }}
 

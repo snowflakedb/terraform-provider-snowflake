@@ -26,6 +26,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(new preview resource)* New interactive warehouse resource
+
+We have added a new preview resource for managing interactive warehouses: [snowflake_warehouse_interactive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) ([Snowflake docs](https://docs.snowflake.com/en/user-guide/warehouses-interactive)).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_warehouse_interactive_resource` to the `preview_features_enabled` field in the provider configuration.
+
+Interactive warehouses behave differently from standard warehouses in a few ways that are described in the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive).
+
+The `show_output` field in the `snowflake_warehouses` data source now includes an additional computed `tables` attribute surfacing interactive warehouse table associations.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
+### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
+
+The `default_workload_identity.aws` nested block on the [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) resources now supports an optional `issuer` attribute, which maps to the `ISSUER` parameter of Snowflake's `WORKLOAD_IDENTITY` user property. It is required when configuring JWT-based (`GetWebIdentityToken`) AWS workload identity federation; existing configurations using only `arn` (the `GetCallerIdentity` attestation method) continue to work unchanged.
+
+This is a non-breaking, additive change; no action is required unless you want to adopt JWT-based AWS workload identity federation.
+
 ### *(new feature)* inherited grants support in `snowflake_grant_privileges_to_account_role`
 
 The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports [inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using). Inherited grants collapse the common `GRANT ON ALL` + `GRANT ON FUTURE` pattern into a single grant that automatically covers all current and future objects of a type in a container. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.
@@ -89,22 +107,6 @@ No changes in configuration are required.
 Note that this error can still legitimately occur if your configuration change actually removes the currently active storage location (e.g. removing the block from your configuration, or renaming/replacing it). This is expected Snowflake behavior, not a bug: an active storage location cannot be removed while it is in use (e.g. by an Iceberg table). Reassign the dependent objects to another storage location before removing it from your configuration.
 
 ## v2.17.x ➞ v2.18.0
-
-### *(new preview resource)* New interactive warehouse resource
-
-We have added a new preview resource for managing interactive warehouses: [snowflake_warehouse_interactive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) ([Snowflake docs](https://docs.snowflake.com/en/user-guide/warehouses-interactive)).
-
-This feature will be marked as stable in future releases. To use it, add `snowflake_warehouse_interactive_resource` to the `preview_features_enabled` field in the provider configuration.
-
-A few interactive-specific constraints apply:
-
-- `auto_suspend` must be at least `86400` (enforced at plan time; Snowflake rejects lower values).
-
-Table associations (`tables`) are applied incrementally with `ADD TABLES` / `DROP TABLES` (only the changed entries), and `fallback_warehouse` is managed via `SET`/`UNSET FALLBACK_WAREHOUSE` (read back from `SHOW PARAMETERS`). Unsupported warehouse parameters (`scaling_policy`, `enable_query_acceleration`, `query_acceleration_max_scale_factor`, `resource_constraint`, `generation`) are intentionally omitted from the schema, so configuring them yields a plan-time "unsupported argument" error. Type transitions to/from interactive are not supported and result in resource re-creation.
-
-The `show_output` field in the `snowflake_warehouses` data source now includes an additional computed `tables` attribute surfacing interactive warehouse table associations.
-
-No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
 ### Multiple resources and data sources promoted to stable
 

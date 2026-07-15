@@ -28,34 +28,31 @@ var warehouseInteractiveSchema = map[string]*schema.Schema{
 	"warehouse_size": {
 		Type:             schema.TypeString,
 		Optional:         true,
-		Default:          string(sdk.WarehouseSizeXSmall),
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseSize),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseSize), IgnoreChangeToCurrentSnowflakeValueInShow("size")),
-		Description:      fmt.Sprintf("Specifies the size of the interactive warehouse. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.ValidWarehouseSizesString)),
+		Description:      fmt.Sprintf("Specifies the size of the interactive warehouse. Valid values are (case-insensitive): %s. Note: removing the size from config will result in the resource recreation.", possibleValuesListed(sdk.ValidWarehouseSizesString)),
 	},
 	"max_cluster_count": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Computed:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("max_cluster_count"),
-		Description:      "Specifies the maximum number of server clusters for the interactive warehouse. Snowflake always assigns a value, so this field is computed when not set.",
+		Description:      "Specifies the maximum number of server clusters for the interactive warehouse.",
 	},
 	"min_cluster_count": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Computed:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("min_cluster_count"),
-		Description:      "Specifies the minimum number of server clusters for the interactive warehouse (only applies to multi-cluster warehouses). Snowflake always assigns a value, so this field is computed when not set.",
+		Description:      "Specifies the minimum number of server clusters for the interactive warehouse (only applies to multi-cluster warehouses).",
 	},
 	"auto_suspend": {
 		Type:             schema.TypeInt,
 		Optional:         true,
-		Computed:         true,
+		Default:          IntDefault,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_suspend"),
-		Description:      "Specifies the number of seconds of inactivity after which an interactive warehouse is automatically suspended. Snowflake always assigns a value, so this field is computed when not set.",
+		Description:      "Specifies the number of seconds of inactivity after which an interactive warehouse is automatically suspended.",
 	},
 	"auto_resume": {
 		Type:             schema.TypeString,
@@ -174,6 +171,9 @@ func WarehouseInteractive() *schema.Resource {
 				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
 			),
 			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, FullyQualifiedNameAttributeName, "name"),
+			customdiff.ForceNewIfChange("warehouse_size", func(ctx context.Context, old, new, meta any) bool {
+				return old.(string) != "" && new.(string) == ""
+			}),
 			ParametersCustomDiff(
 				warehouseParametersProvider,
 				parameter[sdk.AccountParameter]{sdk.AccountParameterMaxConcurrencyLevel, valueTypeInt, sdk.ParameterTypeWarehouse},
@@ -230,29 +230,21 @@ func ImportWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		return nil, fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse or snowflake_warehouse_adaptive instead", id.FullyQualifiedName())
 	}
 
-	tables := make([]string, len(w.Tables))
-	for i, table := range w.Tables {
-		tables[i] = table.FullyQualifiedName()
-	}
-
+	// Only the fields reconciled through handleExternalChangesToObjectInShow need seeding here: Read leaves
+	// them unset on a fresh import because there is no previous SHOW output to compare against. Every other
+	// attribute (name, comment, tables, fallback_warehouse, ...) is populated by the Read that Terraform
+	// runs immediately after this importer, so setting them here too would be redundant.
 	errs := errors.Join(
-		d.Set("name", id.Name()),
-		d.Set("comment", w.Comment),
+		d.Set("auto_resume", booleanStringFromBool(w.AutoResume)),
 		setOptionalFromPtr(d, "auto_suspend", w.AutoSuspend),
 		setOptionalFromPtr(d, "max_cluster_count", w.MaxClusterCount),
 		setOptionalFromPtr(d, "min_cluster_count", w.MinClusterCount),
-		d.Set("tables", tables),
 	)
 	if w.Size != nil {
 		errs = errors.Join(errs, d.Set("warehouse_size", string(*w.Size)))
 	}
-
-	fallbackWarehouse, err := client.Warehouses.ShowParameters(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if fw := fallbackWarehouseFromParameters(fallbackWarehouse); fw != "" {
-		errs = errors.Join(errs, d.Set("fallback_warehouse", fw))
+	if rm := w.ResourceMonitor.Name(); rm != "" {
+		errs = errors.Join(errs, d.Set("resource_monitor", rm))
 	}
 	if errs != nil {
 		return nil, errs
@@ -279,38 +271,25 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		}
 		req.WithTables(tables)
 	}
-	if v := d.Get("warehouse_size").(string); v != "" {
-		size, err := sdk.ToWarehouseSize(v)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithWarehouseSize(size)
-	}
-	if v, ok := d.GetOk("max_cluster_count"); ok {
-		req.WithMaxClusterCount(v.(int))
-	}
-	if v, ok := d.GetOk("min_cluster_count"); ok {
-		req.WithMinClusterCount(v.(int))
-	}
-	if v, ok := d.GetOk("auto_suspend"); ok {
-		req.WithAutoSuspend(v.(int))
-	}
-	if v := d.Get("auto_resume").(string); v != BooleanDefault {
-		parsed, err := booleanStringToBool(v)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		req.WithAutoResume(parsed)
-	}
 	if v, ok := d.GetOk("initially_suspended"); ok {
 		req.WithInitiallySuspended(v.(bool))
 	}
 	if v, ok := d.GetOk("resource_monitor"); ok {
 		req.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
-	if v, ok := d.GetOk("comment"); ok {
-		req.WithComment(v.(string))
+
+	errs := errors.Join(
+		attributeMappedValueCreateBuilder(d, "warehouse_size", req.WithWarehouseSize, sdk.ToWarehouseSize),
+		intAttributeCreateBuilder(d, "max_cluster_count", req.WithMaxClusterCount),
+		intAttributeCreateBuilder(d, "min_cluster_count", req.WithMinClusterCount),
+		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend", req.WithAutoSuspend),
+		booleanStringAttributeCreateBuilder(d, "auto_resume", req.WithAutoResume),
+		stringAttributeCreateBuilder(d, "comment", req.WithComment),
+	)
+	if errs != nil {
+		return diag.FromErr(errs)
 	}
+
 	if v := GetConfigPropertyAsPointerAllowingZeroValue[int](d, "max_concurrency_level"); v != nil {
 		req.WithMaxConcurrencyLevel(*v)
 	}
@@ -383,9 +362,15 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 		if withExternalChangesMarking {
 			sizeVal, sizeStr := optionalStringOutputMapping(w.Size)
 			autoResumeVal, autoResumeStr := w.AutoResume, booleanStringFromBool(w.AutoResume)
+			maxClusterCount := optionalIntOutputMapping(w.MaxClusterCount)
+			minClusterCount := optionalIntOutputMapping(w.MinClusterCount)
+			autoSuspend := optionalIntOutputMappingIntDefault(w.AutoSuspend)
 			if err = handleExternalChangesToObjectInShow(
 				d,
 				outputMapping{"size", "warehouse_size", sizeStr, sizeVal, nil},
+				outputMapping{"max_cluster_count", "max_cluster_count", maxClusterCount, maxClusterCount, nil},
+				outputMapping{"min_cluster_count", "min_cluster_count", minClusterCount, minClusterCount, nil},
+				outputMapping{"auto_suspend", "auto_suspend", autoSuspend, autoSuspend, nil},
 				outputMapping{"auto_resume", "auto_resume", autoResumeVal, autoResumeStr, nil},
 				outputMapping{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
 			); err != nil {
@@ -393,36 +378,10 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			}
 		}
 
-		if err = setStateToValuesFromConfig(d, warehouseInteractiveSchema, []string{
-			"warehouse_size",
-			"auto_resume",
-			"resource_monitor",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
-
-		// auto_suspend, max_cluster_count and min_cluster_count are always assigned by Snowflake for
-		// interactive warehouses, so they are computed and driven directly from the SHOW output.
-		autoSuspendValue := 0
-		if w.AutoSuspend != nil {
-			autoSuspendValue = *w.AutoSuspend
-		}
-		maxClusterCountValue := 0
-		if w.MaxClusterCount != nil {
-			maxClusterCountValue = *w.MaxClusterCount
-		}
-		minClusterCountValue := 0
-		if w.MinClusterCount != nil {
-			minClusterCountValue = *w.MinClusterCount
-		}
-
 		errs := errors.Join(
 			d.Set("name", w.Name),
 			d.Set("comment", w.Comment),
 			d.Set("warehouse_type", effectiveType),
-			d.Set("auto_suspend", autoSuspendValue),
-			d.Set("max_cluster_count", maxClusterCountValue),
-			d.Set("min_cluster_count", minClusterCountValue),
 			d.Set("fallback_warehouse", fallbackWarehouse),
 			d.Set("tables", tables),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
@@ -493,58 +452,18 @@ func UpdateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 			return diag.FromErr(err)
 		}
 		set.WithWarehouseSize(size)
-		set.WithWaitForCompletion(true)
 	}
-	if d.HasChange("max_cluster_count") {
-		if v, ok := d.GetOk("max_cluster_count"); ok {
-			set.WithMaxClusterCount(v.(int))
-		} else {
-			unset.WithMaxClusterCount(true)
-		}
-	}
-	if d.HasChange("min_cluster_count") {
-		if v, ok := d.GetOk("min_cluster_count"); ok {
-			set.WithMinClusterCount(v.(int))
-		} else {
-			unset.WithMinClusterCount(true)
-		}
-	}
-	if d.HasChange("auto_suspend") {
-		if v, ok := d.GetOk("auto_suspend"); ok {
-			set.WithAutoSuspend(v.(int))
-		}
-	}
-	if d.HasChange("auto_resume") {
-		if v := d.Get("auto_resume").(string); v != BooleanDefault {
-			parsed, err := booleanStringToBool(v)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			set.WithAutoResume(parsed)
-		} else {
-			unset.WithAutoResume(true)
-		}
-	}
-	if d.HasChange("resource_monitor") {
-		if v, ok := d.GetOk("resource_monitor"); ok {
-			set.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
-		} else {
-			unset.WithResourceMonitor(true)
-		}
-	}
-	if d.HasChange("comment") {
-		if v, ok := d.GetOk("comment"); ok {
-			set.WithComment(v.(string))
-		} else {
-			unset.WithComment(true)
-		}
-	}
-	if d.HasChange("fallback_warehouse") {
-		if v, ok := d.GetOk("fallback_warehouse"); ok {
-			set.WithFallbackWarehouse(sdk.NewAccountObjectIdentifier(v.(string)))
-		} else {
-			unset.WithFallbackWarehouse(true)
-		}
+
+	if err := errors.Join(
+		intAttributeUpdate(d, "max_cluster_count", &set.MaxClusterCount, &unset.MaxClusterCount),
+		intAttributeUpdate(d, "min_cluster_count", &set.MinClusterCount, &unset.MinClusterCount),
+		intAttributeWithSpecialDefaultUpdate(d, "auto_suspend", &set.AutoSuspend, &unset.AutoSuspend),
+		booleanStringAttributeUpdate(d, "auto_resume", &set.AutoResume, &unset.AutoResume),
+		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
+		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
+		accountObjectIdentifierAttributeUpdate(d, "fallback_warehouse", &set.FallbackWarehouse, &unset.FallbackWarehouse),
+	); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if diags := JoinDiags(
