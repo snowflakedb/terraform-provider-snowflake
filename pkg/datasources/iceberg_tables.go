@@ -49,7 +49,7 @@ var icebergTablesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of DESCRIBE ICEBERG TABLE.",
 					Elem: &schema.Resource{
-						Schema: schemas.DescribeIcebergTableSchema,
+						Schema: schemas.DescribeIcebergTableDetailsSchema,
 					},
 				},
 				resources.ParametersAttributeName: {
