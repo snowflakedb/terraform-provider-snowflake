@@ -15,11 +15,13 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -735,6 +737,227 @@ func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
 					"change_tracking", "error_logging", "path_layout", "iceberg_version", "base_location",
 					"primary_key_constraint", "unique_constraint", "foreign_key_constraint", "check_constraint",
 				},
+			},
+		},
+	})
+}
+
+// TestAcc_IcebergTable_BasicUseCase_ColumnAlters proves that changing the "column" list in place
+// (adding columns, dropping columns, renaming columns, and altering not_null/comment/masking_policy/
+// projection_policy on existing columns) is always applied via ALTER ICEBERG TABLE - never by
+// destroying and recreating the resource. Every step below asserts plancheck.ResourceActionUpdate
+// (never ResourceActionDestroyBeforeCreate/ResourceActionReplace) to make that guarantee explicit,
+// and cross-checks the applied state against a DESCRIBE-backed read using resourceassert.HasColumns.
+func TestAcc_IcebergTable_BasicUseCase_ColumnAlters(t *testing.T) {
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup)
+
+	// Create a dedicated database with the external volume set at db level so the Snowflake-managed table
+	// can be created without specifying the external volume explicitly on the resource.
+	db, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, testClient().Database.TestParametersSet(testClient().Ids.RandomAccountObjectIdentifier()).WithExternalVolume(externalVolumeId))
+	t.Cleanup(dbCleanup)
+	schemaId := sdk.NewDatabaseObjectIdentifier(db.ID().Name(), "PUBLIC")
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
+
+	// Two arity-1 identity masking policies and two projection policies, so masking_policy/projection_policy
+	// can be swapped from one policy to another without changing the column's data type.
+	maskingPolicy1, maskingPolicy1Cleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarcharIceberg)
+	t.Cleanup(maskingPolicy1Cleanup)
+	maskingPolicy1Id := maskingPolicy1.ID()
+
+	maskingPolicy2, maskingPolicy2Cleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarcharIceberg)
+	t.Cleanup(maskingPolicy2Cleanup)
+	maskingPolicy2Id := maskingPolicy2.ID()
+
+	projectionPolicy1Id, projectionPolicy1Cleanup := testClient().ProjectionPolicy.CreateProjectionPolicy(t)
+	t.Cleanup(projectionPolicy1Cleanup)
+
+	projectionPolicy2Id, projectionPolicy2Cleanup := testClient().ProjectionPolicy.CreateProjectionPolicy(t)
+	t.Cleanup(projectionPolicy2Cleanup)
+
+	idComment := random.Comment()
+	idCommentChanged := random.Comment()
+	statusComment := random.Comment()
+
+	ref := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), nil).ResourceReference()
+
+	newModel := func(columns ...model.IcebergTableColumnRequest) *model.IcebergTableModel {
+		return model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), nil).WithColumns(columns...)
+	}
+
+	updateStep := func(config *model.IcebergTableModel, columnAssertions resourceassert.IcebergTableResourceAssert, expectedChanges ...plancheck.PlanCheck) resource.TestStep {
+		return resource.TestStep{
+			Config: accconfig.FromModels(t, config),
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: append([]plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+				}, expectedChanges...),
+			},
+			Check: assertThat(t, &columnAssertions),
+		}
+	}
+
+	// v1 (create): three columns - ID (not_null + comment), NAME (plain), REGION (masking_policy1).
+	v1 := newModel(
+		model.IcebergTableColumnRequest{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true"), Comment: idComment},
+		model.IcebergTableColumnRequest{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg},
+		model.IcebergTableColumnRequest{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: &maskingPolicy1Id},
+	)
+	v1Assertions := *resourceassert.IcebergTableResource(t, ref).HasColumns(
+		resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true, Comment: idComment},
+		resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql()},
+		resourceassert.ExpectedColumn{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), MaskingPolicy: &maskingPolicy1Id, MaskingPolicyUsing: []string{"REGION"}},
+	)
+
+	// v2 (add a column at the end + alter existing columns in place): adds STATUS (not_null + comment set
+	// directly at ADD COLUMN time), sets NAME.not_null, changes ID's comment, and swaps REGION's masking
+	// policy - all in a single apply.
+	v2 := newModel(
+		model.IcebergTableColumnRequest{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true"), Comment: idCommentChanged},
+		model.IcebergTableColumnRequest{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("true")},
+		model.IcebergTableColumnRequest{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: &maskingPolicy2Id},
+		model.IcebergTableColumnRequest{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("true"), Comment: statusComment},
+	)
+	v2Assertions := *resourceassert.IcebergTableResource(t, ref).HasColumns(
+		resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true, Comment: idCommentChanged},
+		resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), NotNull: true},
+		resourceassert.ExpectedColumn{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), MaskingPolicy: &maskingPolicy2Id, MaskingPolicyUsing: []string{"REGION"}},
+		resourceassert.ExpectedColumn{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), NotNull: true, Comment: statusComment},
+	)
+
+	// v3 (add another column with projection_policy set at ADD COLUMN time, rename REGION -> REGION_CODE,
+	// drop NAME's not_null, and unset ID's comment) - again all in a single apply.
+	v3 := newModel(
+		model.IcebergTableColumnRequest{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true")},
+		model.IcebergTableColumnRequest{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("false")},
+		model.IcebergTableColumnRequest{Name: "REGION_CODE", Type: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: &maskingPolicy2Id},
+		model.IcebergTableColumnRequest{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("true"), Comment: statusComment},
+		model.IcebergTableColumnRequest{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg, ProjectionPolicy: &projectionPolicy1Id},
+	)
+	v3Assertions := *resourceassert.IcebergTableResource(t, ref).HasColumns(
+		resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true},
+		resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql()},
+		resourceassert.ExpectedColumn{Name: "REGION_CODE", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), MaskingPolicy: &maskingPolicy2Id, MaskingPolicyUsing: []string{"REGION_CODE"}},
+		resourceassert.ExpectedColumn{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), NotNull: true, Comment: statusComment},
+		resourceassert.ExpectedColumn{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), ProjectionPolicy: &projectionPolicy1Id},
+	)
+
+	// v3b (swap CATEGORY's projection policy to a different one) - proves SetProjectionPolicyOnColumn
+	// correctly overwrites an existing projection policy rather than requiring an unset first.
+	v3b := newModel(
+		model.IcebergTableColumnRequest{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true")},
+		model.IcebergTableColumnRequest{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("false")},
+		model.IcebergTableColumnRequest{Name: "REGION_CODE", Type: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: &maskingPolicy2Id},
+		model.IcebergTableColumnRequest{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("true"), Comment: statusComment},
+		model.IcebergTableColumnRequest{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg, ProjectionPolicy: &projectionPolicy2Id},
+	)
+	v3bAssertions := *resourceassert.IcebergTableResource(t, ref).HasColumns(
+		resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true},
+		resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql()},
+		resourceassert.ExpectedColumn{Name: "REGION_CODE", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), MaskingPolicy: &maskingPolicy2Id, MaskingPolicyUsing: []string{"REGION_CODE"}},
+		resourceassert.ExpectedColumn{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), NotNull: true, Comment: statusComment},
+		resourceassert.ExpectedColumn{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), ProjectionPolicy: &projectionPolicy2Id},
+	)
+
+	// v4 (unset REGION_CODE's masking policy and drop the trailing CATEGORY column - exercising DROP
+	// COLUMN together with an in-place alter in the same apply).
+	v4 := newModel(
+		model.IcebergTableColumnRequest{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true")},
+		model.IcebergTableColumnRequest{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("false")},
+		model.IcebergTableColumnRequest{Name: "REGION_CODE", Type: testdatatypes.DataTypeVarcharIceberg},
+		model.IcebergTableColumnRequest{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("true"), Comment: statusComment},
+	)
+	v4Assertions := *resourceassert.IcebergTableResource(t, ref).HasColumns(
+		resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true},
+		resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql()},
+		resourceassert.ExpectedColumn{Name: "REGION_CODE", Type: testdatatypes.DataTypeVarcharIceberg.ToSql()},
+		resourceassert.ExpectedColumn{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), NotNull: true, Comment: statusComment},
+	)
+
+	// v5 (drop two trailing columns - STATUS and REGION_CODE - in a single apply, leaving only ID and NAME).
+	v5 := newModel(
+		model.IcebergTableColumnRequest{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true")},
+		model.IcebergTableColumnRequest{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("false")},
+	)
+	v5Assertions := *resourceassert.IcebergTableResource(t, ref).HasColumns(
+		resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true},
+		resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql()},
+	)
+
+	// v6 (add two new columns - REGION2 and EXTRA - in a single apply, proving multi-column ADD works too).
+	v6 := newModel(
+		model.IcebergTableColumnRequest{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true")},
+		model.IcebergTableColumnRequest{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("false")},
+		model.IcebergTableColumnRequest{Name: "REGION2", Type: testdatatypes.DataTypeVarcharIceberg, Comment: statusComment},
+		model.IcebergTableColumnRequest{Name: "EXTRA", Type: testdatatypes.DataTypeVarcharIceberg, NotNull: new("true")},
+	)
+	v6Assertions := *resourceassert.IcebergTableResource(t, ref).HasColumns(
+		resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true},
+		resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql()},
+		resourceassert.ExpectedColumn{Name: "REGION2", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), Comment: statusComment},
+		resourceassert.ExpectedColumn{Name: "EXTRA", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), NotNull: true},
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.IcebergTable),
+		Steps: []resource.TestStep{
+			// Create with the initial three columns.
+			{
+				Config: accconfig.FromModels(t, v1),
+				Check:  assertThat(t, &v1Assertions),
+			},
+			// Add a column at the end (with not_null + comment set at ADD COLUMN time) while altering
+			// not_null/comment/masking_policy on existing columns - expect an in-place update.
+			updateStep(v2, v2Assertions,
+				planchecks.ExpectChange(ref, "column.0.comment", tfjson.ActionUpdate, sdk.String(idComment), sdk.String(idCommentChanged)),
+				planchecks.ExpectChange(ref, "column.1.not_null", tfjson.ActionUpdate, sdk.String("false"), sdk.String("true")),
+				planchecks.ExpectChange(ref, "column.2.masking_policy.0.policy_name", tfjson.ActionUpdate, sdk.String(maskingPolicy1Id.FullyQualifiedName()), sdk.String(maskingPolicy2Id.FullyQualifiedName())),
+			),
+			// Add another column (with projection_policy set at ADD COLUMN time), rename a column, and
+			// alter not_null/comment on existing columns - expect an in-place update.
+			updateStep(v3, v3Assertions,
+				planchecks.ExpectChange(ref, "column.0.comment", tfjson.ActionUpdate, sdk.String(idCommentChanged), nil),
+				planchecks.ExpectChange(ref, "column.1.not_null", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
+				planchecks.ExpectChange(ref, "column.2.name", tfjson.ActionUpdate, sdk.String("REGION"), sdk.String("REGION_CODE")),
+			),
+			// Swap the projection policy on an existing column to a different policy - expect an
+			// in-place update.
+			updateStep(v3b, v3bAssertions,
+				planchecks.ExpectChange(ref, "column.4.projection_policy.0.policy_name", tfjson.ActionUpdate, sdk.String(projectionPolicy1Id.FullyQualifiedName()), sdk.String(projectionPolicy2Id.FullyQualifiedName())),
+			),
+			// Unset a masking policy and drop the trailing column - expect an in-place update.
+			// No planchecks.ExpectChange here: unsetting "masking_policy" plans it as an empty list
+			// (not null), and the dropped column has no counterpart index in the new list - both would
+			// make ExpectChange index out of range into the JSON plan representation.
+			updateStep(v4, v4Assertions),
+			// Drop two trailing columns in one apply - expect an in-place update.
+			// No planchecks.ExpectChange here: the surviving columns (ID, NAME) are unchanged, and the
+			// dropped ones have no counterpart index in the new list to diff against.
+			updateStep(v5, v5Assertions),
+			// Add two columns back in one apply - expect an in-place update.
+			// No planchecks.ExpectChange here: the surviving columns (ID, NAME) are unchanged, and the
+			// added ones have no counterpart index in the old list to diff against.
+			updateStep(v6, v6Assertions),
+			// Import at the final state to prove the full column list (including masking/projection
+			// policies picked up along the way) round-trips through Read.
+			{
+				Config:                  accconfig.FromModels(t, v6),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"change_tracking", "error_logging", "path_layout", "iceberg_version", "base_location"},
 			},
 		},
 	})

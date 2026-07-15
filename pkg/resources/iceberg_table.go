@@ -111,8 +111,28 @@ func IcebergTable() *schema.Resource {
 				"enable_iceberg_merge_on_read",
 			),
 			icebergTableSnowflakeManagedParametersCustomDiff,
+			columnCustomizeDiff,
 		),
 	}
+}
+
+// columnCustomizeDiff forces a recreate only when the type or default of the very first column
+// changes between the old and new "column" list. A type/default change at any other index is
+// handled by updateIcebergTableColumns as a drop-and-re-add of the stale tail of columns (see
+// columnSplitIndex), but that requires a preceding column to anchor the drop/re-add sequence to -
+// there is none when the change is at index 0, so a full recreate is the only option there.
+func columnCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	oldRaw, newRaw := d.GetChange("column")
+	oldColumns := oldRaw.([]any)
+	newColumns := newRaw.([]any)
+
+	if len(oldColumns) == 0 || len(newColumns) == 0 {
+		return nil
+	}
+	if columnSplitIndex(oldColumns, newColumns) == 0 {
+		return d.ForceNew("column")
+	}
+	return nil
 }
 
 func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -314,8 +334,14 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	// TODO (next PRs): columns are ForceNew for now; handle the update properly
 	// TODO (next PRs): comment needs to be altered separately - report this
+
+	if d.HasChange("column") {
+		if err := updateIcebergTableColumns(ctx, client, id, d); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
+	}
 
 	set := sdk.NewIcebergTableSetPropertiesRequest()
 	unset := sdk.NewIcebergTableUnsetPropertiesRequest()
@@ -394,6 +420,240 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	return ReadIcebergTableFunc(false)(ctx, d, meta)
+}
+
+// updateIcebergTableColumns reconciles the "column" list by position (index), not by name:
+// Snowflake's ALTER ICEBERG TABLE only supports adding/dropping columns at the end of the column
+// list, so:
+//   - columns before the first index whose type/default changed (the "split index", see
+//     columnSplitIndex) are altered in place (which also covers renames, since the column at a
+//     given index is identified by its old name before any other in-place changes are applied to it),
+//   - columns from the split index onwards are dropped (old columns) and re-added (new columns),
+//     since a type/default change can't be applied to an existing column and instead has to be
+//     modeled as dropping the (now stale) tail of columns and recreating it with the new
+//     definitions - this also covers the plain append/truncate case, where the split index is
+//     simply min(len(oldColumns), len(newColumns)).
+//
+// The split index is never 0 here: columnCustomizeDiff already forces a recreate of the whole
+// resource whenever the type/default of the very first column changes, since there would be no
+// preceding column left to anchor the drop/re-add sequence to.
+func updateIcebergTableColumns(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData) error {
+	oldRaw, newRaw := d.GetChange("column")
+	oldColumns := oldRaw.([]any)
+	newColumns := newRaw.([]any)
+
+	splitIndex := columnSplitIndex(oldColumns, newColumns)
+
+	// Drop old columns from the split index onwards, starting from the end so that dropping one
+	// column never invalidates the (by-name) reference to another one still pending removal.
+	for i := len(oldColumns) - 1; i >= splitIndex; i-- {
+		name := oldColumns[i].(map[string]any)["name"].(string)
+		dropReq := sdk.NewTableDropColumnActionRequest([]sdk.Column{{Value: name}})
+		if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithDropColumnAction(*dropReq)); err != nil {
+			return fmt.Errorf("error dropping column %q on %v: %w", name, id.FullyQualifiedName(), err)
+		}
+	}
+
+	// Add new columns from the split index onwards.
+	for i := splitIndex; i < len(newColumns); i++ {
+		if err := addIcebergTableColumn(ctx, client, id, d, i); err != nil {
+			return err
+		}
+	}
+
+	// Alter columns before the split index in place.
+	for i := 0; i < splitIndex; i++ {
+		if err := alterIcebergTableColumn(ctx, client, id, d, i, oldColumns[i].(map[string]any)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// columnSplitIndex returns the first index (within the range common to both lists) at which the
+// column's type or default expression differs between the old and new list, or
+// min(len(oldColumns), len(newColumns)) if there is no such index.
+func columnSplitIndex(oldColumns, newColumns []any) int {
+	return collections.CommonPrefixLastIndex(oldColumns, newColumns, func(oldColumn, newColumn any) bool {
+		return !columnTypeOrDefaultChanged(oldColumn.(map[string]any), newColumn.(map[string]any))
+	}) + 1
+}
+
+// columnTypeOrDefaultChanged reports whether the column's type or default expression differs
+// between the old and new column map (both indexed elements of the "column" list).
+func columnTypeOrDefaultChanged(oldColumn, newColumn map[string]any) bool {
+	oldType, err := datatypes.ParseDataType(oldColumn["type"].(string))
+	if err != nil {
+		return true
+	}
+	newType, err := datatypes.ParseDataType(newColumn["type"].(string))
+	if err != nil {
+		return true
+	}
+	if !datatypes.AreTheSame(oldType, newType) {
+		return true
+	}
+	return columnDefaultExpression(oldColumn) != columnDefaultExpression(newColumn)
+}
+
+// columnDefaultExpression extracts the "default.0.expression" value from a column map, or "" if
+// no default is set.
+func columnDefaultExpression(column map[string]any) string {
+	defaultList, ok := column["default"].([]any)
+	if !ok || len(defaultList) == 0 {
+		return ""
+	}
+	defaultMap, ok := defaultList[0].(map[string]any)
+	if !ok {
+		return ""
+	}
+	expression, _ := defaultMap["expression"].(string)
+	return expression
+}
+
+// addIcebergTableColumn issues ADD COLUMN for the new column at the given index. NOT NULL and
+// COMMENT are not supported by the ADD COLUMN action, so they are applied with a follow-up
+// ALTER COLUMN action when set.
+func addIcebergTableColumn(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData, index int) error {
+	column, err := parseIcebergTableColumn(d, index)
+	if err != nil {
+		return err
+	}
+
+	addReq := sdk.NewIcebergTableAddColumnActionRequest(column.Name, column.ColumnType)
+	if column.DefaultValue != nil {
+		addReq.WithDefaultValue(*column.DefaultValue)
+	}
+	if column.MaskingPolicy != nil {
+		addReq.WithMaskingPolicy(*column.MaskingPolicy)
+	}
+	if column.ProjectionPolicy != nil {
+		addReq.WithProjectionPolicy(*column.ProjectionPolicy)
+	}
+	if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithAddColumnAction(*addReq)); err != nil {
+		return fmt.Errorf("error adding column %q on %v: %w", column.Name, id.FullyQualifiedName(), err)
+	}
+
+	// NOT NULL and COMMENT are not supported by the ADD COLUMN action, so they are applied with a follow-up.
+	// Each ALTER COLUMN action request may set exactly one field, so NOT NULL and COMMENT need separate requests.
+	var alterColumnActions []sdk.IcebergTableAlterColumnActionRequest
+	if column.NotNull != nil && *column.NotNull {
+		alterColumnActions = append(alterColumnActions, *sdk.NewIcebergTableAlterColumnActionRequest(column.Name).WithSetNotNull(true))
+	}
+	if column.Comment != nil {
+		alterColumnActions = append(alterColumnActions, *sdk.NewIcebergTableAlterColumnActionRequest(column.Name).WithComment(*column.Comment))
+	}
+	if len(alterColumnActions) == 0 {
+		return nil
+	}
+	if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithAlterColumnAction(alterColumnActions)); err != nil {
+		return fmt.Errorf("error setting not_null/comment on newly added column %q on %v: %w", column.Name, id.FullyQualifiedName(), err)
+	}
+	return nil
+}
+
+// alterIcebergTableColumn applies in-place changes to the column at the given index, comparing
+// the old and new state field-by-field (using the indexed schema path, e.g. "column.0.comment").
+func alterIcebergTableColumn(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData, index int, oldColumn map[string]any) error {
+	prefix := fmt.Sprintf("column.%d.", index)
+
+	if d.HasChange(prefix + "name") {
+		oldName := oldColumn["name"].(string)
+		newName := d.Get(prefix + "name").(string)
+		renameReq := sdk.NewTableRenameColumnActionRequest(oldName).WithNewName(newName)
+		if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithRenameColumnAction(*renameReq)); err != nil {
+			return fmt.Errorf("error renaming column %q to %q on %v: %w", oldName, newName, id.FullyQualifiedName(), err)
+		}
+	}
+	// Any further column-scoped actions below must use the current (possibly just renamed) name.
+	name := d.Get(prefix + "name").(string)
+
+	var alterColumnActions []sdk.IcebergTableAlterColumnActionRequest
+	if d.HasChange(prefix + "not_null") {
+		alterReq := sdk.NewIcebergTableAlterColumnActionRequest(name)
+		if notNull := d.Get(prefix + "not_null").(string); notNull != BooleanDefault {
+			parsed, err := booleanStringToBool(notNull)
+			if err != nil {
+				return fmt.Errorf("parsing not_null for column %q: %w", name, err)
+			}
+			if parsed {
+				alterReq.WithSetNotNull(true)
+			} else {
+				alterReq.WithDropNotNull(true)
+			}
+		} else {
+			alterReq.WithDropNotNull(true)
+		}
+		alterColumnActions = append(alterColumnActions, *alterReq)
+	}
+	if d.HasChange(prefix + "comment") {
+		alterReq := sdk.NewIcebergTableAlterColumnActionRequest(name)
+		if comment := d.Get(prefix + "comment").(string); comment != "" {
+			alterReq.WithComment(comment)
+		} else {
+			alterReq.WithUnsetComment(true)
+		}
+		alterColumnActions = append(alterColumnActions, *alterReq)
+	}
+	if len(alterColumnActions) > 0 {
+		if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithAlterColumnAction(alterColumnActions)); err != nil {
+			return fmt.Errorf("error altering column %q on %v: %w", name, id.FullyQualifiedName(), err)
+		}
+	}
+
+	if d.HasChange(prefix + "masking_policy") {
+		if err := alterIcebergTableColumnMaskingPolicy(ctx, client, id, d, prefix, name); err != nil {
+			return err
+		}
+	}
+	if d.HasChange(prefix + "projection_policy") {
+		if err := alterIcebergTableColumnProjectionPolicy(ctx, client, id, d, prefix, name); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func alterIcebergTableColumnMaskingPolicy(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData, prefix string, columnName string) error {
+	if v := d.Get(prefix + "masking_policy").([]any); len(v) > 0 {
+		policy, err := parseColumnMaskingPolicy(d, prefix+"masking_policy.0.")
+		if err != nil {
+			return fmt.Errorf("parsing masking policy for column %q: %w", columnName, err)
+		}
+		setReq := sdk.NewTableSetColumnMaskingPolicyRequest(columnName, policy.MaskingPolicy).WithForce(true)
+		if len(policy.Using) > 0 {
+			setReq.WithUsing(policy.Using)
+		}
+		if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSetMaskingPolicyOnColumn(*setReq)); err != nil {
+			return fmt.Errorf("error setting masking policy on column %q on %v: %w", columnName, id.FullyQualifiedName(), err)
+		}
+		return nil
+	}
+	unsetReq := sdk.NewTableUnsetColumnMaskingPolicyRequest(columnName)
+	if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnsetMaskingPolicyOnColumn(*unsetReq)); err != nil {
+		return fmt.Errorf("error unsetting masking policy on column %q on %v: %w", columnName, id.FullyQualifiedName(), err)
+	}
+	return nil
+}
+
+func alterIcebergTableColumnProjectionPolicy(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData, prefix string, columnName string) error {
+	if v := d.Get(prefix + "projection_policy").([]any); len(v) > 0 {
+		policy, err := parseColumnProjectionPolicy(d, prefix+"projection_policy.0.")
+		if err != nil {
+			return fmt.Errorf("parsing projection policy for column %q: %w", columnName, err)
+		}
+		setReq := sdk.NewTableSetColumnProjectionPolicyRequest(columnName, policy.ProjectionPolicy).WithForce(true)
+		if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSetProjectionPolicyOnColumn(*setReq)); err != nil {
+			return fmt.Errorf("error setting projection policy on column %q on %v: %w", columnName, id.FullyQualifiedName(), err)
+		}
+		return nil
+	}
+	unsetReq := sdk.NewTableUnsetColumnProjectionPolicyRequest(columnName)
+	if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnsetProjectionPolicyOnColumn(*unsetReq)); err != nil {
+		return fmt.Errorf("error unsetting projection policy on column %q on %v: %w", columnName, id.FullyQualifiedName(), err)
+	}
+	return nil
 }
 
 func handleIcebergTableSnowflakeManagedParametersCreate(d *schema.ResourceData, req *sdk.CreateIcebergTableRequest) diag.Diagnostics {

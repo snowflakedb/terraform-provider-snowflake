@@ -13,7 +13,6 @@ func columnSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Required:    true,
-		ForceNew:    true,
 		MinItems:    1,
 		Description: "Definitions of the columns to create in the table. Minimum one required.",
 		Elem: &schema.Resource{
@@ -21,21 +20,22 @@ func columnSchema() *schema.Schema {
 				"name": {
 					Type:        schema.TypeString,
 					Required:    true,
-					ForceNew:    true,
 					Description: "Column name.",
 				},
 				"type": {
-					Type:             schema.TypeString,
+					Type: schema.TypeString,
+					// ForceNew is handled by columnTypeOrDefaultCustomizeDiff instead of a plain ForceNew
+					// tag: with a plain tag, adding/removing columns (which shifts other columns' list
+					// indexes) would be misdetected as a type change on every shifted column and force
+					// a destroy/create of the whole resource.
 					Required:         true,
-					ForceNew:         true,
-					Description:      "Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).",
+					Description:      "Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types). Changing this field is not supported and will recreate the resource.",
 					ValidateDiagFunc: IsDataTypeValid,
 					DiffSuppressFunc: DiffSuppressDataTypes,
 				},
 				"not_null": {
 					Type:             schema.TypeString,
 					Optional:         true,
-					ForceNew:         true,
 					Default:          BooleanDefault,
 					ValidateDiagFunc: validateBooleanString,
 					DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
@@ -44,9 +44,10 @@ func columnSchema() *schema.Schema {
 					Description: "Whether to restrict the column to NOT NULL values.",
 				},
 				"default": {
-					Type:        schema.TypeList,
+					Type: schema.TypeList,
+					// ForceNew is handled by columnCustomizeDiff instead of a plain ForceNew tag, for the
+					// same reason as "type" above.
 					Optional:    true,
-					ForceNew:    true,
 					MaxItems:    1,
 					Description: "Defines the column default value.",
 					Elem: &schema.Resource{
@@ -54,18 +55,16 @@ func columnSchema() *schema.Schema {
 							"expression": {
 								Type:        schema.TypeString,
 								Required:    true,
-								ForceNew:    true,
 								Description: "The default expression value for the column.",
 							},
 						},
 					},
 				},
-				"masking_policy":    columnMaskingPolicySchema(true, IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("name")),
+				"masking_policy":    columnMaskingPolicySchema(IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("name")),
 				"projection_policy": columnProjectionPolicySchema(),
 				"comment": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					ForceNew:    true,
 					Description: "Column comment.",
 				},
 			},
@@ -73,11 +72,10 @@ func columnSchema() *schema.Schema {
 	}
 }
 
-func columnMaskingPolicySchema(forceNew bool, usingDiffSuppress schema.SchemaDiffSuppressFunc) *schema.Schema {
+func columnMaskingPolicySchema(usingDiffSuppress schema.SchemaDiffSuppressFunc) *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		ForceNew:    forceNew,
 		MaxItems:    1,
 		Description: relatedResourceDescription("Specifies the masking policy to set on a column.", resources.MaskingPolicy),
 		Elem: &schema.Resource{
@@ -85,7 +83,6 @@ func columnMaskingPolicySchema(forceNew bool, usingDiffSuppress schema.SchemaDif
 				"policy_name": {
 					Type:             schema.TypeString,
 					Required:         true,
-					ForceNew:         forceNew,
 					DiffSuppressFunc: suppressIdentifierQuoting,
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 					Description:      relatedResourceDescription("Masking policy name.", resources.MaskingPolicy),
@@ -93,7 +90,6 @@ func columnMaskingPolicySchema(forceNew bool, usingDiffSuppress schema.SchemaDif
 				"using": {
 					Type:             schema.TypeList,
 					Optional:         true,
-					ForceNew:         forceNew,
 					Elem:             &schema.Schema{Type: schema.TypeString},
 					DiffSuppressFunc: usingDiffSuppress,
 					Description:      "Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.",
@@ -107,7 +103,6 @@ func columnProjectionPolicySchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
-		ForceNew:    true,
 		MaxItems:    1,
 		Description: "Specifies the projection policy to set on a column.",
 		Elem: &schema.Resource{
@@ -115,7 +110,6 @@ func columnProjectionPolicySchema() *schema.Schema {
 				"policy_name": {
 					Type:             schema.TypeString,
 					Required:         true,
-					ForceNew:         true,
 					DiffSuppressFunc: suppressIdentifierQuoting,
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 					Description:      "Projection policy name.",
