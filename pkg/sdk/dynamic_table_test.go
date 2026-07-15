@@ -6,20 +6,20 @@ import (
 
 func TestDynamicTableCreate(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *createDynamicTableOptions {
-		return &createDynamicTableOptions{
+	defaultOpts := func() *CreateDynamicTableOptions {
+		return &CreateDynamicTableOptions{
 			name: id,
-			targetLag: TargetLag{
+			TargetLag: TargetLag{
 				MaximumDuration: String("1 minutes"),
 			},
-			warehouse: AccountObjectIdentifier{
+			Warehouse: AccountObjectIdentifier{
 				name: "warehouse_name",
 			},
-			query: "SELECT product_id, product_name FROM staging_table",
+			Query: "SELECT product_id, product_name FROM staging_table",
 		}
 	}
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *createDynamicTableOptions = nil
+		var opts *CreateDynamicTableOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -39,22 +39,22 @@ func TestDynamicTableCreate(t *testing.T) {
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
 		opts.Comment = String("comment")
-		opts.RefreshMode = DynamicTableRefreshModeFull.ToPointer()
-		opts.Initialize = DynamicTableInitializeOnSchedule.ToPointer()
+		opts.RefreshMode = new(DynamicTableRefreshModeFull)
+		opts.Initialize = new(DynamicTableInitializeOnSchedule)
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE DYNAMIC TABLE %s TARGET_LAG = '1 minutes' INITIALIZE = ON_SCHEDULE REFRESH_MODE = FULL WAREHOUSE = "warehouse_name" COMMENT = 'comment' AS SELECT product_id, product_name FROM staging_table`, id.FullyQualifiedName())
 	})
 }
 
 func TestDynamicTableAlter(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *alterDynamicTableOptions {
-		return &alterDynamicTableOptions{
+	defaultOpts := func() *AlterDynamicTableOptions {
+		return &AlterDynamicTableOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *alterDynamicTableOptions = nil
+		var opts *AlterDynamicTableOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -66,19 +66,19 @@ func TestDynamicTableAlter(t *testing.T) {
 
 	t.Run("validation: no alter action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Resume = Bool(true)
 		opts.Suspend = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: no property to unset", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("alterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDynamicTableOptions", "Suspend", "Resume", "Refresh", "Set", "SetComment", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
 	})
 
 	t.Run("validation: add storage lifecycle policy incorrect identifier", func(t *testing.T) {
@@ -158,14 +158,14 @@ func TestDynamicTableAlter(t *testing.T) {
 
 func TestDynamicTableDrop(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *dropDynamicTableOptions {
-		return &dropDynamicTableOptions{
+	defaultOpts := func() *DropDynamicTableOptions {
+		return &DropDynamicTableOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *dropDynamicTableOptions = nil
+		var opts *DropDynamicTableOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -189,12 +189,12 @@ func TestDynamicTableDrop(t *testing.T) {
 
 func TestDynamicTableShow(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *showDynamicTableOptions {
-		return &showDynamicTableOptions{}
+	defaultOpts := func() *ShowDynamicTableOptions {
+		return &ShowDynamicTableOptions{}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *showDynamicTableOptions = nil
+		var opts *ShowDynamicTableOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -234,14 +234,14 @@ func TestDynamicTableShow(t *testing.T) {
 
 func TestDynamicTableDescribe(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	defaultOpts := func() *describeDynamicTableOptions {
-		return &describeDynamicTableOptions{
+	defaultOpts := func() *DescribeDynamicTableOptions {
+		return &DescribeDynamicTableOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		var opts *describeDynamicTableOptions = nil
+		var opts *DescribeDynamicTableOptions = nil
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
