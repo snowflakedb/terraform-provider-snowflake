@@ -41,8 +41,9 @@ func TestInt_McpServers(t *testing.T) {
 	t.Run("create: basic", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		cleanup := testClientHelper().McpServer.CreateWithRequest(t, sdk.NewCreateMcpServerRequest(id, defaultSpec))
-		t.Cleanup(cleanup)
+		err := client.McpServers.Create(ctx, sdk.NewCreateMcpServerRequest(id, defaultSpec))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().McpServer.DropFunc(t, id))
 
 		assertThatObject(
 			t, objectassert.McpServer(t, id).
@@ -69,10 +70,11 @@ func TestInt_McpServers(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
 
-		cleanup := testClientHelper().McpServer.CreateWithRequest(t, sdk.NewCreateMcpServerRequest(id, complexSpec).
+		err := client.McpServers.Create(ctx, sdk.NewCreateMcpServerRequest(id, complexSpec).
 			WithIfNotExists(true).
 			WithComment(comment))
-		t.Cleanup(cleanup)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().McpServer.DropFunc(t, id))
 
 		assertThatObject(
 			t, objectassert.McpServer(t, id).
@@ -100,15 +102,37 @@ func TestInt_McpServers(t *testing.T) {
 		cleanup := testClientHelper().McpServer.Create(t, id)
 		t.Cleanup(cleanup)
 
-		showResults, err := client.McpServers.Show(ctx, sdk.NewShowMcpServerRequest().WithIn(sdk.In{Schema: id.SchemaId()}))
-		require.NoError(t, err)
-		require.NotEmpty(t, showResults)
+		findById := func(results []sdk.McpServer) (*sdk.McpServer, error) {
+			return collections.FindFirst(results, func(result sdk.McpServer) bool {
+				return result.ID().FullyQualifiedName() == id.FullyQualifiedName()
+			})
+		}
 
-		result, err := collections.FindFirst(showResults, func(result sdk.McpServer) bool {
-			return result.ID().FullyQualifiedName() == id.FullyQualifiedName()
+		t.Run("in_account", func(t *testing.T) {
+			showResults, err := client.McpServers.Show(ctx, sdk.NewShowMcpServerRequest().WithIn(sdk.In{Account: sdk.Bool(true)}))
+			require.NoError(t, err)
+
+			require.Len(t, showResults, 1)
+			result, err := findById(showResults)
+			require.NoError(t, err)
+			require.Equal(t, id.FullyQualifiedName(), result.ID().FullyQualifiedName())
 		})
-		require.NoError(t, err)
-		require.Equal(t, id.FullyQualifiedName(), result.ID().FullyQualifiedName())
+
+		t.Run("in_database", func(t *testing.T) {
+			showResults, err := client.McpServers.Show(ctx, sdk.NewShowMcpServerRequest().WithIn(sdk.In{Database: id.DatabaseId()}))
+			require.NoError(t, err)
+			result, err := findById(showResults)
+			require.NoError(t, err)
+			require.Equal(t, id.FullyQualifiedName(), result.ID().FullyQualifiedName())
+		})
+
+		t.Run("in_schema", func(t *testing.T) {
+			showResults, err := client.McpServers.Show(ctx, sdk.NewShowMcpServerRequest().WithIn(sdk.In{Schema: id.SchemaId()}))
+			require.NoError(t, err)
+			result, err := findById(showResults)
+			require.NoError(t, err)
+			require.Equal(t, id.FullyQualifiedName(), result.ID().FullyQualifiedName())
+		})
 	})
 
 	t.Run("show by id", func(t *testing.T) {
