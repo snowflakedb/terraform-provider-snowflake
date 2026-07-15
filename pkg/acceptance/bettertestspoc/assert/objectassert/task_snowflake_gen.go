@@ -262,18 +262,6 @@ func (t *TaskAssert) HasBudget(expected string) *TaskAssert {
 	return t
 }
 
-// commented out manually
-// func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
-//	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-//		t.Helper()
-//		if o.TaskRelations != expected {
-//			return fmt.Errorf("expected task relations: %v; got: %v", expected, o.TaskRelations)
-//		}
-//		return nil
-//	})
-//	return t
-// }
-
 func (t *TaskAssert) HasLastSuspendedReason(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
@@ -291,7 +279,6 @@ func (t *TaskAssert) HasTargetCompletionInterval(expected sdk.TaskTargetCompleti
 		if o.TargetCompletionInterval == nil {
 			return fmt.Errorf("expected target completion interval to have value; got: nil")
 		}
-		// adjusted manually
 		if !reflect.DeepEqual(*o.TargetCompletionInterval, expected) {
 			return fmt.Errorf("expected target completion interval: %v; got: %v", expected, *o.TargetCompletionInterval)
 		}

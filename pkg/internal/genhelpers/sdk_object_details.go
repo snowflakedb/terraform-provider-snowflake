@@ -16,5 +16,6 @@ type SdkObjectDetails struct {
 	ObjectTypeName     string
 	NoShowById         bool
 	ShowByParentId     *ShowByParentIdDef
+	NestedAssertFields []string
 	StructDetails
 }

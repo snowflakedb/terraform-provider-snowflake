@@ -33,7 +33,6 @@ func (i *IcebergTableDetailsAssert) HasName(expected string) *IcebergTableDetail
 	return i
 }
 
-// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
 func (i *IcebergTableDetailsAssert) HasType(expected datatypes.DataType) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()

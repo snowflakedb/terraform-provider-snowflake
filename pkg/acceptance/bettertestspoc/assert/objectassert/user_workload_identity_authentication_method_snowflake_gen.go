@@ -94,7 +94,7 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasCreatedOn(expected t
 func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasAdditionalInfo(expected sql.NullString) *UserWorkloadIdentityAuthenticationMethodAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
-		if o.AdditionalInfo != expected {
+		if !reflect.DeepEqual(o.AdditionalInfo, expected) {
 			return fmt.Errorf("expected additional info: %v; got: %v", expected, o.AdditionalInfo)
 		}
 		return nil
@@ -108,7 +108,7 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasAwsAdditionalInfo(ex
 		if o.AwsAdditionalInfo == nil {
 			return fmt.Errorf("expected aws additional info to have value; got: nil")
 		}
-		if *o.AwsAdditionalInfo != expected {
+		if !reflect.DeepEqual(*o.AwsAdditionalInfo, expected) {
 			return fmt.Errorf("expected aws additional info: %v; got: %v", expected, *o.AwsAdditionalInfo)
 		}
 		return nil
@@ -122,7 +122,7 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasAzureAdditionalInfo(
 		if o.AzureAdditionalInfo == nil {
 			return fmt.Errorf("expected azure additional info to have value; got: nil")
 		}
-		if *o.AzureAdditionalInfo != expected {
+		if !reflect.DeepEqual(*o.AzureAdditionalInfo, expected) {
 			return fmt.Errorf("expected azure additional info: %v; got: %v", expected, *o.AzureAdditionalInfo)
 		}
 		return nil
@@ -136,7 +136,7 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasGcpAdditionalInfo(ex
 		if o.GcpAdditionalInfo == nil {
 			return fmt.Errorf("expected gcp additional info to have value; got: nil")
 		}
-		if *o.GcpAdditionalInfo != expected {
+		if !reflect.DeepEqual(*o.GcpAdditionalInfo, expected) {
 			return fmt.Errorf("expected gcp additional info: %v; got: %v", expected, *o.GcpAdditionalInfo)
 		}
 		return nil

@@ -641,7 +641,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn, data.(awsWifData).issuer)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
 				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber, data.(awsWifData).issuer)
 			},
 		},

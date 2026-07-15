@@ -4,10 +4,12 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -84,12 +86,11 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasSignature(expected ...sdk.Table
 	return s
 }
 
-// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
 func (s *StorageLifecyclePolicyDetailsAssert) HasReturnType(expected datatypes.DataType) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
 		if !datatypes.AreTheSame(o.ReturnType, expected) {
-			return fmt.Errorf("expected return type: %v; got: %v", expected, o.ReturnType)
+			return fmt.Errorf("expected return type: %v; got: %v", expected.ToSql(), o.ReturnType.ToSql())
 		}
 		return nil
 	})

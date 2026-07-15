@@ -15,6 +15,9 @@ type SdkObjectDef struct {
 	// ShowByParentId groups the fields needed to generate a constructor that fetches the object
 	// via a parent identifier (e.g. userId for ProgrammaticAccessToken). All three fields must be set together.
 	ShowByParentId *genhelpers.ShowByParentIdDef
+	// NestedAssertFields lists struct-type fields that should not get a simple Has* assertion generated.
+	// These fields will receive the nested assertion pattern in a future step.
+	NestedAssertFields []string
 }
 
 var allStructs = []SdkObjectDef{
@@ -71,8 +74,9 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.AuthenticationPolicy{},
 	},
 	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.Task{},
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.Task{},
+		NestedAssertFields: []string{"TaskRelations"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -435,6 +439,7 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 			ObjectTypeName:     d.ObjectTypeName,
 			NoShowById:         d.NoShowById,
 			ShowByParentId:     d.ShowByParentId,
+			NestedAssertFields: d.NestedAssertFields,
 		}
 	}
 	return allSdkObjectsDetails
