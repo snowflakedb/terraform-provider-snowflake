@@ -79,7 +79,6 @@ func acceptanceTestsProvider() *schema.Provider {
 	p.ResourcesMap["snowflake_iceberg_table"] = resources.IcebergTable()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
-	p.DataSourcesMap["snowflake_iceberg_tables"] = datasources.IcebergTables()
 	return p
 }
 

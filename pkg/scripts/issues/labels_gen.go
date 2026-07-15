@@ -189,6 +189,7 @@ var RepositoryLabels = []string{
 	"data_source:functions",
 	"data_source:git_repositories",
 	"data_source:grants",
+	"data_source:iceberg_tables",
 	"data_source:image_repositories",
 	"data_source:listings",
 	"data_source:masking_policies",

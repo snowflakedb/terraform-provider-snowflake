@@ -930,6 +930,7 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
+- [snowflake_iceberg_tables](./docs/data-sources/iceberg_tables)
 - [snowflake_listings](./docs/data-sources/listings)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
 - [snowflake_network_rules](./docs/data-sources/network_rules)
