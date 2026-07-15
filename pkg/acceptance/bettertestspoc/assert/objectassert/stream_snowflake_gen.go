@@ -21,7 +21,7 @@ type StreamAssert struct {
 func Stream(t *testing.T, id sdk.SchemaObjectIdentifier) *StreamAssert {
 	t.Helper()
 	return &StreamAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Stream"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stream, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeStream, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stream, sdk.SchemaObjectIdentifier] {
 			return testClient.Stream.Show
 		}),
 	}
