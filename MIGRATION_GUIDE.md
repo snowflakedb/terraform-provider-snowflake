@@ -24,6 +24,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.19.x ➞ v2.20.0
+
+### *(new feature)* New MCP server resource
+
+We have added a new preview resource for managing MCP servers: [snowflake_mcp_server](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/mcp_server).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_mcp_server_resource` to the `preview_features_enabled` field in the provider configuration.
+
 ## v2.18.x ➞ v2.19.0
 
 ### *(new feature)* inherited grants support in `snowflake_grant_privileges_to_account_role`

@@ -35,6 +35,7 @@
 - [snowflake_job_service](./docs/resources/job_service)
 - [snowflake_managed_account](./docs/resources/managed_account)
 - [snowflake_materialized_view](./docs/resources/materialized_view)
+- [snowflake_mcp_server](./docs/resources/mcp_server)
 - [snowflake_network_policy_attachment](./docs/resources/network_policy_attachment)
 - [snowflake_notebook](./docs/resources/notebook)
 - [snowflake_notification_integration](./docs/resources/notification_integration)
