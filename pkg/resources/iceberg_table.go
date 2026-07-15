@@ -22,16 +22,19 @@ import (
 
 // TODO (next PRs): the following CreateIcebergTableOptions fields are not yet supported by this resource:
 //   - CopyGrants and CopyTags
+//   - Use ALTER TABLE for handling column changes
 //   - ICEBERG_MERGE_ON_READ_BEHAVIOR (needs to be added to SDK)
-//   - column-level extras (part of ColumnsAndConstraints): out-of-line constraints, and per-column
-//     DefaultValue, NotNull, InlineConstraint, MaskingPolicy, ProjectionPolicy, Comment...
 //   - https://docs.snowflake.com/en/sql-reference/parameters#label-iceberg-default-ddl-collation
 var icebergTableSchema = collections.MergeMaps(
 	icebergTableCommonSchema(),
 	map[string]*schema.Schema{
-		"column":             basicColumnSchema(),
-		"row_access_policy":  rowAccessPolicyFieldSchema("Iceberg table"),
-		"aggregation_policy": aggregationPolicySchema("Iceberg table"),
+		"column":                 columnSchema(),
+		"primary_key_constraint": primaryKeyConstraintSchema(),
+		"unique_constraint":      uniqueConstraintSchema(),
+		"foreign_key_constraint": foreignKeyConstraintSchema(),
+		"check_constraint":       checkConstraintSchema(),
+		"row_access_policy":      rowAccessPolicyFieldSchema("Iceberg table"),
+		"aggregation_policy":     aggregationPolicySchema("Iceberg table"),
 		"base_location": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -116,11 +119,15 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	name := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	columns, err := parseBasicColumns(d.Get("column").([]any))
+	columns, err := parseColumns(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	columnsAndConstraints := *sdk.NewIcebergTableColumnsAndConstraintsRequest().WithColumns(toIcebergTableColumnRequests(columns))
+	outOfLineConstraints, err := parseOutOfLineConstraints(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	columnsAndConstraints := *sdk.NewIcebergTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint(outOfLineConstraints)
 	req := sdk.NewCreateIcebergTableRequest(id, columnsAndConstraints)
 
 	if err := errors.Join(
@@ -227,8 +234,12 @@ func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			// rather than the original DDL text, so external changes cannot be reliably detected. See
 			// https://docs.snowflake.com/en/user-guide/tables-clustering-keys#defining-a-clustering-key-for-a-table
 			// add these limitations to the documentation and report this to Snowflake
+			columnsState, err := handleIcebergTableColumns(details, policyRefs)
+			if err != nil {
+				return err
+			}
 			return errors.Join(
-				d.Set("column", icebergTableColumnsToSchema(details)),
+				d.Set("column", columnsState),
 				d.Set("partition_by", partitionBy),
 			)
 		})
@@ -365,18 +376,29 @@ func handleIcebergTableSnowflakeManagedParametersUpdate(d *schema.ResourceData, 
 	)
 }
 
-func toIcebergTableColumnRequests(columns []basicColumn) []sdk.IcebergTableColumnRequest {
-	return collections.Map(columns, func(c basicColumn) sdk.IcebergTableColumnRequest {
-		return *sdk.NewIcebergTableColumnRequest(c.Name, c.DataType)
-	})
-}
+func handleIcebergTableColumns(columns []sdk.IcebergTableDetails, policyRefs []sdk.PolicyReference) ([]map[string]any, error) {
+	if len(columns) == 0 {
+		return nil, nil
+	}
 
-func icebergTableColumnsToSchema(details []sdk.IcebergTableDetails) []map[string]any {
-	return collections.Map(details, func(d sdk.IcebergTableDetails) map[string]any {
-		return map[string]any{
-			"name": d.Name,
-			"type": d.Type.ToSql(),
+	return collections.MapErr(columns, func(column sdk.IcebergTableDetails) (map[string]any, error) {
+		columnState := map[string]any{
+			"name":     column.Name,
+			"type":     column.Type.ToSql(),
+			"not_null": !column.IsNullable,
 		}
+		if column.Comment != nil {
+			columnState["comment"] = *column.Comment
+		}
+		if column.Default != nil {
+			columnState["default"] = []map[string]any{{"expression": *column.Default}}
+		}
+		columnPoliciesState, err := columnPoliciesToState(column.Name, policyRefs)
+		if err != nil {
+			return nil, fmt.Errorf("converting column policies to state: %w", err)
+		}
+		columnState = collections.MergeMaps(columnState, columnPoliciesState)
+		return columnState, nil
 	})
 }
 

@@ -607,6 +607,57 @@ func TestInt_IcebergTables(t *testing.T) {
 		)
 	})
 
+	t.Run("create Snowflake managed: inline constraint enforcement options", func(t *testing.T) {
+		fkRefTable, fkRefCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForIcebergTable(t)
+		t.Cleanup(fkRefCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{
+					Name:       "ID",
+					ColumnType: testdatatypes.DataTypeNumber,
+					InlineConstraint: &sdk.TableColumnInlineConstraintRequest{
+						UniquePK: &sdk.TableColumnInlineUniquePKRequest{
+							Name:              new("pk_id_enforced"),
+							PrimaryKey:        new(true),
+							Enforced:          new(true),
+							Deferrable:        new(true),
+							InitiallyDeferred: new(true),
+							Enable:            new(true),
+							Validate:          new(true),
+							Rely:              new(true),
+						},
+					},
+				},
+				{
+					Name:       "FK_ID",
+					ColumnType: testdatatypes.DataTypeNumber,
+					InlineConstraint: &sdk.TableColumnInlineConstraintRequest{
+						FK: &sdk.TableColumnInlineFKRequest{
+							Name:               new("fk_ref_not_enforced"),
+							References:         fkRefTable.ID(),
+							RefColumn:          []sdk.Column{{Value: "ID"}},
+							NotEnforced:        new(true),
+							NotDeferrable:      new(true),
+							InitiallyImmediate: new(true),
+							Disable:            new(true),
+							Novalidate:         new(true),
+							Norely:             new(true),
+						},
+					},
+				},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		// TODO (next PRs): report this to Snowflake
+		require.Len(t, constraints, 2)
+	})
+
 	t.Run("create Snowflake managed: cluster by", func(t *testing.T) {
 		// PARTITION BY and CLUSTER BY are mutually exclusive for Iceberg tables (err 099207), so clustering is
 		// tested in a separate table from the partitioned "all options" one above.

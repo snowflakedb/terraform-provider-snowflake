@@ -352,7 +352,7 @@ func Test_IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.wantSuppress, resources.IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem()(tt.key, tt.old, tt.new, tt.resourceData))
+			require.Equal(t, tt.wantSuppress, resources.IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("column_name")(tt.key, tt.old, tt.new, tt.resourceData))
 		})
 	}
 }

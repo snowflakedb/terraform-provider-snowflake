@@ -169,7 +169,7 @@ var viewSchema = map[string]*schema.Schema{
 								Elem: &schema.Schema{
 									Type: schema.TypeString,
 								},
-								DiffSuppressFunc: IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem(),
+								DiffSuppressFunc: IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("column_name"),
 								Description:      "Specifies the arguments to pass into the conditional masking policy SQL expression. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.",
 							},
 						},
@@ -661,47 +661,20 @@ func handleColumns(d ResourceValueSetter, columns []sdk.ViewDetails, policyRefs 
 	}
 	columnsRaw := make([]map[string]any, len(columns))
 	for i, column := range columns {
-		columnsRaw[i] = map[string]any{
+		columnState := map[string]any{
 			"column_name": column.Name,
 		}
 		if column.Comment != nil {
-			columnsRaw[i]["comment"] = *column.Comment
+			columnState["comment"] = *column.Comment
 		} else {
-			columnsRaw[i]["comment"] = nil
+			columnState["comment"] = nil
 		}
-		projectionPolicy, err := collections.FindFirst(policyRefs, func(r sdk.PolicyReference) bool {
-			return r.PolicyKind == sdk.PolicyKindProjectionPolicy && r.RefColumnName != nil && *r.RefColumnName == column.Name
-		})
-		if err == nil {
-			if projectionPolicy.PolicyDb != nil && projectionPolicy.PolicySchema != nil {
-				columnsRaw[i]["projection_policy"] = []map[string]any{
-					{
-						"policy_name": sdk.NewSchemaObjectIdentifier(*projectionPolicy.PolicyDb, *projectionPolicy.PolicySchema, projectionPolicy.PolicyName).FullyQualifiedName(),
-					},
-				}
-			} else {
-				log.Printf("[DEBUG] could not store projection policy name: policy db and schema can not be empty")
-			}
+		columnPoliciesState, err := columnPoliciesToState(column.Name, policyRefs)
+		if err != nil {
+			log.Printf("[DEBUG] could not convert column policies to state: %v", err)
 		}
-		maskingPolicy, err := collections.FindFirst(policyRefs, func(r sdk.PolicyReference) bool {
-			return r.PolicyKind == sdk.PolicyKindMaskingPolicy && r.RefColumnName != nil && *r.RefColumnName == column.Name
-		})
-		if err == nil {
-			if maskingPolicy.PolicyDb != nil && maskingPolicy.PolicySchema != nil {
-				var usingArgs []string
-				if maskingPolicy.RefArgColumnNames != nil {
-					usingArgs = sdk.ParseCommaSeparatedStringArray(*maskingPolicy.RefArgColumnNames, true)
-				}
-				columnsRaw[i]["masking_policy"] = []map[string]any{
-					{
-						"policy_name": sdk.NewSchemaObjectIdentifier(*maskingPolicy.PolicyDb, *maskingPolicy.PolicySchema, maskingPolicy.PolicyName).FullyQualifiedName(),
-						"using":       append([]string{*maskingPolicy.RefColumnName}, usingArgs...),
-					},
-				}
-			} else {
-				log.Printf("[DEBUG] could not store masking policy name: policy db and schema can not be empty")
-			}
-		}
+		columnState = collections.MergeMaps(columnState, columnPoliciesState)
+		columnsRaw[i] = columnState
 	}
 	return d.Set("column", columnsRaw)
 }
