@@ -2,9 +2,15 @@
 
 {{ $assertName := .Name | printf "%sAssert" }}
 {{ $nameLowerCase := FirstLetterLowercase .Name }}
+{{- if .IsSubStruct }}
+type {{ $assertName }} struct {
+    *assert.SubStructAssert[{{ .SdkType }}]
+}
+{{- else }}
 type {{ $assertName }} struct {
     *assert.SnowflakeObjectAssert[{{ .SdkType }}, {{ .IdType }}]
 }
+{{- end }}
 
 {{- if not (or .IsSubStruct .NoShowById .NoIdentifiableObject) }}
 {{- if .ShowByParentId }}
@@ -41,9 +47,7 @@ func {{ .Name }}(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
 
 {{- if .IsSubStruct }}
 func New{{ .Name }}Assert() *{{ $assertName }} {
-    return &{{ $assertName }}{
-        assert.NewSnowflakeObjectAssertEmpty[{{ .SdkType }}, {{ .IdType }}](),
-    }
+    return &{{ $assertName }}{assert.NewSubStructAssert[{{ .SdkType }}]()}
 }
 {{- end }}
 

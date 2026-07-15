@@ -11,20 +11,11 @@ import (
 )
 
 type StorageLocationAzureDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.StorageLocationAzureDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.StorageLocationAzureDetails]
 }
 
 func NewStorageLocationAzureDetailsAssert() *StorageLocationAzureDetailsAssert {
-	return &StorageLocationAzureDetailsAssert{
-		assert.NewSnowflakeObjectAssertEmpty[sdk.StorageLocationAzureDetails, sdk.AccountObjectIdentifier](),
-	}
-}
-
-func StorageLocationAzureDetailsFromObject(t *testing.T, storageLocationAzureDetails *sdk.StorageLocationAzureDetails) *StorageLocationAzureDetailsAssert {
-	t.Helper()
-	return &StorageLocationAzureDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLocationAzureDetails"), sdk.NewAccountObjectIdentifier(""), storageLocationAzureDetails),
-	}
+	return &StorageLocationAzureDetailsAssert{assert.NewSubStructAssert[sdk.StorageLocationAzureDetails]()}
 }
 
 func (s *StorageLocationAzureDetailsAssert) HasAzureTenantId(expected string) *StorageLocationAzureDetailsAssert {

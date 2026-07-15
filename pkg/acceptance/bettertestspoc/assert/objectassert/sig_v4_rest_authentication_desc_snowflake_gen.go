@@ -11,13 +11,11 @@ import (
 )
 
 type SigV4RestAuthenticationDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.SigV4RestAuthenticationDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.SigV4RestAuthenticationDetails]
 }
 
 func NewSigV4RestAuthenticationDetailsAssert() *SigV4RestAuthenticationDetailsAssert {
-	return &SigV4RestAuthenticationDetailsAssert{
-		assert.NewSnowflakeObjectAssertEmpty[sdk.SigV4RestAuthenticationDetails, sdk.AccountObjectIdentifier](),
-	}
+	return &SigV4RestAuthenticationDetailsAssert{assert.NewSubStructAssert[sdk.SigV4RestAuthenticationDetails]()}
 }
 
 func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4IamRole(expected string) *SigV4RestAuthenticationDetailsAssert {

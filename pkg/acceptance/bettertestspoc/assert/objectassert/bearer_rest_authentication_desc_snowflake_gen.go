@@ -11,13 +11,11 @@ import (
 )
 
 type BearerRestAuthenticationDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.BearerRestAuthenticationDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.BearerRestAuthenticationDetails]
 }
 
 func NewBearerRestAuthenticationDetailsAssert() *BearerRestAuthenticationDetailsAssert {
-	return &BearerRestAuthenticationDetailsAssert{
-		assert.NewSnowflakeObjectAssertEmpty[sdk.BearerRestAuthenticationDetails, sdk.AccountObjectIdentifier](),
-	}
+	return &BearerRestAuthenticationDetailsAssert{assert.NewSubStructAssert[sdk.BearerRestAuthenticationDetails]()}
 }
 
 func (b *BearerRestAuthenticationDetailsAssert) HasBearerToken(expected string) *BearerRestAuthenticationDetailsAssert {

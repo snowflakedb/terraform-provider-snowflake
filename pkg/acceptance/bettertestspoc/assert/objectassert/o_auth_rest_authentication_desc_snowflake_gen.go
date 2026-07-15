@@ -13,13 +13,11 @@ import (
 )
 
 type OAuthRestAuthenticationDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.OAuthRestAuthenticationDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.OAuthRestAuthenticationDetails]
 }
 
 func NewOAuthRestAuthenticationDetailsAssert() *OAuthRestAuthenticationDetailsAssert {
-	return &OAuthRestAuthenticationDetailsAssert{
-		assert.NewSnowflakeObjectAssertEmpty[sdk.OAuthRestAuthenticationDetails, sdk.AccountObjectIdentifier](),
-	}
+	return &OAuthRestAuthenticationDetailsAssert{assert.NewSubStructAssert[sdk.OAuthRestAuthenticationDetails]()}
 }
 
 func (o *OAuthRestAuthenticationDetailsAssert) HasOauthTokenUri(expected string) *OAuthRestAuthenticationDetailsAssert {

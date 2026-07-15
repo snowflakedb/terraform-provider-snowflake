@@ -51,12 +51,23 @@ func NewSnowflakeObjectAssertWithObject[T any, I sdk.ObjectIdentifier](objectTyp
 	}
 }
 
-// NewSnowflakeObjectAssertEmpty creates a SnowflakeObjectAssert with no object or provider.
-// It is used exclusively for building sub-assertions in the nested assertion pattern.
-func NewSnowflakeObjectAssertEmpty[T any, I sdk.ObjectIdentifier]() *SnowflakeObjectAssert[T, I] {
-	return &SnowflakeObjectAssert[T, I]{
-		assertions: make([]assertSdk[*T], 0),
-	}
+// SubStructAssert is used exclusively for composition via the nested assertion adapter.
+// It intentionally does NOT implement VerifyAll, ToTerraformTestCheckFunc, or
+// ToTerraformImportStateCheckFunc — sub-struct asserters cannot be used standalone.
+type SubStructAssert[T any] struct {
+	assertions []func(*testing.T, *T) error
+}
+
+func NewSubStructAssert[T any]() *SubStructAssert[T] {
+	return &SubStructAssert[T]{assertions: make([]func(*testing.T, *T) error, 0)}
+}
+
+func (s *SubStructAssert[T]) AddAssertion(assertion func(*testing.T, *T) error) {
+	s.assertions = append(s.assertions, assertion)
+}
+
+func (s *SubStructAssert[T]) GetAssertions() []func(*testing.T, *T) error {
+	return s.assertions
 }
 
 func (s *SnowflakeObjectAssert[T, I]) AddAssertion(assertion assertSdk[*T]) {
@@ -72,16 +83,6 @@ func AssertionOnPointerField[F any](t *testing.T, field *F, fieldName string, as
 		return fmt.Errorf("expected %s to have value; got: nil", fieldName)
 	}
 	return assertion(t, field)
-}
-
-// GetAssertions returns the accumulated assertions. Used by the nested assertion pattern to
-// compose sub-asserter assertions into a parent asserter.
-func (s *SnowflakeObjectAssert[T, I]) GetAssertions() []func(*testing.T, *T) error {
-	result := make([]func(*testing.T, *T) error, len(s.assertions))
-	for i, a := range s.assertions {
-		result[i] = a
-	}
-	return result
 }
 
 func (s *SnowflakeObjectAssert[T, I]) GetId() I {

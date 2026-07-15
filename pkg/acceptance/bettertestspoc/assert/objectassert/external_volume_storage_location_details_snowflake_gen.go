@@ -13,13 +13,11 @@ import (
 )
 
 type ExternalVolumeStorageLocationDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.ExternalVolumeStorageLocationDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.ExternalVolumeStorageLocationDetails]
 }
 
 func NewExternalVolumeStorageLocationDetailsAssert() *ExternalVolumeStorageLocationDetailsAssert {
-	return &ExternalVolumeStorageLocationDetailsAssert{
-		assert.NewSnowflakeObjectAssertEmpty[sdk.ExternalVolumeStorageLocationDetails, sdk.AccountObjectIdentifier](),
-	}
+	return &ExternalVolumeStorageLocationDetailsAssert{assert.NewSubStructAssert[sdk.ExternalVolumeStorageLocationDetails]()}
 }
 
 func (e *ExternalVolumeStorageLocationDetailsAssert) HasName(expected string) *ExternalVolumeStorageLocationDetailsAssert {
