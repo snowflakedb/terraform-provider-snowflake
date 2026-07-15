@@ -313,8 +313,7 @@ func (v *IdentifierTransformer) Transform(f *Field) *Field {
 // InlineTransformer produces ddl:"-" on a struct field, causing the SQL builder
 // to render the sub-struct's fields inline without any wrapper keyword.
 // This is equivalent to the ddl:"-" tag used directly on Options struct fields.
-// Use when a sub-struct provides its own SQL keywords internally (e.g. AccountRename,
-// AccountDrop) rather than being prefixed by a parent keyword.
+// Use when a sub-struct provides its own SQL keywords internally (e.g. AccountDrop)
 type InlineTransformer struct{}
 
 func InlineOptions() *InlineTransformer {

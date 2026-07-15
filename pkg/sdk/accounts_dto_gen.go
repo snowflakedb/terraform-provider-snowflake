@@ -29,13 +29,14 @@ type CreateAccountRequest struct {
 }
 
 type AlterAccountRequest struct {
-	Name     *AccountObjectIdentifier
-	Set      *AccountSetRequest
-	Unset    *AccountUnsetRequest
-	SetTag   []TagAssociation
-	UnsetTag []ObjectIdentifier
-	Rename   *AccountRenameRequest
-	Drop     *AccountDropRequest
+	Name       *AccountObjectIdentifier
+	Set        *AccountSetRequest
+	Unset      *AccountUnsetRequest
+	SetTag     []TagAssociation
+	UnsetTag   []ObjectIdentifier
+	RenameTo   *AccountObjectIdentifier
+	SaveOldURL *bool
+	Drop       *AccountDropRequest
 }
 
 type AccountSetRequest struct {
@@ -84,11 +85,6 @@ type AccountLevelParametersUnsetRequest struct {
 
 type AccountFeaturePolicyUnsetRequest struct {
 	FeaturePolicy *bool
-}
-
-type AccountRenameRequest struct {
-	NewName    AccountObjectIdentifier // required
-	SaveOldURL *bool
 }
 
 type AccountDropRequest struct {

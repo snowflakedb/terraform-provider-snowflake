@@ -69,7 +69,7 @@ func TestAccountCreate(t *testing.T) {
 func TestAccountAlter(t *testing.T) {
 	t.Run("validation: exactly one value - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "RenameTo"))
 	})
 
 	t.Run("validation: exactly one value set in AccountSet - nothing set", func(t *testing.T) {
@@ -105,10 +105,9 @@ func TestAccountAlter(t *testing.T) {
 	})
 
 	t.Run("validation: no name passed when renaming account", func(t *testing.T) {
+		newName := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			Rename: &AccountRename{
-				NewName: randomAccountObjectIdentifier(),
-			},
+			RenameTo: &newName,
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
@@ -647,11 +646,9 @@ func TestAccountAlter(t *testing.T) {
 		oldName := randomAccountObjectIdentifier()
 		newName := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			Name: &oldName,
-			Rename: &AccountRename{
-				NewName:    newName,
-				SaveOldURL: Bool(false),
-			},
+			Name:       &oldName,
+			RenameTo:   &newName,
+			SaveOldURL: Bool(false),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s RENAME TO %s SAVE_OLD_URL = false`, oldName.FullyQualifiedName(), newName.FullyQualifiedName())
 	})

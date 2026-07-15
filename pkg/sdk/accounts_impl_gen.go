@@ -87,9 +87,11 @@ func (r *CreateAccountRequest) toOpts() *CreateAccountOptions {
 
 func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 	opts := &AlterAccountOptions{
-		Name:     r.Name,
-		SetTag:   r.SetTag,
-		UnsetTag: r.UnsetTag,
+		Name:       r.Name,
+		SetTag:     r.SetTag,
+		UnsetTag:   r.UnsetTag,
+		RenameTo:   r.RenameTo,
+		SaveOldURL: r.SaveOldURL,
 	}
 	if r.Set != nil {
 		opts.Set = &AccountSet{
@@ -139,12 +141,6 @@ func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 			opts.Unset.FeaturePolicyUnset = &AccountFeaturePolicyUnset{
 				FeaturePolicy: r.Unset.FeaturePolicyUnset.FeaturePolicy,
 			}
-		}
-	}
-	if r.Rename != nil {
-		opts.Rename = &AccountRename{
-			NewName:    r.Rename.NewName,
-			SaveOldURL: r.Rename.SaveOldURL,
 		}
 	}
 	if r.Drop != nil {

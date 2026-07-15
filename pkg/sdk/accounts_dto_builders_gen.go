@@ -104,8 +104,13 @@ func (s *AlterAccountRequest) WithUnsetTag(unsetTag []ObjectIdentifier) *AlterAc
 	return s
 }
 
-func (s *AlterAccountRequest) WithRename(rename AccountRenameRequest) *AlterAccountRequest {
-	s.Rename = &rename
+func (s *AlterAccountRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterAccountRequest {
+	s.RenameTo = &renameTo
+	return s
+}
+
+func (s *AlterAccountRequest) WithSaveOldURL(saveOldURL bool) *AlterAccountRequest {
+	s.SaveOldURL = &saveOldURL
 	return s
 }
 
@@ -291,19 +296,6 @@ func NewAccountFeaturePolicyUnsetRequest() *AccountFeaturePolicyUnsetRequest {
 
 func (s *AccountFeaturePolicyUnsetRequest) WithFeaturePolicy(featurePolicy bool) *AccountFeaturePolicyUnsetRequest {
 	s.FeaturePolicy = &featurePolicy
-	return s
-}
-
-func NewAccountRenameRequest(
-	newName AccountObjectIdentifier,
-) *AccountRenameRequest {
-	s := AccountRenameRequest{}
-	s.NewName = newName
-	return &s
-}
-
-func (s *AccountRenameRequest) WithSaveOldURL(saveOldURL bool) *AccountRenameRequest {
-	s.SaveOldURL = &saveOldURL
 	return s
 }
 

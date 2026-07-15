@@ -440,7 +440,7 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
 			WithName(id.AsAccountObjectIdentifier()).
-			WithRename(*sdk.NewAccountRenameRequest(newId.AsAccountObjectIdentifier())))
+			WithRenameTo(newId.AsAccountObjectIdentifier()))
 		if err != nil {
 			return diag.FromErr(err)
 		}

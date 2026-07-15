@@ -218,7 +218,7 @@ func TestInt_Account(t *testing.T) {
 
 		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
 			WithName(oldAccount.ID()).
-			WithRename(*sdk.NewAccountRenameRequest(newName)))
+			WithRenameTo(newName))
 		require.NoError(t, err)
 
 		_, err = client.Accounts.ShowByID(ctx, oldAccount.ID())
@@ -240,7 +240,7 @@ func TestInt_Account(t *testing.T) {
 
 		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
 			WithName(account.ID()).
-			WithRename(*sdk.NewAccountRenameRequest(newName).WithSaveOldURL(false)))
+			WithRenameTo(newName).WithSaveOldURL(false))
 		require.NoError(t, err)
 
 		_, err = client.Accounts.ShowByID(ctx, account.ID())
@@ -297,7 +297,7 @@ func TestInt_Account(t *testing.T) {
 
 		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
 			WithName(account.ID()).
-			WithRename(*sdk.NewAccountRenameRequest(newName)))
+			WithRenameTo(newName))
 		require.NoError(t, err)
 
 		acc, err := client.Accounts.ShowByID(ctx, newName)

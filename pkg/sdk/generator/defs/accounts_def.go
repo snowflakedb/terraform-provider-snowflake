@@ -9,12 +9,6 @@ import (
 
 var accountEditionDef = g.NewEnum("AccountEdition", "AccountEditions", "STANDARD", "ENTERPRISE", "BUSINESS_CRITICAL")
 
-func accountRename() *g.QueryStruct {
-	return g.NewQueryStruct("AccountRename").
-		Identifier("NewName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO").Required()).
-		OptionalAssignmentWithFieldName("SAVE_OLD_URL", "bool", g.ParameterOptions(), "SaveOldURL")
-}
-
 func accountDrop() *g.QueryStruct {
 	return g.NewQueryStruct("AccountDrop").
 		OptionalSQLWithCustomFieldName("OldUrl", "DROP OLD URL").
@@ -151,9 +145,11 @@ var accountsDef = g.NewInterface(
 		OptionalQueryStructField("Unset", accountUnset(), g.ListOptions().NoParentheses().SQL("UNSET")).
 		PredefinedQueryStructField("SetTag", "[]TagAssociation", g.KeywordOptions().SQL("SET TAG")).
 		PredefinedQueryStructField("UnsetTag", "[]ObjectIdentifier", g.KeywordOptions().SQL("UNSET TAG")).
-		OptionalInlineQueryStructField("Rename", accountRename()).
+		RenameTo().
+		OptionalAssignmentWithFieldName("SAVE_OLD_URL", "bool", g.ParameterOptions(), "SaveOldURL").
 		OptionalInlineQueryStructField("Drop", accountDrop()).
-		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename").
+		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTag", "UnsetTag", "Drop", "RenameTo").
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithAdditionalValidations(),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-account",

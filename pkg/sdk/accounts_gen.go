@@ -51,15 +51,16 @@ type CreateAccountOptions struct {
 
 // AlterAccountOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-account.
 type AlterAccountOptions struct {
-	alter    bool                     `ddl:"static" sql:"ALTER"`
-	account  bool                     `ddl:"static" sql:"ACCOUNT"`
-	Name     *AccountObjectIdentifier `ddl:"identifier"`
-	Set      *AccountSet              `ddl:"keyword" sql:"SET"`
-	Unset    *AccountUnset            `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTag   []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
-	UnsetTag []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
-	Rename   *AccountRename           `ddl:"-"`
-	Drop     *AccountDrop             `ddl:"-"`
+	alter      bool                     `ddl:"static" sql:"ALTER"`
+	account    bool                     `ddl:"static" sql:"ACCOUNT"`
+	Name       *AccountObjectIdentifier `ddl:"identifier"`
+	Set        *AccountSet              `ddl:"keyword" sql:"SET"`
+	Unset      *AccountUnset            `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTag     []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
+	UnsetTag   []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
+	RenameTo   *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	SaveOldURL *bool                    `ddl:"parameter" sql:"SAVE_OLD_URL"`
+	Drop       *AccountDrop             `ddl:"-"`
 }
 
 type AccountSet struct {
@@ -110,11 +111,6 @@ type AccountLevelParametersUnset struct {
 type AccountFeaturePolicyUnset struct {
 	FeaturePolicy      *bool `ddl:"keyword" sql:"FEATURE POLICY"`
 	forAllApplications bool  `ddl:"static" sql:"FOR ALL APPLICATIONS"`
-}
-
-type AccountRename struct {
-	NewName    AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
-	SaveOldURL *bool                   `ddl:"parameter" sql:"SAVE_OLD_URL"`
 }
 
 type AccountDrop struct {

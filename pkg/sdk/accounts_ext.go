@@ -109,12 +109,10 @@ func (opts *AlterAccountOptions) additionalValidations() error {
 			errs = append(errs, errExactlyOneOf("AccountDrop", "OldUrl", "OldOrganizationUrl"))
 		}
 	}
-	if valueSet(opts.Rename) {
-		if !ValidObjectIdentifier(opts.Rename.NewName) {
-			errs = append(errs, errInvalidIdentifier("AccountRename", "NewName"))
-		}
+	if valueSet(opts.SaveOldURL) && !valueSet(opts.RenameTo) {
+		errs = append(errs, NewError("SaveOldURL can only be set with RenameTo"))
 	}
-	if valueSet(opts.Drop) || valueSet(opts.Rename) {
+	if valueSet(opts.Drop) || valueSet(opts.RenameTo) {
 		if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
