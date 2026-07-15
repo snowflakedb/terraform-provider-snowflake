@@ -25,7 +25,6 @@ import (
 
 // TODO (next PRs): the following CreateIcebergTableOptions fields are not yet supported by this resource:
 //   - CopyGrants and CopyTags
-//   - Use ALTER TABLE for handling column changes
 //   - ICEBERG_MERGE_ON_READ_BEHAVIOR (needs to be added to SDK)
 //   - https://docs.snowflake.com/en/sql-reference/parameters#label-iceberg-default-ddl-collation
 var icebergTableSchema = collections.MergeMaps(
@@ -462,7 +461,7 @@ func updateIcebergTableColumns(ctx context.Context, client *sdk.Client, id sdk.S
 	}
 
 	// Alter columns before the split index in place.
-	for i := 0; i < splitIndex; i++ {
+	for i := range splitIndex {
 		if err := alterIcebergTableColumn(ctx, client, id, d, i, oldColumns[i].(map[string]any)); err != nil {
 			return err
 		}

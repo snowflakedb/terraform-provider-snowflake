@@ -920,21 +920,24 @@ func TestAcc_IcebergTable_BasicUseCase_ColumnAlters(t *testing.T) {
 			},
 			// Add a column at the end (with not_null + comment set at ADD COLUMN time) while altering
 			// not_null/comment/masking_policy on existing columns - expect an in-place update.
-			updateStep(v2, v2Assertions,
+			updateStep(
+				v2, v2Assertions,
 				planchecks.ExpectChange(ref, "column.0.comment", tfjson.ActionUpdate, sdk.String(idComment), sdk.String(idCommentChanged)),
 				planchecks.ExpectChange(ref, "column.1.not_null", tfjson.ActionUpdate, sdk.String("false"), sdk.String("true")),
 				planchecks.ExpectChange(ref, "column.2.masking_policy.0.policy_name", tfjson.ActionUpdate, sdk.String(maskingPolicy1Id.FullyQualifiedName()), sdk.String(maskingPolicy2Id.FullyQualifiedName())),
 			),
 			// Add another column (with projection_policy set at ADD COLUMN time), rename a column, and
 			// alter not_null/comment on existing columns - expect an in-place update.
-			updateStep(v3, v3Assertions,
+			updateStep(
+				v3, v3Assertions,
 				planchecks.ExpectChange(ref, "column.0.comment", tfjson.ActionUpdate, sdk.String(idCommentChanged), nil),
 				planchecks.ExpectChange(ref, "column.1.not_null", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 				planchecks.ExpectChange(ref, "column.2.name", tfjson.ActionUpdate, sdk.String("REGION"), sdk.String("REGION_CODE")),
 			),
 			// Swap the projection policy on an existing column to a different policy - expect an
 			// in-place update.
-			updateStep(v3b, v3bAssertions,
+			updateStep(
+				v3b, v3bAssertions,
 				planchecks.ExpectChange(ref, "column.4.projection_policy.0.policy_name", tfjson.ActionUpdate, sdk.String(projectionPolicy1Id.FullyQualifiedName()), sdk.String(projectionPolicy2Id.FullyQualifiedName())),
 			),
 			// Unset a masking policy and drop the trailing column - expect an in-place update.
