@@ -18,10 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-// interactiveWarehouseMinAutoSuspend is the minimum AUTO_SUSPEND (in seconds) accepted by Snowflake
-// for interactive warehouses.
-const interactiveWarehouseMinAutoSuspend = 86400
-
 var warehouseInteractiveSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
@@ -57,9 +53,9 @@ var warehouseInteractiveSchema = map[string]*schema.Schema{
 		Type:             schema.TypeInt,
 		Optional:         true,
 		Computed:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(interactiveWarehouseMinAutoSuspend)),
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("auto_suspend"),
-		Description:      fmt.Sprintf("Specifies the number of seconds of inactivity after which an interactive warehouse is automatically suspended. Must be at least %d for interactive warehouses. Snowflake always assigns a value, so this field is computed when not set.", interactiveWarehouseMinAutoSuspend),
+		Description:      "Specifies the number of seconds of inactivity after which an interactive warehouse is automatically suspended. Snowflake always assigns a value, so this field is computed when not set.",
 	},
 	"auto_resume": {
 		Type:             schema.TypeString,
@@ -170,7 +166,7 @@ func WarehouseInteractive() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseInteractive, customdiff.All(
-			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, ShowOutputAttributeName, "name", "warehouse_size", "max_cluster_count", "min_cluster_count", "auto_suspend", "auto_resume", "resource_monitor", "comment", "tables", "fallback_warehouse"),
+			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, ShowOutputAttributeName, "name", "warehouse_size", "max_cluster_count", "min_cluster_count", "auto_suspend", "auto_resume", "resource_monitor", "comment", "tables"),
 			ComputedIfAnyAttributeChanged(
 				warehouseInteractiveSchema, ParametersAttributeName,
 				strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)),
@@ -231,7 +227,7 @@ func ImportWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		return nil, err
 	}
 	if !w.IsInteractiveWarehouse() {
-		return nil, fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse instead", id.FullyQualifiedName())
+		return nil, fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse or snowflake_warehouse_adaptive instead", id.FullyQualifiedName())
 	}
 
 	tables := make([]string, len(w.Tables))
