@@ -4,7 +4,6 @@ package objectassert
 
 import (
 	"fmt"
-	"reflect"
 	"slices"
 	"testing"
 	"time"
@@ -229,20 +228,6 @@ func (i *IcebergTableAssert) HasCatalogSyncName(expected string) *IcebergTableAs
 		t.Helper()
 		if o.CatalogSyncName != expected {
 			return fmt.Errorf("expected catalog sync name: %v; got: %v", expected, o.CatalogSyncName)
-		}
-		return nil
-	})
-	return i
-}
-
-func (i *IcebergTableAssert) HasAutoRefreshStatus(expected sdk.IcebergTableAutoRefreshStatus) *IcebergTableAssert {
-	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
-		t.Helper()
-		if o.AutoRefreshStatus == nil {
-			return fmt.Errorf("expected auto refresh status to have value; got: nil")
-		}
-		if !reflect.DeepEqual(*o.AutoRefreshStatus, expected) {
-			return fmt.Errorf("expected auto refresh status: %v; got: %v", expected, *o.AutoRefreshStatus)
 		}
 		return nil
 	})
