@@ -41,6 +41,7 @@ func init() {
 		managedAccountsDef,
 		maskingPoliciesDef,
 		materializedViewsDef,
+		mcpServersDef,
 		networkPoliciesDef,
 		networkRulesDef,
 		notebooksDef,

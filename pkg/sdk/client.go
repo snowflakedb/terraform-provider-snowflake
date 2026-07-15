@@ -56,6 +56,7 @@ type Client struct {
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
+	McpServers                   McpServers
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	Notebooks                    Notebooks
@@ -199,6 +200,7 @@ func (c *Client) initialize() {
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
+	c.McpServers = &mcpServers{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.Notebooks = &notebooks{client: c}
