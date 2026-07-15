@@ -53,6 +53,31 @@ func (c *ListingClient) CreateWithId(t *testing.T, id sdk.AccountObjectIdentifie
 	return listing, c.DropFunc(t, id)
 }
 
+// CreateOrganization creates an organization listing. Organization listings only have a
+// dedicated CREATE command (CREATE ORGANIZATION LISTING); all the other operations (ALTER,
+// DROP, SHOW, DESCRIBE) are shared with regular listings, hence the rest of ListingClient is reused.
+func (c *ListingClient) CreateOrganization(t *testing.T) (*sdk.Listing, func()) {
+	t.Helper()
+	return c.CreateOrganizationWithId(t, c.ids.RandomAccountObjectIdentifier())
+}
+
+func (c *ListingClient) CreateOrganizationWithId(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Listing, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	manifest, _ := c.OrganizationBasicManifest(t)
+	err := c.client().CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+		WithAs(manifest).
+		WithPublish(false),
+	)
+	assert.NoError(t, err)
+
+	listing, err := c.client().ShowByID(ctx, id)
+	assert.NoError(t, err)
+
+	return listing, c.DropFunc(t, id)
+}
+
 func (c *ListingClient) Alter(t *testing.T, req *sdk.AlterListingRequest) {
 	t.Helper()
 	ctx := context.Background()
@@ -160,6 +185,56 @@ func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccounts(t *test
 func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccountsAndDifferentSubtitle(t *testing.T, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
 	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccounts...)
+}
+
+// OrganizationBasicManifest returns a minimal valid organization listing manifest; see
+// https://docs.snowflake.com/en/user-guide/collaboration/listings/organizational/org-listing-manifest-reference.
+func (c *ListingClient) OrganizationBasicManifest(t *testing.T) (string, string) {
+	t.Helper()
+	return c.basicOrganizationManifest(t, "basic_", "subtitle")
+}
+
+func (c *ListingClient) OrganizationBasicManifestWithDifferentSubtitle(t *testing.T) (string, string) {
+	t.Helper()
+	return c.basicOrganizationManifest(t, "basic_with_diff_subtitle_", "different_subtitle")
+}
+
+func (c *ListingClient) OrganizationBasicManifestWithTargetAccounts(t *testing.T, targetAccounts ...sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	return c.basicOrganizationManifestWithTargetAccounts(t, "with_target_accounts_", "subtitle", targetAccounts...)
+}
+
+func (c *ListingClient) basicOrganizationManifest(t *testing.T, titleSuffix string, subtitle string) (string, string) {
+	t.Helper()
+	title := c.ids.WithTestObjectSuffix(titleSuffix)
+	return fmt.Sprintf(`title: "%s"
+subtitle: "%s"
+description: "description"
+organization_targets:
+  access:
+  - all_internal_accounts: true
+locations:
+  access_regions:
+  - name: "ALL"
+`, title, subtitle), title
+}
+
+func (c *ListingClient) basicOrganizationManifestWithTargetAccounts(t *testing.T, titleSuffix string, subtitle string, targetAccounts ...sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	title := c.ids.WithTestObjectSuffix(titleSuffix)
+	accessEntries := collections.Map(targetAccounts, func(id sdk.AccountIdentifier) string {
+		return fmt.Sprintf("  - account: \"%s\"", id.AccountName())
+	})
+	return fmt.Sprintf(`title: "%s"
+subtitle: "%s"
+description: "description"
+organization_targets:
+  access:
+%s
+locations:
+  access_regions:
+  - name: "ALL"
+`, title, subtitle, collections.JoinStrings(accessEntries, "\n")), title
 }
 
 func (c *ListingClient) basicManifest(t *testing.T, titleSuffix string, subtitle string) (string, string) {

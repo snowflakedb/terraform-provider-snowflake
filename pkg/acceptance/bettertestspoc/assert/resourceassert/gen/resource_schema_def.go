@@ -226,6 +226,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.Listing().Schema,
 	},
 	{
+		name:   "OrganizationListing",
+		schema: resources.OrganizationListing().Schema,
+	},
+	{
 		name:   "ManagedAccount",
 		schema: resources.ManagedAccount().Schema,
 	},

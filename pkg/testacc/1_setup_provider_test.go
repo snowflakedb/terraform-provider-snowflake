@@ -78,6 +78,11 @@ func acceptanceTestsProvider() *schema.Provider {
 	p.ResourcesMap["snowflake_iceberg_table"] = resources.IcebergTable()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
+	p.ResourcesMap["snowflake_organization_listing"] = resources.OrganizationListing()
+	p.ResourcesMap["snowflake_api_integration_amazon_api_gateway"] = resources.ApiIntegrationAmazonApiGateway()
+	p.ResourcesMap["snowflake_api_integration_azure_api_management"] = resources.ApiIntegrationAzureApiManagement()
+	p.ResourcesMap["snowflake_api_integration_git_repository_github_app"] = resources.ApiIntegrationGitRepositoryGithubApp()
+	p.ResourcesMap["snowflake_api_integration_google_cloud_api_gateway"] = resources.ApiIntegrationGoogleCloudApiGateway()
 	return p
 }
 

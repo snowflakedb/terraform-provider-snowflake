@@ -24,6 +24,11 @@ func (v *listings) Create(ctx context.Context, request *CreateListingRequest) er
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *listings) CreateOrganization(ctx context.Context, request *CreateOrganizationListingRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *listings) Alter(ctx context.Context, request *AlterListingRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -91,6 +96,23 @@ func (r *CreateListingRequest) toOpts() *CreateListingOptions {
 		Publish:     r.Publish,
 		Review:      r.Review,
 		Comment:     r.Comment,
+	}
+	if r.With != nil {
+		opts.With = &ListingWith{
+			Share:              r.With.Share,
+			ApplicationPackage: r.With.ApplicationPackage,
+		}
+	}
+	return opts
+}
+
+func (r *CreateOrganizationListingRequest) toOpts() *CreateOrganizationListingOptions {
+	opts := &CreateOrganizationListingOptions{
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		As:          r.As,
+		From:        r.From,
+		Publish:     r.Publish,
 	}
 	if r.With != nil {
 		opts.With = &ListingWith{

@@ -160,6 +160,55 @@ func TestListings_Create(t *testing.T) {
 	})
 }
 
+func TestListings_CreateOrganization(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+	shareId := randomAccountObjectIdentifier()
+
+	// Minimal valid CreateOrganizationListingOptions
+	defaultOpts := func() *CreateOrganizationListingOptions {
+		return &CreateOrganizationListingOptions{
+			name: id,
+			As:   String("manifest content"),
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateOrganizationListingOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.As opts.From] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.As = nil
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"))
+	})
+
+	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.With = &ListingWith{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING %s AS $$manifest content$$", id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfNotExists = Bool(true)
+		opts.With = &ListingWith{Share: &shareId}
+		opts.Publish = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, "CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s AS $$manifest content$$ PUBLISH = true", id.FullyQualifiedName(), shareId.FullyQualifiedName())
+	})
+}
+
 func TestListings_Alter(t *testing.T) {
 	id := randomAccountObjectIdentifier()
 	// Minimal valid AlterListingOptions
@@ -282,6 +331,14 @@ func TestListings_Alter(t *testing.T) {
 			Comment: String("comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s SET COMMENT = 'comment'", opts.name.FullyQualifiedName())
+	})
+
+	t.Run("unset", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Unset = &ListingUnset{
+			Comment: Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s UNSET COMMENT", opts.name.FullyQualifiedName())
 	})
 }
 

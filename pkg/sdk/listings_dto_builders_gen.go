@@ -60,6 +60,39 @@ func (s *ListingWithRequest) WithApplicationPackage(applicationPackage AccountOb
 	return s
 }
 
+func NewCreateOrganizationListingRequest(
+	name AccountObjectIdentifier,
+) *CreateOrganizationListingRequest {
+	s := CreateOrganizationListingRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CreateOrganizationListingRequest) WithIfNotExists(ifNotExists bool) *CreateOrganizationListingRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithWith(with ListingWithRequest) *CreateOrganizationListingRequest {
+	s.With = &with
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithAs(as string) *CreateOrganizationListingRequest {
+	s.As = &as
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithFrom(from Location) *CreateOrganizationListingRequest {
+	s.From = &from
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithPublish(publish bool) *CreateOrganizationListingRequest {
+	s.Publish = &publish
+	return s
+}
+
 func NewAlterListingRequest(
 	name AccountObjectIdentifier,
 ) *AlterListingRequest {
