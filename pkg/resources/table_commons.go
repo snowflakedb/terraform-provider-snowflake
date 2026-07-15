@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -428,38 +429,48 @@ func extractPolicyWithColumnsList(v any, columnsKey string) (sdk.SchemaObjectIde
 	return id, collections.Map(columnsRaw, func(c string) sdk.Column { return sdk.Column{Value: c} }), nil
 }
 
-// rowAccessPolicyAlterRequests computes the ViewAddRowAccessPolicyRequest/ViewDropRowAccessPolicyRequest to apply
+// rowAccessPolicyCreateRequest extracts the row_access_policy field, if set, into a ready-to-use
+// ViewRowAccessPolicyRequest-shaped id + columns pair for use on create. ok is false when the field is unset.
+func rowAccessPolicyCreateRequest(d *schema.ResourceData) (id sdk.SchemaObjectIdentifier, columns []sdk.Column, ok bool, err error) {
+	v := d.Get("row_access_policy")
+	if len(v.([]any)) == 0 {
+		return sdk.SchemaObjectIdentifier{}, nil, false, nil
+	}
+	id, columns, err = extractPolicyWithColumnsSet(v, "on")
+	if err != nil {
+		return sdk.SchemaObjectIdentifier{}, nil, false, err
+	}
+	return id, columns, true, nil
+}
+
+// rowAccessPolicyUpdateRequests computes the ready-to-use ViewAddRowAccessPolicyRequest/ViewDropRowAccessPolicyRequest
 // for a row_access_policy diff. These request types are shared verbatim between AlterViewRequest and
 // AlterIcebergTableRequest, so the diffing logic can be shared even though the two resources wire the result into
 // different top-level alter requests.
-func rowAccessPolicyAlterRequests(
-	d *schema.ResourceData,
-	addRowAccessPolicyFunc func(id sdk.SchemaObjectIdentifier, columns []sdk.Column),
-	dropRowAccessPolicyFunc func(id sdk.SchemaObjectIdentifier),
-) error {
+func rowAccessPolicyUpdateRequests(d *schema.ResourceData) (add *sdk.ViewAddRowAccessPolicyRequest, drop *sdk.ViewDropRowAccessPolicyRequest, err error) {
 	oldRaw, newRaw := d.GetChange("row_access_policy")
 	if len(oldRaw.([]any)) > 0 {
 		oldId, _, err := extractPolicyWithColumnsSet(oldRaw, "on")
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
-		dropRowAccessPolicyFunc(oldId)
+		drop = sdk.NewViewDropRowAccessPolicyRequest(oldId)
 	}
 	if len(newRaw.([]any)) > 0 {
 		newId, newColumns, err := extractPolicyWithColumnsSet(newRaw, "on")
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
-		addRowAccessPolicyFunc(newId, newColumns)
+		add = sdk.NewViewAddRowAccessPolicyRequest(newId, newColumns)
 	}
-	return nil
+	return add, drop, nil
 }
 
-// aggregationPolicyAlterState extracts the desired aggregation policy state (id + entity key) from the
-// aggregation_policy field, or reports that the policy should be unset.
-func aggregationPolicyAlterState(d *schema.ResourceData) (id sdk.SchemaObjectIdentifier, entityKey []sdk.Column, isSet bool, err error) {
-	v, ok := d.GetOk("aggregation_policy")
-	if !ok {
+// aggregationPolicyCreateRequest extracts the aggregation_policy field, if set, into a ready-to-use
+// ViewAggregationPolicyRequest-shaped id + columns pair for use on create. ok is false when the field is unset.
+func aggregationPolicyCreateRequest(d *schema.ResourceData) (id sdk.SchemaObjectIdentifier, entityKey []sdk.Column, ok bool, err error) {
+	v := d.Get("aggregation_policy")
+	if len(v.([]any)) == 0 {
 		return sdk.SchemaObjectIdentifier{}, nil, false, nil
 	}
 	id, entityKey, err = extractPolicyWithColumnsSet(v, "entity_key")
@@ -467,6 +478,25 @@ func aggregationPolicyAlterState(d *schema.ResourceData) (id sdk.SchemaObjectIde
 		return sdk.SchemaObjectIdentifier{}, nil, false, err
 	}
 	return id, entityKey, true, nil
+}
+
+// aggregationPolicyUpdateRequests computes the ready-to-use ViewSetAggregationPolicyRequest/ViewUnsetAggregationPolicyRequest
+// for the desired aggregation_policy state. These request types are shared verbatim between AlterViewRequest and
+// AlterIcebergTableRequest.
+func aggregationPolicyUpdateRequests(d *schema.ResourceData) (set *sdk.ViewSetAggregationPolicyRequest, unset *sdk.ViewUnsetAggregationPolicyRequest, err error) {
+	v, ok := d.GetOk("aggregation_policy")
+	if !ok {
+		return nil, sdk.NewViewUnsetAggregationPolicyRequest(), nil
+	}
+	id, entityKey, err := extractPolicyWithColumnsSet(v, "entity_key")
+	if err != nil {
+		return nil, nil, err
+	}
+	set = sdk.NewViewSetAggregationPolicyRequest(id)
+	if len(entityKey) > 0 {
+		set.WithEntityKey(entityKey)
+	}
+	return set.WithForce(true), nil, nil
 }
 
 // handlePolicyReferences populates row_access_policy and aggregation_policy from the given policy references.
@@ -505,6 +535,20 @@ func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.Resource
 		return err
 	}
 	return nil
+}
+
+// readRootLevelPolicies fetches the policy references for id in the given domain, populates
+// row_access_policy and aggregation_policy in the resource state, and returns the fetched references
+// so callers can also derive column-level (masking/projection) policy state from them.
+func readRootLevelPolicies(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, domain sdk.PolicyEntityDomain, d *schema.ResourceData) ([]sdk.PolicyReference, error) {
+	policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, domain))
+	if err != nil {
+		return nil, err
+	}
+	if err := handlePolicyReferences(policyRefs, d); err != nil {
+		return nil, err
+	}
+	return policyRefs, nil
 }
 
 // buildColumnPolicyLookups indexes policyRefs by referenced column name, once, so that

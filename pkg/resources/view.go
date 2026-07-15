@@ -360,22 +360,18 @@ func CreateView(orReplace bool) schema.CreateContextFunc {
 			req.WithColumns(columns)
 		}
 
-		if v := d.Get("row_access_policy"); len(v.([]any)) > 0 {
-			id, columns, err := extractPolicyWithColumnsSet(v, "on")
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			req.WithRowAccessPolicy(*sdk.NewViewRowAccessPolicyRequest(id, columns))
+		if policyId, columns, ok, err := rowAccessPolicyCreateRequest(d); err != nil {
+			return diag.FromErr(err)
+		} else if ok {
+			req.WithRowAccessPolicy(*sdk.NewViewRowAccessPolicyRequest(policyId, columns))
 		}
 
-		if v := d.Get("aggregation_policy"); len(v.([]any)) > 0 {
-			id, columns, err := extractPolicyWithColumnsSet(v, "entity_key")
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			aggregationPolicyReq := sdk.NewViewAggregationPolicyRequest(id)
-			if len(columns) > 0 {
-				aggregationPolicyReq.WithEntityKey(columns)
+		if policyId, entityKey, ok, err := aggregationPolicyCreateRequest(d); err != nil {
+			return diag.FromErr(err)
+		} else if ok {
+			aggregationPolicyReq := sdk.NewViewAggregationPolicyRequest(policyId)
+			if len(entityKey) > 0 {
+				aggregationPolicyReq.WithEntityKey(entityKey)
 			}
 			req.WithAggregationPolicy(*aggregationPolicyReq)
 		}
@@ -564,13 +560,9 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 		}); err != nil {
 			return diag.FromErr(err)
 		}
-		policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainView))
+		policyRefs, err := readRootLevelPolicies(ctx, client, id, sdk.PolicyEntityDomainView, d)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("getting policy references for view: %w", err))
-		}
-		err = handlePolicyReferences(policyRefs, d)
-		if err != nil {
-			return diag.FromErr(err)
 		}
 		err = handleDataMetricFunctions(ctx, client, id, d)
 		if err != nil {
@@ -900,13 +892,7 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	}
 
 	if d.HasChange("row_access_policy") {
-		var addReq *sdk.ViewAddRowAccessPolicyRequest
-		var dropReq *sdk.ViewDropRowAccessPolicyRequest
-		err := rowAccessPolicyAlterRequests(d, func(id sdk.SchemaObjectIdentifier, columns []sdk.Column) {
-			addReq = sdk.NewViewAddRowAccessPolicyRequest(id, columns)
-		}, func(id sdk.SchemaObjectIdentifier) {
-			dropReq = sdk.NewViewDropRowAccessPolicyRequest(id)
-		})
+		addReq, dropReq, err := rowAccessPolicyUpdateRequests(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -923,20 +909,16 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		}
 	}
 	if d.HasChange("aggregation_policy") {
-		newId, newColumns, isSet, err := aggregationPolicyAlterState(d)
+		setReq, unsetReq, err := aggregationPolicyUpdateRequests(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if isSet {
-			aggregationPolicyReq := sdk.NewViewSetAggregationPolicyRequest(newId)
-			if len(newColumns) > 0 {
-				aggregationPolicyReq.WithEntityKey(newColumns)
-			}
-			if err := client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithSetAggregationPolicy(*aggregationPolicyReq.WithForce(true))); err != nil {
+		if setReq != nil {
+			if err := client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithSetAggregationPolicy(*setReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error setting aggregation policy for view %v: %w", d.Id(), err))
 			}
 		} else {
-			if err := client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest())); err != nil {
+			if err := client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithUnsetAggregationPolicy(*unsetReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting aggregation policy for view %v", d.Id()))
 			}
 		}

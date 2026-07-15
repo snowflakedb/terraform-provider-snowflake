@@ -157,22 +157,19 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	if v := d.Get("row_access_policy"); len(v.([]any)) > 0 {
-		policyId, columns, err := extractPolicyWithColumnsSet(v, "on")
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	// TODO(SNOW-3785067): Deduplicate code with views
+	if policyId, columns, ok, err := rowAccessPolicyCreateRequest(d); err != nil {
+		return diag.FromErr(err)
+	} else if ok {
 		req.WithRowAccessPolicy(*sdk.NewIcebergTableRowAccessPolicyRequest(policyId, columns))
 	}
 
-	if v := d.Get("aggregation_policy"); len(v.([]any)) > 0 {
-		id, columns, err := extractPolicyWithColumnsSet(v, "entity_key")
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		aggregationPolicyReq := sdk.NewIcebergTableAggregationPolicyRequest(id)
-		if len(columns) > 0 {
-			aggregationPolicyReq.WithEntityKey(columns)
+	if policyId, entityKey, ok, err := aggregationPolicyCreateRequest(d); err != nil {
+		return diag.FromErr(err)
+	} else if ok {
+		aggregationPolicyReq := sdk.NewIcebergTableAggregationPolicyRequest(policyId)
+		if len(entityKey) > 0 {
+			aggregationPolicyReq.WithEntityKey(entityKey)
 		}
 		req.WithAggregationPolicy(*aggregationPolicyReq)
 	}
@@ -280,11 +277,8 @@ func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			if err != nil {
 				return err
 			}
-			policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainTable))
+			policyRefs, err := readRootLevelPolicies(ctx, client, id, sdk.PolicyEntityDomainTable, d)
 			if err != nil {
-				return err
-			}
-			if err := handlePolicyReferences(policyRefs, d); err != nil {
 				return err
 			}
 
@@ -362,13 +356,7 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	if d.HasChange("row_access_policy") {
-		var addReq *sdk.ViewAddRowAccessPolicyRequest
-		var dropReq *sdk.ViewDropRowAccessPolicyRequest
-		err := rowAccessPolicyAlterRequests(d, func(id sdk.SchemaObjectIdentifier, columns []sdk.Column) {
-			addReq = sdk.NewViewAddRowAccessPolicyRequest(id, columns)
-		}, func(id sdk.SchemaObjectIdentifier) {
-			dropReq = sdk.NewViewDropRowAccessPolicyRequest(id)
-		})
+		addReq, dropReq, err := rowAccessPolicyUpdateRequests(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -380,9 +368,9 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 				*sdk.NewIcebergTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
 			))
 		case addReq != nil:
-			alterReq.WithAddRowAccessPolicy(*sdk.NewViewAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On))
+			alterReq.WithAddRowAccessPolicy(*addReq)
 		case dropReq != nil:
-			alterReq.WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(dropReq.RowAccessPolicy))
+			alterReq.WithDropRowAccessPolicy(*dropReq)
 		}
 		if err := client.IcebergTables.Alter(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error updating row access policy on %v err = %w", d.Id(), err))
@@ -390,20 +378,16 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	if d.HasChange("aggregation_policy") {
-		newId, newColumns, isSet, err := aggregationPolicyAlterState(d)
+		setReq, unsetReq, err := aggregationPolicyUpdateRequests(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if isSet {
-			aggregationPolicyReq := sdk.NewViewSetAggregationPolicyRequest(newId)
-			if len(newColumns) > 0 {
-				aggregationPolicyReq.WithEntityKey(newColumns)
-			}
-			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSetAggregationPolicy(*aggregationPolicyReq.WithForce(true))); err != nil {
+		if setReq != nil {
+			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithSetAggregationPolicy(*setReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error setting aggregation policy for iceberg table %v: %w", d.Id(), err))
 			}
 		} else {
-			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest())); err != nil {
+			if err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).WithUnsetAggregationPolicy(*unsetReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting aggregation policy for iceberg table %v: %w", d.Id(), err))
 			}
 		}
