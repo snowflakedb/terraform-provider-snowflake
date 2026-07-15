@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -18,7 +21,6 @@ import (
 )
 
 // TODO (next PRs): the following CreateIcebergTableOptions fields are not yet supported by this resource:
-//   - structure/layout: PartitionBy, ClusterBy
 //   - CopyGrants and CopyTags
 //   - ICEBERG_MERGE_ON_READ_BEHAVIOR (needs to be added to SDK)
 //   - column-level extras (part of ColumnsAndConstraints): out-of-line constraints, and per-column
@@ -59,6 +61,14 @@ var icebergTableSchema = collections.MergeMaps(
 			ForceNew:         true,
 			Description:      "Specifies the Iceberg table format version.",
 			ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+		},
+		"partition_by": icebergTablePartitionBySchema(),
+		"cluster_by": {
+			Type:          schema.TypeList,
+			Elem:          &schema.Schema{Type: schema.TypeString},
+			Optional:      true,
+			ConflictsWith: []string{"partition_by"},
+			Description:   externalChangesNotDetectedFieldDescription("A list of one or more table columns/expressions to be used as clustering key(s) for the table."),
 		},
 		ParametersAttributeName: {
 			Type:        schema.TypeList,
@@ -125,6 +135,10 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 				return nil, err
 			}
 			return &pathLayout, nil
+		}),
+		attributeMappedValueCreateBuilderNested(d, "partition_by", req.WithPartitionBy, parseIcebergTablePartitionBy),
+		attributeMappedValueCreateBuilder(d, "cluster_by", req.WithClusterBy, func(value []any) ([]string, error) {
+			return expandStringList(value), nil
 		}),
 	); err != nil {
 		return diag.FromErr(err)
@@ -196,9 +210,26 @@ func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFun
 				return err
 			}
 
-			// path_layout is not exposed by SHOW or DESCRIBE, so it is not read back (external changes are not detected).
+			var partitionBy []map[string]any
+			if currentPartitionSpec, err := collections.FindFirst(table.PartitionSpecs, func(spec sdk.IcebergTablePartitionSpec) bool {
+				return spec.SpecId == table.CurrentPartitionSpecId
+			}); err == nil {
+				partitionBy, err = icebergTablePartitionSpecFieldsToSchema(currentPartitionSpec.Fields)
+				if err != nil {
+					return fmt.Errorf("could not parse partition spec fields for Iceberg table (%s): %w", id.FullyQualifiedName(), err)
+				}
+			}
+
+			// TODO (next PRs):
+			// path_layout, error_logging and change_tracking are not exposed by SHOW or DESCRIBE, so they are not read back (external changes are not detected).
+			// cluster_by is not read back either. SHOW/DESCRIBE ICEBERG TABLE do not expose the
+			// clustering key, and even for regular tables Snowflake returns a transformed clustering expression
+			// rather than the original DDL text, so external changes cannot be reliably detected. See
+			// https://docs.snowflake.com/en/user-guide/tables-clustering-keys#defining-a-clustering-key-for-a-table
+			// add these limitations to the documentation and report this to Snowflake
 			return errors.Join(
 				d.Set("column", icebergTableColumnsToSchema(details)),
+				d.Set("partition_by", partitionBy),
 			)
 		})
 	}
@@ -237,6 +268,19 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 	if err := applyIcebergTableAlter(ctx, client, id, set, unset); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("cluster_by") {
+		clusterBy := expandStringList(d.Get("cluster_by").([]any))
+		alterReq := sdk.NewAlterIcebergTableRequest(id)
+		if len(clusterBy) > 0 {
+			alterReq.WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithClusterBy(clusterBy))
+		} else {
+			alterReq.WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true))
+		}
+		if err := client.IcebergTables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating cluster_by on %v: %w", d.Id(), err))
+		}
 	}
 
 	if d.HasChange("row_access_policy") {
@@ -334,4 +378,167 @@ func icebergTableColumnsToSchema(details []sdk.IcebergTableDetails) []map[string
 			"type": d.Type.ToSql(),
 		}
 	})
+}
+
+// icebergTablePartitionKinds lists the top-level fields of a single partition_by block; exactly one must be set.
+var icebergTablePartitionKinds = []string{"identity", "bucket", "truncate", "year", "month", "day", "hour"}
+
+func icebergTablePartitionBySchema() *schema.Schema {
+	return &schema.Schema{
+		Type:          schema.TypeList,
+		Optional:      true,
+		ForceNew:      true,
+		ConflictsWith: []string{"cluster_by"},
+		Description:   "Defines the partitioning for the Iceberg table. Cannot be changed after creation. Exactly one of identity, bucket, truncate, year, month, day, or hour must be set for each entry. Cannot be used together with `cluster_by`.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"identity": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					ForceNew:    true,
+					Description: "Name of the column to use as-is for partitioning.",
+				},
+				"bucket": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					ForceNew:    true,
+					MaxItems:    1,
+					Description: "Partitions the table by hashing the column into a fixed number of buckets.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"num_buckets": {Type: schema.TypeInt, Required: true, ForceNew: true, Description: "Number of buckets to hash the column values into."},
+							"column":      {Type: schema.TypeString, Required: true, ForceNew: true, Description: "Name of the column to bucket."},
+						},
+					},
+				},
+				"truncate": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					ForceNew:    true,
+					MaxItems:    1,
+					Description: "Partitions the table by truncating the column value to a fixed width.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"width":  {Type: schema.TypeInt, Required: true, ForceNew: true, Description: "Width to truncate the column value to."},
+							"column": {Type: schema.TypeString, Required: true, ForceNew: true, Description: "Name of the column to truncate."},
+						},
+					},
+				},
+				"year":  icebergTablePartitionTimeSchema("Partitions the table by the year component of the column."),
+				"month": icebergTablePartitionTimeSchema("Partitions the table by the month component of the column."),
+				"day":   icebergTablePartitionTimeSchema("Partitions the table by the day component of the column."),
+				"hour":  icebergTablePartitionTimeSchema("Partitions the table by the hour component of the column."),
+			},
+		},
+	}
+}
+
+func icebergTablePartitionTimeSchema(description string) *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		ForceNew:    true,
+		Description: description,
+	}
+}
+
+// parseIcebergTablePartitionBy parses the partition_by blocks from the resource data to SDK objects.
+func parseIcebergTablePartitionBy(d *schema.ResourceData) ([]sdk.IcebergTablePartitionExpressionRequest, error) {
+	entries := d.Get("partition_by").([]any)
+	requests := make([]sdk.IcebergTablePartitionExpressionRequest, len(entries))
+
+	for i := range entries {
+		prefix := fmt.Sprintf("partition_by.%d.", i)
+		req := sdk.NewIcebergTablePartitionExpressionRequest()
+
+		err := errors.Join(
+			attributeMappedValueCreateBuilderNested(d, prefix+"identity", req.WithIdentity, func(d *schema.ResourceData) (string, error) {
+				return d.Get(prefix + "identity").(string), nil
+			}),
+			attributeMappedValueCreateBuilderNested(d, prefix+"bucket", req.WithBucket, parseIcebergTablePartitionBucket(prefix+"bucket.0.")),
+			attributeMappedValueCreateBuilderNested(d, prefix+"truncate", req.WithTruncate, parseIcebergTablePartitionTruncate(prefix+"truncate.0.")),
+			attributeMappedValueCreateBuilderNested(d, prefix+"year", req.WithYear, parseIcebergTablePartitionTime(prefix+"year.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionYearRequest {
+				return *sdk.NewIcebergTablePartitionYearRequest().WithArgs(args)
+			})),
+			attributeMappedValueCreateBuilderNested(d, prefix+"month", req.WithMonth, parseIcebergTablePartitionTime(prefix+"month.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionMonthRequest {
+				return *sdk.NewIcebergTablePartitionMonthRequest().WithArgs(args)
+			})),
+			attributeMappedValueCreateBuilderNested(d, prefix+"day", req.WithDay, parseIcebergTablePartitionTime(prefix+"day.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionDayRequest {
+				return *sdk.NewIcebergTablePartitionDayRequest().WithArgs(args)
+			})),
+			attributeMappedValueCreateBuilderNested(d, prefix+"hour", req.WithHour, parseIcebergTablePartitionTime(prefix+"hour.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionHourRequest {
+				return *sdk.NewIcebergTablePartitionHourRequest().WithArgs(args)
+			})),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		requests[i] = *req
+	}
+	return requests, nil
+}
+
+// parseIcebergTablePartitionBucket returns a mapper parsing a bucket partition block at the given prefix.
+func parseIcebergTablePartitionBucket(prefix string) func(d *schema.ResourceData) (sdk.IcebergTablePartitionBucketRequest, error) {
+	return func(d *schema.ResourceData) (sdk.IcebergTablePartitionBucketRequest, error) {
+		return *sdk.NewIcebergTablePartitionBucketRequest().WithArgs(
+			*sdk.NewIcebergTablePartitionBucketArgsRequest(d.Get(prefix+"num_buckets").(int), d.Get(prefix+"column").(string)),
+		), nil
+	}
+}
+
+// parseIcebergTablePartitionTruncate returns a mapper parsing a truncate partition block at the given prefix.
+func parseIcebergTablePartitionTruncate(prefix string) func(d *schema.ResourceData) (sdk.IcebergTablePartitionTruncateRequest, error) {
+	return func(d *schema.ResourceData) (sdk.IcebergTablePartitionTruncateRequest, error) {
+		return *sdk.NewIcebergTablePartitionTruncateRequest().WithArgs(
+			*sdk.NewIcebergTablePartitionTruncateArgsRequest(d.Get(prefix+"width").(int), d.Get(prefix+"column").(string)),
+		), nil
+	}
+}
+
+// parseIcebergTablePartitionTime returns a mapper parsing a time-based (year/month/day/hour) partition block at the given prefix.
+func parseIcebergTablePartitionTime[T any](key string, build func(sdk.IcebergTablePartitionTimeArgsRequest) T) func(d *schema.ResourceData) (T, error) {
+	return func(d *schema.ResourceData) (T, error) {
+		return build(*sdk.NewIcebergTablePartitionTimeArgsRequest(d.Get(key).(string))), nil
+	}
+}
+
+// icebergTablePartitionNumericTransformPattern matches the bucket[N] and truncate[N] transforms, capturing
+// the transform kind and its numeric argument.
+var icebergTablePartitionNumericTransformPattern = regexp.MustCompile(`^(bucket|truncate)\[(\d+)]$`)
+
+// icebergTablePartitionSpecFieldsToSchema converts the fields of a SHOW ICEBERG TABLES partition spec back
+// into the partition_by schema shape. Snowflake derives each field's name from its source column and
+// transform (e.g. identity -> "<column>", bucket[4] -> "<column>_bucket_4", year -> "<column>_year"), so the
+// source column name can be recovered by stripping the transform-specific suffix.
+func icebergTablePartitionSpecFieldsToSchema(fields []sdk.IcebergTablePartitionSpecField) ([]map[string]any, error) {
+	entries := make([]map[string]any, len(fields))
+	for i, field := range fields {
+		switch field.Transform {
+		case "identity":
+			entries[i] = map[string]any{"identity": field.Name}
+		case "year", "month", "day", "hour":
+			entries[i] = map[string]any{field.Transform: strings.TrimSuffix(field.Name, "_"+field.Transform)}
+		default:
+			match := icebergTablePartitionNumericTransformPattern.FindStringSubmatch(field.Transform)
+			if match == nil {
+				return nil, fmt.Errorf("unsupported Iceberg table partition transform: %s", field.Transform)
+			}
+			kind, arg := match[1], match[2]
+			n, err := strconv.Atoi(arg)
+			if err != nil {
+				return nil, err
+			}
+			switch kind {
+			case "bucket":
+				column := strings.TrimSuffix(field.Name, "_bucket_"+arg)
+				entries[i] = map[string]any{"bucket": []map[string]any{{"num_buckets": n, "column": column}}}
+			case "truncate":
+				column := strings.TrimSuffix(field.Name, "_trunc_"+arg)
+				entries[i] = map[string]any{"truncate": []map[string]any{{"width": n, "column": column}}}
+			}
+		}
+	}
+	return entries, nil
 }

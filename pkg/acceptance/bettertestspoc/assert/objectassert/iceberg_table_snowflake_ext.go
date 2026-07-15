@@ -1,9 +1,7 @@
 package objectassert
 
 import (
-	"encoding/json"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 
@@ -92,21 +90,6 @@ func (i *IcebergTableAssert) HasNoNameMapping() *IcebergTableAssert {
 		return nil
 	})
 	return i
-}
-
-func (c *IcebergTableAssert) HasPartitionSpecsJson(expected []sdk.IcebergTablePartitionSpec) *IcebergTableAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
-		t.Helper()
-		var got []sdk.IcebergTablePartitionSpec
-		if err := json.Unmarshal([]byte(o.PartitionSpecs), &got); err != nil {
-			return fmt.Errorf("expected partition specs to be a valid JSON string; got: %s", o.PartitionSpecs)
-		}
-		if !reflect.DeepEqual(got, expected) {
-			return fmt.Errorf("expected partition specs: %+v; got: %+v", expected, got)
-		}
-		return nil
-	})
-	return c
 }
 
 func (i *IcebergTableAssert) HasBaseLocationIdPrefix(id sdk.SchemaObjectIdentifier) *IcebergTableAssert {
