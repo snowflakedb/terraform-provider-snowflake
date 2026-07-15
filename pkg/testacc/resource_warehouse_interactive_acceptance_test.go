@@ -6,28 +6,70 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_WarehouseInteractive_Basic(t *testing.T) {
+func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
-	warehouseModel := model.WarehouseInteractiveWithId(warehouseId)
-	warehouseModelWithComment := model.WarehouseInteractiveWithId(warehouseId).
+	basic := model.WarehouseInteractiveWithId(warehouseId)
+	// warehouse_size and min_cluster_count are intentionally not toggled in the update path below.
+	// Resizing an interactive warehouse, and raising min_cluster_count (which forces the warehouse to
+	// synchronously provision the additional cluster), are operations that exceed the interactive
+	// warehouse's (low, capped) statement timeout when applied via ALTER. Both are covered by the
+	// create path in CompleteUseCase instead. max_cluster_count is only a ceiling, so raising it is fast.
+	//
+	// Every optional value below is chosen to differ from the interactive warehouse defaults
+	// (auto_suspend=86400, auto_resume=true, max_cluster_count=1). If a config value equals the current
+	// Snowflake value, IgnoreChangeToCurrentSnowflakeValueInShow correctly suppresses it as a no-op and the
+	// attribute is never written to state, so the SET must be a genuine change. auto_suspend must be
+	// >= 86400 for interactive warehouses, so we use a larger value to force a change.
+	withOptionals := model.WarehouseInteractiveWithId(warehouseId).
+		WithMaxClusterCount(3).
+		WithAutoSuspend(172800).
+		WithAutoResume(r.BooleanFalse).
 		WithComment(comment).
-		WithWarehouseSize(string(sdk.WarehouseSizeXSmall))
+		WithMaxConcurrencyLevel(8)
 
-	ref := warehouseModel.ResourceReference()
+	ref := basic.ResourceReference()
+
+	basicAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.WarehouseInteractiveResource(t, ref).
+			HasNameString(warehouseId.Name()).
+			HasWarehouseTypeString(string(sdk.WarehouseTypeInteractive)).
+			HasNoWarehouseSize().
+			HasAutoSuspendString(r.IntDefaultString).
+			HasCommentEmpty().
+			HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+			HasName(warehouseId.Name()).
+			HasStateNotEmpty(),
+	}
+
+	withOptionalsAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.WarehouseInteractiveResource(t, ref).
+			HasNameString(warehouseId.Name()).
+			HasMaxClusterCount(3).
+			HasAutoSuspend(172800).
+			HasAutoResumeString(r.BooleanFalse).
+			HasCommentString(comment).
+			HasMaxConcurrencyLevel(8),
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+			HasName(warehouseId.Name()).
+			HasComment(comment),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -38,36 +80,124 @@ func TestAcc_WarehouseInteractive_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with only required fields
 			{
-				Config: accconfig.FromModels(t, warehouseModel),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, basicAssertions...),
+			},
+			// import after minimal config.
+			// Optional fields left out of config are reconciled from SHOW during the import Read, so
+			// they will not match the minimal state and are ignored here (same pattern as the adaptive resource).
+			// show_output carries volatile runtime counters (running, queued, ...) that can change between
+			// apply and import, so it is not verified here (it is asserted in the create/update steps).
+			{
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"warehouse_size", "auto_suspend", "max_cluster_count", "min_cluster_count", "auto_resume", "show_output"},
+			},
+			// set all optional fields
+			{
+				Config: accconfig.FromModels(t, withOptionals),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, withOptionalsAssertions...),
+			},
+			// import after setting optional fields. warehouse_size and min_cluster_count are not in config, so
+			// they are reconciled from SHOW on import and ignored here, as is the volatile show_output.
+			{
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"warehouse_size", "min_cluster_count", "show_output"},
+			},
+			// unset all optional fields
+			{
+				Config: accconfig.FromModels(t, basic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, basicAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(resourceMonitorCleanup)
+
+	fallback, fallbackCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(fallbackCleanup)
+
+	table, tableCleanup := testClient().Table.CreateInteractiveTable(t)
+	t.Cleanup(tableCleanup)
+
+	complete := model.WarehouseInteractiveWithId(warehouseId).
+		WithWarehouseSize(string(sdk.WarehouseSizeSmall)).
+		WithMaxClusterCount(2).
+		WithMinClusterCount(1).
+		WithAutoSuspend(86400).
+		WithAutoResume(r.BooleanTrue).
+		WithInitiallySuspended(true).
+		WithResourceMonitor(resourceMonitor.ID().Name()).
+		WithFallbackWarehouse(fallback.ID().Name()).
+		WithComment(comment).
+		WithMaxConcurrencyLevel(8).
+		WithStatementQueuedTimeoutInSeconds(30).
+		WithStatementTimeoutInSeconds(45).
+		WithTables(table.FullyQualifiedName())
+
+	ref := complete.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseInteractive),
+		Steps: []resource.TestStep{
+			// create with all fields set
+			{
+				Config: accconfig.FromModels(t, complete),
 				Check: assertThat(
 					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasNameString(warehouseId.Name()).
 						HasWarehouseTypeString(string(sdk.WarehouseTypeInteractive)).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
+						HasMaxClusterCount(2).
+						HasMinClusterCount(1).
+						HasAutoSuspend(86400).
+						HasAutoResumeString(r.BooleanTrue).
+						HasResourceMonitorString(resourceMonitor.ID().Name()).
+						HasFallbackWarehouseString(fallback.ID().Name()).
+						HasCommentString(comment).
+						HasMaxConcurrencyLevel(8).
+						HasStatementQueuedTimeoutInSeconds(30).
+						HasStatementTimeoutInSeconds(45).
+						HasTables(table.FullyQualifiedName()).
 						HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
 					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasName(warehouseId.Name()).
+						HasComment(comment).
 						HasStateNotEmpty(),
 				),
 			},
-			// import after minimal config
+			// import and verify state matches.
+			// initially_suspended is a create-only field that is not read back from Snowflake, and show_output
+			// carries volatile runtime counters, so both are ignored here.
 			{
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"auto_resume"},
-			},
-			// set optional fields
-			{
-				Config: accconfig.FromModels(t, warehouseModelWithComment),
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseInteractiveResource(t, ref).
-						HasCommentString(comment).
-						HasWarehouseSizeString(string(sdk.WarehouseSizeXSmall)),
-					resourceshowoutputassert.WarehouseShowOutput(t, ref).
-						HasComment(comment),
-				),
+				ImportStateVerifyIgnore: []string{"initially_suspended", "show_output"},
 			},
 		},
 	})
@@ -123,50 +253,6 @@ func TestAcc_WarehouseInteractive_TablesDelta(t *testing.T) {
 	})
 }
 
-func TestAcc_WarehouseInteractive_FallbackWarehouse(t *testing.T) {
-	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
-
-	fallback, fallbackCleanup := testClient().Warehouse.CreateWarehouse(t)
-	t.Cleanup(fallbackCleanup)
-
-	modelWithFallback := model.WarehouseInteractiveWithId(warehouseId).
-		WithFallbackWarehouse(fallback.ID().Name())
-	modelWithoutFallback := model.WarehouseInteractiveWithId(warehouseId)
-
-	ref := modelWithFallback.ResourceReference()
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.WarehouseInteractive),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, modelWithFallback),
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseInteractiveResource(t, ref).
-						HasFallbackWarehouseString(fallback.ID().Name()),
-				),
-			},
-			{
-				Config: accconfig.FromModels(t, modelWithoutFallback),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-					},
-				},
-				Check: assertThat(
-					t,
-					resourceassert.WarehouseInteractiveResource(t, ref).
-						HasFallbackWarehouseEmpty(),
-				),
-			},
-		},
-	})
-}
-
 func TestAcc_WarehouseInteractive_Import_WrongWarehouseType(t *testing.T) {
 	interactiveId := testClient().Ids.RandomAccountObjectIdentifier()
 	regularId := testClient().Ids.RandomAccountObjectIdentifier()
@@ -201,7 +287,9 @@ func TestAcc_WarehouseInteractive_Validations(t *testing.T) {
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	modelInvalidAutoSuspend := model.WarehouseInteractiveWithId(warehouseId).
-		WithAutoSuspend(100)
+		WithAutoSuspend(0)
+	modelInvalidWarehouseSize := model.WarehouseInteractiveWithId(warehouseId).
+		WithWarehouseSize("unknown")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -212,7 +300,12 @@ func TestAcc_WarehouseInteractive_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelInvalidAutoSuspend),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`expected auto_suspend to be at least \(86400\), got 100`),
+				ExpectError: regexp.MustCompile(`expected auto_suspend to be at least \(1\), got 0`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidWarehouseSize),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("invalid warehouse size: UNKNOWN"),
 			},
 		},
 	})
