@@ -4,12 +4,10 @@ package objectassert
 
 import (
 	"fmt"
-	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -61,25 +59,6 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaName(expected string) *St
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
-		}
-		return nil
-	})
-	return s
-}
-
-// Adjusted manually: TableColumnSignature.Type is a datatypes.DataType interface, so the generated
-// slices.Equal comparison compared interface pointers instead of values. Compare each element by
-// name and use datatypes.AreTheSame for the data type.
-func (s *StorageLifecyclePolicyDetailsAssert) HasSignature(expected ...sdk.TableColumnSignature) *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if len(o.Signature) != len(expected) {
-			return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
-		}
-		for i := range expected {
-			if o.Signature[i].Name != expected[i].Name || !datatypes.AreTheSame(o.Signature[i].Type, expected[i].Type) {
-				return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
-			}
 		}
 		return nil
 	})

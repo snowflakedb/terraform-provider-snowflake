@@ -16,10 +16,9 @@ type OAuthRestAuthenticationDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.OAuthRestAuthenticationDetails, sdk.AccountObjectIdentifier]
 }
 
-func OAuthRestAuthenticationDetailsFromObject(t *testing.T, oAuthRestAuthenticationDetails *sdk.OAuthRestAuthenticationDetails) *OAuthRestAuthenticationDetailsAssert {
-	t.Helper()
+func NewOAuthRestAuthenticationDetailsAssert() *OAuthRestAuthenticationDetailsAssert {
 	return &OAuthRestAuthenticationDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("OAuthRestAuthenticationDetails"), sdk.NewAccountObjectIdentifier(""), oAuthRestAuthenticationDetails),
+		assert.NewSnowflakeObjectAssertEmpty[sdk.OAuthRestAuthenticationDetails, sdk.AccountObjectIdentifier](),
 	}
 }
 

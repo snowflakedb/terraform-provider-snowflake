@@ -14,6 +14,12 @@ type StorageLocationS3CompatDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.StorageLocationS3CompatDetails, sdk.AccountObjectIdentifier]
 }
 
+func NewStorageLocationS3CompatDetailsAssert() *StorageLocationS3CompatDetailsAssert {
+	return &StorageLocationS3CompatDetailsAssert{
+		assert.NewSnowflakeObjectAssertEmpty[sdk.StorageLocationS3CompatDetails, sdk.AccountObjectIdentifier](),
+	}
+}
+
 func StorageLocationS3CompatDetailsFromObject(t *testing.T, storageLocationS3CompatDetails *sdk.StorageLocationS3CompatDetails) *StorageLocationS3CompatDetailsAssert {
 	t.Helper()
 	return &StorageLocationS3CompatDetailsAssert{

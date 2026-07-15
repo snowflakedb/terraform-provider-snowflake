@@ -9,13 +9,23 @@ type ShowByParentIdDef struct {
 	ShowMethodName string
 }
 
+// DescribeOverrideDef overrides the default test client and method used in the IsDataSourceOutput
+// constructor when the naming convention (TrimSuffix(Name,"Details") + ".Describe") does not match.
+type DescribeOverrideDef struct {
+	ClientName string
+	MethodName string
+}
+
 type SdkObjectDetails struct {
-	IdType             string
-	IsDataSourceOutput bool
-	IsSubStruct        bool
-	ObjectTypeName     string
-	NoShowById         bool
-	ShowByParentId     *ShowByParentIdDef
-	NestedAssertFields []string
+	IdType               string
+	IsDataSourceOutput   bool
+	IsSubStruct          bool
+	ObjectTypeName       string
+	NoShowById           bool
+	NoIdentifiableObject bool
+	ShowByParentId       *ShowByParentIdDef
+	DescribeOverride     *DescribeOverrideDef
+	NestedAssertFields   []string
+	SkipFields           []string
 	StructDetails
 }

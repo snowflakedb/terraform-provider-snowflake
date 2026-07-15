@@ -14,10 +14,9 @@ type IcebergRestRestConfigDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.IcebergRestRestConfigDetails, sdk.AccountObjectIdentifier]
 }
 
-func IcebergRestRestConfigDetailsFromObject(t *testing.T, icebergRestRestConfigDetails *sdk.IcebergRestRestConfigDetails) *IcebergRestRestConfigDetailsAssert {
-	t.Helper()
+func NewIcebergRestRestConfigDetailsAssert() *IcebergRestRestConfigDetailsAssert {
 	return &IcebergRestRestConfigDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("IcebergRestRestConfigDetails"), sdk.NewAccountObjectIdentifier(""), icebergRestRestConfigDetails),
+		assert.NewSnowflakeObjectAssertEmpty[sdk.IcebergRestRestConfigDetails, sdk.AccountObjectIdentifier](),
 	}
 }
 

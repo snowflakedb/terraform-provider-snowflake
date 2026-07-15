@@ -14,10 +14,9 @@ type OpenCatalogRestConfigDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.OpenCatalogRestConfigDetails, sdk.AccountObjectIdentifier]
 }
 
-func OpenCatalogRestConfigDetailsFromObject(t *testing.T, openCatalogRestConfigDetails *sdk.OpenCatalogRestConfigDetails) *OpenCatalogRestConfigDetailsAssert {
-	t.Helper()
+func NewOpenCatalogRestConfigDetailsAssert() *OpenCatalogRestConfigDetailsAssert {
 	return &OpenCatalogRestConfigDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("OpenCatalogRestConfigDetails"), sdk.NewAccountObjectIdentifier(""), openCatalogRestConfigDetails),
+		assert.NewSnowflakeObjectAssertEmpty[sdk.OpenCatalogRestConfigDetails, sdk.AccountObjectIdentifier](),
 	}
 }
 

@@ -14,6 +14,12 @@ type StorageLocationGcsDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.StorageLocationGcsDetails, sdk.AccountObjectIdentifier]
 }
 
+func NewStorageLocationGcsDetailsAssert() *StorageLocationGcsDetailsAssert {
+	return &StorageLocationGcsDetailsAssert{
+		assert.NewSnowflakeObjectAssertEmpty[sdk.StorageLocationGcsDetails, sdk.AccountObjectIdentifier](),
+	}
+}
+
 func StorageLocationGcsDetailsFromObject(t *testing.T, storageLocationGcsDetails *sdk.StorageLocationGcsDetails) *StorageLocationGcsDetailsAssert {
 	t.Helper()
 	return &StorageLocationGcsDetailsAssert{

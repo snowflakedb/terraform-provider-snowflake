@@ -27,7 +27,7 @@ func CatalogIntegrationIcebergRestDetails(t *testing.T, id sdk.AccountObjectIden
 func CatalogIntegrationIcebergRestDetailsFromObject(t *testing.T, catalogIntegrationIcebergRestDetails *sdk.CatalogIntegrationIcebergRestDetails) *CatalogIntegrationIcebergRestDetailsAssert {
 	t.Helper()
 	return &CatalogIntegrationIcebergRestDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationIcebergRestDetails"), catalogIntegrationIcebergRestDetails.Id, catalogIntegrationIcebergRestDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationIcebergRestDetails"), catalogIntegrationIcebergRestDetails.ID(), catalogIntegrationIcebergRestDetails),
 	}
 }
 
@@ -108,11 +108,18 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasCatalogNamespace(expecte
 	return c
 }
 
-// HasRestConfig removed manually
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasRestConfigWith(subAssert *IcebergRestRestConfigDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
+			return assertion(t, &o.RestConfig)
+		})
+	}
+	return c
+}
 
 func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-		t.Helper()
 		if o.OAuthRestAuthentication == nil {
 			return fmt.Errorf("expected o auth rest authentication to have value; got: nil")
 		}
@@ -121,9 +128,19 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthentication(
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthenticationWith(subAssert *OAuthRestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
+	c.HasOAuthRestAuthentication()
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
+			return assert.AssertionOnPointerField(t, o.OAuthRestAuthentication, "o auth rest authentication", assertion)
+		})
+	}
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestDetailsAssert) HasBearerRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-		t.Helper()
 		if o.BearerRestAuthentication == nil {
 			return fmt.Errorf("expected bearer rest authentication to have value; got: nil")
 		}
@@ -132,13 +149,34 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasBearerRestAuthentication
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasBearerRestAuthenticationWith(subAssert *BearerRestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
+	c.HasBearerRestAuthentication()
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
+			return assert.AssertionOnPointerField(t, o.BearerRestAuthentication, "bearer rest authentication", assertion)
+		})
+	}
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigV4RestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-		t.Helper()
 		if o.SigV4RestAuthentication == nil {
 			return fmt.Errorf("expected sig v4 rest authentication to have value; got: nil")
 		}
 		return nil
 	})
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigV4RestAuthenticationWith(subAssert *SigV4RestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
+	c.HasSigV4RestAuthentication()
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
+			return assert.AssertionOnPointerField(t, o.SigV4RestAuthentication, "sig v4 rest authentication", assertion)
+		})
+	}
 	return c
 }

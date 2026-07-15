@@ -8,15 +8,18 @@ import (
 )
 
 type SnowflakeObjectAssertionsModel struct {
-	Name               string
-	SdkType            string
-	IdType             string
-	IsDataSourceOutput bool
-	IsSubStruct        bool
-	ObjectTypeName     string
-	NoShowById         bool
-	ShowByParentId     *genhelpers.ShowByParentIdDef
-	Fields             []SnowflakeObjectFieldAssertion
+	Name                 string
+	SdkType              string
+	IdType               string
+	IsDataSourceOutput   bool
+	IsSubStruct          bool
+	ObjectTypeName       string
+	NoShowById           bool
+	NoIdentifiableObject bool
+	ShowByParentId       *genhelpers.ShowByParentIdDef
+	DescribeOverride     *genhelpers.DescribeOverrideDef
+	NestedAssertFields   []string
+	Fields               []SnowflakeObjectFieldAssertion
 
 	*genhelpers.PreambleModel
 }
@@ -43,7 +46,8 @@ type SnowflakeObjectFieldAssertion struct {
 	ErrorMapper              genhelpers.Mapper // mapper used in fmt.Errorf; may differ from Mapper (e.g. .ToSql() for datatypes.DataType)
 	ErrorExpectedValueMapper genhelpers.Mapper
 	ComparisonMethod         ComparisonMethod
-	SkipGeneration           bool // true for NestedAssertFields — Has* assertion not generated; step 6 handles these
+	GenerateNestedAdapter    bool // true for NestedAssertFields — generates nested assertion adapter instead of Has*
+	SkipGeneration           bool // true for SkipFields — suppresses Has* generation entirely
 }
 
 // ComparisonFunc returns the function to use in a `!ComparisonFunc(actual, expected)` comparison,
@@ -78,6 +82,9 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 	for idx, field := range sdkObject.Fields {
 		fieldAssertion := MapToSnowflakeObjectFieldAssertion(field)
 		if slices.Contains(sdkObject.NestedAssertFields, field.Name) {
+			fieldAssertion.GenerateNestedAdapter = true
+		}
+		if slices.Contains(sdkObject.SkipFields, field.Name) {
 			fieldAssertion.SkipGeneration = true
 		}
 		fields[idx] = fieldAssertion
@@ -89,16 +96,19 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 	}
 
 	return SnowflakeObjectAssertionsModel{
-		Name:               name,
-		SdkType:            sdkObject.Name,
-		IdType:             sdkObject.IdType,
-		IsDataSourceOutput: sdkObject.IsDataSourceOutput,
-		IsSubStruct:        sdkObject.IsSubStruct,
-		ObjectTypeName:     objectTypeName,
-		NoShowById:         sdkObject.NoShowById,
-		ShowByParentId:     sdkObject.ShowByParentId,
-		Fields:             fields,
-		PreambleModel:      preamble,
+		Name:                 name,
+		SdkType:              sdkObject.Name,
+		IdType:               sdkObject.IdType,
+		IsDataSourceOutput:   sdkObject.IsDataSourceOutput,
+		IsSubStruct:          sdkObject.IsSubStruct,
+		ObjectTypeName:       objectTypeName,
+		NoShowById:           sdkObject.NoShowById,
+		NoIdentifiableObject: sdkObject.NoIdentifiableObject,
+		ShowByParentId:       sdkObject.ShowByParentId,
+		DescribeOverride:     sdkObject.DescribeOverride,
+		Fields:               fields,
+		NestedAssertFields:   sdkObject.NestedAssertFields,
+		PreambleModel:        preamble,
 	}
 }
 

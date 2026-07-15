@@ -12,12 +12,21 @@ type SdkObjectDef struct {
 	IsSubStruct        bool
 	ObjectTypeName     string
 	NoShowById         bool
+	// NoIdentifiableObject marks objects that have no meaningful identifier (e.g. list-returned
+	// describe results). Suppresses the constructor and New*Assert(), uses placeholder in FromObject.
+	NoIdentifiableObject bool
 	// ShowByParentId groups the fields needed to generate a constructor that fetches the object
 	// via a parent identifier (e.g. userId for ProgrammaticAccessToken). All three fields must be set together.
 	ShowByParentId *genhelpers.ShowByParentIdDef
-	// NestedAssertFields lists struct-type fields that should not get a simple Has* assertion generated.
-	// These fields will receive the nested assertion pattern in a future step.
+	// NestedAssertFields lists struct-type fields that get the nested assertion adapter pattern instead
+	// of a simple Has* assertion. The sub-struct type must have a corresponding asserter in allStructs.
 	NestedAssertFields []string
+	// SkipFields lists fields to suppress Has* generation entirely. Use for fields that have a
+	// custom implementation in an _ext.go file that should not be overwritten.
+	SkipFields []string
+	// DescribeOverride overrides the default test client and method in the IsDataSourceOutput constructor
+	// when the naming convention does not match the actual helper.
+	DescribeOverride *genhelpers.DescribeOverrideDef
 }
 
 var allStructs = []SdkObjectDef{
@@ -74,9 +83,9 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.AuthenticationPolicy{},
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.Task{},
-		NestedAssertFields: []string{"TaskRelations"},
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.Task{},
+		SkipFields:   []string{"TaskRelations"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -169,6 +178,7 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.SchemaObjectIdentifier",
 		ObjectStruct:       sdk.StorageLifecyclePolicyDetails{},
 		IsDataSourceOutput: true,
+		SkipFields:         []string{"Signature"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -304,11 +314,21 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogDetails{},
 		IsDataSourceOutput: true,
+		NestedAssertFields: []string{"RestConfig", "RestAuthentication"},
+		DescribeOverride: &genhelpers.DescribeOverrideDef{
+			ClientName: "CatalogIntegration",
+			MethodName: "DescribeOpenCatalog",
+		},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.CatalogIntegrationIcebergRestDetails{},
 		IsDataSourceOutput: true,
+		NestedAssertFields: []string{"RestConfig", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"},
+		DescribeOverride: &genhelpers.DescribeOverrideDef{
+			ClientName: "CatalogIntegration",
+			MethodName: "DescribeIcebergRest",
+		},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -335,6 +355,12 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.BearerRestAuthenticationDetails{},
+		IsDataSourceOutput: true,
+		IsSubStruct:        true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
 		IsDataSourceOutput: true,
 		IsSubStruct:        true,
@@ -354,16 +380,16 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.IcebergTableDetails{},
-		IsDataSourceOutput: true,
-		IsSubStruct:        true,
+		IdType:               "sdk.SchemaObjectIdentifier",
+		ObjectStruct:         sdk.IcebergTableDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.TableSearchOptimizationDetails{},
-		IsDataSourceOutput: true,
-		IsSubStruct:        true,
+		IdType:               "sdk.SchemaObjectIdentifier",
+		ObjectStruct:         sdk.TableSearchOptimizationDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
 	},
 	{
 		IdType:             "sdk.SchemaObjectIdentifier",
@@ -432,14 +458,17 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 	for idx, d := range allStructs {
 		structDetails := genhelpers.ExtractStructDetails(d.ObjectStruct)
 		allSdkObjectsDetails[idx] = genhelpers.SdkObjectDetails{
-			IdType:             d.IdType,
-			StructDetails:      structDetails,
-			IsDataSourceOutput: d.IsDataSourceOutput,
-			IsSubStruct:        d.IsSubStruct,
-			ObjectTypeName:     d.ObjectTypeName,
-			NoShowById:         d.NoShowById,
-			ShowByParentId:     d.ShowByParentId,
-			NestedAssertFields: d.NestedAssertFields,
+			IdType:               d.IdType,
+			StructDetails:        structDetails,
+			IsDataSourceOutput:   d.IsDataSourceOutput,
+			IsSubStruct:          d.IsSubStruct,
+			ObjectTypeName:       d.ObjectTypeName,
+			NoShowById:           d.NoShowById,
+			NoIdentifiableObject: d.NoIdentifiableObject,
+			ShowByParentId:       d.ShowByParentId,
+			DescribeOverride:     d.DescribeOverride,
+			NestedAssertFields:   d.NestedAssertFields,
+			SkipFields:           d.SkipFields,
 		}
 	}
 	return allSdkObjectsDetails

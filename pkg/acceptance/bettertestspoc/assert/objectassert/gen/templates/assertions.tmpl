@@ -6,6 +6,40 @@
 {{ $assertVar := FirstLetter $nameLowerCase }}
 {{- range .Fields }}
 {{- if not .SkipGeneration }}
+{{- if .GenerateNestedAdapter }}
+{{- if .IsOriginalTypePointer }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            if o.{{ .Name }} == nil {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to have value; got: nil")
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}With(subAssert *{{ TrimPrefix (TypeWithoutPointerAndBrackets .ConcreteType) "sdk." }}Assert) *{{ $assertName }} {
+        {{ $assertVar }}.Has{{ .Name }}()
+        for _, assertion := range subAssert.GetAssertions() {
+            assertion := assertion
+            {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+                return assert.AssertionOnPointerField(t, o.{{ .Name }}, "{{ CamelToWords .Name }}", assertion)
+            })
+        }
+        return {{ $assertVar }}
+    }
+{{- else }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}With(subAssert *{{ TrimPrefix (TypeWithoutPointerAndBrackets .ConcreteType) "sdk." }}Assert) *{{ $assertName }} {
+        for _, assertion := range subAssert.GetAssertions() {
+            assertion := assertion
+            {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+                return assertion(t, &o.{{ .Name }})
+            })
+        }
+        return {{ $assertVar }}
+    }
+{{- end }}
+{{- else }}
     {{ $itemType := TypeWithoutPointerAndBrackets .ConcreteType }}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ if .IsOriginalTypeSlice }}...{{ end }}{{ $itemType }}) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
@@ -36,5 +70,6 @@
         })
         return {{ $assertVar }}
     }
+{{- end }}
 {{- end }}
 {{ end }}

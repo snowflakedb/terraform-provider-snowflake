@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -14,6 +15,12 @@ import (
 
 type ExternalVolumeStorageLocationDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.ExternalVolumeStorageLocationDetails, sdk.AccountObjectIdentifier]
+}
+
+func NewExternalVolumeStorageLocationDetailsAssert() *ExternalVolumeStorageLocationDetailsAssert {
+	return &ExternalVolumeStorageLocationDetailsAssert{
+		assert.NewSnowflakeObjectAssertEmpty[sdk.ExternalVolumeStorageLocationDetails, sdk.AccountObjectIdentifier](),
+	}
 }
 
 func ExternalVolumeStorageLocationDetailsFromObject(t *testing.T, externalVolumeStorageLocationDetails *sdk.ExternalVolumeStorageLocationDetails) *ExternalVolumeStorageLocationDetailsAssert {
@@ -86,7 +93,7 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3StorageLocation(expect
 		if o.S3StorageLocation == nil {
 			return fmt.Errorf("expected s3 storage location to have value; got: nil")
 		}
-		if *o.S3StorageLocation != expected {
+		if !reflect.DeepEqual(*o.S3StorageLocation, expected) {
 			return fmt.Errorf("expected s3 storage location: %v; got: %v", expected, *o.S3StorageLocation)
 		}
 		return nil
@@ -100,7 +107,7 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasGCSStorageLocation(expec
 		if o.GCSStorageLocation == nil {
 			return fmt.Errorf("expected gcs storage location to have value; got: nil")
 		}
-		if *o.GCSStorageLocation != expected {
+		if !reflect.DeepEqual(*o.GCSStorageLocation, expected) {
 			return fmt.Errorf("expected gcs storage location: %v; got: %v", expected, *o.GCSStorageLocation)
 		}
 		return nil
@@ -114,7 +121,7 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasAzureStorageLocation(exp
 		if o.AzureStorageLocation == nil {
 			return fmt.Errorf("expected azure storage location to have value; got: nil")
 		}
-		if *o.AzureStorageLocation != expected {
+		if !reflect.DeepEqual(*o.AzureStorageLocation, expected) {
 			return fmt.Errorf("expected azure storage location: %v; got: %v", expected, *o.AzureStorageLocation)
 		}
 		return nil
@@ -128,7 +135,7 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3CompatStorageLocation(
 		if o.S3CompatStorageLocation == nil {
 			return fmt.Errorf("expected s3 compat storage location to have value; got: nil")
 		}
-		if *o.S3CompatStorageLocation != expected {
+		if !reflect.DeepEqual(*o.S3CompatStorageLocation, expected) {
 			return fmt.Errorf("expected s3 compat storage location: %v; got: %v", expected, *o.S3CompatStorageLocation)
 		}
 		return nil

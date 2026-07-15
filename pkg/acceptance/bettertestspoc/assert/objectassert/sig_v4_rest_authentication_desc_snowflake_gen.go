@@ -14,10 +14,9 @@ type SigV4RestAuthenticationDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.SigV4RestAuthenticationDetails, sdk.AccountObjectIdentifier]
 }
 
-func SigV4RestAuthenticationDetailsFromObject(t *testing.T, sigV4RestAuthenticationDetails *sdk.SigV4RestAuthenticationDetails) *SigV4RestAuthenticationDetailsAssert {
-	t.Helper()
+func NewSigV4RestAuthenticationDetailsAssert() *SigV4RestAuthenticationDetailsAssert {
 	return &SigV4RestAuthenticationDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("SigV4RestAuthenticationDetails"), sdk.NewAccountObjectIdentifier(""), sigV4RestAuthenticationDetails),
+		assert.NewSnowflakeObjectAssertEmpty[sdk.SigV4RestAuthenticationDetails, sdk.AccountObjectIdentifier](),
 	}
 }
 
