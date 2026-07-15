@@ -80,6 +80,8 @@ func TestAcc_StorageLifecyclePolicies_BasicUseCase(t *testing.T) {
 					showOutputAssertions,
 					resourceshowoutputassert.StorageLifecyclePoliciesDatasourceDescribeOutput(t, storageLifecyclePoliciesModel.DatasourceReference()).
 						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
 						HasSignature(expectedSignature...).
 						HasReturnType(testdatatypes.DataTypeBoolean).
 						HasBody(body).

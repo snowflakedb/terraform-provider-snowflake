@@ -25,13 +25,40 @@ func StorageLifecyclePolicyDetails(t *testing.T, id sdk.SchemaObjectIdentifier) 
 	}
 }
 
-// Adjusted manually: removed StorageLifecyclePolicyDetailsFromObject — CortexAgentDetails has no Id field or ID() method.
+func StorageLifecyclePolicyDetailsFromObject(t *testing.T, storageLifecyclePolicyDetails *sdk.StorageLifecyclePolicyDetails) *StorageLifecyclePolicyDetailsAssert {
+	t.Helper()
+	return &StorageLifecyclePolicyDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLifecyclePolicyDetails"), storageLifecyclePolicyDetails.ID(), storageLifecyclePolicyDetails),
+	}
+}
 
 func (s *StorageLifecyclePolicyDetailsAssert) HasName(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyDetailsAssert) HasDatabaseName(expected string) *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.DatabaseName != expected {
+			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaName(expected string) *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.SchemaName != expected {
+			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
 		}
 		return nil
 	})

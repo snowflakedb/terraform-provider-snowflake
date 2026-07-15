@@ -10,6 +10,8 @@ type SdkObjectDef struct {
 	ObjectStruct       any
 	IsDataSourceOutput bool
 	IsSubStruct        bool
+	ObjectTypeName     string
+	NoShowById         bool
 }
 
 var allStructs = []SdkObjectDef{
@@ -373,8 +375,9 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.PostgresInstance{},
 	},
 	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.CortexAgent{},
+		IdType:         "sdk.SchemaObjectIdentifier",
+		ObjectStruct:   sdk.CortexAgent{},
+		ObjectTypeName: "Agent",
 	},
 	{
 		IdType:             "sdk.SchemaObjectIdentifier",
@@ -384,6 +387,7 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.TagReference{},
+		NoShowById:   true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -393,6 +397,7 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.PolicyReference{},
+		NoShowById:   true,
 	},
 }
 
@@ -405,6 +410,8 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 			StructDetails:      structDetails,
 			IsDataSourceOutput: d.IsDataSourceOutput,
 			IsSubStruct:        d.IsSubStruct,
+			ObjectTypeName:     d.ObjectTypeName,
+			NoShowById:         d.NoShowById,
 		}
 	}
 	return allSdkObjectsDetails

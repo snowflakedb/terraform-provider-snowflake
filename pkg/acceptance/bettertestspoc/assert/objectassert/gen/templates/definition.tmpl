@@ -6,17 +6,18 @@ type {{ $assertName }} struct {
     *assert.SnowflakeObjectAssert[{{ .SdkType }}, {{ .IdType }}]
 }
 
-{{- if not .IsSubStruct }}
+{{- if not (or .IsSubStruct .NoShowById) }}
 func {{ .Name }}(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
-        assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("{{ .Name }}"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
-            {{- if .IsDataSourceOutput }}
+        {{- if .IsDataSourceOutput }}
+            assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("{{ .ObjectTypeName }}"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
                 return testClient.{{ TrimSuffix .Name "Details" }}.Describe
-            {{- else }}
+        {{- else }}
+            assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType{{ .ObjectTypeName }}, id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
                 return testClient.{{ .Name }}.Show
-            {{- end }}
-        }),
+        {{- end }}
+            }),
     }
 }
 {{- end }}
@@ -26,8 +27,10 @@ func {{ .Name }}FromObject(t *testing.T, {{ $nameLowerCase }} *{{ .SdkType }}) *
     return &{{ $assertName }}{
         {{- if .IsSubStruct }}
         assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .Name }}"), {{ .PlaceholderIdentifier }}, {{ $nameLowerCase }}),
+        {{- else if or .IsDataSourceOutput .NoShowById }}
+        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .ObjectTypeName }}"), {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
         {{- else }}
-        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType{{ .Name }}, {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
+        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType{{ .ObjectTypeName }}, {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
         {{- end }}
     }
 }
