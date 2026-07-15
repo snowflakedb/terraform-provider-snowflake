@@ -7,7 +7,30 @@
 {{- range .Fields }}
 {{- if not .SkipGeneration }}
 {{- if .GenerateNestedAdapter }}
-{{- if .IsOriginalTypePointer }}
+{{- if .IsOriginalTypeSlice }}
+    {{ $itemType := TypeWithoutPointerAndBrackets .ConcreteType }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}With(subAsserts ...*{{ TrimPrefix $itemType "sdk." }}Assert) *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            if len(o.{{ .Name }}) != len(subAsserts) {
+                return fmt.Errorf("expected %d {{ CamelToWords .Name }}; got: %d", len(subAsserts), len(o.{{ .Name }}))
+            }
+            return nil
+        })
+        for idx, subAssert := range subAsserts {
+            idx, subAssert := idx, subAssert
+            for _, assertion := range subAssert.GetAssertions() {
+                assertion := assertion
+                {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+                    if idx >= len(o.{{ .Name }}) {
+                        return fmt.Errorf("expected at least %d {{ CamelToWords .Name }}; got: %d", idx+1, len(o.{{ .Name }}))
+                    }
+                    return assertion(t, &o.{{ .Name }}[idx])
+                })
+            }
+        }
+        return {{ $assertVar }}
+    }
+{{- else if .IsOriginalTypePointer }}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}() *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
             if o.{{ .Name }} == nil {

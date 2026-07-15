@@ -95,6 +95,7 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ExternalVolumeDetails{},
 		IsDataSourceOutput: true,
+		NestedAssertFields: []string{"StorageLocations"},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -238,9 +239,10 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Pipe{},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.ExternalVolumeStorageLocationDetails{},
-		IsSubStruct:  true,
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ExternalVolumeStorageLocationDetails{},
+		IsSubStruct:        true,
+		NestedAssertFields: []string{"S3StorageLocation", "GCSStorageLocation", "AzureStorageLocation", "S3CompatStorageLocation"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
