@@ -21,7 +21,6 @@ import (
 )
 
 // TODO (next PRs): the following CreateIcebergTableOptions fields are not yet supported by this resource:
-//   - structure/layout: PartitionBy, ClusterBy
 //   - CopyGrants and CopyTags
 //   - ICEBERG_MERGE_ON_READ_BEHAVIOR (needs to be added to SDK)
 //   - column-level extras (part of ColumnsAndConstraints): out-of-line constraints, and per-column
@@ -68,7 +67,6 @@ var icebergTableSchema = collections.MergeMaps(
 			Type:          schema.TypeList,
 			Elem:          &schema.Schema{Type: schema.TypeString},
 			Optional:      true,
-			ForceNew:      true,
 			ConflictsWith: []string{"partition_by"},
 			Description:   externalChangesNotDetectedFieldDescription("A list of one or more table columns/expressions to be used as clustering key(s) for the table."),
 		},
@@ -270,6 +268,19 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 	if err := applyIcebergTableAlter(ctx, client, id, set, unset); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.HasChange("cluster_by") {
+		clusterBy := expandStringList(d.Get("cluster_by").([]any))
+		alterReq := sdk.NewAlterIcebergTableRequest(id)
+		if len(clusterBy) > 0 {
+			alterReq.WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithClusterBy(clusterBy))
+		} else {
+			alterReq.WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true))
+		}
+		if err := client.IcebergTables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating cluster_by on %v: %w", d.Id(), err))
+		}
 	}
 
 	if d.HasChange("row_access_policy") {

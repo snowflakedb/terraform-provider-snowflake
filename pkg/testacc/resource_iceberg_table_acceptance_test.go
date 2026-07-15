@@ -141,6 +141,18 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithClusterBy("ID", "NAME")
 
+	// modelWithAlteredClusterBy mirrors modelWithClusterBy but changes the cluster_by columns, to prove that
+	// changing cluster_by triggers an in-place update (ALTER ... CLUSTER BY) rather than a replace.
+	modelWithAlteredClusterBy := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithCatalog("SNOWFLAKE").
+		WithBaseLocation(baseLocationChanged).
+		WithExternalVolume(externalVolumeId.Name()).
+		WithChangeTracking("true").
+		WithIcebergVersion(3).
+		WithPathLayout(string(sdk.IcebergTablePathLayoutHierarchical)).
+		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
+		WithClusterBy("NAME")
+
 	ref := modelBasic.ResourceReference()
 
 	basicAssertions := []assert.TestCheckFuncProvider{
@@ -525,12 +537,12 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, unsetOptionalAssertions...),
 			},
-			// Switch from partition_by to cluster_by
+			// Switch from partition_by to cluster_by - expect an in-place update (cluster_by is not ForceNew)
 			{
 				Config: accconfig.FromModels(t, modelWithClusterBy),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(
@@ -540,6 +552,42 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasNameString(id.Name()).
 						HasClusterBy("ID", "NAME").
+						HasPartitionByEmpty(),
+				),
+			},
+			// Change cluster_by to a different set of columns - expect an in-place update (ALTER ... CLUSTER BY)
+			{
+				Config: accconfig.FromModels(t, modelWithAlteredClusterBy),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.IcebergTableResource(t, ref).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasClusterBy("NAME").
+						HasPartitionByEmpty(),
+				),
+			},
+			// Unset cluster_by - expect an in-place update (ALTER ... DROP CLUSTERING KEY) rather than a replace
+			{
+				Config: accconfig.FromModels(t, modelWithAllOptionalUnset),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.IcebergTableResource(t, ref).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasClusterByEmpty().
 						HasPartitionByEmpty(),
 				),
 			},
