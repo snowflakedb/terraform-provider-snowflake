@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,6 +15,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -100,7 +103,7 @@ func IcebergTable() *schema.Resource {
 		Timeouts: defaultTimeouts,
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(icebergTableSchema, ShowOutputAttributeName, "comment"),
-			ComputedIfAnyAttributeChanged(icebergTableSchema, DescribeOutputAttributeName, "column"),
+			// ComputedIf is missing on purpose - diff suppression is not enough to avoid the output field being marked as computed.
 			ComputedIfAnyAttributeChanged(
 				icebergTableSchema, ParametersAttributeName,
 				"external_volume", "catalog", "target_file_size", "storage_serialization_policy",
@@ -119,7 +122,7 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	name := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	columns, err := parseColumns(d)
+	columns, err := parseIcebergTableColumns(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -127,7 +130,10 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	columnsAndConstraints := *sdk.NewIcebergTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint(outOfLineConstraints)
+	columnsAndConstraints := *sdk.NewIcebergTableColumnsAndConstraintsRequest(columns)
+	if len(outOfLineConstraints) > 0 {
+		columnsAndConstraints.WithOutOfLineConstraint(outOfLineConstraints)
+	}
 	req := sdk.NewCreateIcebergTableRequest(id, columnsAndConstraints)
 
 	if err := errors.Join(
@@ -184,6 +190,71 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	return ReadIcebergTableFunc(false)(ctx, d, meta)
 }
 
+// parseIcebergTableColumns parses the "column" list from the resource data into IcebergTableColumnRequests.
+func parseIcebergTableColumns(d *schema.ResourceData) ([]sdk.IcebergTableColumnRequest, error) {
+	raw := d.Get("column").([]any)
+	indices := make([]int, len(raw))
+	for i := range indices {
+		indices[i] = i
+	}
+	return collections.MapErr(indices, func(i int) (sdk.IcebergTableColumnRequest, error) {
+		return parseIcebergTableColumn(d, i)
+	})
+}
+
+// parseIcebergTableColumn parses a single column at the given index (e.g. "column.0.") into an IcebergTableColumnRequest.
+func parseIcebergTableColumn(d *schema.ResourceData, index int) (sdk.IcebergTableColumnRequest, error) {
+	prefix := fmt.Sprintf("column.%d.", index)
+	name := d.Get(prefix + "name").(string)
+	dataType, err := datatypes.ParseDataType(d.Get(prefix + "type").(string))
+	if err != nil {
+		return sdk.IcebergTableColumnRequest{}, fmt.Errorf("parsing data type of column %q: %w", name, err)
+	}
+	req := sdk.NewIcebergTableColumnRequest(name, dataType)
+	if err := booleanStringAttributeCreate(d, prefix+"not_null", &req.NotNull); err != nil {
+		return sdk.IcebergTableColumnRequest{}, fmt.Errorf("parsing not_null for column %q: %w", name, err)
+	}
+
+	if err := errors.Join(
+		stringAttributeCreateBuilder(d, prefix+"comment", func(v string) *sdk.IcebergTableColumnRequest { return req.WithComment(v) }),
+		attributeMappedValueCreateBuilderNested(d, prefix+"default", func(v sdk.ColumnDefaultValue) *sdk.IcebergTableColumnRequest {
+			return req.WithDefaultValue(v)
+		}, func(d *schema.ResourceData) (sdk.ColumnDefaultValue, error) {
+			return parseIcebergColumnDefaultValue(d, index)
+		}),
+		attributeMappedValueCreateBuilderNested(d, prefix+"masking_policy", func(v sdk.TableColumnMaskingPolicyRequest) *sdk.IcebergTableColumnRequest {
+			return req.WithMaskingPolicy(v)
+		}, func(d *schema.ResourceData) (sdk.TableColumnMaskingPolicyRequest, error) {
+			return parseColumnMaskingPolicy(d, prefix+"masking_policy.0.")
+		}),
+		attributeMappedValueCreateBuilderNested(d, prefix+"projection_policy", func(v sdk.TableColumnProjectionPolicyRequest) *sdk.IcebergTableColumnRequest {
+			return req.WithProjectionPolicy(v)
+		}, func(d *schema.ResourceData) (sdk.TableColumnProjectionPolicyRequest, error) {
+			return parseColumnProjectionPolicy(d, prefix+"projection_policy.0.")
+		}),
+	); err != nil {
+		return sdk.IcebergTableColumnRequest{}, fmt.Errorf("parsing column %q: %w", name, err)
+	}
+
+	return *req, nil
+}
+
+// parseIcebergColumnDefaultValue reads the default expression directly from the raw config (rather than
+// d.GetOk) so that an explicitly configured empty-string expression is not mistaken for an unset one.
+func parseIcebergColumnDefaultValue(d *schema.ResourceData, index int) (sdk.ColumnDefaultValue, error) {
+	defaultValue := sdk.ColumnDefaultValue{}
+	path := cty.GetAttrPath("column").IndexInt(index).GetAttr("default").IndexInt(0).GetAttr("expression")
+	configValue, diags := d.GetRawConfigAt(path)
+	if diags.HasError() {
+		return defaultValue, fmt.Errorf("reading raw config for column %d default expression: %v", index, diags)
+	}
+	if !configValue.IsNull() {
+		expression := configValue.AsString()
+		defaultValue.Expression = &expression
+	}
+	return defaultValue, nil
+}
+
 func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
@@ -234,12 +305,8 @@ func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			// rather than the original DDL text, so external changes cannot be reliably detected. See
 			// https://docs.snowflake.com/en/user-guide/tables-clustering-keys#defining-a-clustering-key-for-a-table
 			// add these limitations to the documentation and report this to Snowflake
-			columnsState, err := handleIcebergTableColumns(details, policyRefs)
-			if err != nil {
-				return err
-			}
 			return errors.Join(
-				d.Set("column", columnsState),
+				d.Set("column", handleIcebergTableColumns(details, policyRefs)),
 				d.Set("partition_by", partitionBy),
 			)
 		})
@@ -376,16 +443,16 @@ func handleIcebergTableSnowflakeManagedParametersUpdate(d *schema.ResourceData, 
 	)
 }
 
-func handleIcebergTableColumns(columns []sdk.IcebergTableDetails, policyRefs []sdk.PolicyReference) ([]map[string]any, error) {
+func handleIcebergTableColumns(columns []sdk.IcebergTableDetails, policyRefs []sdk.PolicyReference) []map[string]any {
 	if len(columns) == 0 {
-		return nil, nil
+		return nil
 	}
 
-	return collections.MapErr(columns, func(column sdk.IcebergTableDetails) (map[string]any, error) {
+	return collections.Map(columns, func(column sdk.IcebergTableDetails) map[string]any {
 		columnState := map[string]any{
 			"name":     column.Name,
 			"type":     column.Type.ToSql(),
-			"not_null": !column.IsNullable,
+			"not_null": booleanStringFromBool(!column.IsNullable),
 		}
 		if column.Comment != nil {
 			columnState["comment"] = *column.Comment
@@ -395,10 +462,9 @@ func handleIcebergTableColumns(columns []sdk.IcebergTableDetails, policyRefs []s
 		}
 		columnPoliciesState, err := columnPoliciesToState(column.Name, policyRefs)
 		if err != nil {
-			return nil, fmt.Errorf("converting column policies to state: %w", err)
+			log.Printf("[DEBUG] could not convert column policies to state for column %q: %v", column.Name, err)
 		}
-		columnState = collections.MergeMaps(columnState, columnPoliciesState)
-		return columnState, nil
+		return collections.MergeMaps(columnState, columnPoliciesState)
 	})
 }
 

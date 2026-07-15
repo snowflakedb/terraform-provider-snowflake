@@ -77,9 +77,7 @@ func (i *IcebergTableResourceAssert) HasPartitionByHour(index int, column string
 	return i
 }
 
-// ExpectedColumn describes the fields of a single `column` block to assert on. MaskingPolicy and
-// ProjectionPolicy are only checked when non-nil. MaskingPolicyUsing is only checked when MaskingPolicy
-// is non-nil and MaskingPolicyUsing is non-empty.
+// ExpectedColumn describes the fields of a single `column` block to assert on.
 type ExpectedColumn struct {
 	Name               string
 	Type               string
@@ -97,7 +95,7 @@ func (i *IcebergTableResourceAssert) HasColumns(columns ...ExpectedColumn) *Iceb
 		prefix := fmt.Sprintf("column.%d.", index)
 		i.ValueSet(prefix+"name", column.Name)
 		i.ValueSet(prefix+"type", column.Type)
-		i.BoolValueSet(prefix+"not_null", column.NotNull)
+		i.ValueSet(prefix+"not_null", strconv.FormatBool(column.NotNull))
 		i.ValueSet(prefix+"comment", column.Comment)
 
 		if column.DefaultExpression != "" {
@@ -142,13 +140,28 @@ func boolPairExpectation(positive, negative *bool) string {
 	}
 }
 
-func (i *IcebergTableResourceAssert) hasConstraintEnforcementFields(prefix string, enforced, notEnforced, deferrable, notDeferrable, initiallyDeferred, initiallyImmediate, enable, disable, validate, novalidate, rely, norely *bool) *IcebergTableResourceAssert {
-	i.ValueSet(prefix+"enforced", boolPairExpectation(enforced, notEnforced))
-	i.ValueSet(prefix+"deferrable", boolPairExpectation(deferrable, notDeferrable))
-	i.ValueSet(prefix+"initially_deferred", boolPairExpectation(initiallyDeferred, initiallyImmediate))
-	i.ValueSet(prefix+"enable", boolPairExpectation(enable, disable))
-	i.ValueSet(prefix+"validate", boolPairExpectation(validate, novalidate))
-	i.ValueSet(prefix+"rely", boolPairExpectation(rely, norely))
+type ConstraintEnforcementFields struct {
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+func (i *IcebergTableResourceAssert) hasConstraintEnforcementFields(prefix string, fields ConstraintEnforcementFields) *IcebergTableResourceAssert {
+	i.ValueSet(prefix+"enforced", boolPairExpectation(fields.Enforced, fields.NotEnforced))
+	i.ValueSet(prefix+"deferrable", boolPairExpectation(fields.Deferrable, fields.NotDeferrable))
+	i.ValueSet(prefix+"initially_deferred", boolPairExpectation(fields.InitiallyDeferred, fields.InitiallyImmediate))
+	i.ValueSet(prefix+"enable", boolPairExpectation(fields.Enable, fields.Disable))
+	i.ValueSet(prefix+"validate", boolPairExpectation(fields.Validate, fields.Novalidate))
+	i.ValueSet(prefix+"rely", boolPairExpectation(fields.Rely, fields.Norely))
 	return i
 }
 
@@ -162,7 +175,20 @@ func (i *IcebergTableResourceAssert) hasUniquePKConstraintFields(prefix string, 
 	for colIndex, column := range c.Columns {
 		i.ValueSet(fmt.Sprintf("%scolumn.%d", prefix, colIndex), column.Value)
 	}
-	i.hasConstraintEnforcementFields(prefix, c.Enforced, c.NotEnforced, c.Deferrable, c.NotDeferrable, c.InitiallyDeferred, c.InitiallyImmediate, c.Enable, c.Disable, c.Validate, c.Novalidate, c.Rely, c.Norely)
+	i.hasConstraintEnforcementFields(prefix, ConstraintEnforcementFields{
+		Enforced:           c.Enforced,
+		NotEnforced:        c.NotEnforced,
+		Deferrable:         c.Deferrable,
+		NotDeferrable:      c.NotDeferrable,
+		InitiallyDeferred:  c.InitiallyDeferred,
+		InitiallyImmediate: c.InitiallyImmediate,
+		Enable:             c.Enable,
+		Disable:            c.Disable,
+		Validate:           c.Validate,
+		Novalidate:         c.Novalidate,
+		Rely:               c.Rely,
+		Norely:             c.Norely,
+	})
 	return i
 }
 
@@ -212,7 +238,20 @@ func (i *IcebergTableResourceAssert) HasForeignKeyConstraints(constraints ...sdk
 		if c.On != nil && c.On.OnDelete != nil {
 			i.ValueSet(prefix+"on_delete", string(*c.On.OnDelete))
 		}
-		i.hasConstraintEnforcementFields(prefix, c.Enforced, c.NotEnforced, c.Deferrable, c.NotDeferrable, c.InitiallyDeferred, c.InitiallyImmediate, c.Enable, c.Disable, c.Validate, c.Novalidate, c.Rely, c.Norely)
+		i.hasConstraintEnforcementFields(prefix, ConstraintEnforcementFields{
+			Enforced:           c.Enforced,
+			NotEnforced:        c.NotEnforced,
+			Deferrable:         c.Deferrable,
+			NotDeferrable:      c.NotDeferrable,
+			InitiallyDeferred:  c.InitiallyDeferred,
+			InitiallyImmediate: c.InitiallyImmediate,
+			Enable:             c.Enable,
+			Disable:            c.Disable,
+			Validate:           c.Validate,
+			Novalidate:         c.Novalidate,
+			Rely:               c.Rely,
+			Norely:             c.Norely,
+		})
 	}
 	return i
 }

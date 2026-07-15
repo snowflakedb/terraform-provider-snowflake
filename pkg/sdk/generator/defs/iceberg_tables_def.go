@@ -53,7 +53,7 @@ var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
 var icebergTableColumnsAndConstraints = g.NewQueryStruct("IcebergTableColumnsAndConstraints").
-	ListQueryStructField("Columns", icebergTableColumn, g.KeywordOptions()).
+	ListQueryStructField("Columns", icebergTableColumn, g.KeywordOptions().Required()).
 	ListQueryStructField("OutOfLineConstraint", tableOutOfLineConstraint(), g.KeywordOptions())
 
 var icebergTablePartitionBucketArgs = g.NewQueryStruct("IcebergTablePartitionBucketArgs").

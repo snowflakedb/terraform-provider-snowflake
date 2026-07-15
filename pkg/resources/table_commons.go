@@ -8,200 +8,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-// columnSchema builds the rich "column" schema shared by table-like resources that support the
-// full per-column capabilities (as opposed to basicColumnSchema, which only supports name + type).
-func columnSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeList,
-		Required:    true,
-		ForceNew:    true,
-		MinItems:    1,
-		Description: "Definitions of the columns to create in the table. Minimum one required.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"name": {
-					Type:        schema.TypeString,
-					Required:    true,
-					ForceNew:    true,
-					Description: "Column name.",
-				},
-				"type": {
-					Type:             schema.TypeString,
-					Required:         true,
-					ForceNew:         true,
-					Description:      "Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).",
-					ValidateDiagFunc: IsDataTypeValid,
-					DiffSuppressFunc: DiffSuppressDataTypes,
-				},
-				"not_null": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					ForceNew:    true,
-					Default:     false,
-					Description: "Whether to restrict the column to NOT NULL values.",
-				},
-				"default": {
-					Type:        schema.TypeList,
-					Optional:    true,
-					ForceNew:    true,
-					MaxItems:    1,
-					Description: "Defines the column default value.",
-					Elem: &schema.Resource{
-						Schema: map[string]*schema.Schema{
-							"expression": {
-								Type:        schema.TypeString,
-								Optional:    true,
-								ForceNew:    true,
-								Description: "The default expression value for the column.",
-							},
-						},
-					},
-				},
-				"masking_policy":    columnMaskingPolicySchema(true, IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("name")),
-				"projection_policy": columnProjectionPolicySchema(),
-				"comment": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					ForceNew:    true,
-					Description: "Column comment.",
-				},
-			},
-		},
-	}
-}
-
-// parseColumns parses the "column" list from the resource data into IcebergTableColumnRequests.
-func parseColumns(d *schema.ResourceData) ([]sdk.IcebergTableColumnRequest, error) {
-	raw := d.Get("column").([]any)
-	columns := make([]sdk.IcebergTableColumnRequest, len(raw))
-	for i := range raw {
-		column, err := parseColumn(d, fmt.Sprintf("column.%d.", i))
-		if err != nil {
-			return nil, err
-		}
-		columns[i] = column
-	}
-	return columns, nil
-}
-
-// parseColumn parses a single column at the given prefix (e.g. "column.0.") into an IcebergTableColumnRequest.
-func parseColumn(d *schema.ResourceData, prefix string) (sdk.IcebergTableColumnRequest, error) {
-	name := d.Get(prefix + "name").(string)
-	dataType, err := datatypes.ParseDataType(d.Get(prefix + "type").(string))
-	if err != nil {
-		return sdk.IcebergTableColumnRequest{}, fmt.Errorf("parsing data type of column %q: %w", name, err)
-	}
-	req := sdk.NewIcebergTableColumnRequest(name, dataType)
-
-	if err := errors.Join(
-		boolAttributeCreate(d, prefix+"not_null", &req.NotNull),
-		stringAttributeCreateBuilder(d, prefix+"comment", func(v string) *sdk.IcebergTableColumnRequest { return req.WithComment(v) }),
-		attributeMappedValueCreateBuilderNested(d, prefix+"default", func(v sdk.ColumnDefaultValue) *sdk.IcebergTableColumnRequest {
-			return req.WithDefaultValue(v)
-		}, func(d *schema.ResourceData) (sdk.ColumnDefaultValue, error) {
-			return parseColumnDefaultValue(d, prefix+"default.0."), nil
-		}),
-		attributeMappedValueCreateBuilderNested(d, prefix+"masking_policy", func(v sdk.TableColumnMaskingPolicyRequest) *sdk.IcebergTableColumnRequest {
-			return req.WithMaskingPolicy(v)
-		}, func(d *schema.ResourceData) (sdk.TableColumnMaskingPolicyRequest, error) {
-			return parseColumnMaskingPolicy(d, prefix+"masking_policy.0.")
-		}),
-		attributeMappedValueCreateBuilderNested(d, prefix+"projection_policy", func(v sdk.TableColumnProjectionPolicyRequest) *sdk.IcebergTableColumnRequest {
-			return req.WithProjectionPolicy(v)
-		}, func(d *schema.ResourceData) (sdk.TableColumnProjectionPolicyRequest, error) {
-			return parseColumnProjectionPolicy(d, prefix+"projection_policy.0.")
-		}),
-	); err != nil {
-		return sdk.IcebergTableColumnRequest{}, fmt.Errorf("parsing column %q: %w", name, err)
-	}
-
-	return *req, nil
-}
-
-func parseColumnDefaultValue(d *schema.ResourceData, prefix string) sdk.ColumnDefaultValue {
-	defaultValue := sdk.ColumnDefaultValue{}
-	if v, ok := d.GetOk(prefix + "expression"); ok {
-		expression := v.(string)
-		defaultValue.Expression = &expression
-	}
-	return defaultValue
-}
-
-func columnMaskingPolicySchema(forceNew bool, usingDiffSuppress schema.SchemaDiffSuppressFunc) *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		ForceNew:    forceNew,
-		MaxItems:    1,
-		Description: relatedResourceDescription("Specifies the masking policy to set on a column.", resources.MaskingPolicy),
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"policy_name": {
-					Type:             schema.TypeString,
-					Required:         true,
-					ForceNew:         forceNew,
-					DiffSuppressFunc: suppressIdentifierQuoting,
-					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-					Description:      relatedResourceDescription("Masking policy name.", resources.MaskingPolicy),
-				},
-				"using": {
-					Type:             schema.TypeList,
-					Optional:         true,
-					ForceNew:         forceNew,
-					Elem:             &schema.Schema{Type: schema.TypeString},
-					DiffSuppressFunc: usingDiffSuppress,
-					Description:      "Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.",
-				},
-			},
-		},
-	}
-}
-
-func columnProjectionPolicySchema() *schema.Schema {
-	return &schema.Schema{
-		Type:        schema.TypeList,
-		Optional:    true,
-		ForceNew:    true,
-		MaxItems:    1,
-		Description: "Specifies the projection policy to set on a column.",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"policy_name": {
-					Type:             schema.TypeString,
-					Required:         true,
-					ForceNew:         true,
-					DiffSuppressFunc: suppressIdentifierQuoting,
-					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-					Description:      "Projection policy name.",
-				},
-			},
-		},
-	}
-}
-
-func parseColumnMaskingPolicy(d *schema.ResourceData, prefix string) (sdk.TableColumnMaskingPolicyRequest, error) {
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix + "policy_name").(string))
-	if err != nil {
-		return sdk.TableColumnMaskingPolicyRequest{}, err
-	}
-	req := sdk.TableColumnMaskingPolicyRequest{MaskingPolicy: id}
-	if usingRaw := d.Get(prefix + "using").([]any); len(usingRaw) > 0 {
-		req.Using = collections.Map(expandStringList(usingRaw), func(v string) sdk.Column { return sdk.Column{Value: v} })
-	}
-	return req, nil
-}
-
-func parseColumnProjectionPolicy(d *schema.ResourceData, prefix string) (sdk.TableColumnProjectionPolicyRequest, error) {
-	id, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix + "policy_name").(string))
-	if err != nil {
-		return sdk.TableColumnProjectionPolicyRequest{}, err
-	}
-	return sdk.TableColumnProjectionPolicyRequest{ProjectionPolicy: id}, nil
-}
 
 // constraintEnforcementSchemaFields builds the enforcement-related fields shared by the UNIQUE/PRIMARY KEY
 // and FOREIGN KEY out-of-line constraint schemas. Each field squashes a pair of mutually exclusive SQL
@@ -256,12 +64,14 @@ func outOfLineUniqueOrPKConstraintSchemaFields() map[string]*schema.Schema {
 }
 
 // primaryKeyConstraintSchema builds the primary_key_constraint schema shared by table-like resources,
-// covering a table-level PRIMARY KEY constraint.
+// covering a table-level PRIMARY KEY constraint. MaxItems is capped at 1 because a table can have at
+// most one PRIMARY KEY constraint.
 func primaryKeyConstraintSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeList,
 		Optional:    true,
 		ForceNew:    true,
+		MaxItems:    1,
 		Description: "Defines a table-level PRIMARY KEY constraint.",
 		Elem: &schema.Resource{
 			Schema: outOfLineUniqueOrPKConstraintSchemaFields(),
@@ -623,7 +433,7 @@ func extractPolicyWithColumnsList(v any, columnsKey string) (sdk.SchemaObjectIde
 // AlterIcebergTableRequest, so the diffing logic can be shared even though the two resources wire the result into
 // different top-level alter requests.
 func rowAccessPolicyAlterRequests(
-	d ResourceValueGetter,
+	d *schema.ResourceData,
 	addRowAccessPolicyFunc func(id sdk.SchemaObjectIdentifier, columns []sdk.Column),
 	dropRowAccessPolicyFunc func(id sdk.SchemaObjectIdentifier),
 ) error {
@@ -647,7 +457,7 @@ func rowAccessPolicyAlterRequests(
 
 // aggregationPolicyAlterState extracts the desired aggregation policy state (id + entity key) from the
 // aggregation_policy field, or reports that the policy should be unset.
-func aggregationPolicyAlterState(d ResourceValueGetter) (id sdk.SchemaObjectIdentifier, entityKey []sdk.Column, isSet bool, err error) {
+func aggregationPolicyAlterState(d *schema.ResourceData) (id sdk.SchemaObjectIdentifier, entityKey []sdk.Column, isSet bool, err error) {
 	v, ok := d.GetOk("aggregation_policy")
 	if !ok {
 		return sdk.SchemaObjectIdentifier{}, nil, false, nil
@@ -659,14 +469,8 @@ func aggregationPolicyAlterState(d ResourceValueGetter) (id sdk.SchemaObjectIden
 	return id, entityKey, true, nil
 }
 
-// ResourceValueGetter is the subset of *schema.ResourceData used by the shared policy helpers.
-type ResourceValueGetter interface {
-	GetChange(key string) (any, any)
-	GetOk(key string) (any, bool)
-}
-
 // handlePolicyReferences populates row_access_policy and aggregation_policy from the given policy references.
-func handlePolicyReferences(policyRefs []sdk.PolicyReference, d ResourceValueSetter) error {
+func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.ResourceData) error {
 	var aggregationPolicies []map[string]any
 	var rowAccessPolicies []map[string]any
 	for _, p := range policyRefs {
@@ -703,10 +507,12 @@ func handlePolicyReferences(policyRefs []sdk.PolicyReference, d ResourceValueSet
 	return nil
 }
 
-func columnPoliciesToState(columnName string, policyRefs []sdk.PolicyReference) (map[string]any, error) {
-	columnPolicies := make(map[string]any)
-	maskingPolicies := make(map[string]sdk.PolicyReference)
-	projectionPolicies := make(map[string]sdk.PolicyReference)
+// buildColumnPolicyLookups indexes policyRefs by referenced column name, once, so that
+// columnPoliciesToState can look up a column's masking/projection policy in O(1) instead of
+// rescanning the full policyRefs slice for every column.
+func buildColumnPolicyLookups(policyRefs []sdk.PolicyReference) (maskingPolicies, projectionPolicies map[string]sdk.PolicyReference) {
+	maskingPolicies = make(map[string]sdk.PolicyReference)
+	projectionPolicies = make(map[string]sdk.PolicyReference)
 	for _, p := range policyRefs {
 		if p.RefColumnName == nil {
 			continue
@@ -718,23 +524,31 @@ func columnPoliciesToState(columnName string, policyRefs []sdk.PolicyReference) 
 			projectionPolicies[*p.RefColumnName] = p
 		}
 	}
+	return maskingPolicies, projectionPolicies
+}
+
+// columnPoliciesToState converts columnName's masking/projection policy (if any) into column state
+// fields. The two lookups are independent: a conversion error on one policy is reported but does not
+// prevent the other, valid, policy from being included in the returned state.
+func columnPoliciesToState(columnName string, policyRefs []sdk.PolicyReference) (map[string]any, error) {
+	maskingPolicies, projectionPolicies := buildColumnPolicyLookups(policyRefs)
+	columnPolicies := make(map[string]any)
+	var errs []error
 	if p, ok := maskingPolicies[columnName]; ok {
-		maskingPolicyState, err := maskingPolicyToState(p)
-		if err != nil {
-			return nil, fmt.Errorf("converting masking policy to state: %w", err)
+		if maskingPolicyState, err := maskingPolicyToState(p); err != nil {
+			errs = append(errs, fmt.Errorf("converting masking policy to state: %w", err))
 		} else {
 			columnPolicies["masking_policy"] = []map[string]any{maskingPolicyState}
 		}
 	}
 	if p, ok := projectionPolicies[columnName]; ok {
-		projectionPolicyState, err := projectionPolicyToState(p)
-		if err != nil {
-			return nil, fmt.Errorf("converting projection policy to state: %w", err)
+		if projectionPolicyState, err := projectionPolicyToState(p); err != nil {
+			errs = append(errs, fmt.Errorf("converting projection policy to state: %w", err))
 		} else {
 			columnPolicies["projection_policy"] = []map[string]any{projectionPolicyState}
 		}
 	}
-	return columnPolicies, nil
+	return columnPolicies, errors.Join(errs...)
 }
 
 func maskingPolicyToState(maskingPolicy sdk.PolicyReference) (map[string]any, error) {

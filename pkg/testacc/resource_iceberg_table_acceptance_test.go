@@ -633,6 +633,7 @@ func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
 	idComment := random.Comment()
 	nameComment := random.Comment()
 	statusDefault := "'active'"
+	emptyDefault := "''"
 
 	pkConstraintName := random.AlphaN(6)
 	uniqueConstraintName := random.AlphaN(6)
@@ -640,10 +641,11 @@ func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
 	checkConstraintName := random.AlphaN(6)
 
 	columns := []model.IcebergTableColumnRequest{
-		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: true, Comment: idComment},
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true"), Comment: idComment},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, Comment: nameComment, MaskingPolicy: &maskingPolicyId},
 		{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg, ProjectionPolicy: &projectionPolicyId},
 		{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg, DefaultExpression: statusDefault},
+		{Name: "NOTES", Type: testdatatypes.DataTypeVarcharIceberg, DefaultExpression: emptyDefault},
 		{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: &conditionalMaskingPolicyId, MaskingPolicyUsing: []string{"CATEGORY", "STATUS"}},
 		{Name: "REF_ID", Type: testdatatypes.DataTypeNumber_38_0},
 	}
@@ -682,7 +684,7 @@ func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
 	}
 
 	modelWithColumns := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), nil).
-		WithColumnRequests(columns...).
+		WithColumns(columns...).
 		WithPrimaryKeyConstraints(primaryKeyConstraint).
 		WithUniqueConstraints(uniqueConstraint).
 		WithForeignKeyConstraints(foreignKeyConstraint).
@@ -699,6 +701,7 @@ func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
 			resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), Comment: nameComment, MaskingPolicy: &maskingPolicyId, MaskingPolicyUsing: []string{"NAME"}},
 			resourceassert.ExpectedColumn{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), ProjectionPolicy: &projectionPolicyId},
 			resourceassert.ExpectedColumn{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), DefaultExpression: statusDefault},
+			resourceassert.ExpectedColumn{Name: "NOTES", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), DefaultExpression: emptyDefault},
 			resourceassert.ExpectedColumn{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), MaskingPolicy: &conditionalMaskingPolicyId, MaskingPolicyUsing: []string{"CATEGORY", "STATUS"}},
 			resourceassert.ExpectedColumn{Name: "REF_ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql()},
 		).

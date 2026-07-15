@@ -26,7 +26,7 @@ func (i *IcebergTableModel) WithColumn(column []sdk.TableColumnSignature) *Icebe
 type IcebergTableColumnRequest struct {
 	Name               string
 	Type               datatypes.DataType
-	NotNull            bool
+	NotNull            *string
 	Comment            string
 	DefaultExpression  string
 	MaskingPolicy      *sdk.SchemaObjectIdentifier
@@ -34,17 +34,17 @@ type IcebergTableColumnRequest struct {
 	ProjectionPolicy   *sdk.SchemaObjectIdentifier
 }
 
-// WithColumnRequests is like WithColumn, but supports setting the full set of per-column fields
+// WithColumns is like WithColumn, but supports setting the full set of per-column fields
 // (not_null, comment, default expression, masking_policy, projection_policy).
-func (i *IcebergTableModel) WithColumnRequests(columns ...IcebergTableColumnRequest) *IcebergTableModel {
+func (i *IcebergTableModel) WithColumns(columns ...IcebergTableColumnRequest) *IcebergTableModel {
 	vars := make([]tfconfig.Variable, len(columns))
 	for idx, c := range columns {
 		m := map[string]tfconfig.Variable{
 			"name": tfconfig.StringVariable(c.Name),
 			"type": tfconfig.StringVariable(c.Type.ToSql()),
 		}
-		if c.NotNull {
-			m["not_null"] = tfconfig.BoolVariable(true)
+		if c.NotNull != nil {
+			m["not_null"] = tfconfig.StringVariable(*c.NotNull)
 		}
 		if c.Comment != "" {
 			m["comment"] = tfconfig.StringVariable(c.Comment)
@@ -74,25 +74,6 @@ func (i *IcebergTableModel) WithColumnRequests(columns ...IcebergTableColumnRequ
 	}
 	i.Column = tfconfig.ListVariable(vars...)
 	return i
-}
-
-func columnsVariable(columns []sdk.Column) tfconfig.Variable {
-	return tfconfig.ListVariable(collections.Map(columns, func(c sdk.Column) tfconfig.Variable { return tfconfig.StringVariable(c.Value) })...)
-}
-
-func setStringIfNotNil(m map[string]tfconfig.Variable, key string, value *string) {
-	if value != nil {
-		m[key] = tfconfig.StringVariable(*value)
-	}
-}
-
-func setBoolPairIfNotNil(m map[string]tfconfig.Variable, key string, trueVal, falseVal *bool) {
-	if trueVal != nil {
-		m[key] = tfconfig.BoolVariable(true)
-	}
-	if falseVal != nil {
-		m[key] = tfconfig.BoolVariable(false)
-	}
 }
 
 // uniquePKConstraintVariable builds the fields shared by primary_key_constraint and
