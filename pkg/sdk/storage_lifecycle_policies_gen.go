@@ -19,6 +19,7 @@ type StorageLifecyclePolicies interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicy, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error)
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StorageLifecyclePolicyDetails, error)
 }
 
 // CreateStorageLifecyclePolicyOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-storage-lifecycle-policy.
@@ -132,6 +133,8 @@ type describeStorageLifecyclePolicyDBRow struct {
 
 type StorageLifecyclePolicyDetails struct {
 	Name           string
+	DatabaseName   string
+	SchemaName     string
 	Signature      []TableColumnSignature
 	ReturnType     datatypes.DataType
 	Body           string

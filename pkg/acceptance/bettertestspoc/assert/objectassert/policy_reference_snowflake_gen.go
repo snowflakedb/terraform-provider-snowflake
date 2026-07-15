@@ -14,17 +14,10 @@ type PolicyReferenceAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.PolicyReference, sdk.SchemaObjectIdentifier]
 }
 
-// Adjusted manually: removed PolicyReference
-
-// Adjusted manually
 func PolicyReferenceFromObject(t *testing.T, policyReference *sdk.PolicyReference) *PolicyReferenceAssert {
 	t.Helper()
 	return &PolicyReferenceAssert{
-		assert.NewSnowflakeObjectAssertWithObject(
-			sdk.ObjectType("PolicyReference"),
-			sdk.NewSchemaObjectIdentifier(*policyReference.PolicyDb, *policyReference.PolicySchema, policyReference.PolicyName),
-			policyReference,
-		),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("PolicyReference"), policyReference.ID(), policyReference),
 	}
 }
 

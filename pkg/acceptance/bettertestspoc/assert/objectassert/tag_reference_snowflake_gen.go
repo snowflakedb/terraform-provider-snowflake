@@ -14,25 +14,10 @@ type TagReferenceAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.TagReference, sdk.SchemaObjectIdentifier]
 }
 
-// Adjusted manually
-// func TagReference(t *testing.T, id sdk.SchemaObjectIdentifier) *TagReferenceAssert {
-// 	t.Helper()
-// 	return &TagReferenceAssert{
-// 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("TagReference"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.TagReference, sdk.SchemaObjectIdentifier] {
-// 			return testClient.TagReference.Show
-// 		}),
-// 	}
-// }
-
-// Adjusted manually
 func TagReferenceFromObject(t *testing.T, tagReference *sdk.TagReference) *TagReferenceAssert {
 	t.Helper()
 	return &TagReferenceAssert{
-		assert.NewSnowflakeObjectAssertWithObject(
-			sdk.ObjectType("TagReference"),
-			sdk.NewSchemaObjectIdentifier(tagReference.TagDatabase, tagReference.TagSchema, tagReference.TagName),
-			tagReference,
-		),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("TagReference"), tagReference.ID(), tagReference),
 	}
 }
 

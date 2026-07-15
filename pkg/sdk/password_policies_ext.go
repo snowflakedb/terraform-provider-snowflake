@@ -27,12 +27,22 @@ func (r passwordPolicyDBRow) additionalConvert(result *PasswordPolicy) error {
 	return nil
 }
 
+func (d *PasswordPolicyDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(d.DatabaseName, d.SchemaName, d.Name)
+}
+
 func (v *passwordPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicyDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return parsePasswordPolicyProperties(properties)
+	details, err := parsePasswordPolicyProperties(properties)
+	if err != nil {
+		return nil, err
+	}
+	details.DatabaseName = id.DatabaseName()
+	details.SchemaName = id.SchemaName()
+	return details, nil
 }
 
 func parsePasswordPolicyProperties(properties []PasswordPolicyProperty) (*PasswordPolicyDetails, error) {

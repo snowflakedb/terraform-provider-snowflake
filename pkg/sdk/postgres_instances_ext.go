@@ -128,6 +128,10 @@ func ParsePostgresInstanceDetails(properties []PostgresInstanceProperty) (*Postg
 	return details, errors.Join(errs...)
 }
 
+func (d *PostgresInstanceDetails) ID() AccountObjectIdentifier {
+	return NewAccountObjectIdentifier(d.Name)
+}
+
 func (v *postgresInstances) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*PostgresInstanceDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {

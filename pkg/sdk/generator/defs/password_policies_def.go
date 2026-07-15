@@ -129,6 +129,8 @@ var passwordPoliciesDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 		g.PlainStruct("PasswordPolicyDetails").
 			Text("Name").
+			Text("DatabaseName").
+			Text("SchemaName").
 			Text("Owner").
 			Text("Comment").
 			Number("PasswordMinLength").
