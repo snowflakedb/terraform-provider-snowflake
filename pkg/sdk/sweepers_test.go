@@ -384,6 +384,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 		"JAKUB_MICHALAK",
 		"JAN_CIESLAK",
 		"KAMIL_WASILEWSKI",
+		"PIOTR_CICHON",
 		"TEST_CI_SERVICE_USER",
 		"PENTESTING_USER_1",
 		"PENTESTING_USER_2",
