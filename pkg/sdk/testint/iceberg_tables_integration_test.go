@@ -111,7 +111,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasOwnerRoleType("ROLE").
 				HasCatalogSyncName("").
 				HasNoAutoRefreshStatus().
-				HasPartitionSpecs(sdk.IcebergTablePartitionSpec{
+				HasPartitionSpecsFixed(sdk.IcebergTablePartitionSpec{
 					SpecId: 0,
 					Fields: []sdk.IcebergTablePartitionSpecField{},
 				}).
@@ -182,7 +182,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasCatalogSyncName("").
 				HasNoAutoRefreshStatus().
 				HasCurrentPartitionSpecId(0).
-				HasPartitionSpecs(sdk.IcebergTablePartitionSpec{
+				HasPartitionSpecsFixed(sdk.IcebergTablePartitionSpec{
 					SpecId: 0,
 					Fields: []sdk.IcebergTablePartitionSpecField{
 						{FieldId: 1000, Name: "REGION", SourceId: 4, Transform: "identity"},
