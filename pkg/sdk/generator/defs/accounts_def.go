@@ -26,7 +26,8 @@ func accountLevelParameters() *g.QueryStruct {
 		PredefinedQueryStructField("AccountParameters", "*LegacyAccountParameters", g.ListOptions().NoParentheses()).
 		PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
 		PredefinedQueryStructField("ObjectParameters", "*ObjectParameters", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("UserParameters", "*UserParameters", g.ListOptions().NoParentheses())
+		PredefinedQueryStructField("UserParameters", "*UserParameters", g.ListOptions().NoParentheses()).
+		WithAdditionalValidations()
 }
 
 func accountLevelParametersUnset() *g.QueryStruct {
@@ -34,7 +35,8 @@ func accountLevelParametersUnset() *g.QueryStruct {
 		PredefinedQueryStructField("AccountParameters", "*LegacyAccountParametersUnset", g.ListOptions().NoParentheses()).
 		PredefinedQueryStructField("SessionParameters", "*SessionParametersUnset", g.ListOptions().NoParentheses()).
 		PredefinedQueryStructField("ObjectParameters", "*ObjectParametersUnset", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("UserParameters", "*UserParametersUnset", g.ListOptions().NoParentheses())
+		PredefinedQueryStructField("UserParameters", "*UserParametersUnset", g.ListOptions().NoParentheses()).
+		WithValidation(g.AtLeastOneValueSet, "AccountParameters", "SessionParameters", "ObjectParameters", "UserParameters")
 }
 
 func accountFeaturePolicySet() *g.QueryStruct {
@@ -137,7 +139,8 @@ var accountsDef = g.NewInterface(
 		OptionalTextAssignment("CONSUMPTION_BILLING_ENTITY", g.ParameterOptions().DoubleQuotes()).
 		OptionalBooleanAssignment("POLARIS", g.ParameterOptions()).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.AtLeastOneValueSet, "AdminPassword", "AdminRsaPublicKey"),
+		WithValidation(g.AtLeastOneValueSet, "AdminPassword", "AdminRsaPublicKey").
+		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-account",
 	g.NewQueryStruct("AlterAccount").
