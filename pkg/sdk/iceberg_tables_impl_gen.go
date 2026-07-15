@@ -685,7 +685,6 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		CanWriteMetadata:          r.CanWriteMetadata == "Y",
 		OwnerRoleType:             r.OwnerRoleType,
 		CatalogSyncName:           r.CatalogSyncName,
-		PartitionSpecs:            r.PartitionSpecs,
 		CurrentPartitionSpecId:    r.CurrentPartitionSpecId,
 		IcebergTableFormatVersion: r.IcebergTableFormatVersion,
 	}
@@ -702,6 +701,9 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		if err := json.Unmarshal([]byte(r.AutoRefreshStatus), &result.AutoRefreshStatus); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal AutoRefreshStatus: %w", err)
 		}
+	}
+	if err := json.Unmarshal([]byte(r.PartitionSpecs), &result.PartitionSpecs); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal PartitionSpecs: %w", err)
 	}
 	return result, nil
 }

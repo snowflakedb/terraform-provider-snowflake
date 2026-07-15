@@ -104,8 +104,42 @@ var ShowIcebergTableSchema = map[string]*schema.Schema{
 		},
 	},
 	"partition_specs": {
-		Type:     schema.TypeString,
+		// Adjusted manually: partition_specs is returned as a JSON blob and parsed into a struct slice in the
+		// SDK, so it is represented here as a nested object list instead of the generator's default string field.
+		Type:     schema.TypeList,
 		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"spec_id": {
+					Type:     schema.TypeInt,
+					Computed: true,
+				},
+				"fields": {
+					Type:     schema.TypeList,
+					Computed: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"name": {
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"transform": {
+								Type:     schema.TypeString,
+								Computed: true,
+							},
+							"source_id": {
+								Type:     schema.TypeInt,
+								Computed: true,
+							},
+							"field_id": {
+								Type:     schema.TypeInt,
+								Computed: true,
+							},
+						},
+					},
+				},
+			},
+		},
 	},
 	"current_partition_spec_id": {
 		Type:     schema.TypeInt,
@@ -166,7 +200,7 @@ func IcebergTableToSchema(icebergTable *sdk.IcebergTable) map[string]any {
 		}
 		icebergTableSchema["auto_refresh_status"] = []map[string]any{autoRefreshStatus}
 	}
-	icebergTableSchema["partition_specs"] = icebergTable.PartitionSpecs
+	icebergTableSchema["partition_specs"] = icebergTablePartitionSpecsToSchema(icebergTable.PartitionSpecs)
 	icebergTableSchema["current_partition_spec_id"] = icebergTable.CurrentPartitionSpecId
 	icebergTableSchema["iceberg_table_format_version"] = icebergTable.IcebergTableFormatVersion
 	return icebergTableSchema

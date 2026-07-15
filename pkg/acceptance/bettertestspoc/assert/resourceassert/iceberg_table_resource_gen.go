@@ -69,6 +69,11 @@ func (i *IcebergTableResourceAssert) HasChangeTracking(expected string) *Iceberg
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasClusterBy(expected ...string) *IcebergTableResourceAssert {
+	i.ListContainsExactlyStringValuesInOrder("cluster_by", expected...)
+	return i
+}
+
 // typed assert for "column" (type: List, subtype: Map) is not currently supported
 
 func (i *IcebergTableResourceAssert) HasComment(expected string) *IcebergTableResourceAssert {
@@ -115,6 +120,8 @@ func (i *IcebergTableResourceAssert) HasMaxDataExtensionTimeInDays(expected int)
 	i.IntValueSet("max_data_extension_time_in_days", expected)
 	return i
 }
+
+// typed assert for "partition_by" (type: List, subtype: Map) is not currently supported
 
 func (i *IcebergTableResourceAssert) HasPathLayout(expected string) *IcebergTableResourceAssert {
 	i.StringValueSet("path_layout", expected)
@@ -360,6 +367,11 @@ func (i *IcebergTableResourceAssert) HasChangeTrackingEmpty() *IcebergTableResou
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasClusterByEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("cluster_by.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasCommentEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("comment", "")
 	return i
@@ -402,6 +414,11 @@ func (i *IcebergTableResourceAssert) HasIcebergVersionEmpty() *IcebergTableResou
 
 func (i *IcebergTableResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("max_data_extension_time_in_days", "")
+	return i
+}
+
+func (i *IcebergTableResourceAssert) HasPartitionByEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("partition_by.#", "0")
 	return i
 }
 
