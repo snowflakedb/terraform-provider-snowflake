@@ -59,188 +59,171 @@ func stageFileFormatStringOrNone() *g.QueryStruct {
 		WithValidation(g.ExactlyOneValueSet, "Value", "None")
 }
 
+// csvFileFormatOptionFields appends the CSV-specific file format fields (unprefixed) onto qs.
+// Reused both by fileFormatDef()'s nested embed struct and by the CreateCsv/AlterCsv operations.
+func csvFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
+	return qs.
+		OptionalEnumAssignment("COMPRESSION", CsvCompressionEnumDef, g.ParameterOptions().NoQuotes()).
+		OptionalQueryStructField("RecordDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("RECORD_DELIMITER =")).
+		OptionalQueryStructField("FieldDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_DELIMITER =")).
+		OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
+		OptionalTextAssignment("FILE_EXTENSION", g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("PARSE_HEADER", g.ParameterOptions()).
+		OptionalNumberAssignment("SKIP_HEADER", g.ParameterOptions()).
+		OptionalBooleanAssignment("SKIP_BLANK_LINES", g.ParameterOptions()).
+		OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
+		OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
+		OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
+		OptionalEnumAssignment("BINARY_FORMAT", BinaryFormatEnumDef, g.ParameterOptions().NoQuotes()).
+		OptionalQueryStructField("Escape", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE =")).
+		OptionalQueryStructField("EscapeUnenclosedField", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE_UNENCLOSED_FIELD =")).
+		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+		OptionalQueryStructField("FieldOptionallyEnclosedBy", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_OPTIONALLY_ENCLOSED_BY =")).
+		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+		OptionalBooleanAssignment("ERROR_ON_COLUMN_COUNT_MISMATCH", g.ParameterOptions()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("EMPTY_FIELD_AS_NULL", g.ParameterOptions()).
+		OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
+		OptionalEnumAssignment("ENCODING", CsvEncodingEnumDef, g.ParameterOptions().NoQuotes()).
+		WithValidation(g.ConflictingFields, "SkipHeader", "ParseHeader")
+}
+
+func jsonFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
+	return qs.
+		OptionalEnumAssignment("COMPRESSION", JsonCompressionEnumDef, g.ParameterOptions().NoQuotes()).
+		OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
+		OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
+		OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
+		OptionalEnumAssignment("BINARY_FORMAT", BinaryFormatEnumDef, g.ParameterOptions().NoQuotes()).
+		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+		OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
+		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+		OptionalTextAssignment("FILE_EXTENSION", g.ParameterOptions().SingleQuotes()).
+		OptionalBooleanAssignment("ENABLE_OCTAL", g.ParameterOptions()).
+		OptionalBooleanAssignment("ALLOW_DUPLICATE", g.ParameterOptions()).
+		OptionalBooleanAssignment("STRIP_OUTER_ARRAY", g.ParameterOptions()).
+		OptionalBooleanAssignment("STRIP_NULL_VALUES", g.ParameterOptions()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
+		OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
+		WithValidation(g.ConflictingFields, "IgnoreUtf8Errors", "ReplaceInvalidCharacters")
+}
+
+func avroFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
+	return qs.
+		OptionalEnumAssignment("COMPRESSION", AvroCompressionEnumDef, g.ParameterOptions().NoQuotes()).
+		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses())
+}
+
+func orcFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
+	return qs.
+		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses())
+}
+
+func parquetFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
+	return qs.
+		OptionalEnumAssignment("COMPRESSION", ParquetCompressionEnumDef, g.ParameterOptions().NoQuotes()).
+		OptionalBooleanAssignment("SNAPPY_COMPRESSION", g.ParameterOptions()).
+		OptionalBooleanAssignment("BINARY_AS_TEXT", g.ParameterOptions()).
+		OptionalBooleanAssignment("USE_LOGICAL_TYPE", g.ParameterOptions()).
+		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
+		OptionalBooleanAssignment("USE_VECTORIZED_SCANNER", g.ParameterOptions()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+		WithValidation(g.ConflictingFields, "Compression", "SnappyCompression")
+}
+
+func xmlFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
+	return qs.
+		OptionalEnumAssignment("COMPRESSION", XmlCompressionEnumDef, g.ParameterOptions().NoQuotes()).
+		OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
+		OptionalBooleanAssignment("PRESERVE_SPACE", g.ParameterOptions()).
+		OptionalBooleanAssignment("STRIP_OUTER_ELEMENT", g.ParameterOptions()).
+		OptionalBooleanAssignment("DISABLE_AUTO_CONVERT", g.ParameterOptions()).
+		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
+		OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
+		WithValidation(g.ConflictingFields, "IgnoreUtf8Errors", "ReplaceInvalidCharacters")
+}
+
+// fileFormatDef models the nested, per-type FILE_FORMAT = (TYPE = CSV, ...) options used for
+// embedding a file format directly into another object (e.g. CREATE/ALTER STAGE). Its structs
+// are anchored to generation via a helper struct on the FileFormats Describe operation, since
+// FileFormats itself only ever embeds them, but stages_def.go references "FileFormatOptions" by name.
 func fileFormatDef() *g.QueryStruct {
 	return g.NewQueryStruct("FileFormatOptions").
 		OptionalQueryStructField(
 			"CsvOptions",
-			g.NewQueryStruct("FileFormatCsvOptions").
-				SQLWithCustomFieldName("formatType", "TYPE = CSV").
-				OptionalEnumAssignment("COMPRESSION", CsvCompressionEnumDef, g.ParameterOptions().NoQuotes()).
-				OptionalQueryStructField("RecordDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("RECORD_DELIMITER =")).
-				OptionalQueryStructField("FieldDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_DELIMITER =")).
-				OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
-				OptionalTextAssignment("FILE_EXTENSION", g.ParameterOptions().SingleQuotes()).
-				OptionalBooleanAssignment("PARSE_HEADER", g.ParameterOptions()).
-				OptionalNumberAssignment("SKIP_HEADER", g.ParameterOptions()).
-				OptionalBooleanAssignment("SKIP_BLANK_LINES", g.ParameterOptions()).
-				OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
-				OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
-				OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
-				OptionalEnumAssignment("BINARY_FORMAT", BinaryFormatEnumDef, g.ParameterOptions().NoQuotes()).
-				OptionalQueryStructField("Escape", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE =")).
-				OptionalQueryStructField("EscapeUnenclosedField", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE_UNENCLOSED_FIELD =")).
-				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
-				OptionalQueryStructField("FieldOptionallyEnclosedBy", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_OPTIONALLY_ENCLOSED_BY =")).
-				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
-				OptionalBooleanAssignment("ERROR_ON_COLUMN_COUNT_MISMATCH", g.ParameterOptions()).
-				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				OptionalBooleanAssignment("EMPTY_FIELD_AS_NULL", g.ParameterOptions()).
-				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
-				OptionalEnumAssignment("ENCODING", CsvEncodingEnumDef, g.ParameterOptions().NoQuotes()).
-				WithValidation(g.ConflictingFields, "SkipHeader", "ParseHeader"),
+			csvFileFormatOptionFields(g.NewQueryStruct("FileFormatCsvOptions").SQLWithCustomFieldName("formatType", "TYPE = CSV")),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"JsonOptions",
-			g.NewQueryStruct("FileFormatJsonOptions").
-				SQLWithCustomFieldName("formatType", "TYPE = JSON").
-				OptionalEnumAssignment("COMPRESSION", JsonCompressionEnumDef, g.ParameterOptions().NoQuotes()).
-				OptionalQueryStructField("DateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
-				OptionalQueryStructField("TimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
-				OptionalQueryStructField("TimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
-				OptionalEnumAssignment("BINARY_FORMAT", BinaryFormatEnumDef, g.ParameterOptions().NoQuotes()).
-				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
-				OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
-				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
-				OptionalTextAssignment("FILE_EXTENSION", g.ParameterOptions().SingleQuotes()).
-				OptionalBooleanAssignment("ENABLE_OCTAL", g.ParameterOptions()).
-				OptionalBooleanAssignment("ALLOW_DUPLICATE", g.ParameterOptions()).
-				OptionalBooleanAssignment("STRIP_OUTER_ARRAY", g.ParameterOptions()).
-				OptionalBooleanAssignment("STRIP_NULL_VALUES", g.ParameterOptions()).
-				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
-				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
-				WithValidation(g.ConflictingFields, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
+			jsonFileFormatOptionFields(g.NewQueryStruct("FileFormatJsonOptions").SQLWithCustomFieldName("formatType", "TYPE = JSON")),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"AvroOptions",
-			g.NewQueryStruct("FileFormatAvroOptions").
-				SQLWithCustomFieldName("formatType", "TYPE = AVRO").
-				OptionalEnumAssignment("COMPRESSION", AvroCompressionEnumDef, g.ParameterOptions().NoQuotes()).
-				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
-				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
+			avroFileFormatOptionFields(g.NewQueryStruct("FileFormatAvroOptions").SQLWithCustomFieldName("formatType", "TYPE = AVRO")),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"OrcOptions",
-			g.NewQueryStruct("FileFormatOrcOptions").
-				SQLWithCustomFieldName("formatType", "TYPE = ORC").
-				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
-				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()),
+			orcFileFormatOptionFields(g.NewQueryStruct("FileFormatOrcOptions").SQLWithCustomFieldName("formatType", "TYPE = ORC")),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"ParquetOptions",
-			g.NewQueryStruct("FileFormatParquetOptions").
-				SQLWithCustomFieldName("formatType", "TYPE = PARQUET").
-				OptionalEnumAssignment("COMPRESSION", ParquetCompressionEnumDef, g.ParameterOptions().NoQuotes()).
-				OptionalBooleanAssignment("SNAPPY_COMPRESSION", g.ParameterOptions()).
-				OptionalBooleanAssignment("BINARY_AS_TEXT", g.ParameterOptions()).
-				OptionalBooleanAssignment("USE_LOGICAL_TYPE", g.ParameterOptions()).
-				OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
-				OptionalBooleanAssignment("USE_VECTORIZED_SCANNER", g.ParameterOptions()).
-				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
-				WithValidation(g.ConflictingFields, "Compression", "SnappyCompression"),
+			parquetFileFormatOptionFields(g.NewQueryStruct("FileFormatParquetOptions").SQLWithCustomFieldName("formatType", "TYPE = PARQUET")),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
 			"XmlOptions",
-			g.NewQueryStruct("FileFormatXmlOptions").
-				SQLWithCustomFieldName("formatType", "TYPE = XML").
-				OptionalEnumAssignment("COMPRESSION", XmlCompressionEnumDef, g.ParameterOptions().NoQuotes()).
-				OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
-				OptionalBooleanAssignment("PRESERVE_SPACE", g.ParameterOptions()).
-				OptionalBooleanAssignment("STRIP_OUTER_ELEMENT", g.ParameterOptions()).
-				OptionalBooleanAssignment("DISABLE_AUTO_CONVERT", g.ParameterOptions()).
-				OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-				OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
-				WithValidation(g.ConflictingFields, "IgnoreUtf8Errors", "ReplaceInvalidCharacters"),
+			xmlFileFormatOptionFields(g.NewQueryStruct("FileFormatXmlOptions").SQLWithCustomFieldName("formatType", "TYPE = XML")),
 			g.KeywordOptions(),
 		).
 		WithValidation(g.ConflictingFields, "CsvOptions", "JsonOptions", "AvroOptions", "OrcOptions", "ParquetOptions", "XmlOptions")
 }
 
-// fileFormatFlatOptionsDef models the flat, type-specific options shared by the standalone
-// CREATE FILE FORMAT / ALTER FILE FORMAT ... SET statements (unlike fileFormatDef(), whose
-// groups are nested for embedding as FILE_FORMAT = (TYPE = CSV, ...) inside other objects).
-func fileFormatFlatOptionsDef() *g.QueryStruct {
-	return g.NewQueryStruct("FileFormatObjectOptions").
+// createFileFormat builds the CREATE FILE FORMAT ... TYPE = <sqlType> struct shared shape for a single type.
+func createFileFormat(structName, sqlType string) *g.QueryStruct {
+	return g.NewQueryStruct(structName).
+		Create().
+		OrReplace().
+		SQL("FILE FORMAT").
+		IfNotExists().
+		Name().
+		SQLWithCustomFieldName("formatType", "TYPE = "+sqlType)
+}
+
+// createFileFormatWithFields applies the type-specific option fields to createFileFormat and appends
+// the comment field and name validation common to every Create<Type> operation.
+func createFileFormatWithFields(structName, sqlType string, typeFields func(*g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
+	return typeFields(createFileFormat(structName, sqlType)).
 		OptionalComment().
-		// CSV
-		OptionalAssignmentWithFieldName("COMPRESSION", CsvCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "CsvCompression").
-		OptionalQueryStructField("CsvRecordDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("RECORD_DELIMITER =")).
-		OptionalQueryStructField("CsvFieldDelimiter", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_DELIMITER =")).
-		OptionalAssignmentWithFieldName("MULTI_LINE", "*bool", g.ParameterOptions(), "CsvMultiLine").
-		OptionalAssignmentWithFieldName("FILE_EXTENSION", "*string", g.ParameterOptions().SingleQuotes(), "CsvFileExtension").
-		OptionalAssignmentWithFieldName("PARSE_HEADER", "*bool", g.ParameterOptions(), "CsvParseHeader").
-		OptionalAssignmentWithFieldName("SKIP_HEADER", "*int", g.ParameterOptions(), "CsvSkipHeader").
-		OptionalAssignmentWithFieldName("SKIP_BLANK_LINES", "*bool", g.ParameterOptions(), "CsvSkipBlankLines").
-		OptionalQueryStructField("CsvDateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
-		OptionalQueryStructField("CsvTimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
-		OptionalQueryStructField("CsvTimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
-		OptionalAssignmentWithFieldName("BINARY_FORMAT", BinaryFormatEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "CsvBinaryFormat").
-		OptionalQueryStructField("CsvEscape", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE =")).
-		OptionalQueryStructField("CsvEscapeUnenclosedField", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE_UNENCLOSED_FIELD =")).
-		OptionalAssignmentWithFieldName("TRIM_SPACE", "*bool", g.ParameterOptions(), "CsvTrimSpace").
-		OptionalQueryStructField("CsvFieldOptionallyEnclosedBy", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_OPTIONALLY_ENCLOSED_BY =")).
-		ListAssignmentWithFieldName("NULL_IF", "NullString", g.ParameterOptions().Parentheses(), "CsvNullIf").
-		OptionalAssignmentWithFieldName("ERROR_ON_COLUMN_COUNT_MISMATCH", "*bool", g.ParameterOptions(), "CsvErrorOnColumnCountMismatch").
-		OptionalAssignmentWithFieldName("REPLACE_INVALID_CHARACTERS", "*bool", g.ParameterOptions(), "CsvReplaceInvalidCharacters").
-		OptionalAssignmentWithFieldName("EMPTY_FIELD_AS_NULL", "*bool", g.ParameterOptions(), "CsvEmptyFieldAsNull").
-		OptionalAssignmentWithFieldName("SKIP_BYTE_ORDER_MARK", "*bool", g.ParameterOptions(), "CsvSkipByteOrderMark").
-		OptionalAssignmentWithFieldName("ENCODING", CsvEncodingEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "CsvEncoding").
-		// JSON
-		OptionalAssignmentWithFieldName("COMPRESSION", JsonCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "JsonCompression").
-		OptionalQueryStructField("JsonDateFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("DATE_FORMAT =")).
-		OptionalQueryStructField("JsonTimeFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIME_FORMAT =")).
-		OptionalQueryStructField("JsonTimestampFormat", stageFileFormatStringOrAuto(), g.ListOptions().NoParentheses().SQL("TIMESTAMP_FORMAT =")).
-		OptionalAssignmentWithFieldName("BINARY_FORMAT", BinaryFormatEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "JsonBinaryFormat").
-		OptionalAssignmentWithFieldName("TRIM_SPACE", "*bool", g.ParameterOptions(), "JsonTrimSpace").
-		OptionalAssignmentWithFieldName("MULTI_LINE", "*bool", g.ParameterOptions(), "JsonMultiLine").
-		ListAssignmentWithFieldName("NULL_IF", "NullString", g.ParameterOptions().Parentheses(), "JsonNullIf").
-		OptionalAssignmentWithFieldName("FILE_EXTENSION", "*string", g.ParameterOptions().SingleQuotes(), "JsonFileExtension").
-		OptionalAssignmentWithFieldName("ENABLE_OCTAL", "*bool", g.ParameterOptions(), "JsonEnableOctal").
-		OptionalAssignmentWithFieldName("ALLOW_DUPLICATE", "*bool", g.ParameterOptions(), "JsonAllowDuplicate").
-		OptionalAssignmentWithFieldName("STRIP_OUTER_ARRAY", "*bool", g.ParameterOptions(), "JsonStripOuterArray").
-		OptionalAssignmentWithFieldName("STRIP_NULL_VALUES", "*bool", g.ParameterOptions(), "JsonStripNullValues").
-		OptionalAssignmentWithFieldName("REPLACE_INVALID_CHARACTERS", "*bool", g.ParameterOptions(), "JsonReplaceInvalidCharacters").
-		OptionalAssignmentWithFieldName("IGNORE_UTF8_ERRORS", "*bool", g.ParameterOptions(), "JsonIgnoreUtf8Errors").
-		OptionalAssignmentWithFieldName("SKIP_BYTE_ORDER_MARK", "*bool", g.ParameterOptions(), "JsonSkipByteOrderMark").
-		// AVRO
-		OptionalAssignmentWithFieldName("COMPRESSION", AvroCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "AvroCompression").
-		OptionalAssignmentWithFieldName("TRIM_SPACE", "*bool", g.ParameterOptions(), "AvroTrimSpace").
-		OptionalAssignmentWithFieldName("REPLACE_INVALID_CHARACTERS", "*bool", g.ParameterOptions(), "AvroReplaceInvalidCharacters").
-		ListAssignmentWithFieldName("NULL_IF", "NullString", g.ParameterOptions().Parentheses(), "AvroNullIf").
-		// ORC
-		OptionalAssignmentWithFieldName("TRIM_SPACE", "*bool", g.ParameterOptions(), "OrcTrimSpace").
-		OptionalAssignmentWithFieldName("REPLACE_INVALID_CHARACTERS", "*bool", g.ParameterOptions(), "OrcReplaceInvalidCharacters").
-		ListAssignmentWithFieldName("NULL_IF", "NullString", g.ParameterOptions().Parentheses(), "OrcNullIf").
-		// PARQUET
-		OptionalAssignmentWithFieldName("COMPRESSION", ParquetCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "ParquetCompression").
-		OptionalAssignmentWithFieldName("SNAPPY_COMPRESSION", "*bool", g.ParameterOptions(), "ParquetSnappyCompression").
-		OptionalAssignmentWithFieldName("BINARY_AS_TEXT", "*bool", g.ParameterOptions(), "ParquetBinaryAsText").
-		OptionalAssignmentWithFieldName("USE_LOGICAL_TYPE", "*bool", g.ParameterOptions(), "ParquetUseLogicalType").
-		OptionalAssignmentWithFieldName("TRIM_SPACE", "*bool", g.ParameterOptions(), "ParquetTrimSpace").
-		OptionalAssignmentWithFieldName("USE_VECTORIZED_SCANNER", "*bool", g.ParameterOptions(), "ParquetUseVectorizedScanner").
-		OptionalAssignmentWithFieldName("REPLACE_INVALID_CHARACTERS", "*bool", g.ParameterOptions(), "ParquetReplaceInvalidCharacters").
-		ListAssignmentWithFieldName("NULL_IF", "NullString", g.ParameterOptions().Parentheses(), "ParquetNullIf").
-		// XML
-		OptionalAssignmentWithFieldName("COMPRESSION", XmlCompressionEnumDef.KindPtr(), g.ParameterOptions().NoQuotes(), "XmlCompression").
-		OptionalAssignmentWithFieldName("IGNORE_UTF8_ERRORS", "*bool", g.ParameterOptions(), "XmlIgnoreUtf8Errors").
-		OptionalAssignmentWithFieldName("PRESERVE_SPACE", "*bool", g.ParameterOptions(), "XmlPreserveSpace").
-		OptionalAssignmentWithFieldName("STRIP_OUTER_ELEMENT", "*bool", g.ParameterOptions(), "XmlStripOuterElement").
-		OptionalAssignmentWithFieldName("DISABLE_AUTO_CONVERT", "*bool", g.ParameterOptions(), "XmlDisableAutoConvert").
-		OptionalAssignmentWithFieldName("REPLACE_INVALID_CHARACTERS", "*bool", g.ParameterOptions(), "XmlReplaceInvalidCharacters").
-		OptionalAssignmentWithFieldName("SKIP_BYTE_ORDER_MARK", "*bool", g.ParameterOptions(), "XmlSkipByteOrderMark").
-		WithValidation(g.ConflictingFields, "CsvSkipHeader", "CsvParseHeader").
-		WithValidation(g.ConflictingFields, "JsonIgnoreUtf8Errors", "JsonReplaceInvalidCharacters").
-		WithValidation(g.ConflictingFields, "ParquetCompression", "ParquetSnappyCompression").
-		WithValidation(g.ConflictingFields, "XmlIgnoreUtf8Errors", "XmlReplaceInvalidCharacters").
-		WithAdditionalValidations()
+		WithValidation(g.ValidIdentifier, "name")
+}
+
+// alterFileFormatSetFields builds the SET (...) struct for a single type by applying its
+// type-specific option fields and appending the comment field common to every Alter<Type> operation.
+func alterFileFormatSetFields(structName string, typeFields func(*g.QueryStruct) *g.QueryStruct) *g.QueryStruct {
+	return typeFields(g.NewQueryStruct(structName)).OptionalComment()
+}
+
+// alterFileFormat builds the shared ALTER FILE FORMAT ... [ RENAME TO | SET (...) ] shape for a single type.
+func alterFileFormat(structName string, setFields *g.QueryStruct) *g.QueryStruct {
+	return g.NewQueryStruct(structName).
+		Alter().
+		SQL("FILE FORMAT").
+		IfExists().
+		Name().
+		RenameTo().
+		OptionalQueryStructField("Set", setFields, g.ListOptions().NoParentheses().NoComma().SQL("SET")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set")
 }
 
 var fileFormatsDef = g.NewInterface(
@@ -248,31 +231,65 @@ var fileFormatsDef = g.NewInterface(
 	"FileFormat",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
-	CreateOperation(
+	CustomOperation(
+		"CreateCsv",
 		"https://docs.snowflake.com/en/sql-reference/sql/create-file-format",
-		g.NewQueryStruct("CreateFileFormat").
-			Create().
-			OrReplace().
-			SQL("FILE FORMAT").
-			IfNotExists().
-			Name().
-			EnumAssignmentWithFieldName("TYPE", FileFormatTypeEnumDef, g.ParameterOptions().Required().NoQuotes(), "FileFormatType").
-			QueryStructField("FileFormatObjectOptions", fileFormatFlatOptionsDef(), g.ListOptions().NoParentheses().NoComma()).
-			OptionalComment().
-			WithValidation(g.ValidIdentifier, "name").
-			WithAdditionalValidations(),
+		createFileFormatWithFields("CreateCsvFileFormat", "CSV", csvFileFormatOptionFields),
 	).
-	AlterOperation(
+	CustomOperation(
+		"CreateJson",
+		"https://docs.snowflake.com/en/sql-reference/sql/create-file-format",
+		createFileFormatWithFields("CreateJsonFileFormat", "JSON", jsonFileFormatOptionFields),
+	).
+	CustomOperation(
+		"CreateAvro",
+		"https://docs.snowflake.com/en/sql-reference/sql/create-file-format",
+		createFileFormatWithFields("CreateAvroFileFormat", "AVRO", avroFileFormatOptionFields),
+	).
+	CustomOperation(
+		"CreateOrc",
+		"https://docs.snowflake.com/en/sql-reference/sql/create-file-format",
+		createFileFormatWithFields("CreateOrcFileFormat", "ORC", orcFileFormatOptionFields),
+	).
+	CustomOperation(
+		"CreateParquet",
+		"https://docs.snowflake.com/en/sql-reference/sql/create-file-format",
+		createFileFormatWithFields("CreateParquetFileFormat", "PARQUET", parquetFileFormatOptionFields),
+	).
+	CustomOperation(
+		"CreateXml",
+		"https://docs.snowflake.com/en/sql-reference/sql/create-file-format",
+		createFileFormatWithFields("CreateXmlFileFormat", "XML", xmlFileFormatOptionFields),
+	).
+	CustomOperation(
+		"AlterCsv",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-file-format",
-		g.NewQueryStruct("AlterFileFormat").
-			Alter().
-			SQL("FILE FORMAT").
-			IfExists().
-			Name().
-			RenameTo().
-			OptionalQueryStructField("Set", fileFormatFlatOptionsDef(), g.ListOptions().NoParentheses().NoComma().SQL("SET")).
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set"),
+		alterFileFormat("AlterCsvFileFormat", alterFileFormatSetFields("AlterCsvFileFormatSet", csvFileFormatOptionFields)),
+	).
+	CustomOperation(
+		"AlterJson",
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-file-format",
+		alterFileFormat("AlterJsonFileFormat", alterFileFormatSetFields("AlterJsonFileFormatSet", jsonFileFormatOptionFields)),
+	).
+	CustomOperation(
+		"AlterAvro",
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-file-format",
+		alterFileFormat("AlterAvroFileFormat", alterFileFormatSetFields("AlterAvroFileFormatSet", avroFileFormatOptionFields)),
+	).
+	CustomOperation(
+		"AlterOrc",
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-file-format",
+		alterFileFormat("AlterOrcFileFormat", alterFileFormatSetFields("AlterOrcFileFormatSet", orcFileFormatOptionFields)),
+	).
+	CustomOperation(
+		"AlterParquet",
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-file-format",
+		alterFileFormat("AlterParquetFileFormat", alterFileFormatSetFields("AlterParquetFileFormatSet", parquetFileFormatOptionFields)),
+	).
+	CustomOperation(
+		"AlterXml",
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-file-format",
+		alterFileFormat("AlterXmlFileFormat", alterFileFormatSetFields("AlterXmlFileFormatSet", xmlFileFormatOptionFields)),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-file-format",
@@ -316,22 +333,49 @@ var fileFormatsDef = g.NewInterface(
 			SQL("FILE FORMAT").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-		g.PlainStruct("FileFormatDetails").
-			Enum("Type", FileFormatTypeEnumDef).
-			Field("Options", "FileFormatObjectOptions"),
+		fileFormatDef(),
 	).
 	WithCustomInterfaceMethod(
-		"DescribeDetails",
-		"DescribeDetails returns the parsed, type-specific file format options.",
+		"DescribeCsvDetails",
+		"DescribeCsvDetails returns converted describe output for CSV file formats.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*FileFormatDetails", "error",
+		"*FileFormatCsvDetails", "error",
 	).
-	CustomOperation(
-		"DummyOperation",
-		"not available",
-		g.NewQueryStruct("FileFormatsDummyOperation").
-			OptionalQueryStructField("FileFormat", g.RemoveValidations(fileFormatDef()), g.ListOptions().Parentheses().SQL("FILE_FORMAT =")).
-			WithAdditionalValidations(),
+	WithCustomInterfaceMethod(
+		"DescribeJsonDetails",
+		"DescribeJsonDetails returns converted describe output for JSON file formats.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*FileFormatJsonDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAvroDetails",
+		"DescribeAvroDetails returns converted describe output for Avro file formats.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*FileFormatAvroDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeOrcDetails",
+		"DescribeOrcDetails returns converted describe output for ORC file formats.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*FileFormatOrcDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeParquetDetails",
+		"DescribeParquetDetails returns converted describe output for Parquet file formats.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*FileFormatParquetDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeXmlDetails",
+		"DescribeXmlDetails returns converted describe output for XML file formats.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*FileFormatXmlDetails", "error",
+	).
+	WithCustomInterfaceMethod(
+		"DescribeAllDetails",
+		"DescribeAllDetails returns parsed describe output for any file format type.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*FileFormatAllDetails", "error",
 	).
 	WithEnums(
 		FileFormatTypeEnumDef,

@@ -3,7 +3,6 @@
 package sdk
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -18,19 +17,25 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[XmlCompression]{"XmlCompression", AllXmlCompressions, ToXmlCompression})
 }
 
-func TestFileFormats_Create(t *testing.T) {
+func TestFileFormats_CreateCsv(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateFileFormatOptions
-	defaultOpts := func() *CreateFileFormatOptions {
-		return &CreateFileFormatOptions{
-			name:           id,
-			FileFormatType: FileFormatTypeCsv,
+	// Minimal valid CreateCsvFileFormatOptions
+	defaultOpts := func() *CreateCsvFileFormatOptions {
+		return &CreateCsvFileFormatOptions{
+			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateFileFormatOptions)(nil)
+		opts := (*CreateCsvFileFormatOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: conflicting fields for [opts.SkipHeader opts.ParseHeader]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SkipHeader = new(1)
+		opts.ParseHeader = new(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateCsvFileFormatOptions", "SkipHeader", "ParseHeader"))
 	})
 
 	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
@@ -39,47 +44,52 @@ func TestFileFormats_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: conflicting fields for [opts.FileFormatObjectOptions.CsvSkipHeader opts.FileFormatObjectOptions.CsvParseHeader]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.RecordDelimiter.Value opts.RecordDelimiter.None] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.FileFormatObjectOptions.CsvSkipHeader = Int(1)
-		opts.FileFormatObjectOptions.CsvParseHeader = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFileFormatOptions.FileFormatObjectOptions", "CsvSkipHeader", "CsvParseHeader"))
+		opts.RecordDelimiter = &StageFileFormatStringOrNone{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.RecordDelimiter", "Value", "None"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.FileFormatObjectOptions.JsonIgnoreUtf8Errors opts.FileFormatObjectOptions.JsonReplaceInvalidCharacters]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.FieldDelimiter.Value opts.FieldDelimiter.None] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeJson
-		opts.FileFormatObjectOptions.JsonIgnoreUtf8Errors = Bool(true)
-		opts.FileFormatObjectOptions.JsonReplaceInvalidCharacters = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFileFormatOptions.FileFormatObjectOptions", "JsonIgnoreUtf8Errors", "JsonReplaceInvalidCharacters"))
+		opts.FieldDelimiter = &StageFileFormatStringOrNone{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.FieldDelimiter", "Value", "None"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.FileFormatObjectOptions.ParquetCompression opts.FileFormatObjectOptions.ParquetSnappyCompression]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.DateFormat.Value opts.DateFormat.Auto] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeParquet
-		opts.FileFormatObjectOptions.ParquetCompression = Pointer(ParquetCompressionSnappy)
-		opts.FileFormatObjectOptions.ParquetSnappyCompression = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFileFormatOptions.FileFormatObjectOptions", "ParquetCompression", "ParquetSnappyCompression"))
+		opts.DateFormat = &StageFileFormatStringOrAuto{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.DateFormat", "Value", "Auto"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.FileFormatObjectOptions.XmlIgnoreUtf8Errors opts.FileFormatObjectOptions.XmlReplaceInvalidCharacters]", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.TimeFormat.Value opts.TimeFormat.Auto] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeXml
-		opts.FileFormatObjectOptions.XmlIgnoreUtf8Errors = Bool(true)
-		opts.FileFormatObjectOptions.XmlReplaceInvalidCharacters = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateFileFormatOptions.FileFormatObjectOptions", "XmlIgnoreUtf8Errors", "XmlReplaceInvalidCharacters"))
+		opts.TimeFormat = &StageFileFormatStringOrAuto{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.TimeFormat", "Value", "Auto"))
 	})
 
-	t.Run("validation: cannot set fields for a different type than TYPE", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.TimestampFormat.Value opts.TimestampFormat.Auto] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.FileFormatObjectOptions.JsonEnableOctal = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("cannot set %s fields when TYPE = %s", FileFormatTypeJson, FileFormatTypeCsv))
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.TimestampFormat", "Value", "Auto"))
 	})
 
-	t.Run("validation: exactly one field from [opts.FileFormatObjectOptions.CsvRecordDelimiter.Value opts.FileFormatObjectOptions.CsvRecordDelimiter.None] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Escape.Value opts.Escape.None] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.FileFormatObjectOptions.CsvRecordDelimiter = &StageFileFormatStringOrNone{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateFileFormatOptions.FileFormatObjectOptions.CsvRecordDelimiter", "Value", "None"))
+		opts.Escape = &StageFileFormatStringOrNone{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.Escape", "Value", "None"))
+	})
+
+	t.Run("validation: exactly one field from [opts.EscapeUnenclosedField.Value opts.EscapeUnenclosedField.None] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.EscapeUnenclosedField = &StageFileFormatStringOrNone{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.EscapeUnenclosedField", "Value", "None"))
+	})
+
+	t.Run("validation: exactly one field from [opts.FieldOptionallyEnclosedBy.Value opts.FieldOptionallyEnclosedBy.None] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateCsvFileFormatOptions.FieldOptionallyEnclosedBy", "Value", "None"))
 	})
 
 	t.Run("basic", func(t *testing.T) {
@@ -87,137 +97,47 @@ func TestFileFormats_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = CSV`, id.FullyQualifiedName())
 	})
 
-	t.Run("all options CSV", func(t *testing.T) {
+	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		opts.FileFormatObjectOptions = FileFormatObjectOptions{
-			CsvCompression:               Pointer(CsvCompressionBz2),
-			CsvRecordDelimiter:           &StageFileFormatStringOrNone{Value: String("-")},
-			CsvFieldDelimiter:            &StageFileFormatStringOrNone{Value: String(":")},
-			CsvMultiLine:                 Bool(true),
-			CsvFileExtension:             String("csv"),
-			CsvSkipHeader:                Int(5),
-			CsvSkipBlankLines:            Bool(true),
-			CsvDateFormat:                &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")},
-			CsvTimeFormat:                &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")},
-			CsvTimestampFormat:           &StageFileFormatStringOrAuto{Auto: Bool(true)},
-			CsvBinaryFormat:              Pointer(BinaryFormatUtf8),
-			CsvEscape:                    &StageFileFormatStringOrNone{Value: String("\\")},
-			CsvEscapeUnenclosedField:     &StageFileFormatStringOrNone{None: Bool(true)},
-			CsvTrimSpace:                 Bool(true),
-			CsvFieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{Value: String("\"")},
-			CsvNullIf: []NullString{
-				{"nul"},
-				{"nulll"},
-			},
-			CsvErrorOnColumnCountMismatch: Bool(true),
-			CsvReplaceInvalidCharacters:   Bool(true),
-			CsvEmptyFieldAsNull:           Bool(true),
-			CsvSkipByteOrderMark:          Bool(true),
-			CsvEncoding:                   Pointer(CsvEncodingIso2022kr),
-			Comment:                       String("some comment"),
-		}
-		opts.Comment = String("top level comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = CSV COMMENT = 'some comment' COMPRESSION = BZ2 RECORD_DELIMITER = '-' FIELD_DELIMITER = ':' MULTI_LINE = true FILE_EXTENSION = 'csv' SKIP_HEADER = 5 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = AUTO BINARY_FORMAT = UTF8 ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = NONE TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('nul', 'nulll') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = ISO2022KR COMMENT = 'top level comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options JSON", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeJson
-		opts.FileFormatObjectOptions = FileFormatObjectOptions{
-			JsonCompression:     Pointer(JsonCompressionBrotli),
-			JsonDateFormat:      &StageFileFormatStringOrAuto{Auto: Bool(true)},
-			JsonTimeFormat:      &StageFileFormatStringOrAuto{Auto: Bool(true)},
-			JsonTimestampFormat: &StageFileFormatStringOrAuto{Auto: Bool(true)},
-			JsonBinaryFormat:    Pointer(BinaryFormatHex),
-			JsonTrimSpace:       Bool(true),
-			JsonMultiLine:       Bool(true),
-			JsonNullIf: []NullString{
-				{"c1"},
-				{"c2"},
-			},
-			JsonFileExtension:            String("json"),
-			JsonEnableOctal:              Bool(true),
-			JsonAllowDuplicate:           Bool(true),
-			JsonStripOuterArray:          Bool(true),
-			JsonStripNullValues:          Bool(true),
-			JsonReplaceInvalidCharacters: Bool(true),
-			JsonSkipByteOrderMark:        Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = JSON COMPRESSION = BROTLI DATE_FORMAT = AUTO TIME_FORMAT = AUTO TIMESTAMP_FORMAT = AUTO BINARY_FORMAT = HEX TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('c1', 'c2') FILE_EXTENSION = 'json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = true`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options Avro", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeAvro
-		opts.FileFormatObjectOptions = FileFormatObjectOptions{
-			AvroCompression:              Pointer(AvroCompressionDeflate),
-			AvroTrimSpace:                Bool(true),
-			AvroReplaceInvalidCharacters: Bool(true),
-			AvroNullIf: []NullString{
-				{"nil"},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = AVRO COMPRESSION = DEFLATE TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options ORC", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeOrc
-		opts.FileFormatObjectOptions = FileFormatObjectOptions{
-			OrcTrimSpace:                Bool(true),
-			OrcReplaceInvalidCharacters: Bool(true),
-			OrcNullIf: []NullString{
-				{"nil"},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options Parquet", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeParquet
-		opts.FileFormatObjectOptions = FileFormatObjectOptions{
-			ParquetCompression:              Pointer(ParquetCompressionLzo),
-			ParquetBinaryAsText:             Bool(true),
-			ParquetUseLogicalType:           Bool(true),
-			ParquetTrimSpace:                Bool(true),
-			ParquetUseVectorizedScanner:     Bool(true),
-			ParquetReplaceInvalidCharacters: Bool(true),
-			ParquetNullIf: []NullString{
-				{"nil"},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = PARQUET COMPRESSION = LZO BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options XML", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FileFormatType = FileFormatTypeXml
-		opts.FileFormatObjectOptions = FileFormatObjectOptions{
-			XmlCompression:              Pointer(XmlCompressionGzip),
-			XmlPreserveSpace:            Bool(true),
-			XmlStripOuterElement:        Bool(true),
-			XmlDisableAutoConvert:       Bool(true),
-			XmlReplaceInvalidCharacters: Bool(true),
-			XmlSkipByteOrderMark:        Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = XML COMPRESSION = GZIP PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_AUTO_CONVERT = true REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = true`, id.FullyQualifiedName())
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(CsvCompressionGzip)
+		opts.RecordDelimiter = &StageFileFormatStringOrNone{Value: new("\\n")}
+		opts.FieldDelimiter = &StageFileFormatStringOrNone{Value: new(",")}
+		opts.MultiLine = new(true)
+		opts.FileExtension = new(".csv")
+		opts.SkipHeader = new(2)
+		opts.SkipBlankLines = new(true)
+		opts.DateFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")}
+		opts.TimeFormat = &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")}
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")}
+		opts.BinaryFormat = new(BinaryFormatHex)
+		opts.Escape = &StageFileFormatStringOrNone{Value: new("\\")}
+		opts.EscapeUnenclosedField = &StageFileFormatStringOrNone{Value: new("\\")}
+		opts.TrimSpace = new(true)
+		opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: new("\"")}
+		opts.NullIf = []NullString{{S: "NULL"}, {S: ""}}
+		opts.ErrorOnColumnCountMismatch = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.EmptyFieldAsNull = new(true)
+		opts.SkipByteOrderMark = new(true)
+		opts.Encoding = new(CsvEncodingUtf8)
+		opts.Comment = new("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = CSV COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8 COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 
-func TestFileFormats_Alter(t *testing.T) {
+func TestFileFormats_AlterCsv(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterFileFormatOptions
-	defaultOpts := func() *AlterFileFormatOptions {
-		return &AlterFileFormatOptions{
+	// Minimal valid AlterCsvFileFormatOptions
+	defaultOpts := func() *AlterCsvFileFormatOptions {
+		return &AlterCsvFileFormatOptions{
 			name: id,
 		}
 	}
 
 	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterFileFormatOptions)(nil)
+		opts := (*AlterCsvFileFormatOptions)(nil)
 		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
 	})
 
@@ -229,42 +149,657 @@ func TestFileFormats_Alter(t *testing.T) {
 
 	t.Run("validation: exactly one field from [opts.RenameTo opts.Set] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterFileFormatOptions", "RenameTo", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions", "RenameTo", "Set"))
 	})
 
-	t.Run("validation: conflicting fields for [opts.Set.CsvSkipHeader opts.Set.CsvParseHeader]", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.Set.SkipHeader opts.Set.ParseHeader]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &FileFormatObjectOptions{
-			CsvSkipHeader:  Int(1),
-			CsvParseHeader: Bool(true),
+		opts.Set = &AlterCsvFileFormatSet{
+			SkipHeader:  new(1),
+			ParseHeader: new(true),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterFileFormatOptions.Set", "CsvSkipHeader", "CsvParseHeader"))
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterCsvFileFormatOptions.Set", "SkipHeader", "ParseHeader"))
 	})
 
-	t.Run("validation: exactly one field from [opts.Set.CsvRecordDelimiter.Value opts.Set.CsvRecordDelimiter.None] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set.RecordDelimiter.Value opts.Set.RecordDelimiter.None] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Set = &FileFormatObjectOptions{
-			CsvRecordDelimiter: &StageFileFormatStringOrNone{},
+		opts.Set = &AlterCsvFileFormatSet{
+			RecordDelimiter: &StageFileFormatStringOrNone{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterFileFormatOptions.Set.CsvRecordDelimiter", "Value", "None"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.RecordDelimiter", "Value", "None"))
 	})
 
-	t.Run("rename", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set.FieldDelimiter.Value opts.Set.FieldDelimiter.None] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		newId := randomSchemaObjectIdentifier()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s RENAME TO %s`, id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Set = &FileFormatObjectOptions{
-			CsvCompression: Pointer(CsvCompressionGzip),
-			CsvSkipHeader:  Int(1),
-			Comment:        String("some comment"),
+		opts.Set = &AlterCsvFileFormatSet{
+			FieldDelimiter: &StageFileFormatStringOrNone{},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMMENT = 'some comment' COMPRESSION = GZIP SKIP_HEADER = 1`, id.FullyQualifiedName())
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.FieldDelimiter", "Value", "None"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.DateFormat.Value opts.Set.DateFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterCsvFileFormatSet{
+			DateFormat: &StageFileFormatStringOrAuto{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.DateFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.TimeFormat.Value opts.Set.TimeFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterCsvFileFormatSet{
+			TimeFormat: &StageFileFormatStringOrAuto{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.TimeFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.TimestampFormat.Value opts.Set.TimestampFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterCsvFileFormatSet{
+			TimestampFormat: &StageFileFormatStringOrAuto{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.TimestampFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.Escape.Value opts.Set.Escape.None] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterCsvFileFormatSet{
+			Escape: &StageFileFormatStringOrNone{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.Escape", "Value", "None"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.EscapeUnenclosedField.Value opts.Set.EscapeUnenclosedField.None] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterCsvFileFormatSet{
+			EscapeUnenclosedField: &StageFileFormatStringOrNone{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.EscapeUnenclosedField", "Value", "None"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.FieldOptionallyEnclosedBy.Value opts.Set.FieldOptionallyEnclosedBy.None] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterCsvFileFormatSet{
+			FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCsvFileFormatOptions.Set.FieldOptionallyEnclosedBy", "Value", "None"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
+		opts.RenameTo = &target
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s RENAME TO %s`, id.FullyQualifiedName(), target.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Set = &AlterCsvFileFormatSet{
+			Compression:                new(CsvCompressionGzip),
+			RecordDelimiter:            &StageFileFormatStringOrNone{Value: new("\\n")},
+			FieldDelimiter:             &StageFileFormatStringOrNone{Value: new(",")},
+			MultiLine:                  new(true),
+			FileExtension:              new(".csv"),
+			SkipHeader:                 new(2),
+			SkipBlankLines:             new(true),
+			DateFormat:                 &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+			TimeFormat:                 &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+			TimestampFormat:            &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+			BinaryFormat:               new(BinaryFormatHex),
+			Escape:                     &StageFileFormatStringOrNone{Value: new("\\")},
+			EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: new("\\")},
+			TrimSpace:                  new(true),
+			FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: new("\"")},
+			NullIf:                     []NullString{{S: "NULL"}, {S: ""}},
+			ErrorOnColumnCountMismatch: new(true),
+			ReplaceInvalidCharacters:   new(true),
+			EmptyFieldAsNull:           new(true),
+			SkipByteOrderMark:          new(true),
+			Encoding:                   new(CsvEncodingUtf8),
+			Comment:                    new("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8 COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_CreateJson(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid CreateJsonFileFormatOptions
+	defaultOpts := func() *CreateJsonFileFormatOptions {
+		return &CreateJsonFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateJsonFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: conflicting fields for [opts.IgnoreUtf8Errors opts.ReplaceInvalidCharacters]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IgnoreUtf8Errors = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateJsonFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.DateFormat.Value opts.DateFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.DateFormat = &StageFileFormatStringOrAuto{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateJsonFileFormatOptions.DateFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: exactly one field from [opts.TimeFormat.Value opts.TimeFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.TimeFormat = &StageFileFormatStringOrAuto{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateJsonFileFormatOptions.TimeFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: exactly one field from [opts.TimestampFormat.Value opts.TimestampFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateJsonFileFormatOptions.TimestampFormat", "Value", "Auto"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = JSON`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(JsonCompressionGzip)
+		opts.DateFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")}
+		opts.TimeFormat = &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")}
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")}
+		opts.BinaryFormat = new(BinaryFormatBase64)
+		opts.TrimSpace = new(true)
+		opts.MultiLine = new(true)
+		opts.NullIf = []NullString{{S: "NULL"}}
+		opts.FileExtension = new(".json")
+		opts.EnableOctal = new(true)
+		opts.AllowDuplicate = new(true)
+		opts.StripOuterArray = new(true)
+		opts.StripNullValues = new(true)
+		opts.IgnoreUtf8Errors = new(true)
+		opts.SkipByteOrderMark = new(true)
+		opts.Comment = new("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = JSON COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_AlterJson(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid AlterJsonFileFormatOptions
+	defaultOpts := func() *AlterJsonFileFormatOptions {
+		return &AlterJsonFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*AlterJsonFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.RenameTo opts.Set] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterJsonFileFormatOptions", "RenameTo", "Set"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.Set.IgnoreUtf8Errors opts.Set.ReplaceInvalidCharacters]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterJsonFileFormatSet{
+			IgnoreUtf8Errors:         new(true),
+			ReplaceInvalidCharacters: new(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterJsonFileFormatOptions.Set", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.DateFormat.Value opts.Set.DateFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterJsonFileFormatSet{
+			DateFormat: &StageFileFormatStringOrAuto{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterJsonFileFormatOptions.Set.DateFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.TimeFormat.Value opts.Set.TimeFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterJsonFileFormatSet{
+			TimeFormat: &StageFileFormatStringOrAuto{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterJsonFileFormatOptions.Set.TimeFormat", "Value", "Auto"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.TimestampFormat.Value opts.Set.TimestampFormat.Auto] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterJsonFileFormatSet{
+			TimestampFormat: &StageFileFormatStringOrAuto{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterJsonFileFormatOptions.Set.TimestampFormat", "Value", "Auto"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
+		opts.RenameTo = &target
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s RENAME TO %s`, id.FullyQualifiedName(), target.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Set = &AlterJsonFileFormatSet{
+			Compression:       new(JsonCompressionGzip),
+			DateFormat:        &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+			TimeFormat:        &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+			TimestampFormat:   &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+			BinaryFormat:      new(BinaryFormatBase64),
+			TrimSpace:         new(true),
+			MultiLine:         new(true),
+			NullIf:            []NullString{{S: "NULL"}},
+			FileExtension:     new(".json"),
+			EnableOctal:       new(true),
+			AllowDuplicate:    new(true),
+			StripOuterArray:   new(true),
+			StripNullValues:   new(true),
+			IgnoreUtf8Errors:  new(true),
+			SkipByteOrderMark: new(true),
+			Comment:           new("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_CreateAvro(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid CreateAvroFileFormatOptions
+	defaultOpts := func() *CreateAvroFileFormatOptions {
+		return &CreateAvroFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateAvroFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = AVRO`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(AvroCompressionGzip)
+		opts.TrimSpace = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.NullIf = []NullString{{S: "NULL"}, {S: ""}}
+		opts.Comment = new("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = AVRO COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_AlterAvro(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid AlterAvroFileFormatOptions
+	defaultOpts := func() *AlterAvroFileFormatOptions {
+		return &AlterAvroFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*AlterAvroFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.RenameTo opts.Set] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAvroFileFormatOptions", "RenameTo", "Set"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
+		opts.RenameTo = &target
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s RENAME TO %s`, id.FullyQualifiedName(), target.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Set = &AlterAvroFileFormatSet{
+			Compression:              new(AvroCompressionGzip),
+			TrimSpace:                new(true),
+			ReplaceInvalidCharacters: new(true),
+			NullIf:                   []NullString{{S: "NULL"}, {S: ""}},
+			Comment:                  new("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_CreateOrc(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid CreateOrcFileFormatOptions
+	defaultOpts := func() *CreateOrcFileFormatOptions {
+		return &CreateOrcFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateOrcFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = ORC`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.TrimSpace = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.NullIf = []NullString{{S: "NULL"}}
+		opts.Comment = new("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_AlterOrc(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid AlterOrcFileFormatOptions
+	defaultOpts := func() *AlterOrcFileFormatOptions {
+		return &AlterOrcFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*AlterOrcFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.RenameTo opts.Set] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOrcFileFormatOptions", "RenameTo", "Set"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
+		opts.RenameTo = &target
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s RENAME TO %s`, id.FullyQualifiedName(), target.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Set = &AlterOrcFileFormatSet{
+			TrimSpace:                new(true),
+			ReplaceInvalidCharacters: new(true),
+			NullIf:                   []NullString{{S: "NULL"}},
+			Comment:                  new("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_CreateParquet(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid CreateParquetFileFormatOptions
+	defaultOpts := func() *CreateParquetFileFormatOptions {
+		return &CreateParquetFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateParquetFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: conflicting fields for [opts.Compression opts.SnappyCompression]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Compression = new(ParquetCompressionSnappy)
+		opts.SnappyCompression = new(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateParquetFileFormatOptions", "Compression", "SnappyCompression"))
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = PARQUET`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(ParquetCompressionSnappy)
+		opts.BinaryAsText = new(true)
+		opts.UseLogicalType = new(true)
+		opts.TrimSpace = new(true)
+		opts.UseVectorizedScanner = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.NullIf = []NullString{{S: "NULL"}}
+		opts.Comment = new("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = PARQUET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_AlterParquet(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid AlterParquetFileFormatOptions
+	defaultOpts := func() *AlterParquetFileFormatOptions {
+		return &AlterParquetFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*AlterParquetFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.RenameTo opts.Set] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterParquetFileFormatOptions", "RenameTo", "Set"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.Set.Compression opts.Set.SnappyCompression]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterParquetFileFormatSet{
+			Compression:       new(ParquetCompressionSnappy),
+			SnappyCompression: new(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterParquetFileFormatOptions.Set", "Compression", "SnappyCompression"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
+		opts.RenameTo = &target
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s RENAME TO %s`, id.FullyQualifiedName(), target.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Set = &AlterParquetFileFormatSet{
+			Compression:              new(ParquetCompressionSnappy),
+			BinaryAsText:             new(true),
+			UseLogicalType:           new(true),
+			TrimSpace:                new(true),
+			UseVectorizedScanner:     new(true),
+			ReplaceInvalidCharacters: new(true),
+			NullIf:                   []NullString{{S: "NULL"}},
+			Comment:                  new("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_CreateXml(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid CreateXmlFileFormatOptions
+	defaultOpts := func() *CreateXmlFileFormatOptions {
+		return &CreateXmlFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateXmlFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: conflicting fields for [opts.IgnoreUtf8Errors opts.ReplaceInvalidCharacters]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IgnoreUtf8Errors = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateXmlFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = XML`, id.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(XmlCompressionGzip)
+		opts.IgnoreUtf8Errors = new(true)
+		opts.PreserveSpace = new(true)
+		opts.StripOuterElement = new(true)
+		opts.DisableAutoConvert = new(true)
+		opts.SkipByteOrderMark = new(true)
+		opts.Comment = new("some comment")
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = XML COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+}
+
+func TestFileFormats_AlterXml(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	// Minimal valid AlterXmlFileFormatOptions
+	defaultOpts := func() *AlterXmlFileFormatOptions {
+		return &AlterXmlFileFormatOptions{
+			name: id,
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*AlterXmlFileFormatOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptySchemaObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: exactly one field from [opts.RenameTo opts.Set] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterXmlFileFormatOptions", "RenameTo", "Set"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.Set.IgnoreUtf8Errors opts.Set.ReplaceInvalidCharacters]", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterXmlFileFormatSet{
+			IgnoreUtf8Errors:         new(true),
+			ReplaceInvalidCharacters: new(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterXmlFileFormatOptions.Set", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
+		opts.RenameTo = &target
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s RENAME TO %s`, id.FullyQualifiedName(), target.FullyQualifiedName())
+	})
+
+	t.Run("all options", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = new(true)
+		opts.Set = &AlterXmlFileFormatSet{
+			Compression:        new(XmlCompressionGzip),
+			IgnoreUtf8Errors:   new(true),
+			PreserveSpace:      new(true),
+			StripOuterElement:  new(true),
+			DisableAutoConvert: new(true),
+			SkipByteOrderMark:  new(true),
+			Comment:            new("some comment"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -295,7 +830,7 @@ func TestFileFormats_Drop(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP FILE FORMAT IF EXISTS %s`, id.FullyQualifiedName())
 	})
 }
@@ -318,9 +853,11 @@ func TestFileFormats_Show(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("name")}
-		opts.In = &In{Database: NewAccountObjectIdentifier("database-name")}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW FILE FORMATS LIKE 'name' IN DATABASE "database-name"`)
+		opts.Like = &Like{Pattern: new("some_pattern")}
+		opts.In = &In{
+			Schema: NewDatabaseObjectIdentifier("db", "schema"),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `SHOW FILE FORMATS LIKE 'some_pattern' IN SCHEMA "db"."schema"`)
 	})
 }
 
@@ -348,6 +885,6 @@ func TestFileFormats_Describe(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE FILE FORMAT %s`, id.FullyQualifiedName())
 	})
-}
 
-// dummy operation tests removed manually
+	// all options removed manually: DescribeFileFormatOptions has no fields beyond name
+}

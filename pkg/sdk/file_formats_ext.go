@@ -2,124 +2,11 @@ package sdk
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 )
-
-func (opts *DummyOperationFileFormatOptions) additionalValidations() error {
-	if valueSet(opts.FileFormat) {
-		return opts.FileFormat.validate()
-	}
-	return nil
-}
-
-func (opts *FileFormatObjectOptions) fieldsByType() map[FileFormatType][]any {
-	return map[FileFormatType][]any{
-		FileFormatTypeCsv: {
-			opts.CsvCompression,
-			opts.CsvRecordDelimiter,
-			opts.CsvFieldDelimiter,
-			opts.CsvMultiLine,
-			opts.CsvFileExtension,
-			opts.CsvParseHeader,
-			opts.CsvSkipHeader,
-			opts.CsvSkipBlankLines,
-			opts.CsvDateFormat,
-			opts.CsvTimeFormat,
-			opts.CsvTimestampFormat,
-			opts.CsvBinaryFormat,
-			opts.CsvEscape,
-			opts.CsvEscapeUnenclosedField,
-			opts.CsvTrimSpace,
-			opts.CsvFieldOptionallyEnclosedBy,
-			opts.CsvNullIf,
-			opts.CsvErrorOnColumnCountMismatch,
-			opts.CsvReplaceInvalidCharacters,
-			opts.CsvEmptyFieldAsNull,
-			opts.CsvSkipByteOrderMark,
-			opts.CsvEncoding,
-		},
-		FileFormatTypeJson: {
-			opts.JsonCompression,
-			opts.JsonDateFormat,
-			opts.JsonTimeFormat,
-			opts.JsonTimestampFormat,
-			opts.JsonBinaryFormat,
-			opts.JsonTrimSpace,
-			opts.JsonMultiLine,
-			opts.JsonNullIf,
-			opts.JsonFileExtension,
-			opts.JsonEnableOctal,
-			opts.JsonAllowDuplicate,
-			opts.JsonStripOuterArray,
-			opts.JsonStripNullValues,
-			opts.JsonReplaceInvalidCharacters,
-			opts.JsonIgnoreUtf8Errors,
-			opts.JsonSkipByteOrderMark,
-		},
-		FileFormatTypeAvro: {
-			opts.AvroCompression,
-			opts.AvroTrimSpace,
-			opts.AvroReplaceInvalidCharacters,
-			opts.AvroNullIf,
-		},
-		FileFormatTypeOrc: {
-			opts.OrcTrimSpace,
-			opts.OrcReplaceInvalidCharacters,
-			opts.OrcNullIf,
-		},
-		FileFormatTypeParquet: {
-			opts.ParquetCompression,
-			opts.ParquetSnappyCompression,
-			opts.ParquetBinaryAsText,
-			opts.ParquetUseLogicalType,
-			opts.ParquetTrimSpace,
-			opts.ParquetUseVectorizedScanner,
-			opts.ParquetReplaceInvalidCharacters,
-			opts.ParquetNullIf,
-		},
-		FileFormatTypeXml: {
-			opts.XmlCompression,
-			opts.XmlIgnoreUtf8Errors,
-			opts.XmlPreserveSpace,
-			opts.XmlStripOuterElement,
-			opts.XmlDisableAutoConvert,
-			opts.XmlReplaceInvalidCharacters,
-			opts.XmlSkipByteOrderMark,
-		},
-	}
-}
-
-// additionalValidations ensures fields belonging to more than one file format type are never set at once,
-// e.g. setting both a Csv* and a Json* field in the same FileFormatObjectOptions (used by both Create and Alter Set).
-func (opts *FileFormatObjectOptions) additionalValidations() error {
-	typesWithFieldsSet := 0
-	for _, fields := range opts.fieldsByType() {
-		if anyValueSet(fields...) {
-			typesWithFieldsSet++
-		}
-	}
-	if typesWithFieldsSet > 1 {
-		return fmt.Errorf("cannot set options for more than one file format type at once")
-	}
-	return nil
-}
-
-// additionalValidations ensures only the fields matching FileFormatType are set on Create.
-func (opts *CreateFileFormatOptions) additionalValidations() error {
-	fields := opts.FileFormatObjectOptions.fieldsByType()
-	for formatType, typeFields := range fields {
-		if formatType == opts.FileFormatType {
-			continue
-		}
-		if anyValueSet(typeFields...) {
-			return fmt.Errorf("cannot set %s fields when TYPE = %s", formatType, opts.FileFormatType)
-		}
-	}
-	return nil
-}
 
 func (opts FileFormatOptions) validate() error {
 	var errs []error
@@ -204,14 +91,622 @@ func (opts FileFormatOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-// DescribeDetails returns the DESCRIBE FILE FORMAT output parsed into typed, per-file-format-type options.
-func (v *fileFormats) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error) {
+// FileFormatCsvDetails holds the structured output of DESCRIBE FILE FORMAT for CSV file formats.
+type FileFormatCsvDetails struct {
+	Id                         SchemaObjectIdentifier
+	Compression                *CsvCompression
+	RecordDelimiter            *StageFileFormatStringOrNone
+	FieldDelimiter             *StageFileFormatStringOrNone
+	FileExtension              *string
+	SkipHeader                 *int
+	ParseHeader                *bool
+	SkipBlankLines             *bool
+	DateFormat                 *StageFileFormatStringOrAuto
+	TimeFormat                 *StageFileFormatStringOrAuto
+	TimestampFormat            *StageFileFormatStringOrAuto
+	BinaryFormat               *BinaryFormat
+	Escape                     *StageFileFormatStringOrNone
+	EscapeUnenclosedField      *StageFileFormatStringOrNone
+	TrimSpace                  *bool
+	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone
+	NullIf                     []NullString
+	ErrorOnColumnCountMismatch *bool
+	ReplaceInvalidCharacters   *bool
+	EmptyFieldAsNull           *bool
+	SkipByteOrderMark          *bool
+	Encoding                   *CsvEncoding
+}
+
+func (d *FileFormatCsvDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+// FileFormatJsonDetails holds the structured output of DESCRIBE FILE FORMAT for JSON file formats.
+type FileFormatJsonDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *JsonCompression
+	DateFormat               *StageFileFormatStringOrAuto
+	TimeFormat               *StageFileFormatStringOrAuto
+	TimestampFormat          *StageFileFormatStringOrAuto
+	BinaryFormat             *BinaryFormat
+	TrimSpace                *bool
+	MultiLine                *bool
+	NullIf                   []NullString
+	FileExtension            *string
+	EnableOctal              *bool
+	AllowDuplicate           *bool
+	StripOuterArray          *bool
+	StripNullValues          *bool
+	ReplaceInvalidCharacters *bool
+	IgnoreUtf8Errors         *bool
+	SkipByteOrderMark        *bool
+}
+
+func (d *FileFormatJsonDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+// FileFormatAvroDetails holds the structured output of DESCRIBE FILE FORMAT for Avro file formats.
+type FileFormatAvroDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *AvroCompression
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+func (d *FileFormatAvroDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+// FileFormatOrcDetails holds the structured output of DESCRIBE FILE FORMAT for ORC file formats.
+type FileFormatOrcDetails struct {
+	Id                       SchemaObjectIdentifier
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+func (d *FileFormatOrcDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+// FileFormatParquetDetails holds the structured output of DESCRIBE FILE FORMAT for Parquet file formats.
+type FileFormatParquetDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *ParquetCompression
+	TrimSpace                *bool
+	BinaryAsText             *bool
+	UseLogicalType           *bool
+	UseVectorizedScanner     *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+func (d *FileFormatParquetDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+// FileFormatXmlDetails holds the structured output of DESCRIBE FILE FORMAT for XML file formats.
+type FileFormatXmlDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *XmlCompression
+	IgnoreUtf8Errors         *bool
+	PreserveSpace            *bool
+	StripOuterElement        *bool
+	DisableAutoConvert       *bool
+	ReplaceInvalidCharacters *bool
+	SkipByteOrderMark        *bool
+}
+
+func (d *FileFormatXmlDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+// DescribeCsvDetails fetches and parses describe output for a CSV file format.
+func (v *fileFormats) DescribeCsvDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatCsvDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+	return parseFileFormatCsvDetails(properties, id)
+}
 
-	details := &FileFormatDetails{}
+// DescribeJsonDetails fetches and parses describe output for a JSON file format.
+func (v *fileFormats) DescribeJsonDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatJsonDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseFileFormatJsonDetails(properties, id)
+}
+
+// DescribeAvroDetails fetches and parses describe output for an Avro file format.
+func (v *fileFormats) DescribeAvroDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatAvroDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseFileFormatAvroDetails(properties, id)
+}
+
+// DescribeOrcDetails fetches and parses describe output for an ORC file format.
+func (v *fileFormats) DescribeOrcDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatOrcDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseFileFormatOrcDetails(properties, id)
+}
+
+// DescribeParquetDetails fetches and parses describe output for a Parquet file format.
+func (v *fileFormats) DescribeParquetDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatParquetDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseFileFormatParquetDetails(properties, id)
+}
+
+// DescribeXmlDetails fetches and parses describe output for an XML file format.
+func (v *fileFormats) DescribeXmlDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatXmlDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseFileFormatXmlDetails(properties, id)
+}
+
+func parseFileFormatCsvDetails(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatCsvDetails, error) {
+	details := &FileFormatCsvDetails{Id: id}
+	var errs []error
+	for _, p := range properties {
+		if p.Value == "" {
+			continue
+		}
+		v := p.Value
+		switch p.Name {
+		case "RECORD_DELIMITER":
+			details.RecordDelimiter = &StageFileFormatStringOrNone{Value: &v}
+		case "FIELD_DELIMITER":
+			details.FieldDelimiter = &StageFileFormatStringOrNone{Value: &v}
+		case "FILE_EXTENSION":
+			details.FileExtension = &v
+		case "SKIP_HEADER":
+			i, err := strconv.Atoi(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_HEADER value "%s" to int: %w`, v, err))
+			} else {
+				details.SkipHeader = &i
+			}
+		case "PARSE_HEADER":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast PARSE_HEADER value "%s" to bool: %w`, v, err))
+			} else {
+				details.ParseHeader = &b
+			}
+		case "DATE_FORMAT":
+			details.DateFormat = &StageFileFormatStringOrAuto{Value: &v}
+		case "TIME_FORMAT":
+			details.TimeFormat = &StageFileFormatStringOrAuto{Value: &v}
+		case "TIMESTAMP_FORMAT":
+			details.TimestampFormat = &StageFileFormatStringOrAuto{Value: &v}
+		case "BINARY_FORMAT":
+			bf := BinaryFormat(v)
+			details.BinaryFormat = &bf
+		case "ESCAPE":
+			details.Escape = &StageFileFormatStringOrNone{Value: &v}
+		case "ESCAPE_UNENCLOSED_FIELD":
+			details.EscapeUnenclosedField = &StageFileFormatStringOrNone{Value: &v}
+		case "TRIM_SPACE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+			} else {
+				details.TrimSpace = &b
+			}
+		case "FIELD_OPTIONALLY_ENCLOSED_BY":
+			details.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: &v}
+		case "NULL_IF":
+			details.NullIf = parseNullIfProperty(v)
+		case "COMPRESSION":
+			comp := CsvCompression(v)
+			details.Compression = &comp
+		case "ERROR_ON_COLUMN_COUNT_MISMATCH":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast ERROR_ON_COLUMN_COUNT_MISMATCH value "%s" to bool: %w`, v, err))
+			} else {
+				details.ErrorOnColumnCountMismatch = &b
+			}
+		case "SKIP_BLANK_LINES":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BLANK_LINES value "%s" to bool: %w`, v, err))
+			} else {
+				details.SkipBlankLines = &b
+			}
+		case "REPLACE_INVALID_CHARACTERS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+			} else {
+				details.ReplaceInvalidCharacters = &b
+			}
+		case "EMPTY_FIELD_AS_NULL":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast EMPTY_FIELD_AS_NULL value "%s" to bool: %w`, v, err))
+			} else {
+				details.EmptyFieldAsNull = &b
+			}
+		case "SKIP_BYTE_ORDER_MARK":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err))
+			} else {
+				details.SkipByteOrderMark = &b
+			}
+		case "ENCODING":
+			enc := CsvEncoding(v)
+			details.Encoding = &enc
+		}
+	}
+	return details, errors.Join(errs...)
+}
+
+func parseFileFormatJsonDetails(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatJsonDetails, error) {
+	details := &FileFormatJsonDetails{Id: id}
+	var errs []error
+	for _, p := range properties {
+		if p.Value == "" {
+			continue
+		}
+		v := p.Value
+		switch p.Name {
+		case "FILE_EXTENSION":
+			details.FileExtension = &v
+		case "DATE_FORMAT":
+			details.DateFormat = &StageFileFormatStringOrAuto{Value: &v}
+		case "TIME_FORMAT":
+			details.TimeFormat = &StageFileFormatStringOrAuto{Value: &v}
+		case "TIMESTAMP_FORMAT":
+			details.TimestampFormat = &StageFileFormatStringOrAuto{Value: &v}
+		case "BINARY_FORMAT":
+			bf := BinaryFormat(v)
+			details.BinaryFormat = &bf
+		case "TRIM_SPACE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+			} else {
+				details.TrimSpace = &b
+			}
+		case "MULTI_LINE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast MULTI_LINE value "%s" to bool: %w`, v, err))
+			} else {
+				details.MultiLine = &b
+			}
+		case "NULL_IF":
+			details.NullIf = parseNullIfProperty(v)
+		case "COMPRESSION":
+			comp := JsonCompression(v)
+			details.Compression = &comp
+		case "ENABLE_OCTAL":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast ENABLE_OCTAL value "%s" to bool: %w`, v, err))
+			} else {
+				details.EnableOctal = &b
+			}
+		case "ALLOW_DUPLICATE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast ALLOW_DUPLICATE value "%s" to bool: %w`, v, err))
+			} else {
+				details.AllowDuplicate = &b
+			}
+		case "STRIP_OUTER_ARRAY":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast STRIP_OUTER_ARRAY value "%s" to bool: %w`, v, err))
+			} else {
+				details.StripOuterArray = &b
+			}
+		case "STRIP_NULL_VALUES":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast STRIP_NULL_VALUES value "%s" to bool: %w`, v, err))
+			} else {
+				details.StripNullValues = &b
+			}
+		case "IGNORE_UTF8_ERRORS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, v, err))
+			} else {
+				details.IgnoreUtf8Errors = &b
+			}
+		case "REPLACE_INVALID_CHARACTERS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+			} else {
+				details.ReplaceInvalidCharacters = &b
+			}
+		case "SKIP_BYTE_ORDER_MARK":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err))
+			} else {
+				details.SkipByteOrderMark = &b
+			}
+		}
+	}
+	return details, errors.Join(errs...)
+}
+
+func parseFileFormatAvroDetails(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatAvroDetails, error) {
+	details := &FileFormatAvroDetails{Id: id}
+	var errs []error
+	for _, p := range properties {
+		if p.Value == "" {
+			continue
+		}
+		v := p.Value
+		switch p.Name {
+		case "TRIM_SPACE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+			} else {
+				details.TrimSpace = &b
+			}
+		case "NULL_IF":
+			details.NullIf = parseNullIfProperty(v)
+		case "COMPRESSION":
+			comp := AvroCompression(v)
+			details.Compression = &comp
+		case "REPLACE_INVALID_CHARACTERS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+			} else {
+				details.ReplaceInvalidCharacters = &b
+			}
+		}
+	}
+	return details, errors.Join(errs...)
+}
+
+func parseFileFormatOrcDetails(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatOrcDetails, error) {
+	details := &FileFormatOrcDetails{Id: id}
+	var errs []error
+	for _, p := range properties {
+		if p.Value == "" {
+			continue
+		}
+		v := p.Value
+		switch p.Name {
+		case "TRIM_SPACE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+			} else {
+				details.TrimSpace = &b
+			}
+		case "NULL_IF":
+			details.NullIf = parseNullIfProperty(v)
+		case "REPLACE_INVALID_CHARACTERS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+			} else {
+				details.ReplaceInvalidCharacters = &b
+			}
+		}
+	}
+	return details, errors.Join(errs...)
+}
+
+func parseFileFormatParquetDetails(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatParquetDetails, error) {
+	details := &FileFormatParquetDetails{Id: id}
+	var errs []error
+	for _, p := range properties {
+		if p.Value == "" {
+			continue
+		}
+		v := p.Value
+		switch p.Name {
+		case "TRIM_SPACE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+			} else {
+				details.TrimSpace = &b
+			}
+		case "NULL_IF":
+			details.NullIf = parseNullIfProperty(v)
+		case "COMPRESSION":
+			comp := ParquetCompression(v)
+			details.Compression = &comp
+		case "BINARY_AS_TEXT":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast BINARY_AS_TEXT value "%s" to bool: %w`, v, err))
+			} else {
+				details.BinaryAsText = &b
+			}
+		case "USE_LOGICAL_TYPE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast USE_LOGICAL_TYPE value "%s" to bool: %w`, v, err))
+			} else {
+				details.UseLogicalType = &b
+			}
+		case "USE_VECTORIZED_SCANNER":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast USE_VECTORIZED_SCANNER value "%s" to bool: %w`, v, err))
+			} else {
+				details.UseVectorizedScanner = &b
+			}
+		case "REPLACE_INVALID_CHARACTERS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+			} else {
+				details.ReplaceInvalidCharacters = &b
+			}
+		}
+	}
+	return details, errors.Join(errs...)
+}
+
+func parseFileFormatXmlDetails(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatXmlDetails, error) {
+	details := &FileFormatXmlDetails{Id: id}
+	var errs []error
+	for _, p := range properties {
+		if p.Value == "" {
+			continue
+		}
+		v := p.Value
+		switch p.Name {
+		case "COMPRESSION":
+			comp := XmlCompression(v)
+			details.Compression = &comp
+		case "IGNORE_UTF8_ERRORS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, v, err))
+			} else {
+				details.IgnoreUtf8Errors = &b
+			}
+		case "PRESERVE_SPACE":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast PRESERVE_SPACE value "%s" to bool: %w`, v, err))
+			} else {
+				details.PreserveSpace = &b
+			}
+		case "STRIP_OUTER_ELEMENT":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast STRIP_OUTER_ELEMENT value "%s" to bool: %w`, v, err))
+			} else {
+				details.StripOuterElement = &b
+			}
+		case "DISABLE_AUTO_CONVERT":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast DISABLE_AUTO_CONVERT value "%s" to bool: %w`, v, err))
+			} else {
+				details.DisableAutoConvert = &b
+			}
+		case "REPLACE_INVALID_CHARACTERS":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+			} else {
+				details.ReplaceInvalidCharacters = &b
+			}
+		case "SKIP_BYTE_ORDER_MARK":
+			b, err := strconv.ParseBool(v)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err))
+			} else {
+				details.SkipByteOrderMark = &b
+			}
+		}
+	}
+	return details, errors.Join(errs...)
+}
+
+// FileFormatAllDetails holds the output of DESCRIBE FILE FORMAT for any file format type.
+// Fields that do not apply to the described type are zero-valued.
+type FileFormatAllDetails struct {
+	Id                              SchemaObjectIdentifier
+	Type                            FileFormatType
+	CsvCompression                  *CsvCompression
+	CsvRecordDelimiter              *StageFileFormatStringOrNone
+	CsvFieldDelimiter               *StageFileFormatStringOrNone
+	CsvFileExtension                *string
+	CsvSkipHeader                   *int
+	CsvParseHeader                  *bool
+	CsvSkipBlankLines               *bool
+	CsvDateFormat                   *StageFileFormatStringOrAuto
+	CsvTimeFormat                   *StageFileFormatStringOrAuto
+	CsvTimestampFormat              *StageFileFormatStringOrAuto
+	CsvBinaryFormat                 *BinaryFormat
+	CsvEscape                       *StageFileFormatStringOrNone
+	CsvEscapeUnenclosedField        *StageFileFormatStringOrNone
+	CsvTrimSpace                    *bool
+	CsvFieldOptionallyEnclosedBy    *StageFileFormatStringOrNone
+	CsvNullIf                       []NullString
+	CsvErrorOnColumnCountMismatch   *bool
+	CsvReplaceInvalidCharacters     *bool
+	CsvEmptyFieldAsNull             *bool
+	CsvSkipByteOrderMark            *bool
+	CsvEncoding                     *CsvEncoding
+	JsonCompression                 *JsonCompression
+	JsonDateFormat                  *StageFileFormatStringOrAuto
+	JsonTimeFormat                  *StageFileFormatStringOrAuto
+	JsonTimestampFormat             *StageFileFormatStringOrAuto
+	JsonBinaryFormat                *BinaryFormat
+	JsonTrimSpace                   *bool
+	JsonMultiLine                   *bool
+	JsonNullIf                      []NullString
+	JsonFileExtension               *string
+	JsonEnableOctal                 *bool
+	JsonAllowDuplicate              *bool
+	JsonStripOuterArray             *bool
+	JsonStripNullValues             *bool
+	JsonReplaceInvalidCharacters    *bool
+	JsonIgnoreUtf8Errors            *bool
+	JsonSkipByteOrderMark           *bool
+	AvroCompression                 *AvroCompression
+	AvroTrimSpace                   *bool
+	AvroReplaceInvalidCharacters    *bool
+	AvroNullIf                      []NullString
+	OrcTrimSpace                    *bool
+	OrcReplaceInvalidCharacters     *bool
+	OrcNullIf                       []NullString
+	ParquetCompression              *ParquetCompression
+	ParquetTrimSpace                *bool
+	ParquetBinaryAsText             *bool
+	ParquetUseLogicalType           *bool
+	ParquetUseVectorizedScanner     *bool
+	ParquetReplaceInvalidCharacters *bool
+	ParquetNullIf                   []NullString
+	XmlCompression                  *XmlCompression
+	XmlIgnoreUtf8Errors             *bool
+	XmlPreserveSpace                *bool
+	XmlStripOuterElement            *bool
+	XmlDisableAutoConvert           *bool
+	XmlReplaceInvalidCharacters     *bool
+	XmlSkipByteOrderMark            *bool
+}
+
+func (d *FileFormatAllDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+// DescribeAllDetails fetches and parses describe output for any file format type.
+func (v *fileFormats) DescribeAllDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatAllDetails, error) {
+	properties, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return parseFileFormatAllDetails(properties, id)
+}
+
+func parseFileFormatAllDetails(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatAllDetails, error) {
+	details := &FileFormatAllDetails{Id: id}
+	var errs []error
+
 	for _, p := range properties {
 		if p.Name == "TYPE" {
 			formatType, err := ToFileFormatType(p.Value)
@@ -232,82 +727,90 @@ func (v *fileFormats) DescribeDetails(ctx context.Context, id SchemaObjectIdenti
 			v := p.Value
 			switch p.Name {
 			case "RECORD_DELIMITER":
-				details.Options.CsvRecordDelimiter = &StageFileFormatStringOrNone{Value: &v}
+				details.CsvRecordDelimiter = &StageFileFormatStringOrNone{Value: &v}
 			case "FIELD_DELIMITER":
-				details.Options.CsvFieldDelimiter = &StageFileFormatStringOrNone{Value: &v}
+				details.CsvFieldDelimiter = &StageFileFormatStringOrNone{Value: &v}
 			case "FILE_EXTENSION":
-				details.Options.CsvFileExtension = &v
+				details.CsvFileExtension = &v
 			case "SKIP_HEADER":
 				i, err := strconv.Atoi(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast SKIP_HEADER value "%s" to int: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast SKIP_HEADER value "%s" to int: %w`, v, err))
+				} else {
+					details.CsvSkipHeader = &i
 				}
-				details.Options.CsvSkipHeader = &i
 			case "PARSE_HEADER":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast PARSE_HEADER value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast PARSE_HEADER value "%s" to bool: %w`, v, err))
+				} else {
+					details.CsvParseHeader = &b
 				}
-				details.Options.CsvParseHeader = &b
 			case "DATE_FORMAT":
-				details.Options.CsvDateFormat = &StageFileFormatStringOrAuto{Value: &v}
+				details.CsvDateFormat = &StageFileFormatStringOrAuto{Value: &v}
 			case "TIME_FORMAT":
-				details.Options.CsvTimeFormat = &StageFileFormatStringOrAuto{Value: &v}
+				details.CsvTimeFormat = &StageFileFormatStringOrAuto{Value: &v}
 			case "TIMESTAMP_FORMAT":
-				details.Options.CsvTimestampFormat = &StageFileFormatStringOrAuto{Value: &v}
+				details.CsvTimestampFormat = &StageFileFormatStringOrAuto{Value: &v}
 			case "BINARY_FORMAT":
 				bf := BinaryFormat(v)
-				details.Options.CsvBinaryFormat = &bf
+				details.CsvBinaryFormat = &bf
 			case "ESCAPE":
-				details.Options.CsvEscape = &StageFileFormatStringOrNone{Value: &v}
+				details.CsvEscape = &StageFileFormatStringOrNone{Value: &v}
 			case "ESCAPE_UNENCLOSED_FIELD":
-				details.Options.CsvEscapeUnenclosedField = &StageFileFormatStringOrNone{Value: &v}
+				details.CsvEscapeUnenclosedField = &StageFileFormatStringOrNone{Value: &v}
 			case "TRIM_SPACE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+				} else {
+					details.CsvTrimSpace = &b
 				}
-				details.Options.CsvTrimSpace = &b
 			case "FIELD_OPTIONALLY_ENCLOSED_BY":
-				details.Options.CsvFieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: &v}
+				details.CsvFieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: &v}
 			case "NULL_IF":
-				details.Options.CsvNullIf = parseNullIfProperty(v)
+				details.CsvNullIf = parseNullIfProperty(v)
 			case "COMPRESSION":
 				comp := CsvCompression(v)
-				details.Options.CsvCompression = &comp
+				details.CsvCompression = &comp
 			case "ERROR_ON_COLUMN_COUNT_MISMATCH":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast ERROR_ON_COLUMN_COUNT_MISMATCH value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast ERROR_ON_COLUMN_COUNT_MISMATCH value "%s" to bool: %w`, v, err))
+				} else {
+					details.CsvErrorOnColumnCountMismatch = &b
 				}
-				details.Options.CsvErrorOnColumnCountMismatch = &b
 			case "SKIP_BLANK_LINES":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast SKIP_BLANK_LINES value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast SKIP_BLANK_LINES value "%s" to bool: %w`, v, err))
+				} else {
+					details.CsvSkipBlankLines = &b
 				}
-				details.Options.CsvSkipBlankLines = &b
 			case "REPLACE_INVALID_CHARACTERS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+				} else {
+					details.CsvReplaceInvalidCharacters = &b
 				}
-				details.Options.CsvReplaceInvalidCharacters = &b
 			case "EMPTY_FIELD_AS_NULL":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast EMPTY_FIELD_AS_NULL value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast EMPTY_FIELD_AS_NULL value "%s" to bool: %w`, v, err))
+				} else {
+					details.CsvEmptyFieldAsNull = &b
 				}
-				details.Options.CsvEmptyFieldAsNull = &b
 			case "SKIP_BYTE_ORDER_MARK":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err))
+				} else {
+					details.CsvSkipByteOrderMark = &b
 				}
-				details.Options.CsvSkipByteOrderMark = &b
 			case "ENCODING":
 				enc := CsvEncoding(v)
-				details.Options.CsvEncoding = &enc
+				details.CsvEncoding = &enc
 			}
 		}
 	case FileFormatTypeJson:
@@ -318,75 +821,84 @@ func (v *fileFormats) DescribeDetails(ctx context.Context, id SchemaObjectIdenti
 			v := p.Value
 			switch p.Name {
 			case "FILE_EXTENSION":
-				details.Options.JsonFileExtension = &v
+				details.JsonFileExtension = &v
 			case "DATE_FORMAT":
-				details.Options.JsonDateFormat = &StageFileFormatStringOrAuto{Value: &v}
+				details.JsonDateFormat = &StageFileFormatStringOrAuto{Value: &v}
 			case "TIME_FORMAT":
-				details.Options.JsonTimeFormat = &StageFileFormatStringOrAuto{Value: &v}
+				details.JsonTimeFormat = &StageFileFormatStringOrAuto{Value: &v}
 			case "TIMESTAMP_FORMAT":
-				details.Options.JsonTimestampFormat = &StageFileFormatStringOrAuto{Value: &v}
+				details.JsonTimestampFormat = &StageFileFormatStringOrAuto{Value: &v}
 			case "BINARY_FORMAT":
 				bf := BinaryFormat(v)
-				details.Options.JsonBinaryFormat = &bf
+				details.JsonBinaryFormat = &bf
 			case "TRIM_SPACE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonTrimSpace = &b
 				}
-				details.Options.JsonTrimSpace = &b
 			case "MULTI_LINE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast MULTI_LINE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast MULTI_LINE value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonMultiLine = &b
 				}
-				details.Options.JsonMultiLine = &b
 			case "NULL_IF":
-				details.Options.JsonNullIf = parseNullIfProperty(v)
+				details.JsonNullIf = parseNullIfProperty(v)
 			case "COMPRESSION":
 				comp := JsonCompression(v)
-				details.Options.JsonCompression = &comp
+				details.JsonCompression = &comp
 			case "ENABLE_OCTAL":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast ENABLE_OCTAL value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast ENABLE_OCTAL value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonEnableOctal = &b
 				}
-				details.Options.JsonEnableOctal = &b
 			case "ALLOW_DUPLICATE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast ALLOW_DUPLICATE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast ALLOW_DUPLICATE value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonAllowDuplicate = &b
 				}
-				details.Options.JsonAllowDuplicate = &b
 			case "STRIP_OUTER_ARRAY":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast STRIP_OUTER_ARRAY value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast STRIP_OUTER_ARRAY value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonStripOuterArray = &b
 				}
-				details.Options.JsonStripOuterArray = &b
 			case "STRIP_NULL_VALUES":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast STRIP_NULL_VALUES value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast STRIP_NULL_VALUES value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonStripNullValues = &b
 				}
-				details.Options.JsonStripNullValues = &b
 			case "IGNORE_UTF8_ERRORS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonIgnoreUtf8Errors = &b
 				}
-				details.Options.JsonIgnoreUtf8Errors = &b
 			case "REPLACE_INVALID_CHARACTERS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonReplaceInvalidCharacters = &b
 				}
-				details.Options.JsonReplaceInvalidCharacters = &b
 			case "SKIP_BYTE_ORDER_MARK":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err))
+				} else {
+					details.JsonSkipByteOrderMark = &b
 				}
-				details.Options.JsonSkipByteOrderMark = &b
 			}
 		}
 	case FileFormatTypeAvro:
@@ -399,20 +911,22 @@ func (v *fileFormats) DescribeDetails(ctx context.Context, id SchemaObjectIdenti
 			case "TRIM_SPACE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+				} else {
+					details.AvroTrimSpace = &b
 				}
-				details.Options.AvroTrimSpace = &b
 			case "NULL_IF":
-				details.Options.AvroNullIf = parseNullIfProperty(v)
+				details.AvroNullIf = parseNullIfProperty(v)
 			case "COMPRESSION":
 				comp := AvroCompression(v)
-				details.Options.AvroCompression = &comp
+				details.AvroCompression = &comp
 			case "REPLACE_INVALID_CHARACTERS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+				} else {
+					details.AvroReplaceInvalidCharacters = &b
 				}
-				details.Options.AvroReplaceInvalidCharacters = &b
 			}
 		}
 	case FileFormatTypeOrc:
@@ -425,17 +939,19 @@ func (v *fileFormats) DescribeDetails(ctx context.Context, id SchemaObjectIdenti
 			case "TRIM_SPACE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+				} else {
+					details.OrcTrimSpace = &b
 				}
-				details.Options.OrcTrimSpace = &b
 			case "NULL_IF":
-				details.Options.OrcNullIf = parseNullIfProperty(v)
+				details.OrcNullIf = parseNullIfProperty(v)
 			case "REPLACE_INVALID_CHARACTERS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+				} else {
+					details.OrcReplaceInvalidCharacters = &b
 				}
-				details.Options.OrcReplaceInvalidCharacters = &b
 			}
 		}
 	case FileFormatTypeParquet:
@@ -448,38 +964,43 @@ func (v *fileFormats) DescribeDetails(ctx context.Context, id SchemaObjectIdenti
 			case "TRIM_SPACE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, v, err))
+				} else {
+					details.ParquetTrimSpace = &b
 				}
-				details.Options.ParquetTrimSpace = &b
 			case "NULL_IF":
-				details.Options.ParquetNullIf = parseNullIfProperty(v)
+				details.ParquetNullIf = parseNullIfProperty(v)
 			case "COMPRESSION":
 				comp := ParquetCompression(v)
-				details.Options.ParquetCompression = &comp
+				details.ParquetCompression = &comp
 			case "BINARY_AS_TEXT":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast BINARY_AS_TEXT value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast BINARY_AS_TEXT value "%s" to bool: %w`, v, err))
+				} else {
+					details.ParquetBinaryAsText = &b
 				}
-				details.Options.ParquetBinaryAsText = &b
 			case "USE_LOGICAL_TYPE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast USE_LOGICAL_TYPE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast USE_LOGICAL_TYPE value "%s" to bool: %w`, v, err))
+				} else {
+					details.ParquetUseLogicalType = &b
 				}
-				details.Options.ParquetUseLogicalType = &b
 			case "USE_VECTORIZED_SCANNER":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast USE_VECTORIZED_SCANNER value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast USE_VECTORIZED_SCANNER value "%s" to bool: %w`, v, err))
+				} else {
+					details.ParquetUseVectorizedScanner = &b
 				}
-				details.Options.ParquetUseVectorizedScanner = &b
 			case "REPLACE_INVALID_CHARACTERS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+				} else {
+					details.ParquetReplaceInvalidCharacters = &b
 				}
-				details.Options.ParquetReplaceInvalidCharacters = &b
 			}
 		}
 	case FileFormatTypeXml:
@@ -491,190 +1012,65 @@ func (v *fileFormats) DescribeDetails(ctx context.Context, id SchemaObjectIdenti
 			switch p.Name {
 			case "COMPRESSION":
 				comp := XmlCompression(v)
-				details.Options.XmlCompression = &comp
+				details.XmlCompression = &comp
 			case "IGNORE_UTF8_ERRORS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, v, err))
+				} else {
+					details.XmlIgnoreUtf8Errors = &b
 				}
-				details.Options.XmlIgnoreUtf8Errors = &b
 			case "PRESERVE_SPACE":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast PRESERVE_SPACE value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast PRESERVE_SPACE value "%s" to bool: %w`, v, err))
+				} else {
+					details.XmlPreserveSpace = &b
 				}
-				details.Options.XmlPreserveSpace = &b
 			case "STRIP_OUTER_ELEMENT":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast STRIP_OUTER_ELEMENT value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast STRIP_OUTER_ELEMENT value "%s" to bool: %w`, v, err))
+				} else {
+					details.XmlStripOuterElement = &b
 				}
-				details.Options.XmlStripOuterElement = &b
 			case "DISABLE_AUTO_CONVERT":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast DISABLE_AUTO_CONVERT value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast DISABLE_AUTO_CONVERT value "%s" to bool: %w`, v, err))
+				} else {
+					details.XmlDisableAutoConvert = &b
 				}
-				details.Options.XmlDisableAutoConvert = &b
 			case "REPLACE_INVALID_CHARACTERS":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, v, err))
+				} else {
+					details.XmlReplaceInvalidCharacters = &b
 				}
-				details.Options.XmlReplaceInvalidCharacters = &b
 			case "SKIP_BYTE_ORDER_MARK":
 				b, err := strconv.ParseBool(v)
 				if err != nil {
-					return nil, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err)
+					errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, v, err))
+				} else {
+					details.XmlSkipByteOrderMark = &b
 				}
-				details.Options.XmlSkipByteOrderMark = &b
 			}
 		}
 	default:
 		return nil, fmt.Errorf("describe did not return a recognized file format type")
 	}
 
-	return details, nil
+	return details, errors.Join(errs...)
 }
 
 func parseNullIfProperty(v string) []NullString {
 	nullIf := []NullString{}
-	for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
+	for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
 		if s == "" {
 			continue
 		}
 		nullIf = append(nullIf, NullString{s})
 	}
 	return nullIf
-}
-
-// showFileFormatsOptionsResult mirrors the JSON shape of the SHOW FILE FORMATS format_options column.
-type showFileFormatsOptionsResult struct {
-	Type                       string   `json:"TYPE"`
-	RecordDelimiter            string   `json:"RECORD_DELIMITER"`
-	FieldDelimiter             string   `json:"FIELD_DELIMITER"`
-	FileExtension              string   `json:"FILE_EXTENSION"`
-	SkipHeader                 int      `json:"SKIP_HEADER"`
-	ParseHeader                bool     `json:"PARSE_HEADER"`
-	DateFormat                 string   `json:"DATE_FORMAT"`
-	TimeFormat                 string   `json:"TIME_FORMAT"`
-	TimestampFormat            string   `json:"TIMESTAMP_FORMAT"`
-	BinaryFormat               string   `json:"BINARY_FORMAT"`
-	Escape                     string   `json:"ESCAPE"`
-	EscapeUnenclosedField      string   `json:"ESCAPE_UNENCLOSED_FIELD"`
-	TrimSpace                  bool     `json:"TRIM_SPACE"`
-	FieldOptionallyEnclosedBy  string   `json:"FIELD_OPTIONALLY_ENCLOSED_BY"`
-	NullIf                     []string `json:"NULL_IF"`
-	Compression                string   `json:"COMPRESSION"`
-	ErrorOnColumnCountMismatch bool     `json:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
-	SkipBlankLines             bool     `json:"SKIP_BLANK_LINES"`
-	ReplaceInvalidCharacters   bool     `json:"REPLACE_INVALID_CHARACTERS"`
-	EmptyFieldAsNull           bool     `json:"EMPTY_FIELD_AS_NULL"`
-	SkipByteOrderMark          bool     `json:"SKIP_BYTE_ORDER_MARK"`
-	Encoding                   string   `json:"ENCODING"`
-	MultiLine                  bool     `json:"MULTI_LINE"`
-	EnableOctal                bool     `json:"ENABLE_OCTAL"`
-	AllowDuplicate             bool     `json:"ALLOW_DUPLICATE"`
-	StripOuterArray            bool     `json:"STRIP_OUTER_ARRAY"`
-	StripNullValues            bool     `json:"STRIP_NULL_VALUES"`
-	IgnoreUTF8Errors           bool     `json:"IGNORE_UTF8_ERRORS"`
-	BinaryAsText               bool     `json:"BINARY_AS_TEXT"`
-	UseLogicalType             bool     `json:"USE_LOGICAL_TYPE"`
-	UseVectorizedScanner       bool     `json:"USE_VECTORIZED_SCANNER"`
-	PreserveSpace              bool     `json:"PRESERVE_SPACE"`
-	StripOuterElement          bool     `json:"STRIP_OUTER_ELEMENT"`
-	DisableAutoConvert         bool     `json:"DISABLE_AUTO_CONVERT"`
-	SnappyCompression          bool     `json:"SNAPPY_COMPRESSION"`
-}
-
-// fileFormatObjectOptionsFromShowResult parses the JSON blob returned in the SHOW FILE FORMATS
-// format_options column into the typed, per-file-format-type FileFormatObjectOptions.
-func fileFormatObjectOptionsFromShowResult(formatType FileFormatType, raw string) (*FileFormatObjectOptions, error) {
-	var input showFileFormatsOptionsResult
-	if err := json.Unmarshal([]byte(raw), &input); err != nil {
-		return nil, fmt.Errorf("cannot parse format options: %w", err)
-	}
-
-	nullIf := make([]NullString, len(input.NullIf))
-	for i, s := range input.NullIf {
-		nullIf[i] = NullString{s}
-	}
-
-	options := &FileFormatObjectOptions{}
-	switch formatType {
-	case FileFormatTypeCsv:
-		compression := CsvCompression(input.Compression)
-		binaryFormat := BinaryFormat(input.BinaryFormat)
-		encoding := CsvEncoding(input.Encoding)
-		options.CsvCompression = &compression
-		options.CsvRecordDelimiter = &StageFileFormatStringOrNone{Value: &input.RecordDelimiter}
-		options.CsvFieldDelimiter = &StageFileFormatStringOrNone{Value: &input.FieldDelimiter}
-		options.CsvFileExtension = &input.FileExtension
-		options.CsvParseHeader = &input.ParseHeader
-		options.CsvSkipHeader = &input.SkipHeader
-		options.CsvSkipBlankLines = &input.SkipBlankLines
-		options.CsvDateFormat = &StageFileFormatStringOrAuto{Value: &input.DateFormat}
-		options.CsvTimeFormat = &StageFileFormatStringOrAuto{Value: &input.TimeFormat}
-		options.CsvTimestampFormat = &StageFileFormatStringOrAuto{Value: &input.TimestampFormat}
-		options.CsvBinaryFormat = &binaryFormat
-		options.CsvEscape = &StageFileFormatStringOrNone{Value: &input.Escape}
-		options.CsvEscapeUnenclosedField = &StageFileFormatStringOrNone{Value: &input.EscapeUnenclosedField}
-		options.CsvTrimSpace = &input.TrimSpace
-		options.CsvFieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: &input.FieldOptionallyEnclosedBy}
-		options.CsvNullIf = nullIf
-		options.CsvErrorOnColumnCountMismatch = &input.ErrorOnColumnCountMismatch
-		options.CsvReplaceInvalidCharacters = &input.ReplaceInvalidCharacters
-		options.CsvEmptyFieldAsNull = &input.EmptyFieldAsNull
-		options.CsvSkipByteOrderMark = &input.SkipByteOrderMark
-		options.CsvEncoding = &encoding
-	case FileFormatTypeJson:
-		compression := JsonCompression(input.Compression)
-		binaryFormat := BinaryFormat(input.BinaryFormat)
-		options.JsonCompression = &compression
-		options.JsonDateFormat = &StageFileFormatStringOrAuto{Value: &input.DateFormat}
-		options.JsonTimeFormat = &StageFileFormatStringOrAuto{Value: &input.TimeFormat}
-		options.JsonTimestampFormat = &StageFileFormatStringOrAuto{Value: &input.TimestampFormat}
-		options.JsonBinaryFormat = &binaryFormat
-		options.JsonTrimSpace = &input.TrimSpace
-		options.JsonMultiLine = &input.MultiLine
-		options.JsonNullIf = nullIf
-		options.JsonFileExtension = &input.FileExtension
-		options.JsonEnableOctal = &input.EnableOctal
-		options.JsonAllowDuplicate = &input.AllowDuplicate
-		options.JsonStripOuterArray = &input.StripOuterArray
-		options.JsonStripNullValues = &input.StripNullValues
-		options.JsonReplaceInvalidCharacters = &input.ReplaceInvalidCharacters
-		options.JsonIgnoreUtf8Errors = &input.IgnoreUTF8Errors
-		options.JsonSkipByteOrderMark = &input.SkipByteOrderMark
-	case FileFormatTypeAvro:
-		compression := AvroCompression(input.Compression)
-		options.AvroCompression = &compression
-		options.AvroTrimSpace = &input.TrimSpace
-		options.AvroReplaceInvalidCharacters = &input.ReplaceInvalidCharacters
-		options.AvroNullIf = nullIf
-	case FileFormatTypeOrc:
-		options.OrcTrimSpace = &input.TrimSpace
-		options.OrcReplaceInvalidCharacters = &input.ReplaceInvalidCharacters
-		options.OrcNullIf = nullIf
-	case FileFormatTypeParquet:
-		compression := ParquetCompression(input.Compression)
-		options.ParquetCompression = &compression
-		options.ParquetSnappyCompression = &input.SnappyCompression
-		options.ParquetBinaryAsText = &input.BinaryAsText
-		options.ParquetUseLogicalType = &input.UseLogicalType
-		options.ParquetTrimSpace = &input.TrimSpace
-		options.ParquetUseVectorizedScanner = &input.UseVectorizedScanner
-		options.ParquetReplaceInvalidCharacters = &input.ReplaceInvalidCharacters
-		options.ParquetNullIf = nullIf
-	case FileFormatTypeXml:
-		compression := XmlCompression(input.Compression)
-		options.XmlCompression = &compression
-		options.XmlIgnoreUtf8Errors = &input.IgnoreUTF8Errors
-		options.XmlPreserveSpace = &input.PreserveSpace
-		options.XmlStripOuterElement = &input.StripOuterElement
-		options.XmlDisableAutoConvert = &input.DisableAutoConvert
-		options.XmlReplaceInvalidCharacters = &input.ReplaceInvalidCharacters
-		options.XmlSkipByteOrderMark = &input.SkipByteOrderMark
-	}
-	return options, nil
 }

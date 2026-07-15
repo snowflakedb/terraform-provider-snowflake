@@ -18,12 +18,62 @@ type fileFormats struct {
 	client *Client
 }
 
-func (v *fileFormats) Create(ctx context.Context, request *CreateFileFormatRequest) error {
+func (v *fileFormats) CreateCsv(ctx context.Context, request *CreateCsvFileFormatRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *fileFormats) Alter(ctx context.Context, request *AlterFileFormatRequest) error {
+func (v *fileFormats) CreateJson(ctx context.Context, request *CreateJsonFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) CreateAvro(ctx context.Context, request *CreateAvroFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) CreateOrc(ctx context.Context, request *CreateOrcFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) CreateParquet(ctx context.Context, request *CreateParquetFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) CreateXml(ctx context.Context, request *CreateXmlFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) AlterCsv(ctx context.Context, request *AlterCsvFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) AlterJson(ctx context.Context, request *AlterJsonFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) AlterAvro(ctx context.Context, request *AlterAvroFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) AlterOrc(ctx context.Context, request *AlterOrcFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) AlterParquet(ctx context.Context, request *AlterParquetFileFormatRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *fileFormats) AlterXml(ctx context.Context, request *AlterXmlFileFormatRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -72,264 +122,375 @@ func (v *fileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (
 	return convertRows[descFileFormatsDbRow, FileFormatProperty](rows)
 }
 
-func (v *fileFormats) DummyOperation(ctx context.Context, request *DummyOperationFileFormatRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (r *CreateFileFormatRequest) toOpts() *CreateFileFormatOptions {
-	opts := &CreateFileFormatOptions{
-		OrReplace:      r.OrReplace,
-		IfNotExists:    r.IfNotExists,
-		name:           r.name,
-		FileFormatType: r.FileFormatType,
-		Comment:        r.Comment,
+func (r *CreateCsvFileFormatRequest) toOpts() *CreateCsvFileFormatOptions {
+	opts := &CreateCsvFileFormatOptions{
+		OrReplace:                  r.OrReplace,
+		IfNotExists:                r.IfNotExists,
+		name:                       r.name,
+		Compression:                r.Compression,
+		MultiLine:                  r.MultiLine,
+		FileExtension:              r.FileExtension,
+		ParseHeader:                r.ParseHeader,
+		SkipHeader:                 r.SkipHeader,
+		SkipBlankLines:             r.SkipBlankLines,
+		BinaryFormat:               r.BinaryFormat,
+		TrimSpace:                  r.TrimSpace,
+		NullIf:                     r.NullIf,
+		ErrorOnColumnCountMismatch: r.ErrorOnColumnCountMismatch,
+		ReplaceInvalidCharacters:   r.ReplaceInvalidCharacters,
+		EmptyFieldAsNull:           r.EmptyFieldAsNull,
+		SkipByteOrderMark:          r.SkipByteOrderMark,
+		Encoding:                   r.Encoding,
+		Comment:                    r.Comment,
 	}
-	opts.FileFormatObjectOptions = FileFormatObjectOptions{
-		Comment:                         r.FileFormatObjectOptions.Comment,
-		CsvCompression:                  r.FileFormatObjectOptions.CsvCompression,
-		CsvMultiLine:                    r.FileFormatObjectOptions.CsvMultiLine,
-		CsvFileExtension:                r.FileFormatObjectOptions.CsvFileExtension,
-		CsvParseHeader:                  r.FileFormatObjectOptions.CsvParseHeader,
-		CsvSkipHeader:                   r.FileFormatObjectOptions.CsvSkipHeader,
-		CsvSkipBlankLines:               r.FileFormatObjectOptions.CsvSkipBlankLines,
-		CsvBinaryFormat:                 r.FileFormatObjectOptions.CsvBinaryFormat,
-		CsvTrimSpace:                    r.FileFormatObjectOptions.CsvTrimSpace,
-		CsvNullIf:                       r.FileFormatObjectOptions.CsvNullIf,
-		CsvErrorOnColumnCountMismatch:   r.FileFormatObjectOptions.CsvErrorOnColumnCountMismatch,
-		CsvReplaceInvalidCharacters:     r.FileFormatObjectOptions.CsvReplaceInvalidCharacters,
-		CsvEmptyFieldAsNull:             r.FileFormatObjectOptions.CsvEmptyFieldAsNull,
-		CsvSkipByteOrderMark:            r.FileFormatObjectOptions.CsvSkipByteOrderMark,
-		CsvEncoding:                     r.FileFormatObjectOptions.CsvEncoding,
-		JsonCompression:                 r.FileFormatObjectOptions.JsonCompression,
-		JsonBinaryFormat:                r.FileFormatObjectOptions.JsonBinaryFormat,
-		JsonTrimSpace:                   r.FileFormatObjectOptions.JsonTrimSpace,
-		JsonMultiLine:                   r.FileFormatObjectOptions.JsonMultiLine,
-		JsonNullIf:                      r.FileFormatObjectOptions.JsonNullIf,
-		JsonFileExtension:               r.FileFormatObjectOptions.JsonFileExtension,
-		JsonEnableOctal:                 r.FileFormatObjectOptions.JsonEnableOctal,
-		JsonAllowDuplicate:              r.FileFormatObjectOptions.JsonAllowDuplicate,
-		JsonStripOuterArray:             r.FileFormatObjectOptions.JsonStripOuterArray,
-		JsonStripNullValues:             r.FileFormatObjectOptions.JsonStripNullValues,
-		JsonReplaceInvalidCharacters:    r.FileFormatObjectOptions.JsonReplaceInvalidCharacters,
-		JsonIgnoreUtf8Errors:            r.FileFormatObjectOptions.JsonIgnoreUtf8Errors,
-		JsonSkipByteOrderMark:           r.FileFormatObjectOptions.JsonSkipByteOrderMark,
-		AvroCompression:                 r.FileFormatObjectOptions.AvroCompression,
-		AvroTrimSpace:                   r.FileFormatObjectOptions.AvroTrimSpace,
-		AvroReplaceInvalidCharacters:    r.FileFormatObjectOptions.AvroReplaceInvalidCharacters,
-		AvroNullIf:                      r.FileFormatObjectOptions.AvroNullIf,
-		OrcTrimSpace:                    r.FileFormatObjectOptions.OrcTrimSpace,
-		OrcReplaceInvalidCharacters:     r.FileFormatObjectOptions.OrcReplaceInvalidCharacters,
-		OrcNullIf:                       r.FileFormatObjectOptions.OrcNullIf,
-		ParquetCompression:              r.FileFormatObjectOptions.ParquetCompression,
-		ParquetSnappyCompression:        r.FileFormatObjectOptions.ParquetSnappyCompression,
-		ParquetBinaryAsText:             r.FileFormatObjectOptions.ParquetBinaryAsText,
-		ParquetUseLogicalType:           r.FileFormatObjectOptions.ParquetUseLogicalType,
-		ParquetTrimSpace:                r.FileFormatObjectOptions.ParquetTrimSpace,
-		ParquetUseVectorizedScanner:     r.FileFormatObjectOptions.ParquetUseVectorizedScanner,
-		ParquetReplaceInvalidCharacters: r.FileFormatObjectOptions.ParquetReplaceInvalidCharacters,
-		ParquetNullIf:                   r.FileFormatObjectOptions.ParquetNullIf,
-		XmlCompression:                  r.FileFormatObjectOptions.XmlCompression,
-		XmlIgnoreUtf8Errors:             r.FileFormatObjectOptions.XmlIgnoreUtf8Errors,
-		XmlPreserveSpace:                r.FileFormatObjectOptions.XmlPreserveSpace,
-		XmlStripOuterElement:            r.FileFormatObjectOptions.XmlStripOuterElement,
-		XmlDisableAutoConvert:           r.FileFormatObjectOptions.XmlDisableAutoConvert,
-		XmlReplaceInvalidCharacters:     r.FileFormatObjectOptions.XmlReplaceInvalidCharacters,
-		XmlSkipByteOrderMark:            r.FileFormatObjectOptions.XmlSkipByteOrderMark,
-	}
-	if r.FileFormatObjectOptions.CsvRecordDelimiter != nil {
-		opts.FileFormatObjectOptions.CsvRecordDelimiter = &StageFileFormatStringOrNone{
-			Value: r.FileFormatObjectOptions.CsvRecordDelimiter.Value,
-			None:  r.FileFormatObjectOptions.CsvRecordDelimiter.None,
+	if r.RecordDelimiter != nil {
+		opts.RecordDelimiter = &StageFileFormatStringOrNone{
+			Value: r.RecordDelimiter.Value,
+			None:  r.RecordDelimiter.None,
 		}
 	}
-	if r.FileFormatObjectOptions.CsvFieldDelimiter != nil {
-		opts.FileFormatObjectOptions.CsvFieldDelimiter = &StageFileFormatStringOrNone{
-			Value: r.FileFormatObjectOptions.CsvFieldDelimiter.Value,
-			None:  r.FileFormatObjectOptions.CsvFieldDelimiter.None,
+	if r.FieldDelimiter != nil {
+		opts.FieldDelimiter = &StageFileFormatStringOrNone{
+			Value: r.FieldDelimiter.Value,
+			None:  r.FieldDelimiter.None,
 		}
 	}
-	if r.FileFormatObjectOptions.CsvDateFormat != nil {
-		opts.FileFormatObjectOptions.CsvDateFormat = &StageFileFormatStringOrAuto{
-			Value: r.FileFormatObjectOptions.CsvDateFormat.Value,
-			Auto:  r.FileFormatObjectOptions.CsvDateFormat.Auto,
+	if r.DateFormat != nil {
+		opts.DateFormat = &StageFileFormatStringOrAuto{
+			Value: r.DateFormat.Value,
+			Auto:  r.DateFormat.Auto,
 		}
 	}
-	if r.FileFormatObjectOptions.CsvTimeFormat != nil {
-		opts.FileFormatObjectOptions.CsvTimeFormat = &StageFileFormatStringOrAuto{
-			Value: r.FileFormatObjectOptions.CsvTimeFormat.Value,
-			Auto:  r.FileFormatObjectOptions.CsvTimeFormat.Auto,
+	if r.TimeFormat != nil {
+		opts.TimeFormat = &StageFileFormatStringOrAuto{
+			Value: r.TimeFormat.Value,
+			Auto:  r.TimeFormat.Auto,
 		}
 	}
-	if r.FileFormatObjectOptions.CsvTimestampFormat != nil {
-		opts.FileFormatObjectOptions.CsvTimestampFormat = &StageFileFormatStringOrAuto{
-			Value: r.FileFormatObjectOptions.CsvTimestampFormat.Value,
-			Auto:  r.FileFormatObjectOptions.CsvTimestampFormat.Auto,
+	if r.TimestampFormat != nil {
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{
+			Value: r.TimestampFormat.Value,
+			Auto:  r.TimestampFormat.Auto,
 		}
 	}
-	if r.FileFormatObjectOptions.CsvEscape != nil {
-		opts.FileFormatObjectOptions.CsvEscape = &StageFileFormatStringOrNone{
-			Value: r.FileFormatObjectOptions.CsvEscape.Value,
-			None:  r.FileFormatObjectOptions.CsvEscape.None,
+	if r.Escape != nil {
+		opts.Escape = &StageFileFormatStringOrNone{
+			Value: r.Escape.Value,
+			None:  r.Escape.None,
 		}
 	}
-	if r.FileFormatObjectOptions.CsvEscapeUnenclosedField != nil {
-		opts.FileFormatObjectOptions.CsvEscapeUnenclosedField = &StageFileFormatStringOrNone{
-			Value: r.FileFormatObjectOptions.CsvEscapeUnenclosedField.Value,
-			None:  r.FileFormatObjectOptions.CsvEscapeUnenclosedField.None,
+	if r.EscapeUnenclosedField != nil {
+		opts.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+			Value: r.EscapeUnenclosedField.Value,
+			None:  r.EscapeUnenclosedField.None,
 		}
 	}
-	if r.FileFormatObjectOptions.CsvFieldOptionallyEnclosedBy != nil {
-		opts.FileFormatObjectOptions.CsvFieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
-			Value: r.FileFormatObjectOptions.CsvFieldOptionallyEnclosedBy.Value,
-			None:  r.FileFormatObjectOptions.CsvFieldOptionallyEnclosedBy.None,
-		}
-	}
-	if r.FileFormatObjectOptions.JsonDateFormat != nil {
-		opts.FileFormatObjectOptions.JsonDateFormat = &StageFileFormatStringOrAuto{
-			Value: r.FileFormatObjectOptions.JsonDateFormat.Value,
-			Auto:  r.FileFormatObjectOptions.JsonDateFormat.Auto,
-		}
-	}
-	if r.FileFormatObjectOptions.JsonTimeFormat != nil {
-		opts.FileFormatObjectOptions.JsonTimeFormat = &StageFileFormatStringOrAuto{
-			Value: r.FileFormatObjectOptions.JsonTimeFormat.Value,
-			Auto:  r.FileFormatObjectOptions.JsonTimeFormat.Auto,
-		}
-	}
-	if r.FileFormatObjectOptions.JsonTimestampFormat != nil {
-		opts.FileFormatObjectOptions.JsonTimestampFormat = &StageFileFormatStringOrAuto{
-			Value: r.FileFormatObjectOptions.JsonTimestampFormat.Value,
-			Auto:  r.FileFormatObjectOptions.JsonTimestampFormat.Auto,
+	if r.FieldOptionallyEnclosedBy != nil {
+		opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+			Value: r.FieldOptionallyEnclosedBy.Value,
+			None:  r.FieldOptionallyEnclosedBy.None,
 		}
 	}
 	return opts
 }
 
-func (r *AlterFileFormatRequest) toOpts() *AlterFileFormatOptions {
-	opts := &AlterFileFormatOptions{
+func (r *CreateJsonFileFormatRequest) toOpts() *CreateJsonFileFormatOptions {
+	opts := &CreateJsonFileFormatOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		Compression:              r.Compression,
+		BinaryFormat:             r.BinaryFormat,
+		TrimSpace:                r.TrimSpace,
+		MultiLine:                r.MultiLine,
+		NullIf:                   r.NullIf,
+		FileExtension:            r.FileExtension,
+		EnableOctal:              r.EnableOctal,
+		AllowDuplicate:           r.AllowDuplicate,
+		StripOuterArray:          r.StripOuterArray,
+		StripNullValues:          r.StripNullValues,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		IgnoreUtf8Errors:         r.IgnoreUtf8Errors,
+		SkipByteOrderMark:        r.SkipByteOrderMark,
+		Comment:                  r.Comment,
+	}
+	if r.DateFormat != nil {
+		opts.DateFormat = &StageFileFormatStringOrAuto{
+			Value: r.DateFormat.Value,
+			Auto:  r.DateFormat.Auto,
+		}
+	}
+	if r.TimeFormat != nil {
+		opts.TimeFormat = &StageFileFormatStringOrAuto{
+			Value: r.TimeFormat.Value,
+			Auto:  r.TimeFormat.Auto,
+		}
+	}
+	if r.TimestampFormat != nil {
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{
+			Value: r.TimestampFormat.Value,
+			Auto:  r.TimestampFormat.Auto,
+		}
+	}
+	return opts
+}
+
+func (r *CreateAvroFileFormatRequest) toOpts() *CreateAvroFileFormatOptions {
+	opts := &CreateAvroFileFormatOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		Compression:              r.Compression,
+		TrimSpace:                r.TrimSpace,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		NullIf:                   r.NullIf,
+		Comment:                  r.Comment,
+	}
+	return opts
+}
+
+func (r *CreateOrcFileFormatRequest) toOpts() *CreateOrcFileFormatOptions {
+	opts := &CreateOrcFileFormatOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		TrimSpace:                r.TrimSpace,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		NullIf:                   r.NullIf,
+		Comment:                  r.Comment,
+	}
+	return opts
+}
+
+func (r *CreateParquetFileFormatRequest) toOpts() *CreateParquetFileFormatOptions {
+	opts := &CreateParquetFileFormatOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		Compression:              r.Compression,
+		SnappyCompression:        r.SnappyCompression,
+		BinaryAsText:             r.BinaryAsText,
+		UseLogicalType:           r.UseLogicalType,
+		TrimSpace:                r.TrimSpace,
+		UseVectorizedScanner:     r.UseVectorizedScanner,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		NullIf:                   r.NullIf,
+		Comment:                  r.Comment,
+	}
+	return opts
+}
+
+func (r *CreateXmlFileFormatRequest) toOpts() *CreateXmlFileFormatOptions {
+	opts := &CreateXmlFileFormatOptions{
+		OrReplace:                r.OrReplace,
+		IfNotExists:              r.IfNotExists,
+		name:                     r.name,
+		Compression:              r.Compression,
+		IgnoreUtf8Errors:         r.IgnoreUtf8Errors,
+		PreserveSpace:            r.PreserveSpace,
+		StripOuterElement:        r.StripOuterElement,
+		DisableAutoConvert:       r.DisableAutoConvert,
+		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
+		SkipByteOrderMark:        r.SkipByteOrderMark,
+		Comment:                  r.Comment,
+	}
+	return opts
+}
+
+func (r *AlterCsvFileFormatRequest) toOpts() *AlterCsvFileFormatOptions {
+	opts := &AlterCsvFileFormatOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
 		RenameTo: r.RenameTo,
 	}
 	if r.Set != nil {
-		opts.Set = &FileFormatObjectOptions{
-			Comment:                         r.Set.Comment,
-			CsvCompression:                  r.Set.CsvCompression,
-			CsvMultiLine:                    r.Set.CsvMultiLine,
-			CsvFileExtension:                r.Set.CsvFileExtension,
-			CsvParseHeader:                  r.Set.CsvParseHeader,
-			CsvSkipHeader:                   r.Set.CsvSkipHeader,
-			CsvSkipBlankLines:               r.Set.CsvSkipBlankLines,
-			CsvBinaryFormat:                 r.Set.CsvBinaryFormat,
-			CsvTrimSpace:                    r.Set.CsvTrimSpace,
-			CsvNullIf:                       r.Set.CsvNullIf,
-			CsvErrorOnColumnCountMismatch:   r.Set.CsvErrorOnColumnCountMismatch,
-			CsvReplaceInvalidCharacters:     r.Set.CsvReplaceInvalidCharacters,
-			CsvEmptyFieldAsNull:             r.Set.CsvEmptyFieldAsNull,
-			CsvSkipByteOrderMark:            r.Set.CsvSkipByteOrderMark,
-			CsvEncoding:                     r.Set.CsvEncoding,
-			JsonCompression:                 r.Set.JsonCompression,
-			JsonBinaryFormat:                r.Set.JsonBinaryFormat,
-			JsonTrimSpace:                   r.Set.JsonTrimSpace,
-			JsonMultiLine:                   r.Set.JsonMultiLine,
-			JsonNullIf:                      r.Set.JsonNullIf,
-			JsonFileExtension:               r.Set.JsonFileExtension,
-			JsonEnableOctal:                 r.Set.JsonEnableOctal,
-			JsonAllowDuplicate:              r.Set.JsonAllowDuplicate,
-			JsonStripOuterArray:             r.Set.JsonStripOuterArray,
-			JsonStripNullValues:             r.Set.JsonStripNullValues,
-			JsonReplaceInvalidCharacters:    r.Set.JsonReplaceInvalidCharacters,
-			JsonIgnoreUtf8Errors:            r.Set.JsonIgnoreUtf8Errors,
-			JsonSkipByteOrderMark:           r.Set.JsonSkipByteOrderMark,
-			AvroCompression:                 r.Set.AvroCompression,
-			AvroTrimSpace:                   r.Set.AvroTrimSpace,
-			AvroReplaceInvalidCharacters:    r.Set.AvroReplaceInvalidCharacters,
-			AvroNullIf:                      r.Set.AvroNullIf,
-			OrcTrimSpace:                    r.Set.OrcTrimSpace,
-			OrcReplaceInvalidCharacters:     r.Set.OrcReplaceInvalidCharacters,
-			OrcNullIf:                       r.Set.OrcNullIf,
-			ParquetCompression:              r.Set.ParquetCompression,
-			ParquetSnappyCompression:        r.Set.ParquetSnappyCompression,
-			ParquetBinaryAsText:             r.Set.ParquetBinaryAsText,
-			ParquetUseLogicalType:           r.Set.ParquetUseLogicalType,
-			ParquetTrimSpace:                r.Set.ParquetTrimSpace,
-			ParquetUseVectorizedScanner:     r.Set.ParquetUseVectorizedScanner,
-			ParquetReplaceInvalidCharacters: r.Set.ParquetReplaceInvalidCharacters,
-			ParquetNullIf:                   r.Set.ParquetNullIf,
-			XmlCompression:                  r.Set.XmlCompression,
-			XmlIgnoreUtf8Errors:             r.Set.XmlIgnoreUtf8Errors,
-			XmlPreserveSpace:                r.Set.XmlPreserveSpace,
-			XmlStripOuterElement:            r.Set.XmlStripOuterElement,
-			XmlDisableAutoConvert:           r.Set.XmlDisableAutoConvert,
-			XmlReplaceInvalidCharacters:     r.Set.XmlReplaceInvalidCharacters,
-			XmlSkipByteOrderMark:            r.Set.XmlSkipByteOrderMark,
+		opts.Set = &AlterCsvFileFormatSet{
+			Compression:                r.Set.Compression,
+			MultiLine:                  r.Set.MultiLine,
+			FileExtension:              r.Set.FileExtension,
+			ParseHeader:                r.Set.ParseHeader,
+			SkipHeader:                 r.Set.SkipHeader,
+			SkipBlankLines:             r.Set.SkipBlankLines,
+			BinaryFormat:               r.Set.BinaryFormat,
+			TrimSpace:                  r.Set.TrimSpace,
+			NullIf:                     r.Set.NullIf,
+			ErrorOnColumnCountMismatch: r.Set.ErrorOnColumnCountMismatch,
+			ReplaceInvalidCharacters:   r.Set.ReplaceInvalidCharacters,
+			EmptyFieldAsNull:           r.Set.EmptyFieldAsNull,
+			SkipByteOrderMark:          r.Set.SkipByteOrderMark,
+			Encoding:                   r.Set.Encoding,
+			Comment:                    r.Set.Comment,
 		}
-		if r.Set.CsvRecordDelimiter != nil {
-			opts.Set.CsvRecordDelimiter = &StageFileFormatStringOrNone{
-				Value: r.Set.CsvRecordDelimiter.Value,
-				None:  r.Set.CsvRecordDelimiter.None,
+		if r.Set.RecordDelimiter != nil {
+			opts.Set.RecordDelimiter = &StageFileFormatStringOrNone{
+				Value: r.Set.RecordDelimiter.Value,
+				None:  r.Set.RecordDelimiter.None,
 			}
 		}
-		if r.Set.CsvFieldDelimiter != nil {
-			opts.Set.CsvFieldDelimiter = &StageFileFormatStringOrNone{
-				Value: r.Set.CsvFieldDelimiter.Value,
-				None:  r.Set.CsvFieldDelimiter.None,
+		if r.Set.FieldDelimiter != nil {
+			opts.Set.FieldDelimiter = &StageFileFormatStringOrNone{
+				Value: r.Set.FieldDelimiter.Value,
+				None:  r.Set.FieldDelimiter.None,
 			}
 		}
-		if r.Set.CsvDateFormat != nil {
-			opts.Set.CsvDateFormat = &StageFileFormatStringOrAuto{
-				Value: r.Set.CsvDateFormat.Value,
-				Auto:  r.Set.CsvDateFormat.Auto,
+		if r.Set.DateFormat != nil {
+			opts.Set.DateFormat = &StageFileFormatStringOrAuto{
+				Value: r.Set.DateFormat.Value,
+				Auto:  r.Set.DateFormat.Auto,
 			}
 		}
-		if r.Set.CsvTimeFormat != nil {
-			opts.Set.CsvTimeFormat = &StageFileFormatStringOrAuto{
-				Value: r.Set.CsvTimeFormat.Value,
-				Auto:  r.Set.CsvTimeFormat.Auto,
+		if r.Set.TimeFormat != nil {
+			opts.Set.TimeFormat = &StageFileFormatStringOrAuto{
+				Value: r.Set.TimeFormat.Value,
+				Auto:  r.Set.TimeFormat.Auto,
 			}
 		}
-		if r.Set.CsvTimestampFormat != nil {
-			opts.Set.CsvTimestampFormat = &StageFileFormatStringOrAuto{
-				Value: r.Set.CsvTimestampFormat.Value,
-				Auto:  r.Set.CsvTimestampFormat.Auto,
+		if r.Set.TimestampFormat != nil {
+			opts.Set.TimestampFormat = &StageFileFormatStringOrAuto{
+				Value: r.Set.TimestampFormat.Value,
+				Auto:  r.Set.TimestampFormat.Auto,
 			}
 		}
-		if r.Set.CsvEscape != nil {
-			opts.Set.CsvEscape = &StageFileFormatStringOrNone{
-				Value: r.Set.CsvEscape.Value,
-				None:  r.Set.CsvEscape.None,
+		if r.Set.Escape != nil {
+			opts.Set.Escape = &StageFileFormatStringOrNone{
+				Value: r.Set.Escape.Value,
+				None:  r.Set.Escape.None,
 			}
 		}
-		if r.Set.CsvEscapeUnenclosedField != nil {
-			opts.Set.CsvEscapeUnenclosedField = &StageFileFormatStringOrNone{
-				Value: r.Set.CsvEscapeUnenclosedField.Value,
-				None:  r.Set.CsvEscapeUnenclosedField.None,
+		if r.Set.EscapeUnenclosedField != nil {
+			opts.Set.EscapeUnenclosedField = &StageFileFormatStringOrNone{
+				Value: r.Set.EscapeUnenclosedField.Value,
+				None:  r.Set.EscapeUnenclosedField.None,
 			}
 		}
-		if r.Set.CsvFieldOptionallyEnclosedBy != nil {
-			opts.Set.CsvFieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
-				Value: r.Set.CsvFieldOptionallyEnclosedBy.Value,
-				None:  r.Set.CsvFieldOptionallyEnclosedBy.None,
+		if r.Set.FieldOptionallyEnclosedBy != nil {
+			opts.Set.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
+				Value: r.Set.FieldOptionallyEnclosedBy.Value,
+				None:  r.Set.FieldOptionallyEnclosedBy.None,
 			}
 		}
-		if r.Set.JsonDateFormat != nil {
-			opts.Set.JsonDateFormat = &StageFileFormatStringOrAuto{
-				Value: r.Set.JsonDateFormat.Value,
-				Auto:  r.Set.JsonDateFormat.Auto,
+	}
+	return opts
+}
+
+func (r *AlterJsonFileFormatRequest) toOpts() *AlterJsonFileFormatOptions {
+	opts := &AlterJsonFileFormatOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		RenameTo: r.RenameTo,
+	}
+	if r.Set != nil {
+		opts.Set = &AlterJsonFileFormatSet{
+			Compression:              r.Set.Compression,
+			BinaryFormat:             r.Set.BinaryFormat,
+			TrimSpace:                r.Set.TrimSpace,
+			MultiLine:                r.Set.MultiLine,
+			NullIf:                   r.Set.NullIf,
+			FileExtension:            r.Set.FileExtension,
+			EnableOctal:              r.Set.EnableOctal,
+			AllowDuplicate:           r.Set.AllowDuplicate,
+			StripOuterArray:          r.Set.StripOuterArray,
+			StripNullValues:          r.Set.StripNullValues,
+			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
+			IgnoreUtf8Errors:         r.Set.IgnoreUtf8Errors,
+			SkipByteOrderMark:        r.Set.SkipByteOrderMark,
+			Comment:                  r.Set.Comment,
+		}
+		if r.Set.DateFormat != nil {
+			opts.Set.DateFormat = &StageFileFormatStringOrAuto{
+				Value: r.Set.DateFormat.Value,
+				Auto:  r.Set.DateFormat.Auto,
 			}
 		}
-		if r.Set.JsonTimeFormat != nil {
-			opts.Set.JsonTimeFormat = &StageFileFormatStringOrAuto{
-				Value: r.Set.JsonTimeFormat.Value,
-				Auto:  r.Set.JsonTimeFormat.Auto,
+		if r.Set.TimeFormat != nil {
+			opts.Set.TimeFormat = &StageFileFormatStringOrAuto{
+				Value: r.Set.TimeFormat.Value,
+				Auto:  r.Set.TimeFormat.Auto,
 			}
 		}
-		if r.Set.JsonTimestampFormat != nil {
-			opts.Set.JsonTimestampFormat = &StageFileFormatStringOrAuto{
-				Value: r.Set.JsonTimestampFormat.Value,
-				Auto:  r.Set.JsonTimestampFormat.Auto,
+		if r.Set.TimestampFormat != nil {
+			opts.Set.TimestampFormat = &StageFileFormatStringOrAuto{
+				Value: r.Set.TimestampFormat.Value,
+				Auto:  r.Set.TimestampFormat.Auto,
 			}
+		}
+	}
+	return opts
+}
+
+func (r *AlterAvroFileFormatRequest) toOpts() *AlterAvroFileFormatOptions {
+	opts := &AlterAvroFileFormatOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		RenameTo: r.RenameTo,
+	}
+	if r.Set != nil {
+		opts.Set = &AlterAvroFileFormatSet{
+			Compression:              r.Set.Compression,
+			TrimSpace:                r.Set.TrimSpace,
+			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
+			NullIf:                   r.Set.NullIf,
+			Comment:                  r.Set.Comment,
+		}
+	}
+	return opts
+}
+
+func (r *AlterOrcFileFormatRequest) toOpts() *AlterOrcFileFormatOptions {
+	opts := &AlterOrcFileFormatOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		RenameTo: r.RenameTo,
+	}
+	if r.Set != nil {
+		opts.Set = &AlterOrcFileFormatSet{
+			TrimSpace:                r.Set.TrimSpace,
+			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
+			NullIf:                   r.Set.NullIf,
+			Comment:                  r.Set.Comment,
+		}
+	}
+	return opts
+}
+
+func (r *AlterParquetFileFormatRequest) toOpts() *AlterParquetFileFormatOptions {
+	opts := &AlterParquetFileFormatOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		RenameTo: r.RenameTo,
+	}
+	if r.Set != nil {
+		opts.Set = &AlterParquetFileFormatSet{
+			Compression:              r.Set.Compression,
+			SnappyCompression:        r.Set.SnappyCompression,
+			BinaryAsText:             r.Set.BinaryAsText,
+			UseLogicalType:           r.Set.UseLogicalType,
+			TrimSpace:                r.Set.TrimSpace,
+			UseVectorizedScanner:     r.Set.UseVectorizedScanner,
+			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
+			NullIf:                   r.Set.NullIf,
+			Comment:                  r.Set.Comment,
+		}
+	}
+	return opts
+}
+
+func (r *AlterXmlFileFormatRequest) toOpts() *AlterXmlFileFormatOptions {
+	opts := &AlterXmlFileFormatOptions{
+		IfExists: r.IfExists,
+		name:     r.name,
+		RenameTo: r.RenameTo,
+	}
+	if r.Set != nil {
+		opts.Set = &AlterXmlFileFormatSet{
+			Compression:              r.Set.Compression,
+			IgnoreUtf8Errors:         r.Set.IgnoreUtf8Errors,
+			PreserveSpace:            r.Set.PreserveSpace,
+			StripOuterElement:        r.Set.StripOuterElement,
+			DisableAutoConvert:       r.Set.DisableAutoConvert,
+			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
+			SkipByteOrderMark:        r.Set.SkipByteOrderMark,
+			Comment:                  r.Set.Comment,
 		}
 	}
 	return opts
@@ -363,12 +524,6 @@ func (r ShowFileFormatsRow) convert() (*FileFormat, error) {
 		FormatOptions: r.FormatOptions,
 	}
 	mapStringWithMapping(&result.Type, r.Type, ToFileFormatType)
-	// Adjusted manually: parse FormatOptions into the typed Options field.
-	options, err := fileFormatObjectOptionsFromShowResult(result.Type, r.FormatOptions)
-	if err != nil {
-		return nil, err
-	}
-	result.Options = *options
 	return result, nil
 }
 
@@ -387,151 +542,4 @@ func (r descFileFormatsDbRow) convert() (*FileFormatProperty, error) {
 		Default: r.PropertyDefault,
 	}
 	return result, nil
-}
-
-func (r *DummyOperationFileFormatRequest) toOpts() *DummyOperationFileFormatOptions {
-	opts := &DummyOperationFileFormatOptions{}
-	if r.FileFormat != nil {
-		opts.FileFormat = &FileFormatOptions{}
-		if r.FileFormat.CsvOptions != nil {
-			opts.FileFormat.CsvOptions = &FileFormatCsvOptions{
-				Compression:                r.FileFormat.CsvOptions.Compression,
-				MultiLine:                  r.FileFormat.CsvOptions.MultiLine,
-				FileExtension:              r.FileFormat.CsvOptions.FileExtension,
-				ParseHeader:                r.FileFormat.CsvOptions.ParseHeader,
-				SkipHeader:                 r.FileFormat.CsvOptions.SkipHeader,
-				SkipBlankLines:             r.FileFormat.CsvOptions.SkipBlankLines,
-				BinaryFormat:               r.FileFormat.CsvOptions.BinaryFormat,
-				TrimSpace:                  r.FileFormat.CsvOptions.TrimSpace,
-				NullIf:                     r.FileFormat.CsvOptions.NullIf,
-				ErrorOnColumnCountMismatch: r.FileFormat.CsvOptions.ErrorOnColumnCountMismatch,
-				ReplaceInvalidCharacters:   r.FileFormat.CsvOptions.ReplaceInvalidCharacters,
-				EmptyFieldAsNull:           r.FileFormat.CsvOptions.EmptyFieldAsNull,
-				SkipByteOrderMark:          r.FileFormat.CsvOptions.SkipByteOrderMark,
-				Encoding:                   r.FileFormat.CsvOptions.Encoding,
-			}
-			if r.FileFormat.CsvOptions.RecordDelimiter != nil {
-				opts.FileFormat.CsvOptions.RecordDelimiter = &StageFileFormatStringOrNone{
-					Value: r.FileFormat.CsvOptions.RecordDelimiter.Value,
-					None:  r.FileFormat.CsvOptions.RecordDelimiter.None,
-				}
-			}
-			if r.FileFormat.CsvOptions.FieldDelimiter != nil {
-				opts.FileFormat.CsvOptions.FieldDelimiter = &StageFileFormatStringOrNone{
-					Value: r.FileFormat.CsvOptions.FieldDelimiter.Value,
-					None:  r.FileFormat.CsvOptions.FieldDelimiter.None,
-				}
-			}
-			if r.FileFormat.CsvOptions.DateFormat != nil {
-				opts.FileFormat.CsvOptions.DateFormat = &StageFileFormatStringOrAuto{
-					Value: r.FileFormat.CsvOptions.DateFormat.Value,
-					Auto:  r.FileFormat.CsvOptions.DateFormat.Auto,
-				}
-			}
-			if r.FileFormat.CsvOptions.TimeFormat != nil {
-				opts.FileFormat.CsvOptions.TimeFormat = &StageFileFormatStringOrAuto{
-					Value: r.FileFormat.CsvOptions.TimeFormat.Value,
-					Auto:  r.FileFormat.CsvOptions.TimeFormat.Auto,
-				}
-			}
-			if r.FileFormat.CsvOptions.TimestampFormat != nil {
-				opts.FileFormat.CsvOptions.TimestampFormat = &StageFileFormatStringOrAuto{
-					Value: r.FileFormat.CsvOptions.TimestampFormat.Value,
-					Auto:  r.FileFormat.CsvOptions.TimestampFormat.Auto,
-				}
-			}
-			if r.FileFormat.CsvOptions.Escape != nil {
-				opts.FileFormat.CsvOptions.Escape = &StageFileFormatStringOrNone{
-					Value: r.FileFormat.CsvOptions.Escape.Value,
-					None:  r.FileFormat.CsvOptions.Escape.None,
-				}
-			}
-			if r.FileFormat.CsvOptions.EscapeUnenclosedField != nil {
-				opts.FileFormat.CsvOptions.EscapeUnenclosedField = &StageFileFormatStringOrNone{
-					Value: r.FileFormat.CsvOptions.EscapeUnenclosedField.Value,
-					None:  r.FileFormat.CsvOptions.EscapeUnenclosedField.None,
-				}
-			}
-			if r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy != nil {
-				opts.FileFormat.CsvOptions.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
-					Value: r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.Value,
-					None:  r.FileFormat.CsvOptions.FieldOptionallyEnclosedBy.None,
-				}
-			}
-		}
-		if r.FileFormat.JsonOptions != nil {
-			opts.FileFormat.JsonOptions = &FileFormatJsonOptions{
-				Compression:              r.FileFormat.JsonOptions.Compression,
-				BinaryFormat:             r.FileFormat.JsonOptions.BinaryFormat,
-				TrimSpace:                r.FileFormat.JsonOptions.TrimSpace,
-				MultiLine:                r.FileFormat.JsonOptions.MultiLine,
-				NullIf:                   r.FileFormat.JsonOptions.NullIf,
-				FileExtension:            r.FileFormat.JsonOptions.FileExtension,
-				EnableOctal:              r.FileFormat.JsonOptions.EnableOctal,
-				AllowDuplicate:           r.FileFormat.JsonOptions.AllowDuplicate,
-				StripOuterArray:          r.FileFormat.JsonOptions.StripOuterArray,
-				StripNullValues:          r.FileFormat.JsonOptions.StripNullValues,
-				ReplaceInvalidCharacters: r.FileFormat.JsonOptions.ReplaceInvalidCharacters,
-				IgnoreUtf8Errors:         r.FileFormat.JsonOptions.IgnoreUtf8Errors,
-				SkipByteOrderMark:        r.FileFormat.JsonOptions.SkipByteOrderMark,
-			}
-			if r.FileFormat.JsonOptions.DateFormat != nil {
-				opts.FileFormat.JsonOptions.DateFormat = &StageFileFormatStringOrAuto{
-					Value: r.FileFormat.JsonOptions.DateFormat.Value,
-					Auto:  r.FileFormat.JsonOptions.DateFormat.Auto,
-				}
-			}
-			if r.FileFormat.JsonOptions.TimeFormat != nil {
-				opts.FileFormat.JsonOptions.TimeFormat = &StageFileFormatStringOrAuto{
-					Value: r.FileFormat.JsonOptions.TimeFormat.Value,
-					Auto:  r.FileFormat.JsonOptions.TimeFormat.Auto,
-				}
-			}
-			if r.FileFormat.JsonOptions.TimestampFormat != nil {
-				opts.FileFormat.JsonOptions.TimestampFormat = &StageFileFormatStringOrAuto{
-					Value: r.FileFormat.JsonOptions.TimestampFormat.Value,
-					Auto:  r.FileFormat.JsonOptions.TimestampFormat.Auto,
-				}
-			}
-		}
-		if r.FileFormat.AvroOptions != nil {
-			opts.FileFormat.AvroOptions = &FileFormatAvroOptions{
-				Compression:              r.FileFormat.AvroOptions.Compression,
-				TrimSpace:                r.FileFormat.AvroOptions.TrimSpace,
-				ReplaceInvalidCharacters: r.FileFormat.AvroOptions.ReplaceInvalidCharacters,
-				NullIf:                   r.FileFormat.AvroOptions.NullIf,
-			}
-		}
-		if r.FileFormat.OrcOptions != nil {
-			opts.FileFormat.OrcOptions = &FileFormatOrcOptions{
-				TrimSpace:                r.FileFormat.OrcOptions.TrimSpace,
-				ReplaceInvalidCharacters: r.FileFormat.OrcOptions.ReplaceInvalidCharacters,
-				NullIf:                   r.FileFormat.OrcOptions.NullIf,
-			}
-		}
-		if r.FileFormat.ParquetOptions != nil {
-			opts.FileFormat.ParquetOptions = &FileFormatParquetOptions{
-				Compression:              r.FileFormat.ParquetOptions.Compression,
-				SnappyCompression:        r.FileFormat.ParquetOptions.SnappyCompression,
-				BinaryAsText:             r.FileFormat.ParquetOptions.BinaryAsText,
-				UseLogicalType:           r.FileFormat.ParquetOptions.UseLogicalType,
-				TrimSpace:                r.FileFormat.ParquetOptions.TrimSpace,
-				UseVectorizedScanner:     r.FileFormat.ParquetOptions.UseVectorizedScanner,
-				ReplaceInvalidCharacters: r.FileFormat.ParquetOptions.ReplaceInvalidCharacters,
-				NullIf:                   r.FileFormat.ParquetOptions.NullIf,
-			}
-		}
-		if r.FileFormat.XmlOptions != nil {
-			opts.FileFormat.XmlOptions = &FileFormatXmlOptions{
-				Compression:              r.FileFormat.XmlOptions.Compression,
-				IgnoreUtf8Errors:         r.FileFormat.XmlOptions.IgnoreUtf8Errors,
-				PreserveSpace:            r.FileFormat.XmlOptions.PreserveSpace,
-				StripOuterElement:        r.FileFormat.XmlOptions.StripOuterElement,
-				DisableAutoConvert:       r.FileFormat.XmlOptions.DisableAutoConvert,
-				ReplaceInvalidCharacters: r.FileFormat.XmlOptions.ReplaceInvalidCharacters,
-				SkipByteOrderMark:        r.FileFormat.XmlOptions.SkipByteOrderMark,
-			}
-		}
-	}
-	return opts
 }
