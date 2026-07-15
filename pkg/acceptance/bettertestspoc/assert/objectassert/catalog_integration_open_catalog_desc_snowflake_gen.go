@@ -112,7 +112,10 @@ func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestConfigWith(subAssert
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
-			return assertion(t, &o.RestConfig)
+			if err := assertion(t, &o.RestConfig); err != nil {
+				return fmt.Errorf("rest config: %w", err)
+			}
+			return nil
 		})
 	}
 	return c
@@ -122,7 +125,10 @@ func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestAuthenticationWith(s
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
-			return assertion(t, &o.RestAuthentication)
+			if err := assertion(t, &o.RestAuthentication); err != nil {
+				return fmt.Errorf("rest authentication: %w", err)
+			}
+			return nil
 		})
 	}
 	return c

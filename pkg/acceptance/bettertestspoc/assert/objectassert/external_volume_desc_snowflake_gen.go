@@ -57,7 +57,10 @@ func (e *ExternalVolumeDetailsAssert) HasStorageLocationsWith(subAsserts ...*Ext
 				if idx >= len(o.StorageLocations) {
 					return fmt.Errorf("expected at least %d storage locations; got: %d", idx+1, len(o.StorageLocations))
 				}
-				return assertion(t, &o.StorageLocations[idx])
+				if err := assertion(t, &o.StorageLocations[idx]); err != nil {
+					return fmt.Errorf("storage locations[%d]: %w", idx, err)
+				}
+				return nil
 			})
 		}
 	}

@@ -24,7 +24,10 @@
                     if idx >= len(o.{{ .Name }}) {
                         return fmt.Errorf("expected at least %d {{ CamelToWords .Name }}; got: %d", idx+1, len(o.{{ .Name }}))
                     }
-                    return assertion(t, &o.{{ .Name }}[idx])
+                    if err := assertion(t, &o.{{ .Name }}[idx]); err != nil {
+                        return fmt.Errorf("{{ CamelToWords .Name }}[%d]: %w", idx, err)
+                    }
+                    return nil
                 })
             }
         }
@@ -46,7 +49,10 @@
         for _, assertion := range subAssert.GetAssertions() {
             assertion := assertion
             {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
-                return assert.AssertionOnPointerField(t, o.{{ .Name }}, "{{ CamelToWords .Name }}", assertion)
+                if err := assert.AssertionOnPointerField(t, o.{{ .Name }}, "{{ CamelToWords .Name }}", assertion); err != nil {
+                    return fmt.Errorf("{{ CamelToWords .Name }}: %w", err)
+                }
+                return nil
             })
         }
         return {{ $assertVar }}
@@ -56,7 +62,10 @@
         for _, assertion := range subAssert.GetAssertions() {
             assertion := assertion
             {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
-                return assertion(t, &o.{{ .Name }})
+                if err := assertion(t, &o.{{ .Name }}); err != nil {
+                    return fmt.Errorf("{{ CamelToWords .Name }}: %w", err)
+                }
+                return nil
             })
         }
         return {{ $assertVar }}

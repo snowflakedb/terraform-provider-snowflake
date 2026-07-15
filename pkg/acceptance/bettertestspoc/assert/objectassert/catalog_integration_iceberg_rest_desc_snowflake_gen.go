@@ -112,7 +112,10 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasRestConfigWith(subAssert
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-			return assertion(t, &o.RestConfig)
+			if err := assertion(t, &o.RestConfig); err != nil {
+				return fmt.Errorf("rest config: %w", err)
+			}
+			return nil
 		})
 	}
 	return c
@@ -133,7 +136,10 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthenticationW
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-			return assert.AssertionOnPointerField(t, o.OAuthRestAuthentication, "o auth rest authentication", assertion)
+			if err := assert.AssertionOnPointerField(t, o.OAuthRestAuthentication, "o auth rest authentication", assertion); err != nil {
+				return fmt.Errorf("o auth rest authentication: %w", err)
+			}
+			return nil
 		})
 	}
 	return c
@@ -154,7 +160,10 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasBearerRestAuthentication
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-			return assert.AssertionOnPointerField(t, o.BearerRestAuthentication, "bearer rest authentication", assertion)
+			if err := assert.AssertionOnPointerField(t, o.BearerRestAuthentication, "bearer rest authentication", assertion); err != nil {
+				return fmt.Errorf("bearer rest authentication: %w", err)
+			}
+			return nil
 		})
 	}
 	return c
@@ -175,7 +184,10 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigV4RestAuthenticationW
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-			return assert.AssertionOnPointerField(t, o.SigV4RestAuthentication, "sig v4 rest authentication", assertion)
+			if err := assert.AssertionOnPointerField(t, o.SigV4RestAuthentication, "sig v4 rest authentication", assertion); err != nil {
+				return fmt.Errorf("sig v4 rest authentication: %w", err)
+			}
+			return nil
 		})
 	}
 	return c

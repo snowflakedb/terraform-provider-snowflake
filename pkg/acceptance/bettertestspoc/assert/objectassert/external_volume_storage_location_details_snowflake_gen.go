@@ -94,7 +94,10 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3StorageLocationWith(su
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-			return assert.AssertionOnPointerField(t, o.S3StorageLocation, "s3 storage location", assertion)
+			if err := assert.AssertionOnPointerField(t, o.S3StorageLocation, "s3 storage location", assertion); err != nil {
+				return fmt.Errorf("s3 storage location: %w", err)
+			}
+			return nil
 		})
 	}
 	return e
@@ -115,7 +118,10 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasGCSStorageLocationWith(s
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-			return assert.AssertionOnPointerField(t, o.GCSStorageLocation, "gcs storage location", assertion)
+			if err := assert.AssertionOnPointerField(t, o.GCSStorageLocation, "gcs storage location", assertion); err != nil {
+				return fmt.Errorf("gcs storage location: %w", err)
+			}
+			return nil
 		})
 	}
 	return e
@@ -136,7 +142,10 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasAzureStorageLocationWith
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-			return assert.AssertionOnPointerField(t, o.AzureStorageLocation, "azure storage location", assertion)
+			if err := assert.AssertionOnPointerField(t, o.AzureStorageLocation, "azure storage location", assertion); err != nil {
+				return fmt.Errorf("azure storage location: %w", err)
+			}
+			return nil
 		})
 	}
 	return e
@@ -157,7 +166,10 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3CompatStorageLocationW
 	for _, assertion := range subAssert.GetAssertions() {
 		assertion := assertion
 		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-			return assert.AssertionOnPointerField(t, o.S3CompatStorageLocation, "s3 compat storage location", assertion)
+			if err := assert.AssertionOnPointerField(t, o.S3CompatStorageLocation, "s3 compat storage location", assertion); err != nil {
+				return fmt.Errorf("s3 compat storage location: %w", err)
+			}
+			return nil
 		})
 	}
 	return e
