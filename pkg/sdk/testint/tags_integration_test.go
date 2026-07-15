@@ -381,16 +381,12 @@ func TestInt_TagsAssociations(t *testing.T) {
 
 	t.Run("TestInt_TagAssociationForAccountLocator", func(t *testing.T) {
 		id := testClientHelper().Ids.AccountIdentifierWithLocator()
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			SetTag: tags,
-		})
+		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSetTag(tags))
 		require.NoError(t, err)
 
 		assertTagSet(id, sdk.ObjectTypeAccount)
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			UnsetTag: unsetTags,
-		})
+		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnsetTag(unsetTags))
 		require.NoError(t, err)
 
 		assertTagUnset(id, sdk.ObjectTypeAccount)

@@ -104,6 +104,16 @@ func (opts *AlterAccountOptions) additionalValidations() error {
 			}
 		}
 	}
+	if valueSet(opts.Drop) {
+		if !exactlyOneValueSet(opts.Drop.OldUrl, opts.Drop.OldOrganizationUrl) {
+			errs = append(errs, errExactlyOneOf("AccountDrop", "OldUrl", "OldOrganizationUrl"))
+		}
+	}
+	if valueSet(opts.Rename) {
+		if !ValidObjectIdentifier(opts.Rename.NewName) {
+			errs = append(errs, errInvalidIdentifier("AccountRename", "NewName"))
+		}
+	}
 	if valueSet(opts.Drop) || valueSet(opts.Rename) {
 		if !valueSet(opts.Name) || !ValidObjectIdentifier(opts.Name) {
 			errs = append(errs, ErrInvalidObjectIdentifier)

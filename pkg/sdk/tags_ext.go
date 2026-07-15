@@ -143,16 +143,12 @@ func (v *tags) UnsetSafely(ctx context.Context, request *UnsetTagRequest) error 
 
 // SetOnCurrentAccount applies tags to the current account.
 func (v *tags) SetOnCurrentAccount(ctx context.Context, setTags []TagAssociation) error {
-	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
-		SetTag: setTags,
-	})
+	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSetTag(setTags))
 }
 
 // UnsetOnCurrentAccount removes tags from the current account.
 func (v *tags) UnsetOnCurrentAccount(ctx context.Context, unsetTags []ObjectIdentifier) error {
-	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
-		UnsetTag: unsetTags,
-	})
+	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnsetTag(unsetTags))
 }
 
 func NewAllowedValuesRequestFromStrings(values []string) *AllowedValuesRequest {
