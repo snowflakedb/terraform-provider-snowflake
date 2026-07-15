@@ -75,6 +75,24 @@ var ShowIcebergTableSnowflakeManagedParametersSchema = map[string]*schema.Schema
 	"enable_iceberg_merge_on_read":    ParameterListSchema,
 }
 
+// ShowIcebergTableAllTypesParametersSchema is the union of all iceberg table type parameter schemas.
+// Used by the data source, which can return mixed table types in a single query.
+var ShowIcebergTableAllTypesParametersSchema = func() map[string]*schema.Schema {
+	result := maps.Clone(ShowIcebergTableSnowflakeManagedParametersSchema)
+	maps.Copy(result, ShowIcebergTableFromRestParametersSchema)
+	maps.Copy(result, ShowIcebergTableExternallyManagedParametersSchema)
+	return result
+}()
+
+// IcebergTableAllTypesParametersToSchema maps parameters from any iceberg table type by
+// combining the results of all type-specific mapping functions.
+func IcebergTableAllTypesParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
+	result := IcebergTableSnowflakeManagedParametersToSchema(parameters, providerCtx)
+	maps.Copy(result, IcebergTableFromRestParametersToSchema(parameters, providerCtx))
+	maps.Copy(result, IcebergTableExternallyManagedParametersToSchema(parameters, providerCtx))
+	return result
+}
+
 func IcebergTableSnowflakeManagedParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
 	result := make(map[string]any)
 	for _, param := range parameters {

@@ -57,7 +57,7 @@ var icebergTablesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of SHOW PARAMETERS FOR ICEBERG TABLE.",
 					Elem: &schema.Resource{
-						Schema: schemas.ShowIcebergTableParametersSchema,
+						Schema: schemas.ShowIcebergTableAllTypesParametersSchema,
 					},
 				},
 			},
@@ -109,7 +109,7 @@ func ReadIcebergTables(ctx context.Context, d *schema.ResourceData, meta any) di
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			tableParameters = []map[string]any{schemas.IcebergTableParametersToSchema(parameters, providerCtx)}
+			tableParameters = []map[string]any{schemas.IcebergTableAllTypesParametersToSchema(parameters, providerCtx)}
 		}
 
 		flattened[i] = map[string]any{

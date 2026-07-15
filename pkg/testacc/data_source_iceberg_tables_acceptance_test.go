@@ -56,6 +56,8 @@ func TestAcc_IcebergTables_BasicUseCase(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "iceberg_tables.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "iceberg_tables.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "iceberg_tables.0.parameters.#", "1")),
 					showOutputAssertions,
 					resourceshowoutputassert.IcebergTablesDatasourceDescribeOutput(t, datasourceModel.DatasourceReference()).
 						HasName("ID"),
