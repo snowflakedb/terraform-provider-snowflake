@@ -150,11 +150,14 @@ Read-Only:
 Read-Only:
 
 - `auto_resume` (Boolean)
+- `auto_suspend` (Number)
 - `available` (Number)
 - `comment` (String)
 - `created_on` (String)
 - `is_current` (Boolean)
 - `is_default` (Boolean)
+- `max_cluster_count` (Number)
+- `min_cluster_count` (Number)
 - `name` (String)
 - `other` (Number)
 - `owner` (String)
@@ -165,6 +168,8 @@ Read-Only:
 - `resource_monitor` (String)
 - `resumed_on` (String)
 - `running` (Number)
+- `size` (String)
+- `started_clusters` (Number)
 - `state` (String)
 - `tables` (List of String)
 - `type` (String)

@@ -159,6 +159,26 @@ var _ = ShowWarehouseSchemaAdaptive
 // showWarehouseSchemaInteractive contains fields only present for interactive warehouses.
 // Adjusted manually.
 var showWarehouseSchemaInteractive = map[string]*schema.Schema{
+	"size": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"min_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"max_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"started_clusters": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"auto_suspend": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
 	"tables": {
 		Type:     schema.TypeList,
 		Computed: true,
@@ -278,6 +298,21 @@ func WarehouseAdaptiveToSchema(warehouse *sdk.Warehouse) map[string]any {
 // Adjusted manually.
 func WarehouseInteractiveToSchema(warehouse *sdk.Warehouse) map[string]any {
 	warehouseSchema := commonWarehouseToSchema(warehouse)
+	if warehouse.Size != nil {
+		warehouseSchema["size"] = string((*warehouse.Size))
+	}
+	if warehouse.MinClusterCount != nil {
+		warehouseSchema["min_cluster_count"] = (*warehouse.MinClusterCount)
+	}
+	if warehouse.MaxClusterCount != nil {
+		warehouseSchema["max_cluster_count"] = (*warehouse.MaxClusterCount)
+	}
+	if warehouse.StartedClusters != nil {
+		warehouseSchema["started_clusters"] = (*warehouse.StartedClusters)
+	}
+	if warehouse.AutoSuspend != nil {
+		warehouseSchema["auto_suspend"] = (*warehouse.AutoSuspend)
+	}
 	tables := make([]string, len(warehouse.Tables))
 	for i, table := range warehouse.Tables {
 		tables[i] = table.FullyQualifiedName()
