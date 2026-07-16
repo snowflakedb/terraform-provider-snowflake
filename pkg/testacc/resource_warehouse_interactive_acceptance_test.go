@@ -331,10 +331,29 @@ func TestAcc_WarehouseInteractive_Import_WrongWarehouseType(t *testing.T) {
 func TestAcc_WarehouseInteractive_Validations(t *testing.T) {
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 
-	modelInvalidAutoSuspend := model.WarehouseInteractiveWithId(warehouseId).
-		WithAutoSuspend(0)
+	// NOTE: resource_monitor and fallback_warehouse also have validators, but both use
+	// IsValidIdentifier[sdk.AccountObjectIdentifier], which intentionally skips validation
+	// (see SNOW-1495079) because an account object identifier may legitimately contain dots.
+	// There is therefore no config value that makes them fail at plan time, so they are not
+	// exercised here.
 	modelInvalidWarehouseSize := model.WarehouseInteractiveWithId(warehouseId).
 		WithWarehouseSize("unknown")
+	modelInvalidMaxClusterCount := model.WarehouseInteractiveWithId(warehouseId).
+		WithMaxClusterCount(0)
+	modelInvalidMinClusterCount := model.WarehouseInteractiveWithId(warehouseId).
+		WithMinClusterCount(0)
+	modelInvalidAutoSuspend := model.WarehouseInteractiveWithId(warehouseId).
+		WithAutoSuspend(0)
+	modelInvalidAutoResume := model.WarehouseInteractiveWithId(warehouseId).
+		WithAutoResume("other")
+	modelInvalidTables := model.WarehouseInteractiveWithId(warehouseId).
+		WithTables("db.schema.table.column")
+	modelInvalidMaxConcurrencyLevel := model.WarehouseInteractiveWithId(warehouseId).
+		WithMaxConcurrencyLevel(0)
+	modelInvalidStatementQueuedTimeout := model.WarehouseInteractiveWithId(warehouseId).
+		WithStatementQueuedTimeoutInSeconds(-1)
+	modelInvalidStatementTimeout := model.WarehouseInteractiveWithId(warehouseId).
+		WithStatementTimeoutInSeconds(-1)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -343,14 +362,49 @@ func TestAcc_WarehouseInteractive_Validations(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
+				Config:      accconfig.FromModels(t, modelInvalidWarehouseSize),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("invalid warehouse size: UNKNOWN"),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidMaxClusterCount),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected max_cluster_count to be at least \(1\), got 0`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidMinClusterCount),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected min_cluster_count to be at least \(1\), got 0`),
+			},
+			{
 				Config:      accconfig.FromModels(t, modelInvalidAutoSuspend),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected auto_suspend to be at least \(1\), got 0`),
 			},
 			{
-				Config:      accconfig.FromModels(t, modelInvalidWarehouseSize),
+				Config:      accconfig.FromModels(t, modelInvalidAutoResume),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("invalid warehouse size: UNKNOWN"),
+				ExpectError: regexp.MustCompile(`expected \[\{\{} auto_resume}] to be one of \["true" "false"], got other`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidTables),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Expected SchemaObjectIdentifier identifier type`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidMaxConcurrencyLevel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected max_concurrency_level to be at least \(1\), got 0`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidStatementQueuedTimeout),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected statement_queued_timeout_in_seconds to be at least \(0\), got -1`),
+			},
+			{
+				Config:      accconfig.FromModels(t, modelInvalidStatementTimeout),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected statement_timeout_in_seconds to be in the range \(0 - 604800\), got -1`),
 			},
 		},
 	})
