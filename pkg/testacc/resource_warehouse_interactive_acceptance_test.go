@@ -223,7 +223,8 @@ func TestAcc_WarehouseInteractive_WarehouseSize(t *testing.T) {
 			// create with a concrete size
 			{
 				Config: accconfig.FromModels(t, small),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasWarehouseSizeString(string(sdk.WarehouseSizeSmall)),
 				),
@@ -237,7 +238,8 @@ func TestAcc_WarehouseInteractive_WarehouseSize(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasNoWarehouseSize(),
 				),
