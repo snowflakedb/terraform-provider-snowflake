@@ -54,6 +54,14 @@ The `partition_specs` field in the `show_output` of the Iceberg table resources 
 
 If you have existing state with the old string-based `partition_specs`, refresh the resource (e.g. `terraform apply` or `terraform refresh`) to update it to the new format. No changes to your resource configuration are required, as `partition_specs` is a computed, read-only field.
 
+### *(bug fix)* `snowflake_external_volume` no longer removes and re-adds unchanged storage locations
+
+Previously, adding a new `storage_location` block to an existing [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume) (or making other partial changes to the `storage_location` list) could cause the provider to unnecessarily issue `ALTER EXTERNAL VOLUME ... REMOVE STORAGE_LOCATION` for an existing, unchanged location before re-adding it. If that location was active (e.g. backing an Iceberg table), Snowflake correctly rejected the removal with error 393926 (42601), blocking the update. The provider now correctly detects unchanged locations and leaves them untouched, issuing only the `ADD`/`REMOVE` operations required for the actual diff.
+
+No changes in configuration are required.
+
+Note that this error can still legitimately occur if your configuration change actually removes the currently active storage location (e.g. removing the block from your configuration, or renaming/replacing it). This is expected Snowflake behavior, not a bug: an active storage location cannot be removed while it is in use (e.g. by an Iceberg table). Reassign the dependent objects to another storage location before removing it from your configuration.
+
 ## v2.17.x ➞ v2.18.0
 
 ### Multiple resources and data sources promoted to stable
