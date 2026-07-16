@@ -301,27 +301,13 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		req.WithStatementTimeoutInSeconds(*v)
 	}
 
-	// CREATE WAREHOUSE makes the newly created warehouse the current warehouse for the session
-	// connection. For an interactive warehouse this forces a 5-second statement timeout, which would
-	// then apply to the follow-up ALTER, the post-create Read, and any later statement that reuses the
-	// same pooled connection (e.g. a subsequent apply or import). Capture the current warehouse first
-	// and restore it right after creating, so DDL/metadata operations keep running on the original
-	// warehouse rather than the interactive one.
-	previousWarehouse, err := client.ContextFunctions.CurrentWarehouse(ctx)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error reading current warehouse before creating interactive warehouse %s: %w", id.FullyQualifiedName(), err))
-	}
-
+	// NOTE: This has the side effect of using the newly created warehouse in the current session.
+	// Because interactive warehouses always have a 5-second statement timeout, this can sometimes
+	// cause subsequent DDLs to timeout. This is a known issue.
 	if err := client.Warehouses.CreateInteractive(ctx, req); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating interactive warehouse %s: %w", id.FullyQualifiedName(), err))
 	}
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	if previousWarehouse != "" {
-		if err := client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(sdk.NewAccountObjectIdentifier(previousWarehouse))); err != nil {
-			return diag.FromErr(fmt.Errorf("error restoring warehouse %q after creating interactive warehouse %s: %w", previousWarehouse, id.FullyQualifiedName(), err))
-		}
-	}
 
 	// FALLBACK_WAREHOUSE is not a CREATE property; set it via a follow-up ALTER.
 	if v, ok := d.GetOk("fallback_warehouse"); ok {
