@@ -7,6 +7,7 @@ package testacc
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -18,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -2947,6 +2949,138 @@ func TestAcc_ExternalVolume_BasicUseCase_MultipleProviders(t *testing.T) {
 								},
 							},
 						}),
+				),
+			},
+		},
+	})
+}
+
+// Regression test for SNOW-3794939: appending a new storage_location must not remove and
+// re-add an existing, unchanged storage_location. If that location is active (backing an
+// Iceberg table), Snowflake rejects the unnecessary REMOVE with error 393926 (42601).
+func TestAcc_ExternalVolume_AddStorageLocation_WhileLastIsActive(t *testing.T) {
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	externalVolumeName := id.Name()
+	ref := "snowflake_external_volume.complete"
+
+	primaryLocationName := "primary"
+	secondLocationName := "secondary"
+
+	s3CompatStorageLocationRequest := func(locName string) sdk.ExternalVolumeStorageLocationRequest {
+		return *sdk.NewExternalVolumeStorageLocationRequest(locName).WithS3CompatStorageLocationParams(
+			*sdk.NewS3CompatStorageLocationParamsRequest(
+				s3CompatBaseUrl,
+				s3CompatEndpoint,
+				*sdk.NewExternalVolumeS3CompatCredentialsRequest(awsKeyId, awsSecretKey),
+			),
+		)
+	}
+
+	basicModel := model.ExternalVolume("complete", externalVolumeName, []sdk.ExternalVolumeStorageLocationRequest{
+		s3CompatStorageLocationRequest(primaryLocationName),
+	})
+
+	modelWithExtraLocation := model.ExternalVolume("complete", externalVolumeName, []sdk.ExternalVolumeStorageLocationRequest{
+		s3CompatStorageLocationRequest(primaryLocationName),
+		s3CompatStorageLocationRequest(secondLocationName),
+	})
+	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ExternalVolumeResource))
+
+	// The cleanup is stored on purpose. In order to remove the whole external volume, we need to remove the iceberg table first.
+	var icebergTableCleanup func()
+	createActiveIcebergTable := func() func() {
+		icebergTableId := testClient().Ids.RandomSchemaObjectIdentifier()
+		_, cleanup := testClient().IcebergTable.CreateWithRequest(
+			t,
+			sdk.NewCreateIcebergTableRequest(icebergTableId, sdk.IcebergTableColumnsAndConstraintsRequest{
+				Columns: []sdk.IcebergTableColumnRequest{{Name: "ID", ColumnType: testdatatypes.DataTypeNumber}},
+			}).
+				WithCatalog(sdk.IcebergTableCatalogSnowflake).
+				WithExternalVolume(id).
+				WithBaseLocation("external_volume_active_location_test_table"),
+		)
+		return cleanup
+	}
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
+		Steps: []resource.TestStep{
+			// v2.18.0: create with a single storage location
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.18.0"),
+				Config: tfconfig.FromModels(
+					t,
+					providerModel,
+					basicModel,
+				),
+				Check: assertThat(
+					t,
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasNameString(externalVolumeName).
+						HasStorageLocationLength(1),
+				),
+			},
+			// v2.18.0: make the first storage location active by creating an Iceberg table on it, then
+			// append a second storage location - reproduces the bug: the provider unnecessarily removes
+			// the now-active first location, which Snowflake rejects with error 393926 (42601)
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.18.0"),
+				PreConfig: func() {
+					icebergTableCleanup = createActiveIcebergTable()
+				},
+				Config: tfconfig.FromModels(
+					t,
+					providerModel,
+					modelWithExtraLocation,
+				),
+				ExpectError: regexp.MustCompile(`393926 \(42601\): The active storage location .* cannot be removed on external volume`),
+			},
+			// current version: the very same operation must now succeed, without removing the active location
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: tfconfig.FromModels(
+					t,
+					providerModel,
+					modelWithExtraLocation,
+				),
+				Check: assertThat(
+					t,
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasNameString(externalVolumeName).
+						HasStorageLocationLength(2),
+				),
+			},
+			// drop the Iceberg table before the external volume gets destroyed at the end of the test
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				PreConfig: func() {
+					icebergTableCleanup()
+				},
+				Config: tfconfig.FromModels(
+					t,
+					providerModel,
+					modelWithExtraLocation,
+				),
+				Check: assertThat(
+					t,
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasNameString(externalVolumeName).
+						HasStorageLocationLength(2),
 				),
 			},
 		},
