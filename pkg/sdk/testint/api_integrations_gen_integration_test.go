@@ -291,7 +291,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(false).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
@@ -321,7 +321,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(false).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
@@ -362,7 +362,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(false).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
@@ -393,13 +393,13 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(false).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
 				HasNoBlockedPrefixes().
 				HasComment("").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
 				HasAllowedAuthenticationSecrets(""),
 		)
 	})
@@ -427,13 +427,13 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(false).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
 				HasNoBlockedPrefixes().
 				HasComment("").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 				HasOauthGrant("AUTHORIZATION_CODE").
 				HasOauthClientId(oauthClientId).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
@@ -464,20 +464,20 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(false).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
 				HasBlockedPrefixes(gitOtherPrefix).
 				HasComment("git oauth2 comment").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 				HasOauthGrant("AUTHORIZATION_CODE").
 				HasOauthClientId(oauthClientId).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
 				HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 				HasOauthAccessTokenValidity(3600).
 				HasOauthRefreshTokenValidity(86400).
-				HasOauthAllowedScopes(sdk.ApiIntegrationOauthAllowedScopeReadApi, sdk.ApiIntegrationOauthAllowedScopeWriteRepository).
+				HasOauthAllowedScopesEnum(sdk.ApiIntegrationOauthAllowedScopeReadApi, sdk.ApiIntegrationOauthAllowedScopeWriteRepository).
 				HasOauthUsername("user@example.com").
 				HasAllowedAuthenticationSecrets(""),
 		)
@@ -509,7 +509,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(true).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
@@ -557,7 +557,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(true).
 				HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
 				HasAllowedPrefixes(gitPrefix).
@@ -872,7 +872,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasAllowedPrefixes(gitOtherPrefix).
 				HasBlockedPrefixes(gitPrefix).
 				HasComment("changed comment").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 				HasOauthGrant("AUTHORIZATION_CODE").
 				HasOauthClientId(oauthClientId).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
@@ -1341,7 +1341,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, integration.ID()).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasUsePrivatelinkEndpoint(false).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
