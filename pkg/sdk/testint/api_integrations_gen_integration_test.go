@@ -225,7 +225,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGoogleDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 				HasGoogleAudience(googleAudience).
 				HasGoogleApiServiceAccountNotEmpty().
 				HasAllowedPrefixes(googlePrefix).
@@ -256,7 +256,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGoogleDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 				HasGoogleAudience(googleAudience).
 				HasGoogleApiServiceAccountNotEmpty().
 				HasAllowedPrefixes(googlePrefix).
@@ -759,7 +759,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGoogleDetails(t, integration.ID()).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 				HasGoogleAudience(googleOtherAudience).
 				HasGoogleApiServiceAccountNotEmpty().
 				HasAllowedPrefixes(googleOtherPrefix).
@@ -1325,7 +1325,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationGoogleDetails(t, integration.ID()).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 				HasGoogleAudience(googleAudience).
 				HasGoogleApiServiceAccountNotEmpty().
 				HasAllowedPrefixes(googlePrefix).
