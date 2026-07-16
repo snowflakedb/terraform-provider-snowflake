@@ -90,17 +90,18 @@ var warehouseInteractiveSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("tables"),
 		Description:      "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
 	},
-	"fallback_warehouse": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: suppressIdentifierQuoting,
-		Description:      relatedResourceDescription("Specifies the name of the fallback warehouse for the interactive warehouse.", resources.Warehouse),
-	},
 	"warehouse_type": {
 		Type:        schema.TypeString,
 		Computed:    true,
 		Description: "Specifies the type for the interactive warehouse. This field is used for checking external changes and recreating the resource if needed.",
+	},
+	strings.ToLower(string(sdk.WarehouseParameterFallbackWarehouse)): {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Computed:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+		Description:      relatedResourceDescription("Specifies the name of the fallback warehouse for the interactive warehouse.", resources.Warehouse),
 	},
 	strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)): {
 		Type:             schema.TypeInt,
@@ -166,6 +167,7 @@ func WarehouseInteractive() *schema.Resource {
 			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, ShowOutputAttributeName, "name", "warehouse_size", "max_cluster_count", "min_cluster_count", "auto_suspend", "auto_resume", "resource_monitor", "comment", "tables"),
 			ComputedIfAnyAttributeChanged(
 				warehouseInteractiveSchema, ParametersAttributeName,
+				strings.ToLower(string(sdk.WarehouseParameterFallbackWarehouse)),
 				strings.ToLower(string(sdk.WarehouseParameterMaxConcurrencyLevel)),
 				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
 				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
@@ -176,9 +178,10 @@ func WarehouseInteractive() *schema.Resource {
 			}),
 			ParametersCustomDiff(
 				warehouseParametersProvider,
-				parameter[sdk.AccountParameter]{sdk.AccountParameterMaxConcurrencyLevel, valueTypeInt, sdk.ParameterTypeWarehouse},
-				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
-				parameter[sdk.AccountParameter]{sdk.AccountParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
+				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterMaxConcurrencyLevel, valueTypeInt, sdk.ParameterTypeWarehouse},
+				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
+				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
+				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterFallbackWarehouse, valueTypeString, sdk.ParameterTypeWarehouse},
 			),
 			// Snowflake does not allow changing WAREHOUSE_TYPE via ALTER (to or from INTERACTIVE),
 			// so if the underlying object is no longer interactive the only way to reconcile is to
@@ -204,9 +207,9 @@ func parseTablesSet(raw *schema.Set) ([]sdk.SchemaObjectIdentifier, error) {
 }
 
 // fallbackWarehouseFromParameters returns the FALLBACK_WAREHOUSE value from SHOW PARAMETERS output.
-// FALLBACK_WAREHOUSE is a warehouse parameter (exposed in SHOW PARAMETERS IN WAREHOUSE, not as a
-// SHOW WAREHOUSES column); unlike the int/bool warehouse parameters its value is the fallback
-// warehouse name (an account-object identifier), or empty when it is not set.
+// Its value is an account-object identifier (the fallback warehouse name), or empty when unset. It is
+// read here rather than in the shared handleWarehouseParameterRead because it applies to interactive
+// warehouses only.
 func fallbackWarehouseFromParameters(parameters []*sdk.Parameter) string {
 	for _, parameter := range parameters {
 		if parameter.Key == string(sdk.WarehouseParameterFallbackWarehouse) {
@@ -278,6 +281,9 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 	if v, ok := d.GetOk("resource_monitor"); ok {
 		req.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
+	if v, ok := d.GetOk("fallback_warehouse"); ok {
+		req.WithFallbackWarehouse(sdk.NewAccountObjectIdentifier(v.(string)))
+	}
 
 	errs := errors.Join(
 		attributeMappedValueCreateBuilder(d, "warehouse_size", req.WithWarehouseSize, sdk.ToWarehouseSize),
@@ -308,14 +314,6 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(fmt.Errorf("error creating interactive warehouse %s: %w", id.FullyQualifiedName(), err))
 	}
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-
-	// FALLBACK_WAREHOUSE is not a CREATE property; set it via a follow-up ALTER.
-	if v, ok := d.GetOk("fallback_warehouse"); ok {
-		set := sdk.NewWarehouseSetRequest().WithFallbackWarehouse(sdk.NewAccountObjectIdentifier(v.(string)))
-		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*set)); err != nil {
-			return diag.FromErr(fmt.Errorf("error setting fallback warehouse for interactive warehouse %s: %w", id.FullyQualifiedName(), err))
-		}
-	}
 
 	return ReadWarehouseInteractiveFunc(false)(ctx, d, meta)
 }
@@ -360,7 +358,6 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			tables[i] = table.FullyQualifiedName()
 		}
 
-		// FALLBACK_WAREHOUSE is exposed as a warehouse parameter, not a SHOW WAREHOUSES column.
 		fallbackWarehouse := fallbackWarehouseFromParameters(warehouseParameters)
 
 		if withExternalChangesMarking {

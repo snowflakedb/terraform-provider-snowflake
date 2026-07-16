@@ -89,6 +89,7 @@ type CreateInteractiveWarehouseOptions struct {
 	MaxConcurrencyLevel             *int                     `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int                     `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                     `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
+	FallbackWarehouse               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	Tag                             []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
