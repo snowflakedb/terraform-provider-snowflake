@@ -19,6 +19,7 @@ var notebookPairs = g.StructPair("notebookRow", "Notebook").
 	Field("code_warehouse", "string", "AccountObjectIdentifier", g.WithPlainFieldName("CodeWarehouse"))
 
 var notebookDetailsPairs = g.StructPair("NotebookDetailsRow", "NotebookDetails").
+	PlainOnlyField("Id", "SchemaObjectIdentifier").
 	OptionalText("title").
 	Text("main_file").
 	Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).

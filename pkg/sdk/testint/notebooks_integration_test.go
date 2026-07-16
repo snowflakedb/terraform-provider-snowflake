@@ -95,7 +95,7 @@ func TestInt_Notebooks(t *testing.T) {
 				HasTitle("title").
 				HasMainFile("example.ipynb").
 				HasQueryWarehouse(queryWarehouse.ID()).
-				HasUrlId().
+				HasUrlIdNotEmpty().
 				HasNonEmptyDefaultPackages().
 				HasUserPackages("").
 				HasComputePool(computePool.ID()).
@@ -174,7 +174,7 @@ func TestInt_Notebooks(t *testing.T) {
 				HasNoTitle().
 				HasMainFile("example.ipynb").
 				HasQueryWarehouse(queryWarehouse.ID()).
-				HasUrlId().
+				HasUrlIdNotEmpty().
 				HasNonEmptyDefaultPackages().
 				HasUserPackages("").
 				HasComputePool(computePool.ID()).
@@ -288,7 +288,7 @@ func TestInt_Notebooks(t *testing.T) {
 				HasTitle("title").
 				HasMainFile("example.ipynb").
 				HasNoQueryWarehouse().
-				HasUrlId().
+				HasUrlIdNotEmpty().
 				HasNonEmptyDefaultPackages().
 				HasUserPackages("").
 				HasNoComputePool().
@@ -345,7 +345,7 @@ func TestInt_Notebooks(t *testing.T) {
 			t, objectassert.NotebookDetails(t, notebook.ID()).
 				HasMainFile("notebook_app.ipynb").
 				HasNoQueryWarehouse().
-				HasUrlId().
+				HasUrlIdNotEmpty().
 				HasNonEmptyDefaultPackages().
 				HasUserPackages("").
 				HasNoComputePool().
