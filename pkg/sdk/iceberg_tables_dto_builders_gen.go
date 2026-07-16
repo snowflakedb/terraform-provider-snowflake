@@ -139,14 +139,12 @@ func (s *CreateIcebergTableRequest) WithContact(contact []TableContact) *CreateI
 	return s
 }
 
-func NewIcebergTableColumnsAndConstraintsRequest() *IcebergTableColumnsAndConstraintsRequest {
+func NewIcebergTableColumnsAndConstraintsRequest(
+	columns []IcebergTableColumnRequest,
+) *IcebergTableColumnsAndConstraintsRequest {
 	s := IcebergTableColumnsAndConstraintsRequest{}
-	return &s
-}
-
-func (s *IcebergTableColumnsAndConstraintsRequest) WithColumns(columns []IcebergTableColumnRequest) *IcebergTableColumnsAndConstraintsRequest {
 	s.Columns = columns
-	return s
+	return &s
 }
 
 func (s *IcebergTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfLineConstraint []TableOutOfLineConstraintRequest) *IcebergTableColumnsAndConstraintsRequest {

@@ -595,6 +595,151 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
+	// Snowflake-managed Iceberg tables require an external volume, which needs preconfigured AWS storage.
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup)
+
+	// Create a dedicated database with the external volume set at db level so the Snowflake-managed table
+	// can be created without specifying the external volume explicitly on the resource.
+	db, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, testClient().Database.TestParametersSet(testClient().Ids.RandomAccountObjectIdentifier()).WithExternalVolume(externalVolumeId))
+	t.Cleanup(dbCleanup)
+	schemaId := sdk.NewDatabaseObjectIdentifier(db.ID().Name(), "PUBLIC")
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
+
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarcharIceberg)
+	t.Cleanup(maskingPolicyCleanup)
+	maskingPolicyId := maskingPolicy.ID()
+
+	conditionalMaskingPolicy, conditionalMaskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
+	t.Cleanup(conditionalMaskingPolicyCleanup)
+	conditionalMaskingPolicyId := conditionalMaskingPolicy.ID()
+
+	projectionPolicyId, projectionPolicyCleanup := testClient().ProjectionPolicy.CreateProjectionPolicy(t)
+	t.Cleanup(projectionPolicyCleanup)
+
+	// FK constraints must reference a column backed by a UNIQUE or PRIMARY KEY constraint on the target table.
+	fkRefTable, fkRefTableCleanup := testClient().Table.CreateWithPredefinedColumnsForIcebergTable(t)
+	t.Cleanup(fkRefTableCleanup)
+
+	idComment := random.Comment()
+	nameComment := random.Comment()
+	statusDefault := "'active'"
+	emptyDefault := "''"
+
+	pkConstraintName := random.AlphaN(6)
+	uniqueConstraintName := random.AlphaN(6)
+	fkConstraintName := random.AlphaN(6)
+	checkConstraintName := random.AlphaN(6)
+
+	columns := []model.IcebergTableColumnRequest{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true"), Comment: idComment},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, Comment: nameComment, MaskingPolicy: &maskingPolicyId},
+		{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg, ProjectionPolicy: &projectionPolicyId},
+		{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg, DefaultExpression: statusDefault},
+		{Name: "NOTES", Type: testdatatypes.DataTypeVarcharIceberg, DefaultExpression: emptyDefault},
+		{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: &conditionalMaskingPolicyId, MaskingPolicyUsing: []string{"CATEGORY", "STATUS"}},
+		{Name: "REF_ID", Type: testdatatypes.DataTypeNumber_38_0},
+	}
+
+	primaryKeyConstraint := sdk.TableOutOfLineUniquePKRequest{
+		Name:               new(pkConstraintName),
+		PrimaryKey:         new(true),
+		Columns:            []sdk.Column{{Value: "ID"}},
+		NotEnforced:        new(true),
+		NotDeferrable:      new(true),
+		InitiallyImmediate: new(true),
+		Disable:            new(true),
+		Novalidate:         new(true),
+		Rely:               new(true),
+	}
+	uniqueConstraint := sdk.TableOutOfLineUniquePKRequest{
+		Name:    new(uniqueConstraintName),
+		Unique:  new(true),
+		Columns: []sdk.Column{{Value: "NAME"}},
+	}
+	foreignKeyConstraint := sdk.TableOutOfLineFKRequest{
+		Name:       new(fkConstraintName),
+		Columns:    []sdk.Column{{Value: "REF_ID"}},
+		References: fkRefTable.ID(),
+		RefColumns: []sdk.Column{{Value: "id"}},
+		Match:      new(sdk.SimpleMatchType),
+		On: &sdk.ForeignKeyOnAction{
+			OnUpdate: new(sdk.ForeignKeyCascadeAction),
+			OnDelete: new(sdk.ForeignKeySetNullAction),
+		},
+	}
+	checkConstraint := sdk.TableOutOfLineCHRequest{
+		Name:           new(checkConstraintName),
+		Expression:     "ID > 0",
+		EnableValidate: new(true),
+	}
+
+	modelWithColumns := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), nil).
+		WithColumns(columns...).
+		WithPrimaryKeyConstraints(primaryKeyConstraint).
+		WithUniqueConstraints(uniqueConstraint).
+		WithForeignKeyConstraints(foreignKeyConstraint).
+		WithCheckConstraints(checkConstraint)
+
+	ref := modelWithColumns.ResourceReference()
+
+	columnAssertions := resourceassert.IcebergTableResource(t, ref).
+		HasDatabaseString(id.DatabaseName()).
+		HasSchemaString(id.SchemaName()).
+		HasNameString(id.Name()).
+		HasColumns(
+			resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true, Comment: idComment},
+			resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), Comment: nameComment, MaskingPolicy: &maskingPolicyId, MaskingPolicyUsing: []string{"NAME"}},
+			resourceassert.ExpectedColumn{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), ProjectionPolicy: &projectionPolicyId},
+			resourceassert.ExpectedColumn{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), DefaultExpression: statusDefault},
+			resourceassert.ExpectedColumn{Name: "NOTES", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), DefaultExpression: emptyDefault},
+			resourceassert.ExpectedColumn{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), MaskingPolicy: &conditionalMaskingPolicyId, MaskingPolicyUsing: []string{"CATEGORY", "STATUS"}},
+			resourceassert.ExpectedColumn{Name: "REF_ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql()},
+		).
+		HasPrimaryKeyConstraints(primaryKeyConstraint).
+		HasUniqueConstraints(uniqueConstraint).
+		HasForeignKeyConstraints(foreignKeyConstraint).
+		HasCheckConstraints(checkConstraint)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.IcebergTable),
+		Steps: []resource.TestStep{
+			// Create with columns exercising not_null, comment, default, masking_policy (plain and conditional
+			// with using), projection_policy, and all constraint kinds: primary key, unique, foreign key, check.
+			{
+				Config: accconfig.FromModels(t, modelWithColumns),
+				Check:  assertThat(t, columnAssertions),
+			},
+			// Import
+			{
+				Config:            accconfig.FromModels(t, modelWithColumns),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Out-of-line constraints are ForceNew-only and are not read back by the resource, so they
+				// cannot be verified against imported state.
+				ImportStateVerifyIgnore: []string{
+					"change_tracking", "error_logging", "path_layout", "iceberg_version", "base_location",
+					"primary_key_constraint", "unique_constraint", "foreign_key_constraint", "check_constraint",
+				},
+			},
+		},
+	})
+}
+
 func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
