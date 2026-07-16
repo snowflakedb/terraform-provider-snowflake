@@ -53,15 +53,11 @@ resource "snowflake_iceberg_table" "complete" {
   max_data_extension_time_in_days = 10
   enable_data_compaction          = true
   enable_iceberg_merge_on_read    = true
-
-  # Fields that cannot be changed after creation
-  base_location   = "iceberg_table"
-  path_layout     = "FLAT"
-  change_tracking = "true"
-  iceberg_version = 2
-
-  # Fields that can be altered in place
-  error_logging = "true"
+  base_location                   = "iceberg_table"
+  path_layout                     = "FLAT"
+  change_tracking                 = "true"
+  iceberg_version                 = 2
+  error_logging                   = "true"
 
   column {
     name     = "ID"
@@ -88,9 +84,6 @@ resource "snowflake_iceberg_table" "complete" {
   column {
     name = "STATUS"
     type = "VARCHAR(16777216)"
-    default {
-      expression = "'ACTIVE'"
-    }
   }
   column {
     name = "CATEGORY"
@@ -110,6 +103,9 @@ resource "snowflake_iceberg_table" "complete" {
   column {
     name = "REF_ID"
     type = "NUMBER(38,0)"
+    default {
+      expression = "2"
+    }
   }
 
   primary_key_constraint {
