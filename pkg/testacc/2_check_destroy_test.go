@@ -117,6 +117,12 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 	// Handling user separately, due to existing test with "." as part of the identifier.
 	case resources.User:
 		return sdk.ParseAccountObjectIdentifier(rs.Primary.ID)
+	case resources.Account:
+		id, err := sdk.ParseObjectIdentifierString(rs.Primary.ID)
+		if err != nil {
+			return id, err
+		}
+		return sdk.NewAccountObjectIdentifier(id.Name()), nil
 	default:
 		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
 	}

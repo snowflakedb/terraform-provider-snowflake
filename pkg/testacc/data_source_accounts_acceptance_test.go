@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -22,7 +23,7 @@ import (
 func TestAcc_Accounts_Complete(t *testing.T) {
 	testClient().EnsureValidNonProdAccountIsUsed(t)
 
-	prefix := testClient().Ids.AlphaN(4)
+	prefix := strings.ToUpper(random.AlphaN(4))
 
 	publicKey, _ := random.GenerateRSAPublicKey(t)
 	id1 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AccountName()))
