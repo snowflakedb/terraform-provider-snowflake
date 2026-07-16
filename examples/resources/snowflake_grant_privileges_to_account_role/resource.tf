@@ -235,6 +235,53 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 ## ID: "\"role_name\"|false|false|SELECT,INSERT|OnSchemaObject|OnFuture|TABLES|InSchema|\"database\".\"my_schema\""
 
 ##################################
+### inherited privileges
+##################################
+
+# inherited privilege on all warehouses in the account
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges        = ["USAGE"]
+  account_role_name = snowflake_account_role.db_role.name
+  on_account_object {
+    inherited {
+      object_type_plural = "WAREHOUSES"
+    }
+  }
+}
+
+## ID: "\"role_name\"|false|false|USAGE|OnAccountObjectInherited|WAREHOUSES"
+
+# inherited privilege on all schemas in a database
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges        = ["USAGE"]
+  account_role_name = snowflake_account_role.db_role.name
+  on_schema {
+    inherited {
+      in_database = snowflake_database.db.name
+      # in_account = true # ON ALL SCHEMAS IN ACCOUNT
+    }
+  }
+}
+
+## ID: "\"role_name\"|false|false|USAGE|OnSchemaInherited|InDatabase|\"database\""
+
+# inherited privilege on all tables in a database
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges        = ["SELECT"]
+  account_role_name = snowflake_account_role.db_role.name
+  on_schema_object {
+    inherited {
+      object_type_plural = "TABLES"
+      in_database        = snowflake_database.db.name
+      # in_schema  = snowflake_schema.my_schema.fully_qualified_name # ON ALL TABLES IN SCHEMA
+      # in_account = true                                            # ON ALL TABLES IN ACCOUNT
+    }
+  }
+}
+
+## ID: "\"role_name\"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InDatabase|\"database\""
+
+##################################
 ### strict privilege management
 ##################################
 

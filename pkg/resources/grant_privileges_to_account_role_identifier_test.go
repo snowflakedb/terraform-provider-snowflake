@@ -75,6 +75,90 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 			},
 		},
 		{
+			Name:       "grant account role on account object inherited",
+			Identifier: `"account-role"|false|false|USAGE|OnAccountObjectInherited|WAREHOUSES`,
+			Expected: GrantPrivilegesToAccountRoleId{
+				RoleName:        sdk.NewAccountObjectIdentifier("account-role"),
+				WithGrantOption: false,
+				Privileges:      []string{"USAGE"},
+				Kind:            OnAccountObjectInheritedAccountRoleGrantKind,
+				Data: &OnAccountObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeWarehouses,
+				},
+			},
+		},
+		{
+			Name:       "grant account role on schema inherited in account",
+			Identifier: `"account-role"|false|false|USAGE|OnSchemaInherited|InAccount`,
+			Expected: GrantPrivilegesToAccountRoleId{
+				RoleName:        sdk.NewAccountObjectIdentifier("account-role"),
+				WithGrantOption: false,
+				Privileges:      []string{"USAGE"},
+				Kind:            OnSchemaInheritedAccountRoleGrantKind,
+				Data: &OnSchemaInheritedGrantData{
+					Kind: InAccountInheritedContainerKind,
+				},
+			},
+		},
+		{
+			Name:       "grant account role on schema inherited in database",
+			Identifier: `"account-role"|false|false|USAGE|OnSchemaInherited|InDatabase|"database-name"`,
+			Expected: GrantPrivilegesToAccountRoleId{
+				RoleName:        sdk.NewAccountObjectIdentifier("account-role"),
+				WithGrantOption: false,
+				Privileges:      []string{"USAGE"},
+				Kind:            OnSchemaInheritedAccountRoleGrantKind,
+				Data: &OnSchemaInheritedGrantData{
+					Kind:         InDatabaseInheritedContainerKind,
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("database-name")),
+				},
+			},
+		},
+		{
+			Name:       "grant account role on schema object inherited in account",
+			Identifier: `"account-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InAccount`,
+			Expected: GrantPrivilegesToAccountRoleId{
+				RoleName:        sdk.NewAccountObjectIdentifier("account-role"),
+				WithGrantOption: false,
+				Privileges:      []string{"SELECT"},
+				Kind:            OnSchemaObjectInheritedAccountRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InAccountInheritedContainerKind,
+				},
+			},
+		},
+		{
+			Name:       "grant account role on schema object inherited in database",
+			Identifier: `"account-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InDatabase|"database-name"`,
+			Expected: GrantPrivilegesToAccountRoleId{
+				RoleName:        sdk.NewAccountObjectIdentifier("account-role"),
+				WithGrantOption: false,
+				Privileges:      []string{"SELECT"},
+				Kind:            OnSchemaObjectInheritedAccountRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InDatabaseInheritedContainerKind,
+					DatabaseName:     new(sdk.NewAccountObjectIdentifier("database-name")),
+				},
+			},
+		},
+		{
+			Name:       "grant account role on schema object inherited in schema",
+			Identifier: `"account-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InSchema|"database-name"."schema-name"`,
+			Expected: GrantPrivilegesToAccountRoleId{
+				RoleName:        sdk.NewAccountObjectIdentifier("account-role"),
+				WithGrantOption: false,
+				Privileges:      []string{"SELECT"},
+				Kind:            OnSchemaObjectInheritedAccountRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InSchemaInheritedContainerKind,
+					SchemaName:       new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+				},
+			},
+		},
+		{
 			Name:       "grant account role on schema with schema name",
 			Identifier: `"account-role"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchema|OnSchema|"database-name"."schema-name"`,
 			Expected: GrantPrivilegesToAccountRoleId{
@@ -494,6 +578,84 @@ func TestGrantPrivilegesToAccountRoleIdString(t *testing.T) {
 				},
 			},
 			Expected: `"account-role"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchemaObject|OnAll|TABLES|InSchema|"database-name"."schema-name"`,
+		},
+		{
+			Name: "grant account role on account object inherited",
+			Identifier: GrantPrivilegesToAccountRoleId{
+				RoleName:   sdk.NewAccountObjectIdentifier("account-role"),
+				Privileges: []string{"USAGE"},
+				Kind:       OnAccountObjectInheritedAccountRoleGrantKind,
+				Data: &OnAccountObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeWarehouses,
+				},
+			},
+			Expected: `"account-role"|false|false|USAGE|OnAccountObjectInherited|WAREHOUSES`,
+		},
+		{
+			Name: "grant account role on schema inherited in account",
+			Identifier: GrantPrivilegesToAccountRoleId{
+				RoleName:   sdk.NewAccountObjectIdentifier("account-role"),
+				Privileges: []string{"USAGE"},
+				Kind:       OnSchemaInheritedAccountRoleGrantKind,
+				Data: &OnSchemaInheritedGrantData{
+					Kind: InAccountInheritedContainerKind,
+				},
+			},
+			Expected: `"account-role"|false|false|USAGE|OnSchemaInherited|InAccount`,
+		},
+		{
+			Name: "grant account role on schema inherited in database",
+			Identifier: GrantPrivilegesToAccountRoleId{
+				RoleName:   sdk.NewAccountObjectIdentifier("account-role"),
+				Privileges: []string{"USAGE"},
+				Kind:       OnSchemaInheritedAccountRoleGrantKind,
+				Data: &OnSchemaInheritedGrantData{
+					Kind:         InDatabaseInheritedContainerKind,
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("database-name")),
+				},
+			},
+			Expected: `"account-role"|false|false|USAGE|OnSchemaInherited|InDatabase|"database-name"`,
+		},
+		{
+			Name: "grant account role on schema object inherited in account",
+			Identifier: GrantPrivilegesToAccountRoleId{
+				RoleName:   sdk.NewAccountObjectIdentifier("account-role"),
+				Privileges: []string{"SELECT"},
+				Kind:       OnSchemaObjectInheritedAccountRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InAccountInheritedContainerKind,
+				},
+			},
+			Expected: `"account-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InAccount`,
+		},
+		{
+			Name: "grant account role on schema object inherited in database",
+			Identifier: GrantPrivilegesToAccountRoleId{
+				RoleName:   sdk.NewAccountObjectIdentifier("account-role"),
+				Privileges: []string{"SELECT"},
+				Kind:       OnSchemaObjectInheritedAccountRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InDatabaseInheritedContainerKind,
+					DatabaseName:     new(sdk.NewAccountObjectIdentifier("database-name")),
+				},
+			},
+			Expected: `"account-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InDatabase|"database-name"`,
+		},
+		{
+			Name: "grant account role on schema object inherited in schema",
+			Identifier: GrantPrivilegesToAccountRoleId{
+				RoleName:   sdk.NewAccountObjectIdentifier("account-role"),
+				Privileges: []string{"SELECT"},
+				Kind:       OnSchemaObjectInheritedAccountRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InSchemaInheritedContainerKind,
+					SchemaName:       new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+				},
+			},
+			Expected: `"account-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InSchema|"database-name"."schema-name"`,
 		},
 	}
 

@@ -12,10 +12,13 @@ import (
 type AccountRoleGrantKind string
 
 const (
-	OnAccountAccountRoleGrantKind       AccountRoleGrantKind = "OnAccount"
-	OnAccountObjectAccountRoleGrantKind AccountRoleGrantKind = "OnAccountObject"
-	OnSchemaAccountRoleGrantKind        AccountRoleGrantKind = "OnSchema"
-	OnSchemaObjectAccountRoleGrantKind  AccountRoleGrantKind = "OnSchemaObject"
+	OnAccountAccountRoleGrantKind                AccountRoleGrantKind = "OnAccount"
+	OnAccountObjectAccountRoleGrantKind          AccountRoleGrantKind = "OnAccountObject"
+	OnAccountObjectInheritedAccountRoleGrantKind AccountRoleGrantKind = "OnAccountObjectInherited"
+	OnSchemaAccountRoleGrantKind                 AccountRoleGrantKind = "OnSchema"
+	OnSchemaInheritedAccountRoleGrantKind        AccountRoleGrantKind = "OnSchemaInherited"
+	OnSchemaObjectAccountRoleGrantKind           AccountRoleGrantKind = "OnSchemaObject"
+	OnSchemaObjectInheritedAccountRoleGrantKind  AccountRoleGrantKind = "OnSchemaObjectInherited"
 )
 
 type OnAccountGrantData struct{}
@@ -181,6 +184,75 @@ func ParseGrantPrivilegesToAccountRoleId(id string) (GrantPrivilegesToAccountRol
 			ObjectType: objectType,
 			ObjectName: objectId,
 		}
+	case OnAccountObjectInheritedAccountRoleGrantKind:
+		if len(parts) != 6 {
+			return accountRoleId, sdk.NewError(`account role identifier should hold 6 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnAccountObjectInherited|<object_type_plural>"`)
+		}
+		objectNamePlural, err := sdk.ToPluralObjectType(parts[5])
+		if err != nil {
+			return accountRoleId, err
+		}
+		accountRoleId.Data = &OnAccountObjectInheritedGrantData{
+			ObjectNamePlural: objectNamePlural,
+		}
+	case OnSchemaInheritedAccountRoleGrantKind:
+		if len(parts) < 6 {
+			return accountRoleId, sdk.NewError(`account role identifier should hold at least 6 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaInherited|In[Account or Database]|<identifier>..."`)
+		}
+		onSchemaInheritedGrantData := OnSchemaInheritedGrantData{
+			Kind: InheritedContainerKind(parts[5]),
+		}
+		switch onSchemaInheritedGrantData.Kind {
+		case InAccountInheritedContainerKind:
+		case InDatabaseInheritedContainerKind:
+			if len(parts) != 7 {
+				return accountRoleId, sdk.NewError(`account role identifier should hold 7 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaInherited|InDatabase|<database_name>"`)
+			}
+			databaseId, err := sdk.ParseAccountObjectIdentifier(parts[6])
+			if err != nil {
+				return accountRoleId, err
+			}
+			onSchemaInheritedGrantData.DatabaseName = new(databaseId)
+		default:
+			return accountRoleId, sdk.NewError(fmt.Sprintf("invalid InheritedContainerKind: %s", onSchemaInheritedGrantData.Kind))
+		}
+		accountRoleId.Data = &onSchemaInheritedGrantData
+	case OnSchemaObjectInheritedAccountRoleGrantKind:
+		if len(parts) < 7 {
+			return accountRoleId, sdk.NewError(`account role identifier should hold at least 7 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaObjectInherited|<object_type_plural>|In[Account, Database or Schema]|<identifier>..."`)
+		}
+		objectNamePlural, err := sdk.ToPluralObjectType(parts[5])
+		if err != nil {
+			return accountRoleId, err
+		}
+		onSchemaObjectInheritedGrantData := OnSchemaObjectInheritedGrantData{
+			ObjectNamePlural: objectNamePlural,
+			Kind:             InheritedContainerKind(parts[6]),
+		}
+		switch onSchemaObjectInheritedGrantData.Kind {
+		case InAccountInheritedContainerKind:
+		case InDatabaseInheritedContainerKind:
+			if len(parts) != 8 {
+				return accountRoleId, sdk.NewError(`account role identifier should hold 8 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaObjectInherited|<object_type_plural>|InDatabase|<database_name>"`)
+			}
+			databaseId, err := sdk.ParseAccountObjectIdentifier(parts[7])
+			if err != nil {
+				return accountRoleId, err
+			}
+			onSchemaObjectInheritedGrantData.DatabaseName = new(databaseId)
+		case InSchemaInheritedContainerKind:
+			if len(parts) != 8 {
+				return accountRoleId, sdk.NewError(`account role identifier should hold 8 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaObjectInherited|<object_type_plural>|InSchema|<schema_name>"`)
+			}
+			schemaId, err := sdk.ParseDatabaseObjectIdentifier(parts[7])
+			if err != nil {
+				return accountRoleId, err
+			}
+			onSchemaObjectInheritedGrantData.SchemaName = new(schemaId)
+		default:
+			return accountRoleId, sdk.NewError(fmt.Sprintf("invalid InheritedContainerKind: %s", onSchemaObjectInheritedGrantData.Kind))
+		}
+		accountRoleId.Data = &onSchemaObjectInheritedGrantData
 	case OnSchemaAccountRoleGrantKind:
 		if len(parts) < 7 {
 			return accountRoleId, sdk.NewError(`account role identifier should hold at least 7 parts "<role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchema|<grant_on_schema_type>|<on_schema_grant_data>..."`)

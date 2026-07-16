@@ -262,6 +262,53 @@ resource "snowflake_grant_privileges_to_account_role" "example" {
 ## ID: "\"role_name\"|false|false|SELECT,INSERT|OnSchemaObject|OnFuture|TABLES|InSchema|\"database\".\"my_schema\""
 
 ##################################
+### inherited privileges
+##################################
+
+# inherited privilege on all warehouses in the account
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges        = ["USAGE"]
+  account_role_name = snowflake_account_role.db_role.name
+  on_account_object {
+    inherited {
+      object_type_plural = "WAREHOUSES"
+    }
+  }
+}
+
+## ID: "\"role_name\"|false|false|USAGE|OnAccountObjectInherited|WAREHOUSES"
+
+# inherited privilege on all schemas in a database
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges        = ["USAGE"]
+  account_role_name = snowflake_account_role.db_role.name
+  on_schema {
+    inherited {
+      in_database = snowflake_database.db.name
+      # in_account = true # ON ALL SCHEMAS IN ACCOUNT
+    }
+  }
+}
+
+## ID: "\"role_name\"|false|false|USAGE|OnSchemaInherited|InDatabase|\"database\""
+
+# inherited privilege on all tables in a database
+resource "snowflake_grant_privileges_to_account_role" "example" {
+  privileges        = ["SELECT"]
+  account_role_name = snowflake_account_role.db_role.name
+  on_schema_object {
+    inherited {
+      object_type_plural = "TABLES"
+      in_database        = snowflake_database.db.name
+      # in_schema  = snowflake_schema.my_schema.fully_qualified_name # ON ALL TABLES IN SCHEMA
+      # in_account = true                                            # ON ALL TABLES IN ACCOUNT
+    }
+  }
+}
+
+## ID: "\"role_name\"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InDatabase|\"database\""
+
+##################################
 ### strict privilege management
 ##################################
 
@@ -322,10 +369,19 @@ resource "snowflake_grant_privileges_to_account_role" "in_database" {
 <a id="nestedblock--on_account_object"></a>
 ### Nested Schema for `on_account_object`
 
-Required:
+Optional:
 
+- `inherited` (Block List, Max: 1) Configures an inherited privilege to be granted on all current and future account objects of a given type in the account. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details. (see [below for nested schema](#nestedblock--on_account_object--inherited))
 - `object_name` (String) The fully qualified name of the object on which privileges will be granted.
 - `object_type` (String) The object type of the account object on which privileges will be granted. Valid values are: `USER` | `RESOURCE MONITOR` | `WAREHOUSE` | `COMPUTE POOL` | `DATABASE` | `INTEGRATION` | `CONNECTION` | `FAILOVER GROUP` | `REPLICATION GROUP` | `EXTERNAL VOLUME`
+
+<a id="nestedblock--on_account_object--inherited"></a>
+### Nested Schema for `on_account_object.inherited`
+
+Required:
+
+- `object_type_plural` (String) The plural object type of the account object on which an inherited privilege will be granted. Valid values are (case-insensitive): `USERS` | `RESOURCE MONITORS` | `WAREHOUSES` | `COMPUTE POOLS` | `DATABASES` | `INTEGRATIONS` | `CONNECTIONS` | `FAILOVER GROUPS` | `REPLICATION GROUPS` | `EXTERNAL VOLUMES`.
+
 
 
 <a id="nestedblock--on_schema"></a>
@@ -335,7 +391,17 @@ Optional:
 
 - `all_schemas_in_database` (String) The fully qualified name of the database.
 - `future_schemas_in_database` (String) The fully qualified name of the database.
+- `inherited` (Block List, Max: 1) Configures an inherited privilege to be granted on all current and future schemas in either the account or a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details. (see [below for nested schema](#nestedblock--on_schema--inherited))
 - `schema_name` (String) The fully qualified name of the schema.
+
+<a id="nestedblock--on_schema--inherited"></a>
+### Nested Schema for `on_schema.inherited`
+
+Optional:
+
+- `in_account` (Boolean) If true, the inherited privilege will be granted on all schemas in the account.
+- `in_database` (String) The fully qualified name of the database in which the inherited privilege will be granted on all schemas.
+
 
 
 <a id="nestedblock--on_schema_object"></a>
@@ -345,6 +411,7 @@ Optional:
 
 - `all` (Block List, Max: 1) Configures the privilege to be granted on all objects in either a database or schema. (see [below for nested schema](#nestedblock--on_schema_object--all))
 - `future` (Block List, Max: 1) Configures the privilege to be granted on future objects in either a database or schema. (see [below for nested schema](#nestedblock--on_schema_object--future))
+- `inherited` (Block List, Max: 1) Configures an inherited privilege to be granted on all current and future objects of a given type in the account, a database, or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details. (see [below for nested schema](#nestedblock--on_schema_object--inherited))
 - `object_name` (String) The fully qualified name of the object on which privileges will be granted.
 - `object_type` (String) The object type of the schema object on which privileges will be granted. Valid values are: AGENT | AGGREGATION POLICY | ALERT | AUTHENTICATION POLICY | CORTEX SEARCH SERVICE | DATA METRIC FUNCTION | DATASET | DBT PROJECT | DYNAMIC TABLE | EVENT TABLE | EXPERIMENT | EXTERNAL TABLE | FILE FORMAT | FUNCTION | GATEWAY | GIT REPOSITORY | HYBRID TABLE | IMAGE REPOSITORY | ICEBERG TABLE | JOIN POLICY | MASKING POLICY | MATERIALIZED VIEW | MCP SERVER | MODEL | MODEL MONITOR | NETWORK RULE | NOTEBOOK | NOTEBOOK PROJECT | ONLINE FEATURE TABLE | PACKAGES POLICY | PASSWORD POLICY | PIPE | PRIVACY POLICY | PROCEDURE | PROJECTION POLICY | ROW ACCESS POLICY | SECRET | SEMANTIC VIEW | SERVICE | SESSION POLICY | SEQUENCE | SNAPSHOT | SNAPSHOT POLICY | SNAPSHOT SET | STAGE | STORAGE LIFECYCLE POLICY | STREAM | STREAMLIT | TABLE | TAG | TASK | VIEW | WORKSPACE
 
@@ -372,6 +439,20 @@ Optional:
 
 - `in_database` (String)
 - `in_schema` (String)
+
+
+<a id="nestedblock--on_schema_object--inherited"></a>
+### Nested Schema for `on_schema_object.inherited`
+
+Required:
+
+- `object_type_plural` (String) The plural object type of the schema object on which an inherited privilege will be granted. Valid values are (case-insensitive): `AGENTS` | `AGGREGATION POLICIES` | `ALERTS` | `AUTHENTICATION POLICIES` | `CORTEX SEARCH SERVICES` | `DATA METRIC FUNCTIONS` | `DATASETS` | `DBT PROJECTS` | `DYNAMIC TABLES` | `EVENT TABLES` | `EXTERNAL TABLES` | `FILE FORMATS` | `FUNCTIONS` | `GIT REPOSITORIES` | `HYBRID TABLES` | `IMAGE REPOSITORIES` | `ICEBERG TABLES` | `MASKING POLICIES` | `MATERIALIZED VIEWS` | `MCP SERVERS` | `MODELS` | `MODEL MONITORS` | `NETWORK RULES` | `NOTEBOOKS` | `ONLINE FEATURE TABLES` | `PACKAGES POLICIES` | `PASSWORD POLICIES` | `PIPES` | `PRIVACY POLICIES` | `PROCEDURES` | `PROJECTION POLICIES` | `ROW ACCESS POLICIES` | `SECRETS` | `SEMANTIC VIEWS` | `SERVICES` | `SESSION POLICIES` | `SEQUENCES` | `SNAPSHOTS` | `SNAPSHOT POLICIES` | `SNAPSHOT SETS` | `STAGES` | `STREAMS` | `STREAMLITS` | `TABLES` | `TAGS` | `TASKS` | `VIEWS`.
+
+Optional:
+
+- `in_account` (Boolean) If true, the inherited privilege will be granted on all objects of the given type in the account.
+- `in_database` (String) The fully qualified name of the database in which the inherited privilege will be granted on all objects of the given type.
+- `in_schema` (String) The fully qualified name of the schema in which the inherited privilege will be granted on all objects of the given type.
 
 
 
