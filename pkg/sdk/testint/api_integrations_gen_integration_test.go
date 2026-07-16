@@ -63,7 +63,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAwsDetails(t, id).
 				HasEnabled(true).
 				HasApiKey("").
-				HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 				HasApiAwsRoleArn(apiAwsRoleArn).
 				HasApiAwsIamUserArnNotEmpty().
 				HasApiAwsExternalIdNotEmpty().
@@ -99,7 +99,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAwsDetails(t, id).
 				HasEnabled(true).
 				HasApiKey("☺☺☺").
-				HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 				HasApiAwsRoleArn(apiAwsRoleArn).
 				HasApiAwsIamUserArnNotEmpty().
 				HasApiAwsExternalIdNotEmpty().
@@ -130,7 +130,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 
 				assertThatObject(
 					t, objectassert.ApiIntegrationAwsDetails(t, id).
-						HasApiProvider(providerType),
+						HasApiProviderType(providerType),
 				)
 			})
 		}
@@ -694,7 +694,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAwsDetails(t, integration.ID()).
 				HasEnabled(true).
 				HasApiKey("☺☺☺").
-				HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 				HasApiAwsRoleArn(otherRoleArn).
 				HasApiAwsIamUserArnNotEmpty().
 				HasApiAwsExternalIdNotEmpty().
@@ -1289,7 +1289,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAwsDetails(t, integration.ID()).
 				HasEnabled(true).
 				HasApiKey("").
-				HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
+				HasApiProviderType(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 				HasApiAwsRoleArn(apiAwsRoleArn).
 				HasApiAwsIamUserArnNotEmpty().
 				HasApiAwsExternalIdNotEmpty().
