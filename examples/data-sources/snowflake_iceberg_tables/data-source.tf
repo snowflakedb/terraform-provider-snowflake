@@ -57,6 +57,7 @@ output "starts_with_output" {
 data "snowflake_iceberg_tables" "limit" {
   limit {
     rows = 10
+    from = "iceberg-table-"
   }
 }
 

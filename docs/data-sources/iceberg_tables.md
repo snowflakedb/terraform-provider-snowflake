@@ -73,6 +73,7 @@ output "starts_with_output" {
 data "snowflake_iceberg_tables" "limit" {
   limit {
     rows = 10
+    from = "iceberg-table-"
   }
 }
 
@@ -361,7 +362,7 @@ Read-Only:
 - `name_mapping` (String)
 - `owner` (String)
 - `owner_role_type` (String)
-- `partition_specs` (String)
+- `partition_specs` (List of Object) (see [below for nested schema](#nestedobjatt--iceberg_tables--show_output--partition_specs))
 - `schema_name` (String)
 
 <a id="nestedobjatt--iceberg_tables--show_output--auto_refresh_status"></a>
@@ -374,3 +375,22 @@ Read-Only:
 - `last_snapshot_time` (String)
 - `last_updated_time` (String)
 - `pending_snapshot_count` (Number)
+
+
+<a id="nestedobjatt--iceberg_tables--show_output--partition_specs"></a>
+### Nested Schema for `iceberg_tables.show_output.partition_specs`
+
+Read-Only:
+
+- `fields` (List of Object) (see [below for nested schema](#nestedobjatt--iceberg_tables--show_output--partition_specs--fields))
+- `spec_id` (Number)
+
+<a id="nestedobjatt--iceberg_tables--show_output--partition_specs--fields"></a>
+### Nested Schema for `iceberg_tables.show_output.partition_specs.fields`
+
+Read-Only:
+
+- `field_id` (Number)
+- `name` (String)
+- `source_id` (Number)
+- `transform` (String)
