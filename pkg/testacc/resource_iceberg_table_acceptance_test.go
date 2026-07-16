@@ -92,7 +92,11 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithEnableDataCompaction(false).
 		WithEnableIcebergMergeOnRead(false).
 		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-		WithAggregationPolicy(aggregationPolicy, "ID")
+		WithAggregationPolicy(aggregationPolicy, "ID").
+		WithPartitionBy(
+			model.IcebergTablePartitionByIdentity("NAME"),
+			model.IcebergTablePartitionByBucket(4, "ID"),
+		)
 
 	// modelWithAllOptionalChanged sets every optional field to a value different from modelWithAllOptional,
 	// so that reapplying it always forces a new resource (ForceNew fields changed).
@@ -114,8 +118,7 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
 		WithAggregationPolicy(aggregationPolicy, "ID")
 
-	// modelWithAllOptionalUnset starts from modelWithAllOptionalChanged's ForceNew field values (so no
-	// replace is triggered), but omits every alterable optional field from the config to exercise the
+	// modelWithAllOptionalUnset starts from modelWithAllOptionalChanged's ForceNew field values, but omits every alterable optional field from the config to exercise the
 	// UNSET code path in UpdateIcebergTable.
 	modelWithAllOptionalUnset := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
 		WithCatalog("SNOWFLAKE").
@@ -125,6 +128,30 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 		WithIcebergVersion(3).
 		WithPathLayout(string(sdk.IcebergTablePathLayoutHierarchical)).
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible))
+
+	// modelWithClusterBy mirrors modelWithAllOptionalUnset (so no replace is triggered) but sets cluster_by
+	// instead of partition_by (the two are mutually exclusive).
+	modelWithClusterBy := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithCatalog("SNOWFLAKE").
+		WithBaseLocation(baseLocationChanged).
+		WithExternalVolume(externalVolumeId.Name()).
+		WithChangeTracking("true").
+		WithIcebergVersion(3).
+		WithPathLayout(string(sdk.IcebergTablePathLayoutHierarchical)).
+		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
+		WithClusterBy("ID", "NAME")
+
+	// modelWithAlteredClusterBy mirrors modelWithClusterBy but changes the cluster_by columns, to prove that
+	// changing cluster_by triggers an in-place update (ALTER ... CLUSTER BY) rather than a replace.
+	modelWithAlteredClusterBy := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithCatalog("SNOWFLAKE").
+		WithBaseLocation(baseLocationChanged).
+		WithExternalVolume(externalVolumeId.Name()).
+		WithChangeTracking("true").
+		WithIcebergVersion(3).
+		WithPathLayout(string(sdk.IcebergTablePathLayoutHierarchical)).
+		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
+		WithClusterBy("NAME")
 
 	ref := modelBasic.ResourceReference()
 
@@ -225,7 +252,10 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 			HasEnableIcebergMergeOnRead(false).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-			HasAggregationPolicy(aggregationPolicy, "ID"),
+			HasAggregationPolicy(aggregationPolicy, "ID").
+			HasPartitionByLength(2).
+			HasPartitionByIdentity(0, "NAME").
+			HasPartitionByBucket(1, 4, "ID"),
 		resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -397,6 +427,44 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"change_tracking", "error_logging", "path_layout", "iceberg_version", "base_location"},
 			},
+			// The partition spec changes externally (CREATE OR REPLACE with a different partition_by) while
+			// the config keeps requesting the original partitioning.
+			{
+				PreConfig: func() {
+					req := sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+						Columns: []sdk.IcebergTableColumnRequest{
+							*sdk.NewIcebergTableColumnRequest(columns[0].Name, columns[0].Type),
+							*sdk.NewIcebergTableColumnRequest(columns[1].Name, columns[1].Type),
+						},
+					}).
+						WithOrReplace(true).
+						WithExternalVolume(externalVolumeId).
+						WithCatalog(sdk.IcebergTableCatalogSnowflake).
+						WithBaseLocation(baseLocation).
+						WithComment(comment).
+						WithChangeTracking(true).
+						WithIcebergVersion(2).
+						WithPathLayout(sdk.IcebergTablePathLayoutFlat).
+						WithErrorLogging(true).
+						WithTargetFileSize(sdk.IcebergTableTargetFileSize64mb).
+						WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
+						WithDataRetentionTimeInDays(5).
+						WithMaxDataExtensionTimeInDays(10).
+						WithEnableDataCompaction(false).
+						WithEnableIcebergMergeOnRead(false).
+						WithPartitionBy([]sdk.IcebergTablePartitionExpressionRequest{
+							{Bucket: &sdk.IcebergTablePartitionBucketRequest{Args: sdk.IcebergTablePartitionBucketArgsRequest{NumBuckets: 4, Column: "NAME"}}},
+						})
+					testClient().IcebergTable.CreateWithRequest(t, req)
+				},
+				Config: accconfig.FromModels(t, modelWithAllOptional),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t, allOptionalAssertions...),
+			},
 			// The underlying table gets recreated externally (CREATE OR REPLACE) and every field is changed
 			// in the config at the same time - still expect Terraform to destroy and recreate the resource.
 			{
@@ -469,6 +537,205 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, unsetOptionalAssertions...),
 			},
+			// Switch from partition_by to cluster_by - expect an in-place update (cluster_by is not ForceNew)
+			{
+				Config: accconfig.FromModels(t, modelWithClusterBy),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.IcebergTableResource(t, ref).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasClusterBy("ID", "NAME").
+						HasPartitionByEmpty(),
+				),
+			},
+			// Change cluster_by to a different set of columns - expect an in-place update (ALTER ... CLUSTER BY)
+			{
+				Config: accconfig.FromModels(t, modelWithAlteredClusterBy),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.IcebergTableResource(t, ref).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasClusterBy("NAME").
+						HasPartitionByEmpty(),
+				),
+			},
+			// Unset cluster_by - expect an in-place update (ALTER ... DROP CLUSTERING KEY) rather than a replace
+			{
+				Config: accconfig.FromModels(t, modelWithAllOptionalUnset),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.IcebergTableResource(t, ref).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasClusterByEmpty().
+						HasPartitionByEmpty(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_IcebergTable_BasicUseCase_Columns(t *testing.T) {
+	// Snowflake-managed Iceberg tables require an external volume, which needs preconfigured AWS storage.
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup)
+
+	// Create a dedicated database with the external volume set at db level so the Snowflake-managed table
+	// can be created without specifying the external volume explicitly on the resource.
+	db, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, testClient().Database.TestParametersSet(testClient().Ids.RandomAccountObjectIdentifier()).WithExternalVolume(externalVolumeId))
+	t.Cleanup(dbCleanup)
+	schemaId := sdk.NewDatabaseObjectIdentifier(db.ID().Name(), "PUBLIC")
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
+
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarcharIceberg)
+	t.Cleanup(maskingPolicyCleanup)
+	maskingPolicyId := maskingPolicy.ID()
+
+	conditionalMaskingPolicy, conditionalMaskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
+	t.Cleanup(conditionalMaskingPolicyCleanup)
+	conditionalMaskingPolicyId := conditionalMaskingPolicy.ID()
+
+	projectionPolicyId, projectionPolicyCleanup := testClient().ProjectionPolicy.CreateProjectionPolicy(t)
+	t.Cleanup(projectionPolicyCleanup)
+
+	// FK constraints must reference a column backed by a UNIQUE or PRIMARY KEY constraint on the target table.
+	fkRefTable, fkRefTableCleanup := testClient().Table.CreateWithPredefinedColumnsForIcebergTable(t)
+	t.Cleanup(fkRefTableCleanup)
+
+	idComment := random.Comment()
+	nameComment := random.Comment()
+	statusDefault := "'active'"
+	emptyDefault := "''"
+
+	pkConstraintName := random.AlphaN(6)
+	uniqueConstraintName := random.AlphaN(6)
+	fkConstraintName := random.AlphaN(6)
+	checkConstraintName := random.AlphaN(6)
+
+	columns := []model.IcebergTableColumnRequest{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new("true"), Comment: idComment},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg, Comment: nameComment, MaskingPolicy: &maskingPolicyId},
+		{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg, ProjectionPolicy: &projectionPolicyId},
+		{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg, DefaultExpression: statusDefault},
+		{Name: "NOTES", Type: testdatatypes.DataTypeVarcharIceberg, DefaultExpression: emptyDefault},
+		{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg, MaskingPolicy: &conditionalMaskingPolicyId, MaskingPolicyUsing: []string{"CATEGORY", "STATUS"}},
+		{Name: "REF_ID", Type: testdatatypes.DataTypeNumber_38_0},
+	}
+
+	primaryKeyConstraint := sdk.TableOutOfLineUniquePKRequest{
+		Name:               new(pkConstraintName),
+		PrimaryKey:         new(true),
+		Columns:            []sdk.Column{{Value: "ID"}},
+		NotEnforced:        new(true),
+		NotDeferrable:      new(true),
+		InitiallyImmediate: new(true),
+		Disable:            new(true),
+		Novalidate:         new(true),
+		Rely:               new(true),
+	}
+	uniqueConstraint := sdk.TableOutOfLineUniquePKRequest{
+		Name:    new(uniqueConstraintName),
+		Unique:  new(true),
+		Columns: []sdk.Column{{Value: "NAME"}},
+	}
+	foreignKeyConstraint := sdk.TableOutOfLineFKRequest{
+		Name:       new(fkConstraintName),
+		Columns:    []sdk.Column{{Value: "REF_ID"}},
+		References: fkRefTable.ID(),
+		RefColumns: []sdk.Column{{Value: "id"}},
+		Match:      new(sdk.SimpleMatchType),
+		On: &sdk.ForeignKeyOnAction{
+			OnUpdate: new(sdk.ForeignKeyCascadeAction),
+			OnDelete: new(sdk.ForeignKeySetNullAction),
+		},
+	}
+	checkConstraint := sdk.TableOutOfLineCHRequest{
+		Name:           new(checkConstraintName),
+		Expression:     "ID > 0",
+		EnableValidate: new(true),
+	}
+
+	modelWithColumns := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), nil).
+		WithColumns(columns...).
+		WithPrimaryKeyConstraints(primaryKeyConstraint).
+		WithUniqueConstraints(uniqueConstraint).
+		WithForeignKeyConstraints(foreignKeyConstraint).
+		WithCheckConstraints(checkConstraint)
+
+	ref := modelWithColumns.ResourceReference()
+
+	columnAssertions := resourceassert.IcebergTableResource(t, ref).
+		HasDatabaseString(id.DatabaseName()).
+		HasSchemaString(id.SchemaName()).
+		HasNameString(id.Name()).
+		HasColumns(
+			resourceassert.ExpectedColumn{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql(), NotNull: true, Comment: idComment},
+			resourceassert.ExpectedColumn{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), Comment: nameComment, MaskingPolicy: &maskingPolicyId, MaskingPolicyUsing: []string{"NAME"}},
+			resourceassert.ExpectedColumn{Name: "REGION", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), ProjectionPolicy: &projectionPolicyId},
+			resourceassert.ExpectedColumn{Name: "STATUS", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), DefaultExpression: statusDefault},
+			resourceassert.ExpectedColumn{Name: "NOTES", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), DefaultExpression: emptyDefault},
+			resourceassert.ExpectedColumn{Name: "CATEGORY", Type: testdatatypes.DataTypeVarcharIceberg.ToSql(), MaskingPolicy: &conditionalMaskingPolicyId, MaskingPolicyUsing: []string{"CATEGORY", "STATUS"}},
+			resourceassert.ExpectedColumn{Name: "REF_ID", Type: testdatatypes.DataTypeNumber_38_0.ToSql()},
+		).
+		HasPrimaryKeyConstraints(primaryKeyConstraint).
+		HasUniqueConstraints(uniqueConstraint).
+		HasForeignKeyConstraints(foreignKeyConstraint).
+		HasCheckConstraints(checkConstraint)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.IcebergTable),
+		Steps: []resource.TestStep{
+			// Create with columns exercising not_null, comment, default, masking_policy (plain and conditional
+			// with using), projection_policy, and all constraint kinds: primary key, unique, foreign key, check.
+			{
+				Config: accconfig.FromModels(t, modelWithColumns),
+				Check:  assertThat(t, columnAssertions),
+			},
+			// Import
+			{
+				Config:            accconfig.FromModels(t, modelWithColumns),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Out-of-line constraints are ForceNew-only and are not read back by the resource, so they
+				// cannot be verified against imported state.
+				ImportStateVerifyIgnore: []string{
+					"change_tracking", "error_logging", "path_layout", "iceberg_version", "base_location",
+					"primary_key_constraint", "unique_constraint", "foreign_key_constraint", "check_constraint",
+				},
+			},
 		},
 	})
 }
@@ -514,7 +781,11 @@ func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 		WithEnableDataCompaction(false).
 		WithEnableIcebergMergeOnRead(false).
 		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-		WithAggregationPolicy(aggregationPolicy, "ID")
+		WithAggregationPolicy(aggregationPolicy, "ID").
+		WithPartitionBy(
+			model.IcebergTablePartitionByBucket(4, "ID"),
+			model.IcebergTablePartitionByTruncate(10, "NAME"),
+		)
 
 	ref := modelComplete.ResourceReference()
 
@@ -548,7 +819,10 @@ func TestAcc_IcebergTable_CompleteUseCase(t *testing.T) {
 						HasEnableIcebergMergeOnRead(false).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
-						HasAggregationPolicy(aggregationPolicy, "ID"),
+						HasAggregationPolicy(aggregationPolicy, "ID").
+						HasPartitionByLength(2).
+						HasPartitionByBucket(0, 4, "ID").
+						HasPartitionByTruncate(1, 10, "NAME"),
 					resourceshowoutputassert.IcebergTableShowOutput(t, ref).
 						HasName(id.Name()).
 						HasDatabaseName(id.DatabaseName()).
@@ -630,6 +904,14 @@ func TestAcc_IcebergTable_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, baseModel().WithIcebergVersion(0)),
 				ExpectError: regexp.MustCompile(`expected .*iceberg_version.* to be at least \(1\), got 0`),
+			},
+			{
+				Config: accconfig.FromModels(
+					t, baseModel().
+						WithPartitionBy(model.IcebergTablePartitionByIdentity("ID")).
+						WithClusterBy("ID"),
+				),
+				ExpectError: regexp.MustCompile(`"cluster_by": conflicts with partition_by`),
 			},
 		},
 	})

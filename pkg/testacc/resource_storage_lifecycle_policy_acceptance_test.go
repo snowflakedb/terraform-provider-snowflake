@@ -115,6 +115,8 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			HasOptions(`{"ARCHIVE_FOR_DAYS":null,"ARCHIVE_TIER":"NULL"}`),
 		resourceshowoutputassert.StorageLifecyclePolicyDescribeOutput(t, ref).
 			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasSignature(expectedSignature...).
 			HasReturnType(testdatatypes.DataTypeBoolean).
 			HasBody(body).
@@ -144,6 +146,8 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			HasOptions(`{"ARCHIVE_FOR_DAYS":365,"ARCHIVE_TIER":"COLD"}`),
 		resourceshowoutputassert.StorageLifecyclePolicyDescribeOutput(t, ref).
 			HasName(newId.Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasSignature(expectedSignature...).
 			HasReturnType(testdatatypes.DataTypeBoolean).
 			HasBody(newBody).
@@ -173,6 +177,8 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			HasOptions(`{"ARCHIVE_FOR_DAYS":null,"ARCHIVE_TIER":"COLD"}`),
 		resourceshowoutputassert.StorageLifecyclePolicyDescribeOutput(t, ref).
 			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasSignature(expectedSignature...).
 			HasReturnType(testdatatypes.DataTypeBoolean).
 			HasBody(body).
@@ -202,6 +208,8 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			HasOptions(`{"ARCHIVE_FOR_DAYS":null,"ARCHIVE_TIER":"NULL"}`),
 		resourceshowoutputassert.StorageLifecyclePolicyDescribeOutput(t, ref).
 			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasSignature(expectedNewSignature...).
 			HasReturnType(testdatatypes.DataTypeBoolean).
 			HasBody(body).

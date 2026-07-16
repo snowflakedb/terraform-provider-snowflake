@@ -4,11 +4,13 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -232,10 +234,12 @@ func (i *IcebergTableAssert) HasCatalogSyncName(expected string) *IcebergTableAs
 	return i
 }
 
-func (i *IcebergTableAssert) HasPartitionSpecs(expected string) *IcebergTableAssert {
+func (i *IcebergTableAssert) HasPartitionSpecs(expected ...sdk.IcebergTablePartitionSpec) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
-		if o.PartitionSpecs != expected {
+		mapped := collections.Map(o.PartitionSpecs, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected partition specs: %v; got: %v", expected, o.PartitionSpecs)
 		}
 		return nil

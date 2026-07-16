@@ -54,6 +54,16 @@ func (p *PasswordPolicyDescribeOutputAssert) HasName(expected string) *PasswordP
 	return p
 }
 
+func (p *PasswordPolicyDescribeOutputAssert) HasDatabaseName(expected string) *PasswordPolicyDescribeOutputAssert {
+	p.StringValueSet("database_name", expected)
+	return p
+}
+
+func (p *PasswordPolicyDescribeOutputAssert) HasSchemaName(expected string) *PasswordPolicyDescribeOutputAssert {
+	p.StringValueSet("schema_name", expected)
+	return p
+}
+
 func (p *PasswordPolicyDescribeOutputAssert) HasOwner(expected string) *PasswordPolicyDescribeOutputAssert {
 	p.StringValueSet("owner", expected)
 	return p
@@ -125,6 +135,16 @@ func (p *PasswordPolicyDescribeOutputAssert) HasPasswordHistory(expected int) *P
 
 func (p *PasswordPolicyDescribeOutputAssert) HasNoName() *PasswordPolicyDescribeOutputAssert {
 	p.ValueNotSet("name")
+	return p
+}
+
+func (p *PasswordPolicyDescribeOutputAssert) HasNoDatabaseName() *PasswordPolicyDescribeOutputAssert {
+	p.ValueNotSet("database_name")
+	return p
+}
+
+func (p *PasswordPolicyDescribeOutputAssert) HasNoSchemaName() *PasswordPolicyDescribeOutputAssert {
+	p.ValueNotSet("schema_name")
 	return p
 }
 

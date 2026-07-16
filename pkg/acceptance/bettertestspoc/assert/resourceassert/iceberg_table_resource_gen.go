@@ -69,6 +69,13 @@ func (i *IcebergTableResourceAssert) HasChangeTracking(expected string) *Iceberg
 	return i
 }
 
+// typed assert for "check_constraint" (type: List, subtype: Map) is not currently supported
+
+func (i *IcebergTableResourceAssert) HasClusterBy(expected ...string) *IcebergTableResourceAssert {
+	i.ListContainsExactlyStringValuesInOrder("cluster_by", expected...)
+	return i
+}
+
 // typed assert for "column" (type: List, subtype: Map) is not currently supported
 
 func (i *IcebergTableResourceAssert) HasComment(expected string) *IcebergTableResourceAssert {
@@ -101,6 +108,8 @@ func (i *IcebergTableResourceAssert) HasExternalVolume(expected string) *Iceberg
 	return i
 }
 
+// typed assert for "foreign_key_constraint" (type: List, subtype: Map) is not currently supported
+
 func (i *IcebergTableResourceAssert) HasFullyQualifiedName(expected string) *IcebergTableResourceAssert {
 	i.StringValueSet("fully_qualified_name", expected)
 	return i
@@ -116,10 +125,14 @@ func (i *IcebergTableResourceAssert) HasMaxDataExtensionTimeInDays(expected int)
 	return i
 }
 
+// typed assert for "partition_by" (type: List, subtype: Map) is not currently supported
+
 func (i *IcebergTableResourceAssert) HasPathLayout(expected string) *IcebergTableResourceAssert {
 	i.StringValueSet("path_layout", expected)
 	return i
 }
+
+// typed assert for "primary_key_constraint" (type: List, subtype: Map) is not currently supported
 
 // typed assert for "row_access_policy" (type: List, subtype: Map) is not currently supported
 
@@ -132,6 +145,8 @@ func (i *IcebergTableResourceAssert) HasTargetFileSize(expected string) *Iceberg
 	i.StringValueSet("target_file_size", expected)
 	return i
 }
+
+// typed assert for "unique_constraint" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //
@@ -360,6 +375,16 @@ func (i *IcebergTableResourceAssert) HasChangeTrackingEmpty() *IcebergTableResou
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasCheckConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("check_constraint.#", "0")
+	return i
+}
+
+func (i *IcebergTableResourceAssert) HasClusterByEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("cluster_by.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasCommentEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("comment", "")
 	return i
@@ -390,6 +415,11 @@ func (i *IcebergTableResourceAssert) HasExternalVolumeEmpty() *IcebergTableResou
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasForeignKeyConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("foreign_key_constraint.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasFullyQualifiedNameEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("fully_qualified_name", "")
 	return i
@@ -405,8 +435,18 @@ func (i *IcebergTableResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *Icebe
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasPartitionByEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("partition_by.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasPathLayoutEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("path_layout", "")
+	return i
+}
+
+func (i *IcebergTableResourceAssert) HasPrimaryKeyConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("primary_key_constraint.#", "0")
 	return i
 }
 
@@ -422,6 +462,11 @@ func (i *IcebergTableResourceAssert) HasStorageSerializationPolicyEmpty() *Icebe
 
 func (i *IcebergTableResourceAssert) HasTargetFileSizeEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("target_file_size", "")
+	return i
+}
+
+func (i *IcebergTableResourceAssert) HasUniqueConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("unique_constraint.#", "0")
 	return i
 }
 

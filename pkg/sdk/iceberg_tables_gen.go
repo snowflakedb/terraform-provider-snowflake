@@ -606,7 +606,7 @@ type IcebergTable struct {
 	OwnerRoleType             string
 	CatalogSyncName           string
 	AutoRefreshStatus         *IcebergTableAutoRefreshStatus
-	PartitionSpecs            string
+	PartitionSpecs            []IcebergTablePartitionSpec
 	CurrentPartitionSpecId    int
 	IcebergTableFormatVersion int
 }
