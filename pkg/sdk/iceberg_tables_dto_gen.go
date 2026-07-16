@@ -47,7 +47,7 @@ type CreateIcebergTableRequest struct {
 }
 
 type IcebergTableColumnsAndConstraintsRequest struct {
-	Columns             []IcebergTableColumnRequest
+	Columns             []IcebergTableColumnRequest // required
 	OutOfLineConstraint []TableOutOfLineConstraintRequest
 }
 

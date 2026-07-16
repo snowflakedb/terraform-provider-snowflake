@@ -69,6 +69,8 @@ func (i *IcebergTableResourceAssert) HasChangeTracking(expected string) *Iceberg
 	return i
 }
 
+// typed assert for "check_constraint" (type: List, subtype: Map) is not currently supported
+
 func (i *IcebergTableResourceAssert) HasClusterBy(expected ...string) *IcebergTableResourceAssert {
 	i.ListContainsExactlyStringValuesInOrder("cluster_by", expected...)
 	return i
@@ -106,6 +108,8 @@ func (i *IcebergTableResourceAssert) HasExternalVolume(expected string) *Iceberg
 	return i
 }
 
+// typed assert for "foreign_key_constraint" (type: List, subtype: Map) is not currently supported
+
 func (i *IcebergTableResourceAssert) HasFullyQualifiedName(expected string) *IcebergTableResourceAssert {
 	i.StringValueSet("fully_qualified_name", expected)
 	return i
@@ -128,6 +132,8 @@ func (i *IcebergTableResourceAssert) HasPathLayout(expected string) *IcebergTabl
 	return i
 }
 
+// typed assert for "primary_key_constraint" (type: List, subtype: Map) is not currently supported
+
 // typed assert for "row_access_policy" (type: List, subtype: Map) is not currently supported
 
 func (i *IcebergTableResourceAssert) HasStorageSerializationPolicy(expected string) *IcebergTableResourceAssert {
@@ -139,6 +145,8 @@ func (i *IcebergTableResourceAssert) HasTargetFileSize(expected string) *Iceberg
 	i.StringValueSet("target_file_size", expected)
 	return i
 }
+
+// typed assert for "unique_constraint" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //
@@ -367,6 +375,11 @@ func (i *IcebergTableResourceAssert) HasChangeTrackingEmpty() *IcebergTableResou
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasCheckConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("check_constraint.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasClusterByEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("cluster_by.#", "0")
 	return i
@@ -402,6 +415,11 @@ func (i *IcebergTableResourceAssert) HasExternalVolumeEmpty() *IcebergTableResou
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasForeignKeyConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("foreign_key_constraint.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasFullyQualifiedNameEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("fully_qualified_name", "")
 	return i
@@ -427,6 +445,11 @@ func (i *IcebergTableResourceAssert) HasPathLayoutEmpty() *IcebergTableResourceA
 	return i
 }
 
+func (i *IcebergTableResourceAssert) HasPrimaryKeyConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("primary_key_constraint.#", "0")
+	return i
+}
+
 func (i *IcebergTableResourceAssert) HasRowAccessPolicyEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("row_access_policy.#", "0")
 	return i
@@ -439,6 +462,11 @@ func (i *IcebergTableResourceAssert) HasStorageSerializationPolicyEmpty() *Icebe
 
 func (i *IcebergTableResourceAssert) HasTargetFileSizeEmpty() *IcebergTableResourceAssert {
 	i.ValueSet("target_file_size", "")
+	return i
+}
+
+func (i *IcebergTableResourceAssert) HasUniqueConstraintEmpty() *IcebergTableResourceAssert {
+	i.ValueSet("unique_constraint.#", "0")
 	return i
 }
 

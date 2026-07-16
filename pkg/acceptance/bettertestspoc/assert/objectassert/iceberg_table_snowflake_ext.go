@@ -2,9 +2,11 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -143,6 +145,22 @@ func (i *IcebergTableAssert) HasAutoRefreshStatus(expected sdk.IcebergTableAutoR
 		expected.LastSnapshotTime, expected.LastUpdatedTime = nil, ""
 		if actual != expected {
 			return fmt.Errorf("expected auto refresh status: %+v; got: %+v", expected, actual)
+		}
+		return nil
+	})
+	return i
+}
+
+// HasPartitionSpecs fails with the following panic
+// panic: runtime error: comparing uncomparable type sdk.IcebergTablePartitionSpec [recovered, repanicked]
+// This is a workaround to compare the partition specs using reflect.DeepEqual.
+func (i *IcebergTableAssert) HasPartitionSpecsFixed(expected ...sdk.IcebergTablePartitionSpec) *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		mapped := collections.Map(o.PartitionSpecs, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		if !reflect.DeepEqual(mapped, mappedExpected) {
+			return fmt.Errorf("expected partition specs: %v; got: %v", expected, o.PartitionSpecs)
 		}
 		return nil
 	})

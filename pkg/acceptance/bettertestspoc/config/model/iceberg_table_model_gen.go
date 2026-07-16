@@ -20,6 +20,7 @@ type IcebergTableModel struct {
 	Catalog                    tfconfig.Variable `json:"catalog,omitempty"`
 	CatalogSync                tfconfig.Variable `json:"catalog_sync,omitempty"`
 	ChangeTracking             tfconfig.Variable `json:"change_tracking,omitempty"`
+	CheckConstraint            tfconfig.Variable `json:"check_constraint,omitempty"`
 	ClusterBy                  tfconfig.Variable `json:"cluster_by,omitempty"`
 	Column                     tfconfig.Variable `json:"column,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
@@ -28,14 +29,17 @@ type IcebergTableModel struct {
 	EnableIcebergMergeOnRead   tfconfig.Variable `json:"enable_iceberg_merge_on_read,omitempty"`
 	ErrorLogging               tfconfig.Variable `json:"error_logging,omitempty"`
 	ExternalVolume             tfconfig.Variable `json:"external_volume,omitempty"`
+	ForeignKeyConstraint       tfconfig.Variable `json:"foreign_key_constraint,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IcebergVersion             tfconfig.Variable `json:"iceberg_version,omitempty"`
 	MaxDataExtensionTimeInDays tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
 	PartitionBy                tfconfig.Variable `json:"partition_by,omitempty"`
 	PathLayout                 tfconfig.Variable `json:"path_layout,omitempty"`
+	PrimaryKeyConstraint       tfconfig.Variable `json:"primary_key_constraint,omitempty"`
 	RowAccessPolicy            tfconfig.Variable `json:"row_access_policy,omitempty"`
 	StorageSerializationPolicy tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
 	TargetFileSize             tfconfig.Variable `json:"target_file_size,omitempty"`
+	UniqueConstraint           tfconfig.Variable `json:"unique_constraint,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -148,6 +152,8 @@ func (i *IcebergTableModel) WithChangeTracking(changeTracking string) *IcebergTa
 	return i
 }
 
+// check_constraint attribute type is not yet supported, so WithCheckConstraint can't be generated
+
 // cluster_by attribute type is not yet supported, so WithClusterBy can't be generated
 
 // column attribute type is not yet supported, so WithColumn can't be generated
@@ -182,6 +188,8 @@ func (i *IcebergTableModel) WithExternalVolume(externalVolume string) *IcebergTa
 	return i
 }
 
+// foreign_key_constraint attribute type is not yet supported, so WithForeignKeyConstraint can't be generated
+
 func (i *IcebergTableModel) WithFullyQualifiedName(fullyQualifiedName string) *IcebergTableModel {
 	i.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return i
@@ -204,6 +212,8 @@ func (i *IcebergTableModel) WithPathLayout(pathLayout string) *IcebergTableModel
 	return i
 }
 
+// primary_key_constraint attribute type is not yet supported, so WithPrimaryKeyConstraint can't be generated
+
 // row_access_policy attribute type is not yet supported, so WithRowAccessPolicy can't be generated
 
 func (i *IcebergTableModel) WithStorageSerializationPolicy(storageSerializationPolicy string) *IcebergTableModel {
@@ -215,6 +225,8 @@ func (i *IcebergTableModel) WithTargetFileSize(targetFileSize string) *IcebergTa
 	i.TargetFileSize = tfconfig.StringVariable(targetFileSize)
 	return i
 }
+
+// unique_constraint attribute type is not yet supported, so WithUniqueConstraint can't be generated
 
 //////////////////////////////////////////
 // below it's possible to set any value //
@@ -260,6 +272,11 @@ func (i *IcebergTableModel) WithChangeTrackingValue(value tfconfig.Variable) *Ic
 	return i
 }
 
+func (i *IcebergTableModel) WithCheckConstraintValue(value tfconfig.Variable) *IcebergTableModel {
+	i.CheckConstraint = value
+	return i
+}
+
 func (i *IcebergTableModel) WithClusterByValue(value tfconfig.Variable) *IcebergTableModel {
 	i.ClusterBy = value
 	return i
@@ -300,6 +317,11 @@ func (i *IcebergTableModel) WithExternalVolumeValue(value tfconfig.Variable) *Ic
 	return i
 }
 
+func (i *IcebergTableModel) WithForeignKeyConstraintValue(value tfconfig.Variable) *IcebergTableModel {
+	i.ForeignKeyConstraint = value
+	return i
+}
+
 func (i *IcebergTableModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *IcebergTableModel {
 	i.FullyQualifiedName = value
 	return i
@@ -325,6 +347,11 @@ func (i *IcebergTableModel) WithPathLayoutValue(value tfconfig.Variable) *Iceber
 	return i
 }
 
+func (i *IcebergTableModel) WithPrimaryKeyConstraintValue(value tfconfig.Variable) *IcebergTableModel {
+	i.PrimaryKeyConstraint = value
+	return i
+}
+
 func (i *IcebergTableModel) WithRowAccessPolicyValue(value tfconfig.Variable) *IcebergTableModel {
 	i.RowAccessPolicy = value
 	return i
@@ -337,5 +364,10 @@ func (i *IcebergTableModel) WithStorageSerializationPolicyValue(value tfconfig.V
 
 func (i *IcebergTableModel) WithTargetFileSizeValue(value tfconfig.Variable) *IcebergTableModel {
 	i.TargetFileSize = value
+	return i
+}
+
+func (i *IcebergTableModel) WithUniqueConstraintValue(value tfconfig.Variable) *IcebergTableModel {
+	i.UniqueConstraint = value
 	return i
 }
