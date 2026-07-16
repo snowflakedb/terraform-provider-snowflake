@@ -157,7 +157,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAzureDetails(t, id).
 				HasEnabled(true).
 				HasApiKey("").
-				HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
+				HasApiProviderType(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 				HasAzureTenantId(azureTenantId).
 				HasAzureAdApplicationId(azureAdApplicationId).
 				HasAzureMultiTenantAppNameNotEmpty().
@@ -194,7 +194,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAzureDetails(t, id).
 				HasEnabled(true).
 				HasApiKey("☺☺☺").
-				HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
+				HasApiProviderType(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 				HasAzureTenantId(azureTenantId).
 				HasAzureAdApplicationId(azureAdApplicationId).
 				HasAzureMultiTenantAppNameNotEmpty().
@@ -730,7 +730,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAzureDetails(t, integration.ID()).
 				HasEnabled(true).
 				HasApiKey("☺☺☺").
-				HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
+				HasApiProviderType(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 				HasAzureTenantId(azureOtherTenantId).
 				HasAzureAdApplicationId(otherAdApplicationId).
 				HasAzureMultiTenantAppNameNotEmpty().
@@ -1307,7 +1307,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationAzureDetails(t, integration.ID()).
 				HasEnabled(true).
 				HasApiKey("").
-				HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
+				HasApiProviderType(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 				HasAzureTenantId(azureTenantId).
 				HasAzureAdApplicationId(azureAdApplicationId).
 				HasAzureMultiTenantAppNameNotEmpty().
