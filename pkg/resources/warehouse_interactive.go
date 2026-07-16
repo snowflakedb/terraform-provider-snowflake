@@ -136,7 +136,7 @@ var warehouseInteractiveSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "Outputs the result of `SHOW PARAMETERS IN WAREHOUSE` for the given interactive warehouse.",
 		Elem: &schema.Resource{
-			Schema: schemas.ShowWarehouseParametersSchema,
+			Schema: schemas.ShowWarehouseParametersSchemaInteractive,
 		},
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -204,11 +204,12 @@ func parseTablesSet(raw *schema.Set) ([]sdk.SchemaObjectIdentifier, error) {
 }
 
 // fallbackWarehouseFromParameters returns the FALLBACK_WAREHOUSE value from SHOW PARAMETERS output.
-// FALLBACK_WAREHOUSE is exposed as a warehouse parameter (not a SHOW WAREHOUSES column); the value
-// is the fallback warehouse name, or empty when it is not set.
+// FALLBACK_WAREHOUSE is a warehouse parameter (exposed in SHOW PARAMETERS IN WAREHOUSE, not as a
+// SHOW WAREHOUSES column); unlike the int/bool warehouse parameters its value is the fallback
+// warehouse name (an account-object identifier), or empty when it is not set.
 func fallbackWarehouseFromParameters(parameters []*sdk.Parameter) string {
 	for _, parameter := range parameters {
-		if parameter.Key == "FALLBACK_WAREHOUSE" {
+		if parameter.Key == string(sdk.WarehouseParameterFallbackWarehouse) {
 			return parameter.Value
 		}
 	}
@@ -386,7 +387,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) schema.ReadCo
 			d.Set("tables", tables),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.WarehouseInteractiveToSchema(w)}),
-			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(warehouseParameters, providerCtx)}),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseInteractiveParametersToSchema(warehouseParameters, providerCtx)}),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
