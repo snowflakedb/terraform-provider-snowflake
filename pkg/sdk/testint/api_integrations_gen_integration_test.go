@@ -591,11 +591,11 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+				HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 				HasAllowedPrefixes(mcpPrefix).
 				HasNoBlockedPrefixes().
 				HasComment("").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 				HasOauthGrant("AUTHORIZATION_CODE").
 				HasOauthClientId(oauthClientId).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
@@ -627,13 +627,13 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+				HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 				HasAllowedPrefixes(mcpPrefix).
 				HasComment("mcp oauth2 comment").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 				HasOauthGrant("AUTHORIZATION_CODE").
 				HasOauthClientId(oauthClientId).
-				HasOauthClientAuthMethod(authMethod).
+				HasOauthClientAuthMethodEnum(authMethod).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
 				HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 				HasOauthRefreshTokenValidity(86400),
@@ -663,8 +663,8 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
+				HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
 				HasAllowedPrefixes("https://mcp.atlassian.com/v1/mcp"),
 		)
 	})
@@ -910,14 +910,14 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationExternalMcpDetails(t, integration.ID()).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+				HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 				HasAllowedPrefixes(mcpOtherPrefix).
 				HasBlockedPrefixes(mcpPrefix).
 				HasComment("changed comment").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 				HasOauthGrant("AUTHORIZATION_CODE").
 				HasOauthClientId("new-id").
-				HasOauthClientAuthMethod(authMethod).
+				HasOauthClientAuthMethodEnum(authMethod).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
 				HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 				HasOauthRefreshTokenValidity(3600),
@@ -1151,7 +1151,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		// Confirm the initial state: both optional fields are set.
 		assertThatObject(
 			t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
-				HasOauthClientAuthMethod(authMethod).
+				HasOauthClientAuthMethodEnum(authMethod).
 				HasOauthRefreshTokenValidity(refreshTokenValidity),
 		)
 
@@ -1168,7 +1168,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		// Despite the ALTER succeeding, the values are unchanged — they cannot be removed this way.
 		assertThatObject(
 			t, objectassert.ApiIntegrationExternalMcpDetails(t, id).
-				HasOauthClientAuthMethod(authMethod).
+				HasOauthClientAuthMethodEnum(authMethod).
 				HasOauthRefreshTokenValidity(refreshTokenValidity),
 		)
 	})
@@ -1359,10 +1359,10 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ApiIntegrationExternalMcpDetails(t, integration.ID()).
 				HasEnabled(true).
-				HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+				HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
 				HasAllowedPrefixes(mcpPrefix).
 				HasComment("").
-				HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 				HasOauthGrant("AUTHORIZATION_CODE").
 				HasOauthClientId(oauthClientId).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
