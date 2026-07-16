@@ -25,19 +25,19 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 
 	basic := model.WarehouseInteractiveWithId(warehouseId)
-	// warehouse_size and min_cluster_count are intentionally not toggled in the update path below.
-	// Resizing an interactive warehouse, and raising min_cluster_count (which forces the warehouse to
-	// synchronously provision the additional cluster), are operations that exceed the interactive
-	// warehouse's (low, capped) statement timeout when applied via ALTER. Both are covered by the
-	// create path in CompleteUseCase instead. max_cluster_count is only a ceiling, so raising it is fast.
+	// warehouse_size is not toggled in this set/unset cycle: removing it from config forces a resource
+	// recreate (Snowflake has no UNSET WAREHOUSE_SIZE), which does not fit an update-only unset step.
+	// The warehouse_size resize (update) and its removal (recreate) are exercised in the dedicated
+	// TestAcc_WarehouseInteractive_WarehouseSize test.
 	//
 	// Every optional value below is chosen to differ from the interactive warehouse defaults
-	// (auto_suspend=86400, auto_resume=true, max_cluster_count=1). If a config value equals the current
-	// Snowflake value, IgnoreChangeToCurrentSnowflakeValueInShow correctly suppresses it as a no-op and the
-	// attribute is never written to state, so the SET must be a genuine change. auto_suspend must be
-	// >= 86400 for interactive warehouses, so we use a larger value to force a change.
+	// (auto_suspend=86400, auto_resume=true, min_cluster_count=1, max_cluster_count=1). If a config value
+	// equals the current Snowflake value, IgnoreChangeToCurrentSnowflakeValueInShow correctly suppresses it
+	// as a no-op and the attribute is never written to state, so the SET must be a genuine change.
+	// auto_suspend must be >= 86400 for interactive warehouses, so we use a larger value to force a change.
 	withOptionals := model.WarehouseInteractiveWithId(warehouseId).
 		WithMaxClusterCount(3).
+		WithMinClusterCount(2).
 		WithAutoSuspend(172800).
 		WithAutoResume(r.BooleanFalse).
 		WithComment(comment).
@@ -62,6 +62,7 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 		resourceassert.WarehouseInteractiveResource(t, ref).
 			HasNameString(warehouseId.Name()).
 			HasMaxClusterCount(3).
+			HasMinClusterCount(2).
 			HasAutoSuspend(172800).
 			HasAutoResumeString(r.BooleanFalse).
 			HasCommentString(comment).
@@ -104,13 +105,13 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, withOptionalsAssertions...),
 			},
-			// import after setting optional fields. warehouse_size and min_cluster_count are not in config, so
-			// they are reconciled from SHOW on import and ignored here, as is the volatile show_output.
+			// import after setting optional fields. warehouse_size is not in config, so it is reconciled
+			// from SHOW on import and ignored here, as is the volatile show_output.
 			{
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"warehouse_size", "min_cluster_count", "show_output"},
+				ImportStateVerifyIgnore: []string{"warehouse_size", "show_output"},
 			},
 			// unset all optional fields
 			{
@@ -198,6 +199,48 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"initially_suspended", "show_output"},
+			},
+		},
+	})
+}
+
+func TestAcc_WarehouseInteractive_WarehouseSize(t *testing.T) {
+	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	small := model.WarehouseInteractiveWithId(warehouseId).
+		WithWarehouseSize(string(sdk.WarehouseSizeSmall))
+	noSize := model.WarehouseInteractiveWithId(warehouseId)
+
+	ref := small.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseInteractive),
+		Steps: []resource.TestStep{
+			// create with a concrete size
+			{
+				Config: accconfig.FromModels(t, small),
+				Check: assertThat(t,
+					resourceassert.WarehouseInteractiveResource(t, ref).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeSmall)),
+				),
+			},
+			// removing the size recreates the warehouse: Snowflake has no UNSET WAREHOUSE_SIZE, so the
+			// provider force-recreates (letting Snowflake apply its default size) instead.
+			{
+				Config: accconfig.FromModels(t, noSize),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.WarehouseInteractiveResource(t, ref).
+						HasNoWarehouseSize(),
+				),
 			},
 		},
 	})
