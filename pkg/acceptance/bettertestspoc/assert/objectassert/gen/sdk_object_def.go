@@ -65,6 +65,7 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.Warehouse{},
+		SkipFields:   []string{"Tables"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -185,20 +186,29 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.StorageIntegrationAwsDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "StorageIntegration", MethodName: "DescribeAws"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.StorageIntegrationAzureDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "StorageIntegration", MethodName: "DescribeAzure"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.StorageIntegrationGcsDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "StorageIntegration", MethodName: "DescribeGcs"},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Notebook{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.NotebookDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "Notebook", MethodName: "Describe"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -272,31 +282,37 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationAwsDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeAws"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationAzureDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeAzure"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationExternalMcpDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeExternalMcp"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationGitHttpsApiDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeGitHttpsApi"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationGoogleDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeGoogle"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.ApiIntegrationAllDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeAllDetails"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -306,11 +322,13 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.CatalogIntegrationAwsGlueDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeAwsGlue"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.CatalogIntegrationObjectStorageDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeObjectStorage"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -326,7 +344,8 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.CatalogIntegrationIcebergRestDetails{},
 		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"RestConfig", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"},
+		NestedAssertFields: []string{"RestConfig", "OAuthRestAuthentication", "SigV4RestAuthentication"},
+		SkipFields:         []string{"BearerRestAuthentication"},
 		DescribeOverride: &genhelpers.DescribeOverrideDef{
 			ClientName: "CatalogIntegration",
 			MethodName: "DescribeIcebergRest",
@@ -336,6 +355,7 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.CatalogIntegrationAllDetails{},
 		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeDetails"},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -352,12 +372,6 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.OAuthRestAuthenticationDetails{},
-		IsDataSourceOutput: true,
-		IsSubStruct:        true,
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.BearerRestAuthenticationDetails{},
 		IsDataSourceOutput: true,
 		IsSubStruct:        true,
 	},
@@ -414,6 +428,7 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.IcebergTable{},
+		SkipFields:   []string{"AutoRefreshStatus"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",

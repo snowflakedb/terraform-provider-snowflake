@@ -145,30 +145,6 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasOAuthRestAuthenticationW
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasBearerRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-		if o.BearerRestAuthentication == nil {
-			return fmt.Errorf("expected bearer rest authentication to have value; got: nil")
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *CatalogIntegrationIcebergRestDetailsAssert) HasBearerRestAuthenticationWith(subAssert *BearerRestAuthenticationDetailsAssert) *CatalogIntegrationIcebergRestDetailsAssert {
-	c.HasBearerRestAuthentication()
-	for _, assertion := range subAssert.GetAssertions() {
-		assertion := assertion
-		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
-			if err := assert.AssertionOnPointerField(t, o.BearerRestAuthentication, "bearer rest authentication", assertion); err != nil {
-				return fmt.Errorf("bearer rest authentication: %w", err)
-			}
-			return nil
-		})
-	}
-	return c
-}
-
 func (c *CatalogIntegrationIcebergRestDetailsAssert) HasSigV4RestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
 		if o.SigV4RestAuthentication == nil {
