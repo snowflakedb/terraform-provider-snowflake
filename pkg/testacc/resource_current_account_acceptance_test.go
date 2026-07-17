@@ -428,7 +428,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 			// Test for external changes
 			{
 				PreConfig: func() {
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: &sdk.AccountParameters{AbortDetachedQuery: sdk.Bool(true)}}})
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(sdk.AccountParameters{AbortDetachedQuery: sdk.Bool(true)})))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -601,12 +601,12 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 			// change externally
 			{
 				PreConfig: func() {
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{ResourceMonitor: sdk.Pointer(resourceMonitor.ID())}})
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(authenticationPolicy.ID())}})
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{FeaturePolicySet: &sdk.AccountFeaturePolicySet{FeaturePolicy: &featurePolicyId}}})
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PackagesPolicy: sdk.Pointer(packagesPolicyId)}})
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{PasswordPolicy: sdk.Pointer(passwordPolicy.ID())}})
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{SessionPolicy: sdk.Pointer(sessionPolicy.ID())}})
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithResourceMonitor(resourceMonitor.ID())))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicy(authenticationPolicy.ID())))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithFeaturePolicySet(*sdk.NewAccountFeaturePolicySetRequest().WithFeaturePolicy(featurePolicyId))))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithPackagesPolicy(packagesPolicyId)))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithPasswordPolicy(passwordPolicy.ID())))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithSessionPolicy(sessionPolicy.ID())))
 				},
 				Config: config.FromModels(t, provider, unsetModel),
 				Check: assertThat(

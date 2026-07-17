@@ -51,10 +51,12 @@ func Accounts() *schema.Resource {
 func ReadAccounts(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	req := new(sdk.ShowAccountOptions)
-	handleLike(d, &req.Like)
+	req := sdk.NewShowAccountRequest()
+	if likePattern, ok := d.GetOk("like"); ok {
+		req = req.WithLike(sdk.Like{Pattern: sdk.String(likePattern.(string))})
+	}
 	if history, ok := d.GetOk("with_history"); ok && history.(bool) {
-		req.History = sdk.Bool(true)
+		req = req.WithHistory(true)
 	}
 
 	accounts, err := client.Accounts.Show(ctx, req)

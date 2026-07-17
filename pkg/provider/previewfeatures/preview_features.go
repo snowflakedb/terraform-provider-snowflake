@@ -72,6 +72,7 @@ const (
 	GitRepositoriesDatasource                      feature = "snowflake_git_repositories_datasource"
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource                           feature = "snowflake_hybrid_table_resource"
+	IcebergTableResource                          feature = "snowflake_iceberg_table_resource"
 	IcebergTableFromAwsGlueResource               feature = "snowflake_iceberg_table_from_aws_glue_resource"
 	IcebergTableFromDeltaFilesResource            feature = "snowflake_iceberg_table_from_delta_files_resource"
 	IcebergTableFromFilesResource                 feature = "snowflake_iceberg_table_from_files_resource"
@@ -185,6 +186,7 @@ var allPreviewFeatures = []feature{
 	FunctionsDatasource,
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource,
+	IcebergTableResource,
 	IcebergTableFromAwsGlueResource,
 	IcebergTableFromDeltaFilesResource,
 	IcebergTableFromFilesResource,

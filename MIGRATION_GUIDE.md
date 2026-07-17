@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(new feature)* inherited grants support in `snowflake_grant_privileges_to_account_role`
+
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports [inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using). Inherited grants collapse the common `GRANT ON ALL` + `GRANT ON FUTURE` pattern into a single grant that automatically covers all current and future objects of a type in a container. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.
+
+This is a non-breaking, additive change; existing configurations continue to work unchanged. Notes:
+- Inherited grants are a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. They must be enabled on your account before use, and their behavior may change until they reach general availability.
+- Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
+- `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.
+- `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
+
 ### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
 
 The `default_workload_identity.aws` nested block on the [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) resources now supports an optional `issuer` attribute, which maps to the `ISSUER` parameter of Snowflake's `WORKLOAD_IDENTITY` user property. It is required when configuring JWT-based (`GetWebIdentityToken`) AWS workload identity federation; existing configurations using only `arn` (the `GetCallerIdentity` attestation method) continue to work unchanged.
@@ -43,11 +53,12 @@ In most cases no action is required; this is a non-breaking addition. However, i
 We have added new preview resources for Iceberg tables:
 - [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from a REST catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
 - [snowflake_iceberg_table_from_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_aws_glue) for managing Snowflake Iceberg Tables whose metadata is managed by an AWS Glue catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue)),
+- [snowflake_iceberg_table](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) for managing Snowflake-managed Iceberg Tables, including columns and table-level constraints ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake)),
 
 We have also added a new preview data source:
 - [snowflake_iceberg_tables](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/iceberg_tables) for querying Iceberg Tables with filters (`like`, `in`, `starts_with`, `limit`) and aggregated SHOW, DESCRIBE, and SHOW PARAMETERS output.
 
-These features will be marked as stable in future releases. To use them, add the relevant feature name (`snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`, or `snowflake_iceberg_tables_datasource`) to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add the relevant feature name (`snowflake_iceberg_table`, `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`, or `snowflake_iceberg_tables_datasource`) to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 

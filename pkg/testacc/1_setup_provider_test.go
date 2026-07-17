@@ -62,6 +62,7 @@ var (
 	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
 	experimentalHierarchyRenamesProviderFactory      = providerFactoryUsingCache("ExperimentalHierarchyRenames")
 	activeWarehouseSetOnUserProviderFactory          = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
+	inheritedGrantsProviderFactory                   = providerFactoryUsingCache("InheritedGrantsProvider")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate
@@ -75,7 +76,6 @@ func acceptanceTestsProvider() *schema.Provider {
 	// add resources and data sources that are not ready here like:
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	p.ResourcesMap["snowflake_hybrid_table"] = resources.HybridTable()
-	p.ResourcesMap["snowflake_iceberg_table"] = resources.IcebergTable()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
 	return p

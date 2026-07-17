@@ -50,11 +50,8 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 		return diag.FromErr(fmt.Errorf("authentication_policy %s is not a valid authentication policy qualified name, expected format: `\"db\".\"schema\".\"policy\"`", d.Get("authentication_policy")))
 	}
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-		Set: &sdk.AccountSet{
-			AuthenticationPolicy: &authenticationPolicy,
-		},
-	})
+	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+		WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicy(authenticationPolicy)))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -77,11 +74,8 @@ func ReadAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.Re
 func DeleteAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-		Unset: &sdk.AccountUnset{
-			AuthenticationPolicy: sdk.Bool(true),
-		},
-	})
+	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+		WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicy(true)))
 	if err != nil {
 		return diag.FromErr(err)
 	}
