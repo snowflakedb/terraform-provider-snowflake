@@ -26,23 +26,17 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 
 	publicKey, _ := random.GenerateRSAPublicKey(t)
 	id1 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AccountName()))
-	account, accountCleanup := testClient().Account.CreateWithRequest(t, id1, &sdk.CreateAccountOptions{
-		AdminName:         testClient().Ids.Alpha(),
-		AdminRSAPublicKey: &publicKey,
-		AdminUserType:     sdk.Pointer(sdk.UserTypeService),
-		Email:             "test@example.com",
-		Edition:           sdk.EditionStandard,
-	})
+	account, accountCleanup := testClient().Account.CreateWithRequest(t, id1, sdk.NewCreateAccountRequest(id1, testClient().Ids.Alpha(), "test@example.com").
+		WithEdition(sdk.AccountEditionStandard).
+		WithAdminRsaPublicKey(publicKey).
+		WithAdminUserType(sdk.UserTypeService))
 	t.Cleanup(accountCleanup)
 
 	id2 := sdk.NewAccountObjectIdentifier(fmt.Sprintf("%s_%s", prefix, random.AccountName()))
-	_, account2Cleanup := testClient().Account.CreateWithRequest(t, id2, &sdk.CreateAccountOptions{
-		AdminName:         testClient().Ids.Alpha(),
-		AdminRSAPublicKey: &publicKey,
-		AdminUserType:     sdk.Pointer(sdk.UserTypeService),
-		Email:             "test@example.com",
-		Edition:           sdk.EditionStandard,
-	})
+	_, account2Cleanup := testClient().Account.CreateWithRequest(t, id2, sdk.NewCreateAccountRequest(id2, testClient().Ids.Alpha(), "test@example.com").
+		WithEdition(sdk.AccountEditionStandard).
+		WithAdminRsaPublicKey(publicKey).
+		WithAdminUserType(sdk.UserTypeService))
 	t.Cleanup(account2Cleanup)
 
 	provider := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
@@ -71,7 +65,7 @@ func TestAcc_Accounts_Complete(t *testing.T) {
 						HasAccountName(account.AccountName).
 						HasSnowflakeRegion(account.SnowflakeRegion).
 						HasRegionGroup("").
-						HasEdition(sdk.EditionStandard).
+						HasEdition(sdk.AccountEditionStandard).
 						HasAccountUrlNotEmpty().
 						HasCreatedOnNotEmpty().
 						HasComment("SNOWFLAKE").

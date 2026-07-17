@@ -250,58 +250,56 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 	id := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
-	opts := &sdk.CreateAccountOptions{
-		AdminName: d.Get("admin_name").(string),
-		Email:     d.Get("email").(string),
-		Edition:   sdk.AccountEdition(d.Get("edition").(string)),
-	}
+	req := sdk.NewCreateAccountRequest(id, d.Get("admin_name").(string), d.Get("email").(string)).
+		WithEdition(sdk.AccountEdition(d.Get("edition").(string)))
 
 	if v, ok := d.GetOk("admin_password"); ok {
-		opts.AdminPassword = sdk.String(v.(string))
+		req.WithAdminPassword(v.(string))
 	}
 	if v, ok := d.GetOk("admin_rsa_public_key"); ok {
-		opts.AdminRSAPublicKey = sdk.String(v.(string))
+		req.WithAdminRsaPublicKey(v.(string))
 	}
 	if v, ok := d.GetOk("admin_user_type"); ok {
 		userType, err := sdk.ToUserType(v.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		opts.AdminUserType = &userType
+		req.WithAdminUserType(userType)
 	}
 	if v, ok := d.GetOk("first_name"); ok {
-		opts.FirstName = sdk.String(v.(string))
+		req.WithFirstName(v.(string))
 	}
 	if v, ok := d.GetOk("last_name"); ok {
-		opts.LastName = sdk.String(v.(string))
+		req.WithLastName(v.(string))
 	}
 	if v := d.Get("must_change_password"); v != BooleanDefault {
 		parsedBool, err := booleanStringToBool(v.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		opts.MustChangePassword = &parsedBool
+		req.WithMustChangePassword(parsedBool)
 	}
 	if v, ok := d.GetOk("region_group"); ok {
-		opts.RegionGroup = sdk.String(v.(string))
+		req.WithRegionGroup(v.(string))
 	}
 	if v, ok := d.GetOk("region"); ok {
-		opts.Region = sdk.String(v.(string))
+		req.WithRegion(v.(string))
 	}
 	if v, ok := d.GetOk("comment"); ok {
-		opts.Comment = sdk.String(v.(string))
+		req.WithComment(v.(string))
 	}
 	if v, ok := d.GetOk("consumption_billing_entity"); ok {
-		opts.ConsumptionBillingEntity = sdk.String(v.(string))
+		req.WithConsumptionBillingEntity(v.(string))
 	}
 
-	createResponse, err := client.Accounts.Create(ctx, id, opts)
+	err := client.Accounts.Create(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	var account *sdk.Account
 	if err := util.Retry(5, 3*time.Second, func() (error, bool) {
-		_, err = client.Accounts.ShowByID(ctx, id)
+		account, err = client.Accounts.ShowByID(ctx, id)
 		if err != nil {
 			log.Printf("[DEBUG] retryable operation resulted in error: %v", err)
 			if errors.Is(err, sdk.ErrObjectNotFound) || errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
@@ -315,15 +313,12 @@ func CreateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		return diag.FromErr(fmt.Errorf("failed to query account (%s) after creation, err: %w", id.FullyQualifiedName(), err))
 	}
 
-	d.SetId(helpers.EncodeResourceIdentifier(sdk.NewAccountIdentifier(createResponse.OrganizationName, createResponse.AccountName)))
+	d.SetId(helpers.EncodeResourceIdentifier(sdk.NewAccountIdentifier(account.OrganizationName, account.AccountName)))
 
 	if v, ok := d.GetOk("is_org_admin"); ok && v == BooleanTrue {
-		err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Name: &id,
-			Set: &sdk.AccountSet{
-				OrgAdmin: sdk.Bool(true),
-			},
-		})
+		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+			WithName(id).
+			WithSet(*sdk.NewAccountSetRequest().WithOrgAdmin(true)))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -443,12 +438,9 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if d.HasChange("name") {
 		newId := sdk.NewAccountIdentifier(id.OrganizationName(), d.Get("name").(string))
 
-		err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-			Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
-			Rename: &sdk.AccountRename{
-				NewName: newId.AsAccountObjectIdentifier(),
-			},
-		})
+		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+			WithName(id.AsAccountObjectIdentifier()).
+			WithRenameTo(newId.AsAccountObjectIdentifier()))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -473,22 +465,16 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-					Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
-					Set: &sdk.AccountSet{
-						OrgAdmin: &parsed,
-					},
-				}); err != nil {
+				if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+					WithName(id.AsAccountObjectIdentifier()).
+					WithSet(*sdk.NewAccountSetRequest().WithOrgAdmin(parsed))); err != nil {
 					return diag.FromErr(err)
 				}
 			} else {
-				if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-					Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
-					Set: &sdk.AccountSet{
-						// No unset available for this field (setting Snowflake default)
-						OrgAdmin: sdk.Bool(false),
-					},
-				}); err != nil {
+				if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+					WithName(id.AsAccountObjectIdentifier()).
+					// No unset available for this field (setting Snowflake default)
+					WithSet(*sdk.NewAccountSetRequest().WithOrgAdmin(false))); err != nil {
 					return diag.FromErr(err)
 				}
 			}
@@ -498,21 +484,15 @@ func UpdateAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if d.HasChange("consumption_billing_entity") {
 		newConsumptionBillingEntity := d.Get("consumption_billing_entity").(string)
 		if newConsumptionBillingEntity != "" {
-			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
-				Set: &sdk.AccountSet{
-					ConsumptionBillingEntity: sdk.String(newConsumptionBillingEntity),
-				},
-			}); err != nil {
+			if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+				WithName(id.AsAccountObjectIdentifier()).
+				WithSet(*sdk.NewAccountSetRequest().WithConsumptionBillingEntity(newConsumptionBillingEntity))); err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
-			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-				Name: sdk.Pointer(id.AsAccountObjectIdentifier()),
-				Unset: &sdk.AccountUnset{
-					ConsumptionBillingEntity: sdk.Bool(true),
-				},
-			}); err != nil {
+			if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+				WithName(id.AsAccountObjectIdentifier()).
+				WithUnset(*sdk.NewAccountUnsetRequest().WithConsumptionBillingEntity(true))); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -529,9 +509,9 @@ func DeleteAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	err = client.Accounts.Drop(ctx, id.AsAccountObjectIdentifier(), d.Get("grace_period_in_days").(int), &sdk.DropAccountOptions{
-		IfExists: sdk.Bool(true),
-	})
+	err = client.Accounts.Drop(ctx, sdk.NewDropAccountRequest(id.AsAccountObjectIdentifier()).
+		WithIfExists(true).
+		WithGracePeriodInDays(d.Get("grace_period_in_days").(int)))
 	if err != nil {
 		return diag.FromErr(err)
 	}
