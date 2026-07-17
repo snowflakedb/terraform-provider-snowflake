@@ -38,7 +38,10 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 
 	provider := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
 
-	unsetParametersModel := model.CurrentAccount("test")
+	unsetParametersModel := model.CurrentAccount("test").
+		// TODO [SNOW-3797718]: setting these two explicitly as other tests seem to be rewriting these
+		WithEnableIdentifierFirstLogin(true).
+		WithEnableTriSecretAndRekeyOptOutForImageRepository(false)
 
 	setParametersModel := model.CurrentAccount("test").
 		WithAbortDetachedQuery(true).

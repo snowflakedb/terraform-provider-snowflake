@@ -2,40 +2,9 @@ package sdk
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 )
-
-type AccountCreateResponse struct {
-	AccountLocator    string `json:"accountLocator,omitempty"`
-	AccountLocatorUrl string `json:"accountLocatorUrl,omitempty"`
-	OrganizationName  string
-	AccountName       string         `json:"accountName,omitempty"`
-	Url               string         `json:"url,omitempty"`
-	Edition           AccountEdition `json:"edition,omitempty"`
-	RegionGroup       string         `json:"regionGroup,omitempty"`
-	Cloud             string         `json:"cloud,omitempty"`
-	Region            string         `json:"region,omitempty"`
-}
-
-func ToAccountCreateResponse(v string) (*AccountCreateResponse, error) {
-	var res AccountCreateResponse
-	err := json.Unmarshal([]byte(v), &res)
-	if err != nil {
-		return nil, err
-	}
-	if len(res.Url) > 0 {
-		url := strings.TrimPrefix(res.Url, `https://`)
-		url = strings.TrimPrefix(url, `http://`)
-		parts := strings.SplitN(url, "-", 2)
-		if len(parts) == 2 {
-			res.OrganizationName = strings.ToUpper(parts[0])
-		}
-	}
-	return &res, nil
-}
 
 func (opts *CreateAccountOptions) additionalValidations() error {
 	var errs []error

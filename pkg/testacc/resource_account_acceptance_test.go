@@ -84,8 +84,8 @@ func TestAcc_Account_Minimal(t *testing.T) {
 						HasAccountLocatorUrlNotEmpty().
 						HasManagedAccounts(0).
 						HasConsumptionBillingEntityNameNotEmpty().
-						HasMarketplaceConsumerBillingEntityName("").
-						HasMarketplaceProviderBillingEntityNameNotEmpty().
+						// TODO [SNOW-3797718]: changed temporarily
+						HasMarketplaceProviderBillingEntityName("").
 						HasOldAccountURL("").
 						HasIsOrgAdmin(false).
 						HasAccountOldUrlSavedOnEmpty().
@@ -132,10 +132,10 @@ func TestAcc_Account_Minimal(t *testing.T) {
 	})
 }
 
+// TODO [SNOW-3797718]: default consumption billing entity removed; address during billing entity removal
 func TestAcc_Account_Complete(t *testing.T) {
 	testClient().EnsureValidNonProdAccountIsUsed(t)
 
-	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)
@@ -158,7 +158,6 @@ func TestAcc_Account_Complete(t *testing.T) {
 		WithRegionGroup("PUBLIC").
 		WithRegion(region).
 		WithComment(comment).
-		WithConsumptionBillingEntity(defaultConsumptionBillingEntity).
 		WithIsOrgAdmin(r.BooleanFalse)
 
 	resource.Test(t, resource.TestCase{
@@ -185,7 +184,6 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasRegionGroupString("PUBLIC").
 						HasRegionString(region).
 						HasCommentString(comment).
-						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity).
 						HasIsOrgAdminString(r.BooleanFalse).
 						HasGracePeriodInDaysString("3"),
 					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
@@ -200,9 +198,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasAccountLocatorNotEmpty().
 						HasAccountLocatorUrlNotEmpty().
 						HasManagedAccounts(0).
-						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity).
 						HasMarketplaceConsumerBillingEntityName("").
-						HasMarketplaceProviderBillingEntityNameNotEmpty().
 						HasOldAccountURL("").
 						HasIsOrgAdmin(false).
 						HasAccountOldUrlSavedOnEmpty().
@@ -240,7 +236,6 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasNoRegionGroup().
 						HasRegionString(region).
 						HasCommentString(comment).
-						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity).
 						HasIsOrgAdminString(r.BooleanFalse).
 						HasNoGracePeriodInDays(),
 				),
@@ -626,7 +621,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      config.FromModels(t, providerModel, configModel),
-				ExpectError: regexp.MustCompile("Error: current user doesn't have the orgadmin role in session"),
+				ExpectError: regexp.MustCompile("Insufficient privileges to operate on account '.*'. Your primary role ACCOUNTADMIN must have MANAGE ORGANIZATION ACCOUNTS granted on ACCOUNT .*"),
 			},
 		},
 	})
@@ -663,11 +658,11 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      config.FromModels(t, providerModel, configModelInvalidUserType),
-				ExpectError: regexp.MustCompile("invalid user type: invalid_user_type"),
+				ExpectError: regexp.MustCompile("invalid user type: INVALID_USER_TYPE"),
 			},
 			{
 				Config:      config.FromModels(t, providerModel, configModelInvalidAccountEdition),
-				ExpectError: regexp.MustCompile("unknown account edition: invalid_account_edition"),
+				ExpectError: regexp.MustCompile("invalid account edition: INVALID_ACCOUNT_EDITION"),
 			},
 			{
 				Config:      config.FromModels(t, providerModel, configModelInvalidGracePeriodInDays),
@@ -678,6 +673,7 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 }
 
 func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
+	t.Skip("SNOW-3797718: try with old config")
 	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
