@@ -31,6 +31,8 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports [inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using). Inherited grants collapse the common `GRANT ON ALL` + `GRANT ON FUTURE` pattern into a single grant that automatically covers all current and future objects of a type in a container. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.
 
 This is a non-breaking, additive change; existing configurations continue to work unchanged. Notes:
+- Inherited grants are a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. They must be enabled on your account before use, and their behavior may change until they reach general availability.
+- Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
 - `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.
 - `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
 

@@ -95,6 +95,17 @@ const (
 	InSchemaInheritedContainerKind   InheritedContainerKind = "InSchema"
 )
 
+func (kind InheritedContainerKind) toInheritedAccountRoleGrantIn(database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) sdk.InheritedAccountRoleGrantIn {
+	switch kind {
+	case InDatabaseInheritedContainerKind:
+		return sdk.InheritedAccountRoleGrantIn{Database: database}
+	case InSchemaInheritedContainerKind:
+		return sdk.InheritedAccountRoleGrantIn{Schema: schema}
+	default:
+		return sdk.InheritedAccountRoleGrantIn{Account: new(true)}
+	}
+}
+
 // OnAccountObjectInheritedGrantData holds identifier data for an inherited grant on all
 // account objects of a given type.
 type OnAccountObjectInheritedGrantData struct {

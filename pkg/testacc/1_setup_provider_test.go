@@ -62,6 +62,7 @@ var (
 	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
 	experimentalHierarchyRenamesProviderFactory      = providerFactoryUsingCache("ExperimentalHierarchyRenames")
 	activeWarehouseSetOnUserProviderFactory          = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
+	inheritedGrantsProviderFactory                   = providerFactoryUsingCache("InheritedGrantsProvider")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate

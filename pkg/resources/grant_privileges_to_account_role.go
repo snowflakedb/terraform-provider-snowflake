@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -476,6 +477,9 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole),
 		},
 		Timeouts: defaultTimeouts,
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.GrantPrivilegesToAccountRole, customdiff.All(
+			inheritedGrantsRequireExperiment,
+		)),
 		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
 			func(ctx context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
 				rawPrivileges := req.RawConfig.GetAttr("privileges")
@@ -525,6 +529,22 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 			},
 		},
 	}
+}
+
+// inheritedGrantsRequireExperiment fails the plan when an `inherited` block is used while the experiment is not enabled.
+func inheritedGrantsRequireExperiment(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() || !rawConfig.IsKnown() {
+		return nil
+	}
+	if !rawConfigHasInheritedGrant(rawConfig) {
+		return nil
+	}
+	providerCtx := meta.(*provider.Context)
+	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.InheritedGrants, providerCtx.EnabledExperiments) {
+		return fmt.Errorf("using an `inherited` block requires the %q experiment to be enabled. Add it to the `experimental_features_enabled` list in the provider configuration", experimentalfeatures.InheritedGrants)
+	}
+	return nil
 }
 
 // rawConfigHasInheritedGrant reports whether any of the on_account_object / on_schema / on_schema_object
@@ -836,7 +856,11 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 				}
 			}
 
-			onAccount, onAccountObject, onSchema, onSchemaObject := accountRoleGrantKindBlocks(id.Kind)
+			plainKind := id.Kind.Plain()
+			onAccount := plainKind == OnAccountAccountRoleGrantKind
+			onAccountObject := plainKind == OnAccountObjectAccountRoleGrantKind
+			onSchema := plainKind == OnSchemaAccountRoleGrantKind
+			onSchemaObject := plainKind == OnSchemaObjectAccountRoleGrantKind
 
 			if len(privilegesToAdd) > 0 {
 				privilegesToGrant := getAccountRolePrivileges(
@@ -1281,16 +1305,6 @@ func getAccountRolePrivilegesFromSchema(d *schema.ResourceData) *sdk.AccountRole
 	)
 }
 
-// accountRoleGrantKindBlocks maps a grant kind (including inherited variants) to the four
-// mutually-exclusive block indicators consumed by getAccountRolePrivileges, so that the correct
-// privilege category is used when re-granting/revoking during updates.
-func accountRoleGrantKindBlocks(kind AccountRoleGrantKind) (onAccount bool, onAccountObject bool, onSchema bool, onSchemaObject bool) {
-	return kind == OnAccountAccountRoleGrantKind,
-		kind == OnAccountObjectAccountRoleGrantKind || kind == OnAccountObjectInheritedAccountRoleGrantKind,
-		kind == OnSchemaAccountRoleGrantKind || kind == OnSchemaInheritedAccountRoleGrantKind,
-		kind == OnSchemaObjectAccountRoleGrantKind || kind == OnSchemaObjectInheritedAccountRoleGrantKind
-}
-
 func getAccountRolePrivileges(allPrivileges bool, privileges []string, onAccount bool, onAccountObject bool, onSchema bool, onSchemaObject bool) *sdk.AccountRoleGrantPrivileges {
 	accountRoleGrantPrivileges := new(sdk.AccountRoleGrantPrivileges)
 
@@ -1477,9 +1491,9 @@ func getAccountRoleGrantOn(d *schema.ResourceData) (*sdk.AccountRoleGrantOn, err
 // grantAccountRolePrivileges grants the given privileges, dispatching to the inherited-grant SQL
 // (GRANT INHERITED ...) when the grant kind is inherited, and to the regular GRANT otherwise.
 func grantAccountRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToAccountRoleId, privileges *sdk.AccountRoleGrantPrivileges, withGrantOption bool) error {
-	if isInheritedAccountRoleGrantKind(id.Kind) {
+	if id.Kind.IsInherited() {
 		onAll, in := inheritedAccountRoleGrantParams(id)
-		return client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, toInheritedAccountRoleGrantPrivileges(privileges), onAll, in, id.RoleName)
+		return client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges.ToInheritedAccountRoleGrantPrivileges(), onAll, in, id.RoleName)
 	}
 
 	grantOn, err := getAccountRoleGrantOn(d)
@@ -1494,15 +1508,15 @@ func grantAccountRolePrivileges(ctx context.Context, client *sdk.Client, d *sche
 // revokeAccountRolePrivileges revokes the given privileges, dispatching to the inherited-grant SQL
 // (REVOKE INHERITED ...) when the grant kind is inherited, and to the regular REVOKE otherwise.
 func revokeAccountRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToAccountRoleId, privileges *sdk.AccountRoleGrantPrivileges, opts *sdk.RevokePrivilegesFromAccountRoleOptions, safely bool) error {
-	if isInheritedAccountRoleGrantKind(id.Kind) {
+	if id.Kind.IsInherited() {
 		if opts != nil && opts.GrantOptionFor != nil && *opts.GrantOptionFor {
 			return nil
 		}
 		onAll, in := inheritedAccountRoleGrantParams(id)
 		if safely {
-			return client.Grants.RevokeInheritedPrivilegesFromAccountRoleSafely(ctx, toInheritedAccountRoleGrantPrivileges(privileges), onAll, in, id.RoleName)
+			return client.Grants.RevokeInheritedPrivilegesFromAccountRoleSafely(ctx, privileges.ToInheritedAccountRoleGrantPrivileges(), onAll, in, id.RoleName)
 		}
-		return client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, toInheritedAccountRoleGrantPrivileges(privileges), onAll, in, id.RoleName)
+		return client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges.ToInheritedAccountRoleGrantPrivileges(), onAll, in, id.RoleName)
 	}
 
 	grantOn, err := getAccountRoleGrantOn(d)
@@ -1515,16 +1529,6 @@ func revokeAccountRolePrivileges(ctx context.Context, client *sdk.Client, d *sch
 	return client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, grantOn, id.RoleName, opts)
 }
 
-// isInheritedAccountRoleGrantKind reports whether the grant kind corresponds to an inherited grant.
-func isInheritedAccountRoleGrantKind(kind AccountRoleGrantKind) bool {
-	switch kind {
-	case OnAccountObjectInheritedAccountRoleGrantKind, OnSchemaInheritedAccountRoleGrantKind, OnSchemaObjectInheritedAccountRoleGrantKind:
-		return true
-	default:
-		return false
-	}
-}
-
 // inheritedAccountRoleGrantParams derives the `ON ALL <object_type_plural> IN <container>` parameters
 // for the inherited-grant SDK methods from the identifier data stored on the grant id.
 func inheritedAccountRoleGrantParams(id GrantPrivilegesToAccountRoleId) (sdk.PluralObjectType, sdk.InheritedAccountRoleGrantIn) {
@@ -1532,33 +1536,11 @@ func inheritedAccountRoleGrantParams(id GrantPrivilegesToAccountRoleId) (sdk.Plu
 	case *OnAccountObjectInheritedGrantData:
 		return data.ObjectNamePlural, sdk.InheritedAccountRoleGrantIn{Account: new(true)}
 	case *OnSchemaInheritedGrantData:
-		return sdk.PluralObjectTypeSchemas, inheritedAccountRoleGrantIn(data.Kind, data.DatabaseName, nil)
+		return sdk.PluralObjectTypeSchemas, data.Kind.toInheritedAccountRoleGrantIn(data.DatabaseName, nil)
 	case *OnSchemaObjectInheritedGrantData:
-		return data.ObjectNamePlural, inheritedAccountRoleGrantIn(data.Kind, data.DatabaseName, data.SchemaName)
+		return data.ObjectNamePlural, data.Kind.toInheritedAccountRoleGrantIn(data.DatabaseName, data.SchemaName)
 	default:
 		return "", sdk.InheritedAccountRoleGrantIn{}
-	}
-}
-
-func inheritedAccountRoleGrantIn(kind InheritedContainerKind, database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) sdk.InheritedAccountRoleGrantIn {
-	switch kind {
-	case InDatabaseInheritedContainerKind:
-		return sdk.InheritedAccountRoleGrantIn{Database: database}
-	case InSchemaInheritedContainerKind:
-		return sdk.InheritedAccountRoleGrantIn{Schema: schema}
-	default: // InAccountInheritedContainerKind
-		return sdk.InheritedAccountRoleGrantIn{Account: new(true)}
-	}
-}
-
-// toInheritedAccountRoleGrantPrivileges converts the privileges built for a regular grant into the
-// inherited-grant privileges shape.
-func toInheritedAccountRoleGrantPrivileges(privileges *sdk.AccountRoleGrantPrivileges) sdk.InheritedAccountRoleGrantPrivileges {
-	return sdk.InheritedAccountRoleGrantPrivileges{
-		AccountObjectPrivileges: privileges.AccountObjectPrivileges,
-		SchemaPrivileges:        privileges.SchemaPrivileges,
-		SchemaObjectPrivileges:  privileges.SchemaObjectPrivileges,
-		AllPrivileges:           privileges.AllPrivileges,
 	}
 }
 

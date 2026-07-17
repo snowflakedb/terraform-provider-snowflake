@@ -1222,8 +1222,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_Inherited(t *testing.T
 		WithOnInheritedAccountObjects(sdk.PluralObjectTypeWarehouses)
 	ref := resourceModel.ResourceReference()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1231,7 +1234,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_Inherited(t *testing.T
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, resourceModel),
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1253,7 +1256,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_Inherited(t *testing.T
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, resourceModel),
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1273,8 +1276,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_Inherited_InAccount(t *testin
 		WithOnInheritedSchemasInAccount()
 	ref := resourceModel.ResourceReference()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1282,7 +1288,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_Inherited_InAccount(t *testin
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, resourceModel),
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1305,7 +1311,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_Inherited_InAccount(t *testin
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, resourceModel),
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1329,8 +1335,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_Inherited_InDatabase(t *testi
 		WithOnInheritedSchemasInDatabase(databaseId)
 	ref := resourceModel.ResourceReference()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1338,7 +1347,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_Inherited_InDatabase(t *testi
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, resourceModel),
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1361,7 +1370,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchema_Inherited_InDatabase(t *testi
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, resourceModel),
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1381,8 +1390,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InAccount(t *
 		WithOnInheritedSchemaObjectsInAccount(sdk.PluralObjectTypeTables)
 	ref := resourceModel.ResourceReference()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1390,7 +1402,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InAccount(t *
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, resourceModel),
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1415,7 +1427,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InAccount(t *
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, resourceModel),
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1439,8 +1451,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InDatabase(t 
 		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
 	ref := resourceModel.ResourceReference()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1448,7 +1463,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InDatabase(t 
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, resourceModel),
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1473,7 +1488,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InDatabase(t 
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, resourceModel),
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1497,8 +1512,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InSchema(t *t
 		WithOnInheritedSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schemaId)
 	ref := resourceModel.ResourceReference()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1506,7 +1524,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InSchema(t *t
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, resourceModel),
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1531,7 +1549,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_InSchema(t *t
 			},
 			// Import
 			{
-				Config:            accconfig.FromModels(t, resourceModel),
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -1559,8 +1577,11 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_ContainerChan
 		WithOnInheritedSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schemaId)
 	ref := resourceModelInAccount.ResourceReference()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1568,7 +1589,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_ContainerChan
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: accconfig.FromModels(t, resourceModelInAccount),
+				Config: accconfig.FromModels(t, providerModel, resourceModelInAccount),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1592,7 +1613,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_Inherited_ContainerChan
 			},
 			// Change the container to all tables in a schema
 			{
-				Config: accconfig.FromModels(t, resourceModelInSchema),
+				Config: accconfig.FromModels(t, providerModel, resourceModelInSchema),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -1980,6 +2001,48 @@ func TestAcc_GrantPrivilegesToAccountRole_Inherited_Validation(t *testing.T) {
 		WithPrivileges(string(sdk.SchemaObjectPrivilegeSelect)).
 		WithOnInheritedSchemaObjectsInDatabase("INVALID_PLURAL_OBJECT_TYPE", sdk.NewAccountObjectIdentifier("test_database"))
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, providerModel, withGrantOptionModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`with_grant_option` cannot be used together with an `inherited` block"),
+			},
+			{
+				Config:      accconfig.FromModels(t, providerModel, alwaysApplyModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`always_apply` cannot be used together with an `inherited` block"),
+			},
+			{
+				Config:      accconfig.FromModels(t, providerModel, invalidAccountObjectTypeModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("expected .* to be one of .* got INVALID_PLURAL_OBJECT_TYPE"),
+			},
+			{
+				Config:      accconfig.FromModels(t, providerModel, invalidSchemaObjectTypeModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("expected .* to be one of .* got INVALID_PLURAL_OBJECT_TYPE"),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToAccountRole_Inherited_Validation_MissingExperimentFlag(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	resourceModelMissingExperiment := model.GrantPrivilegesToAccountRole("test", role.ID().FullyQualifiedName()).
+		WithPrivileges(string(sdk.AccountObjectPrivilegeUsage)).
+		WithOnInheritedAccountObjects(sdk.PluralObjectTypeWarehouses)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1988,24 +2051,9 @@ func TestAcc_GrantPrivilegesToAccountRole_Inherited_Validation(t *testing.T) {
 		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		Steps: []resource.TestStep{
 			{
-				Config:      accconfig.FromModels(t, withGrantOptionModel),
+				Config:      accconfig.FromModels(t, resourceModelMissingExperiment),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("`with_grant_option` cannot be used together with an `inherited` block"),
-			},
-			{
-				Config:      accconfig.FromModels(t, alwaysApplyModel),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("`always_apply` cannot be used together with an `inherited` block"),
-			},
-			{
-				Config:      accconfig.FromModels(t, invalidAccountObjectTypeModel),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("expected .* to be one of .* got INVALID_PLURAL_OBJECT_TYPE"),
-			},
-			{
-				Config:      accconfig.FromModels(t, invalidSchemaObjectTypeModel),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("expected .* to be one of .* got INVALID_PLURAL_OBJECT_TYPE"),
+				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled"),
 			},
 		},
 	})

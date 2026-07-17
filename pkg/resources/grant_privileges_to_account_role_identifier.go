@@ -21,6 +21,31 @@ const (
 	OnSchemaObjectInheritedAccountRoleGrantKind  AccountRoleGrantKind = "OnSchemaObjectInherited"
 )
 
+// IsInherited reports whether the grant kind corresponds to an inherited grant.
+func (kind AccountRoleGrantKind) IsInherited() bool {
+	switch kind {
+	case OnAccountObjectInheritedAccountRoleGrantKind, OnSchemaInheritedAccountRoleGrantKind, OnSchemaObjectInheritedAccountRoleGrantKind:
+		return true
+	default:
+		return false
+	}
+}
+
+// Plain collapses an inherited grant kind into its plain counterpart (e.g.
+// OnAccountObjectInheritedAccountRoleGrantKind -> OnAccountObjectAccountRoleGrantKind).
+func (kind AccountRoleGrantKind) Plain() AccountRoleGrantKind {
+	switch kind {
+	case OnAccountObjectInheritedAccountRoleGrantKind:
+		return OnAccountObjectAccountRoleGrantKind
+	case OnSchemaInheritedAccountRoleGrantKind:
+		return OnSchemaAccountRoleGrantKind
+	case OnSchemaObjectInheritedAccountRoleGrantKind:
+		return OnSchemaObjectAccountRoleGrantKind
+	default:
+		return kind
+	}
+}
+
 type OnAccountGrantData struct{}
 
 func (d *OnAccountGrantData) String() string {
