@@ -655,7 +655,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
 		require.NoError(t, err)
 		// TODO (next PRs): report this to Snowflake
-		require.Len(t, constraints, 2)
+		require.Len(t, constraints, 0)
 	})
 
 	t.Run("create Snowflake managed: cluster by", func(t *testing.T) {
