@@ -21,7 +21,7 @@ type IcebergTableAssert struct {
 func IcebergTable(t *testing.T, id sdk.SchemaObjectIdentifier) *IcebergTableAssert {
 	t.Helper()
 	return &IcebergTableAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("IcebergTable"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.IcebergTable, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeIcebergTable, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.IcebergTable, sdk.SchemaObjectIdentifier] {
 			return testClient.IcebergTable.Show
 		}),
 	}

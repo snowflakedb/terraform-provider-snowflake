@@ -225,6 +225,14 @@ func (c *UserClient) ShowUserWorkloadIdentityAuthenticationMethodOptions(t *test
 	return wif, nil
 }
 
+func (c *UserClient) ShowUserWorkloadIdentityAuthenticationMethod(t *testing.T, userId sdk.AccountObjectIdentifier, id sdk.AccountObjectIdentifier) *sdk.UserWorkloadIdentityAuthenticationMethod {
+	t.Helper()
+	method, err := c.ShowUserWorkloadIdentityAuthenticationMethodOptions(t, NewUserWorkloadIdentityAuthenticationMethodsObjectIdentifier(userId, id.Name()))
+	require.NoError(t, err)
+	require.NotNil(t, method)
+	return method
+}
+
 // SetOidcWorkloadIdentity sets the OIDC workload identity configuration for a user.
 func (c *UserClient) SetOidcWorkloadIdentity(t *testing.T, userId sdk.AccountObjectIdentifier, issuer, subject string, audienceList ...string) {
 	t.Helper()

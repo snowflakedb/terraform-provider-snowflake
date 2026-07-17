@@ -86,6 +86,7 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 
 var (
 	objectsNotBeingResources = []any{
+		sdk.BearerRestAuthenticationDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
 		sdk.IcebergRestRestConfigDetails{},
 		sdk.OAuthRestAuthenticationDetails{},

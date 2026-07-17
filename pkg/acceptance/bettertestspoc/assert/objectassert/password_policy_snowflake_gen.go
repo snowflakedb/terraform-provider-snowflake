@@ -19,7 +19,7 @@ type PasswordPolicyAssert struct {
 func PasswordPolicy(t *testing.T, id sdk.SchemaObjectIdentifier) *PasswordPolicyAssert {
 	t.Helper()
 	return &PasswordPolicyAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("PasswordPolicy"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.PasswordPolicy, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypePasswordPolicy, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.PasswordPolicy, sdk.SchemaObjectIdentifier] {
 			return testClient.PasswordPolicy.Show
 		}),
 	}
