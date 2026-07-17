@@ -5,7 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var DescribeIcebergTableSchema = map[string]*schema.Schema{
+var DescribeIcebergTableDetailsSchema = map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,

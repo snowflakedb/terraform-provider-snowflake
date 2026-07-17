@@ -48,14 +48,17 @@ The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terrafor
 
 In most cases no action is required; this is a non-breaking addition. However, if you set `ALLOWED_ROLES_LIST` on the integration outside of Terraform (e.g. directly in Snowflake) before this release, the provider will now detect it as drift. Because the attribute is not present in your configuration, the next plan will show a change that removes the externally set roles. To keep them, add the roles to the `allowed_roles_list` attribute in your configuration.
 
-### *(new feature)* New Iceberg Table resources
+### *(new feature)* New Iceberg Table resources and data source
 
 We have added new preview resources for Iceberg tables:
 - [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from a REST catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
 - [snowflake_iceberg_table_from_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_aws_glue) for managing Snowflake Iceberg Tables whose metadata is managed by an AWS Glue catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue)),
 - [snowflake_iceberg_table](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) for managing Snowflake-managed Iceberg Tables, including columns and table-level constraints ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake)),
 
-These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`, or `snowflake_iceberg_table` to the `preview_features_enabled` field in the provider configuration.
+We have also added a new preview data source:
+- [snowflake_iceberg_tables](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/iceberg_tables) for querying Iceberg Tables with filters (`like`, `in`, `starts_with`, `limit`) and aggregated SHOW, DESCRIBE, and SHOW PARAMETERS output.
+
+These features will be marked as stable in future releases. To use them, add the relevant feature name (`snowflake_iceberg_table`, `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`, or `snowflake_iceberg_tables_datasource`) to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 
