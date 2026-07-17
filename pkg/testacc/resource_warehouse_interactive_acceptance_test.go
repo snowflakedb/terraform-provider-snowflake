@@ -25,10 +25,9 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 
 	basic := model.WarehouseInteractiveWithId(warehouseId)
-	// warehouse_size is not toggled in this set/unset cycle: any size change forces a resource
-	// recreate (an interactive warehouse cannot be resized via ALTER while running, and removing the
-	// size has no UNSET WAREHOUSE_SIZE), which does not fit an update-only step.
-	// The warehouse_size resize and its removal (both recreate) are exercised in the dedicated
+	// warehouse_size is not toggled in this set/unset cycle: removing it from config forces a resource
+	// recreate (Snowflake has no UNSET WAREHOUSE_SIZE), which does not fit an update-only unset step.
+	// The warehouse_size resize (update) and its removal (recreate) are exercised in the dedicated
 	// TestAcc_WarehouseInteractive_WarehouseSize test.
 	//
 	// Every optional value below is chosen to differ from the interactive warehouse defaults
@@ -74,7 +73,7 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -159,7 +158,7 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 	ref := complete.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -217,7 +216,7 @@ func TestAcc_WarehouseInteractive_WarehouseSize(t *testing.T) {
 	ref := small.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -232,13 +231,13 @@ func TestAcc_WarehouseInteractive_WarehouseSize(t *testing.T) {
 						HasWarehouseSizeString(string(sdk.WarehouseSizeSmall)),
 				),
 			},
-			// changing the size recreates the warehouse: an interactive warehouse rejects an ALTER
-			// resize while running, so the provider force-recreates instead of updating in place.
+			// changing the size updates in place: an interactive warehouse rejects an ALTER resize while
+			// running, so the provider suspends it, applies the resize, and resumes it (no recreation).
 			{
 				Config: accconfig.FromModels(t, medium),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(
@@ -285,7 +284,7 @@ func TestAcc_WarehouseInteractive_TablesDelta(t *testing.T) {
 	ref := modelWithTwoTables.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -327,7 +326,7 @@ func TestAcc_WarehouseInteractive_Import_WrongWarehouseType(t *testing.T) {
 	interactiveModel := model.WarehouseInteractiveWithId(interactiveId)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -374,7 +373,7 @@ func TestAcc_WarehouseInteractive_Validations(t *testing.T) {
 		WithStatementTimeoutInSeconds(-1)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

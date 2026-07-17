@@ -34,6 +34,7 @@ Interactive warehouses differ from standard warehouses in a few ways that affect
 - `tables` associations are applied incrementally with `ADD TABLES` / `DROP TABLES` (only the changed entries), rather than by re-associating the full set on every change.
 - `fallback_warehouse` is specific to interactive warehouses; it is not available on standard warehouses (`snowflake_warehouse`).
 - Standard-warehouse-only properties (`scaling_policy`, `enable_query_acceleration`, `query_acceleration_max_scale_factor`, `resource_constraint`, `generation`) are intentionally omitted from the schema; configuring them yields a plan-time "unsupported argument" error.
+- `warehouse_size` cannot be changed with `ALTER` while the warehouse is running, so a resize briefly suspends the warehouse, applies the new size, and resumes it. Removing `warehouse_size` from the config recreates the resource, because Snowflake has no `UNSET WAREHOUSE_SIZE` to fall back to the account default.
 - The warehouse type cannot be changed to or from `INTERACTIVE` with `ALTER`. If the underlying warehouse type changes externally, the only way to reconcile is to recreate the resource.
 
 {{ .SchemaMarkdown | trimspace }}

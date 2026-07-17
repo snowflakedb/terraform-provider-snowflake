@@ -271,7 +271,7 @@ var warehousesDef = g.NewInterface(
 	[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},
 	"*Warehouse", "error",
 ).WithCustomInterfaceMethod(
-	"AlterWithSuspend", "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type",
+	"AlterWithSuspend", "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*AlterWarehouseRequest")},
 	"error",
 ).WithEnums(

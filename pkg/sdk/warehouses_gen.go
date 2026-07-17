@@ -23,7 +23,7 @@ type Warehouses interface {
 	// ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)
 	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
-	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type
+	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse
 	AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error
 }
 

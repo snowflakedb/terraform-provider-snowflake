@@ -18,6 +18,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// interactiveWarehouseDefaultAutoSuspend is the AUTO_SUSPEND value Snowflake applies when an
+// interactive warehouse is created without one. When auto_suspend is removed from config we re-apply
+// it with SET (rather than UNSET) so that removal matches CREATE-time behavior: UNSET AUTO_SUSPEND
+// yields NULL and additionally misbehaves (see SNOW-1473453). This mirrors the regular warehouse.
+const interactiveWarehouseDefaultAutoSuspend = 86400
+
 var warehouseInteractiveSchema = map[string]*schema.Schema{
 	"name": {
 		Type:             schema.TypeString,
@@ -30,7 +36,7 @@ var warehouseInteractiveSchema = map[string]*schema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseSize),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseSize), IgnoreChangeToCurrentSnowflakeValueInShow("size")),
-		Description:      fmt.Sprintf("Specifies the size of the interactive warehouse. Valid values are (case-insensitive): %s. Note: removing the size from config will result in the resource recreation.", possibleValuesListed(sdk.ValidWarehouseSizesString)),
+		Description:      fmt.Sprintf("Specifies the size of the interactive warehouse. Valid values are (case-insensitive): %s. Note: changing the size briefly suspends and resumes the warehouse to apply the resize (an interactive warehouse cannot be resized while running); removing the size from config will result in the resource recreation.", possibleValuesListed(sdk.ValidWarehouseSizesString)),
 	},
 	"max_cluster_count": {
 		Type:             schema.TypeInt,
@@ -173,28 +179,12 @@ func WarehouseInteractive() *schema.Resource {
 				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
 			),
 			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, FullyQualifiedNameAttributeName, "name"),
-			// Unlike a regular warehouse, an interactive warehouse cannot have its size changed
-			// via ALTER while it is running (Snowflake rejects it), and suspend/alter/resume is
-			// not viable because of the resulting race conditions. The only reliable way to change
-			// the size is to recreate the warehouse, so any size change forces replacement.
+			// A resize between two concrete sizes is applied in place via suspend/alter/resume (see
+			// UpdateWarehouseInteractive), mirroring how a regular warehouse handles it. Only removing
+			// the size forces replacement: Snowflake has no UNSET WAREHOUSE_SIZE, so recreation is the
+			// only way to fall back to the account default.
 			customdiff.ForceNewIfChange("warehouse_size", func(ctx context.Context, old, new, meta any) bool {
-				oldStr, newStr := old.(string), new.(string)
-				// Removing the size (non-empty -> empty) always forces recreation.
-				if oldStr != "" && newStr == "" {
-					return true
-				}
-				// Adding a size where there was none previously is handled by CREATE, not a recreate.
-				if oldStr == "" {
-					return false
-				}
-				oldSize, oldErr := sdk.ToWarehouseSize(oldStr)
-				newSize, newErr := sdk.ToWarehouseSize(newStr)
-				// If either value cannot be parsed, fall back to a raw comparison; validation
-				// surfaces the invalid value to the user separately.
-				if oldErr != nil || newErr != nil {
-					return oldStr != newStr
-				}
-				return oldSize != newSize
+				return old.(string) != "" && new.(string) == ""
 			}),
 			ParametersCustomDiff(
 				warehouseParametersProvider,
@@ -478,7 +468,7 @@ func UpdateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 	if err := errors.Join(
 		intAttributeUpdate(d, "max_cluster_count", &set.MaxClusterCount, &unset.MaxClusterCount),
 		intAttributeUpdate(d, "min_cluster_count", &set.MinClusterCount, &unset.MinClusterCount),
-		intAttributeWithSpecialDefaultUpdate(d, "auto_suspend", &set.AutoSuspend, &unset.AutoSuspend),
+		intAttributeWithSpecialDefaultUnsetFallbackUpdate(d, "auto_suspend", &set.AutoSuspend, interactiveWarehouseDefaultAutoSuspend),
 		booleanStringAttributeUpdate(d, "auto_resume", &set.AutoResume, &unset.AutoResume),
 		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
@@ -496,7 +486,10 @@ func UpdateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if *set != *sdk.NewWarehouseSetRequest() {
-		if err := client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*set)); err != nil {
+		// AlterWithSuspend suspends and resumes the warehouse around the alter when it changes the
+		// size, because an interactive warehouse cannot be resized while running. Other SET changes
+		// are applied without a suspend.
+		if err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(fmt.Errorf("error setting interactive warehouse properties: %w", err))
 		}
 	}
