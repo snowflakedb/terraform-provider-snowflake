@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"context"
 	"sync"
 
 	"golang.org/x/sync/singleflight"
@@ -28,21 +29,22 @@ import (
 //
 // Cache is generic over the cached value type so it can be reused for other lookups in the future.
 type Cache[T any] struct {
-	mu    sync.RWMutex
-	data  map[string]T
-	group singleflight.Group
+	mu      sync.RWMutex
+	data    map[string]T
+	group   singleflight.Group
+	cancels map[string]context.CancelFunc
 }
 
 // NewCache returns an initialized, empty cache.
 func NewCache[T any]() *Cache[T] {
-	return &Cache[T]{data: make(map[string]T)}
+	return &Cache[T]{data: make(map[string]T), cancels: make(map[string]context.CancelFunc)}
 }
 
 // GetOrLoad returns the cached value for key. On a cache miss it calls loadFn,
 // stores the result, and returns it. Concurrent misses on the same key are collapsed
 // into a single loadFn call whose result is shared by all callers. If loadFn returns an
 // error the result is not cached and the error is propagated to the caller.
-func (c *Cache[T]) GetOrLoad(key string, loadFn func() (T, error)) (T, error) {
+func (c *Cache[T]) GetOrLoad(key string, loadFn func(ctx context.Context) (T, error)) (T, error) {
 	// Fast path: warm cache hit, read lock only. Skips singleflight entirely.
 	c.mu.RLock()
 	if v, ok := c.data[key]; ok {
@@ -64,9 +66,25 @@ func (c *Cache[T]) GetOrLoad(key string, loadFn func() (T, error)) (T, error) {
 		}
 		c.mu.RUnlock()
 
-		loaded, loadErr := loadFn()
+		ctx, cancel := context.WithCancel(context.Background())
+		c.mu.Lock()
+		c.cancels[key] = cancel
+		c.mu.Unlock()
+		defer func() {
+			c.mu.Lock()
+			delete(c.cancels, key)
+			c.mu.Unlock()
+			cancel()
+		}()
+
+		loaded, loadErr := loadFn(ctx)
 		if loadErr != nil {
 			return nil, loadErr
+		}
+		if ctx.Err() != nil {
+			// Invalidate ran while loadFn was in flight; the result may reflect
+			// pre-mutation state, so don't let it overwrite the invalidation.
+			return nil, ctx.Err()
 		}
 
 		c.mu.Lock()
@@ -87,6 +105,11 @@ func (c *Cache[T]) GetOrLoad(key string, loadFn func() (T, error)) (T, error) {
 // to re-fetch from the source.
 func (c *Cache[T]) Invalidate(key string) {
 	c.mu.Lock()
-	defer c.mu.Unlock()
 	delete(c.data, key)
+	cancel, ok := c.cancels[key]
+	c.mu.Unlock()
+	if ok {
+		cancel()
+	}
+	c.group.Forget(key)
 }
