@@ -24,8 +24,11 @@ func TestAcc_FailoverGroupBasic(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -34,12 +37,12 @@ func TestAcc_FailoverGroupBasic(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupBasic(id.Name(), accountName, TestDatabaseName),
+				Config: failoverGroupBasic(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "fully_qualified_name", id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_integration_types.*", "SECURITY INTEGRATIONS"),
 					resource.TestCheckTypeSetElemAttr("snowflake_failover_group.fg", "allowed_integration_types.*", "API INTEGRATIONS"),
@@ -66,8 +69,10 @@ func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -76,22 +81,22 @@ func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithInterval(id.Name(), accountName, 20, TestDatabaseName),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.interval", "20"),
 				),
 			},
 			{
-				Config: failoverGroupWithNoWarehouse(id.Name(), accountName, 20),
+				Config: failoverGroupWithNoWarehouse(id, currentAccountId, businessCriticalAccountId, 20),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "3"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.interval", "20"),
@@ -106,8 +111,10 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -116,11 +123,11 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithInterval(id.Name(), accountName, 10, TestDatabaseName),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
@@ -130,11 +137,11 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Update Interval
 			{
-				Config: failoverGroupWithInterval(id.Name(), accountName, 20, TestDatabaseName),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
@@ -144,11 +151,11 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Change to Cron Expression
 			{
-				Config: failoverGroupWithCronExpression(id.Name(), accountName, "0 0 10-20 * TUE,THU", TestDatabaseName),
+				Config: failoverGroupWithCronExpression(id, currentAccountId, businessCriticalAccountId, "0 0 10-20 * TUE,THU", testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
@@ -160,11 +167,11 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Update Cron Expression
 			{
-				Config: failoverGroupWithCronExpression(id.Name(), accountName, "0 0 5-20 * TUE,THU", TestDatabaseName),
+				Config: failoverGroupWithCronExpression(id, currentAccountId, businessCriticalAccountId, "0 0 5-20 * TUE,THU", testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
@@ -176,11 +183,11 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Remove replication schedule
 			{
-				Config: failoverGroupWithoutReplicationSchedule(id.Name(), accountName, TestDatabaseName),
+				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "0"),
@@ -188,11 +195,11 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Change to Interval
 			{
-				Config: failoverGroupWithInterval(id.Name(), accountName, 10, TestDatabaseName),
+				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.#", "1"),
@@ -216,8 +223,10 @@ func TestAcc_FailoverGroup_issue2517(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -226,11 +235,11 @@ func TestAcc_FailoverGroup_issue2517(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithAccountParameters(id.Name(), accountName, TestDatabaseName),
+				Config: failoverGroupWithAccountParameters(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "5"),
-					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "1"),
+					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_accounts.#", "2"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_databases.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "allowed_integration_types.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "replication_schedule.0.cron.0.expression", "0 0 10-20 * TUE,THU"),
@@ -246,8 +255,11 @@ func TestAcc_FailoverGroup_issue2544(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -256,13 +268,13 @@ func TestAcc_FailoverGroup_issue2544(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupBasic(id.Name(), accountName, TestDatabaseName),
+				Config: failoverGroupBasic(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 				),
 			},
 			{
-				Config: failoverGroupWithChanges(id.Name(), accountName, 20),
+				Config: failoverGroupWithChanges(id, currentAccountId, businessCriticalAccountId, 20),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 				),
@@ -271,12 +283,13 @@ func TestAcc_FailoverGroup_issue2544(t *testing.T) {
 	})
 }
 
-func failoverGroupBasic(randomCharacters, accountName, databaseName string) string {
+// TODO [SNOW-1348343]: current account id passed on purpose; handle properly during resource rework
+func failoverGroupBasic(failoverGroupId sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, databaseId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["WAREHOUSES", "DATABASES", "INTEGRATIONS", "ROLES"]
-	allowed_accounts= ["%s"]
+	allowed_accounts= ["%s", "%s"]
 	allowed_databases = ["%s"]
 	allowed_integration_types = ["SECURITY INTEGRATIONS", "API INTEGRATIONS", "STORAGE INTEGRATIONS", "EXTERNAL ACCESS INTEGRATIONS", "NOTIFICATION INTEGRATIONS"]
 	replication_schedule {
@@ -286,56 +299,56 @@ resource "snowflake_failover_group" "fg" {
 		}
 	}
 }
-`, randomCharacters, accountName, databaseName)
+`, failoverGroupId.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name())
 }
 
-func failoverGroupWithInterval(randomCharacters, accountName string, interval int, databaseName string) string {
+func failoverGroupWithInterval(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, interval int, databaseId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["WAREHOUSES","DATABASES", "INTEGRATIONS", "ROLES"]
-	allowed_accounts= ["%s"]
+	allowed_accounts= ["%s", "%s"]
 	allowed_databases = ["%s"]
 	allowed_integration_types = ["SECURITY INTEGRATIONS"]
 	replication_schedule {
 		interval = %d
 	}
 }
-`, randomCharacters, accountName, databaseName, interval)
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name(), interval)
 }
 
-func failoverGroupWithoutReplicationSchedule(randomCharacters, accountName string, databaseName string) string {
+func failoverGroupWithoutReplicationSchedule(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, databaseId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["WAREHOUSES","DATABASES", "INTEGRATIONS", "ROLES"]
-	allowed_accounts= ["%s"]
+	allowed_accounts= ["%s", "%s"]
 	allowed_databases = ["%s"]
 	allowed_integration_types = ["SECURITY INTEGRATIONS"]
 }
-`, randomCharacters, accountName, databaseName)
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name())
 }
 
-func failoverGroupWithNoWarehouse(randomCharacters, accountName string, interval int) string {
+func failoverGroupWithNoWarehouse(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, interval int) string {
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["DATABASES", "INTEGRATIONS", "ROLES"]
-	allowed_accounts= ["%s"]
+	allowed_accounts= ["%s", "%s"]
 	allowed_integration_types = ["SECURITY INTEGRATIONS"]
 	replication_schedule {
 		interval = %d
 	}
 }
-`, randomCharacters, accountName, interval)
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), interval)
 }
 
-func failoverGroupWithCronExpression(randomCharacters, accountName, expression, databaseName string) string {
+func failoverGroupWithCronExpression(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, expression string, databaseId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["WAREHOUSES","DATABASES", "INTEGRATIONS", "ROLES"]
-	allowed_accounts= ["%s"]
+	allowed_accounts= ["%s", "%s"]
 	allowed_databases = ["%s"]
 	allowed_integration_types = ["SECURITY INTEGRATIONS"]
 	replication_schedule {
@@ -345,15 +358,15 @@ resource "snowflake_failover_group" "fg" {
 		}
 	}
 }
-`, randomCharacters, accountName, databaseName, expression)
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name(), expression)
 }
 
-func failoverGroupWithAccountParameters(randomCharacters, accountName, databaseName string) string {
+func failoverGroupWithAccountParameters(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, databaseId sdk.AccountObjectIdentifier) string {
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
 	object_types = ["ACCOUNT PARAMETERS", "WAREHOUSES", "DATABASES", "INTEGRATIONS", "ROLES"]
-	allowed_accounts= ["%s"]
+	allowed_accounts= ["%s", "%s"]
 	allowed_databases = ["%s"]
 	allowed_integration_types = ["SECURITY INTEGRATIONS"]
 	replication_schedule {
@@ -363,21 +376,21 @@ resource "snowflake_failover_group" "fg" {
 		}
 	}
 }
-`, randomCharacters, accountName, databaseName)
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), databaseId.Name())
 }
 
-func failoverGroupWithChanges(randomCharacters string, accountName string, interval int) string {
+func failoverGroupWithChanges(id sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, interval int) string {
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%[1]s"
 	object_types = ["DATABASES", "INTEGRATIONS"]
-	allowed_accounts= ["%[2]s"]
+	allowed_accounts= ["%[2]s", "%[3]s"]
 	allowed_integration_types = ["NOTIFICATION INTEGRATIONS"]
 	replication_schedule {
 		interval = %d
 	}
 }
-`, randomCharacters, accountName, interval)
+`, id.Name(), currentAccountId.Name(), allowedAccountId.Name(), interval)
 }
 
 func TestAcc_FailoverGroup_UpdateAllowedAccounts(t *testing.T) {
@@ -485,9 +498,6 @@ resource "snowflake_failover_group" "fg" {
 func TestAcc_FailoverGroup_InvalidObjectType(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	providerModel := providermodel.SnowflakeProvider().
-		WithPreviewFeaturesEnabled(string(previewfeatures.FailoverGroupResource))
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -497,7 +507,7 @@ func TestAcc_FailoverGroup_InvalidObjectType(t *testing.T) {
 		Steps: []resource.TestStep{
 			// An object type outside the supported plural object type set is rejected during create.
 			{
-				Config:      config.FromModels(t, providerModel) + failoverGroupWithObjectTypes(id.Name(), `"DATABASES", "INVALID OBJECT TYPE;"`),
+				Config:      failoverGroupWithObjectTypes(id.Name(), `"DATABASES", "INVALID OBJECT TYPE;"`),
 				ExpectError: regexp.MustCompile("invalid plural object type: INVALID OBJECT TYPE;"),
 			},
 		},

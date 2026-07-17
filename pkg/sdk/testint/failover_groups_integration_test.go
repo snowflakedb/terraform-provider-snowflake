@@ -240,14 +240,14 @@ func TestInt_CreateSecondaryReplicationGroup(t *testing.T) {
 
 	// cleanup failover groups with retry (in case of replication delay)
 	cleanupFailoverGroups := func() {
-		failoverGroupDropped := func() bool {
-			return client.FailoverGroups.Drop(ctx, sdk.NewDropFailoverGroupRequest(failoverGroup.ID())) == nil
-		}
-		assert.Eventually(t, failoverGroupDropped, 10*time.Second, time.Second)
 		secondaryClientFailoverGroupDropped := func() bool {
 			return secondaryClient.FailoverGroups.Drop(ctx, sdk.NewDropFailoverGroupRequest(failoverGroup.ID())) == nil
 		}
 		assert.Eventually(t, secondaryClientFailoverGroupDropped, 10*time.Second, time.Second)
+		failoverGroupDropped := func() bool {
+			return client.FailoverGroups.Drop(ctx, sdk.NewDropFailoverGroupRequest(failoverGroup.ID())) == nil
+		}
+		assert.Eventually(t, failoverGroupDropped, 10*time.Second, time.Second)
 	}
 	t.Cleanup(cleanupFailoverGroups)
 
@@ -589,15 +589,32 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 		assert.Equal(t, sdk.FailoverGroupSecondaryStateStarted, failoverGroup.SecondaryState)
 	})
 
+	// TODO [SNOW-1348343]: Use:
+	// SELECT phase_name, start_time, end_time, progress, details
+	//  FROM TABLE(
+	//  INFORMATION_SCHEMA.REPLICATION_GROUP_REFRESH_PROGRESS(
+	//    '...'
+	//  )
+	// );
+	// with the END_TIME = NULL
+	// to know when there is no refresh going on
 	t.Run("refresh target failover group", func(t *testing.T) {
-		err = secondaryClient.FailoverGroups.AlterTarget(ctx, sdk.NewAlterTargetFailoverGroupRequest(failoverGroup.ID()).WithRefresh(true))
-		require.NoError(t, err)
+		// Try a few times to avoid:
+		// 003101 (55000): Replication group "..." is already being refreshed. Only one refresh statement can execute at a time.
+		refresh := func() bool {
+			return secondaryClient.FailoverGroups.AlterTarget(ctx, sdk.NewAlterTargetFailoverGroupRequest(failoverGroup.ID()).WithRefresh(true)) == nil
+		}
+		assert.Eventually(t, refresh, 20*time.Second, 1*time.Second)
 	})
 
 	t.Run("promote secondary to primary", func(t *testing.T) {
 		// promote secondary to primary
-		err = secondaryClient.FailoverGroups.AlterTarget(ctx, sdk.NewAlterTargetFailoverGroupRequest(failoverGroup.ID()).WithPrimary(true))
-		require.NoError(t, err)
+		// Try a few times to avoid:
+		// 003122 (55000): Replication group "..." cannot currently be set as primary because it is being refreshed. Either wait for the refresh to finish or cancel the refresh and try again.
+		promote := func() bool {
+			return secondaryClient.FailoverGroups.AlterTarget(ctx, sdk.NewAlterTargetFailoverGroupRequest(failoverGroup.ID()).WithPrimary(true)) == nil
+		}
+		assert.Eventually(t, promote, 20*time.Second, 1*time.Second)
 
 		// verify that target failover group is promoted
 		failoverGroup, err = secondaryClient.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
@@ -640,7 +657,7 @@ func TestInt_FailoverGroupsShow(t *testing.T) {
 		failoverGroups, err := client.FailoverGroups.Show(ctx, sdk.NewShowFailoverGroupRequest())
 		require.NoError(t, err)
 		assert.LessOrEqual(t, 1, len(failoverGroups))
-		assert.Contains(t, failoverGroups, failoverGroupTest)
+		assert.Contains(t, failoverGroups, *failoverGroupTest)
 	})
 
 	t.Run("with show options", func(t *testing.T) {
@@ -648,12 +665,12 @@ func TestInt_FailoverGroupsShow(t *testing.T) {
 			WithInAccount(testClientHelper().Ids.AccountIdentifierWithLocator()))
 		require.NoError(t, err)
 		assert.LessOrEqual(t, 1, len(failoverGroups))
-		assert.Contains(t, failoverGroups, failoverGroupTest)
+		assert.Contains(t, failoverGroups, *failoverGroupTest)
 	})
 
 	t.Run("when searching a non-existent failover group", func(t *testing.T) {
 		_, err := client.FailoverGroups.ShowByID(ctx, NonExistingAccountObjectIdentifier)
-		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 }
 
