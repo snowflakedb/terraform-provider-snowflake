@@ -285,7 +285,6 @@ func TestAcc_FailoverGroup_issue2544(t *testing.T) {
 
 // TODO [SNOW-1348343]: current account id passed on purpose; handle properly during resource rework
 func failoverGroupBasic(failoverGroupId sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier, databaseId sdk.AccountObjectIdentifier) string {
-
 	return fmt.Sprintf(`
 resource "snowflake_failover_group" "fg" {
 	name = "%s"
