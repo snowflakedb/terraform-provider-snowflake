@@ -27,7 +27,6 @@ func OrganizationAccount(t *testing.T, id sdk.AccountObjectIdentifier) *Organiza
 func OrganizationAccountFromObject(t *testing.T, organizationAccount *sdk.OrganizationAccount) *OrganizationAccountAssert {
 	t.Helper()
 	return &OrganizationAccountAssert{
-		// manually adjusted: OrganizationAccount.ID() returns AccountIdentifier, not AccountObjectIdentifier
 		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAccount, organizationAccount.ID().AsAccountObjectIdentifier(), organizationAccount),
 	}
 }
