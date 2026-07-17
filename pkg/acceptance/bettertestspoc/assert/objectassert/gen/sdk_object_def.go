@@ -152,8 +152,9 @@ var allStructs = []SdkObjectDef{
 		},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.OrganizationAccount{},
+		IdType:         "sdk.AccountObjectIdentifier",
+		ObjectStruct:   sdk.OrganizationAccount{},
+		ObjectTypeName: "Account",
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -408,14 +409,16 @@ var allStructs = []SdkObjectDef{
 		NoIdentifiableObject: true,
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.TableConstraintDetails{},
-		IsDataSourceOutput: true,
+		IdType:               "sdk.SchemaObjectIdentifier",
+		ObjectStruct:         sdk.TableConstraintDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.TableCheckConstraintDetails{},
-		IsDataSourceOutput: true,
+		IdType:               "sdk.SchemaObjectIdentifier",
+		ObjectStruct:         sdk.TableCheckConstraintDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",

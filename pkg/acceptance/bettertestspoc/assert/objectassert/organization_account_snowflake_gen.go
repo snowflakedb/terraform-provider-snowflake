@@ -18,7 +18,6 @@ type OrganizationAccountAssert struct {
 func OrganizationAccount(t *testing.T, id sdk.AccountObjectIdentifier) *OrganizationAccountAssert {
 	t.Helper()
 	return &OrganizationAccountAssert{
-		// Manually adjusted
 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeAccount, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.OrganizationAccount, sdk.AccountObjectIdentifier] {
 			return testClient.OrganizationAccount.Show
 		}),
@@ -28,7 +27,7 @@ func OrganizationAccount(t *testing.T, id sdk.AccountObjectIdentifier) *Organiza
 func OrganizationAccountFromObject(t *testing.T, organizationAccount *sdk.OrganizationAccount) *OrganizationAccountAssert {
 	t.Helper()
 	return &OrganizationAccountAssert{
-		// Manually adjusted
+		// manually adjusted: OrganizationAccount.ID() returns AccountIdentifier, not AccountObjectIdentifier
 		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAccount, organizationAccount.ID().AsAccountObjectIdentifier(), organizationAccount),
 	}
 }
