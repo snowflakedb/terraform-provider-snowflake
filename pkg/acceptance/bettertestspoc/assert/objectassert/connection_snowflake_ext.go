@@ -29,14 +29,3 @@ func (c *ConnectionAssert) HasConnectionUrlNotEmpty() *ConnectionAssert {
 
 	return c
 }
-
-func (c *ConnectionAssert) HasPrimaryIdentifier(expected sdk.ExternalObjectIdentifier) *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.Primary != expected {
-			return fmt.Errorf("expected primary identifier: %v; got: %v", expected.FullyQualifiedName(), o.Primary)
-		}
-		return nil
-	})
-	return c
-}
