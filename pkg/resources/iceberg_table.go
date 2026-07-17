@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -88,11 +89,10 @@ var icebergTableSchema = collections.MergeMaps(
 
 func IcebergTable() *schema.Resource {
 	return &schema.Resource{
-		// TODO (next PRs): Add PreviewFeature*ContextWrapper when this resource is moved to the production provider.
-		CreateContext: TrackingCreateWrapper(resources.IcebergTable, CreateIcebergTable),
-		ReadContext:   TrackingReadWrapper(resources.IcebergTable, ReadIcebergTableFunc(true)),
-		UpdateContext: TrackingUpdateWrapper(resources.IcebergTable, UpdateIcebergTable),
-		DeleteContext: TrackingDeleteWrapper(resources.IcebergTable, icebergTableDeleteFunc()),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.IcebergTableResource), TrackingCreateWrapper(resources.IcebergTable, CreateIcebergTable)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.IcebergTableResource), TrackingReadWrapper(resources.IcebergTable, ReadIcebergTableFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.IcebergTableResource), TrackingUpdateWrapper(resources.IcebergTable, UpdateIcebergTable)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.IcebergTableResource), TrackingDeleteWrapper(resources.IcebergTable, icebergTableDeleteFunc())),
 
 		Description: "Resource used to manage a Snowflake-managed Iceberg table. For more information, check [the official documentation](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake).",
 

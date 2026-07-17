@@ -77,6 +77,7 @@ var RepositoryLabels = []string{
 	"resource:grant_privileges_to_account_role",
 	"resource:grant_privileges_to_database_role",
 	"resource:grant_privileges_to_share",
+	"resource:iceberg_table",
 	"resource:iceberg_table_from_aws_glue",
 	"resource:iceberg_table_from_delta_files",
 	"resource:iceberg_table_from_files",
