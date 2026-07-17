@@ -148,3 +148,28 @@ data "snowflake_grants" "example_future_to_database_role" {
     database_role = "\"some_database\".\"some_database_role\""
   }
 }
+
+##################################
+### SHOW INHERITED GRANTS IN ...
+##################################
+
+# account
+data "snowflake_grants" "example_inherited_in_account" {
+  inherited_grants_in {
+    account = true
+  }
+}
+
+# database
+data "snowflake_grants" "example_inherited_in_database" {
+  inherited_grants_in {
+    database = "some_database"
+  }
+}
+
+# schema
+data "snowflake_grants" "example_inherited_in_schema" {
+  inherited_grants_in {
+    schema = "\"some_database\".\"some_schema\""
+  }
+}

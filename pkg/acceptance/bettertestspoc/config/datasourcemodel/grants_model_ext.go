@@ -122,3 +122,38 @@ func GrantsToUser(
 			}),
 		)
 }
+
+func InheritedGrantsInAccount(
+	datasourceName string,
+) *GrantsModel {
+	return Grants(datasourceName).
+		WithInheritedGrantsInValue(
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"account": tfconfig.BoolVariable(true),
+			}),
+		)
+}
+
+func InheritedGrantsInDatabase(
+	datasourceName string,
+	id sdk.AccountObjectIdentifier,
+) *GrantsModel {
+	return Grants(datasourceName).
+		WithInheritedGrantsInValue(
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"database": tfconfig.StringVariable(id.Name()),
+			}),
+		)
+}
+
+func InheritedGrantsInSchema(
+	datasourceName string,
+	id sdk.DatabaseObjectIdentifier,
+) *GrantsModel {
+	return Grants(datasourceName).
+		WithInheritedGrantsInValue(
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"schema": tfconfig.StringVariable(id.FullyQualifiedName()),
+			}),
+		)
+}

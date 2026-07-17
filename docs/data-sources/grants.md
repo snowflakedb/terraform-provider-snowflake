@@ -162,6 +162,31 @@ data "snowflake_grants" "example_future_to_database_role" {
     database_role = "\"some_database\".\"some_database_role\""
   }
 }
+
+##################################
+### SHOW INHERITED GRANTS IN ...
+##################################
+
+# account
+data "snowflake_grants" "example_inherited_in_account" {
+  inherited_grants_in {
+    account = true
+  }
+}
+
+# database
+data "snowflake_grants" "example_inherited_in_database" {
+  inherited_grants_in {
+    database = "some_database"
+  }
+}
+
+# schema
+data "snowflake_grants" "example_inherited_in_schema" {
+  inherited_grants_in {
+    schema = "\"some_database\".\"some_schema\""
+  }
+}
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
@@ -176,6 +201,7 @@ data "snowflake_grants" "example_future_to_database_role" {
 - `grants_of` (Block List, Max: 1) Lists all objects to which the given object has been granted. (see [below for nested schema](#nestedblock--grants_of))
 - `grants_on` (Block List, Max: 1) Lists all privileges that have been granted on an object or on an account. (see [below for nested schema](#nestedblock--grants_on))
 - `grants_to` (Block List, Max: 1) Lists all privileges granted to the object. (see [below for nested schema](#nestedblock--grants_to))
+- `inherited_grants_in` (Block List, Max: 1) Lists all inherited grants defined in a container. (see [below for nested schema](#nestedblock--inherited_grants_in))
 
 ### Read-Only
 
@@ -242,6 +268,16 @@ Required:
 
 
 
+<a id="nestedblock--inherited_grants_in"></a>
+### Nested Schema for `inherited_grants_in`
+
+Optional:
+
+- `account` (Boolean) Lists all inherited grants defined in the account.
+- `database` (String) Lists all inherited grants defined in the specified database.
+- `schema` (String) Lists all inherited grants defined in the specified schema. Schema must be a fully qualified name ("&lt;db_name&gt;"."&lt;schema_name&gt;").
+
+
 <a id="nestedatt--grants"></a>
 ### Nested Schema for `grants`
 
@@ -253,5 +289,9 @@ Read-Only:
 - `granted_on` (String)
 - `granted_to` (String)
 - `grantee_name` (String)
+- `inherited_from` (String)
+- `inherited_from_database` (String)
+- `inherited_from_schema` (String)
+- `is_inherited` (Boolean)
 - `name` (String)
 - `privilege` (String)

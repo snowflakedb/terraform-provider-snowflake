@@ -59,6 +59,7 @@ func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 func Test_AllEnumConversions(t *testing.T) {
 	additional := []enumTestProvider{
 		typedEnumTestProvider[ComputePoolInstanceFamily]{"ComputePoolInstanceFamily", AllComputePoolInstanceFamilies, ToComputePoolInstanceFamily},
+		typedEnumTestProvider[GrantInheritedFrom]{"GrantInheritedFrom", AllGrantInheritedFroms, ToGrantInheritedFrom},
 	}
 
 	require.Positive(t, len(allEnumConversionTests))
