@@ -118,7 +118,14 @@ func (n *NotebookDetailsAssert) HasNoQueryWarehouse() *NotebookDetailsAssert {
 }
 
 func (n *NotebookDetailsAssert) HasNoComment() *NotebookDetailsAssert {
-	return n.HasComment("")
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be empty")
+		}
+		return nil
+	})
+	return n
 }
 
 func (n *NotebookDetailsAssert) HasNoTitle() *NotebookDetailsAssert {
