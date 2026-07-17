@@ -47,6 +47,15 @@ type AccountRoleGrantPrivileges struct {
 	AllPrivileges           *bool                    `ddl:"keyword" sql:"ALL PRIVILEGES"`
 }
 
+func (v *AccountRoleGrantPrivileges) ToInheritedAccountRoleGrantPrivileges() InheritedAccountRoleGrantPrivileges {
+	return InheritedAccountRoleGrantPrivileges{
+		AccountObjectPrivileges: v.AccountObjectPrivileges,
+		SchemaPrivileges:        v.SchemaPrivileges,
+		SchemaObjectPrivileges:  v.SchemaObjectPrivileges,
+		AllPrivileges:           v.AllPrivileges,
+	}
+}
+
 type AccountRoleGrantOn struct {
 	Account       *bool                 `ddl:"keyword" sql:"ACCOUNT"`
 	AccountObject *GrantOnAccountObject `ddl:"-"`

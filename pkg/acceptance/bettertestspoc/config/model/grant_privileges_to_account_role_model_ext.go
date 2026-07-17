@@ -64,3 +64,72 @@ func (g *GrantPrivilegesToAccountRoleModel) WithOnFutureSchemaObjectsInSchema(pl
 	}))
 	return g
 }
+
+func (g *GrantPrivilegesToAccountRoleModel) WithOnInheritedAccountObjects(pluralObjectType sdk.PluralObjectType) *GrantPrivilegesToAccountRoleModel {
+	g.WithOnAccountObjectValue(config.ObjectVariable(map[string]config.Variable{
+		"inherited": config.ListVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"object_type_plural": config.StringVariable(string(pluralObjectType)),
+			}),
+		),
+	}))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithOnInheritedSchemasInAccount() *GrantPrivilegesToAccountRoleModel {
+	g.WithOnSchemaValue(config.ObjectVariable(map[string]config.Variable{
+		"inherited": config.ListVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"in_account": config.BoolVariable(true),
+			}),
+		),
+	}))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithOnInheritedSchemasInDatabase(id sdk.AccountObjectIdentifier) *GrantPrivilegesToAccountRoleModel {
+	g.WithOnSchemaValue(config.ObjectVariable(map[string]config.Variable{
+		"inherited": config.ListVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"in_database": config.StringVariable(id.FullyQualifiedName()),
+			}),
+		),
+	}))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithOnInheritedSchemaObjectsInAccount(pluralObjectType sdk.PluralObjectType) *GrantPrivilegesToAccountRoleModel {
+	g.WithOnSchemaObjectValue(config.ObjectVariable(map[string]config.Variable{
+		"inherited": config.ListVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"object_type_plural": config.StringVariable(string(pluralObjectType)),
+				"in_account":         config.BoolVariable(true),
+			}),
+		),
+	}))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithOnInheritedSchemaObjectsInDatabase(pluralObjectType sdk.PluralObjectType, id sdk.AccountObjectIdentifier) *GrantPrivilegesToAccountRoleModel {
+	g.WithOnSchemaObjectValue(config.ObjectVariable(map[string]config.Variable{
+		"inherited": config.ListVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"object_type_plural": config.StringVariable(string(pluralObjectType)),
+				"in_database":        config.StringVariable(id.FullyQualifiedName()),
+			}),
+		),
+	}))
+	return g
+}
+
+func (g *GrantPrivilegesToAccountRoleModel) WithOnInheritedSchemaObjectsInSchema(pluralObjectType sdk.PluralObjectType, schemaId sdk.DatabaseObjectIdentifier) *GrantPrivilegesToAccountRoleModel {
+	g.WithOnSchemaObjectValue(config.ObjectVariable(map[string]config.Variable{
+		"inherited": config.ListVariable(
+			config.ObjectVariable(map[string]config.Variable{
+				"object_type_plural": config.StringVariable(string(pluralObjectType)),
+				"in_schema":          config.StringVariable(schemaId.FullyQualifiedName()),
+			}),
+		),
+	}))
+	return g
+}
