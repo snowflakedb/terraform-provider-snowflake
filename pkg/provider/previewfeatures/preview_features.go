@@ -77,6 +77,7 @@ const (
 	IcebergTableFromDeltaFilesResource            feature = "snowflake_iceberg_table_from_delta_files_resource"
 	IcebergTableFromFilesResource                 feature = "snowflake_iceberg_table_from_files_resource"
 	IcebergTableFromRestResource                  feature = "snowflake_iceberg_table_from_rest_resource"
+	IcebergTablesDatasource                       feature = "snowflake_iceberg_tables_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	InternalStageResource                         feature = "snowflake_stage_internal_resource"
@@ -190,6 +191,7 @@ var allPreviewFeatures = []feature{
 	IcebergTableFromDeltaFilesResource,
 	IcebergTableFromFilesResource,
 	IcebergTableFromRestResource,
+	IcebergTablesDatasource,
 	JobServiceResource,
 	ListingsDatasource,
 	ManagedAccountResource,
