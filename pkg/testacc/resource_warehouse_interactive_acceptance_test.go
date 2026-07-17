@@ -25,9 +25,10 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 
 	basic := model.WarehouseInteractiveWithId(warehouseId)
-	// warehouse_size is not toggled in this set/unset cycle: removing it from config forces a resource
-	// recreate (Snowflake has no UNSET WAREHOUSE_SIZE), which does not fit an update-only unset step.
-	// The warehouse_size resize (update) and its removal (recreate) are exercised in the dedicated
+	// warehouse_size is not toggled in this set/unset cycle: any size change forces a resource
+	// recreate (an interactive warehouse cannot be resized via ALTER while running, and removing the
+	// size has no UNSET WAREHOUSE_SIZE), which does not fit an update-only step.
+	// The warehouse_size resize and its removal (both recreate) are exercised in the dedicated
 	// TestAcc_WarehouseInteractive_WarehouseSize test.
 	//
 	// Every optional value below is chosen to differ from the interactive warehouse defaults
@@ -209,6 +210,8 @@ func TestAcc_WarehouseInteractive_WarehouseSize(t *testing.T) {
 
 	small := model.WarehouseInteractiveWithId(warehouseId).
 		WithWarehouseSize(string(sdk.WarehouseSizeSmall))
+	medium := model.WarehouseInteractiveWithId(warehouseId).
+		WithWarehouseSize(string(sdk.WarehouseSizeMedium))
 	noSize := model.WarehouseInteractiveWithId(warehouseId)
 
 	ref := small.ResourceReference()
@@ -227,6 +230,21 @@ func TestAcc_WarehouseInteractive_WarehouseSize(t *testing.T) {
 					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
 						HasWarehouseSizeString(string(sdk.WarehouseSizeSmall)),
+				),
+			},
+			// changing the size recreates the warehouse: an interactive warehouse rejects an ALTER
+			// resize while running, so the provider force-recreates instead of updating in place.
+			{
+				Config: accconfig.FromModels(t, medium),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseInteractiveResource(t, ref).
+						HasWarehouseSizeString(string(sdk.WarehouseSizeMedium)),
 				),
 			},
 			// removing the size recreates the warehouse: Snowflake has no UNSET WAREHOUSE_SIZE, so the

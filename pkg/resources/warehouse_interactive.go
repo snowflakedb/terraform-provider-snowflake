@@ -173,8 +173,28 @@ func WarehouseInteractive() *schema.Resource {
 				strings.ToLower(string(sdk.WarehouseParameterStatementTimeoutInSeconds)),
 			),
 			ComputedIfAnyAttributeChanged(warehouseInteractiveSchema, FullyQualifiedNameAttributeName, "name"),
+			// Unlike a regular warehouse, an interactive warehouse cannot have its size changed
+			// via ALTER while it is running (Snowflake rejects it), and suspend/alter/resume is
+			// not viable because of the resulting race conditions. The only reliable way to change
+			// the size is to recreate the warehouse, so any size change forces replacement.
 			customdiff.ForceNewIfChange("warehouse_size", func(ctx context.Context, old, new, meta any) bool {
-				return old.(string) != "" && new.(string) == ""
+				oldStr, newStr := old.(string), new.(string)
+				// Removing the size (non-empty -> empty) always forces recreation.
+				if oldStr != "" && newStr == "" {
+					return true
+				}
+				// Adding a size where there was none previously is handled by CREATE, not a recreate.
+				if oldStr == "" {
+					return false
+				}
+				oldSize, oldErr := sdk.ToWarehouseSize(oldStr)
+				newSize, newErr := sdk.ToWarehouseSize(newStr)
+				// If either value cannot be parsed, fall back to a raw comparison; validation
+				// surfaces the invalid value to the user separately.
+				if oldErr != nil || newErr != nil {
+					return oldStr != newStr
+				}
+				return oldSize != newSize
 			}),
 			ParametersCustomDiff(
 				warehouseParametersProvider,
