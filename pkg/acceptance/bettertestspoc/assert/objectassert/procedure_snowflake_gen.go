@@ -121,6 +121,17 @@ func (p *ProcedureAssert) HasMaxNumArguments(expected int) *ProcedureAssert {
 	return p
 }
 
+func (p *ProcedureAssert) HasArgumentsRaw(expected string) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.ArgumentsRaw != expected {
+			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
@@ -139,17 +150,6 @@ func (p *ProcedureAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureAsse
 		t.Helper()
 		if o.ReturnTypeOld != expected {
 			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProcedureAssert) HasArgumentsRaw(expected string) *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.ArgumentsRaw != expected {
-			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
 		}
 		return nil
 	})

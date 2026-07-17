@@ -121,6 +121,17 @@ func (f *FunctionAssert) HasMaxNumArguments(expected int) *FunctionAssert {
 	return f
 }
 
+func (f *FunctionAssert) HasArgumentsRaw(expected string) *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if o.ArgumentsRaw != expected {
+			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FunctionAssert) HasArgumentsOld(expected ...sdk.DataType) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
@@ -139,17 +150,6 @@ func (f *FunctionAssert) HasReturnTypeOld(expected sdk.DataType) *FunctionAssert
 		t.Helper()
 		if o.ReturnTypeOld != expected {
 			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FunctionAssert) HasArgumentsRaw(expected string) *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.ArgumentsRaw != expected {
-			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
 		}
 		return nil
 	})

@@ -19,7 +19,7 @@ type NetworkRuleAssert struct {
 func NetworkRule(t *testing.T, id sdk.SchemaObjectIdentifier) *NetworkRuleAssert {
 	t.Helper()
 	return &NetworkRuleAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("NetworkRule"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.NetworkRule, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeNetworkRule, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.NetworkRule, sdk.SchemaObjectIdentifier] {
 			return testClient.NetworkRule.Show
 		}),
 	}

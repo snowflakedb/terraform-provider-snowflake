@@ -11,14 +11,11 @@ import (
 )
 
 type IcebergRestRestConfigDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.IcebergRestRestConfigDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.IcebergRestRestConfigDetails]
 }
 
-func IcebergRestRestConfigDetailsFromObject(t *testing.T, icebergRestRestConfigDetails *sdk.IcebergRestRestConfigDetails) *IcebergRestRestConfigDetailsAssert {
-	t.Helper()
-	return &IcebergRestRestConfigDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("IcebergRestRestConfigDetails"), sdk.NewAccountObjectIdentifier(""), icebergRestRestConfigDetails),
-	}
+func NewIcebergRestRestConfigDetailsAssert() *IcebergRestRestConfigDetailsAssert {
+	return &IcebergRestRestConfigDetailsAssert{assert.NewSubStructAssert[sdk.IcebergRestRestConfigDetails]()}
 }
 
 func (i *IcebergRestRestConfigDetailsAssert) HasCatalogUri(expected string) *IcebergRestRestConfigDetailsAssert {

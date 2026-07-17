@@ -2,30 +2,60 @@
 
 {{ $assertName := .Name | printf "%sAssert" }}
 {{ $nameLowerCase := FirstLetterLowercase .Name }}
+{{- if .IsSubStruct }}
+type {{ $assertName }} struct {
+    *assert.SubStructAssert[{{ .SdkType }}]
+}
+{{- else }}
 type {{ $assertName }} struct {
     *assert.SnowflakeObjectAssert[{{ .SdkType }}, {{ .IdType }}]
 }
+{{- end }}
 
-{{- if not (or .IsSubStruct .NoShowById) }}
+{{- if not (or .IsSubStruct .NoShowById .NoIdentifiableObject) }}
+{{- if .ShowByParentId }}
+func {{ .Name }}(t *testing.T, parentId {{ .ShowByParentId.ParentIdType }}, id {{ .IdType }}) *{{ $assertName }} {
+    t.Helper()
+    return &{{ $assertName }}{
+        assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType{{ .ObjectTypeName }}, id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
+            return func(t *testing.T, id {{ .IdType }}) (*{{ .SdkType }}, error) {
+                return testClient.{{ .ShowByParentId.ClientName }}.{{ .ShowByParentId.ShowMethodName }}(t, parentId, id), nil
+            }
+        }),
+    }
+}
+{{- else }}
 func {{ .Name }}(t *testing.T, id {{ .IdType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
         {{- if .IsDataSourceOutput }}
-            assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("{{ .ObjectTypeName }}"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
-                return testClient.{{ TrimSuffix .Name "Details" }}.Describe
+        assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("{{ .ObjectTypeName }}"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
+            {{- if .DescribeOverride }}
+            return testClient.{{ .DescribeOverride.ClientName }}.{{ .DescribeOverride.MethodName }}
+            {{- else }}
+            return testClient.{{ TrimSuffix .Name "Details" }}.Describe
+            {{- end }}
         {{- else }}
-            assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType{{ .ObjectTypeName }}, id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
-                return testClient.{{ .Name }}.Show
+        assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType{{ .ObjectTypeName }}, id, func(testClient *helpers.TestClient) assert.ObjectProvider[{{ .SdkType }}, {{ .IdType }}] {
+            return testClient.{{ .Name }}.Show
         {{- end }}
-            }),
+        }),
     }
 }
 {{- end }}
+{{- end }}
 
+{{- if .IsSubStruct }}
+func New{{ .Name }}Assert() *{{ $assertName }} {
+    return &{{ $assertName }}{assert.NewSubStructAssert[{{ .SdkType }}]()}
+}
+{{- end }}
+
+{{- if not .IsSubStruct }}
 func {{ .Name }}FromObject(t *testing.T, {{ $nameLowerCase }} *{{ .SdkType }}) *{{ $assertName }} {
     t.Helper()
     return &{{ $assertName }}{
-        {{- if .IsSubStruct }}
+        {{- if .NoIdentifiableObject }}
         assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .Name }}"), {{ .PlaceholderIdentifier }}, {{ $nameLowerCase }}),
         {{- else if or .IsDataSourceOutput .NoShowById }}
         assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .ObjectTypeName }}"), {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
@@ -34,3 +64,4 @@ func {{ .Name }}FromObject(t *testing.T, {{ $nameLowerCase }} *{{ .SdkType }}) *
         {{- end }}
     }
 }
+{{- end }}

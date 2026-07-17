@@ -58,8 +58,8 @@ func (t *TableSearchOptimizationDetailsAssert) HasTarget(expected string) *Table
 func (t *TableSearchOptimizationDetailsAssert) HasTargetDataType(expected datatypes.DataType) *TableSearchOptimizationDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableSearchOptimizationDetails) error {
 		t.Helper()
-		if o.TargetDataType != expected {
-			return fmt.Errorf("expected target data type: %v; got: %v", expected, o.TargetDataType)
+		if !datatypes.AreTheSame(o.TargetDataType, expected) {
+			return fmt.Errorf("expected target data type: %v; got: %v", expected.ToSql(), o.TargetDataType.ToSql())
 		}
 		return nil
 	})

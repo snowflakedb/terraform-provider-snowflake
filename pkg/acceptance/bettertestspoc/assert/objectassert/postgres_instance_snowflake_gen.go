@@ -19,7 +19,7 @@ type PostgresInstanceAssert struct {
 func PostgresInstance(t *testing.T, id sdk.AccountObjectIdentifier) *PostgresInstanceAssert {
 	t.Helper()
 	return &PostgresInstanceAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("PostgresInstance"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.PostgresInstance, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypePostgresInstance, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.PostgresInstance, sdk.AccountObjectIdentifier] {
 			return testClient.PostgresInstance.Show
 		}),
 	}

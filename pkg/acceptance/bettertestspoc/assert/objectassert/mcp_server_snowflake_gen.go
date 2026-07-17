@@ -19,7 +19,7 @@ type McpServerAssert struct {
 func McpServer(t *testing.T, id sdk.SchemaObjectIdentifier) *McpServerAssert {
 	t.Helper()
 	return &McpServerAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("McpServer"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.McpServer, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeMcpServer, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.McpServer, sdk.SchemaObjectIdentifier] {
 			return testClient.McpServer.Show
 		}),
 	}

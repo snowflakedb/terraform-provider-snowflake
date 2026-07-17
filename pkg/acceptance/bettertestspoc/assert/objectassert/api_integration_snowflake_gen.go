@@ -19,7 +19,7 @@ type ApiIntegrationAssert struct {
 func ApiIntegration(t *testing.T, id sdk.AccountObjectIdentifier) *ApiIntegrationAssert {
 	t.Helper()
 	return &ApiIntegrationAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("ApiIntegration"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ApiIntegration, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeApiIntegration, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ApiIntegration, sdk.AccountObjectIdentifier] {
 			return testClient.ApiIntegration.Show
 		}),
 	}

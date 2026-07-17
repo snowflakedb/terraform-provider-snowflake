@@ -65,31 +65,11 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaName(expected string) *St
 	return s
 }
 
-// Adjusted manually: TableColumnSignature.Type is a datatypes.DataType interface, so the generated
-// slices.Equal comparison compared interface pointers instead of values. Compare each element by
-// name and use datatypes.AreTheSame for the data type.
-func (s *StorageLifecyclePolicyDetailsAssert) HasSignature(expected ...sdk.TableColumnSignature) *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if len(o.Signature) != len(expected) {
-			return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
-		}
-		for i := range expected {
-			if o.Signature[i].Name != expected[i].Name || !datatypes.AreTheSame(o.Signature[i].Type, expected[i].Type) {
-				return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
-			}
-		}
-		return nil
-	})
-	return s
-}
-
-// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
 func (s *StorageLifecyclePolicyDetailsAssert) HasReturnType(expected datatypes.DataType) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
 		if !datatypes.AreTheSame(o.ReturnType, expected) {
-			return fmt.Errorf("expected return type: %v; got: %v", expected, o.ReturnType)
+			return fmt.Errorf("expected return type: %v; got: %v", expected.ToSql(), o.ReturnType.ToSql())
 		}
 		return nil
 	})

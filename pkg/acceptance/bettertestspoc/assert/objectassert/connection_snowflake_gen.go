@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"testing"
 	"time"
@@ -120,7 +121,7 @@ func (c *ConnectionAssert) HasIsPrimary(expected bool) *ConnectionAssert {
 func (c *ConnectionAssert) HasPrimary(expected sdk.ExternalObjectIdentifier) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
-		if o.Primary != expected {
+		if !reflect.DeepEqual(o.Primary, expected) {
 			return fmt.Errorf("expected primary: %v; got: %v", expected, o.Primary)
 		}
 		return nil

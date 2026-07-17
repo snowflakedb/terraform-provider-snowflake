@@ -19,7 +19,7 @@ type StageAssert struct {
 func Stage(t *testing.T, id sdk.SchemaObjectIdentifier) *StageAssert {
 	t.Helper()
 	return &StageAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Stage"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stage, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeStage, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stage, sdk.SchemaObjectIdentifier] {
 			return testClient.Stage.Show
 		}),
 	}

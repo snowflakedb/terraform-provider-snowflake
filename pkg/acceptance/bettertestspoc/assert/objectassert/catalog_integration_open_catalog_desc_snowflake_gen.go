@@ -27,7 +27,7 @@ func CatalogIntegrationOpenCatalogDetails(t *testing.T, id sdk.AccountObjectIden
 func CatalogIntegrationOpenCatalogDetailsFromObject(t *testing.T, catalogIntegrationOpenCatalogDetails *sdk.CatalogIntegrationOpenCatalogDetails) *CatalogIntegrationOpenCatalogDetailsAssert {
 	t.Helper()
 	return &CatalogIntegrationOpenCatalogDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationOpenCatalogDetails"), catalogIntegrationOpenCatalogDetails.Id, catalogIntegrationOpenCatalogDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationOpenCatalogDetails"), catalogIntegrationOpenCatalogDetails.ID(), catalogIntegrationOpenCatalogDetails),
 	}
 }
 
@@ -108,4 +108,28 @@ func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasCatalogNamespace(expecte
 	return c
 }
 
-// HasRestConfig and HasRestAuthentication removed manually
+func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestConfigWith(subAssert *OpenCatalogRestConfigDetailsAssert) *CatalogIntegrationOpenCatalogDetailsAssert {
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
+			if err := assertion(t, &o.RestConfig); err != nil {
+				return fmt.Errorf("rest config: %w", err)
+			}
+			return nil
+		})
+	}
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasRestAuthenticationWith(subAssert *OAuthRestAuthenticationDetailsAssert) *CatalogIntegrationOpenCatalogDetailsAssert {
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
+			if err := assertion(t, &o.RestAuthentication); err != nil {
+				return fmt.Errorf("rest authentication: %w", err)
+			}
+			return nil
+		})
+	}
+	return c
+}

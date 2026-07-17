@@ -19,7 +19,7 @@ type CatalogIntegrationAssert struct {
 func CatalogIntegration(t *testing.T, id sdk.AccountObjectIdentifier) *CatalogIntegrationAssert {
 	t.Helper()
 	return &CatalogIntegrationAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("CatalogIntegration"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CatalogIntegration, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeCatalogIntegration, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CatalogIntegration, sdk.AccountObjectIdentifier] {
 			return testClient.CatalogIntegration.Show
 		}),
 	}

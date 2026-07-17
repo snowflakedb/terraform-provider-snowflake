@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -107,10 +108,28 @@ type StorageLocationS3CompatDetails struct {
 }
 
 type ExternalVolumeDetails struct {
+	Id               AccountObjectIdentifier
 	StorageLocations []ExternalVolumeStorageLocationDetails
 	Active           string
 	Comment          string
 	AllowWrites      string
+}
+
+func (d ExternalVolumeDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
+func (v *externalVolumes) DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolumeDetails, error) {
+	props, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseExternalVolumeDescribed(props)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return &details, nil
 }
 
 // externalVolumeStorageLocationJsonRaw is the internal JSON deserialization type

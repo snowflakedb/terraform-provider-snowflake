@@ -11,14 +11,11 @@ import (
 )
 
 type OpenCatalogRestConfigDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.OpenCatalogRestConfigDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.OpenCatalogRestConfigDetails]
 }
 
-func OpenCatalogRestConfigDetailsFromObject(t *testing.T, openCatalogRestConfigDetails *sdk.OpenCatalogRestConfigDetails) *OpenCatalogRestConfigDetailsAssert {
-	t.Helper()
-	return &OpenCatalogRestConfigDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("OpenCatalogRestConfigDetails"), sdk.NewAccountObjectIdentifier(""), openCatalogRestConfigDetails),
-	}
+func NewOpenCatalogRestConfigDetailsAssert() *OpenCatalogRestConfigDetailsAssert {
+	return &OpenCatalogRestConfigDetailsAssert{assert.NewSubStructAssert[sdk.OpenCatalogRestConfigDetails]()}
 }
 
 func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogUri(expected string) *OpenCatalogRestConfigDetailsAssert {
