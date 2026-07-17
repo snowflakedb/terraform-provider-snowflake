@@ -36,8 +36,8 @@ func ApiIntegrationAllDetailsFromObject(t *testing.T, apiIntegrationAllDetails *
 func (a *ApiIntegrationAllDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

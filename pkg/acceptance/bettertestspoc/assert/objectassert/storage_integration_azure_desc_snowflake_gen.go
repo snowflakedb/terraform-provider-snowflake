@@ -36,8 +36,8 @@ func StorageIntegrationAzureDetailsFromObject(t *testing.T, storageIntegrationAz
 func (s *StorageIntegrationAzureDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *StorageIntegrationAzureDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

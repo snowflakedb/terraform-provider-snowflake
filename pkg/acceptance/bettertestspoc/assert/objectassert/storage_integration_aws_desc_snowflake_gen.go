@@ -36,8 +36,8 @@ func StorageIntegrationAwsDetailsFromObject(t *testing.T, storageIntegrationAwsD
 func (s *StorageIntegrationAwsDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *StorageIntegrationAwsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

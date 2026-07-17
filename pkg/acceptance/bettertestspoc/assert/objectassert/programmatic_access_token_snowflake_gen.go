@@ -48,8 +48,8 @@ func (p *ProgrammaticAccessTokenAssert) HasName(expected string) *ProgrammaticAc
 func (p *ProgrammaticAccessTokenAssert) HasUserName(expected sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
-		if o.UserName.Name() != expected.Name() {
-			return fmt.Errorf("expected user name: %v; got: %v", expected.Name(), o.UserName.Name())
+		if o.UserName.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected user name: %v; got: %v", expected.FullyQualifiedName(), o.UserName.FullyQualifiedName())
 		}
 		return nil
 	})
@@ -62,8 +62,8 @@ func (p *ProgrammaticAccessTokenAssert) HasRoleRestriction(expected sdk.AccountO
 		if o.RoleRestriction == nil {
 			return fmt.Errorf("expected role restriction to have value; got: nil")
 		}
-		if (*o.RoleRestriction).Name() != expected.Name() {
-			return fmt.Errorf("expected role restriction: %v; got: %v", expected.Name(), (*o.RoleRestriction).Name())
+		if (*o.RoleRestriction).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected role restriction: %v; got: %v", expected.FullyQualifiedName(), (*o.RoleRestriction).FullyQualifiedName())
 		}
 		return nil
 	})

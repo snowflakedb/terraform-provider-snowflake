@@ -73,8 +73,8 @@ func (n *NotebookDetailsAssert) HasQueryWarehouse(expected sdk.AccountObjectIden
 		if o.QueryWarehouse == nil {
 			return fmt.Errorf("expected query warehouse to have value; got: nil")
 		}
-		if (*o.QueryWarehouse).Name() != expected.Name() {
-			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.Name(), (*o.QueryWarehouse).Name())
+		if (*o.QueryWarehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.QueryWarehouse).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -137,8 +137,8 @@ func (n *NotebookDetailsAssert) HasComputePool(expected sdk.AccountObjectIdentif
 		if o.ComputePool == nil {
 			return fmt.Errorf("expected compute pool to have value; got: nil")
 		}
-		if (*o.ComputePool).Name() != expected.Name() {
-			return fmt.Errorf("expected compute pool: %v; got: %v", expected.Name(), (*o.ComputePool).Name())
+		if (*o.ComputePool).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected compute pool: %v; got: %v", expected.FullyQualifiedName(), (*o.ComputePool).FullyQualifiedName())
 		}
 		return nil
 	})
