@@ -9,6 +9,7 @@ import (
 
 func (c *CatalogIntegrationIcebergRestDetailsAssert) HasBearerRestAuthentication() *CatalogIntegrationIcebergRestDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
+		t.Helper()
 		if o.BearerRestAuthentication == nil {
 			return fmt.Errorf("expected bearer rest authentication to have value; got: nil")
 		}
