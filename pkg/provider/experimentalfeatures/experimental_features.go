@@ -26,6 +26,7 @@ const (
 	GrantAccountRoleSafePublicRole ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
 	GrantAccountRoleShowCaching    ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SHOW_CACHING"
 	HierarchyRenames               ExperimentalFeature = "HIERARCHY_RENAMES"
+	InheritedGrants                ExperimentalFeature = "INHERITED_GRANTS"
 )
 
 type experimentalFeatureState string
@@ -169,6 +170,14 @@ var allExperiments = []Experiment{
 			"Currently supported by: `snowflake_schema`, `snowflake_table`.",
 			"Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on `snowflake_table` forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.",
 			"For more information, see the [object renaming guide](./guides/object_renaming_guide).",
+		),
+	},
+	{
+		InheritedGrants,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource.",
+			"Without this experiment, using an `inherited` block results in an error.",
 		),
 	},
 }
