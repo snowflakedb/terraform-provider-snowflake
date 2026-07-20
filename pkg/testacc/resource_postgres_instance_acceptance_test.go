@@ -83,7 +83,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				HasComputeFamily("STANDARD_M").
 				HasAuthenticationAuthority("POSTGRES").
 				HasStorageSize(10).
-				HasIsHa(false).
+				HasIsHighlyAvailable(false).
 				HasState(sdk.PostgresInstanceStateReady),
 			resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
 				HasCreatedOnNotEmpty().
@@ -122,7 +122,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasAuthenticationAuthority("POSTGRES").
 			HasComment(comment).
 			HasStorageSize(10).
-			HasIsHa(false).
+			HasIsHighlyAvailable(false).
 			HasState(sdk.PostgresInstanceStateReady),
 		resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
 			HasCreatedOnNotEmpty().

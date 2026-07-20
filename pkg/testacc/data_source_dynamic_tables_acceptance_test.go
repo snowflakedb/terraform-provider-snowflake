@@ -67,7 +67,7 @@ func TestAcc_DynamicTables_complete(t *testing.T) {
 					resource.TestCheckResourceAttrSet(dataSourceName, "records.0.text"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "records.0.automatic_clustering"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "records.0.scheduling_state"),
-					resource.TestCheckResourceAttrSet(dataSourceName, "records.0.last_suspended_on"),
+					resource.TestCheckResourceAttr(dataSourceName, "records.0.last_suspended_on", ""),
 					resource.TestCheckResourceAttrSet(dataSourceName, "records.0.is_clone"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "records.0.is_replica"),
 					resource.TestCheckResourceAttrSet(dataSourceName, "records.0.data_timestamp"),

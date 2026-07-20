@@ -32,6 +32,21 @@ func ImportedIcebergTableShowOutput(t *testing.T, id string) *IcebergTableShowOu
 	return &icebergTableAssert
 }
 
+func IcebergTablesDatasourceShowOutput(t *testing.T, name string) *IcebergTableShowOutputAssert {
+	t.Helper()
+
+	return IcebergTablesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func IcebergTablesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *IcebergTableShowOutputAssert {
+	t.Helper()
+
+	icebergTableAssert := IcebergTableShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "iceberg_tables", idx),
+	}
+	return &icebergTableAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
@@ -113,11 +128,6 @@ func (i *IcebergTableShowOutputAssert) HasOwnerRoleType(expected string) *Iceber
 
 func (i *IcebergTableShowOutputAssert) HasCatalogSyncName(expected string) *IcebergTableShowOutputAssert {
 	i.StringValueSet("catalog_sync_name", expected)
-	return i
-}
-
-func (i *IcebergTableShowOutputAssert) HasPartitionSpecs(expected string) *IcebergTableShowOutputAssert {
-	i.StringValueSet("partition_specs", expected)
 	return i
 }
 
@@ -221,7 +231,7 @@ func (i *IcebergTableShowOutputAssert) HasNoAutoRefreshStatus() *IcebergTableSho
 }
 
 func (i *IcebergTableShowOutputAssert) HasNoPartitionSpecs() *IcebergTableShowOutputAssert {
-	i.ValueNotSet("partition_specs")
+	i.ValueSet("partition_specs.#", "0")
 	return i
 }
 

@@ -18,7 +18,7 @@ type PipeAssert struct {
 func Pipe(t *testing.T, id sdk.SchemaObjectIdentifier) *PipeAssert {
 	t.Helper()
 	return &PipeAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Pipe"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Pipe, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypePipe, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Pipe, sdk.SchemaObjectIdentifier] {
 			return testClient.Pipe.Show
 		}),
 	}

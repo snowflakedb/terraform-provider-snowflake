@@ -19,7 +19,7 @@ type PostgresInstanceAssert struct {
 func PostgresInstance(t *testing.T, id sdk.AccountObjectIdentifier) *PostgresInstanceAssert {
 	t.Helper()
 	return &PostgresInstanceAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("PostgresInstance"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.PostgresInstance, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypePostgresInstance, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.PostgresInstance, sdk.AccountObjectIdentifier] {
 			return testClient.PostgresInstance.Show
 		}),
 	}
@@ -198,11 +198,11 @@ func (p *PostgresInstanceAssert) HasPostgresSettings(expected string) *PostgresI
 	return p
 }
 
-func (p *PostgresInstanceAssert) HasIsHa(expected bool) *PostgresInstanceAssert {
+func (p *PostgresInstanceAssert) HasIsHighlyAvailable(expected bool) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
 		if o.IsHighlyAvailable != expected {
-			return fmt.Errorf("expected is ha: %v; got: %v", expected, o.IsHighlyAvailable)
+			return fmt.Errorf("expected is highly available: %v; got: %v", expected, o.IsHighlyAvailable)
 		}
 		return nil
 	})

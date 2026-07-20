@@ -4,11 +4,13 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -19,7 +21,7 @@ type IcebergTableAssert struct {
 func IcebergTable(t *testing.T, id sdk.SchemaObjectIdentifier) *IcebergTableAssert {
 	t.Helper()
 	return &IcebergTableAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("IcebergTable"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.IcebergTable, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeIcebergTable, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.IcebergTable, sdk.SchemaObjectIdentifier] {
 			return testClient.IcebergTable.Show
 		}),
 	}
@@ -96,8 +98,8 @@ func (i *IcebergTableAssert) HasExternalVolumeName(expected sdk.AccountObjectIde
 		if o.ExternalVolumeName == nil {
 			return fmt.Errorf("expected external volume name to have value; got: nil")
 		}
-		if (*o.ExternalVolumeName).Name() != expected.Name() {
-			return fmt.Errorf("expected external volume name: %v; got: %v", expected.Name(), (*o.ExternalVolumeName).Name())
+		if (*o.ExternalVolumeName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected external volume name: %v; got: %v", expected.FullyQualifiedName(), (*o.ExternalVolumeName).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -110,8 +112,8 @@ func (i *IcebergTableAssert) HasCatalogName(expected sdk.AccountObjectIdentifier
 		if o.CatalogName == nil {
 			return fmt.Errorf("expected catalog name to have value; got: nil")
 		}
-		if (*o.CatalogName).Name() != expected.Name() {
-			return fmt.Errorf("expected catalog name: %v; got: %v", expected.Name(), (*o.CatalogName).Name())
+		if (*o.CatalogName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected catalog name: %v; got: %v", expected.FullyQualifiedName(), (*o.CatalogName).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -232,10 +234,12 @@ func (i *IcebergTableAssert) HasCatalogSyncName(expected string) *IcebergTableAs
 	return i
 }
 
-func (i *IcebergTableAssert) HasPartitionSpecs(expected string) *IcebergTableAssert {
+func (i *IcebergTableAssert) HasPartitionSpecs(expected ...sdk.IcebergTablePartitionSpec) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
-		if o.PartitionSpecs != expected {
+		mapped := collections.Map(o.PartitionSpecs, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected partition specs: %v; got: %v", expected, o.PartitionSpecs)
 		}
 		return nil

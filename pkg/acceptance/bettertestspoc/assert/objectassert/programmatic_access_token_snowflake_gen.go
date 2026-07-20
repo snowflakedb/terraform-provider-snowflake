@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -15,8 +16,16 @@ type ProgrammaticAccessTokenAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.ProgrammaticAccessToken, sdk.AccountObjectIdentifier]
 }
 
-// function ProgrammaticAccessToken is not supported because ProgrammaticAccessToken has a pseudo-identifier and requires a user ID for being listed in Snowflake.
-// TODO(SNOW-1501905): add a function to get the ProgrammaticAccessToken by user and token name.
+func ProgrammaticAccessToken(t *testing.T, parentId sdk.AccountObjectIdentifier, id sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenAssert {
+	t.Helper()
+	return &ProgrammaticAccessTokenAssert{
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeProgrammaticAccessToken, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ProgrammaticAccessToken, sdk.AccountObjectIdentifier] {
+			return func(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ProgrammaticAccessToken, error) {
+				return testClient.User.ShowProgrammaticAccessToken(t, parentId, id), nil
+			}
+		}),
+	}
+}
 
 func ProgrammaticAccessTokenFromObject(t *testing.T, programmaticAccessToken *sdk.ProgrammaticAccessToken) *ProgrammaticAccessTokenAssert {
 	t.Helper()
@@ -39,8 +48,8 @@ func (p *ProgrammaticAccessTokenAssert) HasName(expected string) *ProgrammaticAc
 func (p *ProgrammaticAccessTokenAssert) HasUserName(expected sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
-		if o.UserName.Name() != expected.Name() {
-			return fmt.Errorf("expected user name: %v; got: %v", expected.Name(), o.UserName.Name())
+		if o.UserName.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected user name: %v; got: %v", expected.FullyQualifiedName(), o.UserName.FullyQualifiedName())
 		}
 		return nil
 	})
@@ -53,8 +62,8 @@ func (p *ProgrammaticAccessTokenAssert) HasRoleRestriction(expected sdk.AccountO
 		if o.RoleRestriction == nil {
 			return fmt.Errorf("expected role restriction to have value; got: nil")
 		}
-		if (*o.RoleRestriction).Name() != expected.Name() {
-			return fmt.Errorf("expected role restriction: %v; got: %v", expected.Name(), (*o.RoleRestriction).Name())
+		if (*o.RoleRestriction).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected role restriction: %v; got: %v", expected.FullyQualifiedName(), (*o.RoleRestriction).FullyQualifiedName())
 		}
 		return nil
 	})

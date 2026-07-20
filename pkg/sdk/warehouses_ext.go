@@ -379,3 +379,9 @@ func (s *CreateAdaptiveWarehouseRequest) ID() AccountObjectIdentifier {
 func (s *CreateInteractiveWarehouseRequest) ID() AccountObjectIdentifier {
 	return s.name
 }
+
+// IsInteractiveWarehouse reports whether the warehouse is interactive. Snowflake surfaces this
+// through the type column (type = INTERACTIVE); there is no separate is_interactive column.
+func (w *Warehouse) IsInteractiveWarehouse() bool {
+	return w.Type == WarehouseTypeInteractive
+}

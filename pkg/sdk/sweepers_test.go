@@ -40,6 +40,14 @@ func TestSweepAll(t *testing.T) {
 
 		err = SweepAfterAcceptanceTests(secondaryClient, acceptancetests.ObjectsSuffix)
 		assert.NoError(t, err)
+
+		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
+			err = SweepAfterAcceptanceTests(azureTestClient(t), acceptancetests.ObjectsSuffix)
+			assert.NoError(t, err)
+
+			err = SweepAfterAcceptanceTests(snowflakeDefaultsTestClient(t), acceptancetests.ObjectsSuffix)
+			assert.NoError(t, err)
+		}
 	})
 
 	t.Run("Send test results", SendTestResults)
@@ -94,6 +102,14 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	fourthClient := fourthTestClient(t)
 
 	allClients := []*sdk.Client{client, secondaryClient, thirdClient, fourthClient}
+
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
+		allClients = append(
+			allClients,
+			snowflakeDefaultsTestClient(t),
+			azureTestClient(t),
+		)
+	}
 
 	// can't use extracted IntegrationTestPrefix and AcceptanceTestPrefix until sweepers reside in the SDK package (cyclic)
 	const integrationTestPrefix = "int_test_"
@@ -368,6 +384,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 		"JAKUB_MICHALAK",
 		"JAN_CIESLAK",
 		"KAMIL_WASILEWSKI",
+		"PIOTR_CICHON",
 		"TEST_CI_SERVICE_USER",
 		"PENTESTING_USER_1",
 		"PENTESTING_USER_2",
@@ -831,6 +848,16 @@ func thirdTestClient(t *testing.T) *sdk.Client {
 func fourthTestClient(t *testing.T) *sdk.Client {
 	t.Helper()
 	return testClient(t, testprofiles.Fourth)
+}
+
+func azureTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Azure)
+}
+
+func snowflakeDefaultsTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.SnowflakeDefaults)
 }
 
 func testClient(t *testing.T, profile string) *sdk.Client {

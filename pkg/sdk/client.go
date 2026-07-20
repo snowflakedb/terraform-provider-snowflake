@@ -45,7 +45,7 @@ type Client struct {
 	ExternalTables               ExternalTables
 	EventTables                  EventTables
 	FailoverGroups               FailoverGroups
-	FileFormats                  LegacyFileFormats
+	FileFormatsLegacy            FileFormatsLegacy
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants
@@ -56,6 +56,7 @@ type Client struct {
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
+	McpServers                   McpServers
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	Notebooks                    Notebooks
@@ -188,7 +189,7 @@ func (c *Client) initialize() {
 	c.ExternalTables = &externalTables{client: c}
 	c.EventTables = &eventTables{client: c}
 	c.FailoverGroups = &failoverGroups{client: c}
-	c.FileFormats = &legacyFileFormats{client: c}
+	c.FileFormatsLegacy = &fileFormatsLegacy{client: c}
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
@@ -199,6 +200,7 @@ func (c *Client) initialize() {
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
+	c.McpServers = &mcpServers{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.Notebooks = &notebooks{client: c}

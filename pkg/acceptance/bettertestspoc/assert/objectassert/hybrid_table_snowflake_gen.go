@@ -19,7 +19,7 @@ type HybridTableAssert struct {
 func HybridTable(t *testing.T, id sdk.SchemaObjectIdentifier) *HybridTableAssert {
 	t.Helper()
 	return &HybridTableAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("HybridTable"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.HybridTable, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeHybridTable, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.HybridTable, sdk.SchemaObjectIdentifier] {
 			return testClient.HybridTable.Show
 		}),
 	}

@@ -104,8 +104,10 @@ Read-Only:
 - `archive_for_days` (Number)
 - `archive_tier` (String)
 - `body` (String)
+- `database_name` (String)
 - `name` (String)
 - `return_type` (String)
+- `schema_name` (String)
 - `signature` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--signature))
 
 <a id="nestedobjatt--describe_output--signature"></a>

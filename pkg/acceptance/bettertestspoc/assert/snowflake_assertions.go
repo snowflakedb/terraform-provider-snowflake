@@ -51,8 +51,38 @@ func NewSnowflakeObjectAssertWithObject[T any, I sdk.ObjectIdentifier](objectTyp
 	}
 }
 
+// SubStructAssert is used exclusively for composition via the nested assertion adapter.
+// It intentionally does NOT implement VerifyAll, ToTerraformTestCheckFunc, or
+// ToTerraformImportStateCheckFunc — sub-struct asserters cannot be used standalone.
+type SubStructAssert[T any] struct {
+	assertions []func(*testing.T, *T) error
+}
+
+func NewSubStructAssert[T any]() *SubStructAssert[T] {
+	return &SubStructAssert[T]{assertions: make([]func(*testing.T, *T) error, 0)}
+}
+
+func (s *SubStructAssert[T]) AddAssertion(assertion func(*testing.T, *T) error) {
+	s.assertions = append(s.assertions, assertion)
+}
+
+func (s *SubStructAssert[T]) GetAssertions() []func(*testing.T, *T) error {
+	return s.assertions
+}
+
 func (s *SnowflakeObjectAssert[T, I]) AddAssertion(assertion assertSdk[*T]) {
 	s.assertions = append(s.assertions, assertion)
+}
+
+// AssertionOnPointerField checks that field is non-nil, then runs assertion against it.
+// Used by the nested assertion adapter for optional (pointer) sub-struct fields.
+// Returns an error if field is nil so that all sub-assertions consistently report the nil case.
+func AssertionOnPointerField[F any](t *testing.T, field *F, fieldName string, assertion func(*testing.T, *F) error) error {
+	t.Helper()
+	if field == nil {
+		return fmt.Errorf("expected %s to have value; got: nil", fieldName)
+	}
+	return assertion(t, field)
 }
 
 func (s *SnowflakeObjectAssert[T, I]) GetId() I {

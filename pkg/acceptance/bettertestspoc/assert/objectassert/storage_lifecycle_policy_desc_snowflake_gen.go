@@ -25,7 +25,12 @@ func StorageLifecyclePolicyDetails(t *testing.T, id sdk.SchemaObjectIdentifier) 
 	}
 }
 
-// Adjusted manually: removed StorageLifecyclePolicyDetailsFromObject — CortexAgentDetails has no Id field or ID() method.
+func StorageLifecyclePolicyDetailsFromObject(t *testing.T, storageLifecyclePolicyDetails *sdk.StorageLifecyclePolicyDetails) *StorageLifecyclePolicyDetailsAssert {
+	t.Helper()
+	return &StorageLifecyclePolicyDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLifecyclePolicyDetails"), storageLifecyclePolicyDetails.ID(), storageLifecyclePolicyDetails),
+	}
+}
 
 func (s *StorageLifecyclePolicyDetailsAssert) HasName(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
@@ -38,31 +43,33 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasName(expected string) *StorageL
 	return s
 }
 
-// Adjusted manually: TableColumnSignature.Type is a datatypes.DataType interface, so the generated
-// slices.Equal comparison compared interface pointers instead of values. Compare each element by
-// name and use datatypes.AreTheSame for the data type.
-func (s *StorageLifecyclePolicyDetailsAssert) HasSignature(expected ...sdk.TableColumnSignature) *StorageLifecyclePolicyDetailsAssert {
+func (s *StorageLifecyclePolicyDetailsAssert) HasDatabaseName(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
-		if len(o.Signature) != len(expected) {
-			return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
-		}
-		for i := range expected {
-			if o.Signature[i].Name != expected[i].Name || !datatypes.AreTheSame(o.Signature[i].Type, expected[i].Type) {
-				return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
-			}
+		if o.DatabaseName != expected {
+			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
 		}
 		return nil
 	})
 	return s
 }
 
-// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
+func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaName(expected string) *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.SchemaName != expected {
+			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyDetailsAssert) HasReturnType(expected datatypes.DataType) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
 		if !datatypes.AreTheSame(o.ReturnType, expected) {
-			return fmt.Errorf("expected return type: %v; got: %v", expected, o.ReturnType)
+			return fmt.Errorf("expected return type: %v; got: %v", expected.ToSql(), o.ReturnType.ToSql())
 		}
 		return nil
 	})

@@ -139,14 +139,12 @@ func (s *CreateIcebergTableRequest) WithContact(contact []TableContact) *CreateI
 	return s
 }
 
-func NewIcebergTableColumnsAndConstraintsRequest() *IcebergTableColumnsAndConstraintsRequest {
+func NewIcebergTableColumnsAndConstraintsRequest(
+	columns []IcebergTableColumnRequest,
+) *IcebergTableColumnsAndConstraintsRequest {
 	s := IcebergTableColumnsAndConstraintsRequest{}
-	return &s
-}
-
-func (s *IcebergTableColumnsAndConstraintsRequest) WithColumns(columns []IcebergTableColumnRequest) *IcebergTableColumnsAndConstraintsRequest {
 	s.Columns = columns
-	return s
+	return &s
 }
 
 func (s *IcebergTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfLineConstraint []TableOutOfLineConstraintRequest) *IcebergTableColumnsAndConstraintsRequest {
@@ -813,6 +811,11 @@ func NewIcebergTableAggregationPolicyRequest(
 	return &s
 }
 
+func (s *IcebergTableAggregationPolicyRequest) WithEntityKey(entityKey []Column) *IcebergTableAggregationPolicyRequest {
+	s.EntityKey = entityKey
+	return s
+}
+
 func NewCreateFromIcebergFilesIcebergTableRequest(
 	name SchemaObjectIdentifier,
 	metadataFilePath string,
@@ -1151,17 +1154,17 @@ func (s *AlterIcebergTableRequest) WithUnsetTags(unsetTags []ObjectIdentifier) *
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithAddRowAccessPolicy(addRowAccessPolicy ViewAddRowAccessPolicy) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithAddRowAccessPolicy(addRowAccessPolicy ViewAddRowAccessPolicyRequest) *AlterIcebergTableRequest {
 	s.AddRowAccessPolicy = &addRowAccessPolicy
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithDropRowAccessPolicy(dropRowAccessPolicy ViewDropRowAccessPolicy) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithDropRowAccessPolicy(dropRowAccessPolicy ViewDropRowAccessPolicyRequest) *AlterIcebergTableRequest {
 	s.DropRowAccessPolicy = &dropRowAccessPolicy
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithDropAndAddRowAccessPolicy(dropAndAddRowAccessPolicy ViewDropAndAddRowAccessPolicy) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithDropAndAddRowAccessPolicy(dropAndAddRowAccessPolicy IcebergTableDropAndAddRowAccessPolicyRequest) *AlterIcebergTableRequest {
 	s.DropAndAddRowAccessPolicy = &dropAndAddRowAccessPolicy
 	return s
 }
@@ -1171,12 +1174,12 @@ func (s *AlterIcebergTableRequest) WithDropAllRowAccessPolicies(dropAllRowAccess
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithSetAggregationPolicy(setAggregationPolicy TableSetAggregationPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithSetAggregationPolicy(setAggregationPolicy ViewSetAggregationPolicyRequest) *AlterIcebergTableRequest {
 	s.SetAggregationPolicy = &setAggregationPolicy
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithUnsetAggregationPolicy(unsetAggregationPolicy TableUnsetAggregationPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithUnsetAggregationPolicy(unsetAggregationPolicy ViewUnsetAggregationPolicyRequest) *AlterIcebergTableRequest {
 	s.UnsetAggregationPolicy = &unsetAggregationPolicy
 	return s
 }
@@ -1526,26 +1529,31 @@ func (s *IcebergTableUnsetPropertiesRequest) WithComment(comment bool) *IcebergT
 	return s
 }
 
-func NewTableSetAggregationPolicyRequest(
-	aggregationPolicy SchemaObjectIdentifier,
-) *TableSetAggregationPolicyRequest {
-	s := TableSetAggregationPolicyRequest{}
-	s.AggregationPolicy = aggregationPolicy
+func NewIcebergTableDropAndAddRowAccessPolicyRequest(
+	drop IcebergTableDropRowAccessPolicyRequest,
+	add IcebergTableAddRowAccessPolicyRequest,
+) *IcebergTableDropAndAddRowAccessPolicyRequest {
+	s := IcebergTableDropAndAddRowAccessPolicyRequest{}
+	s.Drop = drop
+	s.Add = add
 	return &s
 }
 
-func (s *TableSetAggregationPolicyRequest) WithEntityKey(entityKey []Column) *TableSetAggregationPolicyRequest {
-	s.EntityKey = entityKey
-	return s
+func NewIcebergTableDropRowAccessPolicyRequest(
+	rowAccessPolicy SchemaObjectIdentifier,
+) *IcebergTableDropRowAccessPolicyRequest {
+	s := IcebergTableDropRowAccessPolicyRequest{}
+	s.RowAccessPolicy = rowAccessPolicy
+	return &s
 }
 
-func (s *TableSetAggregationPolicyRequest) WithForce(force bool) *TableSetAggregationPolicyRequest {
-	s.Force = &force
-	return s
-}
-
-func NewTableUnsetAggregationPolicyRequest() *TableUnsetAggregationPolicyRequest {
-	s := TableUnsetAggregationPolicyRequest{}
+func NewIcebergTableAddRowAccessPolicyRequest(
+	rowAccessPolicy SchemaObjectIdentifier,
+	on []Column,
+) *IcebergTableAddRowAccessPolicyRequest {
+	s := IcebergTableAddRowAccessPolicyRequest{}
+	s.RowAccessPolicy = rowAccessPolicy
+	s.On = on
 	return &s
 }
 

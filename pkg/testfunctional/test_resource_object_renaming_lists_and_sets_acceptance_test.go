@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -498,9 +499,9 @@ func objectRenamingConfigList(listItems []map[string]any) string {
 `, name, item["string"].(string), item["int"].(int))
 	}
 
-	generatedListItems := ""
+	var generatedListItems strings.Builder
 	for _, item := range listItems {
-		generatedListItems += generateListItem(item)
+		generatedListItems.WriteString(generateListItem(item))
 	}
 
 	return fmt.Sprintf(`
@@ -511,7 +512,7 @@ func objectRenamingConfigList(listItems []map[string]any) string {
 		%[1]s
 	}
 
-`, generatedListItems, SdkV2FunctionalTestsProviderName)
+`, generatedListItems.String(), SdkV2FunctionalTestsProviderName)
 }
 
 type objectRenamingPlanCheck func(ctx context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse)
@@ -1192,9 +1193,9 @@ manually_ordered_list {
 `, name, itemType, order)
 	}
 
-	generatedListItems := ""
+	var generatedListItems strings.Builder
 	for _, item := range listItems {
-		generatedListItems += generateListItem(item["name"].(string), item["type"].(string), item["order"].(int))
+		generatedListItems.WriteString(generateListItem(item["name"].(string), item["type"].(string), item["order"].(int)))
 	}
 
 	return fmt.Sprintf(`
@@ -1203,5 +1204,5 @@ resource "snowflake_test_resource_object_renaming" "test" {
 
 	%[1]s
 }
-`, generatedListItems, SdkV2FunctionalTestsProviderName)
+`, generatedListItems.String(), SdkV2FunctionalTestsProviderName)
 }

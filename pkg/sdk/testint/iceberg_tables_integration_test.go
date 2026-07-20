@@ -111,11 +111,9 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasOwnerRoleType("ROLE").
 				HasCatalogSyncName("").
 				HasNoAutoRefreshStatus().
-				HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
-					{
-						SpecId: 0,
-						Fields: []sdk.IcebergTablePartitionSpecField{},
-					},
+				HasPartitionSpecsFixed(sdk.IcebergTablePartitionSpec{
+					SpecId: 0,
+					Fields: []sdk.IcebergTablePartitionSpecField{},
 				}).
 				HasCurrentPartitionSpecId(0).
 				HasIcebergTableFormatVersion(2),
@@ -184,18 +182,16 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasCatalogSyncName("").
 				HasNoAutoRefreshStatus().
 				HasCurrentPartitionSpecId(0).
-				HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
-					{
-						SpecId: 0,
-						Fields: []sdk.IcebergTablePartitionSpecField{
-							{FieldId: 1000, Name: "REGION", SourceId: 4, Transform: "identity"},
-							{FieldId: 1001, Name: "BUCKET_COL_bucket_4", SourceId: 5, Transform: "bucket[4]"},
-							{FieldId: 1002, Name: "TRUNC_COL_trunc_10", SourceId: 6, Transform: "truncate[10]"},
-							{FieldId: 1003, Name: "YEAR_COL_year", SourceId: 7, Transform: "year"},
-							{FieldId: 1004, Name: "MONTH_COL_month", SourceId: 8, Transform: "month"},
-							{FieldId: 1005, Name: "DAY_COL_day", SourceId: 9, Transform: "day"},
-							{FieldId: 1006, Name: "HOUR_COL_hour", SourceId: 10, Transform: "hour"},
-						},
+				HasPartitionSpecsFixed(sdk.IcebergTablePartitionSpec{
+					SpecId: 0,
+					Fields: []sdk.IcebergTablePartitionSpecField{
+						{FieldId: 1000, Name: "REGION", SourceId: 4, Transform: "identity"},
+						{FieldId: 1001, Name: "BUCKET_COL_bucket_4", SourceId: 5, Transform: "bucket[4]"},
+						{FieldId: 1002, Name: "TRUNC_COL_trunc_10", SourceId: 6, Transform: "truncate[10]"},
+						{FieldId: 1003, Name: "YEAR_COL_year", SourceId: 7, Transform: "year"},
+						{FieldId: 1004, Name: "MONTH_COL_month", SourceId: 8, Transform: "month"},
+						{FieldId: 1005, Name: "DAY_COL_day", SourceId: 9, Transform: "day"},
+						{FieldId: 1006, Name: "HOUR_COL_hour", SourceId: 10, Transform: "hour"},
 					},
 				}).
 				HasIcebergTableFormatVersion(2),
@@ -609,6 +605,57 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
 				HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb),
 		)
+	})
+
+	t.Run("create Snowflake managed: inline constraint enforcement options", func(t *testing.T) {
+		fkRefTable, fkRefCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForIcebergTable(t)
+		t.Cleanup(fkRefCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{
+					Name:       "ID",
+					ColumnType: testdatatypes.DataTypeNumber,
+					InlineConstraint: &sdk.TableColumnInlineConstraintRequest{
+						UniquePK: &sdk.TableColumnInlineUniquePKRequest{
+							Name:              new("pk_id_enforced"),
+							PrimaryKey:        new(true),
+							Enforced:          new(true),
+							Deferrable:        new(true),
+							InitiallyDeferred: new(true),
+							Enable:            new(true),
+							Validate:          new(true),
+							Rely:              new(true),
+						},
+					},
+				},
+				{
+					Name:       "FK_ID",
+					ColumnType: testdatatypes.DataTypeNumber,
+					InlineConstraint: &sdk.TableColumnInlineConstraintRequest{
+						FK: &sdk.TableColumnInlineFKRequest{
+							Name:               new("fk_ref_not_enforced"),
+							References:         fkRefTable.ID(),
+							RefColumn:          []sdk.Column{{Value: "ID"}},
+							NotEnforced:        new(true),
+							NotDeferrable:      new(true),
+							InitiallyImmediate: new(true),
+							Disable:            new(true),
+							Novalidate:         new(true),
+							Norely:             new(true),
+						},
+					},
+				},
+			},
+		}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
+
+		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		// TODO (next PRs): report this to Snowflake
+		require.Len(t, constraints, 0)
 	})
 
 	t.Run("create Snowflake managed: cluster by", func(t *testing.T) {
@@ -1312,10 +1359,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// add
 		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithAddRowAccessPolicy(sdk.ViewAddRowAccessPolicy{
-				RowAccessPolicy: rowAccessPolicy.ID(),
-				On:              []sdk.Column{{Value: "ID"}},
-			}))
+			WithAddRowAccessPolicy(*sdk.NewViewAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []sdk.Column{{Value: "ID"}})))
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1325,9 +1369,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// drop
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithDropRowAccessPolicy(sdk.ViewDropRowAccessPolicy{
-				RowAccessPolicy: rowAccessPolicy.ID(),
-			}))
+			WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
 		require.NoError(t, err)
 
 		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1352,10 +1394,10 @@ func TestInt_IcebergTables(t *testing.T) {
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithDropAndAddRowAccessPolicy(sdk.ViewDropAndAddRowAccessPolicy{
-				Drop: sdk.ViewDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicy1.ID()},
-				Add:  sdk.ViewAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicy2.ID(), On: []sdk.Column{{Value: "ID"}}},
-			}))
+			WithDropAndAddRowAccessPolicy(*sdk.NewIcebergTableDropAndAddRowAccessPolicyRequest(
+				*sdk.NewIcebergTableDropRowAccessPolicyRequest(rowAccessPolicy1.ID()),
+				*sdk.NewIcebergTableAddRowAccessPolicyRequest(rowAccessPolicy2.ID(), []sdk.Column{{Value: "ID"}}),
+			)))
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1398,7 +1440,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// set with an explicit entity key
 		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy).
+			WithSetAggregationPolicy(*sdk.NewViewSetAggregationPolicyRequest(aggregationPolicy).
 				WithEntityKey([]sdk.Column{{Value: "ID"}})))
 		require.NoError(t, err)
 
@@ -1409,7 +1451,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// set with FORCE atomically replaces the existing aggregation policy
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy2).
+			WithSetAggregationPolicy(*sdk.NewViewSetAggregationPolicyRequest(aggregationPolicy2).
 				WithEntityKey([]sdk.Column{{Value: "ID"}}).
 				WithForce(true)))
 		require.NoError(t, err)
@@ -1421,7 +1463,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// unset
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
+			WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest()))
 		require.NoError(t, err)
 
 		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)

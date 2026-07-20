@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -25,7 +26,12 @@ func CortexAgentDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgen
 	}
 }
 
-// Adjusted manually: removed CortexAgentDetailsFromObject — CortexAgentDetails has no Id field or ID() method.
+func CortexAgentDetailsFromObject(t *testing.T, cortexAgentDetails *sdk.CortexAgentDetails) *CortexAgentDetailsAssert {
+	t.Helper()
+	return &CortexAgentDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CortexAgentDetails"), cortexAgentDetails.ID(), cortexAgentDetails),
+	}
+}
 
 func (c *CortexAgentDetailsAssert) HasName(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
@@ -85,7 +91,7 @@ func (c *CortexAgentDetailsAssert) HasComment(expected string) *CortexAgentDetai
 func (c *CortexAgentDetailsAssert) HasProfile(expected sdk.CortexAgentProfile) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
-		if o.Profile != expected {
+		if !reflect.DeepEqual(o.Profile, expected) {
 			return fmt.Errorf("expected profile: %v; got: %v", expected, o.Profile)
 		}
 		return nil

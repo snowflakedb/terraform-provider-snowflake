@@ -11,14 +11,11 @@ import (
 )
 
 type StorageLocationS3DetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.StorageLocationS3Details, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.StorageLocationS3Details]
 }
 
-func StorageLocationS3DetailsFromObject(t *testing.T, storageLocationS3Details *sdk.StorageLocationS3Details) *StorageLocationS3DetailsAssert {
-	t.Helper()
-	return &StorageLocationS3DetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLocationS3Details"), sdk.NewAccountObjectIdentifier(""), storageLocationS3Details),
-	}
+func NewStorageLocationS3DetailsAssert() *StorageLocationS3DetailsAssert {
+	return &StorageLocationS3DetailsAssert{assert.NewSubStructAssert[sdk.StorageLocationS3Details]()}
 }
 
 func (s *StorageLocationS3DetailsAssert) HasStorageAwsRoleArn(expected string) *StorageLocationS3DetailsAssert {

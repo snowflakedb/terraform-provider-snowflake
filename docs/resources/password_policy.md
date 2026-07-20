@@ -97,6 +97,7 @@ Optional:
 Read-Only:
 
 - `comment` (String)
+- `database_name` (String)
 - `name` (String)
 - `owner` (String)
 - `password_history` (Number)
@@ -110,6 +111,7 @@ Read-Only:
 - `password_min_numeric_chars` (Number)
 - `password_min_special_chars` (Number)
 - `password_min_upper_case_chars` (Number)
+- `schema_name` (String)
 
 
 <a id="nestedatt--show_output"></a>

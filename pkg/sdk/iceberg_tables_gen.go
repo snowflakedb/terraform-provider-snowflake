@@ -260,6 +260,7 @@ type IcebergTableRowAccessPolicy struct {
 
 type IcebergTableAggregationPolicy struct {
 	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
+	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
 }
 
 // CreateFromIcebergFilesIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files.
@@ -338,34 +339,34 @@ type CreateFromAwsGlueIcebergTableOptions struct {
 
 // AlterIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table.
 type AlterIcebergTableOptions struct {
-	alter                         bool                              `ddl:"static" sql:"ALTER"`
-	icebergTable                  bool                              `ddl:"static" sql:"ICEBERG TABLE"`
-	IfExists                      *bool                             `ddl:"keyword" sql:"IF EXISTS"`
-	name                          SchemaObjectIdentifier            `ddl:"identifier"`
-	AddColumnAction               *IcebergTableAddColumnAction      `ddl:"keyword"`
-	DropColumnAction              *TableDropColumnAction            `ddl:"keyword"`
-	RenameColumnAction            *TableRenameColumnAction          `ddl:"keyword"`
-	AlterColumnAction             []IcebergTableAlterColumnAction   `ddl:"keyword" sql:"ALTER"`
-	SetMaskingPolicyOnColumn      *TableSetColumnMaskingPolicy      `ddl:"keyword"`
-	UnsetMaskingPolicyOnColumn    *TableUnsetColumnMaskingPolicy    `ddl:"keyword"`
-	SetProjectionPolicyOnColumn   *TableSetColumnProjectionPolicy   `ddl:"keyword"`
-	UnsetProjectionPolicyOnColumn *TableUnsetColumnProjectionPolicy `ddl:"keyword"`
-	SetTagsOnColumn               *TableSetColumnTags               `ddl:"keyword"`
-	UnsetTagsOnColumn             *TableUnsetColumnTags             `ddl:"keyword"`
-	ClusteringAction              *IcebergTableClusteringAction     `ddl:"keyword"`
-	Set                           *IcebergTableSetProperties        `ddl:"keyword" sql:"SET"`
-	Unset                         *IcebergTableUnsetProperties      `ddl:"list,no_parentheses" sql:"UNSET"`
-	SetTags                       []TagAssociation                  `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags                     []ObjectIdentifier                `ddl:"keyword" sql:"UNSET TAG"`
-	AddRowAccessPolicy            *ViewAddRowAccessPolicy           `ddl:"keyword"`
-	DropRowAccessPolicy           *ViewDropRowAccessPolicy          `ddl:"keyword"`
-	DropAndAddRowAccessPolicy     *ViewDropAndAddRowAccessPolicy    `ddl:"list,no_parentheses"`
-	DropAllRowAccessPolicies      *bool                             `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
-	SetAggregationPolicy          *TableSetAggregationPolicy        `ddl:"keyword"`
-	UnsetAggregationPolicy        *TableUnsetAggregationPolicy      `ddl:"keyword"`
-	SetJoinPolicy                 *TableSetJoinPolicy               `ddl:"keyword"`
-	UnsetJoinPolicy               *TableUnsetJoinPolicy             `ddl:"keyword"`
-	SearchOptimizationAction      *TableSearchOptimizationAction    `ddl:"keyword"`
+	alter                         bool                                   `ddl:"static" sql:"ALTER"`
+	icebergTable                  bool                                   `ddl:"static" sql:"ICEBERG TABLE"`
+	IfExists                      *bool                                  `ddl:"keyword" sql:"IF EXISTS"`
+	name                          SchemaObjectIdentifier                 `ddl:"identifier"`
+	AddColumnAction               *IcebergTableAddColumnAction           `ddl:"keyword"`
+	DropColumnAction              *TableDropColumnAction                 `ddl:"keyword"`
+	RenameColumnAction            *TableRenameColumnAction               `ddl:"keyword"`
+	AlterColumnAction             []IcebergTableAlterColumnAction        `ddl:"keyword" sql:"ALTER"`
+	SetMaskingPolicyOnColumn      *TableSetColumnMaskingPolicy           `ddl:"keyword"`
+	UnsetMaskingPolicyOnColumn    *TableUnsetColumnMaskingPolicy         `ddl:"keyword"`
+	SetProjectionPolicyOnColumn   *TableSetColumnProjectionPolicy        `ddl:"keyword"`
+	UnsetProjectionPolicyOnColumn *TableUnsetColumnProjectionPolicy      `ddl:"keyword"`
+	SetTagsOnColumn               *TableSetColumnTags                    `ddl:"keyword"`
+	UnsetTagsOnColumn             *TableUnsetColumnTags                  `ddl:"keyword"`
+	ClusteringAction              *IcebergTableClusteringAction          `ddl:"keyword"`
+	Set                           *IcebergTableSetProperties             `ddl:"keyword" sql:"SET"`
+	Unset                         *IcebergTableUnsetProperties           `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags                       []TagAssociation                       `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags                     []ObjectIdentifier                     `ddl:"keyword" sql:"UNSET TAG"`
+	AddRowAccessPolicy            *ViewAddRowAccessPolicy                `ddl:"keyword"`
+	DropRowAccessPolicy           *ViewDropRowAccessPolicy               `ddl:"keyword"`
+	DropAndAddRowAccessPolicy     *IcebergTableDropAndAddRowAccessPolicy `ddl:"list,no_parentheses"`
+	DropAllRowAccessPolicies      *bool                                  `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
+	SetAggregationPolicy          *ViewSetAggregationPolicy              `ddl:"keyword"`
+	UnsetAggregationPolicy        *ViewUnsetAggregationPolicy            `ddl:"keyword"`
+	SetJoinPolicy                 *TableSetJoinPolicy                    `ddl:"keyword"`
+	UnsetJoinPolicy               *TableUnsetJoinPolicy                  `ddl:"keyword"`
+	SearchOptimizationAction      *TableSearchOptimizationAction         `ddl:"keyword"`
 }
 
 type IcebergTableAddColumnAction struct {
@@ -486,15 +487,20 @@ type IcebergTableUnsetProperties struct {
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
-type TableSetAggregationPolicy struct {
-	set               bool                   `ddl:"static" sql:"SET"`
-	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
-	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
-	Force             *bool                  `ddl:"keyword" sql:"FORCE"`
+type IcebergTableDropAndAddRowAccessPolicy struct {
+	Drop IcebergTableDropRowAccessPolicy `ddl:"keyword"`
+	Add  IcebergTableAddRowAccessPolicy  `ddl:"keyword"`
 }
 
-type TableUnsetAggregationPolicy struct {
-	unsetAggregationPolicy bool `ddl:"static" sql:"UNSET AGGREGATION POLICY"`
+type IcebergTableDropRowAccessPolicy struct {
+	drop            bool                   `ddl:"static" sql:"DROP"`
+	RowAccessPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
+}
+
+type IcebergTableAddRowAccessPolicy struct {
+	add             bool                   `ddl:"static" sql:"ADD"`
+	RowAccessPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
+	On              []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
 type TableSetJoinPolicy struct {
@@ -600,7 +606,7 @@ type IcebergTable struct {
 	OwnerRoleType             string
 	CatalogSyncName           string
 	AutoRefreshStatus         *IcebergTableAutoRefreshStatus
-	PartitionSpecs            string
+	PartitionSpecs            []IcebergTablePartitionSpec
 	CurrentPartitionSpecId    int
 	IcebergTableFormatVersion int
 }
