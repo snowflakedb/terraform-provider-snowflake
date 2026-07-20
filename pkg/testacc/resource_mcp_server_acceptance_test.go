@@ -194,7 +194,8 @@ func TestAcc_McpServer_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					// Replace the MCP server with a different spec and comment externally.
-					testClient().McpServer.CreateWithRequest(t,
+					testClient().McpServer.CreateWithRequest(
+						t,
 						sdk.NewCreateMcpServerRequest(id, testClient().McpServer.DefaultSpec()).
 							WithComment(externalComment).
 							WithOrReplace(true),
