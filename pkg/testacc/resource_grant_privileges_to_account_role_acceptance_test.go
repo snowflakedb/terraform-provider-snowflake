@@ -3167,7 +3167,7 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_Inherited_ExternalDrif
 				Check: assertThat(
 					t,
 					resourceassert.GrantPrivilegesToAccountRoleResource(t, ref).
-						HasAccountRoleName(roleId.Name()).
+						HasAccountRoleName(roleId.FullyQualifiedName()).
 						HasPrivileges(privilege).
 						HasAllPrivileges(false).
 						HasWithGrantOption(false).
