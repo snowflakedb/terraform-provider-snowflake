@@ -222,6 +222,17 @@ func (c *ComputePoolAssert) HasComment(expected string) *ComputePoolAssert {
 	return c
 }
 
+func (c *ComputePoolAssert) HasNoComment() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *ComputePoolAssert) HasIsExclusive(expected bool) *ComputePoolAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
 		t.Helper()
@@ -241,6 +252,17 @@ func (c *ComputePoolAssert) HasApplication(expected sdk.AccountObjectIdentifier)
 		}
 		if (*o.Application).FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected application: %v; got: %v", expected.FullyQualifiedName(), (*o.Application).FullyQualifiedName())
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *ComputePoolAssert) HasNoApplication() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if o.Application != nil {
+			return fmt.Errorf("expected application to be nil; got: %v", *o.Application)
 		}
 		return nil
 	})
