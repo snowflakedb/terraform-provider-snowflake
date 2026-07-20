@@ -62,6 +62,10 @@ These features will be marked as stable in future releases. To use them, add the
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 
+### *(improvement)* snowflake_grant_account_role SHOW GRANTS caching no longer serializes parallel reads
+
+The experimental `GRANT_ACCOUNT_ROLE_SHOW_CACHING` feature previously held a single global lock for the entire duration of each `SHOW GRANTS OF ROLE` lookup on a cache miss. This serialized first-time lookups for *different* roles behind one another, negating Terraform's parallel resource reads and, in low-cache-reuse topologies, making plans noticeably slower than with caching disabled. Cache lookups are now deduplicated per role: concurrent misses on the same role still share a single round-trip, while misses on different roles run in parallel. No configuration changes are required.
+
 ### *(new feature)* New MCP Server data source
 
 We have added a new preview data source for MCP Servers:
