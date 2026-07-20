@@ -30,17 +30,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 This release adds support for [inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) across the grants data source and the account role grant resource. Inherited grants collapse the common `GRANT ON ALL` + `GRANT ON FUTURE` pattern into a single grant that automatically covers all current and future objects of a type in a container.
 
-### Data source
+Inherited grants are a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. They must be enabled on your account before use, and their behavior may change until they reach general availability.
+
+#### Data source
 
 The [`snowflake_grants`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/grants) data source now supports listing inherited grants:
 
 - A new `inherited_grants_in` query block was added. It maps to the `SHOW INHERITED GRANTS IN { ACCOUNT | DATABASE <name> | SCHEMA <name> }` command and enumerates the inherited grants defined in a container.
 - Each element of the computed `grants` list now additionally exposes the `is_inherited`, `inherited_from`, `inherited_from_database`, and `inherited_from_schema` attributes.
 
-### Resource
+#### Resource
 
 The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports creating inherited grants. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks. Notes:
-- Inherited grants are a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. They must be enabled on your account before use, and their behavior may change until they reach general availability.
 - Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
 - External drift is detected for inherited grants (e.g. an externally revoked privilege reappears in the plan).
 - `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -15,13 +16,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+var grantsExactlyOneOf = []string{"grants_on", "grants_to", "grants_of", "future_grants_in", "future_grants_to", "inherited_grants_in"}
+
 var grantsSchema = map[string]*schema.Schema{
 	"grants_on": {
 		Type:         schema.TypeList,
 		MaxItems:     1,
 		Optional:     true,
 		Description:  "Lists all privileges that have been granted on an object or on an account.",
-		ExactlyOneOf: []string{"grants_on", "grants_to", "grants_of", "future_grants_in", "future_grants_to", "inherited_grants_in"},
+		ExactlyOneOf: grantsExactlyOneOf,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"object_name": {
@@ -51,7 +54,7 @@ var grantsSchema = map[string]*schema.Schema{
 		Type:         schema.TypeList,
 		MaxItems:     1,
 		Optional:     true,
-		ExactlyOneOf: []string{"grants_on", "grants_to", "grants_of", "future_grants_in", "future_grants_to", "inherited_grants_in"},
+		ExactlyOneOf: grantsExactlyOneOf,
 		Description:  "Lists all privileges granted to the object.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -158,7 +161,7 @@ var grantsSchema = map[string]*schema.Schema{
 		Type:         schema.TypeList,
 		MaxItems:     1,
 		Optional:     true,
-		ExactlyOneOf: []string{"grants_on", "grants_to", "grants_of", "future_grants_in", "future_grants_to", "inherited_grants_in"},
+		ExactlyOneOf: grantsExactlyOneOf,
 		Description:  "Lists all objects to which the given object has been granted.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -215,7 +218,7 @@ var grantsSchema = map[string]*schema.Schema{
 		Type:         schema.TypeList,
 		MaxItems:     1,
 		Optional:     true,
-		ExactlyOneOf: []string{"grants_on", "grants_to", "grants_of", "future_grants_in", "future_grants_to", "inherited_grants_in"},
+		ExactlyOneOf: grantsExactlyOneOf,
 		Description:  "Lists all privileges on new (i.e. future) objects.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -245,7 +248,7 @@ var grantsSchema = map[string]*schema.Schema{
 		Type:         schema.TypeList,
 		MaxItems:     1,
 		Optional:     true,
-		ExactlyOneOf: []string{"grants_on", "grants_to", "grants_of", "future_grants_in", "future_grants_to", "inherited_grants_in"},
+		ExactlyOneOf: grantsExactlyOneOf,
 		Description:  "Lists all privileges granted to the object on new (i.e. future) objects.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -275,7 +278,7 @@ var grantsSchema = map[string]*schema.Schema{
 		Type:         schema.TypeList,
 		MaxItems:     1,
 		Optional:     true,
-		ExactlyOneOf: []string{"grants_on", "grants_to", "grants_of", "future_grants_in", "future_grants_to", "inherited_grants_in"},
+		ExactlyOneOf: grantsExactlyOneOf,
 		Description:  "Lists all inherited grants defined in a container.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -319,68 +322,7 @@ var grantsSchema = map[string]*schema.Schema{
 		Computed:    true,
 		Description: "The list of grants",
 		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"created_on": {
-					Type:        schema.TypeString,
-					Description: "The date and time the grant was created.",
-					Computed:    true,
-				},
-				"privilege": {
-					Type:        schema.TypeString,
-					Description: "The privilege granted.",
-					Computed:    true,
-				},
-				"granted_on": {
-					Type:        schema.TypeString,
-					Description: "The object on which the privilege was granted.",
-					Computed:    true,
-				},
-				"name": {
-					Type:        schema.TypeString,
-					Description: "The name of the object on which the privilege was granted.",
-					Computed:    true,
-				},
-				"granted_to": {
-					Type:        schema.TypeString,
-					Description: "The role to which the privilege was granted.",
-					Computed:    true,
-				},
-				"grantee_name": {
-					Type:        schema.TypeString,
-					Description: "The name of the role to which the privilege was granted.",
-					Computed:    true,
-				},
-				"grant_option": {
-					Type:        schema.TypeBool,
-					Description: "Whether the grantee can grant the privilege to others.",
-					Computed:    true,
-				},
-				"granted_by": {
-					Type:        schema.TypeString,
-					Description: "The role that granted the privilege.",
-					Computed:    true,
-				},
-				"is_inherited": {
-					Type:        schema.TypeBool,
-					Description: "Whether the privilege is an inherited grant.",
-					Computed:    true,
-				},
-				"inherited_from": {
-					Type:        schema.TypeString,
-					Description: "The type of container the grant is inherited from: `ACCOUNT`, `DATABASE`, or `SCHEMA`. It is empty for regular grants.",
-					Computed:    true,
-				},
-				"inherited_from_database": {
-					Type:        schema.TypeString,
-					Description: "The database name when `inherited_from` is `DATABASE` or `SCHEMA`. It is empty otherwise.",
-					Computed:    true,
-				},
-				"inherited_from_schema": {
-					Type:        schema.TypeString,
-					Description: "The schema name when `inherited_from` is `SCHEMA`. It is empty otherwise.",
-					Computed:    true,
-				},
-			},
+			Schema: schemas.ShowGrantSchema,
 		},
 	},
 }
@@ -672,31 +614,11 @@ func buildOptsForInheritedGrantsIn(inheritedGrantsIn map[string]any) (*sdk.ShowG
 func convertGrants(grants []sdk.Grant, inherited bool) []map[string]any {
 	grantDetails := make([]map[string]any, len(grants))
 	for i, grant := range grants {
-		grantDetails[i] = map[string]any{
-			"created_on":   grant.CreatedOn.String(),
-			"privilege":    grant.Privilege,
-			"granted_on":   grant.GrantedOn.String(),
-			"name":         grant.Name.FullyQualifiedName(),
-			"granted_to":   grant.GrantedTo.String(),
-			"grantee_name": grant.GranteeName.FullyQualifiedName(),
-			"grant_option": grant.GrantOption,
-			"granted_by":   grant.GrantedBy.FullyQualifiedName(),
-		}
+		grantDetails[i] = schemas.GrantToSchema(&grant)
 		// The "is_inherited" column is absent for the SHOW INHERITED GRANTS IN ... syntax,
 		// but we know for sure all grants in the output are inherited.
 		if grant.IsInherited == nil && inherited {
 			grantDetails[i]["is_inherited"] = true
-		} else if grant.IsInherited != nil {
-			grantDetails[i]["is_inherited"] = *grant.IsInherited
-		}
-		if grant.InheritedFrom != nil {
-			grantDetails[i]["inherited_from"] = *grant.InheritedFrom
-		}
-		if grant.InheritedFromDatabase != nil {
-			grantDetails[i]["inherited_from_database"] = *grant.InheritedFromDatabase
-		}
-		if grant.InheritedFromSchema != nil {
-			grantDetails[i]["inherited_from_schema"] = *grant.InheritedFromSchema
 		}
 	}
 	return grantDetails
