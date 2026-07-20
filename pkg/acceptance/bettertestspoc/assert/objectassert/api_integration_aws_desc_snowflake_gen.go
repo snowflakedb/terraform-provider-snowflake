@@ -36,8 +36,8 @@ func ApiIntegrationAwsDetailsFromObject(t *testing.T, apiIntegrationAwsDetails *
 func (a *ApiIntegrationAwsDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

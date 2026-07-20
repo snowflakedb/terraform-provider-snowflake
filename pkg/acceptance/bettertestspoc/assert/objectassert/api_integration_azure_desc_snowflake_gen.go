@@ -36,8 +36,8 @@ func ApiIntegrationAzureDetailsFromObject(t *testing.T, apiIntegrationAzureDetai
 func (a *ApiIntegrationAzureDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

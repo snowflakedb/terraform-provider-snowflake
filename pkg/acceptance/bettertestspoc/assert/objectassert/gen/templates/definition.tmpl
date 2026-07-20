@@ -58,9 +58,9 @@ func {{ .Name }}FromObject(t *testing.T, {{ $nameLowerCase }} *{{ .SdkType }}) *
         {{- if .NoIdentifiableObject }}
         assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .Name }}"), {{ .PlaceholderIdentifier }}, {{ $nameLowerCase }}),
         {{- else if or .IsDataSourceOutput .NoShowById }}
-        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .ObjectTypeName }}"), {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
+        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("{{ .ObjectTypeName }}"), {{ if .FromObjectIDExpr }}{{ .FromObjectIDExpr }}{{ else }}{{ $nameLowerCase }}.ID(){{ end }}, {{ $nameLowerCase }}),
         {{- else }}
-        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType{{ .ObjectTypeName }}, {{ $nameLowerCase }}.ID(), {{ $nameLowerCase }}),
+        assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType{{ .ObjectTypeName }}, {{ if .FromObjectIDExpr }}{{ .FromObjectIDExpr }}{{ else }}{{ $nameLowerCase }}.ID(){{ end }}, {{ $nameLowerCase }}),
         {{- end }}
     }
 }

@@ -34,8 +34,8 @@ func CatalogIntegrationAwsGlueDetailsFromObject(t *testing.T, catalogIntegration
 func (c *CatalogIntegrationAwsGlueDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *CatalogIntegrationAwsGlueDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

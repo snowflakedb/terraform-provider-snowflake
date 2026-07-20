@@ -36,8 +36,8 @@ func ApiIntegrationGoogleDetailsFromObject(t *testing.T, apiIntegrationGoogleDet
 func (a *ApiIntegrationGoogleDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

@@ -54,17 +54,6 @@ func (a *AccountAssert) HasAccountName(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasSnowflakeRegion(expected string) *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.SnowflakeRegion != expected {
-			return fmt.Errorf("expected snowflake region: %v; got: %v", expected, o.SnowflakeRegion)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasRegionGroup(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -73,6 +62,17 @@ func (a *AccountAssert) HasRegionGroup(expected string) *AccountAssert {
 		}
 		if *o.RegionGroup != expected {
 			return fmt.Errorf("expected region group: %v; got: %v", expected, *o.RegionGroup)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AccountAssert) HasSnowflakeRegion(expected string) *AccountAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
+		t.Helper()
+		if o.SnowflakeRegion != expected {
+			return fmt.Errorf("expected snowflake region: %v; got: %v", expected, o.SnowflakeRegion)
 		}
 		return nil
 	})

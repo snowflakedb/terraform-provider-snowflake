@@ -155,14 +155,14 @@ func (r *ResourceMonitorAssert) HasSuspendAt(expected int) *ResourceMonitorAsser
 	return r
 }
 
-func (r *ResourceMonitorAssert) HasSuspendImmediateAt(expected int) *ResourceMonitorAssert {
+func (r *ResourceMonitorAssert) HasSuspendImmediatelyAt(expected int) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
 		if o.SuspendImmediatelyAt == nil {
-			return fmt.Errorf("expected suspend immediate at to have value; got: nil")
+			return fmt.Errorf("expected suspend immediately at to have value; got: nil")
 		}
 		if *o.SuspendImmediatelyAt != expected {
-			return fmt.Errorf("expected suspend immediate at: %v; got: %v", expected, *o.SuspendImmediatelyAt)
+			return fmt.Errorf("expected suspend immediately at: %v; got: %v", expected, *o.SuspendImmediatelyAt)
 		}
 		return nil
 	})

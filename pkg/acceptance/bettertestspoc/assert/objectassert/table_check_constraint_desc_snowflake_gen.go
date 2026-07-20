@@ -14,12 +14,10 @@ type TableCheckConstraintDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.TableCheckConstraintDetails, sdk.SchemaObjectIdentifier]
 }
 
-// Adjusted manually: removed the identifier-based constructor — there is no test client Describe provider for table constraints, and TableConstraintDetails has no ID() method.
-
 func TableCheckConstraintDetailsFromObject(t *testing.T, tableCheckConstraintDetails *sdk.TableCheckConstraintDetails) *TableCheckConstraintDetailsAssert {
 	t.Helper()
 	return &TableCheckConstraintDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CheckConstraintDetails"), sdk.NewSchemaObjectIdentifier("DOES", "NOT", "MATTER"), tableCheckConstraintDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("TableCheckConstraintDetails"), sdk.NewSchemaObjectIdentifier("", "", ""), tableCheckConstraintDetails),
 	}
 }
 

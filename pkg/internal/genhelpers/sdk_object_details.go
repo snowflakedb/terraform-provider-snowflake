@@ -25,6 +25,7 @@ type SdkObjectDetails struct {
 	NoIdentifiableObject bool
 	ShowByParentId       *ShowByParentIdDef
 	DescribeOverride     *DescribeOverrideDef
+	FromObjectIDExpr     string
 	NestedAssertFields   []string
 	SkipFields           []string
 	StructDetails

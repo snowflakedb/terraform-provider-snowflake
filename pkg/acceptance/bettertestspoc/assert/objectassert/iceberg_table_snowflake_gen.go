@@ -98,8 +98,8 @@ func (i *IcebergTableAssert) HasExternalVolumeName(expected sdk.AccountObjectIde
 		if o.ExternalVolumeName == nil {
 			return fmt.Errorf("expected external volume name to have value; got: nil")
 		}
-		if (*o.ExternalVolumeName).Name() != expected.Name() {
-			return fmt.Errorf("expected external volume name: %v; got: %v", expected.Name(), (*o.ExternalVolumeName).Name())
+		if (*o.ExternalVolumeName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected external volume name: %v; got: %v", expected.FullyQualifiedName(), (*o.ExternalVolumeName).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -112,8 +112,8 @@ func (i *IcebergTableAssert) HasCatalogName(expected sdk.AccountObjectIdentifier
 		if o.CatalogName == nil {
 			return fmt.Errorf("expected catalog name to have value; got: nil")
 		}
-		if (*o.CatalogName).Name() != expected.Name() {
-			return fmt.Errorf("expected catalog name: %v; got: %v", expected.Name(), (*o.CatalogName).Name())
+		if (*o.CatalogName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected catalog name: %v; got: %v", expected.FullyQualifiedName(), (*o.CatalogName).FullyQualifiedName())
 		}
 		return nil
 	})

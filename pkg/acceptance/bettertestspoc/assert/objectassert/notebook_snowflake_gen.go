@@ -107,8 +107,8 @@ func (n *NotebookAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier)
 		if o.QueryWarehouse == nil {
 			return fmt.Errorf("expected query warehouse to have value; got: nil")
 		}
-		if (*o.QueryWarehouse).Name() != expected.Name() {
-			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.Name(), (*o.QueryWarehouse).Name())
+		if (*o.QueryWarehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.QueryWarehouse).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -140,8 +140,8 @@ func (n *NotebookAssert) HasOwnerRoleType(expected string) *NotebookAssert {
 func (n *NotebookAssert) HasCodeWarehouse(expected sdk.AccountObjectIdentifier) *NotebookAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
 		t.Helper()
-		if o.CodeWarehouse.Name() != expected.Name() {
-			return fmt.Errorf("expected code warehouse: %v; got: %v", expected.Name(), o.CodeWarehouse.Name())
+		if o.CodeWarehouse.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected code warehouse: %v; got: %v", expected.FullyQualifiedName(), o.CodeWarehouse.FullyQualifiedName())
 		}
 		return nil
 	})

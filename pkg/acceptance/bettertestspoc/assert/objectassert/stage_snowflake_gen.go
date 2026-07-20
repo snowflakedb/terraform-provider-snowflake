@@ -176,8 +176,8 @@ func (s *StageAssert) HasStorageIntegration(expected sdk.AccountObjectIdentifier
 		if o.StorageIntegration == nil {
 			return fmt.Errorf("expected storage integration to have value; got: nil")
 		}
-		if o.StorageIntegration.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected storage integration: %v; got: %v", expected, *o.StorageIntegration)
+		if (*o.StorageIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected storage integration: %v; got: %v", expected.FullyQualifiedName(), (*o.StorageIntegration).FullyQualifiedName())
 		}
 		return nil
 	})
