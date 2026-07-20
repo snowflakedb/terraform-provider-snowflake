@@ -146,6 +146,11 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Service{},
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.ServiceDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.ProgrammaticAccessToken{},
 		ShowByParentId: &genhelpers.ShowByParentIdDef{
