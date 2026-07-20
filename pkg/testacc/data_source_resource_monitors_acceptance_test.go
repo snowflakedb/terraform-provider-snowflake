@@ -61,7 +61,7 @@ func TestAcc_ResourceMonitors_BasicUseCase_DifferentFiltering(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTime("").
 						HasSuspendAt(0).
-						HasSuspendImmediatelyAt(0).
+						HasSuspendImmediateAt(0).
 						HasCreatedOnNotEmpty().
 						HasOwnerNotEmpty().
 						HasComment(""),
@@ -103,7 +103,7 @@ func TestAcc_ResourceMonitors_CompleteUseCase(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTime("").
 						HasSuspendAt(0).
-						HasSuspendImmediatelyAt(0).
+						HasSuspendImmediateAt(0).
 						HasOwnerNotEmpty().
 						HasComment(""),
 					assert.Check(resource.TestCheckResourceAttr(datasourceModel.DatasourceReference(), "resource_monitors.#", "1")),
