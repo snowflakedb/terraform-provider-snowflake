@@ -1152,7 +1152,11 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string) {
+func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn *sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string) {
+	if id.Kind.IsInherited() {
+		return computeInheritedAccountRolePrivileges(id, grants, strictPrivilegeManagement)
+	}
+
 	expectedPrivileges := slices.Clone(id.Privileges)
 
 	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
@@ -1195,9 +1199,9 @@ func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, gr
 		// the default application named SNOWFLAKE that could be granted with `object_type = "APPLICATION"`.
 		// To make the logic simpler, we do not allow it and `object_type = "DATABASE"` should be used for all applications.
 		// TODO When implementing SNOW-991421 see if logic added in SNOW-887897 could be moved to the SDK to simplify the resource implementation.
-		if grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
+		if *grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
 			actualPrivileges = append(actualPrivileges, grant.Privilege)
-		} else if grantedOn == grant.GrantedOn || grantedOn == grant.GrantOn {
+		} else if *grantedOn == grant.GrantedOn || *grantedOn == grant.GrantOn {
 			actualPrivileges = append(actualPrivileges, grant.Privilege)
 		}
 	}
@@ -1213,15 +1217,86 @@ func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, gr
 	return actualPrivileges
 }
 
-func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, sdk.ObjectType) {
+// computeInheritedAccountRolePrivileges filters the grants returned by SHOW GRANTS TO ROLE down to the
+// inherited grants (is_inherited = true) that match this resource's object type and container, using the
+// inherited-specific columns (inherited_from, inherited_from_database, inherited_from_schema).
+func computeInheritedAccountRolePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, strictPrivilegeManagement bool) (actualPrivileges []string) {
+	grantedOn, container, database, schema := inheritedAccountRoleGrantScope(id)
+
+	for _, grant := range grants {
+		if !grant.IsInherited {
+			continue
+		}
+		if (grant.GrantTo != sdk.ObjectTypeRole && grant.GrantedTo != sdk.ObjectTypeRole) || grant.GranteeName.Name() != id.RoleName.Name() {
+			continue
+		}
+		if grant.GrantedOn != grantedOn || !inheritedAccountRoleGrantMatchesContainer(grant, container, database, schema) {
+			continue
+		}
+		if !strictPrivilegeManagement && !slices.Contains(id.Privileges, grant.Privilege) {
+			continue
+		}
+		actualPrivileges = append(actualPrivileges, grant.Privilege)
+	}
+
+	return actualPrivileges
+}
+
+// inheritedAccountRoleGrantScope returns the object type and container an inherited grant id is scoped to,
+// used to match the rows returned by SHOW GRANTS TO ROLE.
+func inheritedAccountRoleGrantScope(id GrantPrivilegesToAccountRoleId) (grantedOn sdk.ObjectType, container InheritedContainerKind, database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) {
+	switch data := id.Data.(type) {
+	case *OnAccountObjectInheritedGrantData:
+		return data.ObjectNamePlural.Singular(), InAccountInheritedContainerKind, nil, nil
+	case *OnSchemaInheritedGrantData:
+		return sdk.ObjectTypeSchema, data.Kind, data.DatabaseName, nil
+	case *OnSchemaObjectInheritedGrantData:
+		return data.ObjectNamePlural.Singular(), data.Kind, data.DatabaseName, data.SchemaName
+	default:
+		return "", "", nil, nil
+	}
+}
+
+// inheritedAccountRoleGrantMatchesContainer reports whether the inherited grant row comes from the same
+// container (account, database, or schema) the resource is scoped to, based on the inherited_from,
+// inherited_from_database, and inherited_from_schema columns.
+func inheritedAccountRoleGrantMatchesContainer(grant sdk.Grant, container InheritedContainerKind, database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) bool {
+	if grant.InheritedFrom == nil {
+		return false
+	}
+	switch container {
+	case InAccountInheritedContainerKind:
+		return *grant.InheritedFrom == "ACCOUNT"
+	case InDatabaseInheritedContainerKind:
+		return *grant.InheritedFrom == "DATABASE" &&
+			database != nil && grant.InheritedFromDatabase != nil &&
+			trimIdentifierQuotes(*grant.InheritedFromDatabase) == database.Name()
+	case InSchemaInheritedContainerKind:
+		return *grant.InheritedFrom == "SCHEMA" &&
+			schema != nil && grant.InheritedFromDatabase != nil && grant.InheritedFromSchema != nil &&
+			trimIdentifierQuotes(*grant.InheritedFromDatabase) == schema.DatabaseName() &&
+			trimIdentifierQuotes(*grant.InheritedFromSchema) == schema.Name()
+	default:
+		return false
+	}
+}
+
+// trimIdentifierQuotes strips the surrounding double quotes Snowflake may add to the inherited_from_*
+// identifier columns, so the values can be compared against the parsed identifier names.
+func trimIdentifierQuotes(s string) string {
+	return strings.Trim(s, `"`)
+}
+
+func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, *sdk.ObjectType) {
 	opts := new(sdk.ShowGrantOptions)
 	var grantedOn sdk.ObjectType
 
 	switch id.Kind {
 	case OnAccountObjectInheritedAccountRoleGrantKind, OnSchemaInheritedAccountRoleGrantKind, OnSchemaObjectInheritedAccountRoleGrantKind:
-		// TODO(next-prs): Implement drift detection for inherited grants
-		log.Printf("[INFO] Show for inherited grants is skipped. No changes in privileges in Snowflake will be detected.")
-		return nil, ""
+		opts.To = &sdk.ShowGrantsTo{
+			Role: id.RoleName,
+		}
+		return opts, nil
 	case OnAccountAccountRoleGrantKind:
 		grantedOn = sdk.ObjectTypeAccount
 		opts.On = &sdk.ShowGrantsOn{
@@ -1250,7 +1325,7 @@ func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (
 			}
 		case OnAllSchemasInDatabaseSchemaGrantKind:
 			log.Printf("[INFO] Show with on_schema.all_schemas_in_database option is skipped. No changes in privileges in Snowflake will be detected.")
-			return nil, ""
+			return nil, nil
 		case OnFutureSchemasInDatabaseSchemaGrantKind:
 			opts.Future = sdk.Bool(true)
 			opts.In = &sdk.ShowGrantsIn{
@@ -1268,7 +1343,7 @@ func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (
 			}
 		case OnAllSchemaObjectGrantKind:
 			log.Printf("[INFO] Show with on_schema_object.on_all option is skipped. No changes in privileges in Snowflake will be detected.")
-			return nil, ""
+			return nil, nil
 		case OnFutureSchemaObjectGrantKind:
 			grantedOn = data.OnAllOrFuture.ObjectNamePlural.Singular()
 			opts.Future = sdk.Bool(true)
@@ -1286,7 +1361,7 @@ func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (
 		}
 	}
 
-	return opts, grantedOn
+	return opts, &grantedOn
 }
 
 func getAccountRolePrivilegesFromSchema(d *schema.ResourceData) *sdk.AccountRoleGrantPrivileges {
