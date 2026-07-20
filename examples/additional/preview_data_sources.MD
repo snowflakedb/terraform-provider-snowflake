@@ -15,6 +15,7 @@
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)
 - [snowflake_file_formats](./docs/data-sources/file_formats)
 - [snowflake_functions](./docs/data-sources/functions)
+- [snowflake_iceberg_tables](./docs/data-sources/iceberg_tables)
 - [snowflake_listings](./docs/data-sources/listings)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
 - [snowflake_mcp_servers](./docs/data-sources/mcp_servers)

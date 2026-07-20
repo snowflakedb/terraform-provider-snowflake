@@ -27,7 +27,7 @@ func ListingDetails(t *testing.T, id sdk.AccountObjectIdentifier) *ListingDetail
 func ListingDetailsFromObject(t *testing.T, listingDetails *sdk.ListingDetails) *ListingDetailsAssert {
 	t.Helper()
 	return &ListingDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeListingDetails, listingDetails.ID(), listingDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("ListingDetails"), listingDetails.ID(), listingDetails),
 	}
 }
 

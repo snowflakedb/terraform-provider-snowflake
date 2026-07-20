@@ -1,9 +1,9 @@
 package schemas
 
 import (
-	"maps"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,14 +18,15 @@ var ShowIcebergTableExternallyManagedParametersSchema = map[string]*schema.Schem
 
 // ShowIcebergTableFromRestParametersSchema extends ShowIcebergTableParametersSchema with the
 // additional parameters exposed by the Iceberg table from REST catalog resource.
-var ShowIcebergTableFromRestParametersSchema = func() map[string]*schema.Schema {
-	result := maps.Clone(ShowIcebergTableExternallyManagedParametersSchema)
-	result["target_file_size"] = ParameterListSchema
-	result["storage_serialization_policy"] = ParameterListSchema
-	result["enable_iceberg_merge_on_read"] = ParameterListSchema
-	result["iceberg_merge_on_read_behavior"] = ParameterListSchema
-	return result
-}()
+var ShowIcebergTableFromRestParametersSchema = collections.MergeMaps(
+	ShowIcebergTableExternallyManagedParametersSchema,
+	map[string]*schema.Schema{
+		"target_file_size":               ParameterListSchema,
+		"storage_serialization_policy":   ParameterListSchema,
+		"enable_iceberg_merge_on_read":   ParameterListSchema,
+		"iceberg_merge_on_read_behavior": ParameterListSchema,
+	},
+)
 
 func IcebergTableExternallyManagedParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
 	return handleCommonIcebergTableExternallyManagedParameter(parameters, providerCtx)
@@ -73,6 +74,24 @@ var ShowIcebergTableSnowflakeManagedParametersSchema = map[string]*schema.Schema
 	"max_data_extension_time_in_days": ParameterListSchema,
 	"enable_data_compaction":          ParameterListSchema,
 	"enable_iceberg_merge_on_read":    ParameterListSchema,
+}
+
+// ShowIcebergTableAllTypesParametersSchema is the union of all iceberg table type parameter schemas.
+// Used by the data source, which can return mixed table types in a single query.
+var ShowIcebergTableAllTypesParametersSchema = collections.MergeMaps(
+	ShowIcebergTableSnowflakeManagedParametersSchema,
+	ShowIcebergTableFromRestParametersSchema,
+	ShowIcebergTableExternallyManagedParametersSchema,
+)
+
+// IcebergTableAllTypesParametersToSchema maps parameters from any iceberg table type by
+// combining the results of all type-specific mapping functions.
+func IcebergTableAllTypesParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
+	return collections.MergeMaps(
+		IcebergTableSnowflakeManagedParametersToSchema(parameters, providerCtx),
+		IcebergTableFromRestParametersToSchema(parameters, providerCtx),
+		IcebergTableExternallyManagedParametersToSchema(parameters, providerCtx),
+	)
 }
 
 func IcebergTableSnowflakeManagedParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {

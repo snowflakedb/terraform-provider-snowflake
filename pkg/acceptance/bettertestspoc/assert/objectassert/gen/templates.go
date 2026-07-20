@@ -25,6 +25,7 @@ var (
 		genhelpers.TypeWithoutPointerAndBrackets,
 		genhelpers.CamelToWords,
 		genhelpers.RunMapper,
+		strings.TrimPrefix,
 	)).Parse(assertionsTemplateContent)
 
 	AllTemplates = []*template.Template{genhelpers.PreambleTemplate, DefinitionTemplate, AssertionsTemplate}

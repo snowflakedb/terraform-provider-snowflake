@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(new feature)* inherited grants support in `snowflake_grant_privileges_to_account_role`
+
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports [inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using). Inherited grants collapse the common `GRANT ON ALL` + `GRANT ON FUTURE` pattern into a single grant that automatically covers all current and future objects of a type in a container. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.
+
+This is a non-breaking, additive change; existing configurations continue to work unchanged. Notes:
+- Inherited grants are a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. They must be enabled on your account before use, and their behavior may change until they reach general availability.
+- Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
+- `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.
+- `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
+
 ### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
 
 The `default_workload_identity.aws` nested block on the [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) resources now supports an optional `issuer` attribute, which maps to the `ISSUER` parameter of Snowflake's `WORKLOAD_IDENTITY` user property. It is required when configuring JWT-based (`GetWebIdentityToken`) AWS workload identity federation; existing configurations using only `arn` (the `GetCallerIdentity` attestation method) continue to work unchanged.
@@ -38,21 +48,19 @@ The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terrafor
 
 In most cases no action is required; this is a non-breaking addition. However, if you set `ALLOWED_ROLES_LIST` on the integration outside of Terraform (e.g. directly in Snowflake) before this release, the provider will now detect it as drift. Because the attribute is not present in your configuration, the next plan will show a change that removes the externally set roles. To keep them, add the roles to the `allowed_roles_list` attribute in your configuration.
 
-### *(new feature)* New Iceberg Table resources
+### *(new feature)* New Iceberg Table resources and data source
 
 We have added new preview resources for Iceberg tables:
 - [snowflake_iceberg_table_from_rest](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_rest) for managing Snowflake Iceberg Tables created from a REST catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-rest)),
 - [snowflake_iceberg_table_from_aws_glue](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table_from_aws_glue) for managing Snowflake Iceberg Tables whose metadata is managed by an AWS Glue catalog ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-aws-glue)),
+- [snowflake_iceberg_table](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) for managing Snowflake-managed Iceberg Tables, including columns and table-level constraints ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake)),
 
-These features will be marked as stable in future releases. To use them, add `snowflake_iceberg_table_from_rest` or `snowflake_iceberg_table_from_aws_glue` to the `preview_features_enabled` field in the provider configuration.
+We have also added a new preview data source:
+- [snowflake_iceberg_tables](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/iceberg_tables) for querying Iceberg Tables with filters (`like`, `in`, `starts_with`, `limit`) and aggregated SHOW, DESCRIBE, and SHOW PARAMETERS output.
+
+These features will be marked as stable in future releases. To use them, add the relevant feature name (`snowflake_iceberg_table`, `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`, or `snowflake_iceberg_tables_datasource`) to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
-
-### *(adjustment)* `show_output.partition_specs` on Iceberg table resources is now a structured list
-
-The `partition_specs` field in the `show_output` of the Iceberg table resources (e.g. `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`) was previously a plain string containing raw JSON. It is now a list of objects, each with `spec_id` and `fields` (containing `name`, `transform`, `source_id`, and `field_id`), making the partition spec directly accessible without parsing JSON.
-
-If you have existing state with the old string-based `partition_specs`, refresh the resource (e.g. `terraform apply` or `terraform refresh`) to update it to the new format. No changes to your resource configuration are required, as `partition_specs` is a computed, read-only field.
 
 ### *(new feature)* New MCP Server data source
 
@@ -60,6 +68,20 @@ We have added a new preview data source for MCP Servers:
 - [snowflake_mcp_servers](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/mcp_servers) for listing and filtering MCP Servers using `SHOW MCP SERVERS` and `DESCRIBE MCP SERVER` output.
 
 This feature will be marked as stable in a future release. To use it, add `snowflake_mcp_servers_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+### *(adjustment)* `show_output.partition_specs` on Iceberg table resources is now a structured list
+
+The `partition_specs` field in the `show_output` of the Iceberg table resources (e.g. `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`) was previously a plain string containing raw JSON. It is now a list of objects, each with `spec_id` and `fields` (containing `name`, `transform`, `source_id`, and `field_id`), making the partition spec directly accessible without parsing JSON.
+
+If you have existing state with the old string-based `partition_specs`, refresh the resource (e.g. `terraform apply` or `terraform refresh`) to update it to the new format. No changes to your resource configuration are required, as `partition_specs` is a computed, read-only field.
+
+### *(bug fix)* `snowflake_external_volume` no longer removes and re-adds unchanged storage locations
+
+Previously, adding a new `storage_location` block to an existing [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume) (or making other partial changes to the `storage_location` list) could cause the provider to unnecessarily issue `ALTER EXTERNAL VOLUME ... REMOVE STORAGE_LOCATION` for an existing, unchanged location before re-adding it. If that location was active (e.g. backing an Iceberg table), Snowflake correctly rejected the removal with error 393926 (42601), blocking the update. The provider now correctly detects unchanged locations and leaves them untouched, issuing only the `ADD`/`REMOVE` operations required for the actual diff.
+
+No changes in configuration are required.
+
+Note that this error can still legitimately occur if your configuration change actually removes the currently active storage location (e.g. removing the block from your configuration, or renaming/replacing it). This is expected Snowflake behavior, not a bug: an active storage location cannot be removed while it is in use (e.g. by an Iceberg table). Reassign the dependent objects to another storage location before removing it from your configuration.
 
 ## v2.17.x ➞ v2.18.0
 

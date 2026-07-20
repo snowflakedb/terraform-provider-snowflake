@@ -179,6 +179,7 @@ body:
         - resource:grant_privileges_to_account_role
         - resource:grant_privileges_to_database_role
         - resource:grant_privileges_to_share
+        - resource:iceberg_table
         - resource:iceberg_table_from_aws_glue
         - resource:iceberg_table_from_delta_files
         - resource:iceberg_table_from_files
@@ -290,6 +291,7 @@ body:
         - data_source:functions
         - data_source:git_repositories
         - data_source:grants
+        - data_source:iceberg_tables
         - data_source:image_repositories
         - data_source:listings
         - data_source:masking_policies

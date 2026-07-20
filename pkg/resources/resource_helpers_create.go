@@ -47,6 +47,13 @@ func intAttributeWithSpecialDefaultCreateBuilder[T any](d *schema.ResourceData, 
 	return nil
 }
 
+func boolAttributeCreate(d *schema.ResourceData, key string, createField **bool) error {
+	if v, ok := d.GetOk(key); ok {
+		*createField = sdk.Bool(v.(bool))
+	}
+	return nil
+}
+
 func booleanStringAttributeCreate(d *schema.ResourceData, key string, createField **bool) error {
 	if v := d.Get(key).(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
@@ -65,6 +72,27 @@ func booleanStringAttributeCreateBuilder[T any](d *schema.ResourceData, key stri
 			return err
 		}
 		setValue(parsed)
+	}
+	return nil
+}
+
+// booleanStringPairAttributeCreate reads a tri-state boolean string field and sets exactly one of the
+// two given pointer fields: positiveField when the value is "true", negativeField when it is "false".
+// Both are left untouched when the value is BooleanDefault. Useful for squashing a pair of mutually
+// exclusive SQL keywords (e.g. ENFORCED / NOT ENFORCED) into a single schema field.
+func booleanStringPairAttributeCreate(d *schema.ResourceData, key string, positiveField, negativeField **bool) error {
+	v := d.Get(key).(string)
+	if v == BooleanDefault {
+		return nil
+	}
+	parsed, err := booleanStringToBool(v)
+	if err != nil {
+		return err
+	}
+	if parsed {
+		*positiveField = new(true)
+	} else {
+		*negativeField = new(true)
 	}
 	return nil
 }

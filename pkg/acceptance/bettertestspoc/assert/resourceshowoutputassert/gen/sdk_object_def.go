@@ -28,6 +28,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.DatabaseRole{}):            {"DatabaseRoles"},
 	normalized(sdk.ExternalVolume{}):          {"ExternalVolumes"},
 	normalized(sdk.GitRepository{}):           {"GitRepositories"},
+	normalized(sdk.IcebergTable{}):            {"IcebergTables"},
 	normalized(sdk.ImageRepository{}):         {"ImageRepositories"},
 	normalized(sdk.Listing{}):                 {"Listings"},
 	normalized(sdk.MaskingPolicy{}):           {"MaskingPolicies"},
@@ -63,6 +64,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
+	normalized(sdk.IcebergTableDetails{}):           {"IcebergTables"},
 	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
 	normalized(sdk.SessionPolicyDetails{}):          {"SessionPolicies"},
 	normalized(sdk.StorageLifecyclePolicyDetails{}): {"StorageLifecyclePolicies"},
@@ -86,6 +88,7 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 
 var (
 	objectsNotBeingResources = []any{
+		sdk.BearerRestAuthenticationDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
 		sdk.IcebergRestRestConfigDetails{},
 		sdk.OAuthRestAuthenticationDetails{},

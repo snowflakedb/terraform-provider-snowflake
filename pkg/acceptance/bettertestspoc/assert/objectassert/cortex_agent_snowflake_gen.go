@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -101,7 +102,7 @@ func (c *CortexAgentAssert) HasComment(expected string) *CortexAgentAssert {
 func (c *CortexAgentAssert) HasProfile(expected sdk.CortexAgentProfile) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
-		if o.Profile != expected {
+		if !reflect.DeepEqual(o.Profile, expected) {
 			return fmt.Errorf("expected profile: %v; got: %v", expected, o.Profile)
 		}
 		return nil
