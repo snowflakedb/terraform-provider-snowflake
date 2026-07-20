@@ -14,9 +14,11 @@ type Databases interface {
 	CreateShared(ctx context.Context, request *CreateSharedDatabaseRequest) error
 	CreateSecondary(ctx context.Context, request *CreateSecondaryDatabaseRequest) error
 	CreateFromListing(ctx context.Context, request *CreateFromListingDatabaseRequest) error
+	CreateCatalogLinked(ctx context.Context, request *CreateCatalogLinkedDatabaseRequest) error
 	Alter(ctx context.Context, request *AlterDatabaseRequest) error
 	AlterReplication(ctx context.Context, request *AlterReplicationDatabaseRequest) error
 	AlterFailover(ctx context.Context, request *AlterFailoverDatabaseRequest) error
+	AlterCatalogLinked(ctx context.Context, request *AlterCatalogLinkedDatabaseRequest) error
 	Drop(ctx context.Context, request *DropDatabaseRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
 	Undrop(ctx context.Context, request *UndropDatabaseRequest) error
@@ -135,6 +137,28 @@ type CreateFromListingDatabaseOptions struct {
 	FromListing string                  `ddl:"parameter,single_quotes,no_equals" sql:"FROM LISTING"`
 }
 
+// CreateCatalogLinkedDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-database-catalog-linked.
+type CreateCatalogLinkedDatabaseOptions struct {
+	create                 bool                            `ddl:"static" sql:"CREATE"`
+	database               bool                            `ddl:"static" sql:"DATABASE"`
+	name                   AccountObjectIdentifier         `ddl:"identifier"`
+	LinkedCatalog          LinkedCatalog                   `ddl:"list,parentheses" sql:"LINKED_CATALOG ="`
+	ExternalVolume         *AccountObjectIdentifier        `ddl:"identifier,single_quotes,equals" sql:"EXTERNAL_VOLUME"`
+	Comment                *string                         `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                    []TagAssociation                `ddl:"keyword,parentheses" sql:"TAG"`
+	CatalogCaseSensitivity *DatabaseCatalogCaseSensitivity `ddl:"parameter" sql:"CATALOG_CASE_SENSITIVITY"`
+}
+
+type LinkedCatalog struct {
+	Catalog                   AccountObjectIdentifier                      `ddl:"identifier,single_quotes,equals" sql:"CATALOG"`
+	AllowedNamespaces         []StringListItemWrapper                      `ddl:"parameter,parentheses" sql:"ALLOWED_NAMESPACES"`
+	BlockedNamespaces         []StringListItemWrapper                      `ddl:"parameter,parentheses" sql:"BLOCKED_NAMESPACES"`
+	AllowedWriteOperations    *CatalogLinkedDatabaseAllowedWriteOperations `ddl:"parameter" sql:"ALLOWED_WRITE_OPERATIONS"`
+	NamespaceMode             *CatalogLinkedDatabaseNamespaceMode          `ddl:"parameter" sql:"NAMESPACE_MODE"`
+	NamespaceFlattenDelimiter *string                                      `ddl:"parameter,single_quotes" sql:"NAMESPACE_FLATTEN_DELIMITER"`
+	SyncIntervalSeconds       *int                                         `ddl:"parameter" sql:"SYNC_INTERVAL_SECONDS"`
+}
+
 // AlterDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-database.
 type AlterDatabaseOptions struct {
 	alter     bool                     `ddl:"static" sql:"ALTER"`
@@ -226,6 +250,50 @@ type EnableFailover struct {
 
 type DisableFailover struct {
 	ToAccounts []AccountIdentifier `ddl:"keyword,no_parentheses" sql:"TO ACCOUNTS"`
+}
+
+// AlterCatalogLinkedDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-database-catalog-linked.
+type AlterCatalogLinkedDatabaseOptions struct {
+	alter                       bool                         `ddl:"static" sql:"ALTER"`
+	database                    bool                         `ddl:"static" sql:"DATABASE"`
+	IfExists                    *bool                        `ddl:"keyword" sql:"IF EXISTS"`
+	name                        AccountObjectIdentifier      `ddl:"identifier"`
+	AddToAllowedNamespaces      *AddToAllowedNamespaces      `ddl:"keyword"`
+	RemoveFromAllowedNamespaces *RemoveFromAllowedNamespaces `ddl:"keyword"`
+	UnsetAllowedNamespaces      *bool                        `ddl:"keyword" sql:"UNSET ALLOWED_NAMESPACES"`
+	AddToBlockedNamespaces      *AddToBlockedNamespaces      `ddl:"keyword"`
+	RemoveFromBlockedNamespaces *RemoveFromBlockedNamespaces `ddl:"keyword"`
+	UnsetBlockedNamespaces      *bool                        `ddl:"keyword" sql:"UNSET BLOCKED_NAMESPACES"`
+	Set                         *CatalogLinkedDatabaseSet    `ddl:"list,no_parentheses" sql:"SET"`
+}
+
+type AddToAllowedNamespaces struct {
+	add                 bool                    `ddl:"static" sql:"ADD"`
+	Namespaces          []StringListItemWrapper `ddl:"list,must_parentheses"`
+	toAllowedNamespaces bool                    `ddl:"static" sql:"TO ALLOWED_NAMESPACES"`
+}
+
+type RemoveFromAllowedNamespaces struct {
+	remove                bool                    `ddl:"static" sql:"REMOVE"`
+	Namespaces            []StringListItemWrapper `ddl:"list,must_parentheses"`
+	fromAllowedNamespaces bool                    `ddl:"static" sql:"FROM ALLOWED_NAMESPACES"`
+}
+
+type AddToBlockedNamespaces struct {
+	add                 bool                    `ddl:"static" sql:"ADD"`
+	Namespaces          []StringListItemWrapper `ddl:"list,must_parentheses"`
+	toBlockedNamespaces bool                    `ddl:"static" sql:"TO BLOCKED_NAMESPACES"`
+}
+
+type RemoveFromBlockedNamespaces struct {
+	remove                bool                    `ddl:"static" sql:"REMOVE"`
+	Namespaces            []StringListItemWrapper `ddl:"list,must_parentheses"`
+	fromBlockedNamespaces bool                    `ddl:"static" sql:"FROM BLOCKED_NAMESPACES"`
+}
+
+type CatalogLinkedDatabaseSet struct {
+	SyncIntervalSeconds    *int                                         `ddl:"parameter" sql:"SYNC_INTERVAL_SECONDS"`
+	AllowedWriteOperations *CatalogLinkedDatabaseAllowedWriteOperations `ddl:"parameter" sql:"ALLOWED_WRITE_OPERATIONS"`
 }
 
 // DropDatabaseOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-database.

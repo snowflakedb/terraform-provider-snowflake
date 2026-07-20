@@ -8,9 +8,11 @@ var (
 	_ validatable = new(CreateSharedDatabaseOptions)
 	_ validatable = new(CreateSecondaryDatabaseOptions)
 	_ validatable = new(CreateFromListingDatabaseOptions)
+	_ validatable = new(CreateCatalogLinkedDatabaseOptions)
 	_ validatable = new(AlterDatabaseOptions)
 	_ validatable = new(AlterReplicationDatabaseOptions)
 	_ validatable = new(AlterFailoverDatabaseOptions)
+	_ validatable = new(AlterCatalogLinkedDatabaseOptions)
 	_ validatable = new(DropDatabaseOptions)
 	_ validatable = new(UndropDatabaseOptions)
 	_ validatable = new(ShowDatabaseOptions)
@@ -109,6 +111,25 @@ func (opts *CreateFromListingDatabaseOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
+func (opts *CreateCatalogLinkedDatabaseOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.LinkedCatalog) {
+		if !ValidObjectIdentifier(opts.LinkedCatalog.Catalog) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
+	}
+	return JoinErrors(errs...)
+}
+
 func (opts *AlterDatabaseOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -169,6 +190,25 @@ func (opts *AlterFailoverDatabaseOptions) validate() error {
 	}
 	if !exactlyOneValueSet(opts.EnableFailover, opts.DisableFailover, opts.Primary) {
 		errs = append(errs, errExactlyOneOf("AlterFailoverDatabaseOptions", "EnableFailover", "DisableFailover", "Primary"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterCatalogLinkedDatabaseOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.AddToAllowedNamespaces, opts.RemoveFromAllowedNamespaces, opts.UnsetAllowedNamespaces, opts.AddToBlockedNamespaces, opts.RemoveFromBlockedNamespaces, opts.UnsetBlockedNamespaces, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterCatalogLinkedDatabaseOptions", "AddToAllowedNamespaces", "RemoveFromAllowedNamespaces", "UnsetAllowedNamespaces", "AddToBlockedNamespaces", "RemoveFromBlockedNamespaces", "UnsetBlockedNamespaces", "Set"))
+	}
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.SyncIntervalSeconds, opts.Set.AllowedWriteOperations) {
+			errs = append(errs, errAtLeastOneOf("AlterCatalogLinkedDatabaseOptions.Set", "SyncIntervalSeconds", "AllowedWriteOperations"))
+		}
 	}
 	return JoinErrors(errs...)
 }

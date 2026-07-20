@@ -383,6 +383,79 @@ func NewCreateFromListingDatabaseRequest(
 	return &s
 }
 
+func NewCreateCatalogLinkedDatabaseRequest(
+	name AccountObjectIdentifier,
+) *CreateCatalogLinkedDatabaseRequest {
+	s := CreateCatalogLinkedDatabaseRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CreateCatalogLinkedDatabaseRequest) WithLinkedCatalog(linkedCatalog LinkedCatalogRequest) *CreateCatalogLinkedDatabaseRequest {
+	s.LinkedCatalog = linkedCatalog
+	return s
+}
+
+func (s *CreateCatalogLinkedDatabaseRequest) WithExternalVolume(externalVolume AccountObjectIdentifier) *CreateCatalogLinkedDatabaseRequest {
+	s.ExternalVolume = &externalVolume
+	return s
+}
+
+func (s *CreateCatalogLinkedDatabaseRequest) WithComment(comment string) *CreateCatalogLinkedDatabaseRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *CreateCatalogLinkedDatabaseRequest) WithTag(tag []TagAssociation) *CreateCatalogLinkedDatabaseRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateCatalogLinkedDatabaseRequest) WithCatalogCaseSensitivity(catalogCaseSensitivity DatabaseCatalogCaseSensitivity) *CreateCatalogLinkedDatabaseRequest {
+	s.CatalogCaseSensitivity = &catalogCaseSensitivity
+	return s
+}
+
+func NewLinkedCatalogRequest() *LinkedCatalogRequest {
+	s := LinkedCatalogRequest{}
+	return &s
+}
+
+func (s *LinkedCatalogRequest) WithCatalog(catalog AccountObjectIdentifier) *LinkedCatalogRequest {
+	s.Catalog = catalog
+	return s
+}
+
+func (s *LinkedCatalogRequest) WithAllowedNamespaces(allowedNamespaces []StringListItemWrapper) *LinkedCatalogRequest {
+	s.AllowedNamespaces = allowedNamespaces
+	return s
+}
+
+func (s *LinkedCatalogRequest) WithBlockedNamespaces(blockedNamespaces []StringListItemWrapper) *LinkedCatalogRequest {
+	s.BlockedNamespaces = blockedNamespaces
+	return s
+}
+
+func (s *LinkedCatalogRequest) WithAllowedWriteOperations(allowedWriteOperations CatalogLinkedDatabaseAllowedWriteOperations) *LinkedCatalogRequest {
+	s.AllowedWriteOperations = &allowedWriteOperations
+	return s
+}
+
+func (s *LinkedCatalogRequest) WithNamespaceMode(namespaceMode CatalogLinkedDatabaseNamespaceMode) *LinkedCatalogRequest {
+	s.NamespaceMode = &namespaceMode
+	return s
+}
+
+func (s *LinkedCatalogRequest) WithNamespaceFlattenDelimiter(namespaceFlattenDelimiter string) *LinkedCatalogRequest {
+	s.NamespaceFlattenDelimiter = &namespaceFlattenDelimiter
+	return s
+}
+
+func (s *LinkedCatalogRequest) WithSyncIntervalSeconds(syncIntervalSeconds int) *LinkedCatalogRequest {
+	s.SyncIntervalSeconds = &syncIntervalSeconds
+	return s
+}
+
 func NewAlterDatabaseRequest(
 	name AccountObjectIdentifier,
 ) *AlterDatabaseRequest {
@@ -704,6 +777,101 @@ func NewDisableFailoverRequest() *DisableFailoverRequest {
 
 func (s *DisableFailoverRequest) WithToAccounts(toAccounts []AccountIdentifier) *DisableFailoverRequest {
 	s.ToAccounts = toAccounts
+	return s
+}
+
+func NewAlterCatalogLinkedDatabaseRequest(
+	name AccountObjectIdentifier,
+) *AlterCatalogLinkedDatabaseRequest {
+	s := AlterCatalogLinkedDatabaseRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithIfExists(ifExists bool) *AlterCatalogLinkedDatabaseRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithAddToAllowedNamespaces(addToAllowedNamespaces AddToAllowedNamespacesRequest) *AlterCatalogLinkedDatabaseRequest {
+	s.AddToAllowedNamespaces = &addToAllowedNamespaces
+	return s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithRemoveFromAllowedNamespaces(removeFromAllowedNamespaces RemoveFromAllowedNamespacesRequest) *AlterCatalogLinkedDatabaseRequest {
+	s.RemoveFromAllowedNamespaces = &removeFromAllowedNamespaces
+	return s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithUnsetAllowedNamespaces(unsetAllowedNamespaces bool) *AlterCatalogLinkedDatabaseRequest {
+	s.UnsetAllowedNamespaces = &unsetAllowedNamespaces
+	return s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithAddToBlockedNamespaces(addToBlockedNamespaces AddToBlockedNamespacesRequest) *AlterCatalogLinkedDatabaseRequest {
+	s.AddToBlockedNamespaces = &addToBlockedNamespaces
+	return s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithRemoveFromBlockedNamespaces(removeFromBlockedNamespaces RemoveFromBlockedNamespacesRequest) *AlterCatalogLinkedDatabaseRequest {
+	s.RemoveFromBlockedNamespaces = &removeFromBlockedNamespaces
+	return s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithUnsetBlockedNamespaces(unsetBlockedNamespaces bool) *AlterCatalogLinkedDatabaseRequest {
+	s.UnsetBlockedNamespaces = &unsetBlockedNamespaces
+	return s
+}
+
+func (s *AlterCatalogLinkedDatabaseRequest) WithSet(set CatalogLinkedDatabaseSetRequest) *AlterCatalogLinkedDatabaseRequest {
+	s.Set = &set
+	return s
+}
+
+func NewAddToAllowedNamespacesRequest(
+	namespaces []StringListItemWrapper,
+) *AddToAllowedNamespacesRequest {
+	s := AddToAllowedNamespacesRequest{}
+	s.Namespaces = namespaces
+	return &s
+}
+
+func NewRemoveFromAllowedNamespacesRequest(
+	namespaces []StringListItemWrapper,
+) *RemoveFromAllowedNamespacesRequest {
+	s := RemoveFromAllowedNamespacesRequest{}
+	s.Namespaces = namespaces
+	return &s
+}
+
+func NewAddToBlockedNamespacesRequest(
+	namespaces []StringListItemWrapper,
+) *AddToBlockedNamespacesRequest {
+	s := AddToBlockedNamespacesRequest{}
+	s.Namespaces = namespaces
+	return &s
+}
+
+func NewRemoveFromBlockedNamespacesRequest(
+	namespaces []StringListItemWrapper,
+) *RemoveFromBlockedNamespacesRequest {
+	s := RemoveFromBlockedNamespacesRequest{}
+	s.Namespaces = namespaces
+	return &s
+}
+
+func NewCatalogLinkedDatabaseSetRequest() *CatalogLinkedDatabaseSetRequest {
+	s := CatalogLinkedDatabaseSetRequest{}
+	return &s
+}
+
+func (s *CatalogLinkedDatabaseSetRequest) WithSyncIntervalSeconds(syncIntervalSeconds int) *CatalogLinkedDatabaseSetRequest {
+	s.SyncIntervalSeconds = &syncIntervalSeconds
+	return s
+}
+
+func (s *CatalogLinkedDatabaseSetRequest) WithAllowedWriteOperations(allowedWriteOperations CatalogLinkedDatabaseAllowedWriteOperations) *CatalogLinkedDatabaseSetRequest {
+	s.AllowedWriteOperations = &allowedWriteOperations
 	return s
 }
 

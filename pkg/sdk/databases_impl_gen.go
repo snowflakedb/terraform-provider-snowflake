@@ -42,6 +42,11 @@ func (v *databases) CreateFromListing(ctx context.Context, request *CreateFromLi
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *databases) CreateCatalogLinked(ctx context.Context, request *CreateCatalogLinkedDatabaseRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *databases) Alter(ctx context.Context, request *AlterDatabaseRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -53,6 +58,11 @@ func (v *databases) AlterReplication(ctx context.Context, request *AlterReplicat
 }
 
 func (v *databases) AlterFailover(ctx context.Context, request *AlterFailoverDatabaseRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *databases) AlterCatalogLinked(ctx context.Context, request *AlterCatalogLinkedDatabaseRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -199,6 +209,26 @@ func (r *CreateFromListingDatabaseRequest) toOpts() *CreateFromListingDatabaseOp
 	return opts
 }
 
+func (r *CreateCatalogLinkedDatabaseRequest) toOpts() *CreateCatalogLinkedDatabaseOptions {
+	opts := &CreateCatalogLinkedDatabaseOptions{
+		name:                   r.name,
+		ExternalVolume:         r.ExternalVolume,
+		Comment:                r.Comment,
+		Tag:                    r.Tag,
+		CatalogCaseSensitivity: r.CatalogCaseSensitivity,
+	}
+	opts.LinkedCatalog = LinkedCatalog{
+		Catalog:                   r.LinkedCatalog.Catalog,
+		AllowedNamespaces:         r.LinkedCatalog.AllowedNamespaces,
+		BlockedNamespaces:         r.LinkedCatalog.BlockedNamespaces,
+		AllowedWriteOperations:    r.LinkedCatalog.AllowedWriteOperations,
+		NamespaceMode:             r.LinkedCatalog.NamespaceMode,
+		NamespaceFlattenDelimiter: r.LinkedCatalog.NamespaceFlattenDelimiter,
+		SyncIntervalSeconds:       r.LinkedCatalog.SyncIntervalSeconds,
+	}
+	return opts
+}
+
 func (r *AlterDatabaseRequest) toOpts() *AlterDatabaseOptions {
 	opts := &AlterDatabaseOptions{
 		IfExists:  r.IfExists,
@@ -287,6 +317,42 @@ func (r *AlterFailoverDatabaseRequest) toOpts() *AlterFailoverDatabaseOptions {
 	if r.DisableFailover != nil {
 		opts.DisableFailover = &DisableFailover{
 			ToAccounts: r.DisableFailover.ToAccounts,
+		}
+	}
+	return opts
+}
+
+func (r *AlterCatalogLinkedDatabaseRequest) toOpts() *AlterCatalogLinkedDatabaseOptions {
+	opts := &AlterCatalogLinkedDatabaseOptions{
+		IfExists:               r.IfExists,
+		name:                   r.name,
+		UnsetAllowedNamespaces: r.UnsetAllowedNamespaces,
+		UnsetBlockedNamespaces: r.UnsetBlockedNamespaces,
+	}
+	if r.AddToAllowedNamespaces != nil {
+		opts.AddToAllowedNamespaces = &AddToAllowedNamespaces{
+			Namespaces: r.AddToAllowedNamespaces.Namespaces,
+		}
+	}
+	if r.RemoveFromAllowedNamespaces != nil {
+		opts.RemoveFromAllowedNamespaces = &RemoveFromAllowedNamespaces{
+			Namespaces: r.RemoveFromAllowedNamespaces.Namespaces,
+		}
+	}
+	if r.AddToBlockedNamespaces != nil {
+		opts.AddToBlockedNamespaces = &AddToBlockedNamespaces{
+			Namespaces: r.AddToBlockedNamespaces.Namespaces,
+		}
+	}
+	if r.RemoveFromBlockedNamespaces != nil {
+		opts.RemoveFromBlockedNamespaces = &RemoveFromBlockedNamespaces{
+			Namespaces: r.RemoveFromBlockedNamespaces.Namespaces,
+		}
+	}
+	if r.Set != nil {
+		opts.Set = &CatalogLinkedDatabaseSet{
+			SyncIntervalSeconds:    r.Set.SyncIntervalSeconds,
+			AllowedWriteOperations: r.Set.AllowedWriteOperations,
 		}
 	}
 	return opts

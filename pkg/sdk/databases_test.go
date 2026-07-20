@@ -2,8 +2,11 @@ package sdk
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDatabasesCreate(t *testing.T) {
@@ -310,6 +313,71 @@ func TestDatabasesCreateFromListing(t *testing.T) {
 	})
 }
 
+func TestDatabasesCreateCatalogLinked(t *testing.T) {
+	catalogId := randomAccountObjectIdentifier()
+	defaultOpts := func() *CreateCatalogLinkedDatabaseOptions {
+		return &CreateCatalogLinkedDatabaseOptions{
+			name: randomAccountObjectIdentifier(),
+			LinkedCatalog: LinkedCatalog{
+				Catalog: catalogId,
+			},
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*CreateCatalogLinkedDatabaseOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: invalid name", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: invalid catalog", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.LinkedCatalog.Catalog = emptyAccountObjectIdentifier
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: invalid external volume", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.ExternalVolume = Pointer(emptyAccountObjectIdentifier)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("basic", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsValidAndSQLEquals(t, opts, `CREATE DATABASE %s LINKED_CATALOG = (CATALOG = '\"%s\"')`, opts.name.FullyQualifiedName(), catalogId.Name())
+	})
+
+	t.Run("complete", func(t *testing.T) {
+		externalVolumeId := randomAccountObjectIdentifier()
+		tagId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.LinkedCatalog = LinkedCatalog{
+			Catalog:                   catalogId,
+			AllowedNamespaces:         []StringListItemWrapper{{Value: "ns1"}, {Value: "ns2"}},
+			BlockedNamespaces:         []StringListItemWrapper{{Value: "ns3"}},
+			AllowedWriteOperations:    Pointer(CatalogLinkedDatabaseAllowedWriteOperationsAll),
+			NamespaceMode:             Pointer(CatalogLinkedDatabaseNamespaceModeFlattenNestedNamespace),
+			NamespaceFlattenDelimiter: String("-"),
+			SyncIntervalSeconds:       Int(60),
+		}
+		opts.ExternalVolume = Pointer(externalVolumeId)
+		opts.Comment = String("comment")
+		opts.Tag = []TagAssociation{
+			{
+				Name:  tagId,
+				Value: "v1",
+			},
+		}
+		opts.CatalogCaseSensitivity = Pointer(DatabaseCatalogCaseSensitivityCaseInsensitive)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE DATABASE %s LINKED_CATALOG = (CATALOG = '\"%s\"', ALLOWED_NAMESPACES = ('ns1', 'ns2'), BLOCKED_NAMESPACES = ('ns3'), ALLOWED_WRITE_OPERATIONS = ALL, NAMESPACE_MODE = FLATTEN_NESTED_NAMESPACE, NAMESPACE_FLATTEN_DELIMITER = '-', SYNC_INTERVAL_SECONDS = 60) EXTERNAL_VOLUME = '\"%s\"' COMMENT = 'comment' TAG (%s = 'v1') CATALOG_CASE_SENSITIVITY = CASE_INSENSITIVE`, opts.name.FullyQualifiedName(), catalogId.Name(), externalVolumeId.Name(), tagId.FullyQualifiedName())
+	})
+}
+
 func TestDatabasesAlter(t *testing.T) {
 	defaultOpts := func() *AlterDatabaseOptions {
 		return &AlterDatabaseOptions{
@@ -600,6 +668,106 @@ func TestDatabasesAlterFailover(t *testing.T) {
 	})
 }
 
+func TestDatabasesAlterCatalogLinked(t *testing.T) {
+	defaultOpts := func() *AlterCatalogLinkedDatabaseOptions {
+		return &AlterCatalogLinkedDatabaseOptions{
+			name: randomAccountObjectIdentifier(),
+		}
+	}
+
+	t.Run("validation: nil options", func(t *testing.T) {
+		opts := (*AlterCatalogLinkedDatabaseOptions)(nil)
+		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
+	})
+
+	t.Run("validation: invalid name", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.name = emptyAccountObjectIdentifier
+		opts.UnsetAllowedNamespaces = Bool(true)
+		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
+	})
+
+	t.Run("validation: no alter action", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCatalogLinkedDatabaseOptions", "AddToAllowedNamespaces", "RemoveFromAllowedNamespaces", "UnsetAllowedNamespaces", "AddToBlockedNamespaces", "RemoveFromBlockedNamespaces", "UnsetBlockedNamespaces", "Set"))
+	})
+
+	t.Run("validation: multiple alter actions", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetAllowedNamespaces = Bool(true)
+		opts.UnsetBlockedNamespaces = Bool(true)
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCatalogLinkedDatabaseOptions", "AddToAllowedNamespaces", "RemoveFromAllowedNamespaces", "UnsetAllowedNamespaces", "AddToBlockedNamespaces", "RemoveFromBlockedNamespaces", "UnsetBlockedNamespaces", "Set"))
+	})
+
+	t.Run("validation: empty set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &CatalogLinkedDatabaseSet{}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCatalogLinkedDatabaseOptions.Set", "SyncIntervalSeconds", "AllowedWriteOperations"))
+	})
+
+	t.Run("add to allowed namespaces", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.AddToAllowedNamespaces = &AddToAllowedNamespaces{
+			Namespaces: []StringListItemWrapper{{Value: "ns1"}, {Value: "ns2"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE IF EXISTS %s ADD ('ns1', 'ns2') TO ALLOWED_NAMESPACES`, opts.name.FullyQualifiedName())
+	})
+
+	t.Run("remove from allowed namespaces", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.RemoveFromAllowedNamespaces = &RemoveFromAllowedNamespaces{
+			Namespaces: []StringListItemWrapper{{Value: "ns1"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s REMOVE ('ns1') FROM ALLOWED_NAMESPACES`, opts.name.FullyQualifiedName())
+	})
+
+	t.Run("unset allowed namespaces", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetAllowedNamespaces = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s UNSET ALLOWED_NAMESPACES`, opts.name.FullyQualifiedName())
+	})
+
+	t.Run("add to blocked namespaces", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AddToBlockedNamespaces = &AddToBlockedNamespaces{
+			Namespaces: []StringListItemWrapper{{Value: "ns3"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s ADD ('ns3') TO BLOCKED_NAMESPACES`, opts.name.FullyQualifiedName())
+	})
+
+	t.Run("remove from blocked namespaces", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.RemoveFromBlockedNamespaces = &RemoveFromBlockedNamespaces{
+			Namespaces: []StringListItemWrapper{{Value: "ns3"}},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s REMOVE ('ns3') FROM BLOCKED_NAMESPACES`, opts.name.FullyQualifiedName())
+	})
+
+	t.Run("unset blocked namespaces", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetBlockedNamespaces = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s UNSET BLOCKED_NAMESPACES`, opts.name.FullyQualifiedName())
+	})
+
+	t.Run("set sync interval seconds", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &CatalogLinkedDatabaseSet{
+			SyncIntervalSeconds: Int(120),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s SET SYNC_INTERVAL_SECONDS = 120`, opts.name.FullyQualifiedName())
+	})
+
+	t.Run("set all", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &CatalogLinkedDatabaseSet{
+			SyncIntervalSeconds:    Int(120),
+			AllowedWriteOperations: Pointer(CatalogLinkedDatabaseAllowedWriteOperationsNone),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s SET SYNC_INTERVAL_SECONDS = 120, ALLOWED_WRITE_OPERATIONS = NONE`, opts.name.FullyQualifiedName())
+	})
+}
+
 func TestDatabasesDrop(t *testing.T) {
 	defaultOpts := func() *DropDatabaseOptions {
 		return &DropDatabaseOptions{
@@ -721,4 +889,100 @@ func TestDatabasesDescribe(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE DATABASE %s`, opts.name.FullyQualifiedName())
 	})
+}
+
+func TestToCatalogLinkedDatabaseNamespaceMode(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected CatalogLinkedDatabaseNamespaceMode
+		Error    string
+	}{
+		{Input: string(CatalogLinkedDatabaseNamespaceModeIgnoreNestedNamespace), Expected: CatalogLinkedDatabaseNamespaceModeIgnoreNestedNamespace},
+		{Input: string(CatalogLinkedDatabaseNamespaceModeFlattenNestedNamespace), Expected: CatalogLinkedDatabaseNamespaceModeFlattenNestedNamespace},
+		{Name: "validation: lower case input", Input: "ignore_nested_namespace", Expected: CatalogLinkedDatabaseNamespaceModeIgnoreNestedNamespace},
+		{Name: "validation: incorrect namespace mode", Input: "incorrect", Error: "invalid catalog linked database namespace mode: INCORRECT"},
+		{Name: "validation: empty input", Input: "", Error: "invalid catalog linked database namespace mode: "},
+	}
+
+	for _, testCase := range testCases {
+		name := testCase.Name
+		if name == "" {
+			name = fmt.Sprintf("%v namespace mode", testCase.Input)
+		}
+		t.Run(name, func(t *testing.T) {
+			value, err := ToCatalogLinkedDatabaseNamespaceMode(testCase.Input)
+			if testCase.Error != "" {
+				assert.Empty(t, value)
+				assert.ErrorContains(t, err, testCase.Error)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, testCase.Expected, value)
+			}
+		})
+	}
+}
+
+func TestToCatalogLinkedDatabaseAllowedWriteOperations(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected CatalogLinkedDatabaseAllowedWriteOperations
+		Error    string
+	}{
+		{Input: string(CatalogLinkedDatabaseAllowedWriteOperationsNone), Expected: CatalogLinkedDatabaseAllowedWriteOperationsNone},
+		{Input: string(CatalogLinkedDatabaseAllowedWriteOperationsAll), Expected: CatalogLinkedDatabaseAllowedWriteOperationsAll},
+		{Name: "validation: lower case input", Input: "all", Expected: CatalogLinkedDatabaseAllowedWriteOperationsAll},
+		{Name: "validation: incorrect allowed write operations", Input: "incorrect", Error: "invalid catalog linked database allowed write operations: INCORRECT"},
+		{Name: "validation: empty input", Input: "", Error: "invalid catalog linked database allowed write operations: "},
+	}
+
+	for _, testCase := range testCases {
+		name := testCase.Name
+		if name == "" {
+			name = fmt.Sprintf("%v allowed write operations", testCase.Input)
+		}
+		t.Run(name, func(t *testing.T) {
+			value, err := ToCatalogLinkedDatabaseAllowedWriteOperations(testCase.Input)
+			if testCase.Error != "" {
+				assert.Empty(t, value)
+				assert.ErrorContains(t, err, testCase.Error)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, testCase.Expected, value)
+			}
+		})
+	}
+}
+
+func TestToDatabaseCatalogCaseSensitivity(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected DatabaseCatalogCaseSensitivity
+		Error    string
+	}{
+		{Input: string(DatabaseCatalogCaseSensitivityCaseSensitive), Expected: DatabaseCatalogCaseSensitivityCaseSensitive},
+		{Input: string(DatabaseCatalogCaseSensitivityCaseInsensitive), Expected: DatabaseCatalogCaseSensitivityCaseInsensitive},
+		{Name: "validation: lower case input", Input: "case_sensitive", Expected: DatabaseCatalogCaseSensitivityCaseSensitive},
+		{Name: "validation: incorrect catalog case sensitivity", Input: "incorrect", Error: "invalid database catalog case sensitivity: INCORRECT"},
+		{Name: "validation: empty input", Input: "", Error: "invalid database catalog case sensitivity: "},
+	}
+
+	for _, testCase := range testCases {
+		name := testCase.Name
+		if name == "" {
+			name = fmt.Sprintf("%v catalog case sensitivity", testCase.Input)
+		}
+		t.Run(name, func(t *testing.T) {
+			value, err := ToDatabaseCatalogCaseSensitivity(testCase.Input)
+			if testCase.Error != "" {
+				assert.Empty(t, value)
+				assert.ErrorContains(t, err, testCase.Error)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, testCase.Expected, value)
+			}
+		})
+	}
 }
