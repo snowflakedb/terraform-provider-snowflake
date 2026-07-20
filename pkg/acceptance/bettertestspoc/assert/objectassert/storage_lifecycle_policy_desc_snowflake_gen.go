@@ -101,6 +101,17 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasArchiveForDays(expected int) *S
 	return s
 }
 
+func (s *StorageLifecyclePolicyDetailsAssert) HasNoArchiveForDays() *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.ArchiveForDays != nil {
+			return fmt.Errorf("expected archive for days to be nil; got: %v", *o.ArchiveForDays)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyDetailsAssert) HasArchiveTier(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
