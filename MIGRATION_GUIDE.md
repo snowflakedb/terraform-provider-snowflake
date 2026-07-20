@@ -24,14 +24,6 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.19.x ➞ v2.20.0
-
-### *(new feature)* New MCP server resource
-
-We have added a new preview resource for managing MCP servers: [snowflake_mcp_server](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/mcp_server).
-
-This feature will be marked as stable in future releases. To use it, add `snowflake_mcp_server_resource` to the `preview_features_enabled` field in the provider configuration.
-
 ## v2.18.x ➞ v2.19.0
 
 ### *(new feature)* inherited grants support in `snowflake_grant_privileges_to_account_role`
@@ -75,12 +67,13 @@ Stay tuned for the next variants of Iceberg Tables support in the provider!
 
 The experimental `GRANT_ACCOUNT_ROLE_SHOW_CACHING` feature previously held a single global lock for the entire duration of each `SHOW GRANTS OF ROLE` lookup on a cache miss. This serialized first-time lookups for *different* roles behind one another, negating Terraform's parallel resource reads and, in low-cache-reuse topologies, making plans noticeably slower than with caching disabled. Cache lookups are now deduplicated per role: concurrent misses on the same role still share a single round-trip, while misses on different roles run in parallel. No configuration changes are required.
 
-### *(new feature)* New MCP Server data source
+### *(new feature)* New MCP server resource and data source
 
-We have added a new preview data source for MCP Servers:
-- [snowflake_mcp_servers](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/mcp_servers) for listing and filtering MCP Servers using `SHOW MCP SERVERS` and `DESCRIBE MCP SERVER` output.
+We have added new preview support for managing and querying MCP servers:
+- [snowflake_mcp_server](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/mcp_server) resource for managing MCP servers.
+- [snowflake_mcp_servers](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/mcp_servers) data source for listing and filtering MCP servers using `SHOW MCP SERVERS` and `DESCRIBE MCP SERVER` output.
 
-This feature will be marked as stable in a future release. To use it, add `snowflake_mcp_servers_datasource` to the `preview_features_enabled` field in the provider configuration.
+These features will be marked as stable in future releases. To use them, add `snowflake_mcp_server_resource` and/or `snowflake_mcp_servers_datasource` to the `preview_features_enabled` field in the provider configuration.
 
 ### *(adjustment)* `show_output.partition_specs` on Iceberg table resources is now a structured list
 
