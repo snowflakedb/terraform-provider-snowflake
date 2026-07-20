@@ -99,6 +99,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.MaskingPolicies().Schema,
 	},
 	{
+		name:   "McpServers",
+		schema: datasources.McpServers().Schema,
+	},
+	{
 		name:   "NetworkPolicies",
 		schema: datasources.NetworkPolicies().Schema,
 	},

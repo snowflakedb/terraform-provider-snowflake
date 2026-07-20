@@ -91,6 +91,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_managed_account_resource", want: ManagedAccountResource},
 		{input: "snowflake_materialized_view_resource", want: MaterializedViewResource},
 		{input: "snowflake_materialized_views_datasource", want: MaterializedViewsDatasource},
+		{input: "snowflake_mcp_servers_datasource", want: McpServersDatasource},
 		{input: "snowflake_network_policy_attachment_resource", want: NetworkPolicyAttachmentResource},
 		{input: "snowflake_network_rule_resource", want: NetworkRuleResource},
 		{input: "snowflake_network_rules_datasource", want: NetworkRulesDatasource},

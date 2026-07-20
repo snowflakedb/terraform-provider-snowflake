@@ -62,6 +62,13 @@ These features will be marked as stable in future releases. To use them, add the
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
 
+### *(new feature)* New MCP Server data source
+
+We have added a new preview data source for MCP Servers:
+- [snowflake_mcp_servers](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/mcp_servers) for listing and filtering MCP Servers using `SHOW MCP SERVERS` and `DESCRIBE MCP SERVER` output.
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_mcp_servers_datasource` to the `preview_features_enabled` field in the provider configuration.
+
 ### *(adjustment)* `show_output.partition_specs` on Iceberg table resources is now a structured list
 
 The `partition_specs` field in the `show_output` of the Iceberg table resources (e.g. `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`) was previously a plain string containing raw JSON. It is now a list of objects, each with `spec_id` and `fields` (containing `name`, `transform`, `source_id`, and `field_id`), making the partition spec directly accessible without parsing JSON.

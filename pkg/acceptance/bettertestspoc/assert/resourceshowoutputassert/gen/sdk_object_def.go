@@ -32,6 +32,8 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.ImageRepository{}):         {"ImageRepositories"},
 	normalized(sdk.Listing{}):                 {"Listings"},
 	normalized(sdk.MaskingPolicy{}):           {"MaskingPolicies"},
+	normalized(sdk.McpServer{}):               {"McpServers"},
+	normalized(sdk.McpServerDetails{}):        {"McpServers"},
 	normalized(sdk.NetworkPolicy{}):           {"NetworkPolicies"},
 	normalized(sdk.NetworkRule{}):             {"NetworkRules"},
 	normalized(sdk.NetworkRuleDetails{}):      {"NetworkRules"},
