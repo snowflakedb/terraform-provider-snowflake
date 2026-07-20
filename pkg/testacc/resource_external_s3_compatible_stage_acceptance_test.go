@@ -430,7 +430,7 @@ func TestAcc_ExternalS3CompatStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 	s3CompatUrl := strings.Replace(awsBucketUrl, "s3://", "s3compat://", 1)
 	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
 
-	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateCsv(t)
 	t.Cleanup(fileFormatCleanup)
 
 	modelBasic := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
@@ -460,7 +460,7 @@ func TestAcc_ExternalS3CompatStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 						HasFileFormatCsv(),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.csv.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", "")),
+					assert.Check(resource.TestCheckResourceAttr(modelWithCsvFormat.ResourceReference(), "describe_output.0.file_format.0.format_name", fileFormat.ID().FullyQualifiedName())),
 				),
 			},
 			// Switch to named format

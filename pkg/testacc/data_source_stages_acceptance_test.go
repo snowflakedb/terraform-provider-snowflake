@@ -87,7 +87,7 @@ func TestAcc_Stages_CompleteUseCase(t *testing.T) {
 	gcsStageId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	s3CompatibleStageId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 
-	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateCsv(t)
 	t.Cleanup(fileFormatCleanup)
 
 	internalModel := model.InternalStage("test", id.DatabaseName(), id.SchemaName(), id.Name()).
