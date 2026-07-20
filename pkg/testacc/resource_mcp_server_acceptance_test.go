@@ -153,6 +153,13 @@ func TestAcc_McpServer_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, completeAssertions...),
 			},
+			// Import with all attributes
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 			// Unset
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -162,33 +169,6 @@ func TestAcc_McpServer_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, basicAssertionsWithEmptyValues...),
-			},
-			// Destroy
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
-					},
-				},
-				Config:  config.FromModels(t, basic),
-				Destroy: true,
-			},
-			// Create with all attributes
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
-					},
-				},
-				Config: config.FromModels(t, complete),
-				Check:  assertThat(t, completeAssertions...),
-			},
-			// Import
-			{
-				Config:            config.FromModels(t, complete),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 			// Change all props externally (via CREATE OR REPLACE — no ALTER available)
 			{
@@ -206,8 +186,8 @@ func TestAcc_McpServer_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config: config.FromModels(t, complete),
-				Check:  assertThat(t, completeAssertions...),
+				Config: config.FromModels(t, basic),
+				Check:  assertThat(t, basicAssertionsWithEmptyValues...),
 			},
 		},
 	})

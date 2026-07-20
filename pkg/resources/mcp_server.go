@@ -82,7 +82,6 @@ func McpServer() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.McpServerResource), TrackingCreateWrapper(resources.McpServer, CreateMcpServer)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.McpServerResource), TrackingReadWrapper(resources.McpServer, ReadMcpServer)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.McpServerResource), TrackingUpdateWrapper(resources.McpServer, UpdateMcpServer)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.McpServerResource), TrackingDeleteWrapper(resources.McpServer, deleteFunc)),
 		Description:   "Resource used to manage MCP server objects. For more information, check [MCP server documentation](https://docs.snowflake.com/en/sql-reference/sql/create-mcp-server).",
 
@@ -114,10 +113,6 @@ func CreateMcpServer(ctx context.Context, d *schema.ResourceData, meta any) diag
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 	return ReadMcpServer(ctx, d, meta)
-}
-
-func UpdateMcpServer(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	return nil
 }
 
 func ReadMcpServer(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
