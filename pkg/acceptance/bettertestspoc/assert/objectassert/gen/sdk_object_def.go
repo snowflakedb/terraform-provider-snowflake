@@ -27,6 +27,9 @@ type SdkObjectDef struct {
 	// DescribeOverride overrides the default test client and method in the IsDataSourceOutput constructor
 	// when the naming convention does not match the actual helper.
 	DescribeOverride *genhelpers.DescribeOverrideDef
+	// FromObjectIDExpr overrides the default `<object>.ID()` expression in the FromObject constructor.
+	// Use when the SDK ID() return type doesn't match IdType (e.g. AccountIdentifier vs AccountObjectIdentifier).
+	FromObjectIDExpr string
 }
 
 var allStructs = []SdkObjectDef{
@@ -152,8 +155,10 @@ var allStructs = []SdkObjectDef{
 		},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.OrganizationAccount{},
+		IdType:           "sdk.AccountObjectIdentifier",
+		ObjectStruct:     sdk.OrganizationAccount{},
+		ObjectTypeName:   "Account",
+		FromObjectIDExpr: "organizationAccount.ID().AsAccountObjectIdentifier()",
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -408,14 +413,16 @@ var allStructs = []SdkObjectDef{
 		NoIdentifiableObject: true,
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.TableConstraintDetails{},
-		IsDataSourceOutput: true,
+		IdType:               "sdk.SchemaObjectIdentifier",
+		ObjectStruct:         sdk.TableConstraintDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
 	},
 	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.TableCheckConstraintDetails{},
-		IsDataSourceOutput: true,
+		IdType:               "sdk.SchemaObjectIdentifier",
+		ObjectStruct:         sdk.TableCheckConstraintDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -484,6 +491,7 @@ func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
 			NoIdentifiableObject: d.NoIdentifiableObject,
 			ShowByParentId:       d.ShowByParentId,
 			DescribeOverride:     d.DescribeOverride,
+			FromObjectIDExpr:     d.FromObjectIDExpr,
 			NestedAssertFields:   d.NestedAssertFields,
 			SkipFields:           d.SkipFields,
 		}

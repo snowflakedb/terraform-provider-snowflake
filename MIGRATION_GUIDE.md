@@ -41,6 +41,7 @@ The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io
 This is a non-breaking, additive change; existing configurations continue to work unchanged. Notes:
 - Inherited grants are a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. They must be enabled on your account before use, and their behavior may change until they reach general availability.
 - Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
+- External drift is detected for inherited grants (e.g. an externally revoked privilege reappears in the plan).
 - `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.
 - `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
 
@@ -69,6 +70,17 @@ We have also added a new preview data source:
 These features will be marked as stable in future releases. To use them, add the relevant feature name (`snowflake_iceberg_table`, `snowflake_iceberg_table_from_rest`, `snowflake_iceberg_table_from_aws_glue`, or `snowflake_iceberg_tables_datasource`) to the `preview_features_enabled` field in the provider configuration.
 
 Stay tuned for the next variants of Iceberg Tables support in the provider!
+
+### *(improvement)* snowflake_grant_account_role SHOW GRANTS caching no longer serializes parallel reads
+
+The experimental `GRANT_ACCOUNT_ROLE_SHOW_CACHING` feature previously held a single global lock for the entire duration of each `SHOW GRANTS OF ROLE` lookup on a cache miss. This serialized first-time lookups for *different* roles behind one another, negating Terraform's parallel resource reads and, in low-cache-reuse topologies, making plans noticeably slower than with caching disabled. Cache lookups are now deduplicated per role: concurrent misses on the same role still share a single round-trip, while misses on different roles run in parallel. No configuration changes are required.
+
+### *(new feature)* New MCP Server data source
+
+We have added a new preview data source for MCP Servers:
+- [snowflake_mcp_servers](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/mcp_servers) for listing and filtering MCP Servers using `SHOW MCP SERVERS` and `DESCRIBE MCP SERVER` output.
+
+This feature will be marked as stable in a future release. To use it, add `snowflake_mcp_servers_datasource` to the `preview_features_enabled` field in the provider configuration.
 
 ### *(adjustment)* `show_output.partition_specs` on Iceberg table resources is now a structured list
 

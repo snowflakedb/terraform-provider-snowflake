@@ -181,8 +181,8 @@ func (l *ListingDetailsAssert) HasShare(expected sdk.AccountObjectIdentifier) *L
 		if o.Share == nil {
 			return fmt.Errorf("expected share to have value; got: nil")
 		}
-		if (*o.Share).Name() != expected.Name() {
-			return fmt.Errorf("expected share: %v; got: %v", expected.Name(), (*o.Share).Name())
+		if (*o.Share).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected share: %v; got: %v", expected.FullyQualifiedName(), (*o.Share).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -195,8 +195,8 @@ func (l *ListingDetailsAssert) HasApplicationPackage(expected sdk.AccountObjectI
 		if o.ApplicationPackage == nil {
 			return fmt.Errorf("expected application package to have value; got: nil")
 		}
-		if (*o.ApplicationPackage).Name() != expected.Name() {
-			return fmt.Errorf("expected application package: %v; got: %v", expected.Name(), (*o.ApplicationPackage).Name())
+		if (*o.ApplicationPackage).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected application package: %v; got: %v", expected.FullyQualifiedName(), (*o.ApplicationPackage).FullyQualifiedName())
 		}
 		return nil
 	})

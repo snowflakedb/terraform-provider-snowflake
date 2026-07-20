@@ -61,7 +61,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationAwsDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
+			HasApiProviderType(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(awsRoleArn).
 			HasAllowedPrefixes(awsAllowedPrefix).
 			HasNoBlockedPrefixes().
@@ -92,7 +92,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationAwsDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
+			HasApiProviderType(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(awsRoleArn).
 			HasAllowedPrefixes(awsAllowedPrefix).
 			HasBlockedPrefixes(awsBlockedPrefix).
@@ -222,7 +222,7 @@ func TestAcc_ApiIntegrationAmazonApiGateway_CompleteUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationAwsDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
+			HasApiProviderType(sdk.ApiIntegrationAwsApiProviderTypeAwsApiGateway).
 			HasApiAwsRoleArn(awsRoleArn).
 			HasAllowedPrefixes(awsAllowedPrefix).
 			HasBlockedPrefixes(awsBlockedPrefix).

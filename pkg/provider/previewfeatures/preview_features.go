@@ -88,6 +88,7 @@ const (
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
 	McpServerResource                             feature = "snowflake_mcp_server_resource"
+	McpServersDatasource                          feature = "snowflake_mcp_servers_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
 	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
@@ -199,6 +200,7 @@ var allPreviewFeatures = []feature{
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
 	McpServerResource,
+	McpServersDatasource,
 	NetworkPolicyAttachmentResource,
 	NetworkRulesDatasource,
 	NotebookResource,

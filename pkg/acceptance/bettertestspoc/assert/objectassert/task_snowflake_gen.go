@@ -117,8 +117,8 @@ func (t *TaskAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *TaskAss
 		if o.Warehouse == nil {
 			return fmt.Errorf("expected warehouse to have value; got: nil")
 		}
-		if (*o.Warehouse).Name() != expected.Name() {
-			return fmt.Errorf("expected warehouse: %v; got: %v", expected.Name(), (*o.Warehouse).Name())
+		if (*o.Warehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.Warehouse).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -199,8 +199,8 @@ func (t *TaskAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *
 		if o.ErrorIntegration == nil {
 			return fmt.Errorf("expected error integration to have value; got: nil")
 		}
-		if (*o.ErrorIntegration).Name() != expected.Name() {
-			return fmt.Errorf("expected error integration: %v; got: %v", expected.Name(), (*o.ErrorIntegration).Name())
+		if (*o.ErrorIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected error integration: %v; got: %v", expected.FullyQualifiedName(), (*o.ErrorIntegration).FullyQualifiedName())
 		}
 		return nil
 	})

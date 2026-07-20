@@ -247,8 +247,8 @@ func (p *PostgresInstanceDetailsAssert) HasNetworkPolicy(expected sdk.AccountObj
 		if o.NetworkPolicy == nil {
 			return fmt.Errorf("expected network policy to have value; got: nil")
 		}
-		if (*o.NetworkPolicy).Name() != expected.Name() {
-			return fmt.Errorf("expected network policy: %v; got: %v", expected.Name(), (*o.NetworkPolicy).Name())
+		if (*o.NetworkPolicy).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected network policy: %v; got: %v", expected.FullyQualifiedName(), (*o.NetworkPolicy).FullyQualifiedName())
 		}
 		return nil
 	})
@@ -275,8 +275,8 @@ func (p *PostgresInstanceDetailsAssert) HasStorageIntegration(expected sdk.Accou
 		if o.StorageIntegration == nil {
 			return fmt.Errorf("expected storage integration to have value; got: nil")
 		}
-		if (*o.StorageIntegration).Name() != expected.Name() {
-			return fmt.Errorf("expected storage integration: %v; got: %v", expected.Name(), (*o.StorageIntegration).Name())
+		if (*o.StorageIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected storage integration: %v; got: %v", expected.FullyQualifiedName(), (*o.StorageIntegration).FullyQualifiedName())
 		}
 		return nil
 	})
