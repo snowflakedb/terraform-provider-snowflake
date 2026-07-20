@@ -2,13 +2,342 @@
 
 package sdk
 
-var _ validatable = new(DummyOperationFileFormatOptions)
+var (
+	_ validatable = new(CreateCsvFileFormatOptions)
+	_ validatable = new(CreateJsonFileFormatOptions)
+	_ validatable = new(CreateAvroFileFormatOptions)
+	_ validatable = new(CreateOrcFileFormatOptions)
+	_ validatable = new(CreateParquetFileFormatOptions)
+	_ validatable = new(CreateXmlFileFormatOptions)
+	_ validatable = new(AlterCsvFileFormatOptions)
+	_ validatable = new(AlterJsonFileFormatOptions)
+	_ validatable = new(AlterAvroFileFormatOptions)
+	_ validatable = new(AlterOrcFileFormatOptions)
+	_ validatable = new(AlterParquetFileFormatOptions)
+	_ validatable = new(AlterXmlFileFormatOptions)
+	_ validatable = new(DropFileFormatOptions)
+	_ validatable = new(ShowFileFormatOptions)
+	_ validatable = new(DescribeFileFormatOptions)
+)
 
-func (opts *DummyOperationFileFormatOptions) validate() error {
+func (opts *CreateCsvFileFormatOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
-	errs = append(errs, opts.additionalValidations())
+	if everyValueSet(opts.SkipHeader, opts.ParseHeader) {
+		errs = append(errs, errOneOf("CreateCsvFileFormatOptions", "SkipHeader", "ParseHeader"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.RecordDelimiter) {
+		if !exactlyOneValueSet(opts.RecordDelimiter.Value, opts.RecordDelimiter.None) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.RecordDelimiter", "Value", "None"))
+		}
+	}
+	if valueSet(opts.FieldDelimiter) {
+		if !exactlyOneValueSet(opts.FieldDelimiter.Value, opts.FieldDelimiter.None) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.FieldDelimiter", "Value", "None"))
+		}
+	}
+	if valueSet(opts.DateFormat) {
+		if !exactlyOneValueSet(opts.DateFormat.Value, opts.DateFormat.Auto) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.DateFormat", "Value", "Auto"))
+		}
+	}
+	if valueSet(opts.TimeFormat) {
+		if !exactlyOneValueSet(opts.TimeFormat.Value, opts.TimeFormat.Auto) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.TimeFormat", "Value", "Auto"))
+		}
+	}
+	if valueSet(opts.TimestampFormat) {
+		if !exactlyOneValueSet(opts.TimestampFormat.Value, opts.TimestampFormat.Auto) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.TimestampFormat", "Value", "Auto"))
+		}
+	}
+	if valueSet(opts.Escape) {
+		if !exactlyOneValueSet(opts.Escape.Value, opts.Escape.None) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.Escape", "Value", "None"))
+		}
+	}
+	if valueSet(opts.EscapeUnenclosedField) {
+		if !exactlyOneValueSet(opts.EscapeUnenclosedField.Value, opts.EscapeUnenclosedField.None) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.EscapeUnenclosedField", "Value", "None"))
+		}
+	}
+	if valueSet(opts.FieldOptionallyEnclosedBy) {
+		if !exactlyOneValueSet(opts.FieldOptionallyEnclosedBy.Value, opts.FieldOptionallyEnclosedBy.None) {
+			errs = append(errs, errExactlyOneOf("CreateCsvFileFormatOptions.FieldOptionallyEnclosedBy", "Value", "None"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateJsonFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if everyValueSet(opts.IgnoreUtf8Errors, opts.ReplaceInvalidCharacters) {
+		errs = append(errs, errOneOf("CreateJsonFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if valueSet(opts.DateFormat) {
+		if !exactlyOneValueSet(opts.DateFormat.Value, opts.DateFormat.Auto) {
+			errs = append(errs, errExactlyOneOf("CreateJsonFileFormatOptions.DateFormat", "Value", "Auto"))
+		}
+	}
+	if valueSet(opts.TimeFormat) {
+		if !exactlyOneValueSet(opts.TimeFormat.Value, opts.TimeFormat.Auto) {
+			errs = append(errs, errExactlyOneOf("CreateJsonFileFormatOptions.TimeFormat", "Value", "Auto"))
+		}
+	}
+	if valueSet(opts.TimestampFormat) {
+		if !exactlyOneValueSet(opts.TimestampFormat.Value, opts.TimestampFormat.Auto) {
+			errs = append(errs, errExactlyOneOf("CreateJsonFileFormatOptions.TimestampFormat", "Value", "Auto"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAvroFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateOrcFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateParquetFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if everyValueSet(opts.Compression, opts.SnappyCompression) {
+		errs = append(errs, errOneOf("CreateParquetFileFormatOptions", "Compression", "SnappyCompression"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateXmlFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if everyValueSet(opts.IgnoreUtf8Errors, opts.ReplaceInvalidCharacters) {
+		errs = append(errs, errOneOf("CreateXmlFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterCsvFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions", "RenameTo", "Set"))
+	}
+	if valueSet(opts.Set) {
+		if everyValueSet(opts.Set.SkipHeader, opts.Set.ParseHeader) {
+			errs = append(errs, errOneOf("AlterCsvFileFormatOptions.Set", "SkipHeader", "ParseHeader"))
+		}
+		if valueSet(opts.Set.RecordDelimiter) {
+			if !exactlyOneValueSet(opts.Set.RecordDelimiter.Value, opts.Set.RecordDelimiter.None) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.RecordDelimiter", "Value", "None"))
+			}
+		}
+		if valueSet(opts.Set.FieldDelimiter) {
+			if !exactlyOneValueSet(opts.Set.FieldDelimiter.Value, opts.Set.FieldDelimiter.None) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.FieldDelimiter", "Value", "None"))
+			}
+		}
+		if valueSet(opts.Set.DateFormat) {
+			if !exactlyOneValueSet(opts.Set.DateFormat.Value, opts.Set.DateFormat.Auto) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.DateFormat", "Value", "Auto"))
+			}
+		}
+		if valueSet(opts.Set.TimeFormat) {
+			if !exactlyOneValueSet(opts.Set.TimeFormat.Value, opts.Set.TimeFormat.Auto) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.TimeFormat", "Value", "Auto"))
+			}
+		}
+		if valueSet(opts.Set.TimestampFormat) {
+			if !exactlyOneValueSet(opts.Set.TimestampFormat.Value, opts.Set.TimestampFormat.Auto) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.TimestampFormat", "Value", "Auto"))
+			}
+		}
+		if valueSet(opts.Set.Escape) {
+			if !exactlyOneValueSet(opts.Set.Escape.Value, opts.Set.Escape.None) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.Escape", "Value", "None"))
+			}
+		}
+		if valueSet(opts.Set.EscapeUnenclosedField) {
+			if !exactlyOneValueSet(opts.Set.EscapeUnenclosedField.Value, opts.Set.EscapeUnenclosedField.None) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.EscapeUnenclosedField", "Value", "None"))
+			}
+		}
+		if valueSet(opts.Set.FieldOptionallyEnclosedBy) {
+			if !exactlyOneValueSet(opts.Set.FieldOptionallyEnclosedBy.Value, opts.Set.FieldOptionallyEnclosedBy.None) {
+				errs = append(errs, errExactlyOneOf("AlterCsvFileFormatOptions.Set.FieldOptionallyEnclosedBy", "Value", "None"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterJsonFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterJsonFileFormatOptions", "RenameTo", "Set"))
+	}
+	if valueSet(opts.Set) {
+		if everyValueSet(opts.Set.IgnoreUtf8Errors, opts.Set.ReplaceInvalidCharacters) {
+			errs = append(errs, errOneOf("AlterJsonFileFormatOptions.Set", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+		}
+		if valueSet(opts.Set.DateFormat) {
+			if !exactlyOneValueSet(opts.Set.DateFormat.Value, opts.Set.DateFormat.Auto) {
+				errs = append(errs, errExactlyOneOf("AlterJsonFileFormatOptions.Set.DateFormat", "Value", "Auto"))
+			}
+		}
+		if valueSet(opts.Set.TimeFormat) {
+			if !exactlyOneValueSet(opts.Set.TimeFormat.Value, opts.Set.TimeFormat.Auto) {
+				errs = append(errs, errExactlyOneOf("AlterJsonFileFormatOptions.Set.TimeFormat", "Value", "Auto"))
+			}
+		}
+		if valueSet(opts.Set.TimestampFormat) {
+			if !exactlyOneValueSet(opts.Set.TimestampFormat.Value, opts.Set.TimestampFormat.Auto) {
+				errs = append(errs, errExactlyOneOf("AlterJsonFileFormatOptions.Set.TimestampFormat", "Value", "Auto"))
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterAvroFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterAvroFileFormatOptions", "RenameTo", "Set"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterOrcFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterOrcFileFormatOptions", "RenameTo", "Set"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterParquetFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterParquetFileFormatOptions", "RenameTo", "Set"))
+	}
+	if valueSet(opts.Set) {
+		if everyValueSet(opts.Set.Compression, opts.Set.SnappyCompression) {
+			errs = append(errs, errOneOf("AlterParquetFileFormatOptions.Set", "Compression", "SnappyCompression"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterXmlFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set) {
+		errs = append(errs, errExactlyOneOf("AlterXmlFileFormatOptions", "RenameTo", "Set"))
+	}
+	if valueSet(opts.Set) {
+		if everyValueSet(opts.Set.IgnoreUtf8Errors, opts.Set.ReplaceInvalidCharacters) {
+			errs = append(errs, errOneOf("AlterXmlFileFormatOptions.Set", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *DropFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
+
+func (opts *DescribeFileFormatOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
 	return JoinErrors(errs...)
 }
