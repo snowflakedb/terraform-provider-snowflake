@@ -483,3 +483,148 @@ type FileFormatXmlOptions struct {
 	ReplaceInvalidCharacters *bool           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	SkipByteOrderMark        *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 }
+
+type FileFormatCsvDetails struct {
+	Id                         SchemaObjectIdentifier
+	Compression                *CsvCompression
+	RecordDelimiter            *StageFileFormatStringOrNone
+	FieldDelimiter             *StageFileFormatStringOrNone
+	FileExtension              *string
+	SkipHeader                 *int
+	ParseHeader                *bool
+	SkipBlankLines             *bool
+	DateFormat                 *StageFileFormatStringOrAuto
+	TimeFormat                 *StageFileFormatStringOrAuto
+	TimestampFormat            *StageFileFormatStringOrAuto
+	BinaryFormat               *BinaryFormat
+	Escape                     *StageFileFormatStringOrNone
+	EscapeUnenclosedField      *StageFileFormatStringOrNone
+	TrimSpace                  *bool
+	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone
+	NullIf                     []NullString
+	ErrorOnColumnCountMismatch *bool
+	ReplaceInvalidCharacters   *bool
+	EmptyFieldAsNull           *bool
+	SkipByteOrderMark          *bool
+	Encoding                   *CsvEncoding
+}
+
+type FileFormatJsonDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *JsonCompression
+	DateFormat               *StageFileFormatStringOrAuto
+	TimeFormat               *StageFileFormatStringOrAuto
+	TimestampFormat          *StageFileFormatStringOrAuto
+	BinaryFormat             *BinaryFormat
+	TrimSpace                *bool
+	MultiLine                *bool
+	NullIf                   []NullString
+	FileExtension            *string
+	EnableOctal              *bool
+	AllowDuplicate           *bool
+	StripOuterArray          *bool
+	StripNullValues          *bool
+	ReplaceInvalidCharacters *bool
+	IgnoreUtf8Errors         *bool
+	SkipByteOrderMark        *bool
+}
+
+type FileFormatAvroDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *AvroCompression
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+type FileFormatOrcDetails struct {
+	Id                       SchemaObjectIdentifier
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+type FileFormatParquetDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *ParquetCompression
+	TrimSpace                *bool
+	BinaryAsText             *bool
+	UseLogicalType           *bool
+	UseVectorizedScanner     *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+}
+
+type FileFormatXmlDetails struct {
+	Id                       SchemaObjectIdentifier
+	Compression              *XmlCompression
+	IgnoreUtf8Errors         *bool
+	PreserveSpace            *bool
+	StripOuterElement        *bool
+	DisableAutoConvert       *bool
+	ReplaceInvalidCharacters *bool
+	SkipByteOrderMark        *bool
+}
+
+type FileFormatAllDetails struct {
+	Id                              SchemaObjectIdentifier
+	Type                            FileFormatType
+	CsvCompression                  *CsvCompression
+	CsvRecordDelimiter              *StageFileFormatStringOrNone
+	CsvFieldDelimiter               *StageFileFormatStringOrNone
+	CsvFileExtension                *string
+	CsvSkipHeader                   *int
+	CsvParseHeader                  *bool
+	CsvSkipBlankLines               *bool
+	CsvDateFormat                   *StageFileFormatStringOrAuto
+	CsvTimeFormat                   *StageFileFormatStringOrAuto
+	CsvTimestampFormat              *StageFileFormatStringOrAuto
+	CsvBinaryFormat                 *BinaryFormat
+	CsvEscape                       *StageFileFormatStringOrNone
+	CsvEscapeUnenclosedField        *StageFileFormatStringOrNone
+	CsvTrimSpace                    *bool
+	CsvFieldOptionallyEnclosedBy    *StageFileFormatStringOrNone
+	CsvNullIf                       []NullString
+	CsvErrorOnColumnCountMismatch   *bool
+	CsvReplaceInvalidCharacters     *bool
+	CsvEmptyFieldAsNull             *bool
+	CsvSkipByteOrderMark            *bool
+	CsvEncoding                     *CsvEncoding
+	JsonCompression                 *JsonCompression
+	JsonDateFormat                  *StageFileFormatStringOrAuto
+	JsonTimeFormat                  *StageFileFormatStringOrAuto
+	JsonTimestampFormat             *StageFileFormatStringOrAuto
+	JsonBinaryFormat                *BinaryFormat
+	JsonTrimSpace                   *bool
+	JsonMultiLine                   *bool
+	JsonNullIf                      []NullString
+	JsonFileExtension               *string
+	JsonEnableOctal                 *bool
+	JsonAllowDuplicate              *bool
+	JsonStripOuterArray             *bool
+	JsonStripNullValues             *bool
+	JsonReplaceInvalidCharacters    *bool
+	JsonIgnoreUtf8Errors            *bool
+	JsonSkipByteOrderMark           *bool
+	AvroCompression                 *AvroCompression
+	AvroTrimSpace                   *bool
+	AvroReplaceInvalidCharacters    *bool
+	AvroNullIf                      []NullString
+	OrcTrimSpace                    *bool
+	OrcReplaceInvalidCharacters     *bool
+	OrcNullIf                       []NullString
+	ParquetCompression              *ParquetCompression
+	ParquetTrimSpace                *bool
+	ParquetBinaryAsText             *bool
+	ParquetUseLogicalType           *bool
+	ParquetUseVectorizedScanner     *bool
+	ParquetReplaceInvalidCharacters *bool
+	ParquetNullIf                   []NullString
+	XmlCompression                  *XmlCompression
+	XmlIgnoreUtf8Errors             *bool
+	XmlPreserveSpace                *bool
+	XmlStripOuterElement            *bool
+	XmlDisableAutoConvert           *bool
+	XmlReplaceInvalidCharacters     *bool
+	XmlSkipByteOrderMark            *bool
+}

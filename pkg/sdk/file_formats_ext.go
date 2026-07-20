@@ -91,112 +91,24 @@ func (opts FileFormatOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-// FileFormatCsvDetails holds the structured output of DESCRIBE FILE FORMAT for CSV file formats.
-type FileFormatCsvDetails struct {
-	Id                         SchemaObjectIdentifier
-	Compression                *CsvCompression
-	RecordDelimiter            *StageFileFormatStringOrNone
-	FieldDelimiter             *StageFileFormatStringOrNone
-	FileExtension              *string
-	SkipHeader                 *int
-	ParseHeader                *bool
-	SkipBlankLines             *bool
-	DateFormat                 *StageFileFormatStringOrAuto
-	TimeFormat                 *StageFileFormatStringOrAuto
-	TimestampFormat            *StageFileFormatStringOrAuto
-	BinaryFormat               *BinaryFormat
-	Escape                     *StageFileFormatStringOrNone
-	EscapeUnenclosedField      *StageFileFormatStringOrNone
-	TrimSpace                  *bool
-	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone
-	NullIf                     []NullString
-	ErrorOnColumnCountMismatch *bool
-	ReplaceInvalidCharacters   *bool
-	EmptyFieldAsNull           *bool
-	SkipByteOrderMark          *bool
-	Encoding                   *CsvEncoding
-}
-
 func (d *FileFormatCsvDetails) ID() SchemaObjectIdentifier {
 	return d.Id
-}
-
-// FileFormatJsonDetails holds the structured output of DESCRIBE FILE FORMAT for JSON file formats.
-type FileFormatJsonDetails struct {
-	Id                       SchemaObjectIdentifier
-	Compression              *JsonCompression
-	DateFormat               *StageFileFormatStringOrAuto
-	TimeFormat               *StageFileFormatStringOrAuto
-	TimestampFormat          *StageFileFormatStringOrAuto
-	BinaryFormat             *BinaryFormat
-	TrimSpace                *bool
-	MultiLine                *bool
-	NullIf                   []NullString
-	FileExtension            *string
-	EnableOctal              *bool
-	AllowDuplicate           *bool
-	StripOuterArray          *bool
-	StripNullValues          *bool
-	ReplaceInvalidCharacters *bool
-	IgnoreUtf8Errors         *bool
-	SkipByteOrderMark        *bool
 }
 
 func (d *FileFormatJsonDetails) ID() SchemaObjectIdentifier {
 	return d.Id
 }
 
-// FileFormatAvroDetails holds the structured output of DESCRIBE FILE FORMAT for Avro file formats.
-type FileFormatAvroDetails struct {
-	Id                       SchemaObjectIdentifier
-	Compression              *AvroCompression
-	TrimSpace                *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
-}
-
 func (d *FileFormatAvroDetails) ID() SchemaObjectIdentifier {
 	return d.Id
-}
-
-// FileFormatOrcDetails holds the structured output of DESCRIBE FILE FORMAT for ORC file formats.
-type FileFormatOrcDetails struct {
-	Id                       SchemaObjectIdentifier
-	TrimSpace                *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
 }
 
 func (d *FileFormatOrcDetails) ID() SchemaObjectIdentifier {
 	return d.Id
 }
 
-// FileFormatParquetDetails holds the structured output of DESCRIBE FILE FORMAT for Parquet file formats.
-type FileFormatParquetDetails struct {
-	Id                       SchemaObjectIdentifier
-	Compression              *ParquetCompression
-	TrimSpace                *bool
-	BinaryAsText             *bool
-	UseLogicalType           *bool
-	UseVectorizedScanner     *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
-}
-
 func (d *FileFormatParquetDetails) ID() SchemaObjectIdentifier {
 	return d.Id
-}
-
-// FileFormatXmlDetails holds the structured output of DESCRIBE FILE FORMAT for XML file formats.
-type FileFormatXmlDetails struct {
-	Id                       SchemaObjectIdentifier
-	Compression              *XmlCompression
-	IgnoreUtf8Errors         *bool
-	PreserveSpace            *bool
-	StripOuterElement        *bool
-	DisableAutoConvert       *bool
-	ReplaceInvalidCharacters *bool
-	SkipByteOrderMark        *bool
 }
 
 func (d *FileFormatXmlDetails) ID() SchemaObjectIdentifier {
@@ -623,71 +535,6 @@ func parseFileFormatXmlDetails(properties []FileFormatProperty, id SchemaObjectI
 		}
 	}
 	return details, errors.Join(errs...)
-}
-
-// FileFormatAllDetails holds the output of DESCRIBE FILE FORMAT for any file format type.
-// Fields that do not apply to the described type are zero-valued.
-type FileFormatAllDetails struct {
-	Id                              SchemaObjectIdentifier
-	Type                            FileFormatType
-	CsvCompression                  *CsvCompression
-	CsvRecordDelimiter              *StageFileFormatStringOrNone
-	CsvFieldDelimiter               *StageFileFormatStringOrNone
-	CsvFileExtension                *string
-	CsvSkipHeader                   *int
-	CsvParseHeader                  *bool
-	CsvSkipBlankLines               *bool
-	CsvDateFormat                   *StageFileFormatStringOrAuto
-	CsvTimeFormat                   *StageFileFormatStringOrAuto
-	CsvTimestampFormat              *StageFileFormatStringOrAuto
-	CsvBinaryFormat                 *BinaryFormat
-	CsvEscape                       *StageFileFormatStringOrNone
-	CsvEscapeUnenclosedField        *StageFileFormatStringOrNone
-	CsvTrimSpace                    *bool
-	CsvFieldOptionallyEnclosedBy    *StageFileFormatStringOrNone
-	CsvNullIf                       []NullString
-	CsvErrorOnColumnCountMismatch   *bool
-	CsvReplaceInvalidCharacters     *bool
-	CsvEmptyFieldAsNull             *bool
-	CsvSkipByteOrderMark            *bool
-	CsvEncoding                     *CsvEncoding
-	JsonCompression                 *JsonCompression
-	JsonDateFormat                  *StageFileFormatStringOrAuto
-	JsonTimeFormat                  *StageFileFormatStringOrAuto
-	JsonTimestampFormat             *StageFileFormatStringOrAuto
-	JsonBinaryFormat                *BinaryFormat
-	JsonTrimSpace                   *bool
-	JsonMultiLine                   *bool
-	JsonNullIf                      []NullString
-	JsonFileExtension               *string
-	JsonEnableOctal                 *bool
-	JsonAllowDuplicate              *bool
-	JsonStripOuterArray             *bool
-	JsonStripNullValues             *bool
-	JsonReplaceInvalidCharacters    *bool
-	JsonIgnoreUtf8Errors            *bool
-	JsonSkipByteOrderMark           *bool
-	AvroCompression                 *AvroCompression
-	AvroTrimSpace                   *bool
-	AvroReplaceInvalidCharacters    *bool
-	AvroNullIf                      []NullString
-	OrcTrimSpace                    *bool
-	OrcReplaceInvalidCharacters     *bool
-	OrcNullIf                       []NullString
-	ParquetCompression              *ParquetCompression
-	ParquetTrimSpace                *bool
-	ParquetBinaryAsText             *bool
-	ParquetUseLogicalType           *bool
-	ParquetUseVectorizedScanner     *bool
-	ParquetReplaceInvalidCharacters *bool
-	ParquetNullIf                   []NullString
-	XmlCompression                  *XmlCompression
-	XmlIgnoreUtf8Errors             *bool
-	XmlPreserveSpace                *bool
-	XmlStripOuterElement            *bool
-	XmlDisableAutoConvert           *bool
-	XmlReplaceInvalidCharacters     *bool
-	XmlSkipByteOrderMark            *bool
 }
 
 func (d *FileFormatAllDetails) ID() SchemaObjectIdentifier {
