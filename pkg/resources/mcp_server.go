@@ -12,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -92,10 +91,6 @@ func McpServer() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.McpServer, ImportName[sdk.SchemaObjectIdentifier]),
 		},
 		Timeouts: defaultTimeouts,
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.McpServer, customdiff.All(
-			ComputedIfAnyAttributeChanged(mcpServerSchema, ShowOutputAttributeName, "comment"),
-			ComputedIfAnyAttributeChanged(mcpServerSchema, DescribeOutputAttributeName, "specification", "comment"),
-		)),
 	}
 }
 

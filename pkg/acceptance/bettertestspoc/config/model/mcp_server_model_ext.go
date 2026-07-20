@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 )
 
@@ -13,29 +15,31 @@ func McpServerWithSpecification(resourceName, database, schema, name, specificat
 
 // DefaultSpecAsYamlencodeHCL returns a HCL yamlencode expression for a default MCP server spec
 // suitable for use with McpServerWithSpecification.
+// String values use SnowflakeProviderConfigQuoteMarker so they survive JSON encoding
+// (json.Marshal would otherwise escape the double quotes to \").
 func DefaultSpecAsYamlencodeHCL() string {
-	return `yamlencode({
+	return fmt.Sprintf(`yamlencode({
   tools = [
     {
-      title       = "SQL Execution Tool"
-      name        = "sql_exec_tool"
-      type        = "SYSTEM_EXECUTE_SQL"
-      description = "For acceptance tests."
+      title       = %[1]sSQL Execution Tool%[1]s
+      name        = %[1]ssql_exec_tool%[1]s
+      type        = %[1]sSYSTEM_EXECUTE_SQL%[1]s
+      description = %[1]sFor acceptance tests.%[1]s
     }
   ]
-})`
+})`, string(config.SnowflakeProviderConfigQuoteMarker))
 }
 
 // AltSpecAsYamlencodeHCL returns an alternate HCL yamlencode expression for update tests.
 func AltSpecAsYamlencodeHCL() string {
-	return `yamlencode({
+	return fmt.Sprintf(`yamlencode({
   tools = [
     {
-      title       = "SQL Execution Tool"
-      name        = "sql_exec_tool"
-      type        = "SYSTEM_EXECUTE_SQL"
-      description = "Updated description for acceptance tests."
+      title       = %[1]sSQL Execution Tool%[1]s
+      name        = %[1]ssql_exec_tool%[1]s
+      type        = %[1]sSYSTEM_EXECUTE_SQL%[1]s
+      description = %[1]sUpdated description for acceptance tests.%[1]s
     }
   ]
-})`
+})`, string(config.SnowflakeProviderConfigQuoteMarker))
 }

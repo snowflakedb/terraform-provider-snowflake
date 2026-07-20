@@ -32,32 +32,148 @@ func ImportedMcpServerResource(t *testing.T, id string) *McpServerResourceAssert
 // Attribute typed value checks //
 //////////////////////////////////
 
-func (c *McpServerResourceAssert) HasDatabase(expected string) *McpServerResourceAssert {
-	c.StringValueSet("database", expected)
-	return c
+func (m *McpServerResourceAssert) HasDatabase(expected string) *McpServerResourceAssert {
+	m.StringValueSet("database", expected)
+	return m
 }
 
-func (c *McpServerResourceAssert) HasSchema(expected string) *McpServerResourceAssert {
-	c.StringValueSet("schema", expected)
-	return c
+func (m *McpServerResourceAssert) HasSchema(expected string) *McpServerResourceAssert {
+	m.StringValueSet("schema", expected)
+	return m
 }
 
-func (c *McpServerResourceAssert) HasName(expected string) *McpServerResourceAssert {
-	c.StringValueSet("name", expected)
-	return c
+func (m *McpServerResourceAssert) HasName(expected string) *McpServerResourceAssert {
+	m.StringValueSet("name", expected)
+	return m
 }
 
-func (c *McpServerResourceAssert) HasComment(expected string) *McpServerResourceAssert {
-	c.StringValueSet("comment", expected)
-	return c
+func (m *McpServerResourceAssert) HasComment(expected string) *McpServerResourceAssert {
+	m.StringValueSet("comment", expected)
+	return m
 }
 
-func (c *McpServerResourceAssert) HasSpecification(expected string) *McpServerResourceAssert {
-	c.StringValueSet("specification", expected)
-	return c
+func (m *McpServerResourceAssert) HasFullyQualifiedName(expected string) *McpServerResourceAssert {
+	m.StringValueSet("fully_qualified_name", expected)
+	return m
 }
 
-func (c *McpServerResourceAssert) HasFullyQualifiedName(expected string) *McpServerResourceAssert {
-	c.StringValueSet("fully_qualified_name", expected)
-	return c
+func (m *McpServerResourceAssert) HasSpecification(expected string) *McpServerResourceAssert {
+	m.StringValueSet("specification", expected)
+	return m
+}
+
+///////////////////////////////////
+// Attribute value string checks //
+///////////////////////////////////
+
+func (m *McpServerResourceAssert) HasDatabaseString(expected string) *McpServerResourceAssert {
+	m.ValueSet("database", expected)
+	return m
+}
+
+func (m *McpServerResourceAssert) HasSchemaString(expected string) *McpServerResourceAssert {
+	m.ValueSet("schema", expected)
+	return m
+}
+
+func (m *McpServerResourceAssert) HasNameString(expected string) *McpServerResourceAssert {
+	m.ValueSet("name", expected)
+	return m
+}
+
+func (m *McpServerResourceAssert) HasCommentString(expected string) *McpServerResourceAssert {
+	m.ValueSet("comment", expected)
+	return m
+}
+
+func (m *McpServerResourceAssert) HasFullyQualifiedNameString(expected string) *McpServerResourceAssert {
+	m.ValueSet("fully_qualified_name", expected)
+	return m
+}
+
+func (m *McpServerResourceAssert) HasSpecificationString(expected string) *McpServerResourceAssert {
+	m.ValueSet("specification", expected)
+	return m
+}
+
+///////////////////////////////
+// Attribute no value checks //
+///////////////////////////////
+
+func (m *McpServerResourceAssert) HasNoDatabase() *McpServerResourceAssert {
+	m.ValueNotSet("database")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasNoSchema() *McpServerResourceAssert {
+	m.ValueNotSet("schema")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasNoName() *McpServerResourceAssert {
+	m.ValueNotSet("name")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasNoComment() *McpServerResourceAssert {
+	m.ValueNotSet("comment")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasNoFullyQualifiedName() *McpServerResourceAssert {
+	m.ValueNotSet("fully_qualified_name")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasNoSpecification() *McpServerResourceAssert {
+	m.ValueNotSet("specification")
+	return m
+}
+
+////////////////////////////
+// Attribute empty checks //
+////////////////////////////
+
+func (m *McpServerResourceAssert) HasCommentEmpty() *McpServerResourceAssert {
+	m.ValueSet("comment", "")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasFullyQualifiedNameEmpty() *McpServerResourceAssert {
+	m.ValueSet("fully_qualified_name", "")
+	return m
+}
+
+///////////////////////////////
+// Attribute presence checks //
+///////////////////////////////
+
+func (m *McpServerResourceAssert) HasDatabaseNotEmpty() *McpServerResourceAssert {
+	m.ValuePresent("database")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasSchemaNotEmpty() *McpServerResourceAssert {
+	m.ValuePresent("schema")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasNameNotEmpty() *McpServerResourceAssert {
+	m.ValuePresent("name")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasCommentNotEmpty() *McpServerResourceAssert {
+	m.ValuePresent("comment")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasFullyQualifiedNameNotEmpty() *McpServerResourceAssert {
+	m.ValuePresent("fully_qualified_name")
+	return m
+}
+
+func (m *McpServerResourceAssert) HasSpecificationNotEmpty() *McpServerResourceAssert {
+	m.ValuePresent("specification")
+	return m
 }
