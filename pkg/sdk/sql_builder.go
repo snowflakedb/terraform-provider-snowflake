@@ -174,8 +174,8 @@ func (b *sqlBuilder) getModifier(tag reflect.StructTag, tagName string, modType 
 	if tagValue == "" {
 		return defaultMod
 	}
-	parts := strings.Split(tagValue, ",")
-	for _, part := range parts {
+	parts := strings.SplitSeq(tagValue, ",")
+	for part := range parts {
 		if strings.Contains(part, string(modType)) {
 			trimmedS := strings.TrimSpace(part)
 			switch modType {

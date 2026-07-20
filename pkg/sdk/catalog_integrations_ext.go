@@ -12,6 +12,26 @@ func (r *CreateCatalogIntegrationRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }
 
+func (d *CatalogIntegrationOpenCatalogDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
+func (d *CatalogIntegrationIcebergRestDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
+func (d *CatalogIntegrationAwsGlueDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
+func (d *CatalogIntegrationObjectStorageDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
+func (d *CatalogIntegrationAllDetails) ID() AccountObjectIdentifier {
+	return d.Id
+}
+
 func (v *catalogIntegrations) DescribeAwsGlueDetails(ctx context.Context, id AccountObjectIdentifier) (*CatalogIntegrationAwsGlueDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {

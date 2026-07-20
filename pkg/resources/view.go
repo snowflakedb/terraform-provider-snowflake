@@ -169,7 +169,7 @@ var viewSchema = map[string]*schema.Schema{
 								Elem: &schema.Schema{
 									Type: schema.TypeString,
 								},
-								DiffSuppressFunc: IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem(),
+								DiffSuppressFunc: IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("column_name"),
 								Description:      "Specifies the arguments to pass into the conditional masking policy SQL expression. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.",
 							},
 						},
@@ -206,56 +206,8 @@ var viewSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies a comment for the view.",
 	},
-	"row_access_policy": {
-		Type:     schema.TypeList,
-		MaxItems: 1,
-		Optional: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"policy_name": {
-					Type:             schema.TypeString,
-					Required:         true,
-					DiffSuppressFunc: suppressIdentifierQuoting,
-					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-					Description:      relatedResourceDescription("Row access policy name.", resources.RowAccessPolicy),
-				},
-				"on": {
-					Type:     schema.TypeSet,
-					Required: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-					Description: "Defines which columns are affected by the policy.",
-				},
-			},
-		},
-		Description: "Specifies the row access policy to set on a view.",
-	},
-	"aggregation_policy": {
-		Type:     schema.TypeList,
-		MaxItems: 1,
-		Optional: true,
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"policy_name": {
-					Type:             schema.TypeString,
-					Required:         true,
-					DiffSuppressFunc: suppressIdentifierQuoting,
-					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-					Description:      "Aggregation policy name.",
-				},
-				"entity_key": {
-					Type:     schema.TypeSet,
-					Optional: true,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-					Description: "Defines which columns uniquely identify an entity within the view.",
-				},
-			},
-		},
-		Description: "Specifies the aggregation policy to set on a view.",
-	},
+	"row_access_policy":  rowAccessPolicyFieldSchema("view"),
+	"aggregation_policy": aggregationPolicySchema("view"),
 	"statement": {
 		Type:             schema.TypeString,
 		Required:         true,
@@ -408,22 +360,18 @@ func CreateView(orReplace bool) schema.CreateContextFunc {
 			req.WithColumns(columns)
 		}
 
-		if v := d.Get("row_access_policy"); len(v.([]any)) > 0 {
-			id, columns, err := extractPolicyWithColumnsSet(v, "on")
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			req.WithRowAccessPolicy(*sdk.NewViewRowAccessPolicyRequest(id, columns))
+		if policyId, columns, ok, err := rowAccessPolicyCreateRequest(d); err != nil {
+			return diag.FromErr(err)
+		} else if ok {
+			req.WithRowAccessPolicy(*sdk.NewViewRowAccessPolicyRequest(policyId, columns))
 		}
 
-		if v := d.Get("aggregation_policy"); len(v.([]any)) > 0 {
-			id, columns, err := extractPolicyWithColumnsSet(v, "entity_key")
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			aggregationPolicyReq := sdk.NewViewAggregationPolicyRequest(id)
-			if len(columns) > 0 {
-				aggregationPolicyReq.WithEntityKey(columns)
+		if policyId, entityKey, ok, err := aggregationPolicyCreateRequest(d); err != nil {
+			return diag.FromErr(err)
+		} else if ok {
+			aggregationPolicyReq := sdk.NewViewAggregationPolicyRequest(policyId)
+			if len(entityKey) > 0 {
+				aggregationPolicyReq.WithEntityKey(entityKey)
 			}
 			req.WithAggregationPolicy(*aggregationPolicyReq)
 		}
@@ -558,40 +506,6 @@ func extractColumns(v any) ([]sdk.ViewColumnRequest, error) {
 	return columns, nil
 }
 
-func extractPolicyWithColumnsSet(v any, columnsKey string) (sdk.SchemaObjectIdentifier, []sdk.Column, error) {
-	policyConfig := v.([]any)[0].(map[string]any)
-	id, err := sdk.ParseSchemaObjectIdentifier(policyConfig["policy_name"].(string))
-	if err != nil {
-		return sdk.SchemaObjectIdentifier{}, nil, err
-	}
-	if policyConfig[columnsKey] == nil {
-		return id, nil, nil
-	}
-	columnsRaw := expandStringList(policyConfig[columnsKey].(*schema.Set).List())
-	columns := make([]sdk.Column, len(columnsRaw))
-	for i := range columnsRaw {
-		columns[i] = sdk.Column{Value: columnsRaw[i]}
-	}
-	return id, columns, nil
-}
-
-func extractPolicyWithColumnsList(v any, columnsKey string) (sdk.SchemaObjectIdentifier, []sdk.Column, error) {
-	policyConfig := v.([]any)[0].(map[string]any)
-	id, err := sdk.ParseSchemaObjectIdentifier(policyConfig["policy_name"].(string))
-	if err != nil {
-		return sdk.SchemaObjectIdentifier{}, nil, err
-	}
-	if policyConfig[columnsKey] == nil {
-		return id, nil, fmt.Errorf("unable to extract policy with column list, unable to find columnsKey: %s", columnsKey)
-	}
-	columnsRaw := expandStringList(policyConfig[columnsKey].([]any))
-	columns := make([]sdk.Column, len(columnsRaw))
-	for i := range columnsRaw {
-		columns[i] = sdk.Column{Value: columnsRaw[i]}
-	}
-	return id, columns, nil
-}
-
 func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
@@ -646,13 +560,9 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 		}); err != nil {
 			return diag.FromErr(err)
 		}
-		policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(id, sdk.PolicyEntityDomainView))
+		policyRefs, err := readRootLevelPolicies(ctx, client, id, sdk.PolicyEntityDomainView, d)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("getting policy references for view: %w", err))
-		}
-		err = handlePolicyReferences(policyRefs, d)
-		if err != nil {
-			return diag.FromErr(err)
 		}
 		err = handleDataMetricFunctions(ctx, client, id, d)
 		if err != nil {
@@ -690,43 +600,6 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 		}
 		return nil
 	}
-}
-
-func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.ResourceData) error {
-	var aggregationPolicies []map[string]any
-	var rowAccessPolicies []map[string]any
-	for _, p := range policyRefs {
-		policyName := sdk.NewSchemaObjectIdentifier(*p.PolicyDb, *p.PolicySchema, p.PolicyName)
-		switch p.PolicyKind {
-		case sdk.PolicyKindAggregationPolicy:
-			var entityKey []string
-			if p.RefArgColumnNames != nil {
-				entityKey = sdk.ParseCommaSeparatedStringArray(*p.RefArgColumnNames, true)
-			}
-			aggregationPolicies = append(aggregationPolicies, map[string]any{
-				"policy_name": policyName.FullyQualifiedName(),
-				"entity_key":  entityKey,
-			})
-		case sdk.PolicyKindRowAccessPolicy:
-			var on []string
-			if p.RefArgColumnNames != nil {
-				on = sdk.ParseCommaSeparatedStringArray(*p.RefArgColumnNames, true)
-			}
-			rowAccessPolicies = append(rowAccessPolicies, map[string]any{
-				"policy_name": policyName.FullyQualifiedName(),
-				"on":          on,
-			})
-		default:
-			log.Printf("[DEBUG] unexpected policy kind %v in policy references returned from Snowflake", p.PolicyKind)
-		}
-	}
-	if err := d.Set("aggregation_policy", aggregationPolicies); err != nil {
-		return err
-	}
-	if err := d.Set("row_access_policy", rowAccessPolicies); err != nil {
-		return err
-	}
-	return nil
 }
 
 func handleDataMetricFunctions(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData) error {
@@ -780,47 +653,20 @@ func handleColumns(d ResourceValueSetter, columns []sdk.ViewDetails, policyRefs 
 	}
 	columnsRaw := make([]map[string]any, len(columns))
 	for i, column := range columns {
-		columnsRaw[i] = map[string]any{
+		columnState := map[string]any{
 			"column_name": column.Name,
 		}
 		if column.Comment != nil {
-			columnsRaw[i]["comment"] = *column.Comment
+			columnState["comment"] = *column.Comment
 		} else {
-			columnsRaw[i]["comment"] = nil
+			columnState["comment"] = nil
 		}
-		projectionPolicy, err := collections.FindFirst(policyRefs, func(r sdk.PolicyReference) bool {
-			return r.PolicyKind == sdk.PolicyKindProjectionPolicy && r.RefColumnName != nil && *r.RefColumnName == column.Name
-		})
-		if err == nil {
-			if projectionPolicy.PolicyDb != nil && projectionPolicy.PolicySchema != nil {
-				columnsRaw[i]["projection_policy"] = []map[string]any{
-					{
-						"policy_name": sdk.NewSchemaObjectIdentifier(*projectionPolicy.PolicyDb, *projectionPolicy.PolicySchema, projectionPolicy.PolicyName).FullyQualifiedName(),
-					},
-				}
-			} else {
-				log.Printf("[DEBUG] could not store projection policy name: policy db and schema can not be empty")
-			}
+		columnPoliciesState, err := columnPoliciesToState(column.Name, policyRefs)
+		if err != nil {
+			log.Printf("[DEBUG] could not convert column policies to state: %v", err)
 		}
-		maskingPolicy, err := collections.FindFirst(policyRefs, func(r sdk.PolicyReference) bool {
-			return r.PolicyKind == sdk.PolicyKindMaskingPolicy && r.RefColumnName != nil && *r.RefColumnName == column.Name
-		})
-		if err == nil {
-			if maskingPolicy.PolicyDb != nil && maskingPolicy.PolicySchema != nil {
-				var usingArgs []string
-				if maskingPolicy.RefArgColumnNames != nil {
-					usingArgs = sdk.ParseCommaSeparatedStringArray(*maskingPolicy.RefArgColumnNames, true)
-				}
-				columnsRaw[i]["masking_policy"] = []map[string]any{
-					{
-						"policy_name": sdk.NewSchemaObjectIdentifier(*maskingPolicy.PolicyDb, *maskingPolicy.PolicySchema, maskingPolicy.PolicyName).FullyQualifiedName(),
-						"using":       append([]string{*maskingPolicy.RefColumnName}, usingArgs...),
-					},
-				}
-			} else {
-				log.Printf("[DEBUG] could not store masking policy name: policy db and schema can not be empty")
-			}
-		}
+		columnState = collections.MergeMaps(columnState, columnPoliciesState)
+		columnsRaw[i] = columnState
 	}
 	return d.Set("column", columnsRaw)
 }
@@ -1046,23 +892,9 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	}
 
 	if d.HasChange("row_access_policy") {
-		var addReq *sdk.ViewAddRowAccessPolicyRequest
-		var dropReq *sdk.ViewDropRowAccessPolicyRequest
-
-		oldRaw, newRaw := d.GetChange("row_access_policy")
-		if len(oldRaw.([]any)) > 0 {
-			oldId, _, err := extractPolicyWithColumnsSet(oldRaw, "on")
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			dropReq = sdk.NewViewDropRowAccessPolicyRequest(oldId)
-		}
-		if len(newRaw.([]any)) > 0 {
-			newId, newColumns, err := extractPolicyWithColumnsSet(newRaw, "on")
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			addReq = sdk.NewViewAddRowAccessPolicyRequest(newId, newColumns)
+		addReq, dropReq, err := rowAccessPolicyUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 		req := sdk.NewAlterViewRequest(id)
 		if addReq != nil && dropReq != nil { // nolint
@@ -1072,28 +904,21 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 		} else if dropReq != nil {
 			req.WithDropRowAccessPolicy(*dropReq)
 		}
-		err := client.Views.Alter(ctx, req)
-		if err != nil {
+		if err := client.Views.Alter(ctx, req); err != nil {
 			return diag.FromErr(fmt.Errorf("error altering row_access_policy for view %v: %w", d.Id(), err))
 		}
 	}
 	if d.HasChange("aggregation_policy") {
-		if v, ok := d.GetOk("aggregation_policy"); ok {
-			newId, newColumns, err := extractPolicyWithColumnsSet(v, "entity_key")
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			aggregationPolicyReq := sdk.NewViewSetAggregationPolicyRequest(newId)
-			if len(newColumns) > 0 {
-				aggregationPolicyReq.WithEntityKey(newColumns)
-			}
-			err = client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithSetAggregationPolicy(*aggregationPolicyReq.WithForce(true)))
-			if err != nil {
+		setReq, unsetReq, err := aggregationPolicyUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if setReq != nil {
+			if err := client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithSetAggregationPolicy(*setReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error setting aggregation policy for view %v: %w", d.Id(), err))
 			}
 		} else {
-			err := client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest()))
-			if err != nil {
+			if err := client.Views.Alter(ctx, sdk.NewAlterViewRequest(id).WithUnsetAggregationPolicy(*unsetReq)); err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting aggregation policy for view %v", d.Id()))
 			}
 		}

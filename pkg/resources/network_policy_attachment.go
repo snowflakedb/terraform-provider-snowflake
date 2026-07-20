@@ -207,7 +207,7 @@ func setOnAccount(ctx context.Context, d *schema.ResourceData, meta any) error {
 
 	policyName := d.Get("network_policy_name").(string)
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{LegacyParameters: &sdk.AccountLevelParameters{ObjectParameters: &sdk.ObjectParameters{NetworkPolicy: sdk.String(policyName)}}}})
+	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithLegacyParameters(*sdk.NewAccountLevelParametersRequest().WithObjectParameters(sdk.ObjectParameters{NetworkPolicy: sdk.String(policyName)}))))
 	if err != nil {
 		return fmt.Errorf("error setting network policy %v on account err = %w", policyName, err)
 	}
@@ -221,7 +221,7 @@ func unsetOnAccount(ctx context.Context, d *schema.ResourceData, meta any) error
 
 	policyName := d.Get("network_policy_name").(string)
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{LegacyParameters: &sdk.AccountLevelParametersUnset{ObjectParameters: &sdk.ObjectParametersUnset{NetworkPolicy: sdk.Bool(true)}}}})
+	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithLegacyParameters(*sdk.NewAccountLevelParametersUnsetRequest().WithObjectParameters(sdk.ObjectParametersUnset{NetworkPolicy: sdk.Bool(true)}))))
 	if err != nil {
 		return fmt.Errorf("error unsetting network policy %v on account err = %w", policyName, err)
 	}

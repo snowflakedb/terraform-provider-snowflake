@@ -50,11 +50,8 @@ func CreateAccountPasswordPolicyAttachment(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("password_policy %s is not a valid password policy qualified name, expected format: `\"db\".\"schema\".\"policy\"`", d.Get("password_policy")))
 	}
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-		Set: &sdk.AccountSet{
-			PasswordPolicy: &passwordPolicy,
-		},
-	})
+	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+		WithSet(*sdk.NewAccountSetRequest().WithPasswordPolicy(passwordPolicy)))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -77,11 +74,8 @@ func ReadAccountPasswordPolicyAttachment(ctx context.Context, d *schema.Resource
 func DeleteAccountPasswordPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
-		Unset: &sdk.AccountUnset{
-			PasswordPolicy: sdk.Bool(true),
-		},
-	})
+	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+		WithUnset(*sdk.NewAccountUnsetRequest().WithPasswordPolicy(true)))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -420,7 +420,6 @@ func Test_DataTypeDiffSuppressFunc(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			result := resources.DiffSuppressDataTypes("", tc.old, tc.new, nil)
 			require.Equal(t, tc.expected, result)

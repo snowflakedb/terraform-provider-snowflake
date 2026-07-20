@@ -52,7 +52,7 @@ func v085ExternalFunctionStateUpgrader(ctx context.Context, rawState map[string]
 
 	argDataTypes := make([]sdk.DataType, 0)
 	if parsedV085ExternalFunctionId.ExternalFunctionArgTypes != "" {
-		for _, argType := range strings.Split(parsedV085ExternalFunctionId.ExternalFunctionArgTypes, "-") {
+		for argType := range strings.SplitSeq(parsedV085ExternalFunctionId.ExternalFunctionArgTypes, "-") {
 			argDataType, err := datatypes.ParseDataType(argType)
 			if err != nil {
 				return nil, err

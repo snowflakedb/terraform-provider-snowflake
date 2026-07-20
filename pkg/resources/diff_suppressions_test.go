@@ -241,6 +241,40 @@ func Test_ignoreNewEmptyList(t *testing.T) {
 	}
 }
 
+func Test_NormalizeIcebergTableBaseLocation(t *testing.T) {
+	tests := []struct {
+		name  string
+		value string
+		want  string
+	}{
+		{
+			name:  "strips generated suffix after the last dot",
+			value: "iceberg_table_test_table.abc123",
+			want:  "iceberg_table_test_table",
+		},
+		{
+			name:  "strips only after the last dot when there are multiple",
+			value: "path/to.location.abc123",
+			want:  "path/to.location",
+		},
+		{
+			name:  "returns the value unchanged when there is no dot",
+			value: "iceberg_table_test_table",
+			want:  "iceberg_table_test_table",
+		},
+		{
+			name:  "returns empty string unchanged",
+			value: "",
+			want:  "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, resources.NormalizeIcebergTableBaseLocation(tt.value))
+		})
+	}
+}
+
 func Test_IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem(t *testing.T) {
 	resourceSchema := map[string]*schema.Schema{
 		"column": {
@@ -318,7 +352,7 @@ func Test_IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Equal(t, tt.wantSuppress, resources.IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem()(tt.key, tt.old, tt.new, tt.resourceData))
+			require.Equal(t, tt.wantSuppress, resources.IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("column_name")(tt.key, tt.old, tt.new, tt.resourceData))
 		})
 	}
 }

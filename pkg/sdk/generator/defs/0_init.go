@@ -11,6 +11,7 @@ import (
 func init() {
 	gen.AllSdkObjectDefinitions = append(
 		gen.AllSdkObjectDefinitions,
+		accountsDef,
 		alertsDef,
 		apiIntegrationsDef,
 		applicationPackagesDef,
@@ -25,6 +26,7 @@ func init() {
 		cortexSearchServicesDef,
 		databaseRolesDef,
 		databasesDef,
+		dynamicTablesDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
 		externalFunctionsDef,
@@ -40,6 +42,7 @@ func init() {
 		managedAccountsDef,
 		maskingPoliciesDef,
 		materializedViewsDef,
+		mcpServersDef,
 		networkPoliciesDef,
 		networkRulesDef,
 		notebooksDef,

@@ -239,8 +239,8 @@ func (c *ComputePoolAssert) HasApplication(expected sdk.AccountObjectIdentifier)
 		if o.Application == nil {
 			return fmt.Errorf("expected application to have value; got: nil")
 		}
-		if (*o.Application).Name() != expected.Name() {
-			return fmt.Errorf("expected application: %v; got: %v", expected.Name(), (*o.Application).Name())
+		if (*o.Application).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected application: %v; got: %v", expected.FullyQualifiedName(), (*o.Application).FullyQualifiedName())
 		}
 		return nil
 	})

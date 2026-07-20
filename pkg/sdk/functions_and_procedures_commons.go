@@ -33,8 +33,8 @@ func parseFunctionOrProcedureImports(importsRaw *string) ([]NormalizedPath, erro
 		return normalizedImports, fmt.Errorf("could not parse imports from Snowflake: %s, wrapping brackets not found", *importsRaw)
 	}
 	raw := (*importsRaw)[1 : len(*importsRaw)-1]
-	imports := strings.Split(raw, ",")
-	for _, imp := range imports {
+	imports := strings.SplitSeq(raw, ",")
+	for imp := range imports {
 		p, err := parseFunctionOrProcedureStageLocationPath(imp)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse imports from Snowflake: %s, err: %w", *importsRaw, err)
@@ -90,9 +90,9 @@ func parseFunctionOrProcedureSignature(signature string) ([]NormalizedArgument, 
 		return normalizedArguments, fmt.Errorf("could not parse signature from Snowflake: %s, wrapping parentheses not found", trimmed)
 	}
 	raw := trimmed[1 : len(trimmed)-1]
-	args := strings.Split(raw, ",")
+	args := strings.SplitSeq(raw, ",")
 
-	for _, arg := range args {
+	for arg := range args {
 		a, err := parseFunctionOrProcedureArgument(arg)
 		if err != nil {
 			return nil, fmt.Errorf("could not parse signature from Snowflake: %s, err: %w", trimmed, err)

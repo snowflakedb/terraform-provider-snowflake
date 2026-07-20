@@ -101,3 +101,9 @@ func (c *CatalogIntegrationClient) DescribeIcebergRest(t *testing.T, id sdk.Acco
 	ctx := context.Background()
 	return c.client().DescribeIcebergRestDetails(ctx, id)
 }
+
+func (c *CatalogIntegrationClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.CatalogIntegrationAllDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeDetails(ctx, id)
+}

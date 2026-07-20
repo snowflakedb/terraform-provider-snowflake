@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -19,7 +20,7 @@ type CortexAgentAssert struct {
 func CortexAgent(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgentAssert {
 	t.Helper()
 	return &CortexAgentAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("CortexAgent"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CortexAgent, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeAgent, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CortexAgent, sdk.SchemaObjectIdentifier] {
 			return testClient.CortexAgent.Show
 		}),
 	}
@@ -28,7 +29,6 @@ func CortexAgent(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgentAssert
 func CortexAgentFromObject(t *testing.T, cortexAgent *sdk.CortexAgent) *CortexAgentAssert {
 	t.Helper()
 	return &CortexAgentAssert{
-		// object type adjusted manually
 		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAgent, cortexAgent.ID(), cortexAgent),
 	}
 }
@@ -102,7 +102,7 @@ func (c *CortexAgentAssert) HasComment(expected string) *CortexAgentAssert {
 func (c *CortexAgentAssert) HasProfile(expected sdk.CortexAgentProfile) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
-		if o.Profile != expected {
+		if !reflect.DeepEqual(o.Profile, expected) {
 			return fmt.Errorf("expected profile: %v; got: %v", expected, o.Profile)
 		}
 		return nil

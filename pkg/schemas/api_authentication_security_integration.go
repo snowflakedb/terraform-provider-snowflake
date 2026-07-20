@@ -42,7 +42,6 @@ var _ = DescribeApiAuthSecurityIntegrationSchema
 func ApiAuthSecurityIntegrationPropertiesToSchema(securityIntegrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
 	securityIntegrationSchema := make(map[string]any)
 	for _, securityIntegrationProperty := range securityIntegrationProperties {
-		securityIntegrationProperty := securityIntegrationProperty
 		if slices.Contains(ApiAuthenticationPropertiesNames, securityIntegrationProperty.Name) {
 			securityIntegrationSchema[strings.ToLower(securityIntegrationProperty.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&securityIntegrationProperty)}
 		} else {

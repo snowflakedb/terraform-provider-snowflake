@@ -21,7 +21,7 @@ type TagAssert struct {
 func Tag(t *testing.T, id sdk.SchemaObjectIdentifier) *TagAssert {
 	t.Helper()
 	return &TagAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Tag"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Tag, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeTag, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Tag, sdk.SchemaObjectIdentifier] {
 			return testClient.Tag.Show
 		}),
 	}

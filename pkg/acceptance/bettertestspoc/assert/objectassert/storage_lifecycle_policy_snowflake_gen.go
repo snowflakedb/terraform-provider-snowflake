@@ -19,7 +19,7 @@ type StorageLifecyclePolicyAssert struct {
 func StorageLifecyclePolicy(t *testing.T, id sdk.SchemaObjectIdentifier) *StorageLifecyclePolicyAssert {
 	t.Helper()
 	return &StorageLifecyclePolicyAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("StorageLifecyclePolicy"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.StorageLifecyclePolicy, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeStorageLifecyclePolicy, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.StorageLifecyclePolicy, sdk.SchemaObjectIdentifier] {
 			return testClient.StorageLifecyclePolicy.Show
 		}),
 	}
