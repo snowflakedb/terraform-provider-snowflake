@@ -54,7 +54,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 				HasCreatedOnNotEmpty().
 				HasCreatedBy(currentUser.Name()).
 				HasNoMinsToBypassNetworkPolicyRequirement().
-				HasRotatedToEmpty(),
+				HasNoRotatedTo(),
 		)
 	})
 
@@ -91,7 +91,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 				HasCreatedOnNotEmpty().
 				HasCreatedBy(currentUser.Name()).
 				HasMinsToBypassNetworkPolicyRequirementWithTolerance(10).
-				HasRotatedToEmpty(),
+				HasNoRotatedTo(),
 		)
 	})
 
@@ -240,7 +240,7 @@ func TestInt_UserProgrammaticAccessToken(t *testing.T) {
 				HasCreatedOnNotEmpty().
 				HasCreatedBy(currentUser.Name()).
 				HasNoMinsToBypassNetworkPolicyRequirement().
-				HasRotatedToEmpty(),
+				HasNoRotatedTo(),
 		)
 	})
 
