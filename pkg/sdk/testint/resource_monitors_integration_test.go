@@ -92,7 +92,7 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 				HasNonEmptyEndTime().
 				HasNotifyAt(100).
 				HasSuspendAt(30).
-				HasSuspendImmediateAt(50),
+				HasSuspendImmediatelyAt(50),
 		)
 	})
 

@@ -18,6 +18,7 @@ type SnowflakeObjectAssertionsModel struct {
 	NoIdentifiableObject bool
 	ShowByParentId       *genhelpers.ShowByParentIdDef
 	DescribeOverride     *genhelpers.DescribeOverrideDef
+	FromObjectIDExpr     string
 	NestedAssertFields   []string
 	Fields               []SnowflakeObjectFieldAssertion
 
@@ -106,6 +107,7 @@ func ModelFromSdkObjectDetails(sdkObject genhelpers.SdkObjectDetails, preamble *
 		NoIdentifiableObject: sdkObject.NoIdentifiableObject,
 		ShowByParentId:       sdkObject.ShowByParentId,
 		DescribeOverride:     sdkObject.DescribeOverride,
+		FromObjectIDExpr:     sdkObject.FromObjectIDExpr,
 		Fields:               fields,
 		NestedAssertFields:   sdkObject.NestedAssertFields,
 		PreambleModel:        preamble,
@@ -137,18 +139,7 @@ func MapToSnowflakeObjectFieldAssertion(field genhelpers.Field) SnowflakeObjectF
 	}
 
 	// TODO [SNOW-1501905]: handle other mappings if needed
-	if concreteBase == "sdk.AccountObjectIdentifier" {
-		mapper = genhelpers.Name
-		if field.IsPointer() {
-			mapper = func(s string) string {
-				return genhelpers.Name(genhelpers.Parentheses(genhelpers.Dereference(s)))
-			}
-		}
-		expectedValueMapper = genhelpers.Name
-		errorMapper = genhelpers.Name
-		errorExpectedValueMapper = genhelpers.Name
-	}
-	if concreteBase == "sdk.SchemaObjectIdentifier" {
+	if concreteBase == "sdk.AccountObjectIdentifier" || concreteBase == "sdk.SchemaObjectIdentifier" {
 		mapper = genhelpers.FullyQualifiedName
 		if field.IsPointer() {
 			mapper = func(s string) string {

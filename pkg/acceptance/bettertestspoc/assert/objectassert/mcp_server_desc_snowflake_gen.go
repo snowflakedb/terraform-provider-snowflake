@@ -25,7 +25,12 @@ func McpServerDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *McpServerDet
 	}
 }
 
-// manually adjusted: removed McpServerDetailsFromObject — McpServerDetails has no ID() method.
+func McpServerDetailsFromObject(t *testing.T, mcpServerDetails *sdk.McpServerDetails) *McpServerDetailsAssert {
+	t.Helper()
+	return &McpServerDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("McpServerDetails"), mcpServerDetails.ID(), mcpServerDetails),
+	}
+}
 
 func (m *McpServerDetailsAssert) HasName(expected string) *McpServerDetailsAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
