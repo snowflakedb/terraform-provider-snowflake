@@ -71,8 +71,8 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+			HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthGrant("AUTHORIZATION_CODE").
 			HasOauthClientId(mcpOauth2ClientId).
 			HasOauthTokenEndpoint(mcpOauth2TokenEndpoint).
@@ -111,13 +111,13 @@ func TestAcc_ApiIntegrationExternalMcpOAuth2_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+			HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthGrant("AUTHORIZATION_CODE").
 			HasOauthClientId(mcpOauth2ClientId).
 			HasOauthTokenEndpoint(mcpOauth2TokenEndpoint).
 			HasOauthAuthorizationEndpoint(mcpOauth2AuthorizationEndpoint).
-			HasOauthClientAuthMethod(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost).
+			HasOauthClientAuthMethodEnum(sdk.ApiIntegrationOauthClientAuthMethodClientSecretPost).
 			HasOauthRefreshTokenValidity(mcpOauth2RefreshTokenValidity).
 			HasAllowedPrefixes(mcpAllowedPrefix).
 			HasBlockedPrefixes(mcpBlockedPrefix).

@@ -57,7 +57,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationGoogleDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
+			HasApiProviderType(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
 			HasAllowedPrefixes(googleAllowedPrefix).
 			HasNoBlockedPrefixes().
@@ -85,7 +85,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationGoogleDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
+			HasApiProviderType(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
 			HasAllowedPrefixes(googleAllowedPrefix).
 			HasBlockedPrefixes(googleBlockedPrefix).
@@ -211,7 +211,7 @@ func TestAcc_ApiIntegrationGoogleCloudApiGateway_CompleteUseCase(t *testing.T) {
 			HasGoogleApiServiceAccountNotEmpty(),
 		objectassert.ApiIntegrationGoogleDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
+			HasApiProviderType(sdk.ApiIntegrationGoogleApiProviderTypeGoogleApiGateway).
 			HasGoogleAudience(googleAudience).
 			HasAllowedPrefixes(googleAllowedPrefix).
 			HasBlockedPrefixes(googleBlockedPrefix).

@@ -65,7 +65,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthClientId(gitOauth2ClientId).
 			HasOauthTokenEndpoint(gitOauth2TokenEndpoint).
 			HasOauthAuthorizationEndpoint(gitOauth2AuthorizationEndpoint).
@@ -108,7 +108,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthClientId(gitOauth2ClientId).
 			HasOauthTokenEndpoint(gitOauth2TokenEndpoint).
 			HasOauthAuthorizationEndpoint(gitOauth2AuthorizationEndpoint).
@@ -289,13 +289,13 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthClientId(gitOauth2ClientId).
 			HasOauthTokenEndpoint(gitOauth2TokenEndpoint).
 			HasOauthAuthorizationEndpoint(gitOauth2AuthorizationEndpoint).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopes(sdk.ApiIntegrationOauthAllowedScopeReadApi).
+			HasOauthAllowedScopesEnum(sdk.ApiIntegrationOauthAllowedScopeReadApi).
 			HasOauthUsername(gitOauth2Username).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
@@ -336,13 +336,13 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauth2).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauth2).
 			HasOauthClientId(gitOauth2ClientId).
 			HasOauthTokenEndpoint(gitOauth2UpdatedTokenEndpoint).
 			HasOauthAuthorizationEndpoint(gitOauth2UpdatedAuthorizationEndpoint).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopes(sdk.ApiIntegrationOauthAllowedScopeReadApi).
+			HasOauthAllowedScopesEnum(sdk.ApiIntegrationOauthAllowedScopeReadApi).
 			HasOauthUsername(gitOauth2Username).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).

@@ -35,6 +35,11 @@ func ImportedNotebookDescribeOutput(t *testing.T, id string) *NotebookDescribeOu
 // Attribute value checks //
 ////////////////////////////
 
+func (n *NotebookDescribeOutputAssert) HasId(expected sdk.SchemaObjectIdentifier) *NotebookDescribeOutputAssert {
+	n.StringValueSet("id", expected.FullyQualifiedName())
+	return n
+}
+
 func (n *NotebookDescribeOutputAssert) HasTitle(expected string) *NotebookDescribeOutputAssert {
 	n.StringValueSet("title", expected)
 	return n
@@ -183,6 +188,11 @@ func (n *NotebookDescribeOutputAssert) HasLiveVersionLocationUri(expected string
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
+
+func (n *NotebookDescribeOutputAssert) HasNoId() *NotebookDescribeOutputAssert {
+	n.ValueNotSet("id")
+	return n
+}
 
 func (n *NotebookDescribeOutputAssert) HasNoTitle() *NotebookDescribeOutputAssert {
 	n.ValueNotSet("title")

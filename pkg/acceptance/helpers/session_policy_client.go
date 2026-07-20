@@ -24,6 +24,12 @@ func (c *SessionPolicyClient) client() sdk.SessionPolicies {
 	return c.context.client.SessionPolicies
 }
 
+func (c *SessionPolicyClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.SessionPolicy, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ShowByID(ctx, id)
+}
+
 func (c *SessionPolicyClient) CreateSessionPolicy(t *testing.T) (*sdk.SessionPolicy, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifier()
