@@ -90,6 +90,17 @@ func (t *TagReferenceAssert) HasObjectDatabase(expected string) *TagReferenceAss
 	return t
 }
 
+func (t *TagReferenceAssert) HasNoObjectDatabase() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.ObjectDatabase != nil {
+			return fmt.Errorf("expected object database to be nil; got: %v", *o.ObjectDatabase)
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TagReferenceAssert) HasObjectSchema(expected string) *TagReferenceAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
 		t.Helper()
@@ -98,6 +109,17 @@ func (t *TagReferenceAssert) HasObjectSchema(expected string) *TagReferenceAsser
 		}
 		if *o.ObjectSchema != expected {
 			return fmt.Errorf("expected object schema: %v; got: %v", expected, *o.ObjectSchema)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagReferenceAssert) HasNoObjectSchema() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.ObjectSchema != nil {
+			return fmt.Errorf("expected object schema to be nil; got: %v", *o.ObjectSchema)
 		}
 		return nil
 	})
@@ -134,6 +156,17 @@ func (t *TagReferenceAssert) HasColumnName(expected string) *TagReferenceAssert 
 		}
 		if *o.ColumnName != expected {
 			return fmt.Errorf("expected column name: %v; got: %v", expected, *o.ColumnName)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagReferenceAssert) HasNoColumnName() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.ColumnName != nil {
+			return fmt.Errorf("expected column name to be nil; got: %v", *o.ColumnName)
 		}
 		return nil
 	})
