@@ -162,8 +162,8 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any)
 	var grants []sdk.Grant
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
 		cacheKey := roleIdentifier.FullyQualifiedName()
-		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func() ([]sdk.Grant, error) {
-			return client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func(loadCtx context.Context) ([]sdk.Grant, error) {
+			return client.Grants.Show(loadCtx, &sdk.ShowGrantOptions{
 				Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
 			})
 		})
