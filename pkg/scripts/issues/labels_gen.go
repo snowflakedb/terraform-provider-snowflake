@@ -195,6 +195,7 @@ var RepositoryLabels = []string{
 	"data_source:listings",
 	"data_source:masking_policies",
 	"data_source:materialized_views",
+	"data_source:mcp_servers",
 	"data_source:network_policies",
 	"data_source:network_rules",
 	"data_source:notebooks",
