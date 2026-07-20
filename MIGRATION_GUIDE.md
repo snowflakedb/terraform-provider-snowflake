@@ -38,12 +38,6 @@ The `show_output` field in the `snowflake_warehouses` data source now includes a
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
-### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
-
-The `default_workload_identity.aws` nested block on the [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) resources now supports an optional `issuer` attribute, which maps to the `ISSUER` parameter of Snowflake's `WORKLOAD_IDENTITY` user property. It is required when configuring JWT-based (`GetWebIdentityToken`) AWS workload identity federation; existing configurations using only `arn` (the `GetCallerIdentity` attestation method) continue to work unchanged.
-
-This is a non-breaking, additive change; no action is required unless you want to adopt JWT-based AWS workload identity federation.
-
 ### *(new feature)* inherited grants support in `snowflake_grant_privileges_to_account_role`
 
 The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports [inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using). Inherited grants collapse the common `GRANT ON ALL` + `GRANT ON FUTURE` pattern into a single grant that automatically covers all current and future objects of a type in a container. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.
