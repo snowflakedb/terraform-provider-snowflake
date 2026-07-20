@@ -27,7 +27,7 @@ func CatalogIntegrationObjectStorageDetails(t *testing.T, id sdk.AccountObjectId
 func CatalogIntegrationObjectStorageDetailsFromObject(t *testing.T, catalogIntegrationObjectStorageDetails *sdk.CatalogIntegrationObjectStorageDetails) *CatalogIntegrationObjectStorageDetailsAssert {
 	t.Helper()
 	return &CatalogIntegrationObjectStorageDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationObjectStorageDetails"), catalogIntegrationObjectStorageDetails.Id, catalogIntegrationObjectStorageDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationObjectStorageDetails"), catalogIntegrationObjectStorageDetails.ID(), catalogIntegrationObjectStorageDetails),
 	}
 }
 

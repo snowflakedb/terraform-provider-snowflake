@@ -80,21 +80,10 @@ func (n *NotebookAssert) HasComment(expected string) *NotebookAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
 		t.Helper()
 		if o.Comment == nil {
-			return fmt.Errorf("expected comment to be non empty")
+			return fmt.Errorf("expected comment to have value; got: nil")
 		}
 		if *o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
-		}
-		return nil
-	})
-	return n
-}
-
-func (n *NotebookAssert) HasNoComment() *NotebookAssert {
-	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be empty")
 		}
 		return nil
 	})
@@ -153,17 +142,6 @@ func (n *NotebookAssert) HasCodeWarehouse(expected sdk.AccountObjectIdentifier) 
 		t.Helper()
 		if o.CodeWarehouse.Name() != expected.Name() {
 			return fmt.Errorf("expected code warehouse: %v; got: %v", expected.Name(), o.CodeWarehouse.Name())
-		}
-		return nil
-	})
-	return n
-}
-
-func (n *NotebookAssert) HasNoCodeWarehouse() *NotebookAssert {
-	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
-		t.Helper()
-		if o.CodeWarehouse.Name() != "" {
-			return fmt.Errorf("expected code warehouse to be empty")
 		}
 		return nil
 	})

@@ -29,15 +29,15 @@ func SessionPolicyDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *SessionP
 func SessionPolicyDetailsFromObject(t *testing.T, sessionPolicyDetails *sdk.SessionPolicyDetails) *SessionPolicyDetailsAssert {
 	t.Helper()
 	return &SessionPolicyDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("SessionPolicyDetails"), sessionPolicyDetails.Id, sessionPolicyDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("SessionPolicyDetails"), sessionPolicyDetails.ID(), sessionPolicyDetails),
 	}
 }
 
-func (s *SessionPolicyDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *SessionPolicyDetailsAssert {
+func (s *SessionPolicyDetailsAssert) HasId(expected sdk.SchemaObjectIdentifier) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
-		if o.Id.Name() != expected.Name() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
+		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
 		}
 		return nil
 	})

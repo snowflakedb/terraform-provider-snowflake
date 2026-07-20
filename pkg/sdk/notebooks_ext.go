@@ -33,3 +33,11 @@ func (s *NotebookSet) additionalValidations() error {
 func (r *CreateNotebookRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }
+
+func (r NotebookDetailsRow) additionalConvert(_ *NotebookDetails) error {
+	return nil
+}
+
+func (d *NotebookDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}

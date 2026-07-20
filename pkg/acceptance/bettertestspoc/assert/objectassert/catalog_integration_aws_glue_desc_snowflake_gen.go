@@ -27,7 +27,7 @@ func CatalogIntegrationAwsGlueDetails(t *testing.T, id sdk.AccountObjectIdentifi
 func CatalogIntegrationAwsGlueDetailsFromObject(t *testing.T, catalogIntegrationAwsGlueDetails *sdk.CatalogIntegrationAwsGlueDetails) *CatalogIntegrationAwsGlueDetailsAssert {
 	t.Helper()
 	return &CatalogIntegrationAwsGlueDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationAwsGlueDetails"), catalogIntegrationAwsGlueDetails.Id, catalogIntegrationAwsGlueDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CatalogIntegrationAwsGlueDetails"), catalogIntegrationAwsGlueDetails.ID(), catalogIntegrationAwsGlueDetails),
 	}
 }
 
@@ -135,6 +135,28 @@ func (c *CatalogIntegrationAwsGlueDetailsAssert) HasCatalogNamespace(expected st
 		t.Helper()
 		if o.CatalogNamespace != expected {
 			return fmt.Errorf("expected catalog namespace: %v; got: %v", expected, o.CatalogNamespace)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsIamUserArn(expected string) *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.GlueAwsIamUserArn != expected {
+			return fmt.Errorf("expected glue aws iam user arn: %v; got: %v", expected, o.GlueAwsIamUserArn)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsExternalId(expected string) *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.GlueAwsExternalId != expected {
+			return fmt.Errorf("expected glue aws external id: %v; got: %v", expected, o.GlueAwsExternalId)
 		}
 		return nil
 	})
