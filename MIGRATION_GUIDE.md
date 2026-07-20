@@ -33,6 +33,7 @@ The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io
 This is a non-breaking, additive change; existing configurations continue to work unchanged. Notes:
 - Inherited grants are a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. They must be enabled on your account before use, and their behavior may change until they reach general availability.
 - Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
+- External drift is detected for inherited grants (e.g. an externally revoked privilege reappears in the plan).
 - `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.
 - `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
 

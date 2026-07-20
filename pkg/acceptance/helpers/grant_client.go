@@ -48,6 +48,30 @@ func (c *GrantClient) GrantGlobalPrivilegesOnAccountRole(
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) GrantInheritedPrivilegesToAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges sdk.InheritedAccountRoleGrantPrivileges,
+	onAll sdk.PluralObjectType,
+	in sdk.InheritedAccountRoleGrantIn,
+) {
+	t.Helper()
+	err := c.client().GrantInheritedPrivilegesToAccountRole(context.Background(), privileges, onAll, in, accountRoleId)
+	require.NoError(t, err)
+}
+
+func (c *GrantClient) RevokeInheritedPrivilegesFromAccountRole(
+	t *testing.T,
+	accountRoleId sdk.AccountObjectIdentifier,
+	privileges sdk.InheritedAccountRoleGrantPrivileges,
+	onAll sdk.PluralObjectType,
+	in sdk.InheritedAccountRoleGrantIn,
+) {
+	t.Helper()
+	err := c.client().RevokeInheritedPrivilegesFromAccountRole(context.Background(), privileges, onAll, in, accountRoleId)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) RevokeGlobalPrivilegesFromAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
