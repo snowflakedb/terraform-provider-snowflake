@@ -43,11 +43,33 @@ func (a *AuthenticationPolicyAssert) HasCreatedOn(expected time.Time) *Authentic
 	return a
 }
 
+func (a *AuthenticationPolicyAssert) HasCreatedOnNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *AuthenticationPolicyAssert) HasName(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyAssert) HasNameNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (a *AuthenticationPolicyAssert) HasComment(expected string) *Authentication
 	return a
 }
 
+func (a *AuthenticationPolicyAssert) HasCommentNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *AuthenticationPolicyAssert) HasDatabaseName(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
 		if o.DatabaseName != expected {
 			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyAssert) HasDatabaseNameNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +131,33 @@ func (a *AuthenticationPolicyAssert) HasSchemaName(expected string) *Authenticat
 	return a
 }
 
+func (a *AuthenticationPolicyAssert) HasSchemaNameNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *AuthenticationPolicyAssert) HasKind(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
 		if o.Kind != expected {
 			return fmt.Errorf("expected kind: %v; got: %v", expected, o.Kind)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyAssert) HasKindNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
 		}
 		return nil
 	})
@@ -109,6 +175,17 @@ func (a *AuthenticationPolicyAssert) HasOwner(expected string) *AuthenticationPo
 	return a
 }
 
+func (a *AuthenticationPolicyAssert) HasOwnerNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *AuthenticationPolicyAssert) HasOwnerRoleType(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
@@ -120,11 +197,33 @@ func (a *AuthenticationPolicyAssert) HasOwnerRoleType(expected string) *Authenti
 	return a
 }
 
+func (a *AuthenticationPolicyAssert) HasOwnerRoleTypeNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *AuthenticationPolicyAssert) HasOptions(expected string) *AuthenticationPolicyAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
 		t.Helper()
 		if o.Options != expected {
 			return fmt.Errorf("expected options: %v; got: %v", expected, o.Options)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyAssert) HasOptionsNotEmpty() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if o.Options == "" {
+			return fmt.Errorf("expected options to be non-empty")
 		}
 		return nil
 	})
