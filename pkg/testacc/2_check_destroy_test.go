@@ -346,6 +346,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.MaterializedView: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.MaterializedViews.ShowByID)
 	},
+	resources.McpServer: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.McpServers.ShowByID)
+	},
 	resources.NetworkPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NetworkPolicies.ShowByID)
 	},

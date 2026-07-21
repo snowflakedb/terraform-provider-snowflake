@@ -75,6 +75,7 @@ const (
 	ManagedAccount                                         resource = "snowflake_managed_account"
 	MaskingPolicy                                          resource = "snowflake_masking_policy"
 	MaterializedView                                       resource = "snowflake_materialized_view"
+	McpServer                                              resource = "snowflake_mcp_server"
 	NetworkPolicy                                          resource = "snowflake_network_policy"
 	NetworkPolicyAttachment                                resource = "snowflake_network_policy_attachment"
 	NetworkRule                                            resource = "snowflake_network_rule"
