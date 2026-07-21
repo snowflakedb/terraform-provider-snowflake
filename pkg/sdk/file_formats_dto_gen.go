@@ -2,22 +2,28 @@
 
 package sdk
 
-var _ optionsProvider[DummyOperationFileFormatOptions] = new(DummyOperationFileFormatRequest)
+var (
+	_ optionsProvider[CreateCsvFileFormatOptions]     = new(CreateCsvFileFormatRequest)
+	_ optionsProvider[CreateJsonFileFormatOptions]    = new(CreateJsonFileFormatRequest)
+	_ optionsProvider[CreateAvroFileFormatOptions]    = new(CreateAvroFileFormatRequest)
+	_ optionsProvider[CreateOrcFileFormatOptions]     = new(CreateOrcFileFormatRequest)
+	_ optionsProvider[CreateParquetFileFormatOptions] = new(CreateParquetFileFormatRequest)
+	_ optionsProvider[CreateXmlFileFormatOptions]     = new(CreateXmlFileFormatRequest)
+	_ optionsProvider[AlterCsvFileFormatOptions]      = new(AlterCsvFileFormatRequest)
+	_ optionsProvider[AlterJsonFileFormatOptions]     = new(AlterJsonFileFormatRequest)
+	_ optionsProvider[AlterAvroFileFormatOptions]     = new(AlterAvroFileFormatRequest)
+	_ optionsProvider[AlterOrcFileFormatOptions]      = new(AlterOrcFileFormatRequest)
+	_ optionsProvider[AlterParquetFileFormatOptions]  = new(AlterParquetFileFormatRequest)
+	_ optionsProvider[AlterXmlFileFormatOptions]      = new(AlterXmlFileFormatRequest)
+	_ optionsProvider[DropFileFormatOptions]          = new(DropFileFormatRequest)
+	_ optionsProvider[ShowFileFormatOptions]          = new(ShowFileFormatRequest)
+	_ optionsProvider[DescribeFileFormatOptions]      = new(DescribeFileFormatRequest)
+)
 
-type DummyOperationFileFormatRequest struct {
-	FileFormat *FileFormatOptionsRequest
-}
-
-type FileFormatOptionsRequest struct {
-	CsvOptions     *FileFormatCsvOptionsRequest
-	JsonOptions    *FileFormatJsonOptionsRequest
-	AvroOptions    *FileFormatAvroOptionsRequest
-	OrcOptions     *FileFormatOrcOptionsRequest
-	ParquetOptions *FileFormatParquetOptionsRequest
-	XmlOptions     *FileFormatXmlOptionsRequest
-}
-
-type FileFormatCsvOptionsRequest struct {
+type CreateCsvFileFormatRequest struct {
+	OrReplace                  *bool
+	IfNotExists                *bool
+	name                       SchemaObjectIdentifier // required
 	Compression                *CsvCompression
 	RecordDelimiter            *StageFileFormatStringOrNoneRequest
 	FieldDelimiter             *StageFileFormatStringOrNoneRequest
@@ -40,6 +46,7 @@ type FileFormatCsvOptionsRequest struct {
 	EmptyFieldAsNull           *bool
 	SkipByteOrderMark          *bool
 	Encoding                   *CsvEncoding
+	Comment                    *string
 }
 
 type StageFileFormatStringOrNoneRequest struct {
@@ -52,7 +59,10 @@ type StageFileFormatStringOrAutoRequest struct {
 	Auto  *bool
 }
 
-type FileFormatJsonOptionsRequest struct {
+type CreateJsonFileFormatRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
 	Compression              *JsonCompression
 	DateFormat               *StageFileFormatStringOrAutoRequest
 	TimeFormat               *StageFileFormatStringOrAutoRequest
@@ -69,22 +79,34 @@ type FileFormatJsonOptionsRequest struct {
 	ReplaceInvalidCharacters *bool
 	IgnoreUtf8Errors         *bool
 	SkipByteOrderMark        *bool
+	Comment                  *string
 }
 
-type FileFormatAvroOptionsRequest struct {
+type CreateAvroFileFormatRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
 	Compression              *AvroCompression
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
 	NullIf                   []NullString
+	Comment                  *string
 }
 
-type FileFormatOrcOptionsRequest struct {
+type CreateOrcFileFormatRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
 	NullIf                   []NullString
+	Comment                  *string
 }
 
-type FileFormatParquetOptionsRequest struct {
+type CreateParquetFileFormatRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
 	Compression              *ParquetCompression
 	SnappyCompression        *bool
 	BinaryAsText             *bool
@@ -93,9 +115,13 @@ type FileFormatParquetOptionsRequest struct {
 	UseVectorizedScanner     *bool
 	ReplaceInvalidCharacters *bool
 	NullIf                   []NullString
+	Comment                  *string
 }
 
-type FileFormatXmlOptionsRequest struct {
+type CreateXmlFileFormatRequest struct {
+	OrReplace                *bool
+	IfNotExists              *bool
+	name                     SchemaObjectIdentifier // required
 	Compression              *XmlCompression
 	IgnoreUtf8Errors         *bool
 	PreserveSpace            *bool
@@ -103,4 +129,145 @@ type FileFormatXmlOptionsRequest struct {
 	DisableAutoConvert       *bool
 	ReplaceInvalidCharacters *bool
 	SkipByteOrderMark        *bool
+	Comment                  *string
+}
+
+type AlterCsvFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	RenameTo *SchemaObjectIdentifier
+	Set      *AlterCsvFileFormatSetRequest
+}
+
+type AlterCsvFileFormatSetRequest struct {
+	Compression                *CsvCompression
+	RecordDelimiter            *StageFileFormatStringOrNoneRequest
+	FieldDelimiter             *StageFileFormatStringOrNoneRequest
+	MultiLine                  *bool
+	FileExtension              *string
+	ParseHeader                *bool
+	SkipHeader                 *int
+	SkipBlankLines             *bool
+	DateFormat                 *StageFileFormatStringOrAutoRequest
+	TimeFormat                 *StageFileFormatStringOrAutoRequest
+	TimestampFormat            *StageFileFormatStringOrAutoRequest
+	BinaryFormat               *BinaryFormat
+	Escape                     *StageFileFormatStringOrNoneRequest
+	EscapeUnenclosedField      *StageFileFormatStringOrNoneRequest
+	TrimSpace                  *bool
+	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNoneRequest
+	NullIf                     []NullString
+	ErrorOnColumnCountMismatch *bool
+	ReplaceInvalidCharacters   *bool
+	EmptyFieldAsNull           *bool
+	SkipByteOrderMark          *bool
+	Encoding                   *CsvEncoding
+	Comment                    *string
+}
+
+type AlterJsonFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	RenameTo *SchemaObjectIdentifier
+	Set      *AlterJsonFileFormatSetRequest
+}
+
+type AlterJsonFileFormatSetRequest struct {
+	Compression              *JsonCompression
+	DateFormat               *StageFileFormatStringOrAutoRequest
+	TimeFormat               *StageFileFormatStringOrAutoRequest
+	TimestampFormat          *StageFileFormatStringOrAutoRequest
+	BinaryFormat             *BinaryFormat
+	TrimSpace                *bool
+	MultiLine                *bool
+	NullIf                   []NullString
+	FileExtension            *string
+	EnableOctal              *bool
+	AllowDuplicate           *bool
+	StripOuterArray          *bool
+	StripNullValues          *bool
+	ReplaceInvalidCharacters *bool
+	IgnoreUtf8Errors         *bool
+	SkipByteOrderMark        *bool
+	Comment                  *string
+}
+
+type AlterAvroFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	RenameTo *SchemaObjectIdentifier
+	Set      *AlterAvroFileFormatSetRequest
+}
+
+type AlterAvroFileFormatSetRequest struct {
+	Compression              *AvroCompression
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+	Comment                  *string
+}
+
+type AlterOrcFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	RenameTo *SchemaObjectIdentifier
+	Set      *AlterOrcFileFormatSetRequest
+}
+
+type AlterOrcFileFormatSetRequest struct {
+	TrimSpace                *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+	Comment                  *string
+}
+
+type AlterParquetFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	RenameTo *SchemaObjectIdentifier
+	Set      *AlterParquetFileFormatSetRequest
+}
+
+type AlterParquetFileFormatSetRequest struct {
+	Compression              *ParquetCompression
+	SnappyCompression        *bool
+	BinaryAsText             *bool
+	UseLogicalType           *bool
+	TrimSpace                *bool
+	UseVectorizedScanner     *bool
+	ReplaceInvalidCharacters *bool
+	NullIf                   []NullString
+	Comment                  *string
+}
+
+type AlterXmlFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+	RenameTo *SchemaObjectIdentifier
+	Set      *AlterXmlFileFormatSetRequest
+}
+
+type AlterXmlFileFormatSetRequest struct {
+	Compression              *XmlCompression
+	IgnoreUtf8Errors         *bool
+	PreserveSpace            *bool
+	StripOuterElement        *bool
+	DisableAutoConvert       *bool
+	ReplaceInvalidCharacters *bool
+	SkipByteOrderMark        *bool
+	Comment                  *string
+}
+
+type DropFileFormatRequest struct {
+	IfExists *bool
+	name     SchemaObjectIdentifier // required
+}
+
+type ShowFileFormatRequest struct {
+	Like *Like
+	In   *In
+}
+
+type DescribeFileFormatRequest struct {
+	name SchemaObjectIdentifier // required
 }

@@ -40,7 +40,6 @@ type procedureSchemaDef struct {
 func setUpProcedureSchema(definition procedureSchemaDef) map[string]*schema.Schema {
 	currentSchema := make(map[string]*schema.Schema)
 	for k, v := range procedureBaseSchema() {
-		v := v
 		if slices.Contains(definition.additionalArguments, k) || slices.Contains(commonProcedureArguments, k) {
 			currentSchema[k] = &v
 		}

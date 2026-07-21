@@ -193,5 +193,6 @@ Read-Only:
 - `size` (String)
 - `started_clusters` (Number)
 - `state` (String)
+- `tables` (List of String)
 - `type` (String)
 - `updated_on` (String)

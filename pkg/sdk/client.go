@@ -45,7 +45,8 @@ type Client struct {
 	ExternalTables               ExternalTables
 	EventTables                  EventTables
 	FailoverGroups               FailoverGroups
-	FileFormats                  LegacyFileFormats
+	FileFormats                  FileFormats
+	FileFormatsLegacy            FileFormatsLegacy
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants
@@ -56,6 +57,7 @@ type Client struct {
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
+	McpServers                   McpServers
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	Notebooks                    Notebooks
@@ -87,6 +89,7 @@ type Client struct {
 	StorageLifecyclePolicies     StorageLifecyclePolicies
 	Streamlits                   Streamlits
 	Streams                      Streams
+	Tables                       Tables
 	TablesLegacy                 TablesLegacy
 	TagReferences                TagReferences
 	Tags                         Tags
@@ -187,7 +190,8 @@ func (c *Client) initialize() {
 	c.ExternalTables = &externalTables{client: c}
 	c.EventTables = &eventTables{client: c}
 	c.FailoverGroups = &failoverGroups{client: c}
-	c.FileFormats = &legacyFileFormats{client: c}
+	c.FileFormats = &fileFormats{client: c}
+	c.FileFormatsLegacy = &fileFormatsLegacy{client: c}
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
@@ -198,6 +202,7 @@ func (c *Client) initialize() {
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
+	c.McpServers = &mcpServers{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.Notebooks = &notebooks{client: c}
@@ -231,6 +236,7 @@ func (c *Client) initialize() {
 	c.Streamlits = &streamlits{client: c}
 	c.Streams = &streams{client: c}
 	c.SystemFunctions = &systemFunctions{client: c}
+	c.Tables = &tables{client: c}
 	c.TablesLegacy = &tablesLegacy{client: c}
 	c.TagReferences = &tagReferences{client: c}
 	c.Tags = &tags{client: c}

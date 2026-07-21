@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"strings"
 	"time"
@@ -9,11 +10,17 @@ import (
 
 type Grants interface {
 	GrantPrivilegesToAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *GrantPrivilegesToAccountRoleOptions) error
+	GrantInheritedPrivilegesToAccountRole(ctx context.Context, privileges InheritedAccountRoleGrantPrivileges, onAll PluralObjectType, in InheritedAccountRoleGrantIn, role AccountObjectIdentifier) error
 	RevokePrivilegesFromAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error
 	RevokePrivilegesFromAccountRoleSafely(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error
+	RevokeInheritedPrivilegesFromAccountRole(ctx context.Context, privileges InheritedAccountRoleGrantPrivileges, onAll PluralObjectType, in InheritedAccountRoleGrantIn, role AccountObjectIdentifier) error
+	RevokeInheritedPrivilegesFromAccountRoleSafely(ctx context.Context, privileges InheritedAccountRoleGrantPrivileges, onAll PluralObjectType, in InheritedAccountRoleGrantIn, role AccountObjectIdentifier) error
 	GrantPrivilegesToDatabaseRole(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *GrantPrivilegesToDatabaseRoleOptions) error
+	GrantInheritedPrivilegesToDatabaseRole(ctx context.Context, privileges InheritedDatabaseRoleGrantPrivileges, onAll PluralObjectType, in InheritedDatabaseRoleGrantIn, role DatabaseObjectIdentifier) error
 	RevokePrivilegesFromDatabaseRole(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *RevokePrivilegesFromDatabaseRoleOptions) error
 	RevokePrivilegesFromDatabaseRoleSafely(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *RevokePrivilegesFromDatabaseRoleOptions) error
+	RevokeInheritedPrivilegesFromDatabaseRole(ctx context.Context, privileges InheritedDatabaseRoleGrantPrivileges, onAll PluralObjectType, in InheritedDatabaseRoleGrantIn, role DatabaseObjectIdentifier) error
+	RevokeInheritedPrivilegesFromDatabaseRoleSafely(ctx context.Context, privileges InheritedDatabaseRoleGrantPrivileges, onAll PluralObjectType, in InheritedDatabaseRoleGrantIn, role DatabaseObjectIdentifier) error
 	GrantPrivilegeToShare(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, to AccountObjectIdentifier) error
 	RevokePrivilegeFromShare(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, from AccountObjectIdentifier) error
 	RevokePrivilegeFromShareSafely(ctx context.Context, privileges []ObjectPrivilege, on *ShareGrantOn, from AccountObjectIdentifier) error
@@ -38,6 +45,15 @@ type AccountRoleGrantPrivileges struct {
 	SchemaPrivileges        []SchemaPrivilege        `ddl:"-"`
 	SchemaObjectPrivileges  []SchemaObjectPrivilege  `ddl:"-"`
 	AllPrivileges           *bool                    `ddl:"keyword" sql:"ALL PRIVILEGES"`
+}
+
+func (v *AccountRoleGrantPrivileges) ToInheritedAccountRoleGrantPrivileges() InheritedAccountRoleGrantPrivileges {
+	return InheritedAccountRoleGrantPrivileges{
+		AccountObjectPrivileges: v.AccountObjectPrivileges,
+		SchemaPrivileges:        v.SchemaPrivileges,
+		SchemaObjectPrivileges:  v.SchemaObjectPrivileges,
+		AllPrivileges:           v.AllPrivileges,
+	}
 }
 
 type AccountRoleGrantOn struct {
@@ -78,6 +94,28 @@ type GrantOnSchemaObjectIn struct {
 	InSchema         *DatabaseObjectIdentifier `ddl:"identifier" sql:"IN SCHEMA"`
 }
 
+// grantInheritedPrivilegesToAccountRoleOptions is based on https://docs.snowflake.com/en/user-guide/inherited-grants-using#syntax.
+type grantInheritedPrivilegesToAccountRoleOptions struct {
+	grantInherited bool                                `ddl:"static" sql:"GRANT INHERITED"`
+	privileges     InheritedAccountRoleGrantPrivileges `ddl:"-"`
+	onAll          PluralObjectType                    `ddl:"parameter,no_equals" sql:"ON ALL"`
+	in             InheritedAccountRoleGrantIn         `ddl:"keyword" sql:"IN"`
+	accountRole    AccountObjectIdentifier             `ddl:"identifier" sql:"TO ROLE"`
+}
+
+type InheritedAccountRoleGrantPrivileges struct {
+	AccountObjectPrivileges []AccountObjectPrivilege `ddl:"-"`
+	SchemaPrivileges        []SchemaPrivilege        `ddl:"-"`
+	SchemaObjectPrivileges  []SchemaObjectPrivilege  `ddl:"-"`
+	AllPrivileges           *bool                    `ddl:"keyword" sql:"ALL PRIVILEGES"`
+}
+
+type InheritedAccountRoleGrantIn struct {
+	Account  *bool                     `ddl:"keyword" sql:"ACCOUNT"`
+	Database *AccountObjectIdentifier  `ddl:"identifier" sql:"DATABASE"`
+	Schema   *DatabaseObjectIdentifier `ddl:"identifier" sql:"SCHEMA"`
+}
+
 // RevokePrivilegesFromAccountRoleOptions is based on https://docs.snowflake.com/en/sql-reference/sql/revoke-privilege#syntax.
 type RevokePrivilegesFromAccountRoleOptions struct {
 	revoke         bool                        `ddl:"static" sql:"REVOKE"`
@@ -87,6 +125,15 @@ type RevokePrivilegesFromAccountRoleOptions struct {
 	accountRole    AccountObjectIdentifier     `ddl:"identifier" sql:"FROM ROLE"`
 	Restrict       *bool                       `ddl:"keyword" sql:"RESTRICT"`
 	Cascade        *bool                       `ddl:"keyword" sql:"CASCADE"`
+}
+
+// revokeInheritedPrivilegesFromAccountRoleOptions is based on https://docs.snowflake.com/en/user-guide/inherited-grants-using#syntax.
+type revokeInheritedPrivilegesFromAccountRoleOptions struct {
+	revokeInherited bool                                `ddl:"static" sql:"REVOKE INHERITED"`
+	privileges      InheritedAccountRoleGrantPrivileges `ddl:"-"`
+	onAll           PluralObjectType                    `ddl:"parameter,no_equals" sql:"ON ALL"`
+	in              InheritedAccountRoleGrantIn         `ddl:"keyword" sql:"IN"`
+	accountRole     AccountObjectIdentifier             `ddl:"identifier" sql:"FROM ROLE"`
 }
 
 // GrantPrivilegesToDatabaseRoleOptions is based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#syntax.
@@ -111,6 +158,26 @@ type DatabaseRoleGrantOn struct {
 	SchemaObject *GrantOnSchemaObject     `ddl:"-"`
 }
 
+// grantInheritedPrivilegesToDatabaseRoleOptions is based on https://docs.snowflake.com/en/user-guide/inherited-grants-using#syntax.
+type grantInheritedPrivilegesToDatabaseRoleOptions struct {
+	grantInherited bool                                 `ddl:"static" sql:"GRANT INHERITED"`
+	privileges     InheritedDatabaseRoleGrantPrivileges `ddl:"-"`
+	onAll          PluralObjectType                     `ddl:"parameter,no_equals" sql:"ON ALL"`
+	in             InheritedDatabaseRoleGrantIn         `ddl:"keyword" sql:"IN"`
+	databaseRole   DatabaseObjectIdentifier             `ddl:"identifier" sql:"TO DATABASE ROLE"`
+}
+
+type InheritedDatabaseRoleGrantPrivileges struct {
+	SchemaPrivileges       []SchemaPrivilege       `ddl:"-"`
+	SchemaObjectPrivileges []SchemaObjectPrivilege `ddl:"-"`
+	AllPrivileges          *bool                   `ddl:"keyword" sql:"ALL PRIVILEGES"`
+}
+
+type InheritedDatabaseRoleGrantIn struct {
+	Database *AccountObjectIdentifier  `ddl:"identifier" sql:"DATABASE"`
+	Schema   *DatabaseObjectIdentifier `ddl:"identifier" sql:"SCHEMA"`
+}
+
 // RevokePrivilegesFromDatabaseRoleOptions is based on https://docs.snowflake.com/en/sql-reference/sql/revoke-privilege#syntax.
 type RevokePrivilegesFromDatabaseRoleOptions struct {
 	revoke         bool                         `ddl:"static" sql:"REVOKE"`
@@ -120,6 +187,15 @@ type RevokePrivilegesFromDatabaseRoleOptions struct {
 	databaseRole   DatabaseObjectIdentifier     `ddl:"identifier" sql:"FROM DATABASE ROLE"`
 	Restrict       *bool                        `ddl:"keyword" sql:"RESTRICT"`
 	Cascade        *bool                        `ddl:"keyword" sql:"CASCADE"`
+}
+
+// revokeInheritedPrivilegesFromDatabaseRoleOptions is based on https://docs.snowflake.com/en/user-guide/inherited-grants-using#syntax.
+type revokeInheritedPrivilegesFromDatabaseRoleOptions struct {
+	revokeInherited bool                                 `ddl:"static" sql:"REVOKE INHERITED"`
+	privileges      InheritedDatabaseRoleGrantPrivileges `ddl:"-"`
+	onAll           PluralObjectType                     `ddl:"parameter,no_equals" sql:"ON ALL"`
+	in              InheritedDatabaseRoleGrantIn         `ddl:"keyword" sql:"IN"`
+	databaseRole    DatabaseObjectIdentifier             `ddl:"identifier" sql:"FROM DATABASE ROLE"`
 }
 
 // grantPrivilegeToShareOptions is based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege-share.
@@ -159,16 +235,18 @@ type OnView struct {
 
 // ShowGrantOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-grants.
 type ShowGrantOptions struct {
-	show   bool          `ddl:"static" sql:"SHOW"`
-	Future *bool         `ddl:"keyword" sql:"FUTURE"`
-	grants bool          `ddl:"static" sql:"GRANTS"`
-	On     *ShowGrantsOn `ddl:"keyword" sql:"ON"`
-	To     *ShowGrantsTo `ddl:"keyword" sql:"TO"`
-	Of     *ShowGrantsOf `ddl:"keyword" sql:"OF"`
-	In     *ShowGrantsIn `ddl:"keyword" sql:"IN"`
+	show      bool          `ddl:"static" sql:"SHOW"`
+	Inherited *bool         `ddl:"keyword" sql:"INHERITED"`
+	Future    *bool         `ddl:"keyword" sql:"FUTURE"`
+	grants    bool          `ddl:"static" sql:"GRANTS"`
+	On        *ShowGrantsOn `ddl:"keyword" sql:"ON"`
+	To        *ShowGrantsTo `ddl:"keyword" sql:"TO"`
+	Of        *ShowGrantsOf `ddl:"keyword" sql:"OF"`
+	In        *ShowGrantsIn `ddl:"keyword" sql:"IN"`
 }
 
 type ShowGrantsIn struct {
+	Account  *bool                     `ddl:"keyword" sql:"ACCOUNT"`
 	Schema   *DatabaseObjectIdentifier `ddl:"identifier" sql:"SCHEMA"`
 	Database *AccountObjectIdentifier  `ddl:"identifier" sql:"DATABASE"`
 }
@@ -210,19 +288,28 @@ type grantRow struct {
 	GranteeName string    `db:"grantee_name"`
 	GrantOption bool      `db:"grant_option"`
 	GrantedBy   string    `db:"granted_by"`
+	// The inherited-grant columns below are not returned by every SHOW GRANTS variant.
+	IsInherited           sql.NullString `db:"is_inherited"`
+	InheritedFrom         sql.NullString `db:"inherited_from"`
+	InheritedFromDatabase sql.NullString `db:"inherited_from_database"`
+	InheritedFromSchema   sql.NullString `db:"inherited_from_schema"`
 }
 
 type Grant struct {
-	CreatedOn   time.Time
-	Privilege   string
-	GrantedOn   ObjectType
-	GrantOn     ObjectType
-	Name        ObjectIdentifier
-	GrantedTo   ObjectType
-	GrantTo     ObjectType
-	GranteeName ObjectIdentifier
-	GrantOption bool
-	GrantedBy   AccountObjectIdentifier
+	CreatedOn             time.Time
+	Privilege             string
+	GrantedOn             ObjectType
+	GrantOn               ObjectType
+	Name                  ObjectIdentifier
+	GrantedTo             ObjectType
+	GrantTo               ObjectType
+	GranteeName           ObjectIdentifier
+	GrantOption           bool
+	GrantedBy             AccountObjectIdentifier
+	IsInherited           *bool
+	InheritedFrom         *GrantInheritedFrom
+	InheritedFromDatabase *string
+	InheritedFromSchema   *string
 }
 
 func (v *Grant) ID() ObjectIdentifier {
@@ -288,7 +375,7 @@ func (row grantRow) convert() (*Grant, error) {
 		name = NewObjectIdentifierFromFullyQualifiedName(row.Name)
 	}
 
-	return &Grant{
+	grant := Grant{
 		CreatedOn: row.CreatedOn,
 		Privilege: row.Privilege,
 		GrantedOn: grantedOn,
@@ -299,7 +386,15 @@ func (row grantRow) convert() (*Grant, error) {
 		// GranteeName is computed in Show operation. Its format is depending on the grant request options.
 		GrantOption: row.GrantOption,
 		GrantedBy:   NewAccountObjectIdentifier(row.GrantedBy),
-	}, nil
+	}
+	mapNullStringToBoolValue(&grant.IsInherited, row.IsInherited, "true")
+	mapNullStringWithMapping(&grant.InheritedFrom, row.InheritedFrom, ToGrantInheritedFrom)
+	trimQuotes := func(v string) (string, error) {
+		return strings.Trim(v, `"`), nil
+	}
+	mapNullStringWithMapping(&grant.InheritedFromDatabase, row.InheritedFromDatabase, trimQuotes)
+	mapNullStringWithMapping(&grant.InheritedFromSchema, row.InheritedFromSchema, trimQuotes)
+	return &grant, nil
 }
 
 // GrantOwnershipOptions is based on https://docs.snowflake.com/en/sql-reference/sql/grant-ownership#syntax.

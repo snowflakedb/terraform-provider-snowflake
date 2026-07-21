@@ -58,10 +58,12 @@ func (e *ExternalVolumeModel) WithStorageLocation(storageLocation []sdk.External
 			maps[i] = tfconfig.MapVariable(m)
 		case v.S3CompatStorageLocationParams != nil:
 			m := map[string]tfconfig.Variable{
-				"storage_location_name": tfconfig.StringVariable(v.Name),
-				"storage_provider":      tfconfig.StringVariable(string(sdk.StorageProviderS3compat)),
-				"storage_base_url":      tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageBaseUrl),
-				"storage_endpoint":      tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageEndpoint),
+				"storage_location_name":  tfconfig.StringVariable(v.Name),
+				"storage_provider":       tfconfig.StringVariable(string(sdk.StorageProviderS3compat)),
+				"storage_base_url":       tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageBaseUrl),
+				"storage_endpoint":       tfconfig.StringVariable(v.S3CompatStorageLocationParams.StorageEndpoint),
+				"storage_aws_key_id":     tfconfig.StringVariable(v.S3CompatStorageLocationParams.Credentials.AwsKeyId),
+				"storage_aws_secret_key": tfconfig.StringVariable(v.S3CompatStorageLocationParams.Credentials.AwsSecretKey),
 			}
 			maps[i] = tfconfig.MapVariable(m)
 		}

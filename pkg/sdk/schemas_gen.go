@@ -72,7 +72,7 @@ type AlterSchemaOptions struct {
 	schema               bool                      `ddl:"static" sql:"SCHEMA"`
 	IfExists             *bool                     `ddl:"keyword" sql:"IF EXISTS"`
 	name                 DatabaseObjectIdentifier  `ddl:"identifier"`
-	NewName              *DatabaseObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo             *DatabaseObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	SwapWith             *DatabaseObjectIdentifier `ddl:"identifier" sql:"SWAP WITH"`
 	Set                  *SchemaSet                `ddl:"list,no_parentheses" sql:"SET"`
 	Unset                *SchemaUnset              `ddl:"list,no_parentheses" sql:"UNSET"`

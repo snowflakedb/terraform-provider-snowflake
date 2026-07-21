@@ -33,14 +33,14 @@ func (c *DynamicTableClient) CreateDynamicTable(t *testing.T, tableId sdk.Schema
 
 func (c *DynamicTableClient) CreateDynamicTableWithOptions(t *testing.T, id sdk.SchemaObjectIdentifier, warehouseId sdk.AccountObjectIdentifier, tableId sdk.SchemaObjectIdentifier) (*sdk.DynamicTable, func()) {
 	t.Helper()
-	targetLag := sdk.TargetLag{
+	targetLag := sdk.TargetLagRequest{
 		MaximumDuration: sdk.String("2 minutes"),
 	}
 	query := fmt.Sprintf(`select "ID" from %s`, tableId.FullyQualifiedName())
 	comment := random.Comment()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, sdk.NewCreateDynamicTableRequest(id, warehouseId, targetLag, query).WithComment(&comment))
+	err := c.client().Create(ctx, sdk.NewCreateDynamicTableRequest(id, targetLag, warehouseId, query).WithComment(comment))
 	require.NoError(t, err)
 
 	dynamicTable, err := c.client().ShowByID(ctx, id)

@@ -42,7 +42,7 @@ var rolesDef = g.NewInterface(
 		SQL("ROLE").
 		IfExists().
 		Name().
-		OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 		OptionalSetTags().
 		OptionalSQLWithCustomFieldName("UnsetComment", "UNSET COMMENT").

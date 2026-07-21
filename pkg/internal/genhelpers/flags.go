@@ -83,7 +83,7 @@ func (f *namesListFlag) Set(value string) error {
 	if value == "" {
 		return fmt.Errorf("%s %s cannot be initiated with an empty value; use single attribute with comma-separated list", f.name, f.prefix)
 	}
-	for _, fil := range strings.Split(value, ",") {
+	for fil := range strings.SplitSeq(value, ",") {
 		f.filters = append(f.filters, fil)
 	}
 	return nil

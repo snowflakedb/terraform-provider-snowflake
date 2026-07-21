@@ -82,7 +82,6 @@ func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 
 	flattenedTables := make([]map[string]any, len(tables))
 	for i, table := range tables {
-		table := table
 		var tableDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeOutput, err := client.TablesLegacy.DescribeColumns(ctx, sdk.NewDescribeTableColumnsRequest(table.ID()))

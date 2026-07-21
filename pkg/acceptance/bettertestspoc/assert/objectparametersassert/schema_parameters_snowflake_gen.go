@@ -34,31 +34,26 @@ func SchemaParametersPrefetched(t *testing.T, id sdk.DatabaseObjectIdentifier, p
 // Generic parameter checks //
 //////////////////////////////
 
-// modified manually
 func (s *SchemaParametersAssert) HasBoolParameterValue(parameterName sdk.ObjectParameter, expected bool) *SchemaParametersAssert {
 	s.AddAssertion(assert.SnowflakeParameterBoolValueSet(parameterName, expected))
 	return s
 }
 
-// modified manually
 func (s *SchemaParametersAssert) HasIntParameterValue(parameterName sdk.ObjectParameter, expected int) *SchemaParametersAssert {
 	s.AddAssertion(assert.SnowflakeParameterIntValueSet(parameterName, expected))
 	return s
 }
 
-// modified manually
 func (s *SchemaParametersAssert) HasStringParameterValue(parameterName sdk.ObjectParameter, expected string) *SchemaParametersAssert {
 	s.AddAssertion(assert.SnowflakeParameterValueSet(parameterName, expected))
 	return s
 }
 
-// modified manually
 func (s *SchemaParametersAssert) HasDefaultParameterValue(parameterName sdk.ObjectParameter) *SchemaParametersAssert {
 	s.AddAssertion(assert.SnowflakeParameterDefaultValueSet(parameterName))
 	return s
 }
 
-// modified manually
 func (s *SchemaParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk.ObjectParameter, parameterType sdk.ParameterType) *SchemaParametersAssert {
 	s.AddAssertion(assert.SnowflakeParameterDefaultValueOnLevelSet(parameterName, parameterType))
 	return s
@@ -73,7 +68,7 @@ func (s *SchemaParametersAssert) HasDefaultParameterValueOnLevel(parameterName s
 // - have an expected level
 func (s *SchemaParametersAssert) HasAllDefaults() *SchemaParametersAssert {
 	return s.
-		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault) // modified manually
+		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault)
 }
 
 func (s *SchemaParametersAssert) HasAllDefaultsExplicit() *SchemaParametersAssert {
@@ -86,7 +81,7 @@ func (s *SchemaParametersAssert) HasAllDefaultsExplicit() *SchemaParametersAsser
 ////////////////////////////
 
 func (s *SchemaParametersAssert) HasDefaultDdlCollation(expected string) *SchemaParametersAssert {
-	s.AddAssertion(assert.SnowflakeParameterValueSet(sdk.ObjectParameterDefaultDdlCollation, expected)) // modified manually
+	s.AddAssertion(assert.SnowflakeParameterValueSet(sdk.ObjectParameterDefaultDdlCollation, expected))
 	return s
 }
 
@@ -95,7 +90,7 @@ func (s *SchemaParametersAssert) HasDefaultDdlCollation(expected string) *Schema
 ////////////////////////////
 
 func (s *SchemaParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *SchemaParametersAssert {
-	s.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDefaultDdlCollation, expected)) // modified manually
+	s.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDefaultDdlCollation, expected))
 	return s
 }
 
@@ -104,7 +99,7 @@ func (s *SchemaParametersAssert) HasDefaultDdlCollationLevel(expected sdk.Parame
 ////////////////////////////////////
 
 func (s *SchemaParametersAssert) HasDefaultDefaultDdlCollationValue() *SchemaParametersAssert {
-	return s.HasDefaultParameterValue(sdk.ObjectParameterDefaultDdlCollation) // modified manually
+	return s.HasDefaultParameterValue(sdk.ObjectParameterDefaultDdlCollation)
 }
 
 /////////////////////////////////////////////

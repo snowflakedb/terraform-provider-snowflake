@@ -72,10 +72,12 @@ const (
 	GitRepositoriesDatasource                      feature = "snowflake_git_repositories_datasource"
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource                           feature = "snowflake_hybrid_table_resource"
+	IcebergTableResource                          feature = "snowflake_iceberg_table_resource"
 	IcebergTableFromAwsGlueResource               feature = "snowflake_iceberg_table_from_aws_glue_resource"
 	IcebergTableFromDeltaFilesResource            feature = "snowflake_iceberg_table_from_delta_files_resource"
 	IcebergTableFromFilesResource                 feature = "snowflake_iceberg_table_from_files_resource"
 	IcebergTableFromRestResource                  feature = "snowflake_iceberg_table_from_rest_resource"
+	IcebergTablesDatasource                       feature = "snowflake_iceberg_tables_datasource"
 	ImageRepositoryResource                       feature = "snowflake_image_repository_resource"
 	ImageRepositoriesDatasource                   feature = "snowflake_image_repositories_datasource"
 	InternalStageResource                         feature = "snowflake_stage_internal_resource"
@@ -85,6 +87,8 @@ const (
 	ManagedAccountResource                        feature = "snowflake_managed_account_resource"
 	MaterializedViewResource                      feature = "snowflake_materialized_view_resource"
 	MaterializedViewsDatasource                   feature = "snowflake_materialized_views_datasource"
+	McpServerResource                             feature = "snowflake_mcp_server_resource"
+	McpServersDatasource                          feature = "snowflake_mcp_servers_datasource"
 	NetworkPolicyAttachmentResource               feature = "snowflake_network_policy_attachment_resource"
 	NetworkRuleResource                           feature = "snowflake_network_rule_resource"
 	NetworkRulesDatasource                        feature = "snowflake_network_rules_datasource"
@@ -141,6 +145,7 @@ const (
 	UserSessionPolicyAttachmentResource           feature = "snowflake_user_session_policy_attachment_resource"
 	UserProgrammaticAccessTokensDatasource        feature = "snowflake_user_programmatic_access_tokens_datasource"
 	WarehouseAdaptiveResource                     feature = "snowflake_warehouse_adaptive_resource"
+	WarehouseInteractiveResource                  feature = "snowflake_warehouse_interactive_resource"
 )
 
 var allPreviewFeatures = []feature{
@@ -184,15 +189,19 @@ var allPreviewFeatures = []feature{
 	FunctionsDatasource,
 	// Currently, the hybrid table resource is added to the test provider.
 	// HybridTableResource,
+	IcebergTableResource,
 	IcebergTableFromAwsGlueResource,
 	IcebergTableFromDeltaFilesResource,
 	IcebergTableFromFilesResource,
 	IcebergTableFromRestResource,
+	IcebergTablesDatasource,
 	JobServiceResource,
 	ListingsDatasource,
 	ManagedAccountResource,
 	MaterializedViewResource,
 	MaterializedViewsDatasource,
+	McpServerResource,
+	McpServersDatasource,
 	NetworkPolicyAttachmentResource,
 	NetworkRulesDatasource,
 	NotebookResource,
@@ -236,6 +245,7 @@ var allPreviewFeatures = []feature{
 	UserPasswordPolicyAttachmentResource,
 	UserPublicKeysResource,
 	WarehouseAdaptiveResource,
+	WarehouseInteractiveResource,
 }
 var AllPreviewFeatures = sdk.AsStringList(allPreviewFeatures)
 

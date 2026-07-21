@@ -11,16 +11,11 @@ import (
 )
 
 type StorageLocationS3DetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.StorageLocationS3Details, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.StorageLocationS3Details]
 }
 
-// StorageLocationS3Details removed manually
-
-func StorageLocationS3DetailsFromObject(t *testing.T, storageLocationS3Details *sdk.StorageLocationS3Details) *StorageLocationS3DetailsAssert {
-	t.Helper()
-	return &StorageLocationS3DetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLocationS3Details"), sdk.NewAccountObjectIdentifier(""), storageLocationS3Details),
-	}
+func NewStorageLocationS3DetailsAssert() *StorageLocationS3DetailsAssert {
+	return &StorageLocationS3DetailsAssert{assert.NewSubStructAssert[sdk.StorageLocationS3Details]()}
 }
 
 func (s *StorageLocationS3DetailsAssert) HasStorageAwsRoleArn(expected string) *StorageLocationS3DetailsAssert {
@@ -70,8 +65,22 @@ func (s *StorageLocationS3DetailsAssert) HasStorageAwsAccessPointArn(expected st
 func (s *StorageLocationS3DetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageLocationS3DetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
 		t.Helper()
+		if o.UsePrivatelinkEndpoint == nil {
+			return fmt.Errorf("expected use privatelink endpoint to have value; got: nil")
+		}
 		if *o.UsePrivatelinkEndpoint != expected {
-			return fmt.Errorf("expected use privatelink endpoint: %v; got: %v", expected, o.UsePrivatelinkEndpoint)
+			return fmt.Errorf("expected use privatelink endpoint: %v; got: %v", expected, *o.UsePrivatelinkEndpoint)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationS3DetailsAssert) HasNoUsePrivatelinkEndpoint() *StorageLocationS3DetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
+		t.Helper()
+		if o.UsePrivatelinkEndpoint != nil {
+			return fmt.Errorf("expected use privatelink endpoint to be nil; got: %v", *o.UsePrivatelinkEndpoint)
 		}
 		return nil
 	})

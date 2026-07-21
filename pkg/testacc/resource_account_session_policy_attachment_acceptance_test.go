@@ -92,7 +92,7 @@ func TestAcc_AccountSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 			// Unset policy externally
 			{
 				PreConfig: func() {
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{SessionPolicy: sdk.Bool(true)}})
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicy(true)))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

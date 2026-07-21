@@ -80,7 +80,7 @@ func (n *NotebookAssert) HasComment(expected string) *NotebookAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
 		t.Helper()
 		if o.Comment == nil {
-			return fmt.Errorf("expected comment to be non empty")
+			return fmt.Errorf("expected comment to have value; got: nil")
 		}
 		if *o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
@@ -94,7 +94,7 @@ func (n *NotebookAssert) HasNoComment() *NotebookAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
 		t.Helper()
 		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be empty")
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
 		}
 		return nil
 	})
@@ -118,8 +118,19 @@ func (n *NotebookAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier)
 		if o.QueryWarehouse == nil {
 			return fmt.Errorf("expected query warehouse to have value; got: nil")
 		}
-		if (*o.QueryWarehouse).Name() != expected.Name() {
-			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.Name(), (*o.QueryWarehouse).Name())
+		if (*o.QueryWarehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.QueryWarehouse).FullyQualifiedName())
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookAssert) HasNoQueryWarehouse() *NotebookAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
+		t.Helper()
+		if o.QueryWarehouse != nil {
+			return fmt.Errorf("expected query warehouse to be nil; got: %v", *o.QueryWarehouse)
 		}
 		return nil
 	})
@@ -151,19 +162,8 @@ func (n *NotebookAssert) HasOwnerRoleType(expected string) *NotebookAssert {
 func (n *NotebookAssert) HasCodeWarehouse(expected sdk.AccountObjectIdentifier) *NotebookAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
 		t.Helper()
-		if o.CodeWarehouse.Name() != expected.Name() {
-			return fmt.Errorf("expected code warehouse: %v; got: %v", expected.Name(), o.CodeWarehouse.Name())
-		}
-		return nil
-	})
-	return n
-}
-
-func (n *NotebookAssert) HasNoCodeWarehouse() *NotebookAssert {
-	n.AddAssertion(func(t *testing.T, o *sdk.Notebook) error {
-		t.Helper()
-		if o.CodeWarehouse.Name() != "" {
-			return fmt.Errorf("expected code warehouse to be empty")
+		if o.CodeWarehouse.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected code warehouse: %v; got: %v", expected.FullyQualifiedName(), o.CodeWarehouse.FullyQualifiedName())
 		}
 		return nil
 	})

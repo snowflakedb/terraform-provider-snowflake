@@ -82,6 +82,8 @@ func TestAcc_PasswordPolicy_BasicUseCase(t *testing.T) {
 			HasOptions(""),
 		resourceshowoutputassert.PasswordPolicyDescribeOutput(t, ref).
 			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("").
 			HasPasswordMinLength(14).
@@ -146,6 +148,8 @@ func TestAcc_PasswordPolicy_BasicUseCase(t *testing.T) {
 			HasOptions(""),
 		resourceshowoutputassert.PasswordPolicyDescribeOutput(t, ref).
 			HasName(newId.Name()).
+			HasDatabaseName(newId.DatabaseName()).
+			HasSchemaName(newId.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasPasswordMinLength(10).
@@ -190,6 +194,8 @@ func TestAcc_PasswordPolicy_BasicUseCase(t *testing.T) {
 			HasOptions(""),
 		resourceshowoutputassert.PasswordPolicyDescribeOutput(t, ref).
 			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasPasswordMinLength(10).
@@ -373,6 +379,8 @@ func TestAcc_PasswordPolicy_CompleteUseCase(t *testing.T) {
 			HasOptions(""),
 		resourceshowoutputassert.PasswordPolicyDescribeOutput(t, ref).
 			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
 			HasPasswordMinLength(10).
@@ -459,7 +467,9 @@ func TestAcc_PasswordPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 					resourceshowoutputassert.PasswordPolicyShowOutput(t, ref).
 						HasName(id.Name()),
 					resourceshowoutputassert.PasswordPolicyDescribeOutput(t, ref).
-						HasName(id.Name()),
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()),
 				),
 			},
 		},
@@ -502,7 +512,9 @@ func TestAcc_PasswordPolicy_migrateFromVersion_2_15_0(t *testing.T) {
 						HasDatabaseName(id.DatabaseName()).
 						HasSchemaName(id.SchemaName()),
 					resourceshowoutputassert.PasswordPolicyDescribeOutput(t, ref).
-						HasName(id.Name()),
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()),
 				),
 			},
 		},

@@ -5,6 +5,73 @@
 {{ $nameLowerCase := FirstLetterLowercase .Name }}
 {{ $assertVar := FirstLetter $nameLowerCase }}
 {{- range .Fields }}
+{{- if not .SkipGeneration }}
+{{- if .GenerateNestedAdapter }}
+{{- if .IsOriginalTypeSlice }}
+    {{ $itemType := TypeWithoutPointerAndBrackets .ConcreteType }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}With(subAsserts ...*{{ TrimPrefix $itemType "sdk." }}Assert) *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            if len(o.{{ .Name }}) != len(subAsserts) {
+                return fmt.Errorf("expected %d {{ CamelToWords .Name }}; got: %d", len(subAsserts), len(o.{{ .Name }}))
+            }
+            return nil
+        })
+        for idx, subAssert := range subAsserts {
+            idx, subAssert := idx, subAssert
+            for _, assertion := range subAssert.GetAssertions() {
+                assertion := assertion
+                {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+                    if idx >= len(o.{{ .Name }}) {
+                        return fmt.Errorf("expected at least %d {{ CamelToWords .Name }}; got: %d", idx+1, len(o.{{ .Name }}))
+                    }
+                    if err := assertion(t, &o.{{ .Name }}[idx]); err != nil {
+                        return fmt.Errorf("{{ CamelToWords .Name }}[%d]: %w", idx, err)
+                    }
+                    return nil
+                })
+            }
+        }
+        return {{ $assertVar }}
+    }
+{{- else if .IsOriginalTypePointer }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            if o.{{ .Name }} == nil {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to have value; got: nil")
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}With(subAssert *{{ TrimPrefix (TypeWithoutPointerAndBrackets .ConcreteType) "sdk." }}Assert) *{{ $assertName }} {
+        {{ $assertVar }}.Has{{ .Name }}()
+        for _, assertion := range subAssert.GetAssertions() {
+            assertion := assertion
+            {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+                if err := assert.AssertionOnPointerField(t, o.{{ .Name }}, "{{ CamelToWords .Name }}", assertion); err != nil {
+                    return fmt.Errorf("{{ CamelToWords .Name }}: %w", err)
+                }
+                return nil
+            })
+        }
+        return {{ $assertVar }}
+    }
+{{- else }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}With(subAssert *{{ TrimPrefix (TypeWithoutPointerAndBrackets .ConcreteType) "sdk." }}Assert) *{{ $assertName }} {
+        for _, assertion := range subAssert.GetAssertions() {
+            assertion := assertion
+            {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+                if err := assertion(t, &o.{{ .Name }}); err != nil {
+                    return fmt.Errorf("{{ CamelToWords .Name }}: %w", err)
+                }
+                return nil
+            })
+        }
+        return {{ $assertVar }}
+    }
+{{- end }}
+{{- else }}
     {{ $itemType := TypeWithoutPointerAndBrackets .ConcreteType }}
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ if .IsOriginalTypeSlice }}...{{ end }}{{ $itemType }}) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
@@ -21,12 +88,44 @@
                 return fmt.Errorf("expected {{ CamelToWords .Name }} to have value; got: nil")
             }
             {{ end -}}
+            {{- if .ComparisonFunc -}}
+            if !{{ .ComparisonFunc }}({{ RunMapper .Mapper "o." .Name }}, {{ RunMapper .ExpectedValueMapper "expected" }}) {
+                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", {{ RunMapper .ErrorExpectedValueMapper "expected" }}, {{ RunMapper .ErrorMapper "o." .Name }})
+            }
+            {{- else -}}
             if {{ RunMapper .Mapper "o." .Name }} != {{ RunMapper .ExpectedValueMapper "expected" }} {
                 return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", {{ RunMapper .ExpectedValueMapper "expected" }}, {{ RunMapper .Mapper "o." .Name }})
             }
+            {{- end }}
             {{ end -}}
             return nil
         })
         return {{ $assertVar }}
     }
+{{- end }}
+{{- if .IsOriginalTypePointer }}
+    func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            t.Helper()
+            if o.{{ .Name }} != nil {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to be nil; got: %v", *o.{{ .Name }})
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+{{- end }}
+{{- if .IsOriginalTypeSlice }}
+    func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            t.Helper()
+            if len(o.{{ .Name }}) > 0 {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to be empty; got: %v", o.{{ .Name }})
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+{{- end }}
+{{- end }}
 {{ end }}

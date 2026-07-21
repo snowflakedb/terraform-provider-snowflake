@@ -162,41 +162,52 @@ func (v *warehouses) ShowParameters(ctx context.Context, id AccountObjectIdentif
 	})
 }
 
-// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type.
+// AlterWithSuspend wraps Alter with automatic suspend/resume for changes that Snowflake refuses to
+// apply to a running warehouse. Changing the warehouse type requires a suspended warehouse for any
+// warehouse, and an interactive warehouse additionally cannot be resized while running. In both
+// cases the warehouse is suspended before the alter and resumed afterwards.
 func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error {
-	if request.Set != nil && request.Set.WarehouseType != nil {
-		warehouse, err := v.ShowByID(ctx, request.name)
+	changesType := request.Set != nil && request.Set.WarehouseType != nil
+	changesSize := request.Set != nil && request.Set.WarehouseSize != nil
+	if !changesType && !changesSize {
+		return v.Alter(ctx, request)
+	}
+
+	warehouse, err := v.ShowByID(ctx, request.name)
+	if err != nil {
+		return err
+	}
+
+	// A type change always needs a suspended warehouse; a size change needs it only for interactive
+	// warehouses (regular warehouses resize live).
+	mustSuspend := changesType || (changesSize && warehouse.IsInteractiveWarehouse())
+	if mustSuspend && warehouse.State == WarehouseStateStarted {
+		err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithSuspend(true))
 		if err != nil {
 			return err
 		}
-		if warehouse.State == WarehouseStateStarted {
-			err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithSuspend(true))
+		defer func() {
+			err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithResume(true).WithIfSuspended(true))
 			if err != nil {
-				return err
+				log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
 			}
-			defer func() {
-				err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithResume(true).WithIfSuspended(true))
-				if err != nil {
-					log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
-				}
-			}()
+		}()
 
-			// needed to make sure that warehouse is suspended
-			var warehouseSuspensionErrs []error
-			err = util.Retry(5, 1*time.Second, func() (error, bool) {
-				warehouse, err = v.ShowByID(ctx, request.name)
-				if err != nil {
-					warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
-					return nil, false
-				}
-				if warehouse.State != WarehouseStateSuspended {
-					return nil, false
-				}
-				return nil, true
-			})
+		// needed to make sure that warehouse is suspended
+		var warehouseSuspensionErrs []error
+		err = util.Retry(5, 1*time.Second, func() (error, bool) {
+			warehouse, err = v.ShowByID(ctx, request.name)
 			if err != nil {
-				return fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
+				warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
+				return nil, false
 			}
+			if warehouse.State != WarehouseStateSuspended {
+				return nil, false
+			}
+			return nil, true
+		})
+		if err != nil {
+			return fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
 		}
 	}
 	return v.Alter(ctx, request)
@@ -274,6 +285,25 @@ func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 		}
 	}
 
+	// Tables - only present for interactive warehouses; may be NULL. SHOW WAREHOUSES returns the
+	// associated tables as a comma-separated list of fully-qualified names. Identifiers can contain
+	// commas when quoted, so we split in a quote-aware manner rather than using strings.Split.
+	if r.Tables.Valid {
+		if tables := strings.TrimSpace(r.Tables.String); tables != "" {
+			for _, raw := range splitCommaSeparatedIdentifiers(tables) {
+				raw = strings.TrimSpace(raw)
+				if raw == "" {
+					continue
+				}
+				id, err := ParseSchemaObjectIdentifier(raw)
+				if err != nil {
+					return fmt.Errorf("parsing table identifier %q: %w", raw, err)
+				}
+				wh.Tables = append(wh.Tables, id)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -297,6 +327,15 @@ func (opts *CreateAdaptiveWarehouseOptions) additionalValidations() error {
 	var errs []error
 	if valueSet(opts.QueryThroughputMultiplier) && !validateIntGreaterThanOrEqual(*opts.QueryThroughputMultiplier, 0) {
 		errs = append(errs, fmt.Errorf("QueryThroughputMultiplier must be greater than or equal to 0"))
+	}
+	return JoinErrors(errs...)
+}
+
+// additionalValidations for CreateInteractiveWarehouseOptions.
+func (opts *CreateInteractiveWarehouseOptions) additionalValidations() error {
+	var errs []error
+	if valueSet(opts.MinClusterCount) && valueSet(opts.MaxClusterCount) && !validateIntGreaterThanOrEqual(*opts.MaxClusterCount, *opts.MinClusterCount) {
+		errs = append(errs, fmt.Errorf("MinClusterCount must be less than or equal to MaxClusterCount"))
 	}
 	return JoinErrors(errs...)
 }
@@ -346,4 +385,14 @@ func (s *CreateWarehouseRequest) ID() AccountObjectIdentifier {
 
 func (s *CreateAdaptiveWarehouseRequest) ID() AccountObjectIdentifier {
 	return s.name
+}
+
+func (s *CreateInteractiveWarehouseRequest) ID() AccountObjectIdentifier {
+	return s.name
+}
+
+// IsInteractiveWarehouse reports whether the warehouse is interactive. Snowflake surfaces this
+// through the type column (type = INTERACTIVE); there is no separate is_interactive column.
+func (w *Warehouse) IsInteractiveWarehouse() bool {
+	return w.Type == WarehouseTypeInteractive
 }

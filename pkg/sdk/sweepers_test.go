@@ -40,6 +40,14 @@ func TestSweepAll(t *testing.T) {
 
 		err = SweepAfterAcceptanceTests(secondaryClient, acceptancetests.ObjectsSuffix)
 		assert.NoError(t, err)
+
+		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
+			err = SweepAfterAcceptanceTests(azureTestClient(t), acceptancetests.ObjectsSuffix)
+			assert.NoError(t, err)
+
+			err = SweepAfterAcceptanceTests(snowflakeDefaultsTestClient(t), acceptancetests.ObjectsSuffix)
+			assert.NoError(t, err)
+		}
 	})
 
 	t.Run("Send test results", SendTestResults)
@@ -94,6 +102,14 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	fourthClient := fourthTestClient(t)
 
 	allClients := []*sdk.Client{client, secondaryClient, thirdClient, fourthClient}
+
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
+		allClients = append(
+			allClients,
+			snowflakeDefaultsTestClient(t),
+			azureTestClient(t),
+		)
+	}
 
 	// can't use extracted IntegrationTestPrefix and AcceptanceTestPrefix until sweepers reside in the SDK package (cyclic)
 	const integrationTestPrefix = "int_test_"
@@ -368,6 +384,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 		"JAKUB_MICHALAK",
 		"JAN_CIESLAK",
 		"KAMIL_WASILEWSKI",
+		"PIOTR_CICHON",
 		"TEST_CI_SERVICE_USER",
 		"PENTESTING_USER_1",
 		"PENTESTING_USER_2",
@@ -588,7 +605,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 		if suffix != "" {
 			log.Printf("[DEBUG] Sweeping shares with suffix %s", suffix)
 			shareDropCondition = func(s sdk.Share) bool {
-				return strings.HasSuffix(s.Name.Name(), suffix)
+				return strings.HasSuffix(s.Name, suffix)
 			}
 		} else {
 			log.Println("[DEBUG] Sweeping stale shares")
@@ -597,7 +614,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 			}
 		}
 
-		shares, err := client.Shares.Show(ctx, new(sdk.ShowShareOptions))
+		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest())
 		if err != nil {
 			return fmt.Errorf("SHOW SHARES ended with error, err = %w", err)
 		}
@@ -608,7 +625,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 		for idx, share := range shares {
 			log.Printf("[DEBUG] Processing share [%d/%d]: %s...", idx+1, len(shares), share.ID().FullyQualifiedName())
 
-			if !slices.Contains(protectedShares, share.Name.Name()) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
+			if !slices.Contains(protectedShares, share.Name) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
 				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
 				if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
 					errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))
@@ -762,11 +779,9 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 		}
 
 		accountLocator := client.GetAccountLocator()
-		opts := &sdk.ShowFailoverGroupOptions{
-			InAccount: sdk.NewAccountIdentifierFromAccountLocator(accountLocator),
-		}
+		req := sdk.NewShowFailoverGroupRequest().WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(accountLocator))
 
-		fgs, err := client.FailoverGroups.Show(ctx, opts)
+		fgs, err := client.FailoverGroups.Show(ctx, req)
 		if err != nil {
 			return fmt.Errorf("SHOW FAILOVER GROUPS ended with error, err = %w", err)
 		}
@@ -833,6 +848,16 @@ func thirdTestClient(t *testing.T) *sdk.Client {
 func fourthTestClient(t *testing.T) *sdk.Client {
 	t.Helper()
 	return testClient(t, testprofiles.Fourth)
+}
+
+func azureTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Azure)
+}
+
+func snowflakeDefaultsTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.SnowflakeDefaults)
 }
 
 func testClient(t *testing.T, profile string) *sdk.Client {

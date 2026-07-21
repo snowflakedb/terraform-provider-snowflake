@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -109,11 +110,25 @@ func (m *MaskingPolicyAssert) HasComment(expected string) *MaskingPolicyAssert {
 	return m
 }
 
-func (m *MaskingPolicyAssert) HasExemptOtherPolicies(expected bool) *MaskingPolicyAssert {
+func (m *MaskingPolicyAssert) HasOptions(expected sdk.MaskingPolicyOptions) *MaskingPolicyAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
 		t.Helper()
-		if o.ExemptOtherPolicies != expected {
-			return fmt.Errorf("expected exempt other policies: %v; got: %v", expected, o.ExemptOtherPolicies)
+		if o.Options == nil {
+			return fmt.Errorf("expected options to have value; got: nil")
+		}
+		if !reflect.DeepEqual(*o.Options, expected) {
+			return fmt.Errorf("expected options: %v; got: %v", expected, *o.Options)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *MaskingPolicyAssert) HasNoOptions() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.Options != nil {
+			return fmt.Errorf("expected options to be nil; got: %v", *o.Options)
 		}
 		return nil
 	})
@@ -125,6 +140,17 @@ func (m *MaskingPolicyAssert) HasOwnerRoleType(expected string) *MaskingPolicyAs
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *MaskingPolicyAssert) HasExemptOtherPolicies(expected bool) *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.ExemptOtherPolicies != expected {
+			return fmt.Errorf("expected exempt other policies: %v; got: %v", expected, o.ExemptOtherPolicies)
 		}
 		return nil
 	})

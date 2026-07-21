@@ -61,13 +61,13 @@ func (a *AccountShowOutputAssert) HasAccountName(expected string) *AccountShowOu
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasSnowflakeRegion(expected string) *AccountShowOutputAssert {
-	a.StringValueSet("snowflake_region", expected)
+func (a *AccountShowOutputAssert) HasRegionGroup(expected string) *AccountShowOutputAssert {
+	a.StringValueSet("region_group", expected)
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasRegionGroup(expected string) *AccountShowOutputAssert {
-	a.StringValueSet("region_group", expected)
+func (a *AccountShowOutputAssert) HasSnowflakeRegion(expected string) *AccountShowOutputAssert {
+	a.StringValueSet("snowflake_region", expected)
 	return a
 }
 
@@ -210,13 +210,13 @@ func (a *AccountShowOutputAssert) HasNoAccountName() *AccountShowOutputAssert {
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoSnowflakeRegion() *AccountShowOutputAssert {
-	a.ValueNotSet("snowflake_region")
+func (a *AccountShowOutputAssert) HasNoRegionGroup() *AccountShowOutputAssert {
+	a.ValueNotSet("region_group")
 	return a
 }
 
-func (a *AccountShowOutputAssert) HasNoRegionGroup() *AccountShowOutputAssert {
-	a.ValueNotSet("region_group")
+func (a *AccountShowOutputAssert) HasNoSnowflakeRegion() *AccountShowOutputAssert {
+	a.ValueNotSet("snowflake_region")
 	return a
 }
 

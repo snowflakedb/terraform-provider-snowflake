@@ -13,16 +13,11 @@ import (
 )
 
 type ExternalVolumeStorageLocationDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.ExternalVolumeStorageLocationDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.ExternalVolumeStorageLocationDetails]
 }
 
-// ExternalVolumeStorageLocationDetails removed manually
-
-func ExternalVolumeStorageLocationDetailsFromObject(t *testing.T, externalVolumeStorageLocationDetails *sdk.ExternalVolumeStorageLocationDetails) *ExternalVolumeStorageLocationDetailsAssert {
-	t.Helper()
-	return &ExternalVolumeStorageLocationDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("ExternalVolumeStorageLocationDetails"), sdk.NewAccountObjectIdentifier(""), externalVolumeStorageLocationDetails),
-	}
+func NewExternalVolumeStorageLocationDetailsAssert() *ExternalVolumeStorageLocationDetailsAssert {
+	return &ExternalVolumeStorageLocationDetailsAssert{assert.NewSubStructAssert[sdk.ExternalVolumeStorageLocationDetails]()}
 }
 
 func (e *ExternalVolumeStorageLocationDetailsAssert) HasName(expected string) *ExternalVolumeStorageLocationDetailsAssert {
@@ -71,6 +66,17 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasStorageAllowedLocations(
 	return e
 }
 
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasNoStorageAllowedLocations() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if len(o.StorageAllowedLocations) > 0 {
+			return fmt.Errorf("expected storage allowed locations to be empty; got: %v", o.StorageAllowedLocations)
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeStorageLocationDetailsAssert) HasEncryptionType(expected string) *ExternalVolumeStorageLocationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
 		t.Helper()
@@ -82,56 +88,140 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasEncryptionType(expected 
 	return e
 }
 
-func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3StorageLocation(expected sdk.StorageLocationS3Details) *ExternalVolumeStorageLocationDetailsAssert {
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3StorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-		t.Helper()
 		if o.S3StorageLocation == nil {
 			return fmt.Errorf("expected s3 storage location to have value; got: nil")
 		}
-		if *o.S3StorageLocation != expected {
-			return fmt.Errorf("expected s3 storage location: %v; got: %v", expected, *o.S3StorageLocation)
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3StorageLocationWith(subAssert *StorageLocationS3DetailsAssert) *ExternalVolumeStorageLocationDetailsAssert {
+	e.HasS3StorageLocation()
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+			if err := assert.AssertionOnPointerField(t, o.S3StorageLocation, "s3 storage location", assertion); err != nil {
+				return fmt.Errorf("s3 storage location: %w", err)
+			}
+			return nil
+		})
+	}
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasNoS3StorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.S3StorageLocation != nil {
+			return fmt.Errorf("expected s3 storage location to be nil; got: %v", *o.S3StorageLocation)
 		}
 		return nil
 	})
 	return e
 }
 
-func (e *ExternalVolumeStorageLocationDetailsAssert) HasGCSStorageLocation(expected sdk.StorageLocationGcsDetails) *ExternalVolumeStorageLocationDetailsAssert {
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasGCSStorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-		t.Helper()
 		if o.GCSStorageLocation == nil {
 			return fmt.Errorf("expected gcs storage location to have value; got: nil")
 		}
-		if *o.GCSStorageLocation != expected {
-			return fmt.Errorf("expected gcs storage location: %v; got: %v", expected, *o.GCSStorageLocation)
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasGCSStorageLocationWith(subAssert *StorageLocationGcsDetailsAssert) *ExternalVolumeStorageLocationDetailsAssert {
+	e.HasGCSStorageLocation()
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+			if err := assert.AssertionOnPointerField(t, o.GCSStorageLocation, "gcs storage location", assertion); err != nil {
+				return fmt.Errorf("gcs storage location: %w", err)
+			}
+			return nil
+		})
+	}
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasNoGCSStorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.GCSStorageLocation != nil {
+			return fmt.Errorf("expected gcs storage location to be nil; got: %v", *o.GCSStorageLocation)
 		}
 		return nil
 	})
 	return e
 }
 
-func (e *ExternalVolumeStorageLocationDetailsAssert) HasAzureStorageLocation(expected sdk.StorageLocationAzureDetails) *ExternalVolumeStorageLocationDetailsAssert {
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasAzureStorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-		t.Helper()
 		if o.AzureStorageLocation == nil {
 			return fmt.Errorf("expected azure storage location to have value; got: nil")
 		}
-		if *o.AzureStorageLocation != expected {
-			return fmt.Errorf("expected azure storage location: %v; got: %v", expected, *o.AzureStorageLocation)
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasAzureStorageLocationWith(subAssert *StorageLocationAzureDetailsAssert) *ExternalVolumeStorageLocationDetailsAssert {
+	e.HasAzureStorageLocation()
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+			if err := assert.AssertionOnPointerField(t, o.AzureStorageLocation, "azure storage location", assertion); err != nil {
+				return fmt.Errorf("azure storage location: %w", err)
+			}
+			return nil
+		})
+	}
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasNoAzureStorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.AzureStorageLocation != nil {
+			return fmt.Errorf("expected azure storage location to be nil; got: %v", *o.AzureStorageLocation)
 		}
 		return nil
 	})
 	return e
 }
 
-func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3CompatStorageLocation(expected sdk.StorageLocationS3CompatDetails) *ExternalVolumeStorageLocationDetailsAssert {
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3CompatStorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
-		t.Helper()
 		if o.S3CompatStorageLocation == nil {
 			return fmt.Errorf("expected s3 compat storage location to have value; got: nil")
 		}
-		if *o.S3CompatStorageLocation != expected {
-			return fmt.Errorf("expected s3 compat storage location: %v; got: %v", expected, *o.S3CompatStorageLocation)
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasS3CompatStorageLocationWith(subAssert *StorageLocationS3CompatDetailsAssert) *ExternalVolumeStorageLocationDetailsAssert {
+	e.HasS3CompatStorageLocation()
+	for _, assertion := range subAssert.GetAssertions() {
+		assertion := assertion
+		e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+			if err := assert.AssertionOnPointerField(t, o.S3CompatStorageLocation, "s3 compat storage location", assertion); err != nil {
+				return fmt.Errorf("s3 compat storage location: %w", err)
+			}
+			return nil
+		})
+	}
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasNoS3CompatStorageLocation() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.S3CompatStorageLocation != nil {
+			return fmt.Errorf("expected s3 compat storage location to be nil; got: %v", *o.S3CompatStorageLocation)
 		}
 		return nil
 	})

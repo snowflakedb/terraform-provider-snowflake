@@ -13,16 +13,11 @@ import (
 )
 
 type OAuthRestAuthenticationDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.OAuthRestAuthenticationDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.OAuthRestAuthenticationDetails]
 }
 
-// OAuthRestAuthenticationDetails removed manually
-
-func OAuthRestAuthenticationDetailsFromObject(t *testing.T, oAuthRestAuthenticationDetails *sdk.OAuthRestAuthenticationDetails) *OAuthRestAuthenticationDetailsAssert {
-	t.Helper()
-	return &OAuthRestAuthenticationDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject("OAuthRestAuthenticationDetails", sdk.NewAccountObjectIdentifier(""), oAuthRestAuthenticationDetails),
-	}
+func NewOAuthRestAuthenticationDetailsAssert() *OAuthRestAuthenticationDetailsAssert {
+	return &OAuthRestAuthenticationDetailsAssert{assert.NewSubStructAssert[sdk.OAuthRestAuthenticationDetails]()}
 }
 
 func (o *OAuthRestAuthenticationDetailsAssert) HasOauthTokenUri(expected string) *OAuthRestAuthenticationDetailsAssert {
@@ -65,6 +60,17 @@ func (o *OAuthRestAuthenticationDetailsAssert) HasOauthAllowedScopes(expected ..
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected oauth allowed scopes: %v; got: %v", expected, o.OauthAllowedScopes)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OAuthRestAuthenticationDetailsAssert) HasNoOauthAllowedScopes() *OAuthRestAuthenticationDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OAuthRestAuthenticationDetails) error {
+		t.Helper()
+		if len(o.OauthAllowedScopes) > 0 {
+			return fmt.Errorf("expected oauth allowed scopes to be empty; got: %v", o.OauthAllowedScopes)
 		}
 		return nil
 	})

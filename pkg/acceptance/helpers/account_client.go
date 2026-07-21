@@ -35,9 +35,9 @@ func (c *AccountClient) UseOrgadmin(t *testing.T) func() {
 	t.Helper()
 	currentRole, err := c.context.client.ContextFunctions.CurrentRole(context.Background())
 	assert.NoError(t, err)
-	assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), snowflakeroles.Orgadmin))
+	assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(snowflakeroles.Orgadmin)))
 	return func() {
-		assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), currentRole))
+		assert.NoError(t, c.context.client.Sessions.UseRole(context.Background(), sdk.NewUseRoleSessionRequest(currentRole)))
 	}
 }
 
@@ -69,20 +69,17 @@ func (c *AccountClient) Create(t *testing.T) (*sdk.Account, func()) {
 	email := random.Email()
 	publicKey, _ := random.GenerateRSAPublicKey(t)
 
-	return c.CreateWithRequest(t, id, &sdk.CreateAccountOptions{
-		AdminName:         name,
-		AdminRSAPublicKey: sdk.String(publicKey),
-		Email:             email,
-		Edition:           sdk.EditionStandard,
-	})
+	return c.CreateWithRequest(t, id, sdk.NewCreateAccountRequest(id, name, email).
+		WithAdminRsaPublicKey(publicKey).
+		WithEdition(sdk.AccountEditionStandard))
 }
 
-func (c *AccountClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateAccountOptions) (*sdk.Account, func()) {
+func (c *AccountClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIdentifier, req *sdk.CreateAccountRequest) (*sdk.Account, func()) {
 	t.Helper()
 	revertRole := c.UseOrgadmin(t)
 	defer revertRole()
 
-	_, err := c.client().Create(context.Background(), id, opts)
+	err := c.client().Create(context.Background(), req)
 	require.NoError(t, err)
 
 	account, err := c.client().ShowByID(context.Background(), id)
@@ -91,14 +88,14 @@ func (c *AccountClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIden
 	return account, c.DropFunc(t, id)
 }
 
-func (c *AccountClient) Alter(t *testing.T, opts *sdk.AlterAccountOptions) {
+func (c *AccountClient) Alter(t *testing.T, req *sdk.AlterAccountRequest) {
 	t.Helper()
 	// Only alters that change other accounts (which require passing account name) require the ORGADMIN role.
-	if opts.Name != nil {
+	if req.Name != nil {
 		revertRole := c.UseOrgadmin(t)
 		defer revertRole()
 	}
-	err := c.client().Alter(context.Background(), opts)
+	err := c.client().Alter(context.Background(), req)
 	require.NoError(t, err)
 }
 
@@ -114,7 +111,7 @@ func (c *AccountClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier) error
 	ctx := context.Background()
 	revertRole := c.UseOrgadmin(t)
 	defer revertRole()
-	return c.client().Drop(ctx, id, 3, &sdk.DropAccountOptions{IfExists: sdk.Bool(true)})
+	return c.client().Drop(ctx, sdk.NewDropAccountRequest(id).WithIfExists(true).WithGracePeriodInDays(3))
 }
 
 type Region struct {
@@ -147,13 +144,10 @@ func (c *AccountClient) CreateAndLogIn(t *testing.T) (*sdk.Account, *sdk.Client,
 	publicKey, _ := random.GenerateRSAPublicKeyFromPrivateKey(t, privateKey)
 	email := random.Email()
 
-	account, accountCleanup := c.CreateWithRequest(t, id, &sdk.CreateAccountOptions{
-		AdminName:         name,
-		AdminRSAPublicKey: sdk.String(publicKey),
-		AdminUserType:     sdk.Pointer(sdk.UserTypeService),
-		Email:             email,
-		Edition:           sdk.EditionStandard,
-	})
+	account, accountCleanup := c.CreateWithRequest(t, id, sdk.NewCreateAccountRequest(id, name, email).
+		WithAdminRsaPublicKey(publicKey).
+		WithAdminUserType(sdk.UserTypeService).
+		WithEdition(sdk.AccountEditionStandard))
 
 	var client *sdk.Client
 	require.Eventually(t, func() bool {

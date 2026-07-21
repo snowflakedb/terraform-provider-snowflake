@@ -62,6 +62,7 @@ const (
 	GrantPrivilegesToDatabaseRole                          resource = "snowflake_grant_privileges_to_database_role"
 	GrantPrivilegesToShare                                 resource = "snowflake_grant_privileges_to_share"
 	HybridTable                                            resource = "snowflake_hybrid_table"
+	IcebergTable                                           resource = "snowflake_iceberg_table"
 	IcebergTableFromAwsGlue                                resource = "snowflake_iceberg_table_from_aws_glue"
 	IcebergTableFromDeltaFiles                             resource = "snowflake_iceberg_table_from_delta_files"
 	IcebergTableFromFiles                                  resource = "snowflake_iceberg_table_from_files"
@@ -74,6 +75,7 @@ const (
 	ManagedAccount                                         resource = "snowflake_managed_account"
 	MaskingPolicy                                          resource = "snowflake_masking_policy"
 	MaterializedView                                       resource = "snowflake_materialized_view"
+	McpServer                                              resource = "snowflake_mcp_server"
 	NetworkPolicy                                          resource = "snowflake_network_policy"
 	NetworkPolicyAttachment                                resource = "snowflake_network_policy_attachment"
 	NetworkRule                                            resource = "snowflake_network_rule"
@@ -141,6 +143,7 @@ const (
 	View                                                   resource = "snowflake_view"
 	Warehouse                                              resource = "snowflake_warehouse"
 	WarehouseAdaptive                                      resource = "snowflake_warehouse_adaptive"
+	WarehouseInteractive                                   resource = "snowflake_warehouse_interactive"
 )
 
 type Resource interface {

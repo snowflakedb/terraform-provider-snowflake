@@ -2108,6 +2108,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 	})
 
 	t.Run("on all tasks - with operate", func(t *testing.T) {
+		currentRole := testClientHelper().Context.CurrentRole(t)
+
 		taskRole, taskRoleCleanup := testClientHelper().Role.CreateRoleGrantedToCurrentUser(t)
 		t.Cleanup(taskRoleCleanup)
 
@@ -2119,14 +2121,11 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		// grantTaskRole grants the necessary privileges to a role to be able to create task
 		grantTaskRole(t, taskRole.ID())
-
-		currentRole := testClientHelper().Context.CurrentRole(t)
-
 		grantTaskRole(t, role.ID())
-		grantTaskRole(t, currentRole)
 
 		// Use a previously prepared role to create a task
 		usePreviousRole := testClientHelper().Role.UseRole(t, taskRole.ID())
+		t.Cleanup(usePreviousRole)
 
 		task, taskCleanup := testClientHelper().Task.CreateWithSchedule(t)
 		t.Cleanup(taskCleanup)
@@ -2179,14 +2178,12 @@ func TestInt_GrantOwnership(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Cleanup(func() {
-			currentRole := testClientHelper().Context.CurrentRole(t)
-			usePreviousRole := testClientHelper().Role.UseRole(t, role.ID())
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(task), sdk.Pointer(sdk.Revoke))
 			grantOwnershipToRole(t, currentRole, ownershipGrantOnTask(secondTask), sdk.Pointer(sdk.Revoke))
-			usePreviousRole()
 		})
 
 		usePreviousRole = testClientHelper().Role.UseRole(t, taskRole.ID())
+		t.Cleanup(usePreviousRole)
 		currentTask, err := client.Tasks.ShowByID(ctx, task.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateStarted, currentTask.State)
@@ -2220,6 +2217,7 @@ func TestInt_GrantOwnership(t *testing.T) {
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnTask(secondTask), role.ID())
 
 		usePreviousRole = testClientHelper().Role.UseRole(t, role.ID())
+		t.Cleanup(usePreviousRole)
 		currentTask, err = client.Tasks.ShowByID(ctx, task.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateSuspended, currentTask.State)
@@ -2227,7 +2225,6 @@ func TestInt_GrantOwnership(t *testing.T) {
 		currentSecondTask, err = client.Tasks.ShowByID(ctx, secondTask.ID())
 		require.NoError(t, err)
 		require.Equal(t, sdk.TaskStateSuspended, currentSecondTask.State)
-		usePreviousRole()
 	})
 }
 
@@ -2434,6 +2431,244 @@ func TestInt_ShowGrants(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeApplication, grants[0].GrantedTo)
 		assert.Equal(t, testClientHelper().Ids.SnowflakeApplicationId().Name(), grants[0].GranteeName.Name())
 	})
+
+	t.Run("show inherited grants in database", func(t *testing.T) {
+		database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
+		t.Cleanup(databaseCleanup)
+
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(
+			ctx,
+			sdk.InheritedAccountRoleGrantPrivileges{
+				SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
+			},
+			sdk.PluralObjectTypeTables,
+			sdk.InheritedAccountRoleGrantIn{Database: new(database.ID())},
+			role.ID(),
+		)
+		require.NoError(t, err)
+
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Inherited: new(true),
+			In: &sdk.ShowGrantsIn{
+				Database: new(database.ID()),
+			},
+		})
+		require.NoError(t, err)
+		require.Len(t, grants, 1)
+		grant := grants[0]
+		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grant.Privilege)
+		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
+		assert.Empty(t, grant.Name)
+		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
+		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
+		// The "is_inherited" column is absent for the SHOW INHERITED GRANTS IN ... syntax.
+		require.Nil(t, grant.IsInherited)
+		require.NotNil(t, grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromDatabase, *grant.InheritedFrom)
+		require.NotNil(t, grant.InheritedFromDatabase)
+		assert.Equal(t, database.ID().Name(), *grant.InheritedFromDatabase)
+		assert.Nil(t, grant.InheritedFromSchema)
+	})
+}
+
+func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	databaseId := testClientHelper().Ids.DatabaseId()
+	schemaId := testClientHelper().Ids.SchemaId()
+
+	t.Run("on all warehouses in account", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		privileges := sdk.InheritedAccountRoleGrantPrivileges{
+			AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage},
+		}
+		in := sdk.InheritedAccountRoleGrantIn{Account: new(true)}
+
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges, sdk.PluralObjectTypeWarehouses, in, role.ID())
+		require.NoError(t, err)
+
+		grant := findInheritedGrant(t, sdk.ShowGrantsTo{Role: role.ID()}, sdk.AccountObjectPrivilegeUsage.String())
+		assert.Equal(t, sdk.AccountObjectPrivilegeUsage.String(), grant.Privilege)
+		assert.Equal(t, sdk.ObjectTypeWarehouse, grant.GrantedOn)
+		assert.Empty(t, grant.Name)
+		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
+		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
+		require.NotNil(t, grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromAccount, *grant.InheritedFrom)
+		assert.Nil(t, grant.InheritedFromDatabase)
+		assert.Nil(t, grant.InheritedFromSchema)
+
+		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges, sdk.PluralObjectTypeWarehouses, in, role.ID())
+		require.NoError(t, err)
+		assertNoInheritedGrants(t, sdk.ShowGrantsTo{Role: role.ID()})
+	})
+
+	t.Run("on all tables in database", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		privileges := sdk.InheritedAccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
+		}
+		in := sdk.InheritedAccountRoleGrantIn{Database: new(databaseId)}
+
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+
+		grant := findInheritedGrant(t, sdk.ShowGrantsTo{Role: role.ID()}, sdk.SchemaObjectPrivilegeSelect.String())
+		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grant.Privilege)
+		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
+		assert.Empty(t, grant.Name)
+		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
+		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
+		require.NotNil(t, grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromDatabase, *grant.InheritedFrom)
+		require.NotNil(t, grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
+		assert.Nil(t, grant.InheritedFromSchema)
+
+		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+		assertNoInheritedGrants(t, sdk.ShowGrantsTo{Role: role.ID()})
+	})
+
+	t.Run("on all tables in schema", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		privileges := sdk.InheritedAccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert},
+		}
+		in := sdk.InheritedAccountRoleGrantIn{Schema: new(schemaId)}
+
+		err := client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+
+		grant := findInheritedGrant(t, sdk.ShowGrantsTo{Role: role.ID()}, sdk.SchemaObjectPrivilegeInsert.String())
+		assert.Equal(t, sdk.SchemaObjectPrivilegeInsert.String(), grant.Privilege)
+		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
+		assert.Empty(t, grant.Name)
+		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
+		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
+		require.NotNil(t, grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromSchema, *grant.InheritedFrom)
+		require.NotNil(t, grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
+		require.NotNil(t, grant.InheritedFromSchema)
+		assert.Equal(t, schemaId.Name(), *grant.InheritedFromSchema)
+
+		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+		assertNoInheritedGrants(t, sdk.ShowGrantsTo{Role: role.ID()})
+	})
+}
+
+func TestInt_GrantAndRevokeInheritedPrivilegesToDatabaseRole(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	databaseId := testClientHelper().Ids.DatabaseId()
+	schemaId := testClientHelper().Ids.SchemaId()
+
+	t.Run("on all tables in database", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(roleCleanup)
+
+		privileges := sdk.InheritedDatabaseRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
+		}
+		in := sdk.InheritedDatabaseRoleGrantIn{Database: new(databaseId)}
+
+		err := client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+
+		grant := findInheritedGrant(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()}, sdk.SchemaObjectPrivilegeSelect.String())
+		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grant.Privilege)
+		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
+		assert.Empty(t, grant.Name)
+		assert.Equal(t, sdk.ObjectTypeDatabaseRole, grant.GrantedTo)
+		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
+		require.NotNil(t, grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromDatabase, *grant.InheritedFrom)
+		require.NotNil(t, grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
+		assert.Nil(t, grant.InheritedFromSchema)
+
+		err = client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+		assertNoInheritedGrants(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()})
+	})
+
+	t.Run("on all tables in schema", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(roleCleanup)
+
+		privileges := sdk.InheritedDatabaseRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeInsert},
+		}
+		in := sdk.InheritedDatabaseRoleGrantIn{Schema: new(schemaId)}
+
+		err := client.Grants.GrantInheritedPrivilegesToDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+
+		grant := findInheritedGrant(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()}, sdk.SchemaObjectPrivilegeInsert.String())
+		assert.Equal(t, sdk.SchemaObjectPrivilegeInsert.String(), grant.Privilege)
+		assert.Equal(t, sdk.ObjectTypeTable, grant.GrantedOn)
+		assert.Empty(t, grant.Name)
+		assert.Equal(t, sdk.ObjectTypeDatabaseRole, grant.GrantedTo)
+		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
+		require.NotNil(t, grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromSchema, *grant.InheritedFrom)
+		require.NotNil(t, grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
+		require.NotNil(t, grant.InheritedFromSchema)
+		assert.Equal(t, schemaId.Name(), *grant.InheritedFromSchema)
+
+		err = client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
+		require.NoError(t, err)
+		assertNoInheritedGrants(t, sdk.ShowGrantsTo{DatabaseRole: role.ID()})
+	})
+}
+
+func findInheritedGrant(t *testing.T, to sdk.ShowGrantsTo, privilege string) *sdk.Grant {
+	t.Helper()
+	client := testClient(t)
+	ctx := testContext(t)
+	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &to})
+	require.NoError(t, err)
+	grant, err := collections.FindFirst(grants, func(g sdk.Grant) bool {
+		return g.IsInherited != nil && *g.IsInherited && g.Privilege == privilege
+	})
+	require.NoError(t, err)
+	return grant
+}
+
+func assertNoInheritedGrants(t *testing.T, to sdk.ShowGrantsTo) {
+	t.Helper()
+	client := testClient(t)
+	ctx := testContext(t)
+	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &to})
+	require.NoError(t, err)
+	for _, grant := range grants {
+		require.NotNil(t, grant.IsInherited)
+		assert.False(t, *grant.IsInherited)
+	}
 }
 
 func grantsToPrivileges(grants []sdk.Grant) []string {

@@ -32,61 +32,6 @@ func (p *PostgresInstanceAssert) HasUpdatedOnNotEmpty() *PostgresInstanceAssert 
 	return p
 }
 
-func (p *PostgresInstanceAssert) HasNoOrigin() *PostgresInstanceAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
-		t.Helper()
-		if o.Origin != nil {
-			return fmt.Errorf("expected origin to have nil; got: %s", *o.Origin)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceAssert) HasNoHost() *PostgresInstanceAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
-		t.Helper()
-		if o.Host != nil {
-			return fmt.Errorf("expected host to have nil; got: %s", *o.Host)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceAssert) HasNoPostgresSettings() *PostgresInstanceAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
-		t.Helper()
-		if o.PostgresSettings != nil {
-			return fmt.Errorf("expected postgres_settings to have nil; got: %s", *o.PostgresSettings)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceAssert) HasNoComment() *PostgresInstanceAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to have nil; got: %s", *o.Comment)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceAssert) HasNoPrivatelinkServiceIdentifier() *PostgresInstanceAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
-		t.Helper()
-		if o.PrivatelinkServiceIdentifier != nil {
-			return fmt.Errorf("expected privatelink_service_identifier to have nil; got: %s", *o.PrivatelinkServiceIdentifier)
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *PostgresInstanceAssert) HasStateOneOf(expected ...sdk.PostgresInstanceState) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()

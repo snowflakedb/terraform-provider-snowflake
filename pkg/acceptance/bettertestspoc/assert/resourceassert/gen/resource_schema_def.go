@@ -186,6 +186,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.HybridTable().Schema,
 	},
 	{
+		name:   "IcebergTable",
+		schema: resources.IcebergTable().Schema,
+	},
+	{
 		name:   "IcebergTableFromAwsGlue",
 		schema: resources.IcebergTableFromAwsGlue().Schema,
 	},
@@ -232,6 +236,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "MaterializedView",
 		schema: resources.MaterializedView().Schema,
+	},
+	{
+		name:   "McpServer",
+		schema: resources.McpServer().Schema,
 	},
 	{
 		name:   "NetworkPolicy",
@@ -440,6 +448,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "WarehouseAdaptive",
 		schema: resources.WarehouseAdaptive().Schema,
+	},
+	{
+		name:   "WarehouseInteractive",
+		schema: resources.WarehouseInteractive().Schema,
 	},
 	{
 		name:   "GrantPrivilegesToAccountRole",

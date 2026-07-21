@@ -11,16 +11,11 @@ import (
 )
 
 type StorageLocationGcsDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.StorageLocationGcsDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.StorageLocationGcsDetails]
 }
 
-// StorageLocationGcsDetails removed manually
-
-func StorageLocationGcsDetailsFromObject(t *testing.T, storageLocationGcsDetails *sdk.StorageLocationGcsDetails) *StorageLocationGcsDetailsAssert {
-	t.Helper()
-	return &StorageLocationGcsDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLocationGcsDetails"), sdk.NewAccountObjectIdentifier(""), storageLocationGcsDetails),
-	}
+func NewStorageLocationGcsDetailsAssert() *StorageLocationGcsDetailsAssert {
+	return &StorageLocationGcsDetailsAssert{assert.NewSubStructAssert[sdk.StorageLocationGcsDetails]()}
 }
 
 func (s *StorageLocationGcsDetailsAssert) HasStorageGcpServiceAccount(expected string) *StorageLocationGcsDetailsAssert {

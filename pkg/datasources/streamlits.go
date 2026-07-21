@@ -160,7 +160,6 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	flattenedStreamlits := make([]map[string]any, len(streamlits))
 
 	for i, streamlit := range streamlits {
-		streamlit := streamlit
 		var streamlitDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			descriptions, err := client.Streamlits.Describe(ctx, streamlit.ID())

@@ -93,8 +93,8 @@ func (s *AlterPasswordPolicyRequest) WithIfExists(ifExists bool) *AlterPasswordP
 	return s
 }
 
-func (s *AlterPasswordPolicyRequest) WithNewName(newName SchemaObjectIdentifier) *AlterPasswordPolicyRequest {
-	s.NewName = &newName
+func (s *AlterPasswordPolicyRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterPasswordPolicyRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

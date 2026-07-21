@@ -50,7 +50,7 @@ var openflowDeploymentsDef = g.NewInterface(
 		Name().
 		OptionalSQL("UPGRADE").
 		OptionalSQL("TERMINATE").
-		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("OpenflowDeploymentSet").

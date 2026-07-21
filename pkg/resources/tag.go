@@ -57,10 +57,14 @@ var tagSchema = map[string]*schema.Schema{
 		ConflictsWith: []string{"no_allowed_values", "ordered_allowed_values"},
 	},
 	"ordered_allowed_values": {
-		Type:          schema.TypeList,
-		Elem:          &schema.Schema{Type: schema.TypeString},
-		Optional:      true,
-		Description:   "Ordered list of allowed values for the tag. The order is preserved in Snowflake and is significant when `on_conflict.allowed_values_sequence` is used — the first matching value in the sequence wins. Use this instead of `allowed_values` when order matters. Conflicts with `allowed_values` and `no_allowed_values`.",
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Optional: true,
+		Description: joinWithSpace(
+			"Ordered list of allowed values for the tag. The order is preserved in Snowflake and is significant when `on_conflict.allowed_values_sequence` is used — the first matching value in the sequence wins.",
+			"Use this instead of `allowed_values` when order matters. Conflicts with `allowed_values` and `no_allowed_values`.",
+			"Note: transitioning from `allowed_values` to `ordered_allowed_values` always plans an update-in-place for this field, even when the configured order already matches the order stored in Snowflake.",
+		),
 		ConflictsWith: []string{"allowed_values", "no_allowed_values"},
 	},
 	"no_allowed_values": {
@@ -388,7 +392,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRename(*sdk.NewTagRenameRequest(newId)))
+		err := client.Tags.Alter(ctx, sdk.NewAlterTagRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming tag %v err = %w", d.Id(), err))
 		}

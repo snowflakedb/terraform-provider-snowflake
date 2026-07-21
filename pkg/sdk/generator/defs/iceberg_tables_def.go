@@ -53,7 +53,7 @@ var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
 var icebergTableColumnsAndConstraints = g.NewQueryStruct("IcebergTableColumnsAndConstraints").
-	ListQueryStructField("Columns", icebergTableColumn, g.KeywordOptions()).
+	ListQueryStructField("Columns", icebergTableColumn, g.KeywordOptions().Required()).
 	ListQueryStructField("OutOfLineConstraint", tableOutOfLineConstraint(), g.KeywordOptions())
 
 var icebergTablePartitionBucketArgs = g.NewQueryStruct("IcebergTablePartitionBucketArgs").
@@ -164,14 +164,37 @@ var icebergTableClusteringAction = g.NewQueryStruct("IcebergTableClusteringActio
 	OptionalSQL("DROP CLUSTERING KEY").
 	WithValidation(g.ExactlyOneValueSet, "ClusterBy", "ChangeReclusterState", "DropClusteringKey")
 
+// TODO (next PRs): report to docs team - ENTITY KEY is accepted by the parser for CREATE ICEBERG TABLE ... AGGREGATION POLICY
+// (verified manually against a live account), but https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake
+// does not document it.
 var icebergTableAggregationPolicy = g.NewQueryStruct("IcebergTableAggregationPolicy").
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+	ListAssignment("ENTITY KEY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "AggregationPolicy")
 
 var tableRowAccessPolicy = g.NewQueryStruct("IcebergTableRowAccessPolicy").
 	Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "Name")
+
+var icebergTableAddRowAccessPolicy = g.NewQueryStruct("IcebergTableAddRowAccessPolicy").
+	SQL("ADD").
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
+	WithValidation(g.ValidateValueSet, "On")
+
+var icebergTableDropRowAccessPolicy = g.NewQueryStruct("IcebergTableDropRowAccessPolicy").
+	SQL("DROP").
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
+
+// TODO [next PRs]: this duplicates ViewDropAndAddRowAccessPolicy in views_def.go because the generator's
+// sharing mechanism (WithSharedToOpts/OptionalSharedQueryStructField) doesn't yet support composing shared
+// query structs into another composite one.
+var icebergTableDropAndAddRowAccessPolicy = g.NewQueryStruct("IcebergTableDropAndAddRowAccessPolicy").
+	QueryStructField("Drop", icebergTableDropRowAccessPolicy, g.KeywordOptions().Required()).
+	QueryStructField("Add", icebergTableAddRowAccessPolicy, g.KeywordOptions().Required())
 
 var icebergTablesDef = g.NewInterface(
 	"IcebergTables",
@@ -373,13 +396,13 @@ var icebergTablesDef = g.NewInterface(
 		).
 		OptionalSetTags().
 		OptionalUnsetTags().
-		PredefinedQueryStructField("AddRowAccessPolicy", "*ViewAddRowAccessPolicy", g.KeywordOptions()).
-		PredefinedQueryStructField("DropRowAccessPolicy", "*ViewDropRowAccessPolicy", g.KeywordOptions()).
-		PredefinedQueryStructField("DropAndAddRowAccessPolicy", "*ViewDropAndAddRowAccessPolicy", g.ListOptions().NoParentheses()).
+		OptionalSharedQueryStructField("AddRowAccessPolicy", viewAddRowAccessPolicy, g.KeywordOptions()).
+		OptionalSharedQueryStructField("DropRowAccessPolicy", viewDropRowAccessPolicy, g.KeywordOptions()).
+		OptionalQueryStructField("DropAndAddRowAccessPolicy", icebergTableDropAndAddRowAccessPolicy, g.ListOptions().NoParentheses()).
 		OptionalSQL("DROP ALL ROW ACCESS POLICIES").
+		OptionalSharedQueryStructField("SetAggregationPolicy", viewSetAggregationPolicy, g.KeywordOptions()).
+		OptionalSharedQueryStructField("UnsetAggregationPolicy", viewUnsetAggregationPolicy, g.KeywordOptions()).
 		// TODO(next PR): add ALTER ICEBERG TABLE ... REFRESH (separate operation; see https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table-refresh)
-		OptionalQueryStructField("SetAggregationPolicy", tableSetAggregationPolicy, g.KeywordOptions()).
-		OptionalQueryStructField("UnsetAggregationPolicy", tableUnsetAggregationPolicy, g.KeywordOptions()).
 		OptionalQueryStructField("SetJoinPolicy", tableSetJoinPolicy, g.KeywordOptions()).
 		OptionalQueryStructField("UnsetJoinPolicy", tableUnsetJoinPolicy, g.KeywordOptions()).
 		OptionalQueryStructField(
@@ -421,7 +444,7 @@ var icebergTablesDef = g.NewInterface(
 		Text("owner_role_type").
 		Text("catalog_sync_name").
 		JsonField("auto_refresh_status", "*IcebergTableAutoRefreshStatus").
-		Text("partition_specs").
+		JsonField("partition_specs", "[]IcebergTablePartitionSpec").
 		Number("current_partition_spec_id").
 		Number("iceberg_table_format_version"),
 	g.NewQueryStruct("ShowIcebergTables").

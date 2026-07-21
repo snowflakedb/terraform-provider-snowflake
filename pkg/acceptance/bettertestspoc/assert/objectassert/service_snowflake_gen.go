@@ -92,8 +92,8 @@ func (s *ServiceAssert) HasOwner(expected string) *ServiceAssert {
 func (s *ServiceAssert) HasComputePool(expected sdk.AccountObjectIdentifier) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
-		if o.ComputePool.Name() != expected.Name() {
-			return fmt.Errorf("expected compute pool: %v; got: %v", expected.Name(), o.ComputePool.Name())
+		if o.ComputePool.FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected compute pool: %v; got: %v", expected.FullyQualifiedName(), o.ComputePool.FullyQualifiedName())
 		}
 		return nil
 	})
@@ -180,10 +180,21 @@ func (s *ServiceAssert) HasAutoResume(expected bool) *ServiceAssert {
 func (s *ServiceAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObjectIdentifier) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
-		mapped := collections.Map(o.ExternalAccessIntegrations, func(item sdk.AccountObjectIdentifier) any { return item.Name() })
-		mappedExpected := collections.Map(expected, func(item sdk.AccountObjectIdentifier) any { return item.Name() })
+		mapped := collections.Map(o.ExternalAccessIntegrations, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
+		mappedExpected := collections.Map(expected, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected external access integrations: %v; got: %v", expected, o.ExternalAccessIntegrations)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasNoExternalAccessIntegrations() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if len(o.ExternalAccessIntegrations) > 0 {
+			return fmt.Errorf("expected external access integrations to be empty; got: %v", o.ExternalAccessIntegrations)
 		}
 		return nil
 	})
@@ -226,6 +237,17 @@ func (s *ServiceAssert) HasResumedOn(expected time.Time) *ServiceAssert {
 	return s
 }
 
+func (s *ServiceAssert) HasNoResumedOn() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.ResumedOn != nil {
+			return fmt.Errorf("expected resumed on to be nil; got: %v", *o.ResumedOn)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasSuspendedOn(expected time.Time) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
@@ -234,6 +256,17 @@ func (s *ServiceAssert) HasSuspendedOn(expected time.Time) *ServiceAssert {
 		}
 		if *o.SuspendedOn != expected {
 			return fmt.Errorf("expected suspended on: %v; got: %v", expected, *o.SuspendedOn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasNoSuspendedOn() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.SuspendedOn != nil {
+			return fmt.Errorf("expected suspended on to be nil; got: %v", *o.SuspendedOn)
 		}
 		return nil
 	})
@@ -265,6 +298,17 @@ func (s *ServiceAssert) HasComment(expected string) *ServiceAssert {
 	return s
 }
 
+func (s *ServiceAssert) HasNoComment() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasOwnerRoleType(expected string) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
@@ -282,8 +326,19 @@ func (s *ServiceAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) 
 		if o.QueryWarehouse == nil {
 			return fmt.Errorf("expected query warehouse to have value; got: nil")
 		}
-		if (*o.QueryWarehouse).Name() != expected.Name() {
-			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.Name(), (*o.QueryWarehouse).Name())
+		if (*o.QueryWarehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.QueryWarehouse).FullyQualifiedName())
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasNoQueryWarehouse() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.QueryWarehouse != nil {
+			return fmt.Errorf("expected query warehouse to be nil; got: %v", *o.QueryWarehouse)
 		}
 		return nil
 	})
@@ -348,6 +403,17 @@ func (s *ServiceAssert) HasManagingObjectDomain(expected string) *ServiceAssert 
 	return s
 }
 
+func (s *ServiceAssert) HasNoManagingObjectDomain() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.ManagingObjectDomain != nil {
+			return fmt.Errorf("expected managing object domain to be nil; got: %v", *o.ManagingObjectDomain)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasManagingObjectName(expected string) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
@@ -356,6 +422,17 @@ func (s *ServiceAssert) HasManagingObjectName(expected string) *ServiceAssert {
 		}
 		if *o.ManagingObjectName != expected {
 			return fmt.Errorf("expected managing object name: %v; got: %v", expected, *o.ManagingObjectName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasNoManagingObjectName() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.ManagingObjectName != nil {
+			return fmt.Errorf("expected managing object name to be nil; got: %v", *o.ManagingObjectName)
 		}
 		return nil
 	})

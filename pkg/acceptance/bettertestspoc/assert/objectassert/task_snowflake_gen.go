@@ -117,8 +117,19 @@ func (t *TaskAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *TaskAss
 		if o.Warehouse == nil {
 			return fmt.Errorf("expected warehouse to have value; got: nil")
 		}
-		if (*o.Warehouse).Name() != expected.Name() {
-			return fmt.Errorf("expected warehouse: %v; got: %v", expected.Name(), (*o.Warehouse).Name())
+		if (*o.Warehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.Warehouse).FullyQualifiedName())
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasNoWarehouse() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Warehouse != nil {
+			return fmt.Errorf("expected warehouse to be nil; got: %v", *o.Warehouse)
 		}
 		return nil
 	})
@@ -143,6 +154,17 @@ func (t *TaskAssert) HasPredecessors(expected ...sdk.SchemaObjectIdentifier) *Ta
 		mappedExpected := collections.Map(expected, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected predecessors: %v; got: %v", expected, o.Predecessors)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasNoPredecessors() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if len(o.Predecessors) > 0 {
+			return fmt.Errorf("expected predecessors to be empty; got: %v", o.Predecessors)
 		}
 		return nil
 	})
@@ -199,8 +221,19 @@ func (t *TaskAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *
 		if o.ErrorIntegration == nil {
 			return fmt.Errorf("expected error integration to have value; got: nil")
 		}
-		if (*o.ErrorIntegration).Name() != expected.Name() {
-			return fmt.Errorf("expected error integration: %v; got: %v", expected.Name(), (*o.ErrorIntegration).Name())
+		if (*o.ErrorIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected error integration: %v; got: %v", expected.FullyQualifiedName(), (*o.ErrorIntegration).FullyQualifiedName())
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasNoErrorIntegration() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.ErrorIntegration != nil {
+			return fmt.Errorf("expected error integration to be nil; got: %v", *o.ErrorIntegration)
 		}
 		return nil
 	})
@@ -262,18 +295,6 @@ func (t *TaskAssert) HasBudget(expected string) *TaskAssert {
 	return t
 }
 
-// commented out manually
-// func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
-//	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-//		t.Helper()
-//		if o.TaskRelations != expected {
-//			return fmt.Errorf("expected task relations: %v; got: %v", expected, o.TaskRelations)
-//		}
-//		return nil
-//	})
-//	return t
-// }
-
 func (t *TaskAssert) HasLastSuspendedReason(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
@@ -291,9 +312,19 @@ func (t *TaskAssert) HasTargetCompletionInterval(expected sdk.TaskTargetCompleti
 		if o.TargetCompletionInterval == nil {
 			return fmt.Errorf("expected target completion interval to have value; got: nil")
 		}
-		// adjusted manually
 		if !reflect.DeepEqual(*o.TargetCompletionInterval, expected) {
 			return fmt.Errorf("expected target completion interval: %v; got: %v", expected, *o.TargetCompletionInterval)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasNoTargetCompletionInterval() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.TargetCompletionInterval != nil {
+			return fmt.Errorf("expected target completion interval to be nil; got: %v", *o.TargetCompletionInterval)
 		}
 		return nil
 	})

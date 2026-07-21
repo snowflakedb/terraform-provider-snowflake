@@ -328,7 +328,7 @@ var stagesDef = g.NewInterface(
 			SQL("STAGE").
 			IfExists().
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			OptionalSetTags().
 			OptionalUnsetTags().
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").

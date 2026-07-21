@@ -70,7 +70,6 @@ func ReadListings(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	flattened := make([]map[string]any, len(listings))
 	for i, listing := range listings {
-		listing := listing
 		var describe []map[string]any
 		if d.Get("with_describe").(bool) {
 			details, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(listing.ID()))

@@ -48,24 +48,33 @@ var (
 	servicesProviderFactory               = providerFactoryUsingCache("Services")
 	// warehouseRequiredProviderFactory should be used whenever tests require a warehouse but do not modify the current
 	// session by, e.g., creating new warehouses.
-	warehouseRequiredProviderFactory                 = providerFactoryUsingCache("WarehouseRequired")
-	explicitAccountAdminRoleProviderFactory          = providerFactoryUsingCache("ExplicitAccountAdminRole")
-	strictPrivilegeManagementGrantProviderFactory    = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
-	grantsImportValidationProviderFactory            = providerFactoryUsingCache("GrantsImportValidationProvider")
-	grantsImportValidationAndStrictProviderFactory   = providerFactoryUsingCache("GrantsImportValidationAndStrictProvider")
-	userEnableDefaultWorkloadIdentityProviderFactory = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
-	s3StageProviderFactory                           = providerFactoryUsingCache("StageExternalS3")
-	grantsSafeDestroyProviderFactory                 = providerFactoryUsingCache("GrantsSafeDestroy")
-	tagAssociationSafeDestroyProviderFactory         = providerFactoryUsingCache("TagAssociationSafeDestroy")
-	grantAccountRoleSafePublicRoleProviderFactory    = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
-	grantAccountRoleShowCachingProviderFactory       = providerFactoryUsingCache("GrantAccountRoleShowCaching")
-	importBooleanDefaultProviderFactory              = providerFactoryUsingCache("ImportBooleanDefault")
-	experimentalHierarchyRenamesProviderFactory      = providerFactoryUsingCache("ExperimentalHierarchyRenames")
-	activeWarehouseSetOnUserProviderFactory          = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
+	warehouseRequiredProviderFactory = providerFactoryUsingCache("WarehouseRequired")
+	// interactiveWarehouseProviderFactory should be used by interactive warehouse tests. CREATE INTERACTIVE WAREHOUSE
+	// switches the session onto the new warehouse and there is no way to un-use it, so these tests must run on a
+	// dedicated (isolated) session rather than the shared default one to avoid leaking that state into other tests.
+	interactiveWarehouseProviderFactory                        = providerFactoryUsingCache("InteractiveWarehouse")
+	explicitAccountAdminRoleProviderFactory                    = providerFactoryUsingCache("ExplicitAccountAdminRole")
+	strictPrivilegeManagementGrantProviderFactory              = providerFactoryUsingCache("StrictPrivilegeManagementGrantProvider")
+	grantsImportValidationProviderFactory                      = providerFactoryUsingCache("GrantsImportValidationProvider")
+	grantsImportValidationAndStrictProviderFactory             = providerFactoryUsingCache("GrantsImportValidationAndStrictProvider")
+	userEnableDefaultWorkloadIdentityProviderFactory           = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
+	s3StageProviderFactory                                     = providerFactoryUsingCache("StageExternalS3")
+	grantsSafeDestroyProviderFactory                           = providerFactoryUsingCache("GrantsSafeDestroy")
+	tagAssociationSafeDestroyProviderFactory                   = providerFactoryUsingCache("TagAssociationSafeDestroy")
+	grantAccountRoleSafePublicRoleProviderFactory              = providerFactoryUsingCache("GrantAccountRoleSafePublicRole")
+	grantAccountRoleShowCachingProviderFactory                 = providerFactoryUsingCache("GrantAccountRoleShowCaching")
+	importBooleanDefaultProviderFactory                        = providerFactoryUsingCache("ImportBooleanDefault")
+	experimentalHierarchyRenamesProviderFactory                = providerFactoryUsingCache("ExperimentalHierarchyRenames")
+	activeWarehouseSetOnUserProviderFactory                    = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
+	inheritedGrantsProviderFactory                             = providerFactoryUsingCache("InheritedGrantsProvider")
+	strictPrivilegeManagementAndInheritedGrantsProviderFactory = providerFactoryUsingCache("StrictPrivilegeManagementAndInheritedGrantsProvider")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate
-var secondaryAccountProviderFactory = providerFactoryUsingCache("SecondaryAccount")
+var (
+	secondaryAccountProviderFactory         = providerFactoryUsingCache("SecondaryAccount")
+	snowflakeDefaultsAccountProviderFactory = providerFactoryUsingCache("SnowflakeDefaultsAccount")
+)
 
 func acceptanceTestsProvider() *schema.Provider {
 	p := provider.Provider()

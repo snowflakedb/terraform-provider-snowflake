@@ -121,6 +121,17 @@ func (p *ProcedureAssert) HasMaxNumArguments(expected int) *ProcedureAssert {
 	return p
 }
 
+func (p *ProcedureAssert) HasArgumentsRaw(expected string) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.ArgumentsRaw != expected {
+			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
@@ -134,22 +145,22 @@ func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAs
 	return p
 }
 
-func (p *ProcedureAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureAssert {
+func (p *ProcedureAssert) HasNoArgumentsOld() *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
-		if o.ReturnTypeOld != expected {
-			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
+		if len(o.ArgumentsOld) > 0 {
+			return fmt.Errorf("expected arguments old to be empty; got: %v", o.ArgumentsOld)
 		}
 		return nil
 	})
 	return p
 }
 
-func (p *ProcedureAssert) HasArgumentsRaw(expected string) *ProcedureAssert {
+func (p *ProcedureAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
-		if o.ArgumentsRaw != expected {
-			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
+		if o.ReturnTypeOld != expected {
+			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
 		}
 		return nil
 	})
@@ -225,6 +236,17 @@ func (p *ProcedureAssert) HasSecrets(expected string) *ProcedureAssert {
 	return p
 }
 
+func (p *ProcedureAssert) HasNoSecrets() *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.Secrets != nil {
+			return fmt.Errorf("expected secrets to be nil; got: %v", *o.Secrets)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProcedureAssert) HasExternalAccessIntegrations(expected string) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
@@ -233,6 +255,17 @@ func (p *ProcedureAssert) HasExternalAccessIntegrations(expected string) *Proced
 		}
 		if *o.ExternalAccessIntegrations != expected {
 			return fmt.Errorf("expected external access integrations: %v; got: %v", expected, *o.ExternalAccessIntegrations)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProcedureAssert) HasNoExternalAccessIntegrations() *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.ExternalAccessIntegrations != nil {
+			return fmt.Errorf("expected external access integrations to be nil; got: %v", *o.ExternalAccessIntegrations)
 		}
 		return nil
 	})

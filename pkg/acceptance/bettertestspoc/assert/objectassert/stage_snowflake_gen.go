@@ -19,7 +19,7 @@ type StageAssert struct {
 func Stage(t *testing.T, id sdk.SchemaObjectIdentifier) *StageAssert {
 	t.Helper()
 	return &StageAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Stage"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stage, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeStage, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stage, sdk.SchemaObjectIdentifier] {
 			return testClient.Stage.Show
 		}),
 	}
@@ -145,6 +145,17 @@ func (s *StageAssert) HasRegion(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasNoRegion() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Region != nil {
+			return fmt.Errorf("expected region to be nil; got: %v", *o.Region)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasType(expected sdk.StageType) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
@@ -170,14 +181,36 @@ func (s *StageAssert) HasCloud(expected sdk.StageCloud) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasNoCloud() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Cloud != nil {
+			return fmt.Errorf("expected cloud to be nil; got: %v", *o.Cloud)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasStorageIntegration(expected sdk.AccountObjectIdentifier) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.StorageIntegration == nil {
 			return fmt.Errorf("expected storage integration to have value; got: nil")
 		}
-		if o.StorageIntegration.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected storage integration: %v; got: %v", expected, *o.StorageIntegration)
+		if (*o.StorageIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected storage integration: %v; got: %v", expected.FullyQualifiedName(), (*o.StorageIntegration).FullyQualifiedName())
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasNoStorageIntegration() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.StorageIntegration != nil {
+			return fmt.Errorf("expected storage integration to be nil; got: %v", *o.StorageIntegration)
 		}
 		return nil
 	})
@@ -198,6 +231,17 @@ func (s *StageAssert) HasEndpoint(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasNoEndpoint() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Endpoint != nil {
+			return fmt.Errorf("expected endpoint to be nil; got: %v", *o.Endpoint)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasOwnerRoleType(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
@@ -206,6 +250,17 @@ func (s *StageAssert) HasOwnerRoleType(expected string) *StageAssert {
 		}
 		if *o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, *o.OwnerRoleType)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasNoOwnerRoleType() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.OwnerRoleType != nil {
+			return fmt.Errorf("expected owner role type to be nil; got: %v", *o.OwnerRoleType)
 		}
 		return nil
 	})

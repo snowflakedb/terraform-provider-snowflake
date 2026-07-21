@@ -20,12 +20,15 @@ func userApplyDefaultWorkloadIdentityOidcChecks(e *assert.ResourceAssert, issuer
 	}
 }
 
-func userApplyDefaultWorkloadIdentityAwsChecks(e *assert.ResourceAssert, arn string) {
+func userApplyDefaultWorkloadIdentityAwsChecks(e *assert.ResourceAssert, arn string, issuer ...string) {
 	e.ValueSet("default_workload_identity.0.oidc.#", "0")
 	e.ValueSet("default_workload_identity.0.azure.#", "0")
 	e.ValueSet("default_workload_identity.0.gcp.#", "0")
 	e.ValueSet("default_workload_identity.0.aws.#", "1")
 	e.ValueSet("default_workload_identity.0.aws.0.arn", arn)
+	if len(issuer) > 0 {
+		e.ValueSet("default_workload_identity.0.aws.0.issuer", issuer[0])
+	}
 }
 
 func userApplyDefaultWorkloadIdentityAzureChecks(e *assert.ResourceAssert, issuer, subject string) {

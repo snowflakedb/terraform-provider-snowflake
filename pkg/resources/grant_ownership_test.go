@@ -110,7 +110,6 @@ func TestGetOnObjectIdentifier(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			id, err := GetOnObjectIdentifier(tt.ObjectType, tt.ObjectName)
 			if tt.Error == "" {
@@ -291,7 +290,6 @@ func TestGetOwnershipGrantOn(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			d := schema.TestResourceDataRaw(t, grantOwnershipSchema, map[string]any{
 				"on": []any{tt.On},
@@ -418,7 +416,6 @@ func TestPrepareShowGrantsRequestForGrantOwnership(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			opts, grantedOn := prepareShowGrantsRequestForGrantOwnership(&tt.Identifier)
 			if tt.ExpectedShowGrantsOpts == nil {
@@ -470,7 +467,6 @@ func TestValidAccountRoleNameGetOwnershipGrantTo(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			grantTo, err := getOwnershipGrantTo(schema.TestResourceDataRaw(t, grantOwnershipSchema, map[string]any{
 				"account_role_name": *tt.AccountRole,
@@ -508,7 +504,6 @@ func TestValidDatabaseRoleNameGetOwnershipGrantTo(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			grantTo, err := getOwnershipGrantTo(schema.TestResourceDataRaw(t, grantOwnershipSchema, map[string]any{
 				"database_role_name": *tt.DatabaseRole,
@@ -567,7 +562,6 @@ func TestGetOwnershipGrantOpts(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
-		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			opts := getOwnershipGrantOpts(&tt.Identifier)
 			assert.NotNil(t, opts)

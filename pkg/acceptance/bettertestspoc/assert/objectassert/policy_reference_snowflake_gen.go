@@ -14,17 +14,10 @@ type PolicyReferenceAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.PolicyReference, sdk.SchemaObjectIdentifier]
 }
 
-// Adjusted manually: removed PolicyReference
-
-// Adjusted manually
 func PolicyReferenceFromObject(t *testing.T, policyReference *sdk.PolicyReference) *PolicyReferenceAssert {
 	t.Helper()
 	return &PolicyReferenceAssert{
-		assert.NewSnowflakeObjectAssertWithObject(
-			sdk.ObjectType("PolicyReference"),
-			sdk.NewSchemaObjectIdentifier(*policyReference.PolicyDb, *policyReference.PolicySchema, policyReference.PolicyName),
-			policyReference,
-		),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("PolicyReference"), policyReference.ID(), policyReference),
 	}
 }
 
@@ -42,6 +35,17 @@ func (p *PolicyReferenceAssert) HasPolicyDb(expected string) *PolicyReferenceAss
 	return p
 }
 
+func (p *PolicyReferenceAssert) HasNoPolicyDb() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.PolicyDb != nil {
+			return fmt.Errorf("expected policy db to be nil; got: %v", *o.PolicyDb)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PolicyReferenceAssert) HasPolicySchema(expected string) *PolicyReferenceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
 		t.Helper()
@@ -50,6 +54,17 @@ func (p *PolicyReferenceAssert) HasPolicySchema(expected string) *PolicyReferenc
 		}
 		if *o.PolicySchema != expected {
 			return fmt.Errorf("expected policy schema: %v; got: %v", expected, *o.PolicySchema)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PolicyReferenceAssert) HasNoPolicySchema() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.PolicySchema != nil {
+			return fmt.Errorf("expected policy schema to be nil; got: %v", *o.PolicySchema)
 		}
 		return nil
 	})
@@ -92,6 +107,17 @@ func (p *PolicyReferenceAssert) HasRefDatabaseName(expected string) *PolicyRefer
 	return p
 }
 
+func (p *PolicyReferenceAssert) HasNoRefDatabaseName() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.RefDatabaseName != nil {
+			return fmt.Errorf("expected ref database name to be nil; got: %v", *o.RefDatabaseName)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PolicyReferenceAssert) HasRefSchemaName(expected string) *PolicyReferenceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
 		t.Helper()
@@ -100,6 +126,17 @@ func (p *PolicyReferenceAssert) HasRefSchemaName(expected string) *PolicyReferen
 		}
 		if *o.RefSchemaName != expected {
 			return fmt.Errorf("expected ref schema name: %v; got: %v", expected, *o.RefSchemaName)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PolicyReferenceAssert) HasNoRefSchemaName() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.RefSchemaName != nil {
+			return fmt.Errorf("expected ref schema name to be nil; got: %v", *o.RefSchemaName)
 		}
 		return nil
 	})
@@ -142,6 +179,17 @@ func (p *PolicyReferenceAssert) HasRefColumnName(expected string) *PolicyReferen
 	return p
 }
 
+func (p *PolicyReferenceAssert) HasNoRefColumnName() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.RefColumnName != nil {
+			return fmt.Errorf("expected ref column name to be nil; got: %v", *o.RefColumnName)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PolicyReferenceAssert) HasRefArgColumnNames(expected string) *PolicyReferenceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
 		t.Helper()
@@ -150,6 +198,17 @@ func (p *PolicyReferenceAssert) HasRefArgColumnNames(expected string) *PolicyRef
 		}
 		if *o.RefArgColumnNames != expected {
 			return fmt.Errorf("expected ref arg column names: %v; got: %v", expected, *o.RefArgColumnNames)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PolicyReferenceAssert) HasNoRefArgColumnNames() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.RefArgColumnNames != nil {
+			return fmt.Errorf("expected ref arg column names to be nil; got: %v", *o.RefArgColumnNames)
 		}
 		return nil
 	})
@@ -170,6 +229,17 @@ func (p *PolicyReferenceAssert) HasTagDatabase(expected string) *PolicyReference
 	return p
 }
 
+func (p *PolicyReferenceAssert) HasNoTagDatabase() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.TagDatabase != nil {
+			return fmt.Errorf("expected tag database to be nil; got: %v", *o.TagDatabase)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PolicyReferenceAssert) HasTagSchema(expected string) *PolicyReferenceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
 		t.Helper()
@@ -178,6 +248,17 @@ func (p *PolicyReferenceAssert) HasTagSchema(expected string) *PolicyReferenceAs
 		}
 		if *o.TagSchema != expected {
 			return fmt.Errorf("expected tag schema: %v; got: %v", expected, *o.TagSchema)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PolicyReferenceAssert) HasNoTagSchema() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.TagSchema != nil {
+			return fmt.Errorf("expected tag schema to be nil; got: %v", *o.TagSchema)
 		}
 		return nil
 	})
@@ -198,6 +279,17 @@ func (p *PolicyReferenceAssert) HasTagName(expected string) *PolicyReferenceAsse
 	return p
 }
 
+func (p *PolicyReferenceAssert) HasNoTagName() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.TagName != nil {
+			return fmt.Errorf("expected tag name to be nil; got: %v", *o.TagName)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PolicyReferenceAssert) HasPolicyStatus(expected string) *PolicyReferenceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
 		t.Helper()
@@ -206,6 +298,17 @@ func (p *PolicyReferenceAssert) HasPolicyStatus(expected string) *PolicyReferenc
 		}
 		if *o.PolicyStatus != expected {
 			return fmt.Errorf("expected policy status: %v; got: %v", expected, *o.PolicyStatus)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PolicyReferenceAssert) HasNoPolicyStatus() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.PolicyStatus != nil {
+			return fmt.Errorf("expected policy status to be nil; got: %v", *o.PolicyStatus)
 		}
 		return nil
 	})

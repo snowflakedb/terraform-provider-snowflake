@@ -127,7 +127,8 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 
 ##### Remaining TODOs
 
-- Generate `ID()` methods for `Request` structs as already done for the `Opts` structs.
+- Generate `ID()` methods for `Request` structs as already done for `Show` result structs.
+- Generate `ID()` methods for `Describe`/`DescribeDetails` structs as already done for `Show` result structs.
 - PoC of unit tests generation without manual changes in the generated files (details soon)
   - generate each branch of alter in tests (instead of basic and all options)
 - Improve validation handling for nested slices (the path is built incorrectly now)

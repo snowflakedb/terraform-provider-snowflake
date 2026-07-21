@@ -154,8 +154,8 @@ func (c *contextFunctions) CurrentSecondaryRoles(ctx context.Context) (*CurrentS
 
 	var roles []AccountObjectIdentifier
 	if len(jsonRoles.Roles) > 0 {
-		stringRoles := strings.Split(jsonRoles.Roles, ",")
-		for _, role := range stringRoles {
+		stringRoles := strings.SplitSeq(jsonRoles.Roles, ",")
+		for role := range stringRoles {
 			roles = append(roles, NewAccountObjectIdentifier(role))
 		}
 	}
@@ -163,9 +163,9 @@ func (c *contextFunctions) CurrentSecondaryRoles(ctx context.Context) (*CurrentS
 	var value SecondaryRoleOption
 	switch jsonRoles.Value {
 	case "ALL":
-		value = SecondaryRolesAll
+		value = SecondaryRoleOptionAll
 	default:
-		value = SecondaryRolesNone
+		value = SecondaryRoleOptionNone
 	}
 	secondaryRoles := &CurrentSecondaryRoles{
 		Roles: roles,
