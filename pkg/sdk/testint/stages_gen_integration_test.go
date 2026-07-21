@@ -495,6 +495,7 @@ func TestInt_Stages(t *testing.T) {
 	})
 
 	t.Run("CreateOnS3 - with aws_sns_topic", func(t *testing.T) {
+		// TODO(SNOW-3818978): Adjust the test for aws_sns_topic
 		snsTopicArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSnsTopicArn)
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
