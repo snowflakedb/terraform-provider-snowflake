@@ -116,6 +116,17 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasAwsAdditionalInfo(ex
 	return u
 }
 
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasNoAwsAdditionalInfo() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.AwsAdditionalInfo != nil {
+			return fmt.Errorf("expected aws additional info to be nil; got: %v", *o.AwsAdditionalInfo)
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasAzureAdditionalInfo(expected sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo) *UserWorkloadIdentityAuthenticationMethodAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
@@ -124,6 +135,17 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasAzureAdditionalInfo(
 		}
 		if !reflect.DeepEqual(*o.AzureAdditionalInfo, expected) {
 			return fmt.Errorf("expected azure additional info: %v; got: %v", expected, *o.AzureAdditionalInfo)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasNoAzureAdditionalInfo() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.AzureAdditionalInfo != nil {
+			return fmt.Errorf("expected azure additional info to be nil; got: %v", *o.AzureAdditionalInfo)
 		}
 		return nil
 	})
@@ -144,6 +166,17 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasGcpAdditionalInfo(ex
 	return u
 }
 
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasNoGcpAdditionalInfo() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.GcpAdditionalInfo != nil {
+			return fmt.Errorf("expected gcp additional info to be nil; got: %v", *o.GcpAdditionalInfo)
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasOidcAdditionalInfo(expected sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo) *UserWorkloadIdentityAuthenticationMethodAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
@@ -152,6 +185,17 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasOidcAdditionalInfo(e
 		}
 		if !reflect.DeepEqual(*o.OidcAdditionalInfo, expected) {
 			return fmt.Errorf("expected oidc additional info: %v; got: %v", expected, *o.OidcAdditionalInfo)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasNoOidcAdditionalInfo() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.OidcAdditionalInfo != nil {
+			return fmt.Errorf("expected oidc additional info to be nil; got: %v", *o.OidcAdditionalInfo)
 		}
 		return nil
 	})

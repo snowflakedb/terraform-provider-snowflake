@@ -112,6 +112,17 @@ func (g *GitRepositoryAssert) HasGitCredentials(expected sdk.SchemaObjectIdentif
 	return g
 }
 
+func (g *GitRepositoryAssert) HasNoGitCredentials() *GitRepositoryAssert {
+	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
+		t.Helper()
+		if o.GitCredentials != nil {
+			return fmt.Errorf("expected git credentials to be nil; got: %v", *o.GitCredentials)
+		}
+		return nil
+	})
+	return g
+}
+
 func (g *GitRepositoryAssert) HasOwner(expected string) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
@@ -148,6 +159,17 @@ func (g *GitRepositoryAssert) HasComment(expected string) *GitRepositoryAssert {
 	return g
 }
 
+func (g *GitRepositoryAssert) HasNoComment() *GitRepositoryAssert {
+	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return g
+}
+
 func (g *GitRepositoryAssert) HasLastFetchedAt(expected time.Time) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
@@ -156,6 +178,17 @@ func (g *GitRepositoryAssert) HasLastFetchedAt(expected time.Time) *GitRepositor
 		}
 		if *o.LastFetchedAt != expected {
 			return fmt.Errorf("expected last fetched at: %v; got: %v", expected, *o.LastFetchedAt)
+		}
+		return nil
+	})
+	return g
+}
+
+func (g *GitRepositoryAssert) HasNoLastFetchedAt() *GitRepositoryAssert {
+	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
+		t.Helper()
+		if o.LastFetchedAt != nil {
+			return fmt.Errorf("expected last fetched at to be nil; got: %v", *o.LastFetchedAt)
 		}
 		return nil
 	})

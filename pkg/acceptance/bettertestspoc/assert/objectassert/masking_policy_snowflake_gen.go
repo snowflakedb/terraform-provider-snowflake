@@ -124,6 +124,17 @@ func (m *MaskingPolicyAssert) HasOptions(expected sdk.MaskingPolicyOptions) *Mas
 	return m
 }
 
+func (m *MaskingPolicyAssert) HasNoOptions() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.Options != nil {
+			return fmt.Errorf("expected options to be nil; got: %v", *o.Options)
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *MaskingPolicyAssert) HasOwnerRoleType(expected string) *MaskingPolicyAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
 		t.Helper()

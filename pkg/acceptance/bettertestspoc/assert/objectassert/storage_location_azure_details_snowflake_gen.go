@@ -64,3 +64,14 @@ func (s *StorageLocationAzureDetailsAssert) HasUsePrivatelinkEndpoint(expected b
 	})
 	return s
 }
+
+func (s *StorageLocationAzureDetailsAssert) HasNoUsePrivatelinkEndpoint() *StorageLocationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
+		t.Helper()
+		if o.UsePrivatelinkEndpoint != nil {
+			return fmt.Errorf("expected use privatelink endpoint to be nil; got: %v", *o.UsePrivatelinkEndpoint)
+		}
+		return nil
+	})
+	return s
+}

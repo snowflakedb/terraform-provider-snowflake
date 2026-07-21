@@ -123,6 +123,17 @@ func (a *ApiIntegrationAwsDetailsAssert) HasAllowedPrefixes(expected ...string) 
 	return a
 }
 
+func (a *ApiIntegrationAwsDetailsAssert) HasNoAllowedPrefixes() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if len(o.AllowedPrefixes) > 0 {
+			return fmt.Errorf("expected allowed prefixes to be empty; got: %v", o.AllowedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAwsDetailsAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
@@ -130,6 +141,17 @@ func (a *ApiIntegrationAwsDetailsAssert) HasBlockedPrefixes(expected ...string) 
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked prefixes: %v; got: %v", expected, o.BlockedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAwsDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if len(o.BlockedPrefixes) > 0 {
+			return fmt.Errorf("expected blocked prefixes to be empty; got: %v", o.BlockedPrefixes)
 		}
 		return nil
 	})

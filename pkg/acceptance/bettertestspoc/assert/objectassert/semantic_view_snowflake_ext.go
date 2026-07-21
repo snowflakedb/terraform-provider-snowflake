@@ -18,14 +18,3 @@ func (s *SemanticViewAssert) HasCreatedOnNotEmpty() *SemanticViewAssert {
 	})
 	return s
 }
-
-func (s *SemanticViewAssert) HasNoComment() *SemanticViewAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be empty")
-		}
-		return nil
-	})
-	return s
-}

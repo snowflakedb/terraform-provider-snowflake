@@ -178,6 +178,17 @@ func (c *CatalogIntegrationAllDetailsAssert) HasRestConfig(expected sdk.IcebergR
 	return c
 }
 
+func (c *CatalogIntegrationAllDetailsAssert) HasNoRestConfig() *CatalogIntegrationAllDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAllDetails) error {
+		t.Helper()
+		if o.RestConfig != nil {
+			return fmt.Errorf("expected rest config to be nil; got: %v", *o.RestConfig)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CatalogIntegrationAllDetailsAssert) HasOAuthRestAuthentication(expected sdk.OAuthRestAuthenticationDetails) *CatalogIntegrationAllDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAllDetails) error {
 		t.Helper()
@@ -186,6 +197,17 @@ func (c *CatalogIntegrationAllDetailsAssert) HasOAuthRestAuthentication(expected
 		}
 		if !reflect.DeepEqual(*o.OAuthRestAuthentication, expected) {
 			return fmt.Errorf("expected o auth rest authentication: %v; got: %v", expected, *o.OAuthRestAuthentication)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationAllDetailsAssert) HasNoOAuthRestAuthentication() *CatalogIntegrationAllDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAllDetails) error {
+		t.Helper()
+		if o.OAuthRestAuthentication != nil {
+			return fmt.Errorf("expected o auth rest authentication to be nil; got: %v", *o.OAuthRestAuthentication)
 		}
 		return nil
 	})
@@ -206,6 +228,17 @@ func (c *CatalogIntegrationAllDetailsAssert) HasBearerRestAuthentication(expecte
 	return c
 }
 
+func (c *CatalogIntegrationAllDetailsAssert) HasNoBearerRestAuthentication() *CatalogIntegrationAllDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAllDetails) error {
+		t.Helper()
+		if o.BearerRestAuthentication != nil {
+			return fmt.Errorf("expected bearer rest authentication to be nil; got: %v", *o.BearerRestAuthentication)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CatalogIntegrationAllDetailsAssert) HasSigV4RestAuthentication(expected sdk.SigV4RestAuthenticationDetails) *CatalogIntegrationAllDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAllDetails) error {
 		t.Helper()
@@ -214,6 +247,17 @@ func (c *CatalogIntegrationAllDetailsAssert) HasSigV4RestAuthentication(expected
 		}
 		if !reflect.DeepEqual(*o.SigV4RestAuthentication, expected) {
 			return fmt.Errorf("expected sig v4 rest authentication: %v; got: %v", expected, *o.SigV4RestAuthentication)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationAllDetailsAssert) HasNoSigV4RestAuthentication() *CatalogIntegrationAllDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAllDetails) error {
+		t.Helper()
+		if o.SigV4RestAuthentication != nil {
+			return fmt.Errorf("expected sig v4 rest authentication to be nil; got: %v", *o.SigV4RestAuthentication)
 		}
 		return nil
 	})

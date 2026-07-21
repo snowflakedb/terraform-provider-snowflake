@@ -79,6 +79,17 @@ func (s *StorageIntegrationGcsDetailsAssert) HasAllowedLocations(expected ...str
 	return s
 }
 
+func (s *StorageIntegrationGcsDetailsAssert) HasNoAllowedLocations() *StorageIntegrationGcsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
+		t.Helper()
+		if len(o.AllowedLocations) > 0 {
+			return fmt.Errorf("expected allowed locations to be empty; got: %v", o.AllowedLocations)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationGcsDetailsAssert) HasBlockedLocations(expected ...string) *StorageIntegrationGcsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
 		t.Helper()
@@ -86,6 +97,17 @@ func (s *StorageIntegrationGcsDetailsAssert) HasBlockedLocations(expected ...str
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked locations: %v; got: %v", expected, o.BlockedLocations)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationGcsDetailsAssert) HasNoBlockedLocations() *StorageIntegrationGcsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
+		t.Helper()
+		if len(o.BlockedLocations) > 0 {
+			return fmt.Errorf("expected blocked locations to be empty; got: %v", o.BlockedLocations)
 		}
 		return nil
 	})

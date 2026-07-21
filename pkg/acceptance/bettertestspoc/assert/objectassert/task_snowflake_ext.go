@@ -61,36 +61,3 @@ func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
 	})
 	return t
 }
-
-func (t *TaskAssert) HasNoWarehouse() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.Warehouse != nil {
-			return fmt.Errorf("expected warehouse to have no value; got: %s", o.Warehouse.Name())
-		}
-		return nil
-	})
-	return t
-}
-
-func (t *TaskAssert) HasNoErrorIntegration() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.ErrorIntegration != nil {
-			return fmt.Errorf("expected error integration to have no value; got: %s", o.ErrorIntegration.Name())
-		}
-		return nil
-	})
-	return t
-}
-
-func (t *TaskAssert) HasNoTargetCompletionInterval() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.TargetCompletionInterval != nil {
-			return fmt.Errorf("expected target completion interval to have no value; got: %v", o.TargetCompletionInterval)
-		}
-		return nil
-	})
-	return t
-}

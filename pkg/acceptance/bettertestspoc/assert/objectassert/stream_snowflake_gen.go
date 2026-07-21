@@ -92,6 +92,17 @@ func (s *StreamAssert) HasOwner(expected string) *StreamAssert {
 	return s
 }
 
+func (s *StreamAssert) HasNoOwner() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.Owner != nil {
+			return fmt.Errorf("expected owner to be nil; got: %v", *o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamAssert) HasComment(expected string) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
@@ -100,6 +111,17 @@ func (s *StreamAssert) HasComment(expected string) *StreamAssert {
 		}
 		if *o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamAssert) HasNoComment() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
 		}
 		return nil
 	})
@@ -120,6 +142,17 @@ func (s *StreamAssert) HasTableName(expected sdk.SchemaObjectIdentifier) *Stream
 	return s
 }
 
+func (s *StreamAssert) HasNoTableName() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.TableName != nil {
+			return fmt.Errorf("expected table name to be nil; got: %v", *o.TableName)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamAssert) HasSourceType(expected sdk.StreamSourceType) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
@@ -128,6 +161,17 @@ func (s *StreamAssert) HasSourceType(expected sdk.StreamSourceType) *StreamAsser
 		}
 		if *o.SourceType != expected {
 			return fmt.Errorf("expected source type: %v; got: %v", expected, *o.SourceType)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamAssert) HasNoSourceType() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.SourceType != nil {
+			return fmt.Errorf("expected source type to be nil; got: %v", *o.SourceType)
 		}
 		return nil
 	})
@@ -147,6 +191,17 @@ func (s *StreamAssert) HasBaseTables(expected ...sdk.SchemaObjectIdentifier) *St
 	return s
 }
 
+func (s *StreamAssert) HasNoBaseTables() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if len(o.BaseTables) > 0 {
+			return fmt.Errorf("expected base tables to be empty; got: %v", o.BaseTables)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamAssert) HasType(expected string) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
@@ -155,6 +210,17 @@ func (s *StreamAssert) HasType(expected string) *StreamAssert {
 		}
 		if *o.Type != expected {
 			return fmt.Errorf("expected type: %v; got: %v", expected, *o.Type)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamAssert) HasNoType() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.Type != nil {
+			return fmt.Errorf("expected type to be nil; got: %v", *o.Type)
 		}
 		return nil
 	})
@@ -186,6 +252,17 @@ func (s *StreamAssert) HasMode(expected sdk.StreamMode) *StreamAssert {
 	return s
 }
 
+func (s *StreamAssert) HasNoMode() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.Mode != nil {
+			return fmt.Errorf("expected mode to be nil; got: %v", *o.Mode)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamAssert) HasStaleAfter(expected time.Time) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
@@ -194,6 +271,17 @@ func (s *StreamAssert) HasStaleAfter(expected time.Time) *StreamAssert {
 		}
 		if *o.StaleAfter != expected {
 			return fmt.Errorf("expected stale after: %v; got: %v", expected, *o.StaleAfter)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamAssert) HasNoStaleAfter() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.StaleAfter != nil {
+			return fmt.Errorf("expected stale after to be nil; got: %v", *o.StaleAfter)
 		}
 		return nil
 	})
@@ -214,6 +302,17 @@ func (s *StreamAssert) HasInvalidReason(expected string) *StreamAssert {
 	return s
 }
 
+func (s *StreamAssert) HasNoInvalidReason() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.InvalidReason != nil {
+			return fmt.Errorf("expected invalid reason to be nil; got: %v", *o.InvalidReason)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamAssert) HasOwnerRoleType(expected string) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
@@ -222,6 +321,17 @@ func (s *StreamAssert) HasOwnerRoleType(expected string) *StreamAssert {
 		}
 		if *o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, *o.OwnerRoleType)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamAssert) HasNoOwnerRoleType() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.OwnerRoleType != nil {
+			return fmt.Errorf("expected owner role type to be nil; got: %v", *o.OwnerRoleType)
 		}
 		return nil
 	})

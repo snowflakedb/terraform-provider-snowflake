@@ -8,17 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (c *ProgrammaticAccessTokenAssert) HasNoRoleRestriction() *ProgrammaticAccessTokenAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.RoleRestriction != nil {
-			return fmt.Errorf("expected role_restriction to be empty; got: %s", o.RoleRestriction)
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ProgrammaticAccessTokenAssert) HasExpiresAtNotEmpty() *ProgrammaticAccessTokenAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
@@ -41,44 +30,11 @@ func (c *ProgrammaticAccessTokenAssert) HasExpiresAtBefore(expected time.Time) *
 	return c
 }
 
-func (c *ProgrammaticAccessTokenAssert) HasNoComment() *ProgrammaticAccessTokenAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be nil; got: %s", *o.Comment)
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ProgrammaticAccessTokenAssert) HasCreatedOnNotEmpty() *ProgrammaticAccessTokenAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
 		if o.CreatedOn == (time.Time{}) {
 			return fmt.Errorf("expected created_on to be not empty")
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ProgrammaticAccessTokenAssert) HasNoMinsToBypassNetworkPolicyRequirement() *ProgrammaticAccessTokenAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.MinsToBypassNetworkPolicyRequirement != nil {
-			return fmt.Errorf("expected mins_to_bypass_network_policy_requirement to be empty; got: %d", *o.MinsToBypassNetworkPolicyRequirement)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ProgrammaticAccessTokenAssert) HasRotatedToEmpty() *ProgrammaticAccessTokenAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.RotatedTo != nil {
-			return fmt.Errorf("expected rotated_to to be empty; got: %s", *o.RotatedTo)
 		}
 		return nil
 	})

@@ -79,6 +79,17 @@ func (s *StorageIntegrationAwsDetailsAssert) HasAllowedLocations(expected ...str
 	return s
 }
 
+func (s *StorageIntegrationAwsDetailsAssert) HasNoAllowedLocations() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if len(o.AllowedLocations) > 0 {
+			return fmt.Errorf("expected allowed locations to be empty; got: %v", o.AllowedLocations)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAwsDetailsAssert) HasBlockedLocations(expected ...string) *StorageIntegrationAwsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
 		t.Helper()
@@ -86,6 +97,17 @@ func (s *StorageIntegrationAwsDetailsAssert) HasBlockedLocations(expected ...str
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked locations: %v; got: %v", expected, o.BlockedLocations)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAwsDetailsAssert) HasNoBlockedLocations() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if len(o.BlockedLocations) > 0 {
+			return fmt.Errorf("expected blocked locations to be empty; got: %v", o.BlockedLocations)
 		}
 		return nil
 	})

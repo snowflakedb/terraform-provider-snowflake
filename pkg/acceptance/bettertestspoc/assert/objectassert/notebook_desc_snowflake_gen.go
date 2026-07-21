@@ -56,6 +56,17 @@ func (n *NotebookDetailsAssert) HasTitle(expected string) *NotebookDetailsAssert
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoTitle() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.Title != nil {
+			return fmt.Errorf("expected title to be nil; got: %v", *o.Title)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasMainFile(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -75,6 +86,17 @@ func (n *NotebookDetailsAssert) HasQueryWarehouse(expected sdk.AccountObjectIden
 		}
 		if (*o.QueryWarehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected query warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.QueryWarehouse).FullyQualifiedName())
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasNoQueryWarehouse() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.QueryWarehouse != nil {
+			return fmt.Errorf("expected query warehouse to be nil; got: %v", *o.QueryWarehouse)
 		}
 		return nil
 	})
@@ -117,6 +139,17 @@ func (n *NotebookDetailsAssert) HasUserPackages(expected string) *NotebookDetail
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoUserPackages() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.UserPackages != nil {
+			return fmt.Errorf("expected user packages to be nil; got: %v", *o.UserPackages)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasRuntimeName(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -131,6 +164,17 @@ func (n *NotebookDetailsAssert) HasRuntimeName(expected string) *NotebookDetails
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoRuntimeName() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.RuntimeName != nil {
+			return fmt.Errorf("expected runtime name to be nil; got: %v", *o.RuntimeName)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasComputePool(expected sdk.AccountObjectIdentifier) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -139,6 +183,17 @@ func (n *NotebookDetailsAssert) HasComputePool(expected sdk.AccountObjectIdentif
 		}
 		if (*o.ComputePool).FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected compute pool: %v; got: %v", expected.FullyQualifiedName(), (*o.ComputePool).FullyQualifiedName())
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasNoComputePool() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.ComputePool != nil {
+			return fmt.Errorf("expected compute pool to be nil; got: %v", *o.ComputePool)
 		}
 		return nil
 	})
@@ -247,6 +302,17 @@ func (n *NotebookDetailsAssert) HasComment(expected string) *NotebookDetailsAsse
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoComment() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasDefaultVersion(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -283,6 +349,17 @@ func (n *NotebookDetailsAssert) HasDefaultVersionAlias(expected string) *Noteboo
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoDefaultVersionAlias() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.DefaultVersionAlias != nil {
+			return fmt.Errorf("expected default version alias to be nil; got: %v", *o.DefaultVersionAlias)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasDefaultVersionLocationUri(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -308,6 +385,17 @@ func (n *NotebookDetailsAssert) HasDefaultVersionSourceLocationUri(expected stri
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoDefaultVersionSourceLocationUri() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.DefaultVersionSourceLocationUri != nil {
+			return fmt.Errorf("expected default version source location uri to be nil; got: %v", *o.DefaultVersionSourceLocationUri)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasDefaultVersionGitCommitHash(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -316,6 +404,17 @@ func (n *NotebookDetailsAssert) HasDefaultVersionGitCommitHash(expected string) 
 		}
 		if *o.DefaultVersionGitCommitHash != expected {
 			return fmt.Errorf("expected default version git commit hash: %v; got: %v", expected, *o.DefaultVersionGitCommitHash)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasNoDefaultVersionGitCommitHash() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.DefaultVersionGitCommitHash != nil {
+			return fmt.Errorf("expected default version git commit hash to be nil; got: %v", *o.DefaultVersionGitCommitHash)
 		}
 		return nil
 	})
@@ -347,6 +446,17 @@ func (n *NotebookDetailsAssert) HasLastVersionAlias(expected string) *NotebookDe
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoLastVersionAlias() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.LastVersionAlias != nil {
+			return fmt.Errorf("expected last version alias to be nil; got: %v", *o.LastVersionAlias)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasLastVersionLocationUri(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -372,6 +482,17 @@ func (n *NotebookDetailsAssert) HasLastVersionSourceLocationUri(expected string)
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoLastVersionSourceLocationUri() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.LastVersionSourceLocationUri != nil {
+			return fmt.Errorf("expected last version source location uri to be nil; got: %v", *o.LastVersionSourceLocationUri)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasLastVersionGitCommitHash(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -386,6 +507,17 @@ func (n *NotebookDetailsAssert) HasLastVersionGitCommitHash(expected string) *No
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasNoLastVersionGitCommitHash() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.LastVersionGitCommitHash != nil {
+			return fmt.Errorf("expected last version git commit hash to be nil; got: %v", *o.LastVersionGitCommitHash)
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasLiveVersionLocationUri(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -394,6 +526,17 @@ func (n *NotebookDetailsAssert) HasLiveVersionLocationUri(expected string) *Note
 		}
 		if *o.LiveVersionLocationUri != expected {
 			return fmt.Errorf("expected live version location uri: %v; got: %v", expected, *o.LiveVersionLocationUri)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasNoLiveVersionLocationUri() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.LiveVersionLocationUri != nil {
+			return fmt.Errorf("expected live version location uri to be nil; got: %v", *o.LiveVersionLocationUri)
 		}
 		return nil
 	})

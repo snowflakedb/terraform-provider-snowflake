@@ -67,6 +67,17 @@ func (e *ExternalVolumeDetailsAssert) HasStorageLocationsWith(subAsserts ...*Ext
 	return e
 }
 
+func (e *ExternalVolumeDetailsAssert) HasNoStorageLocations() *ExternalVolumeDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
+		t.Helper()
+		if len(o.StorageLocations) > 0 {
+			return fmt.Errorf("expected storage locations to be empty; got: %v", o.StorageLocations)
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeDetailsAssert) HasActive(expected string) *ExternalVolumeDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
 		t.Helper()

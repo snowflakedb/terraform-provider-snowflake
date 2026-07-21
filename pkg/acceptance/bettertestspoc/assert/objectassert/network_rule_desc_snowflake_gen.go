@@ -134,3 +134,14 @@ func (n *NetworkRuleDetailsAssert) HasValueList(expected ...string) *NetworkRule
 	})
 	return n
 }
+
+func (n *NetworkRuleDetailsAssert) HasNoValueList() *NetworkRuleDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
+		t.Helper()
+		if len(o.ValueList) > 0 {
+			return fmt.Errorf("expected value list to be empty; got: %v", o.ValueList)
+		}
+		return nil
+	})
+	return n
+}

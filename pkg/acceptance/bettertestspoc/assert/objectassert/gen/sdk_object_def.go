@@ -138,12 +138,22 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.ComputePool{},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ComputePoolDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.GitRepository{},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Service{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.ServiceDetails{},
+		IsDataSourceOutput: true,
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",

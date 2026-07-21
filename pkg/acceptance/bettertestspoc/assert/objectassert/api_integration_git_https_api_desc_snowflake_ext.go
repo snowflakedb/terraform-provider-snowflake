@@ -34,25 +34,3 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoUserAuthType() *ApiIntegra
 	})
 	return a
 }
-
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoTlsTrustedCertificates() *ApiIntegrationGitHttpsApiDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
-		t.Helper()
-		if len(o.TlsTrustedCertificates) != 0 {
-			return fmt.Errorf("expected no tls trusted certificates; got: %v", o.TlsTrustedCertificates)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationGitHttpsApiDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
-		t.Helper()
-		if len(o.BlockedPrefixes) != 0 {
-			return fmt.Errorf("expected no blocked prefixes; got: %v", o.BlockedPrefixes)
-		}
-		return nil
-	})
-	return a
-}

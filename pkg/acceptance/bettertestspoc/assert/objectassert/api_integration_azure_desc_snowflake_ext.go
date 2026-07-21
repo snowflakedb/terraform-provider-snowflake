@@ -23,17 +23,6 @@ func (a *ApiIntegrationAzureDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationAz
 	return a
 }
 
-func (a *ApiIntegrationAzureDetailsAssert) HasNoAllowedPrefixes() *ApiIntegrationAzureDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
-		t.Helper()
-		if len(o.AllowedPrefixes) != 0 {
-			return fmt.Errorf("expected no allowed prefixes; got: %v", o.AllowedPrefixes)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *ApiIntegrationAzureDetailsAssert) HasAzureMultiTenantAppNameNotEmpty() *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
@@ -50,17 +39,6 @@ func (a *ApiIntegrationAzureDetailsAssert) HasAzureConsentUrlNotEmpty() *ApiInte
 		t.Helper()
 		if o.AzureConsentUrl == "" {
 			return fmt.Errorf("expected azure consent url not empty; got empty")
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationAzureDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationAzureDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
-		t.Helper()
-		if len(o.BlockedPrefixes) != 0 {
-			return fmt.Errorf("expected no blocked prefixes; got: %v", o.BlockedPrefixes)
 		}
 		return nil
 	})

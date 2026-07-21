@@ -103,5 +103,29 @@
         return {{ $assertVar }}
     }
 {{- end }}
+{{- if .IsOriginalTypePointer }}
+    func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            t.Helper()
+            if o.{{ .Name }} != nil {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to be nil; got: %v", *o.{{ .Name }})
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+{{- end }}
+{{- if .IsOriginalTypeSlice }}
+    func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ .Name }}() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            t.Helper()
+            if len(o.{{ .Name }}) > 0 {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to be empty; got: %v", o.{{ .Name }})
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+{{- end }}
 {{- end }}
 {{ end }}

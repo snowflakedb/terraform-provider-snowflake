@@ -134,6 +134,17 @@ func (s *SchemaAssert) HasOptions(expected string) *SchemaAssert {
 	return s
 }
 
+func (s *SchemaAssert) HasNoOptions() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.Options != nil {
+			return fmt.Errorf("expected options to be nil; got: %v", *o.Options)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SchemaAssert) HasRetentionTime(expected string) *SchemaAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
 		t.Helper()

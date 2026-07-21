@@ -103,6 +103,17 @@ func (s *SecretAssert) HasComment(expected string) *SecretAssert {
 	return s
 }
 
+func (s *SecretAssert) HasNoComment() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecretAssert) HasSecretType(expected string) *SecretAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
 		t.Helper()
@@ -121,6 +132,17 @@ func (s *SecretAssert) HasOauthScopes(expected ...string) *SecretAssert {
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected oauth scopes: %v; got: %v", expected, o.OauthScopes)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SecretAssert) HasNoOauthScopes() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if len(o.OauthScopes) > 0 {
+			return fmt.Errorf("expected oauth scopes to be empty; got: %v", o.OauthScopes)
 		}
 		return nil
 	})

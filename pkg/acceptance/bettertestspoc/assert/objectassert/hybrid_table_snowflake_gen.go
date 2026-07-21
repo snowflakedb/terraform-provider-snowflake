@@ -101,6 +101,17 @@ func (h *HybridTableAssert) HasRows(expected int) *HybridTableAssert {
 	return h
 }
 
+func (h *HybridTableAssert) HasNoRows() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.Rows != nil {
+			return fmt.Errorf("expected rows to be nil; got: %v", *o.Rows)
+		}
+		return nil
+	})
+	return h
+}
+
 func (h *HybridTableAssert) HasBytes(expected int) *HybridTableAssert {
 	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
 		t.Helper()
@@ -109,6 +120,17 @@ func (h *HybridTableAssert) HasBytes(expected int) *HybridTableAssert {
 		}
 		if *o.Bytes != expected {
 			return fmt.Errorf("expected bytes: %v; got: %v", expected, *o.Bytes)
+		}
+		return nil
+	})
+	return h
+}
+
+func (h *HybridTableAssert) HasNoBytes() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.Bytes != nil {
+			return fmt.Errorf("expected bytes to be nil; got: %v", *o.Bytes)
 		}
 		return nil
 	})

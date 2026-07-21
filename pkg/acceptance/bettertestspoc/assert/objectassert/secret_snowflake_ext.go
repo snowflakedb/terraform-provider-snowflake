@@ -17,14 +17,3 @@ func (s *SecretAssert) HasCreatedOnNotEmpty() *SecretAssert {
 	})
 	return s
 }
-
-func (s *SecretAssert) HasNoComment() *SecretAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be nil; got: %s", *o.Comment)
-		}
-		return nil
-	})
-	return s
-}

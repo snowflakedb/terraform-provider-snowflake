@@ -135,6 +135,17 @@ func (c *CortexAgentDetailsAssert) HasDefaultVersionName(expected string) *Corte
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasNoDefaultVersionName() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.DefaultVersionName != nil {
+			return fmt.Errorf("expected default version name to be nil; got: %v", *o.DefaultVersionName)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasVersions(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
@@ -149,6 +160,17 @@ func (c *CortexAgentDetailsAssert) HasVersions(expected string) *CortexAgentDeta
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasNoVersions() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.Versions != nil {
+			return fmt.Errorf("expected versions to be nil; got: %v", *o.Versions)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasAliases(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
@@ -157,6 +179,17 @@ func (c *CortexAgentDetailsAssert) HasAliases(expected string) *CortexAgentDetai
 		}
 		if *o.Aliases != expected {
 			return fmt.Errorf("expected aliases: %v; got: %v", expected, *o.Aliases)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentDetailsAssert) HasNoAliases() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.Aliases != nil {
+			return fmt.Errorf("expected aliases to be nil; got: %v", *o.Aliases)
 		}
 		return nil
 	})

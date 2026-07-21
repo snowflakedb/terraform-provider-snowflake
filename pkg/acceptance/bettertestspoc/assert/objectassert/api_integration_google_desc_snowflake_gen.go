@@ -112,6 +112,17 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasAllowedPrefixes(expected ...strin
 	return a
 }
 
+func (a *ApiIntegrationGoogleDetailsAssert) HasNoAllowedPrefixes() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if len(o.AllowedPrefixes) > 0 {
+			return fmt.Errorf("expected allowed prefixes to be empty; got: %v", o.AllowedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGoogleDetailsAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()
@@ -119,6 +130,17 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasBlockedPrefixes(expected ...strin
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked prefixes: %v; got: %v", expected, o.BlockedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGoogleDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if len(o.BlockedPrefixes) > 0 {
+			return fmt.Errorf("expected blocked prefixes to be empty; got: %v", o.BlockedPrefixes)
 		}
 		return nil
 	})
