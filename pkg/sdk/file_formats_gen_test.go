@@ -33,8 +33,8 @@ func TestFileFormats_CreateCsv(t *testing.T) {
 
 	t.Run("validation: conflicting fields for [opts.SkipHeader opts.ParseHeader]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.SkipHeader = Pointer(1)
-		opts.ParseHeader = Bool(true)
+		opts.SkipHeader = new(1)
+		opts.ParseHeader = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateCsvFileFormatOptions", "SkipHeader", "ParseHeader"))
 	})
 
@@ -99,30 +99,30 @@ func TestFileFormats_CreateCsv(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		opts.Compression = Pointer(CsvCompressionGzip)
-		opts.RecordDelimiter = &StageFileFormatStringOrNone{Value: String("\\n")}
-		opts.FieldDelimiter = &StageFileFormatStringOrNone{Value: String(",")}
-		opts.MultiLine = Bool(true)
-		opts.FileExtension = String(".csv")
-		opts.SkipHeader = Pointer(2)
-		opts.SkipBlankLines = Bool(true)
-		opts.DateFormat = &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")}
-		opts.TimeFormat = &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")}
-		opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")}
-		opts.BinaryFormat = Pointer(BinaryFormatHex)
-		opts.Escape = &StageFileFormatStringOrNone{Value: String("\\")}
-		opts.EscapeUnenclosedField = &StageFileFormatStringOrNone{Value: String("\\")}
-		opts.TrimSpace = Bool(true)
-		opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: String("\"")}
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(CsvCompressionGzip)
+		opts.RecordDelimiter = &StageFileFormatStringOrNone{Value: new("\\n")}
+		opts.FieldDelimiter = &StageFileFormatStringOrNone{Value: new(",")}
+		opts.MultiLine = new(true)
+		opts.FileExtension = new(".csv")
+		opts.SkipHeader = new(2)
+		opts.SkipBlankLines = new(true)
+		opts.DateFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")}
+		opts.TimeFormat = &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")}
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")}
+		opts.BinaryFormat = new(BinaryFormatHex)
+		opts.Escape = &StageFileFormatStringOrNone{Value: new("\\")}
+		opts.EscapeUnenclosedField = &StageFileFormatStringOrNone{Value: new("\\")}
+		opts.TrimSpace = new(true)
+		opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: new("\"")}
 		opts.NullIf = []NullString{{S: "NULL"}, {S: ""}}
-		opts.ErrorOnColumnCountMismatch = Bool(true)
-		opts.ReplaceInvalidCharacters = Bool(true)
-		opts.EmptyFieldAsNull = Bool(true)
-		opts.SkipByteOrderMark = Bool(true)
-		opts.Encoding = Pointer(CsvEncodingUtf8)
-		opts.Comment = String("some comment")
+		opts.ErrorOnColumnCountMismatch = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
+		opts.EmptyFieldAsNull = new(true)
+		opts.SkipByteOrderMark = new(true)
+		opts.Encoding = new(CsvEncodingUtf8)
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = CSV COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8 COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
@@ -155,8 +155,8 @@ func TestFileFormats_AlterCsv(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.Set.SkipHeader opts.Set.ParseHeader]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AlterCsvFileFormatSet{
-			SkipHeader:  Pointer(1),
-			ParseHeader: Bool(true),
+			SkipHeader:  new(1),
+			ParseHeader: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterCsvFileFormatOptions.Set", "SkipHeader", "ParseHeader"))
 	})
@@ -234,30 +234,30 @@ func TestFileFormats_AlterCsv(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &AlterCsvFileFormatSet{
-			Compression:                Pointer(CsvCompressionGzip),
-			RecordDelimiter:            &StageFileFormatStringOrNone{Value: String("\\n")},
-			FieldDelimiter:             &StageFileFormatStringOrNone{Value: String(",")},
-			MultiLine:                  Bool(true),
-			FileExtension:              String(".csv"),
-			SkipHeader:                 Pointer(2),
-			SkipBlankLines:             Bool(true),
-			DateFormat:                 &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")},
-			TimeFormat:                 &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")},
-			TimestampFormat:            &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")},
-			BinaryFormat:               Pointer(BinaryFormatHex),
-			Escape:                     &StageFileFormatStringOrNone{Value: String("\\")},
-			EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: String("\\")},
-			TrimSpace:                  Bool(true),
-			FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: String("\"")},
+			Compression:                new(CsvCompressionGzip),
+			RecordDelimiter:            &StageFileFormatStringOrNone{Value: new("\\n")},
+			FieldDelimiter:             &StageFileFormatStringOrNone{Value: new(",")},
+			MultiLine:                  new(true),
+			FileExtension:              new(".csv"),
+			SkipHeader:                 new(2),
+			SkipBlankLines:             new(true),
+			DateFormat:                 &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+			TimeFormat:                 &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+			TimestampFormat:            &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+			BinaryFormat:               new(BinaryFormatHex),
+			Escape:                     &StageFileFormatStringOrNone{Value: new("\\")},
+			EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: new("\\")},
+			TrimSpace:                  new(true),
+			FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: new("\"")},
 			NullIf:                     []NullString{{S: "NULL"}, {S: ""}},
-			ErrorOnColumnCountMismatch: Bool(true),
-			ReplaceInvalidCharacters:   Bool(true),
-			EmptyFieldAsNull:           Bool(true),
-			SkipByteOrderMark:          Bool(true),
-			Encoding:                   Pointer(CsvEncodingUtf8),
-			Comment:                    String("some comment"),
+			ErrorOnColumnCountMismatch: new(true),
+			ReplaceInvalidCharacters:   new(true),
+			EmptyFieldAsNull:           new(true),
+			SkipByteOrderMark:          new(true),
+			Encoding:                   new(CsvEncodingUtf8),
+			Comment:                    new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8 COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -279,8 +279,8 @@ func TestFileFormats_CreateJson(t *testing.T) {
 
 	t.Run("validation: conflicting fields for [opts.IgnoreUtf8Errors opts.ReplaceInvalidCharacters]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IgnoreUtf8Errors = Bool(true)
-		opts.ReplaceInvalidCharacters = Bool(true)
+		opts.IgnoreUtf8Errors = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateJsonFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 	})
 
@@ -315,24 +315,24 @@ func TestFileFormats_CreateJson(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		opts.Compression = Pointer(JsonCompressionGzip)
-		opts.DateFormat = &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")}
-		opts.TimeFormat = &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")}
-		opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")}
-		opts.BinaryFormat = Pointer(BinaryFormatBase64)
-		opts.TrimSpace = Bool(true)
-		opts.MultiLine = Bool(true)
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(JsonCompressionGzip)
+		opts.DateFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")}
+		opts.TimeFormat = &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")}
+		opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")}
+		opts.BinaryFormat = new(BinaryFormatBase64)
+		opts.TrimSpace = new(true)
+		opts.MultiLine = new(true)
 		opts.NullIf = []NullString{{S: "NULL"}}
-		opts.FileExtension = String(".json")
-		opts.EnableOctal = Bool(true)
-		opts.AllowDuplicate = Bool(true)
-		opts.StripOuterArray = Bool(true)
-		opts.StripNullValues = Bool(true)
-		opts.IgnoreUtf8Errors = Bool(true)
-		opts.SkipByteOrderMark = Bool(true)
-		opts.Comment = String("some comment")
+		opts.FileExtension = new(".json")
+		opts.EnableOctal = new(true)
+		opts.AllowDuplicate = new(true)
+		opts.StripOuterArray = new(true)
+		opts.StripNullValues = new(true)
+		opts.IgnoreUtf8Errors = new(true)
+		opts.SkipByteOrderMark = new(true)
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = JSON COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
@@ -365,8 +365,8 @@ func TestFileFormats_AlterJson(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.Set.IgnoreUtf8Errors opts.Set.ReplaceInvalidCharacters]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AlterJsonFileFormatSet{
-			IgnoreUtf8Errors:         Bool(true),
-			ReplaceInvalidCharacters: Bool(true),
+			IgnoreUtf8Errors:         new(true),
+			ReplaceInvalidCharacters: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterJsonFileFormatOptions.Set", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 	})
@@ -404,24 +404,24 @@ func TestFileFormats_AlterJson(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &AlterJsonFileFormatSet{
-			Compression:       Pointer(JsonCompressionGzip),
-			DateFormat:        &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")},
-			TimeFormat:        &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")},
-			TimestampFormat:   &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")},
-			BinaryFormat:      Pointer(BinaryFormatBase64),
-			TrimSpace:         Bool(true),
-			MultiLine:         Bool(true),
+			Compression:       new(JsonCompressionGzip),
+			DateFormat:        &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+			TimeFormat:        &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+			TimestampFormat:   &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+			BinaryFormat:      new(BinaryFormatBase64),
+			TrimSpace:         new(true),
+			MultiLine:         new(true),
 			NullIf:            []NullString{{S: "NULL"}},
-			FileExtension:     String(".json"),
-			EnableOctal:       Bool(true),
-			AllowDuplicate:    Bool(true),
-			StripOuterArray:   Bool(true),
-			StripNullValues:   Bool(true),
-			IgnoreUtf8Errors:  Bool(true),
-			SkipByteOrderMark: Bool(true),
-			Comment:           String("some comment"),
+			FileExtension:     new(".json"),
+			EnableOctal:       new(true),
+			AllowDuplicate:    new(true),
+			StripOuterArray:   new(true),
+			StripNullValues:   new(true),
+			IgnoreUtf8Errors:  new(true),
+			SkipByteOrderMark: new(true),
+			Comment:           new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -454,13 +454,13 @@ func TestFileFormats_CreateAvro(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		opts.Compression = Pointer(AvroCompressionGzip)
-		opts.TrimSpace = Bool(true)
-		opts.ReplaceInvalidCharacters = Bool(true)
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(AvroCompressionGzip)
+		opts.TrimSpace = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
 		opts.NullIf = []NullString{{S: "NULL"}, {S: ""}}
-		opts.Comment = String("some comment")
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = AVRO COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
@@ -499,13 +499,13 @@ func TestFileFormats_AlterAvro(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &AlterAvroFileFormatSet{
-			Compression:              Pointer(AvroCompressionGzip),
-			TrimSpace:                Bool(true),
-			ReplaceInvalidCharacters: Bool(true),
+			Compression:              new(AvroCompressionGzip),
+			TrimSpace:                new(true),
+			ReplaceInvalidCharacters: new(true),
 			NullIf:                   []NullString{{S: "NULL"}, {S: ""}},
-			Comment:                  String("some comment"),
+			Comment:                  new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -538,12 +538,12 @@ func TestFileFormats_CreateOrc(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		opts.TrimSpace = Bool(true)
-		opts.ReplaceInvalidCharacters = Bool(true)
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.TrimSpace = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
 		opts.NullIf = []NullString{{S: "NULL"}}
-		opts.Comment = String("some comment")
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
@@ -582,12 +582,12 @@ func TestFileFormats_AlterOrc(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &AlterOrcFileFormatSet{
-			TrimSpace:                Bool(true),
-			ReplaceInvalidCharacters: Bool(true),
+			TrimSpace:                new(true),
+			ReplaceInvalidCharacters: new(true),
 			NullIf:                   []NullString{{S: "NULL"}},
-			Comment:                  String("some comment"),
+			Comment:                  new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -609,8 +609,8 @@ func TestFileFormats_CreateParquet(t *testing.T) {
 
 	t.Run("validation: conflicting fields for [opts.Compression opts.SnappyCompression]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Compression = Pointer(ParquetCompressionSnappy)
-		opts.SnappyCompression = Bool(true)
+		opts.Compression = new(ParquetCompressionSnappy)
+		opts.SnappyCompression = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateParquetFileFormatOptions", "Compression", "SnappyCompression"))
 	})
 
@@ -627,16 +627,16 @@ func TestFileFormats_CreateParquet(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		opts.Compression = Pointer(ParquetCompressionSnappy)
-		opts.BinaryAsText = Bool(true)
-		opts.UseLogicalType = Bool(true)
-		opts.TrimSpace = Bool(true)
-		opts.UseVectorizedScanner = Bool(true)
-		opts.ReplaceInvalidCharacters = Bool(true)
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(ParquetCompressionSnappy)
+		opts.BinaryAsText = new(true)
+		opts.UseLogicalType = new(true)
+		opts.TrimSpace = new(true)
+		opts.UseVectorizedScanner = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
 		opts.NullIf = []NullString{{S: "NULL"}}
-		opts.Comment = String("some comment")
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = PARQUET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
@@ -669,8 +669,8 @@ func TestFileFormats_AlterParquet(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.Set.Compression opts.Set.SnappyCompression]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AlterParquetFileFormatSet{
-			Compression:       Pointer(ParquetCompressionSnappy),
-			SnappyCompression: Bool(true),
+			Compression:       new(ParquetCompressionSnappy),
+			SnappyCompression: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterParquetFileFormatOptions.Set", "Compression", "SnappyCompression"))
 	})
@@ -684,16 +684,16 @@ func TestFileFormats_AlterParquet(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &AlterParquetFileFormatSet{
-			Compression:              Pointer(ParquetCompressionSnappy),
-			BinaryAsText:             Bool(true),
-			UseLogicalType:           Bool(true),
-			TrimSpace:                Bool(true),
-			UseVectorizedScanner:     Bool(true),
-			ReplaceInvalidCharacters: Bool(true),
+			Compression:              new(ParquetCompressionSnappy),
+			BinaryAsText:             new(true),
+			UseLogicalType:           new(true),
+			TrimSpace:                new(true),
+			UseVectorizedScanner:     new(true),
+			ReplaceInvalidCharacters: new(true),
 			NullIf:                   []NullString{{S: "NULL"}},
-			Comment:                  String("some comment"),
+			Comment:                  new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -715,8 +715,8 @@ func TestFileFormats_CreateXml(t *testing.T) {
 
 	t.Run("validation: conflicting fields for [opts.IgnoreUtf8Errors opts.ReplaceInvalidCharacters]", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IgnoreUtf8Errors = Bool(true)
-		opts.ReplaceInvalidCharacters = Bool(true)
+		opts.IgnoreUtf8Errors = new(true)
+		opts.ReplaceInvalidCharacters = new(true)
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateXmlFileFormatOptions", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 	})
 
@@ -733,16 +733,16 @@ func TestFileFormats_CreateXml(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		opts.Compression = Pointer(XmlCompressionGzip)
-		opts.IgnoreUtf8Errors = Bool(true)
-		opts.PreserveSpace = Bool(true)
-		opts.StripOuterElement = Bool(true)
-		opts.DisableSnowflakeData = Bool(true)
-		opts.DisableAutoConvert = Bool(true)
-		opts.SkipByteOrderMark = Bool(true)
-		opts.Comment = String("some comment")
+		opts.OrReplace = new(true)
+		opts.IfNotExists = new(true)
+		opts.Compression = new(XmlCompressionGzip)
+		opts.IgnoreUtf8Errors = new(true)
+		opts.PreserveSpace = new(true)
+		opts.StripOuterElement = new(true)
+		opts.DisableSnowflakeData = new(true)
+		opts.DisableAutoConvert = new(true)
+		opts.SkipByteOrderMark = new(true)
+		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = XML COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
@@ -775,8 +775,8 @@ func TestFileFormats_AlterXml(t *testing.T) {
 	t.Run("validation: conflicting fields for [opts.Set.IgnoreUtf8Errors opts.Set.ReplaceInvalidCharacters]", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &AlterXmlFileFormatSet{
-			IgnoreUtf8Errors:         Bool(true),
-			ReplaceInvalidCharacters: Bool(true),
+			IgnoreUtf8Errors:         new(true),
+			ReplaceInvalidCharacters: new(true),
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterXmlFileFormatOptions.Set", "IgnoreUtf8Errors", "ReplaceInvalidCharacters"))
 	})
@@ -790,16 +790,16 @@ func TestFileFormats_AlterXml(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		opts.Set = &AlterXmlFileFormatSet{
-			Compression:          Pointer(XmlCompressionGzip),
-			IgnoreUtf8Errors:     Bool(true),
-			PreserveSpace:        Bool(true),
-			StripOuterElement:    Bool(true),
-			DisableSnowflakeData: Bool(true),
-			DisableAutoConvert:   Bool(true),
-			SkipByteOrderMark:    Bool(true),
-			Comment:              String("some comment"),
+			Compression:          new(XmlCompressionGzip),
+			IgnoreUtf8Errors:     new(true),
+			PreserveSpace:        new(true),
+			StripOuterElement:    new(true),
+			DisableSnowflakeData: new(true),
+			DisableAutoConvert:   new(true),
+			SkipByteOrderMark:    new(true),
+			Comment:              new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -832,7 +832,7 @@ func TestFileFormats_Drop(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.IfExists = Bool(true)
+		opts.IfExists = new(true)
 		assertOptsValidAndSQLEquals(t, opts, `DROP FILE FORMAT IF EXISTS %s`, id.FullyQualifiedName())
 	})
 }
@@ -855,7 +855,7 @@ func TestFileFormats_Show(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("some_pattern")}
+		opts.Like = &Like{Pattern: new("some_pattern")}
 		opts.In = &In{
 			Schema: NewDatabaseObjectIdentifier("db", "schema"),
 		}
