@@ -26,6 +26,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(new preview resource)* New interactive warehouse resource
+
+We have added a new preview resource for managing interactive warehouses: [snowflake_warehouse_interactive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) ([Snowflake docs](https://docs.snowflake.com/en/user-guide/warehouses-interactive)).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_warehouse_interactive_resource` to the `preview_features_enabled` field in the provider configuration.
+
+Interactive warehouses behave differently from standard warehouses in a few ways that are described in the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive).
+
+The `show_output` field in the `snowflake_warehouses` data source now includes an additional computed `tables` attribute surfacing interactive warehouse table associations.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* inherited grants support in `snowflake_grant_privileges_to_account_role`
 
 The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports [inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using). Inherited grants collapse the common `GRANT ON ALL` + `GRANT ON FUTURE` pattern into a single grant that automatically covers all current and future objects of a type in a container. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.

@@ -135,6 +135,17 @@ func (t *TableConstraintDetailsAssert) HasComment(expected string) *TableConstra
 	return t
 }
 
+func (t *TableConstraintDetailsAssert) HasNoComment() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableConstraintDetailsAssert) HasCreated(expected time.Time) *TableConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
 		t.Helper()

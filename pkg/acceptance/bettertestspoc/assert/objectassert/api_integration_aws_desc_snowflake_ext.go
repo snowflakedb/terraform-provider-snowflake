@@ -44,14 +44,3 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationAwsD
 	})
 	return a
 }
-
-func (a *ApiIntegrationAwsDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationAwsDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
-		t.Helper()
-		if len(o.BlockedPrefixes) != 0 {
-			return fmt.Errorf("expected no blocked prefixes; got: %v", o.BlockedPrefixes)
-		}
-		return nil
-	})
-	return a
-}

@@ -65,3 +65,14 @@ func (o *OAuthRestAuthenticationDetailsAssert) HasOauthAllowedScopes(expected ..
 	})
 	return o
 }
+
+func (o *OAuthRestAuthenticationDetailsAssert) HasNoOauthAllowedScopes() *OAuthRestAuthenticationDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OAuthRestAuthenticationDetails) error {
+		t.Helper()
+		if len(o.OauthAllowedScopes) > 0 {
+			return fmt.Errorf("expected oauth allowed scopes to be empty; got: %v", o.OauthAllowedScopes)
+		}
+		return nil
+	})
+	return o
+}

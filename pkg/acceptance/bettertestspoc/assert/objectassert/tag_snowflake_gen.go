@@ -113,6 +113,17 @@ func (t *TagAssert) HasAllowedValues(expected ...string) *TagAssert {
 	return t
 }
 
+func (t *TagAssert) HasNoAllowedValues() *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if len(o.AllowedValues) > 0 {
+			return fmt.Errorf("expected allowed values to be empty; got: %v", o.AllowedValues)
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TagAssert) HasOwnerRoleType(expected string) *TagAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
 		t.Helper()
@@ -138,6 +149,17 @@ func (t *TagAssert) HasPropagate(expected sdk.TagPropagation) *TagAssert {
 	return t
 }
 
+func (t *TagAssert) HasNoPropagate() *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if o.Propagate != nil {
+			return fmt.Errorf("expected propagate to be nil; got: %v", *o.Propagate)
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TagAssert) HasOnConflict(expected string) *TagAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
 		t.Helper()
@@ -146,6 +168,17 @@ func (t *TagAssert) HasOnConflict(expected string) *TagAssert {
 		}
 		if *o.OnConflict != expected {
 			return fmt.Errorf("expected on conflict: %v; got: %v", expected, *o.OnConflict)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagAssert) HasNoOnConflict() *TagAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Tag) error {
+		t.Helper()
+		if o.OnConflict != nil {
+			return fmt.Errorf("expected on conflict to be nil; got: %v", *o.OnConflict)
 		}
 		return nil
 	})

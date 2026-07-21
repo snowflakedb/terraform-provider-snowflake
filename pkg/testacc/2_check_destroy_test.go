@@ -499,6 +499,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.WarehouseAdaptive: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},
+	resources.WarehouseInteractive: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Warehouses.ShowByID)
+	},
 	resources.Warehouse: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},

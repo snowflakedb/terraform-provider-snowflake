@@ -92,6 +92,17 @@ func (r *ResourceMonitorAssert) HasLevel(expected sdk.ResourceMonitorLevel) *Res
 	return r
 }
 
+func (r *ResourceMonitorAssert) HasNoLevel() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.Level != nil {
+			return fmt.Errorf("expected level to be nil; got: %v", *o.Level)
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *ResourceMonitorAssert) HasFrequency(expected sdk.Frequency) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
@@ -100,6 +111,17 @@ func (r *ResourceMonitorAssert) HasFrequency(expected sdk.Frequency) *ResourceMo
 		}
 		if *o.Frequency != expected {
 			return fmt.Errorf("expected frequency: %v; got: %v", expected, *o.Frequency)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *ResourceMonitorAssert) HasNoFrequency() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.Frequency != nil {
+			return fmt.Errorf("expected frequency to be nil; got: %v", *o.Frequency)
 		}
 		return nil
 	})
@@ -141,6 +163,17 @@ func (r *ResourceMonitorAssert) HasNotifyAt(expected ...int) *ResourceMonitorAss
 	return r
 }
 
+func (r *ResourceMonitorAssert) HasNoNotifyAt() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if len(o.NotifyAt) > 0 {
+			return fmt.Errorf("expected notify at to be empty; got: %v", o.NotifyAt)
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *ResourceMonitorAssert) HasSuspendAt(expected int) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
@@ -155,6 +188,17 @@ func (r *ResourceMonitorAssert) HasSuspendAt(expected int) *ResourceMonitorAsser
 	return r
 }
 
+func (r *ResourceMonitorAssert) HasNoSuspendAt() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.SuspendAt != nil {
+			return fmt.Errorf("expected suspend at to be nil; got: %v", *o.SuspendAt)
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *ResourceMonitorAssert) HasSuspendImmediatelyAt(expected int) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
@@ -163,6 +207,17 @@ func (r *ResourceMonitorAssert) HasSuspendImmediatelyAt(expected int) *ResourceM
 		}
 		if *o.SuspendImmediatelyAt != expected {
 			return fmt.Errorf("expected suspend immediately at: %v; got: %v", expected, *o.SuspendImmediatelyAt)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *ResourceMonitorAssert) HasNoSuspendImmediatelyAt() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.SuspendImmediatelyAt != nil {
+			return fmt.Errorf("expected suspend immediately at to be nil; got: %v", *o.SuspendImmediatelyAt)
 		}
 		return nil
 	})
@@ -209,6 +264,17 @@ func (r *ResourceMonitorAssert) HasNotifyUsers(expected ...string) *ResourceMoni
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected notify users: %v; got: %v", expected, o.NotifyUsers)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *ResourceMonitorAssert) HasNoNotifyUsers() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if len(o.NotifyUsers) > 0 {
+			return fmt.Errorf("expected notify users to be empty; got: %v", o.NotifyUsers)
 		}
 		return nil
 	})

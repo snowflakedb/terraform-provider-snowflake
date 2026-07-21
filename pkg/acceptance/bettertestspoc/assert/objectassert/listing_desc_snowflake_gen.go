@@ -111,6 +111,17 @@ func (l *ListingDetailsAssert) HasPublishedOn(expected string) *ListingDetailsAs
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoPublishedOn() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.PublishedOn != nil {
+			return fmt.Errorf("expected published on to be nil; got: %v", *o.PublishedOn)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasTitle(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -136,6 +147,17 @@ func (l *ListingDetailsAssert) HasSubtitle(expected string) *ListingDetailsAsser
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoSubtitle() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Subtitle != nil {
+			return fmt.Errorf("expected subtitle to be nil; got: %v", *o.Subtitle)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasDescription(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -150,6 +172,17 @@ func (l *ListingDetailsAssert) HasDescription(expected string) *ListingDetailsAs
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoDescription() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Description != nil {
+			return fmt.Errorf("expected description to be nil; got: %v", *o.Description)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasListingTerms(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -158,6 +191,17 @@ func (l *ListingDetailsAssert) HasListingTerms(expected string) *ListingDetailsA
 		}
 		if *o.ListingTerms != expected {
 			return fmt.Errorf("expected listing terms: %v; got: %v", expected, *o.ListingTerms)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoListingTerms() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.ListingTerms != nil {
+			return fmt.Errorf("expected listing terms to be nil; got: %v", *o.ListingTerms)
 		}
 		return nil
 	})
@@ -189,6 +233,17 @@ func (l *ListingDetailsAssert) HasShare(expected sdk.AccountObjectIdentifier) *L
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoShare() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Share != nil {
+			return fmt.Errorf("expected share to be nil; got: %v", *o.Share)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasApplicationPackage(expected sdk.AccountObjectIdentifier) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -197,6 +252,17 @@ func (l *ListingDetailsAssert) HasApplicationPackage(expected sdk.AccountObjectI
 		}
 		if (*o.ApplicationPackage).FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected application package: %v; got: %v", expected.FullyQualifiedName(), (*o.ApplicationPackage).FullyQualifiedName())
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoApplicationPackage() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.ApplicationPackage != nil {
+			return fmt.Errorf("expected application package to be nil; got: %v", *o.ApplicationPackage)
 		}
 		return nil
 	})
@@ -217,6 +283,17 @@ func (l *ListingDetailsAssert) HasBusinessNeeds(expected string) *ListingDetails
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoBusinessNeeds() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.BusinessNeeds != nil {
+			return fmt.Errorf("expected business needs to be nil; got: %v", *o.BusinessNeeds)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasUsageExamples(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -225,6 +302,17 @@ func (l *ListingDetailsAssert) HasUsageExamples(expected string) *ListingDetails
 		}
 		if *o.UsageExamples != expected {
 			return fmt.Errorf("expected usage examples: %v; got: %v", expected, *o.UsageExamples)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoUsageExamples() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.UsageExamples != nil {
+			return fmt.Errorf("expected usage examples to be nil; got: %v", *o.UsageExamples)
 		}
 		return nil
 	})
@@ -245,6 +333,17 @@ func (l *ListingDetailsAssert) HasDataAttributes(expected string) *ListingDetail
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoDataAttributes() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.DataAttributes != nil {
+			return fmt.Errorf("expected data attributes to be nil; got: %v", *o.DataAttributes)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasCategories(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -253,6 +352,17 @@ func (l *ListingDetailsAssert) HasCategories(expected string) *ListingDetailsAss
 		}
 		if *o.Categories != expected {
 			return fmt.Errorf("expected categories: %v; got: %v", expected, *o.Categories)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoCategories() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Categories != nil {
+			return fmt.Errorf("expected categories to be nil; got: %v", *o.Categories)
 		}
 		return nil
 	})
@@ -273,6 +383,17 @@ func (l *ListingDetailsAssert) HasResources(expected string) *ListingDetailsAsse
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoResources() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Resources != nil {
+			return fmt.Errorf("expected resources to be nil; got: %v", *o.Resources)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasProfile(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -281,6 +402,17 @@ func (l *ListingDetailsAssert) HasProfile(expected string) *ListingDetailsAssert
 		}
 		if *o.Profile != expected {
 			return fmt.Errorf("expected profile: %v; got: %v", expected, *o.Profile)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoProfile() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Profile != nil {
+			return fmt.Errorf("expected profile to be nil; got: %v", *o.Profile)
 		}
 		return nil
 	})
@@ -301,6 +433,17 @@ func (l *ListingDetailsAssert) HasCustomizedContactInfo(expected string) *Listin
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoCustomizedContactInfo() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.CustomizedContactInfo != nil {
+			return fmt.Errorf("expected customized contact info to be nil; got: %v", *o.CustomizedContactInfo)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasDataDictionary(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -309,6 +452,17 @@ func (l *ListingDetailsAssert) HasDataDictionary(expected string) *ListingDetail
 		}
 		if *o.DataDictionary != expected {
 			return fmt.Errorf("expected data dictionary: %v; got: %v", expected, *o.DataDictionary)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoDataDictionary() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.DataDictionary != nil {
+			return fmt.Errorf("expected data dictionary to be nil; got: %v", *o.DataDictionary)
 		}
 		return nil
 	})
@@ -329,6 +483,17 @@ func (l *ListingDetailsAssert) HasDataPreview(expected string) *ListingDetailsAs
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoDataPreview() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.DataPreview != nil {
+			return fmt.Errorf("expected data preview to be nil; got: %v", *o.DataPreview)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasComment(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -337,6 +502,17 @@ func (l *ListingDetailsAssert) HasComment(expected string) *ListingDetailsAssert
 		}
 		if *o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoComment() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
 		}
 		return nil
 	})
@@ -368,6 +544,17 @@ func (l *ListingDetailsAssert) HasTargetAccounts(expected string) *ListingDetail
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoTargetAccounts() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.TargetAccounts != nil {
+			return fmt.Errorf("expected target accounts to be nil; got: %v", *o.TargetAccounts)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasRegions(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -376,6 +563,17 @@ func (l *ListingDetailsAssert) HasRegions(expected string) *ListingDetailsAssert
 		}
 		if *o.Regions != expected {
 			return fmt.Errorf("expected regions: %v; got: %v", expected, *o.Regions)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoRegions() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Regions != nil {
+			return fmt.Errorf("expected regions to be nil; got: %v", *o.Regions)
 		}
 		return nil
 	})
@@ -396,6 +594,17 @@ func (l *ListingDetailsAssert) HasRefreshSchedule(expected string) *ListingDetai
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoRefreshSchedule() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.RefreshSchedule != nil {
+			return fmt.Errorf("expected refresh schedule to be nil; got: %v", *o.RefreshSchedule)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasRefreshType(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -404,6 +613,17 @@ func (l *ListingDetailsAssert) HasRefreshType(expected string) *ListingDetailsAs
 		}
 		if *o.RefreshType != expected {
 			return fmt.Errorf("expected refresh type: %v; got: %v", expected, *o.RefreshType)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoRefreshType() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.RefreshType != nil {
+			return fmt.Errorf("expected refresh type to be nil; got: %v", *o.RefreshType)
 		}
 		return nil
 	})
@@ -424,6 +644,17 @@ func (l *ListingDetailsAssert) HasReviewState(expected string) *ListingDetailsAs
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoReviewState() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.ReviewState != nil {
+			return fmt.Errorf("expected review state to be nil; got: %v", *o.ReviewState)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasRejectionReason(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -438,6 +669,17 @@ func (l *ListingDetailsAssert) HasRejectionReason(expected string) *ListingDetai
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoRejectionReason() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.RejectionReason != nil {
+			return fmt.Errorf("expected rejection reason to be nil; got: %v", *o.RejectionReason)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasUnpublishedByAdminReasons(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -446,6 +688,17 @@ func (l *ListingDetailsAssert) HasUnpublishedByAdminReasons(expected string) *Li
 		}
 		if *o.UnpublishedByAdminReasons != expected {
 			return fmt.Errorf("expected unpublished by admin reasons: %v; got: %v", expected, *o.UnpublishedByAdminReasons)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoUnpublishedByAdminReasons() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.UnpublishedByAdminReasons != nil {
+			return fmt.Errorf("expected unpublished by admin reasons to be nil; got: %v", *o.UnpublishedByAdminReasons)
 		}
 		return nil
 	})
@@ -499,6 +752,17 @@ func (l *ListingDetailsAssert) HasIsLimitedTrial(expected bool) *ListingDetailsA
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoIsLimitedTrial() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.IsLimitedTrial != nil {
+			return fmt.Errorf("expected is limited trial to be nil; got: %v", *o.IsLimitedTrial)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasIsByRequest(expected bool) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -507,6 +771,17 @@ func (l *ListingDetailsAssert) HasIsByRequest(expected bool) *ListingDetailsAsse
 		}
 		if *o.IsByRequest != expected {
 			return fmt.Errorf("expected is by request: %v; got: %v", expected, *o.IsByRequest)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoIsByRequest() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.IsByRequest != nil {
+			return fmt.Errorf("expected is by request to be nil; got: %v", *o.IsByRequest)
 		}
 		return nil
 	})
@@ -527,6 +802,17 @@ func (l *ListingDetailsAssert) HasLimitedTrialPlan(expected string) *ListingDeta
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoLimitedTrialPlan() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.LimitedTrialPlan != nil {
+			return fmt.Errorf("expected limited trial plan to be nil; got: %v", *o.LimitedTrialPlan)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasRetriedOn(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -541,6 +827,17 @@ func (l *ListingDetailsAssert) HasRetriedOn(expected string) *ListingDetailsAsse
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoRetriedOn() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.RetriedOn != nil {
+			return fmt.Errorf("expected retried on to be nil; got: %v", *o.RetriedOn)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasScheduledDropTime(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -549,6 +846,17 @@ func (l *ListingDetailsAssert) HasScheduledDropTime(expected string) *ListingDet
 		}
 		if *o.ScheduledDropTime != expected {
 			return fmt.Errorf("expected scheduled drop time: %v; got: %v", expected, *o.ScheduledDropTime)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoScheduledDropTime() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.ScheduledDropTime != nil {
+			return fmt.Errorf("expected scheduled drop time to be nil; got: %v", *o.ScheduledDropTime)
 		}
 		return nil
 	})
@@ -580,6 +888,17 @@ func (l *ListingDetailsAssert) HasDistribution(expected string) *ListingDetailsA
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoDistribution() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Distribution != nil {
+			return fmt.Errorf("expected distribution to be nil; got: %v", *o.Distribution)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasIsMountlessQueryable(expected bool) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -588,6 +907,17 @@ func (l *ListingDetailsAssert) HasIsMountlessQueryable(expected bool) *ListingDe
 		}
 		if *o.IsMountlessQueryable != expected {
 			return fmt.Errorf("expected is mountless queryable: %v; got: %v", expected, *o.IsMountlessQueryable)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoIsMountlessQueryable() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.IsMountlessQueryable != nil {
+			return fmt.Errorf("expected is mountless queryable to be nil; got: %v", *o.IsMountlessQueryable)
 		}
 		return nil
 	})
@@ -608,6 +938,17 @@ func (l *ListingDetailsAssert) HasOrganizationProfileName(expected string) *List
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoOrganizationProfileName() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.OrganizationProfileName != nil {
+			return fmt.Errorf("expected organization profile name to be nil; got: %v", *o.OrganizationProfileName)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasUniformListingLocator(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -616,6 +957,17 @@ func (l *ListingDetailsAssert) HasUniformListingLocator(expected string) *Listin
 		}
 		if *o.UniformListingLocator != expected {
 			return fmt.Errorf("expected uniform listing locator: %v; got: %v", expected, *o.UniformListingLocator)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoUniformListingLocator() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.UniformListingLocator != nil {
+			return fmt.Errorf("expected uniform listing locator to be nil; got: %v", *o.UniformListingLocator)
 		}
 		return nil
 	})
@@ -636,6 +988,17 @@ func (l *ListingDetailsAssert) HasTrialDetails(expected string) *ListingDetailsA
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoTrialDetails() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.TrialDetails != nil {
+			return fmt.Errorf("expected trial details to be nil; got: %v", *o.TrialDetails)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasApproverContact(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -644,6 +1007,17 @@ func (l *ListingDetailsAssert) HasApproverContact(expected string) *ListingDetai
 		}
 		if *o.ApproverContact != expected {
 			return fmt.Errorf("expected approver contact: %v; got: %v", expected, *o.ApproverContact)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoApproverContact() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.ApproverContact != nil {
+			return fmt.Errorf("expected approver contact to be nil; got: %v", *o.ApproverContact)
 		}
 		return nil
 	})
@@ -664,6 +1038,17 @@ func (l *ListingDetailsAssert) HasSupportContact(expected string) *ListingDetail
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoSupportContact() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.SupportContact != nil {
+			return fmt.Errorf("expected support contact to be nil; got: %v", *o.SupportContact)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasLiveVersionUri(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -672,6 +1057,17 @@ func (l *ListingDetailsAssert) HasLiveVersionUri(expected string) *ListingDetail
 		}
 		if *o.LiveVersionUri != expected {
 			return fmt.Errorf("expected live version uri: %v; got: %v", expected, *o.LiveVersionUri)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoLiveVersionUri() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.LiveVersionUri != nil {
+			return fmt.Errorf("expected live version uri to be nil; got: %v", *o.LiveVersionUri)
 		}
 		return nil
 	})
@@ -692,6 +1088,17 @@ func (l *ListingDetailsAssert) HasLastCommittedVersionUri(expected string) *List
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoLastCommittedVersionUri() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.LastCommittedVersionUri != nil {
+			return fmt.Errorf("expected last committed version uri to be nil; got: %v", *o.LastCommittedVersionUri)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasLastCommittedVersionName(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -700,6 +1107,17 @@ func (l *ListingDetailsAssert) HasLastCommittedVersionName(expected string) *Lis
 		}
 		if *o.LastCommittedVersionName != expected {
 			return fmt.Errorf("expected last committed version name: %v; got: %v", expected, *o.LastCommittedVersionName)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoLastCommittedVersionName() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.LastCommittedVersionName != nil {
+			return fmt.Errorf("expected last committed version name to be nil; got: %v", *o.LastCommittedVersionName)
 		}
 		return nil
 	})
@@ -720,6 +1138,17 @@ func (l *ListingDetailsAssert) HasLastCommittedVersionAlias(expected string) *Li
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoLastCommittedVersionAlias() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.LastCommittedVersionAlias != nil {
+			return fmt.Errorf("expected last committed version alias to be nil; got: %v", *o.LastCommittedVersionAlias)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasPublishedVersionUri(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -728,6 +1157,17 @@ func (l *ListingDetailsAssert) HasPublishedVersionUri(expected string) *ListingD
 		}
 		if *o.PublishedVersionUri != expected {
 			return fmt.Errorf("expected published version uri: %v; got: %v", expected, *o.PublishedVersionUri)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoPublishedVersionUri() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.PublishedVersionUri != nil {
+			return fmt.Errorf("expected published version uri to be nil; got: %v", *o.PublishedVersionUri)
 		}
 		return nil
 	})
@@ -748,6 +1188,17 @@ func (l *ListingDetailsAssert) HasPublishedVersionName(expected string) *Listing
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoPublishedVersionName() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.PublishedVersionName != nil {
+			return fmt.Errorf("expected published version name to be nil; got: %v", *o.PublishedVersionName)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasPublishedVersionAlias(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -756,6 +1207,17 @@ func (l *ListingDetailsAssert) HasPublishedVersionAlias(expected string) *Listin
 		}
 		if *o.PublishedVersionAlias != expected {
 			return fmt.Errorf("expected published version alias: %v; got: %v", expected, *o.PublishedVersionAlias)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoPublishedVersionAlias() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.PublishedVersionAlias != nil {
+			return fmt.Errorf("expected published version alias to be nil; got: %v", *o.PublishedVersionAlias)
 		}
 		return nil
 	})
@@ -776,6 +1238,17 @@ func (l *ListingDetailsAssert) HasIsShare(expected bool) *ListingDetailsAssert {
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoIsShare() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.IsShare != nil {
+			return fmt.Errorf("expected is share to be nil; got: %v", *o.IsShare)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasRequestApprovalType(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -784,6 +1257,17 @@ func (l *ListingDetailsAssert) HasRequestApprovalType(expected string) *ListingD
 		}
 		if *o.RequestApprovalType != expected {
 			return fmt.Errorf("expected request approval type: %v; got: %v", expected, *o.RequestApprovalType)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoRequestApprovalType() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.RequestApprovalType != nil {
+			return fmt.Errorf("expected request approval type to be nil; got: %v", *o.RequestApprovalType)
 		}
 		return nil
 	})
@@ -804,6 +1288,17 @@ func (l *ListingDetailsAssert) HasMonetizationDisplayOrder(expected string) *Lis
 	return l
 }
 
+func (l *ListingDetailsAssert) HasNoMonetizationDisplayOrder() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.MonetizationDisplayOrder != nil {
+			return fmt.Errorf("expected monetization display order to be nil; got: %v", *o.MonetizationDisplayOrder)
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasLegacyUniformListingLocators(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -812,6 +1307,17 @@ func (l *ListingDetailsAssert) HasLegacyUniformListingLocators(expected string) 
 		}
 		if *o.LegacyUniformListingLocators != expected {
 			return fmt.Errorf("expected legacy uniform listing locators: %v; got: %v", expected, *o.LegacyUniformListingLocators)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNoLegacyUniformListingLocators() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.LegacyUniformListingLocators != nil {
+			return fmt.Errorf("expected legacy uniform listing locators to be nil; got: %v", *o.LegacyUniformListingLocators)
 		}
 		return nil
 	})

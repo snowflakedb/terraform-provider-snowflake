@@ -8,17 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
-func (s *StorageLifecyclePolicyDetailsAssert) HasNoArchiveForDays() *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.ArchiveForDays != nil {
-			return fmt.Errorf("expected archive for days to be nil; got: %d", *o.ArchiveForDays)
-		}
-		return nil
-	})
-	return s
-}
-
 // HasSignature compares each element by name and uses datatypes.AreTheSame for the data type,
 // because TableColumnSignature.Type is a datatypes.DataType interface that cannot be compared with ==.
 func (s *StorageLifecyclePolicyDetailsAssert) HasSignature(expected ...sdk.TableColumnSignature) *StorageLifecyclePolicyDetailsAssert {

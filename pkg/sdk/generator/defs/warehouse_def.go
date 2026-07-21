@@ -208,6 +208,7 @@ var warehousesDef = g.NewInterface(
 		OptionalNumberAssignment("MAX_CONCURRENCY_LEVEL", g.ParameterOptions()).
 		OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
 		OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
+		OptionalIdentifier("FallbackWarehouse", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FALLBACK_WAREHOUSE").Equals()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
@@ -270,7 +271,7 @@ var warehousesDef = g.NewInterface(
 	[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},
 	"*Warehouse", "error",
 ).WithCustomInterfaceMethod(
-	"AlterWithSuspend", "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type",
+	"AlterWithSuspend", "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*AlterWarehouseRequest")},
 	"error",
 ).WithEnums(

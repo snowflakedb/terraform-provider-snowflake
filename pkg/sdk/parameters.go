@@ -1087,6 +1087,7 @@ const (
 	WarehouseParameterMaxConcurrencyLevel             WarehouseParameter = "MAX_CONCURRENCY_LEVEL"
 	WarehouseParameterStatementQueuedTimeoutInSeconds WarehouseParameter = "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"
 	WarehouseParameterStatementTimeoutInSeconds       WarehouseParameter = "STATEMENT_TIMEOUT_IN_SECONDS"
+	WarehouseParameterFallbackWarehouse               WarehouseParameter = "FALLBACK_WAREHOUSE"
 )
 
 var AllSchemaParameters = []ObjectParameter{

@@ -44,14 +44,3 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleApiServiceAccountNotEmpty()
 	})
 	return a
 }
-
-func (a *ApiIntegrationGoogleDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationGoogleDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
-		t.Helper()
-		if len(o.BlockedPrefixes) != 0 {
-			return fmt.Errorf("expected no blocked prefixes; got: %v", o.BlockedPrefixes)
-		}
-		return nil
-	})
-	return a
-}

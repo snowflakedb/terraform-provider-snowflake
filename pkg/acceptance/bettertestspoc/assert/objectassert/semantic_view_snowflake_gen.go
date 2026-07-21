@@ -90,6 +90,17 @@ func (s *SemanticViewAssert) HasComment(expected string) *SemanticViewAssert {
 	return s
 }
 
+func (s *SemanticViewAssert) HasNoComment() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SemanticViewAssert) HasOwner(expected string) *SemanticViewAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
 		t.Helper()
@@ -120,6 +131,17 @@ func (s *SemanticViewAssert) HasExtension(expected string) *SemanticViewAssert {
 		}
 		if *o.Extension != expected {
 			return fmt.Errorf("expected extension: %v; got: %v", expected, *o.Extension)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SemanticViewAssert) HasNoExtension() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.Extension != nil {
+			return fmt.Errorf("expected extension to be nil; got: %v", *o.Extension)
 		}
 		return nil
 	})

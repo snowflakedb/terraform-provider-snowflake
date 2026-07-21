@@ -715,6 +715,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
+		"snowflake_warehouse_interactive":                                        resources.WarehouseInteractive(),
 	}
 }
 
