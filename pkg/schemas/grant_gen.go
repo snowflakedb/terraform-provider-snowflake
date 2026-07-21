@@ -21,10 +21,7 @@ var ShowGrantSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"grant_on": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
+	// grant_on removed manually
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -33,10 +30,7 @@ var ShowGrantSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"grant_to": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
+	// grant_to removed manually
 	"grantee_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -49,6 +43,22 @@ var ShowGrantSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"is_inherited": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"inherited_from": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"inherited_from_database": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"inherited_from_schema": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = ShowGrantSchema
@@ -58,13 +68,25 @@ func GrantToSchema(grant *sdk.Grant) map[string]any {
 	grantSchema["created_on"] = grant.CreatedOn.String()
 	grantSchema["privilege"] = grant.Privilege
 	grantSchema["granted_on"] = string(grant.GrantedOn)
-	grantSchema["grant_on"] = string(grant.GrantOn)
+	// grant_on removed manually
 	grantSchema["name"] = grant.Name.FullyQualifiedName()
 	grantSchema["granted_to"] = string(grant.GrantedTo)
-	grantSchema["grant_to"] = string(grant.GrantTo)
+	// grant_to removed manually
 	grantSchema["grantee_name"] = grant.GranteeName.FullyQualifiedName()
 	grantSchema["grant_option"] = grant.GrantOption
 	grantSchema["granted_by"] = grant.GrantedBy.Name()
+	if grant.IsInherited != nil {
+		grantSchema["is_inherited"] = (*grant.IsInherited)
+	}
+	if grant.InheritedFrom != nil {
+		grantSchema["inherited_from"] = string((*grant.InheritedFrom))
+	}
+	if grant.InheritedFromDatabase != nil {
+		grantSchema["inherited_from_database"] = (*grant.InheritedFromDatabase)
+	}
+	if grant.InheritedFromSchema != nil {
+		grantSchema["inherited_from_schema"] = (*grant.InheritedFromSchema)
+	}
 	return grantSchema
 }
 
