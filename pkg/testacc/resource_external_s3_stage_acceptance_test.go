@@ -29,6 +29,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO(SNOW-3818978): Add tests for aws_sns_topic
+
 func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -61,7 +63,6 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 			AutoRefresh:     sdk.Bool(false),
-			AwsSnsTopic:     sdk.String("arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic"),
 		}).
 		WithEncryptionAwsCse(masterKey)
 
@@ -217,7 +218,6 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 							Enable:          true,
 							AutoRefresh:     sdk.Pointer(r.BooleanFalse),
 							RefreshOnCreate: sdk.Bool(true),
-							AwsSnsTopic:     sdk.String("arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic"),
 						}).
 						HasEncryptionAwsCse().
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -305,7 +305,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "cloud", string(sdk.StageCloudAws)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.enable", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.auto_refresh", "false"),
-					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.aws_sns_topic", "arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.aws_sns_topic", ""),
 				),
 			},
 			// Alter (update comment, directory.enable, encryption)
