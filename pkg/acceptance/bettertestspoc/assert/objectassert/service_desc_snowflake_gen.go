@@ -45,6 +45,17 @@ func (s *ServiceDetailsAssert) HasName(expected string) *ServiceDetailsAssert {
 	return s
 }
 
+func (s *ServiceDetailsAssert) HasNameNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceDetailsAssert) HasStatus(expected sdk.ServiceStatus) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
@@ -67,6 +78,17 @@ func (s *ServiceDetailsAssert) HasDatabaseName(expected string) *ServiceDetailsA
 	return s
 }
 
+func (s *ServiceDetailsAssert) HasDatabaseNameNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceDetailsAssert) HasSchemaName(expected string) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
@@ -78,11 +100,33 @@ func (s *ServiceDetailsAssert) HasSchemaName(expected string) *ServiceDetailsAss
 	return s
 }
 
+func (s *ServiceDetailsAssert) HasSchemaNameNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceDetailsAssert) HasOwner(expected string) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceDetailsAssert) HasOwnerNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -111,11 +155,33 @@ func (s *ServiceDetailsAssert) HasSpec(expected string) *ServiceDetailsAssert {
 	return s
 }
 
+func (s *ServiceDetailsAssert) HasSpecNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.Spec == "" {
+			return fmt.Errorf("expected spec to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceDetailsAssert) HasDnsName(expected string) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.DnsName != expected {
 			return fmt.Errorf("expected dns name: %v; got: %v", expected, o.DnsName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceDetailsAssert) HasDnsNameNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.DnsName == "" {
+			return fmt.Errorf("expected dns name to be non-empty")
 		}
 		return nil
 	})
@@ -223,11 +289,33 @@ func (s *ServiceDetailsAssert) HasCreatedOn(expected time.Time) *ServiceDetailsA
 	return s
 }
 
+func (s *ServiceDetailsAssert) HasCreatedOnNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceDetailsAssert) HasUpdatedOn(expected time.Time) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.UpdatedOn != expected {
 			return fmt.Errorf("expected updated on: %v; got: %v", expected, o.UpdatedOn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceDetailsAssert) HasUpdatedOnNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.UpdatedOn.IsZero() {
+			return fmt.Errorf("expected updated on to be set; got zero value")
 		}
 		return nil
 	})
@@ -331,6 +419,17 @@ func (s *ServiceDetailsAssert) HasOwnerRoleType(expected string) *ServiceDetails
 	return s
 }
 
+func (s *ServiceDetailsAssert) HasOwnerRoleTypeNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceDetailsAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) *ServiceDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
@@ -383,6 +482,17 @@ func (s *ServiceDetailsAssert) HasSpecDigest(expected string) *ServiceDetailsAss
 		t.Helper()
 		if o.SpecDigest != expected {
 			return fmt.Errorf("expected spec digest: %v; got: %v", expected, o.SpecDigest)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceDetailsAssert) HasSpecDigestNotEmpty() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.SpecDigest == "" {
+			return fmt.Errorf("expected spec digest to be non-empty")
 		}
 		return nil
 	})
