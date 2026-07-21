@@ -55,11 +55,33 @@ func (f *FileFormatAvroAssert) HasType(expected string) *FileFormatAvroAssert {
 	return f
 }
 
+func (f *FileFormatAvroAssert) HasTypeNotEmpty() *FileFormatAvroAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAvro) error {
+		t.Helper()
+		if o.Type == "" {
+			return fmt.Errorf("expected type to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAvroAssert) HasCompression(expected string) *FileFormatAvroAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAvro) error {
 		t.Helper()
 		if o.Compression != expected {
 			return fmt.Errorf("expected compression: %v; got: %v", expected, o.Compression)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAvroAssert) HasCompressionNotEmpty() *FileFormatAvroAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAvro) error {
+		t.Helper()
+		if o.Compression == "" {
+			return fmt.Errorf("expected compression to be non-empty")
 		}
 		return nil
 	})

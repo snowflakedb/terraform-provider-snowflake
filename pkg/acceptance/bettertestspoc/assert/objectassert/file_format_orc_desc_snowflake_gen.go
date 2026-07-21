@@ -55,6 +55,17 @@ func (f *FileFormatOrcAssert) HasType(expected string) *FileFormatOrcAssert {
 	return f
 }
 
+func (f *FileFormatOrcAssert) HasTypeNotEmpty() *FileFormatOrcAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatOrc) error {
+		t.Helper()
+		if o.Type == "" {
+			return fmt.Errorf("expected type to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatOrcAssert) HasTrimSpace(expected bool) *FileFormatOrcAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatOrc) error {
 		t.Helper()
