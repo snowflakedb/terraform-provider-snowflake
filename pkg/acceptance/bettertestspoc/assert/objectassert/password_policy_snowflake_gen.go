@@ -43,11 +43,33 @@ func (p *PasswordPolicyAssert) HasCreatedOn(expected time.Time) *PasswordPolicyA
 	return p
 }
 
+func (p *PasswordPolicyAssert) HasCreatedOnNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PasswordPolicyAssert) HasName(expected string) *PasswordPolicyAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyAssert) HasNameNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (p *PasswordPolicyAssert) HasDatabaseName(expected string) *PasswordPolicyA
 	return p
 }
 
+func (p *PasswordPolicyAssert) HasDatabaseNameNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PasswordPolicyAssert) HasSchemaName(expected string) *PasswordPolicyAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyAssert) HasSchemaNameNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +131,33 @@ func (p *PasswordPolicyAssert) HasKind(expected string) *PasswordPolicyAssert {
 	return p
 }
 
+func (p *PasswordPolicyAssert) HasKindNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PasswordPolicyAssert) HasOwner(expected string) *PasswordPolicyAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyAssert) HasOwnerNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -109,6 +175,17 @@ func (p *PasswordPolicyAssert) HasComment(expected string) *PasswordPolicyAssert
 	return p
 }
 
+func (p *PasswordPolicyAssert) HasCommentNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PasswordPolicyAssert) HasOwnerRoleType(expected string) *PasswordPolicyAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
 		t.Helper()
@@ -120,11 +197,33 @@ func (p *PasswordPolicyAssert) HasOwnerRoleType(expected string) *PasswordPolicy
 	return p
 }
 
+func (p *PasswordPolicyAssert) HasOwnerRoleTypeNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PasswordPolicyAssert) HasOptions(expected string) *PasswordPolicyAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
 		t.Helper()
 		if o.Options != expected {
 			return fmt.Errorf("expected options: %v; got: %v", expected, o.Options)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyAssert) HasOptionsNotEmpty() *PasswordPolicyAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicy) error {
+		t.Helper()
+		if o.Options == "" {
+			return fmt.Errorf("expected options to be non-empty")
 		}
 		return nil
 	})

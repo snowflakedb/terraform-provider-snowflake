@@ -66,11 +66,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasApiKey(expected string) *ApiIntegrat
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.ApiKey == "" {
+			return fmt.Errorf("expected api key to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasApiProvider(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.ApiProvider != expected {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.ApiProvider == "" {
+			return fmt.Errorf("expected api provider to be non-empty")
 		}
 		return nil
 	})
@@ -88,11 +110,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasApiAwsRoleArn(expected string) *ApiI
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasApiAwsRoleArnNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.ApiAwsRoleArn == "" {
+			return fmt.Errorf("expected api aws role arn to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasApiAwsIamUserArn(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.ApiAwsIamUserArn != expected {
 			return fmt.Errorf("expected api aws iam user arn: %v; got: %v", expected, o.ApiAwsIamUserArn)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasApiAwsIamUserArnNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.ApiAwsIamUserArn == "" {
+			return fmt.Errorf("expected api aws iam user arn to be non-empty")
 		}
 		return nil
 	})
@@ -110,11 +154,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasApiAwsExternalId(expected string) *A
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasApiAwsExternalIdNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.ApiAwsExternalId == "" {
+			return fmt.Errorf("expected api aws external id to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasAzureTenantId(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.AzureTenantId != expected {
 			return fmt.Errorf("expected azure tenant id: %v; got: %v", expected, o.AzureTenantId)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasAzureTenantIdNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.AzureTenantId == "" {
+			return fmt.Errorf("expected azure tenant id to be non-empty")
 		}
 		return nil
 	})
@@ -132,11 +198,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasAzureAdApplicationId(expected string
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasAzureAdApplicationIdNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.AzureAdApplicationId == "" {
+			return fmt.Errorf("expected azure ad application id to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasAzureMultiTenantAppName(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.AzureMultiTenantAppName != expected {
 			return fmt.Errorf("expected azure multi tenant app name: %v; got: %v", expected, o.AzureMultiTenantAppName)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasAzureMultiTenantAppNameNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.AzureMultiTenantAppName == "" {
+			return fmt.Errorf("expected azure multi tenant app name to be non-empty")
 		}
 		return nil
 	})
@@ -154,11 +242,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasAzureConsentUrl(expected string) *Ap
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasAzureConsentUrlNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.AzureConsentUrl == "" {
+			return fmt.Errorf("expected azure consent url to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasGoogleAudience(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.GoogleAudience != expected {
 			return fmt.Errorf("expected google audience: %v; got: %v", expected, o.GoogleAudience)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasGoogleAudienceNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.GoogleAudience == "" {
+			return fmt.Errorf("expected google audience to be non-empty")
 		}
 		return nil
 	})
@@ -176,11 +286,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasGoogleApiServiceAccount(expected str
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasGoogleApiServiceAccountNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.GoogleApiServiceAccount == "" {
+			return fmt.Errorf("expected google api service account to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasAllowedAuthenticationSecrets(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.AllowedAuthenticationSecrets != expected {
 			return fmt.Errorf("expected allowed authentication secrets: %v; got: %v", expected, o.AllowedAuthenticationSecrets)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.AllowedAuthenticationSecrets == "" {
+			return fmt.Errorf("expected allowed authentication secrets to be non-empty")
 		}
 		return nil
 	})
@@ -198,11 +330,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasUserAuthType(expected string) *ApiIn
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasUserAuthTypeNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.UserAuthType == "" {
+			return fmt.Errorf("expected user auth type to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasOauthGrant(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.OauthGrant != expected {
 			return fmt.Errorf("expected oauth grant: %v; got: %v", expected, o.OauthGrant)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasOauthGrantNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthGrant == "" {
+			return fmt.Errorf("expected oauth grant to be non-empty")
 		}
 		return nil
 	})
@@ -220,11 +374,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasOauthClientId(expected string) *ApiI
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasOauthClientIdNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthClientId == "" {
+			return fmt.Errorf("expected oauth client id to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasOauthClientAuthMethod(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.OauthClientAuthMethod != expected {
 			return fmt.Errorf("expected oauth client auth method: %v; got: %v", expected, o.OauthClientAuthMethod)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasOauthClientAuthMethodNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthClientAuthMethod == "" {
+			return fmt.Errorf("expected oauth client auth method to be non-empty")
 		}
 		return nil
 	})
@@ -242,11 +418,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasOauthTokenEndpoint(expected string) 
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasOauthTokenEndpointNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthTokenEndpoint == "" {
+			return fmt.Errorf("expected oauth token endpoint to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasOauthAuthorizationEndpoint(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.OauthAuthorizationEndpoint != expected {
 			return fmt.Errorf("expected oauth authorization endpoint: %v; got: %v", expected, o.OauthAuthorizationEndpoint)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasOauthAuthorizationEndpointNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthAuthorizationEndpoint == "" {
+			return fmt.Errorf("expected oauth authorization endpoint to be non-empty")
 		}
 		return nil
 	})
@@ -310,6 +508,17 @@ func (a *ApiIntegrationAllDetailsAssert) HasOauthUsername(expected string) *ApiI
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasOauthUsernameNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthUsername == "" {
+			return fmt.Errorf("expected oauth username to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasOauthAssertionIssuer(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
@@ -321,11 +530,33 @@ func (a *ApiIntegrationAllDetailsAssert) HasOauthAssertionIssuer(expected string
 	return a
 }
 
+func (a *ApiIntegrationAllDetailsAssert) HasOauthAssertionIssuerNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthAssertionIssuer == "" {
+			return fmt.Errorf("expected oauth assertion issuer to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAllDetailsAssert) HasOauthResourceUrl(expected string) *ApiIntegrationAllDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
 		t.Helper()
 		if o.OauthResourceUrl != expected {
 			return fmt.Errorf("expected oauth resource url: %v; got: %v", expected, o.OauthResourceUrl)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasOauthResourceUrlNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.OauthResourceUrl == "" {
+			return fmt.Errorf("expected oauth resource url to be non-empty")
 		}
 		return nil
 	})
@@ -420,6 +651,17 @@ func (a *ApiIntegrationAllDetailsAssert) HasComment(expected string) *ApiIntegra
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAllDetailsAssert) HasCommentNotEmpty() *ApiIntegrationAllDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAllDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

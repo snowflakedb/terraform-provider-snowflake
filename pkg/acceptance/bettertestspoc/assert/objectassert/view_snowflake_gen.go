@@ -42,11 +42,33 @@ func (v *ViewAssert) HasCreatedOn(expected string) *ViewAssert {
 	return v
 }
 
+func (v *ViewAssert) HasCreatedOnNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return v
+}
+
 func (v *ViewAssert) HasName(expected string) *ViewAssert {
 	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return v
+}
+
+func (v *ViewAssert) HasNameNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -64,11 +86,33 @@ func (v *ViewAssert) HasKind(expected string) *ViewAssert {
 	return v
 }
 
+func (v *ViewAssert) HasKindNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return v
+}
+
 func (v *ViewAssert) HasReserved(expected string) *ViewAssert {
 	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
 		t.Helper()
 		if o.Reserved != expected {
 			return fmt.Errorf("expected reserved: %v; got: %v", expected, o.Reserved)
+		}
+		return nil
+	})
+	return v
+}
+
+func (v *ViewAssert) HasReservedNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.Reserved == "" {
+			return fmt.Errorf("expected reserved to be non-empty")
 		}
 		return nil
 	})
@@ -86,11 +130,33 @@ func (v *ViewAssert) HasDatabaseName(expected string) *ViewAssert {
 	return v
 }
 
+func (v *ViewAssert) HasDatabaseNameNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return v
+}
+
 func (v *ViewAssert) HasSchemaName(expected string) *ViewAssert {
 	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return v
+}
+
+func (v *ViewAssert) HasSchemaNameNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -108,6 +174,17 @@ func (v *ViewAssert) HasOwner(expected string) *ViewAssert {
 	return v
 }
 
+func (v *ViewAssert) HasOwnerNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return v
+}
+
 func (v *ViewAssert) HasComment(expected string) *ViewAssert {
 	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
 		t.Helper()
@@ -119,11 +196,33 @@ func (v *ViewAssert) HasComment(expected string) *ViewAssert {
 	return v
 }
 
+func (v *ViewAssert) HasCommentNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return v
+}
+
 func (v *ViewAssert) HasText(expected string) *ViewAssert {
 	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
 		t.Helper()
 		if o.Text != expected {
 			return fmt.Errorf("expected text: %v; got: %v", expected, o.Text)
+		}
+		return nil
+	})
+	return v
+}
+
+func (v *ViewAssert) HasTextNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.Text == "" {
+			return fmt.Errorf("expected text to be non-empty")
 		}
 		return nil
 	})
@@ -163,11 +262,33 @@ func (v *ViewAssert) HasOwnerRoleType(expected string) *ViewAssert {
 	return v
 }
 
+func (v *ViewAssert) HasOwnerRoleTypeNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return v
+}
+
 func (v *ViewAssert) HasChangeTracking(expected string) *ViewAssert {
 	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
 		t.Helper()
 		if o.ChangeTracking != expected {
 			return fmt.Errorf("expected change tracking: %v; got: %v", expected, o.ChangeTracking)
+		}
+		return nil
+	})
+	return v
+}
+
+func (v *ViewAssert) HasChangeTrackingNotEmpty() *ViewAssert {
+	v.AddAssertion(func(t *testing.T, o *sdk.View) error {
+		t.Helper()
+		if o.ChangeTracking == "" {
+			return fmt.Errorf("expected change tracking to be non-empty")
 		}
 		return nil
 	})

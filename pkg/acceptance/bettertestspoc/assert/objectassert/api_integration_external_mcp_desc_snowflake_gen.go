@@ -66,11 +66,33 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasApiProvider(expected string)
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.ApiProvider == "" {
+			return fmt.Errorf("expected api provider to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasUserAuthType(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
 		if o.UserAuthType != expected {
 			return fmt.Errorf("expected user auth type: %v; got: %v", expected, o.UserAuthType)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasUserAuthTypeNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.UserAuthType == "" {
+			return fmt.Errorf("expected user auth type to be non-empty")
 		}
 		return nil
 	})
@@ -88,11 +110,33 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthGrant(expected string) 
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthGrantNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthGrant == "" {
+			return fmt.Errorf("expected oauth grant to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthClientId(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
 		if o.OauthClientId != expected {
 			return fmt.Errorf("expected oauth client id: %v; got: %v", expected, o.OauthClientId)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthClientIdNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthClientId == "" {
+			return fmt.Errorf("expected oauth client id to be non-empty")
 		}
 		return nil
 	})
@@ -110,6 +154,17 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthClientAuthMethod(expect
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthClientAuthMethodNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthClientAuthMethod == "" {
+			return fmt.Errorf("expected oauth client auth method to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthTokenEndpoint(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
@@ -121,11 +176,33 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthTokenEndpoint(expected 
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthTokenEndpointNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthTokenEndpoint == "" {
+			return fmt.Errorf("expected oauth token endpoint to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAuthorizationEndpoint(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
 		if o.OauthAuthorizationEndpoint != expected {
 			return fmt.Errorf("expected oauth authorization endpoint: %v; got: %v", expected, o.OauthAuthorizationEndpoint)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAuthorizationEndpointNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthAuthorizationEndpoint == "" {
+			return fmt.Errorf("expected oauth authorization endpoint to be non-empty")
 		}
 		return nil
 	})
@@ -189,6 +266,17 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthUsername(expected strin
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthUsernameNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthUsername == "" {
+			return fmt.Errorf("expected oauth username to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAssertionIssuer(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
@@ -200,11 +288,33 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAssertionIssuer(expecte
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAssertionIssuerNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthAssertionIssuer == "" {
+			return fmt.Errorf("expected oauth assertion issuer to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthResourceUrl(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
 		if o.OauthResourceUrl != expected {
 			return fmt.Errorf("expected oauth resource url: %v; got: %v", expected, o.OauthResourceUrl)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthResourceUrlNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.OauthResourceUrl == "" {
+			return fmt.Errorf("expected oauth resource url to be non-empty")
 		}
 		return nil
 	})
@@ -264,6 +374,17 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasComment(expected string) *Ap
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasCommentNotEmpty() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

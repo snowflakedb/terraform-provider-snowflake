@@ -44,11 +44,33 @@ func (m *MaskingPolicyAssert) HasCreatedOn(expected time.Time) *MaskingPolicyAss
 	return m
 }
 
+func (m *MaskingPolicyAssert) HasCreatedOnNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *MaskingPolicyAssert) HasName(expected string) *MaskingPolicyAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *MaskingPolicyAssert) HasNameNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -66,11 +88,33 @@ func (m *MaskingPolicyAssert) HasDatabaseName(expected string) *MaskingPolicyAss
 	return m
 }
 
+func (m *MaskingPolicyAssert) HasDatabaseNameNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *MaskingPolicyAssert) HasSchemaName(expected string) *MaskingPolicyAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *MaskingPolicyAssert) HasSchemaNameNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -88,6 +132,17 @@ func (m *MaskingPolicyAssert) HasKind(expected string) *MaskingPolicyAssert {
 	return m
 }
 
+func (m *MaskingPolicyAssert) HasKindNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *MaskingPolicyAssert) HasOwner(expected string) *MaskingPolicyAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
 		t.Helper()
@@ -99,11 +154,33 @@ func (m *MaskingPolicyAssert) HasOwner(expected string) *MaskingPolicyAssert {
 	return m
 }
 
+func (m *MaskingPolicyAssert) HasOwnerNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *MaskingPolicyAssert) HasComment(expected string) *MaskingPolicyAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *MaskingPolicyAssert) HasCommentNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -140,6 +217,17 @@ func (m *MaskingPolicyAssert) HasOwnerRoleType(expected string) *MaskingPolicyAs
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *MaskingPolicyAssert) HasOwnerRoleTypeNotEmpty() *MaskingPolicyAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.MaskingPolicy) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

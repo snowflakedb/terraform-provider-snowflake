@@ -43,11 +43,33 @@ func (h *HybridTableAssert) HasCreatedOn(expected time.Time) *HybridTableAssert 
 	return h
 }
 
+func (h *HybridTableAssert) HasCreatedOnNotEmpty() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return h
+}
+
 func (h *HybridTableAssert) HasName(expected string) *HybridTableAssert {
 	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return h
+}
+
+func (h *HybridTableAssert) HasNameNotEmpty() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,6 +87,17 @@ func (h *HybridTableAssert) HasDatabaseName(expected string) *HybridTableAssert 
 	return h
 }
 
+func (h *HybridTableAssert) HasDatabaseNameNotEmpty() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return h
+}
+
 func (h *HybridTableAssert) HasSchemaName(expected string) *HybridTableAssert {
 	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
 		t.Helper()
@@ -76,11 +109,33 @@ func (h *HybridTableAssert) HasSchemaName(expected string) *HybridTableAssert {
 	return h
 }
 
+func (h *HybridTableAssert) HasSchemaNameNotEmpty() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return h
+}
+
 func (h *HybridTableAssert) HasOwner(expected string) *HybridTableAssert {
 	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return h
+}
+
+func (h *HybridTableAssert) HasOwnerNotEmpty() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -148,11 +203,33 @@ func (h *HybridTableAssert) HasComment(expected string) *HybridTableAssert {
 	return h
 }
 
+func (h *HybridTableAssert) HasCommentNotEmpty() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return h
+}
+
 func (h *HybridTableAssert) HasOwnerRoleType(expected string) *HybridTableAssert {
 	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return h
+}
+
+func (h *HybridTableAssert) HasOwnerRoleTypeNotEmpty() *HybridTableAssert {
+	h.AddAssertion(func(t *testing.T, o *sdk.HybridTable) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

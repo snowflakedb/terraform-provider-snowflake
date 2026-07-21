@@ -42,6 +42,17 @@ func (o *OrganizationAccountAssert) HasOrganizationName(expected string) *Organi
 	return o
 }
 
+func (o *OrganizationAccountAssert) HasOrganizationNameNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.OrganizationName == "" {
+			return fmt.Errorf("expected organization name to be non-empty")
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OrganizationAccountAssert) HasAccountName(expected string) *OrganizationAccountAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
 		t.Helper()
@@ -53,11 +64,33 @@ func (o *OrganizationAccountAssert) HasAccountName(expected string) *Organizatio
 	return o
 }
 
+func (o *OrganizationAccountAssert) HasAccountNameNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.AccountName == "" {
+			return fmt.Errorf("expected account name to be non-empty")
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OrganizationAccountAssert) HasSnowflakeRegion(expected string) *OrganizationAccountAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
 		t.Helper()
 		if o.SnowflakeRegion != expected {
 			return fmt.Errorf("expected snowflake region: %v; got: %v", expected, o.SnowflakeRegion)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OrganizationAccountAssert) HasSnowflakeRegionNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.SnowflakeRegion == "" {
+			return fmt.Errorf("expected snowflake region to be non-empty")
 		}
 		return nil
 	})
@@ -86,11 +119,33 @@ func (o *OrganizationAccountAssert) HasAccountUrl(expected string) *Organization
 	return o
 }
 
+func (o *OrganizationAccountAssert) HasAccountUrlNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.AccountUrl == "" {
+			return fmt.Errorf("expected account url to be non-empty")
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OrganizationAccountAssert) HasCreatedOn(expected string) *OrganizationAccountAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OrganizationAccountAssert) HasCreatedOnNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
 		}
 		return nil
 	})
@@ -133,11 +188,33 @@ func (o *OrganizationAccountAssert) HasAccountLocator(expected string) *Organiza
 	return o
 }
 
+func (o *OrganizationAccountAssert) HasAccountLocatorNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.AccountLocator == "" {
+			return fmt.Errorf("expected account locator to be non-empty")
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OrganizationAccountAssert) HasAccountLocatorUrl(expected string) *OrganizationAccountAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
 		t.Helper()
 		if o.AccountLocatorUrl != expected {
 			return fmt.Errorf("expected account locator url: %v; got: %v", expected, o.AccountLocatorUrl)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OrganizationAccountAssert) HasAccountLocatorUrlNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.AccountLocatorUrl == "" {
+			return fmt.Errorf("expected account locator url to be non-empty")
 		}
 		return nil
 	})
@@ -160,6 +237,17 @@ func (o *OrganizationAccountAssert) HasConsumptionBillingEntityName(expected str
 		t.Helper()
 		if o.ConsumptionBillingEntityName != expected {
 			return fmt.Errorf("expected consumption billing entity name: %v; got: %v", expected, o.ConsumptionBillingEntityName)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OrganizationAccountAssert) HasConsumptionBillingEntityNameNotEmpty() *OrganizationAccountAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OrganizationAccount) error {
+		t.Helper()
+		if o.ConsumptionBillingEntityName == "" {
+			return fmt.Errorf("expected consumption billing entity name to be non-empty")
 		}
 		return nil
 	})

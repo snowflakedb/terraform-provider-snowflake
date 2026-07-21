@@ -43,11 +43,33 @@ func (s *StageAssert) HasCreatedOn(expected time.Time) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasCreatedOnNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasName(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasNameNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,6 +87,17 @@ func (s *StageAssert) HasDatabaseName(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasDatabaseNameNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasSchemaName(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
@@ -76,11 +109,33 @@ func (s *StageAssert) HasSchemaName(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasSchemaNameNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasUrl(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Url != expected {
 			return fmt.Errorf("expected url: %v; got: %v", expected, o.Url)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasUrlNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Url == "" {
+			return fmt.Errorf("expected url to be non-empty")
 		}
 		return nil
 	})
@@ -120,11 +175,33 @@ func (s *StageAssert) HasOwner(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasOwnerNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasComment(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasCommentNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

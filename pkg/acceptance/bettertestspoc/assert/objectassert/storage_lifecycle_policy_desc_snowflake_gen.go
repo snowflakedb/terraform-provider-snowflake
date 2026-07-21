@@ -43,6 +43,17 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasName(expected string) *StorageL
 	return s
 }
 
+func (s *StorageLifecyclePolicyDetailsAssert) HasNameNotEmpty() *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyDetailsAssert) HasDatabaseName(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
@@ -54,11 +65,33 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasDatabaseName(expected string) *
 	return s
 }
 
+func (s *StorageLifecyclePolicyDetailsAssert) HasDatabaseNameNotEmpty() *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaName(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaNameNotEmpty() *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -81,6 +114,17 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasBody(expected string) *StorageL
 		t.Helper()
 		if o.Body != expected {
 			return fmt.Errorf("expected body: %v; got: %v", expected, o.Body)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyDetailsAssert) HasBodyNotEmpty() *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.Body == "" {
+			return fmt.Errorf("expected body to be non-empty")
 		}
 		return nil
 	})
@@ -117,6 +161,17 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasArchiveTier(expected string) *S
 		t.Helper()
 		if o.ArchiveTier != expected {
 			return fmt.Errorf("expected archive tier: %v; got: %v", expected, o.ArchiveTier)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyDetailsAssert) HasArchiveTierNotEmpty() *StorageLifecyclePolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
+		t.Helper()
+		if o.ArchiveTier == "" {
+			return fmt.Errorf("expected archive tier to be non-empty")
 		}
 		return nil
 	})

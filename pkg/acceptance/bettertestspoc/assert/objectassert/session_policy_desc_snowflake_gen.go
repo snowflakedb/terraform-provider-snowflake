@@ -55,6 +55,17 @@ func (s *SessionPolicyDetailsAssert) HasOwner(expected string) *SessionPolicyDet
 	return s
 }
 
+func (s *SessionPolicyDetailsAssert) HasOwnerNotEmpty() *SessionPolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyDetailsAssert) HasOwnerRoleType(expected string) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
@@ -66,11 +77,33 @@ func (s *SessionPolicyDetailsAssert) HasOwnerRoleType(expected string) *SessionP
 	return s
 }
 
+func (s *SessionPolicyDetailsAssert) HasOwnerRoleTypeNotEmpty() *SessionPolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyDetailsAssert) HasComment(expected string) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyDetailsAssert) HasCommentNotEmpty() *SessionPolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

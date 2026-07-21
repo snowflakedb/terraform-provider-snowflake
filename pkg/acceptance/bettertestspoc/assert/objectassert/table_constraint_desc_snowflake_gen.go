@@ -33,11 +33,33 @@ func (t *TableConstraintDetailsAssert) HasConstraintCatalog(expected string) *Ta
 	return t
 }
 
+func (t *TableConstraintDetailsAssert) HasConstraintCatalogNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.ConstraintCatalog == "" {
+			return fmt.Errorf("expected constraint catalog to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableConstraintDetailsAssert) HasConstraintSchema(expected string) *TableConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
 		t.Helper()
 		if o.ConstraintSchema != expected {
 			return fmt.Errorf("expected constraint schema: %v; got: %v", expected, o.ConstraintSchema)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableConstraintDetailsAssert) HasConstraintSchemaNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.ConstraintSchema == "" {
+			return fmt.Errorf("expected constraint schema to be non-empty")
 		}
 		return nil
 	})
@@ -55,11 +77,33 @@ func (t *TableConstraintDetailsAssert) HasConstraintName(expected string) *Table
 	return t
 }
 
+func (t *TableConstraintDetailsAssert) HasConstraintNameNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.ConstraintName == "" {
+			return fmt.Errorf("expected constraint name to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableConstraintDetailsAssert) HasTableCatalog(expected string) *TableConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
 		t.Helper()
 		if o.TableCatalog != expected {
 			return fmt.Errorf("expected table catalog: %v; got: %v", expected, o.TableCatalog)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableConstraintDetailsAssert) HasTableCatalogNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.TableCatalog == "" {
+			return fmt.Errorf("expected table catalog to be non-empty")
 		}
 		return nil
 	})
@@ -77,11 +121,33 @@ func (t *TableConstraintDetailsAssert) HasTableSchema(expected string) *TableCon
 	return t
 }
 
+func (t *TableConstraintDetailsAssert) HasTableSchemaNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.TableSchema == "" {
+			return fmt.Errorf("expected table schema to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableConstraintDetailsAssert) HasTableName(expected string) *TableConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
 		t.Helper()
 		if o.TableName != expected {
 			return fmt.Errorf("expected table name: %v; got: %v", expected, o.TableName)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableConstraintDetailsAssert) HasTableNameNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.TableName == "" {
+			return fmt.Errorf("expected table name to be non-empty")
 		}
 		return nil
 	})
@@ -157,11 +223,33 @@ func (t *TableConstraintDetailsAssert) HasCreated(expected time.Time) *TableCons
 	return t
 }
 
+func (t *TableConstraintDetailsAssert) HasCreatedNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.Created.IsZero() {
+			return fmt.Errorf("expected created to be set; got zero value")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableConstraintDetailsAssert) HasLastAltered(expected time.Time) *TableConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
 		t.Helper()
 		if o.LastAltered != expected {
 			return fmt.Errorf("expected last altered: %v; got: %v", expected, o.LastAltered)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableConstraintDetailsAssert) HasLastAlteredNotEmpty() *TableConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableConstraintDetails) error {
+		t.Helper()
+		if o.LastAltered.IsZero() {
+			return fmt.Errorf("expected last altered to be set; got zero value")
 		}
 		return nil
 	})

@@ -42,11 +42,33 @@ func (r *RowAccessPolicyAssert) HasCreatedOn(expected string) *RowAccessPolicyAs
 	return r
 }
 
+func (r *RowAccessPolicyAssert) HasCreatedOnNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *RowAccessPolicyAssert) HasName(expected string) *RowAccessPolicyAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *RowAccessPolicyAssert) HasNameNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -64,11 +86,33 @@ func (r *RowAccessPolicyAssert) HasDatabaseName(expected string) *RowAccessPolic
 	return r
 }
 
+func (r *RowAccessPolicyAssert) HasDatabaseNameNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *RowAccessPolicyAssert) HasSchemaName(expected string) *RowAccessPolicyAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *RowAccessPolicyAssert) HasSchemaNameNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -86,11 +130,33 @@ func (r *RowAccessPolicyAssert) HasKind(expected string) *RowAccessPolicyAssert 
 	return r
 }
 
+func (r *RowAccessPolicyAssert) HasKindNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *RowAccessPolicyAssert) HasOwner(expected string) *RowAccessPolicyAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *RowAccessPolicyAssert) HasOwnerNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -108,6 +174,17 @@ func (r *RowAccessPolicyAssert) HasComment(expected string) *RowAccessPolicyAsse
 	return r
 }
 
+func (r *RowAccessPolicyAssert) HasCommentNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *RowAccessPolicyAssert) HasOptions(expected string) *RowAccessPolicyAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
 		t.Helper()
@@ -119,11 +196,33 @@ func (r *RowAccessPolicyAssert) HasOptions(expected string) *RowAccessPolicyAsse
 	return r
 }
 
+func (r *RowAccessPolicyAssert) HasOptionsNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.Options == "" {
+			return fmt.Errorf("expected options to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *RowAccessPolicyAssert) HasOwnerRoleType(expected string) *RowAccessPolicyAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *RowAccessPolicyAssert) HasOwnerRoleTypeNotEmpty() *RowAccessPolicyAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.RowAccessPolicy) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

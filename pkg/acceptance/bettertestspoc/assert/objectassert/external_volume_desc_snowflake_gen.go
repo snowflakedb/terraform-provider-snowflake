@@ -89,6 +89,17 @@ func (e *ExternalVolumeDetailsAssert) HasActive(expected string) *ExternalVolume
 	return e
 }
 
+func (e *ExternalVolumeDetailsAssert) HasActiveNotEmpty() *ExternalVolumeDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
+		t.Helper()
+		if o.Active == "" {
+			return fmt.Errorf("expected active to be non-empty")
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeDetailsAssert) HasComment(expected string) *ExternalVolumeDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
 		t.Helper()
@@ -100,11 +111,33 @@ func (e *ExternalVolumeDetailsAssert) HasComment(expected string) *ExternalVolum
 	return e
 }
 
+func (e *ExternalVolumeDetailsAssert) HasCommentNotEmpty() *ExternalVolumeDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeDetailsAssert) HasAllowWrites(expected string) *ExternalVolumeDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
 		t.Helper()
 		if o.AllowWrites != expected {
 			return fmt.Errorf("expected allow writes: %v; got: %v", expected, o.AllowWrites)
+		}
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeDetailsAssert) HasAllowWritesNotEmpty() *ExternalVolumeDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeDetails) error {
+		t.Helper()
+		if o.AllowWrites == "" {
+			return fmt.Errorf("expected allow writes to be non-empty")
 		}
 		return nil
 	})

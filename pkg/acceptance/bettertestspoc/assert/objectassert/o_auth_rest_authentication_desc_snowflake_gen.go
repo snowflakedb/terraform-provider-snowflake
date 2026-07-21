@@ -31,6 +31,17 @@ func (o *OAuthRestAuthenticationDetailsAssert) HasOauthTokenUri(expected string)
 	return o
 }
 
+func (o *OAuthRestAuthenticationDetailsAssert) HasOauthTokenUriNotEmpty() *OAuthRestAuthenticationDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OAuthRestAuthenticationDetails) error {
+		t.Helper()
+		if o.OauthTokenUri == "" {
+			return fmt.Errorf("expected oauth token uri to be non-empty")
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OAuthRestAuthenticationDetailsAssert) HasOauthClientId(expected string) *OAuthRestAuthenticationDetailsAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OAuthRestAuthenticationDetails) error {
 		t.Helper()
@@ -42,11 +53,33 @@ func (o *OAuthRestAuthenticationDetailsAssert) HasOauthClientId(expected string)
 	return o
 }
 
+func (o *OAuthRestAuthenticationDetailsAssert) HasOauthClientIdNotEmpty() *OAuthRestAuthenticationDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OAuthRestAuthenticationDetails) error {
+		t.Helper()
+		if o.OauthClientId == "" {
+			return fmt.Errorf("expected oauth client id to be non-empty")
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OAuthRestAuthenticationDetailsAssert) HasOauthClientSecret(expected string) *OAuthRestAuthenticationDetailsAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OAuthRestAuthenticationDetails) error {
 		t.Helper()
 		if o.OauthClientSecret != expected {
 			return fmt.Errorf("expected oauth client secret: %v; got: %v", expected, o.OauthClientSecret)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OAuthRestAuthenticationDetailsAssert) HasOauthClientSecretNotEmpty() *OAuthRestAuthenticationDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OAuthRestAuthenticationDetails) error {
+		t.Helper()
+		if o.OauthClientSecret == "" {
+			return fmt.Errorf("expected oauth client secret to be non-empty")
 		}
 		return nil
 	})

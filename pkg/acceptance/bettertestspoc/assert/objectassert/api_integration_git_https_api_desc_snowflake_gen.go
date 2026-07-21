@@ -66,11 +66,33 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasApiProvider(expected string)
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.ApiProvider == "" {
+			return fmt.Errorf("expected api provider to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasAllowedAuthenticationSecrets(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
 		if o.AllowedAuthenticationSecrets != expected {
 			return fmt.Errorf("expected allowed authentication secrets: %v; got: %v", expected, o.AllowedAuthenticationSecrets)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasAllowedAuthenticationSecretsNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.AllowedAuthenticationSecrets == "" {
+			return fmt.Errorf("expected allowed authentication secrets to be non-empty")
 		}
 		return nil
 	})
@@ -88,11 +110,33 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasUserAuthType(expected string
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasUserAuthTypeNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.UserAuthType == "" {
+			return fmt.Errorf("expected user auth type to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthGrant(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
 		if o.OauthGrant != expected {
 			return fmt.Errorf("expected oauth grant: %v; got: %v", expected, o.OauthGrant)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthGrantNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthGrant == "" {
+			return fmt.Errorf("expected oauth grant to be non-empty")
 		}
 		return nil
 	})
@@ -110,11 +154,33 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthClientId(expected strin
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthClientIdNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthClientId == "" {
+			return fmt.Errorf("expected oauth client id to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthClientAuthMethod(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
 		if o.OauthClientAuthMethod != expected {
 			return fmt.Errorf("expected oauth client auth method: %v; got: %v", expected, o.OauthClientAuthMethod)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthClientAuthMethodNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthClientAuthMethod == "" {
+			return fmt.Errorf("expected oauth client auth method to be non-empty")
 		}
 		return nil
 	})
@@ -132,11 +198,33 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthTokenEndpoint(expected 
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthTokenEndpointNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthTokenEndpoint == "" {
+			return fmt.Errorf("expected oauth token endpoint to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAuthorizationEndpoint(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
 		if o.OauthAuthorizationEndpoint != expected {
 			return fmt.Errorf("expected oauth authorization endpoint: %v; got: %v", expected, o.OauthAuthorizationEndpoint)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAuthorizationEndpointNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthAuthorizationEndpoint == "" {
+			return fmt.Errorf("expected oauth authorization endpoint to be non-empty")
 		}
 		return nil
 	})
@@ -200,6 +288,17 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthUsername(expected strin
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthUsernameNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthUsername == "" {
+			return fmt.Errorf("expected oauth username to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAssertionIssuer(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
@@ -211,11 +310,33 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAssertionIssuer(expecte
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAssertionIssuerNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthAssertionIssuer == "" {
+			return fmt.Errorf("expected oauth assertion issuer to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthResourceUrl(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
 		if o.OauthResourceUrl != expected {
 			return fmt.Errorf("expected oauth resource url: %v; got: %v", expected, o.OauthResourceUrl)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthResourceUrlNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.OauthResourceUrl == "" {
+			return fmt.Errorf("expected oauth resource url to be non-empty")
 		}
 		return nil
 	})
@@ -310,6 +431,17 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasComment(expected string) *Ap
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasCommentNotEmpty() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

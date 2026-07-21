@@ -43,6 +43,17 @@ func (s *StorageIntegrationAssert) HasName(expected string) *StorageIntegrationA
 	return s
 }
 
+func (s *StorageIntegrationAssert) HasNameNotEmpty() *StorageIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAssert) HasStorageType(expected string) *StorageIntegrationAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
 		t.Helper()
@@ -54,11 +65,33 @@ func (s *StorageIntegrationAssert) HasStorageType(expected string) *StorageInteg
 	return s
 }
 
+func (s *StorageIntegrationAssert) HasStorageTypeNotEmpty() *StorageIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
+		t.Helper()
+		if o.StorageType == "" {
+			return fmt.Errorf("expected storage type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAssert) HasCategory(expected string) *StorageIntegrationAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
 		t.Helper()
 		if o.Category != expected {
 			return fmt.Errorf("expected category: %v; got: %v", expected, o.Category)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAssert) HasCategoryNotEmpty() *StorageIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
+		t.Helper()
+		if o.Category == "" {
+			return fmt.Errorf("expected category to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +120,33 @@ func (s *StorageIntegrationAssert) HasComment(expected string) *StorageIntegrati
 	return s
 }
 
+func (s *StorageIntegrationAssert) HasCommentNotEmpty() *StorageIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAssert) HasCreatedOn(expected time.Time) *StorageIntegrationAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAssert) HasCreatedOnNotEmpty() *StorageIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegration) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

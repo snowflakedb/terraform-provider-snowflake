@@ -27,9 +27,9 @@ func TestInt_Tasks(t *testing.T) {
 	assertTask := func(t *testing.T, task *sdk.Task, id sdk.SchemaObjectIdentifier, warehouseId *sdk.AccountObjectIdentifier) {
 		t.Helper()
 		asserts := objectassert.TaskFromObject(t, task).
-			HasNotEmptyCreatedOn().
+			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasNotEmptyId().
+			HasIdNotEmpty().
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasOwner("ACCOUNTADMIN").
@@ -62,9 +62,9 @@ func TestInt_Tasks(t *testing.T) {
 		t.Helper()
 
 		asserts := objectassert.TaskFromObject(t, task).
-			HasNotEmptyCreatedOn().
+			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
-			HasNotEmptyId().
+			HasIdNotEmpty().
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasOwner("ACCOUNTADMIN").
@@ -110,7 +110,7 @@ func TestInt_Tasks(t *testing.T) {
 		t.Helper()
 		assertThatObject(
 			t, objectassert.TaskFromObject(t, task).
-				HasNotEmptyCreatedOn().
+				HasCreatedOnNotEmpty().
 				HasName(id.Name()).
 				HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 				HasSchemaName(testClientHelper().Ids.SchemaId().Name()).

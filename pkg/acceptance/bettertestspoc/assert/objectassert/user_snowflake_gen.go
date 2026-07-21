@@ -43,11 +43,33 @@ func (u *UserAssert) HasName(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasNameNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasCreatedOn(expected time.Time) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasCreatedOnNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (u *UserAssert) HasLoginName(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasLoginNameNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.LoginName == "" {
+			return fmt.Errorf("expected login name to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasDisplayName(expected string) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.DisplayName != expected {
 			return fmt.Errorf("expected display name: %v; got: %v", expected, o.DisplayName)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasDisplayNameNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.DisplayName == "" {
+			return fmt.Errorf("expected display name to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +131,33 @@ func (u *UserAssert) HasFirstName(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasFirstNameNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.FirstName == "" {
+			return fmt.Errorf("expected first name to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasLastName(expected string) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.LastName != expected {
 			return fmt.Errorf("expected last name: %v; got: %v", expected, o.LastName)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasLastNameNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.LastName == "" {
+			return fmt.Errorf("expected last name to be non-empty")
 		}
 		return nil
 	})
@@ -109,11 +175,33 @@ func (u *UserAssert) HasEmail(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasEmailNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.Email == "" {
+			return fmt.Errorf("expected email to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasMinsToUnlock(expected string) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.MinsToUnlock != expected {
 			return fmt.Errorf("expected mins to unlock: %v; got: %v", expected, o.MinsToUnlock)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasMinsToUnlockNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.MinsToUnlock == "" {
+			return fmt.Errorf("expected mins to unlock to be non-empty")
 		}
 		return nil
 	})
@@ -131,11 +219,33 @@ func (u *UserAssert) HasDaysToExpiry(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasDaysToExpiryNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.DaysToExpiry == "" {
+			return fmt.Errorf("expected days to expiry to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasComment(expected string) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasCommentNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -186,11 +296,33 @@ func (u *UserAssert) HasDefaultWarehouse(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasDefaultWarehouseNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.DefaultWarehouse == "" {
+			return fmt.Errorf("expected default warehouse to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasDefaultNamespace(expected string) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.DefaultNamespace != expected {
 			return fmt.Errorf("expected default namespace: %v; got: %v", expected, o.DefaultNamespace)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasDefaultNamespaceNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.DefaultNamespace == "" {
+			return fmt.Errorf("expected default namespace to be non-empty")
 		}
 		return nil
 	})
@@ -208,11 +340,33 @@ func (u *UserAssert) HasDefaultRole(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasDefaultRoleNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.DefaultRole == "" {
+			return fmt.Errorf("expected default role to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasDefaultSecondaryRoles(expected string) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.DefaultSecondaryRoles != expected {
 			return fmt.Errorf("expected default secondary roles: %v; got: %v", expected, o.DefaultSecondaryRoles)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasDefaultSecondaryRolesNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.DefaultSecondaryRoles == "" {
+			return fmt.Errorf("expected default secondary roles to be non-empty")
 		}
 		return nil
 	})
@@ -241,11 +395,33 @@ func (u *UserAssert) HasExtAuthnUid(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasExtAuthnUidNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.ExtAuthnUid == "" {
+			return fmt.Errorf("expected ext authn uid to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasMinsToBypassMfa(expected string) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.MinsToBypassMfa != expected {
 			return fmt.Errorf("expected mins to bypass mfa: %v; got: %v", expected, o.MinsToBypassMfa)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasMinsToBypassMfaNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.MinsToBypassMfa == "" {
+			return fmt.Errorf("expected mins to bypass mfa to be non-empty")
 		}
 		return nil
 	})
@@ -263,11 +439,33 @@ func (u *UserAssert) HasOwner(expected string) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasOwnerNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasLastSuccessLogin(expected time.Time) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.LastSuccessLogin != expected {
 			return fmt.Errorf("expected last success login: %v; got: %v", expected, o.LastSuccessLogin)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasLastSuccessLoginNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.LastSuccessLogin.IsZero() {
+			return fmt.Errorf("expected last success login to be set; got zero value")
 		}
 		return nil
 	})
@@ -285,11 +483,33 @@ func (u *UserAssert) HasExpiresAtTime(expected time.Time) *UserAssert {
 	return u
 }
 
+func (u *UserAssert) HasExpiresAtTimeNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.ExpiresAtTime.IsZero() {
+			return fmt.Errorf("expected expires at time to be set; got zero value")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserAssert) HasLockedUntilTime(expected time.Time) *UserAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if o.LockedUntilTime != expected {
 			return fmt.Errorf("expected locked until time: %v; got: %v", expected, o.LockedUntilTime)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasLockedUntilTimeNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.LockedUntilTime.IsZero() {
+			return fmt.Errorf("expected locked until time to be set; got zero value")
 		}
 		return nil
 	})
@@ -323,6 +543,17 @@ func (u *UserAssert) HasType(expected string) *UserAssert {
 		t.Helper()
 		if o.Type != expected {
 			return fmt.Errorf("expected type: %v; got: %v", expected, o.Type)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserAssert) HasTypeNotEmpty() *UserAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.User) error {
+		t.Helper()
+		if o.Type == "" {
+			return fmt.Errorf("expected type to be non-empty")
 		}
 		return nil
 	})

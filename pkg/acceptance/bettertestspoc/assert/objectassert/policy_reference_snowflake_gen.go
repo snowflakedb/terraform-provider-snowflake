@@ -82,6 +82,17 @@ func (p *PolicyReferenceAssert) HasPolicyName(expected string) *PolicyReferenceA
 	return p
 }
 
+func (p *PolicyReferenceAssert) HasPolicyNameNotEmpty() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.PolicyName == "" {
+			return fmt.Errorf("expected policy name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PolicyReferenceAssert) HasPolicyKind(expected sdk.PolicyKind) *PolicyReferenceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
 		t.Helper()
@@ -154,11 +165,33 @@ func (p *PolicyReferenceAssert) HasRefEntityName(expected string) *PolicyReferen
 	return p
 }
 
+func (p *PolicyReferenceAssert) HasRefEntityNameNotEmpty() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.RefEntityName == "" {
+			return fmt.Errorf("expected ref entity name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PolicyReferenceAssert) HasRefEntityDomain(expected string) *PolicyReferenceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
 		t.Helper()
 		if o.RefEntityDomain != expected {
 			return fmt.Errorf("expected ref entity domain: %v; got: %v", expected, o.RefEntityDomain)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PolicyReferenceAssert) HasRefEntityDomainNotEmpty() *PolicyReferenceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PolicyReference) error {
+		t.Helper()
+		if o.RefEntityDomain == "" {
+			return fmt.Errorf("expected ref entity domain to be non-empty")
 		}
 		return nil
 	})
