@@ -45,11 +45,33 @@ func (s *SecretAssert) HasCreatedOn(expected time.Time) *SecretAssert {
 	return s
 }
 
+func (s *SecretAssert) HasCreatedOnNotEmpty() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecretAssert) HasName(expected string) *SecretAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SecretAssert) HasNameNotEmpty() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -67,6 +89,17 @@ func (s *SecretAssert) HasSchemaName(expected string) *SecretAssert {
 	return s
 }
 
+func (s *SecretAssert) HasSchemaNameNotEmpty() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecretAssert) HasDatabaseName(expected string) *SecretAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
 		t.Helper()
@@ -78,11 +111,33 @@ func (s *SecretAssert) HasDatabaseName(expected string) *SecretAssert {
 	return s
 }
 
+func (s *SecretAssert) HasDatabaseNameNotEmpty() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecretAssert) HasOwner(expected string) *SecretAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SecretAssert) HasOwnerNotEmpty() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -125,6 +180,17 @@ func (s *SecretAssert) HasSecretType(expected string) *SecretAssert {
 	return s
 }
 
+func (s *SecretAssert) HasSecretTypeNotEmpty() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.SecretType == "" {
+			return fmt.Errorf("expected secret type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecretAssert) HasOauthScopes(expected ...string) *SecretAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
 		t.Helper()
@@ -154,6 +220,17 @@ func (s *SecretAssert) HasOwnerRoleType(expected string) *SecretAssert {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SecretAssert) HasOwnerRoleTypeNotEmpty() *SecretAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Secret) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

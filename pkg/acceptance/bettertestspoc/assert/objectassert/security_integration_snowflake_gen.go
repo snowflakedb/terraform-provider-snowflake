@@ -43,6 +43,17 @@ func (s *SecurityIntegrationAssert) HasName(expected string) *SecurityIntegratio
 	return s
 }
 
+func (s *SecurityIntegrationAssert) HasNameNotEmpty() *SecurityIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecurityIntegrationAssert) HasIntegrationType(expected string) *SecurityIntegrationAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
 		t.Helper()
@@ -54,11 +65,33 @@ func (s *SecurityIntegrationAssert) HasIntegrationType(expected string) *Securit
 	return s
 }
 
+func (s *SecurityIntegrationAssert) HasIntegrationTypeNotEmpty() *SecurityIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
+		t.Helper()
+		if o.IntegrationType == "" {
+			return fmt.Errorf("expected integration type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecurityIntegrationAssert) HasCategory(expected string) *SecurityIntegrationAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
 		t.Helper()
 		if o.Category != expected {
 			return fmt.Errorf("expected category: %v; got: %v", expected, o.Category)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SecurityIntegrationAssert) HasCategoryNotEmpty() *SecurityIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
+		t.Helper()
+		if o.Category == "" {
+			return fmt.Errorf("expected category to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +120,33 @@ func (s *SecurityIntegrationAssert) HasComment(expected string) *SecurityIntegra
 	return s
 }
 
+func (s *SecurityIntegrationAssert) HasCommentNotEmpty() *SecurityIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SecurityIntegrationAssert) HasCreatedOn(expected time.Time) *SecurityIntegrationAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SecurityIntegrationAssert) HasCreatedOnNotEmpty() *SecurityIntegrationAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SecurityIntegration) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

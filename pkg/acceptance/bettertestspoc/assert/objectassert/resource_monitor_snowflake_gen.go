@@ -45,6 +45,17 @@ func (r *ResourceMonitorAssert) HasName(expected string) *ResourceMonitorAssert 
 	return r
 }
 
+func (r *ResourceMonitorAssert) HasNameNotEmpty() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *ResourceMonitorAssert) HasCreditQuota(expected float64) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
@@ -139,11 +150,33 @@ func (r *ResourceMonitorAssert) HasStartTime(expected string) *ResourceMonitorAs
 	return r
 }
 
+func (r *ResourceMonitorAssert) HasStartTimeNotEmpty() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.StartTime == "" {
+			return fmt.Errorf("expected start time to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *ResourceMonitorAssert) HasEndTime(expected string) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
 		if o.EndTime != expected {
 			return fmt.Errorf("expected end time: %v; got: %v", expected, o.EndTime)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *ResourceMonitorAssert) HasEndTimeNotEmpty() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.EndTime == "" {
+			return fmt.Errorf("expected end time to be non-empty")
 		}
 		return nil
 	})
@@ -235,6 +268,17 @@ func (r *ResourceMonitorAssert) HasCreatedOn(expected time.Time) *ResourceMonito
 	return r
 }
 
+func (r *ResourceMonitorAssert) HasCreatedOnNotEmpty() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *ResourceMonitorAssert) HasOwner(expected string) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
@@ -246,11 +290,33 @@ func (r *ResourceMonitorAssert) HasOwner(expected string) *ResourceMonitorAssert
 	return r
 }
 
+func (r *ResourceMonitorAssert) HasOwnerNotEmpty() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *ResourceMonitorAssert) HasComment(expected string) *ResourceMonitorAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *ResourceMonitorAssert) HasCommentNotEmpty() *ResourceMonitorAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ResourceMonitor) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

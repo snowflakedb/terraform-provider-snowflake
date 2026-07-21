@@ -45,6 +45,17 @@ func (s *ServiceAssert) HasName(expected string) *ServiceAssert {
 	return s
 }
 
+func (s *ServiceAssert) HasNameNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasStatus(expected sdk.ServiceStatus) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
@@ -67,6 +78,17 @@ func (s *ServiceAssert) HasDatabaseName(expected string) *ServiceAssert {
 	return s
 }
 
+func (s *ServiceAssert) HasDatabaseNameNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasSchemaName(expected string) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
@@ -78,11 +100,33 @@ func (s *ServiceAssert) HasSchemaName(expected string) *ServiceAssert {
 	return s
 }
 
+func (s *ServiceAssert) HasSchemaNameNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasOwner(expected string) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasOwnerNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -105,6 +149,17 @@ func (s *ServiceAssert) HasDnsName(expected string) *ServiceAssert {
 		t.Helper()
 		if o.DnsName != expected {
 			return fmt.Errorf("expected dns name: %v; got: %v", expected, o.DnsName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasDnsNameNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.DnsName == "" {
+			return fmt.Errorf("expected dns name to be non-empty")
 		}
 		return nil
 	})
@@ -212,11 +267,33 @@ func (s *ServiceAssert) HasCreatedOn(expected time.Time) *ServiceAssert {
 	return s
 }
 
+func (s *ServiceAssert) HasCreatedOnNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasUpdatedOn(expected time.Time) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
 		if o.UpdatedOn != expected {
 			return fmt.Errorf("expected updated on: %v; got: %v", expected, o.UpdatedOn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasUpdatedOnNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.UpdatedOn.IsZero() {
+			return fmt.Errorf("expected updated on to be set; got zero value")
 		}
 		return nil
 	})
@@ -320,6 +397,17 @@ func (s *ServiceAssert) HasOwnerRoleType(expected string) *ServiceAssert {
 	return s
 }
 
+func (s *ServiceAssert) HasOwnerRoleTypeNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *ServiceAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) *ServiceAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
 		t.Helper()
@@ -372,6 +460,17 @@ func (s *ServiceAssert) HasSpecDigest(expected string) *ServiceAssert {
 		t.Helper()
 		if o.SpecDigest != expected {
 			return fmt.Errorf("expected spec digest: %v; got: %v", expected, o.SpecDigest)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceAssert) HasSpecDigestNotEmpty() *ServiceAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+		t.Helper()
+		if o.SpecDigest == "" {
+			return fmt.Errorf("expected spec digest to be non-empty")
 		}
 		return nil
 	})
