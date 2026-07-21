@@ -531,6 +531,12 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeAllDetails"},
 	},
+	{
+		IdType:               "sdk.AccountObjectIdentifier",
+		ObjectStruct:         sdk.DatabaseDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

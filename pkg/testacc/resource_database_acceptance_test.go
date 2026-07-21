@@ -1158,7 +1158,7 @@ func TestAcc_Database_WithoutPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDescribe(t, id).DoesNotContainPublicSchema(),
+					objectassert.DatabaseDetails(t, id).DoesNotContainPublicSchema(),
 				),
 			},
 			// Change in parameter shouldn't change the state Snowflake
@@ -1172,7 +1172,7 @@ func TestAcc_Database_WithoutPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDescribe(t, id).DoesNotContainPublicSchema(),
+					objectassert.DatabaseDetails(t, id).DoesNotContainPublicSchema(),
 				),
 			},
 		},
@@ -1197,7 +1197,7 @@ func TestAcc_Database_WithPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDescribe(t, id).ContainsPublicSchema(),
+					objectassert.DatabaseDetails(t, id).ContainsPublicSchema(),
 				),
 			},
 			// Change in parameter shouldn't change the state Snowflake
@@ -1211,7 +1211,7 @@ func TestAcc_Database_WithPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDescribe(t, id).ContainsPublicSchema(),
+					objectassert.DatabaseDetails(t, id).ContainsPublicSchema(),
 				),
 			},
 		},
