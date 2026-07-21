@@ -112,6 +112,17 @@ func (p *PostgresInstanceAssert) HasOrigin(expected string) *PostgresInstanceAss
 	return p
 }
 
+func (p *PostgresInstanceAssert) HasNoOrigin() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.Origin != nil {
+			return fmt.Errorf("expected origin to be nil; got: %v", *o.Origin)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PostgresInstanceAssert) HasHost(expected string) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
@@ -126,6 +137,17 @@ func (p *PostgresInstanceAssert) HasHost(expected string) *PostgresInstanceAsser
 	return p
 }
 
+func (p *PostgresInstanceAssert) HasNoHost() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.Host != nil {
+			return fmt.Errorf("expected host to be nil; got: %v", *o.Host)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PostgresInstanceAssert) HasPrivatelinkServiceIdentifier(expected string) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
@@ -134,6 +156,17 @@ func (p *PostgresInstanceAssert) HasPrivatelinkServiceIdentifier(expected string
 		}
 		if *o.PrivatelinkServiceIdentifier != expected {
 			return fmt.Errorf("expected privatelink service identifier: %v; got: %v", expected, *o.PrivatelinkServiceIdentifier)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceAssert) HasNoPrivatelinkServiceIdentifier() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.PrivatelinkServiceIdentifier != nil {
+			return fmt.Errorf("expected privatelink service identifier to be nil; got: %v", *o.PrivatelinkServiceIdentifier)
 		}
 		return nil
 	})
@@ -198,6 +231,17 @@ func (p *PostgresInstanceAssert) HasPostgresSettings(expected string) *PostgresI
 	return p
 }
 
+func (p *PostgresInstanceAssert) HasNoPostgresSettings() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.PostgresSettings != nil {
+			return fmt.Errorf("expected postgres settings to be nil; got: %v", *o.PostgresSettings)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PostgresInstanceAssert) HasIsHighlyAvailable(expected bool) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
@@ -239,6 +283,17 @@ func (p *PostgresInstanceAssert) HasComment(expected string) *PostgresInstanceAs
 		}
 		if *o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceAssert) HasNoComment() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
 		}
 		return nil
 	})

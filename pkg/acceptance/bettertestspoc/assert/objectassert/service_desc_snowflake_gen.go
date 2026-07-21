@@ -14,28 +14,28 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-type ServiceAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.Service, sdk.SchemaObjectIdentifier]
+type ServiceDetailsAssert struct {
+	*assert.SnowflakeObjectAssert[sdk.ServiceDetails, sdk.SchemaObjectIdentifier]
 }
 
-func Service(t *testing.T, id sdk.SchemaObjectIdentifier) *ServiceAssert {
+func ServiceDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *ServiceDetailsAssert {
 	t.Helper()
-	return &ServiceAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeService, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Service, sdk.SchemaObjectIdentifier] {
-			return testClient.Service.Show
+	return &ServiceDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("ServiceDetails"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ServiceDetails, sdk.SchemaObjectIdentifier] {
+			return testClient.Service.Describe
 		}),
 	}
 }
 
-func ServiceFromObject(t *testing.T, service *sdk.Service) *ServiceAssert {
+func ServiceDetailsFromObject(t *testing.T, serviceDetails *sdk.ServiceDetails) *ServiceDetailsAssert {
 	t.Helper()
-	return &ServiceAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeService, service.ID(), service),
+	return &ServiceDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("ServiceDetails"), serviceDetails.ID(), serviceDetails),
 	}
 }
 
-func (s *ServiceAssert) HasName(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasName(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
@@ -45,8 +45,8 @@ func (s *ServiceAssert) HasName(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasStatus(expected sdk.ServiceStatus) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasStatus(expected sdk.ServiceStatus) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.Status != expected {
 			return fmt.Errorf("expected status: %v; got: %v", expected, o.Status)
@@ -56,8 +56,8 @@ func (s *ServiceAssert) HasStatus(expected sdk.ServiceStatus) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasDatabaseName(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasDatabaseName(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.DatabaseName != expected {
 			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
@@ -67,8 +67,8 @@ func (s *ServiceAssert) HasDatabaseName(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasSchemaName(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasSchemaName(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
@@ -78,8 +78,8 @@ func (s *ServiceAssert) HasSchemaName(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasOwner(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasOwner(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
@@ -89,8 +89,8 @@ func (s *ServiceAssert) HasOwner(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasComputePool(expected sdk.AccountObjectIdentifier) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasComputePool(expected sdk.AccountObjectIdentifier) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.ComputePool.FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected compute pool: %v; got: %v", expected.FullyQualifiedName(), o.ComputePool.FullyQualifiedName())
@@ -100,8 +100,19 @@ func (s *ServiceAssert) HasComputePool(expected sdk.AccountObjectIdentifier) *Se
 	return s
 }
 
-func (s *ServiceAssert) HasDnsName(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasSpec(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
+		t.Helper()
+		if o.Spec != expected {
+			return fmt.Errorf("expected spec: %v; got: %v", expected, o.Spec)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *ServiceDetailsAssert) HasDnsName(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.DnsName != expected {
 			return fmt.Errorf("expected dns name: %v; got: %v", expected, o.DnsName)
@@ -111,8 +122,8 @@ func (s *ServiceAssert) HasDnsName(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasCurrentInstances(expected int) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasCurrentInstances(expected int) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.CurrentInstances != expected {
 			return fmt.Errorf("expected current instances: %v; got: %v", expected, o.CurrentInstances)
@@ -122,8 +133,8 @@ func (s *ServiceAssert) HasCurrentInstances(expected int) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasTargetInstances(expected int) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasTargetInstances(expected int) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.TargetInstances != expected {
 			return fmt.Errorf("expected target instances: %v; got: %v", expected, o.TargetInstances)
@@ -133,8 +144,8 @@ func (s *ServiceAssert) HasTargetInstances(expected int) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasMinReadyInstances(expected int) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasMinReadyInstances(expected int) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.MinReadyInstances != expected {
 			return fmt.Errorf("expected min ready instances: %v; got: %v", expected, o.MinReadyInstances)
@@ -144,8 +155,8 @@ func (s *ServiceAssert) HasMinReadyInstances(expected int) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasMinInstances(expected int) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasMinInstances(expected int) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.MinInstances != expected {
 			return fmt.Errorf("expected min instances: %v; got: %v", expected, o.MinInstances)
@@ -155,8 +166,8 @@ func (s *ServiceAssert) HasMinInstances(expected int) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasMaxInstances(expected int) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasMaxInstances(expected int) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.MaxInstances != expected {
 			return fmt.Errorf("expected max instances: %v; got: %v", expected, o.MaxInstances)
@@ -166,8 +177,8 @@ func (s *ServiceAssert) HasMaxInstances(expected int) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasAutoResume(expected bool) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasAutoResume(expected bool) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.AutoResume != expected {
 			return fmt.Errorf("expected auto resume: %v; got: %v", expected, o.AutoResume)
@@ -177,8 +188,8 @@ func (s *ServiceAssert) HasAutoResume(expected bool) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObjectIdentifier) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObjectIdentifier) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		mapped := collections.Map(o.ExternalAccessIntegrations, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
 		mappedExpected := collections.Map(expected, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
@@ -190,8 +201,8 @@ func (s *ServiceAssert) HasExternalAccessIntegrations(expected ...sdk.AccountObj
 	return s
 }
 
-func (s *ServiceAssert) HasNoExternalAccessIntegrations() *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasNoExternalAccessIntegrations() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if len(o.ExternalAccessIntegrations) > 0 {
 			return fmt.Errorf("expected external access integrations to be empty; got: %v", o.ExternalAccessIntegrations)
@@ -201,8 +212,8 @@ func (s *ServiceAssert) HasNoExternalAccessIntegrations() *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasCreatedOn(expected time.Time) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasCreatedOn(expected time.Time) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
@@ -212,8 +223,8 @@ func (s *ServiceAssert) HasCreatedOn(expected time.Time) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasUpdatedOn(expected time.Time) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasUpdatedOn(expected time.Time) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.UpdatedOn != expected {
 			return fmt.Errorf("expected updated on: %v; got: %v", expected, o.UpdatedOn)
@@ -223,8 +234,8 @@ func (s *ServiceAssert) HasUpdatedOn(expected time.Time) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasResumedOn(expected time.Time) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasResumedOn(expected time.Time) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.ResumedOn == nil {
 			return fmt.Errorf("expected resumed on to have value; got: nil")
@@ -237,8 +248,8 @@ func (s *ServiceAssert) HasResumedOn(expected time.Time) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasNoResumedOn() *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasNoResumedOn() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.ResumedOn != nil {
 			return fmt.Errorf("expected resumed on to be nil; got: %v", *o.ResumedOn)
@@ -248,8 +259,8 @@ func (s *ServiceAssert) HasNoResumedOn() *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasSuspendedOn(expected time.Time) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasSuspendedOn(expected time.Time) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.SuspendedOn == nil {
 			return fmt.Errorf("expected suspended on to have value; got: nil")
@@ -262,8 +273,8 @@ func (s *ServiceAssert) HasSuspendedOn(expected time.Time) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasNoSuspendedOn() *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasNoSuspendedOn() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.SuspendedOn != nil {
 			return fmt.Errorf("expected suspended on to be nil; got: %v", *o.SuspendedOn)
@@ -273,8 +284,8 @@ func (s *ServiceAssert) HasNoSuspendedOn() *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasAutoSuspendSecs(expected int) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasAutoSuspendSecs(expected int) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.AutoSuspendSecs != expected {
 			return fmt.Errorf("expected auto suspend secs: %v; got: %v", expected, o.AutoSuspendSecs)
@@ -284,8 +295,8 @@ func (s *ServiceAssert) HasAutoSuspendSecs(expected int) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasComment(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasComment(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.Comment == nil {
 			return fmt.Errorf("expected comment to have value; got: nil")
@@ -298,8 +309,8 @@ func (s *ServiceAssert) HasComment(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasNoComment() *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasNoComment() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.Comment != nil {
 			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
@@ -309,8 +320,8 @@ func (s *ServiceAssert) HasNoComment() *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasOwnerRoleType(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasOwnerRoleType(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
@@ -320,8 +331,8 @@ func (s *ServiceAssert) HasOwnerRoleType(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.QueryWarehouse == nil {
 			return fmt.Errorf("expected query warehouse to have value; got: nil")
@@ -334,8 +345,8 @@ func (s *ServiceAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) 
 	return s
 }
 
-func (s *ServiceAssert) HasNoQueryWarehouse() *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasNoQueryWarehouse() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.QueryWarehouse != nil {
 			return fmt.Errorf("expected query warehouse to be nil; got: %v", *o.QueryWarehouse)
@@ -345,8 +356,8 @@ func (s *ServiceAssert) HasNoQueryWarehouse() *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasIsJob(expected bool) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasIsJob(expected bool) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.IsJob != expected {
 			return fmt.Errorf("expected is job: %v; got: %v", expected, o.IsJob)
@@ -356,8 +367,8 @@ func (s *ServiceAssert) HasIsJob(expected bool) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasIsAsyncJob(expected bool) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasIsAsyncJob(expected bool) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.IsAsyncJob != expected {
 			return fmt.Errorf("expected is async job: %v; got: %v", expected, o.IsAsyncJob)
@@ -367,8 +378,8 @@ func (s *ServiceAssert) HasIsAsyncJob(expected bool) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasSpecDigest(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasSpecDigest(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.SpecDigest != expected {
 			return fmt.Errorf("expected spec digest: %v; got: %v", expected, o.SpecDigest)
@@ -378,8 +389,8 @@ func (s *ServiceAssert) HasSpecDigest(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasIsUpgrading(expected bool) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasIsUpgrading(expected bool) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.IsUpgrading != expected {
 			return fmt.Errorf("expected is upgrading: %v; got: %v", expected, o.IsUpgrading)
@@ -389,8 +400,8 @@ func (s *ServiceAssert) HasIsUpgrading(expected bool) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasManagingObjectDomain(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasManagingObjectDomain(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.ManagingObjectDomain == nil {
 			return fmt.Errorf("expected managing object domain to have value; got: nil")
@@ -403,8 +414,8 @@ func (s *ServiceAssert) HasManagingObjectDomain(expected string) *ServiceAssert 
 	return s
 }
 
-func (s *ServiceAssert) HasNoManagingObjectDomain() *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasNoManagingObjectDomain() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.ManagingObjectDomain != nil {
 			return fmt.Errorf("expected managing object domain to be nil; got: %v", *o.ManagingObjectDomain)
@@ -414,8 +425,8 @@ func (s *ServiceAssert) HasNoManagingObjectDomain() *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasManagingObjectName(expected string) *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasManagingObjectName(expected string) *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.ManagingObjectName == nil {
 			return fmt.Errorf("expected managing object name to have value; got: nil")
@@ -428,8 +439,8 @@ func (s *ServiceAssert) HasManagingObjectName(expected string) *ServiceAssert {
 	return s
 }
 
-func (s *ServiceAssert) HasNoManagingObjectName() *ServiceAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.Service) error {
+func (s *ServiceDetailsAssert) HasNoManagingObjectName() *ServiceDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.ServiceDetails) error {
 		t.Helper()
 		if o.ManagingObjectName != nil {
 			return fmt.Errorf("expected managing object name to be nil; got: %v", *o.ManagingObjectName)

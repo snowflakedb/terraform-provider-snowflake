@@ -40,25 +40,3 @@ func (c *ComputePoolAssert) HasUpdatedOnNotEmpty() *ComputePoolAssert {
 	})
 	return c
 }
-
-func (c *ComputePoolAssert) HasNoComment() *ComputePoolAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to have nil; got: %s", *o.Comment)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ComputePoolAssert) HasNoApplication() *ComputePoolAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
-		t.Helper()
-		if o.Application != nil {
-			return fmt.Errorf("expected application to have nil; got: %s", *o.Application)
-		}
-		return nil
-	})
-	return c
-}

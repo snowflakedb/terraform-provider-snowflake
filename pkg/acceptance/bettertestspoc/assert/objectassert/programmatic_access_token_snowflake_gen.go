@@ -70,6 +70,17 @@ func (p *ProgrammaticAccessTokenAssert) HasRoleRestriction(expected sdk.AccountO
 	return p
 }
 
+func (p *ProgrammaticAccessTokenAssert) HasNoRoleRestriction() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.RoleRestriction != nil {
+			return fmt.Errorf("expected role restriction to be nil; got: %v", *o.RoleRestriction)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProgrammaticAccessTokenAssert) HasExpiresAt(expected time.Time) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
@@ -100,6 +111,17 @@ func (p *ProgrammaticAccessTokenAssert) HasComment(expected string) *Programmati
 		}
 		if *o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, *o.Comment)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProgrammaticAccessTokenAssert) HasNoComment() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
 		}
 		return nil
 	})
@@ -142,6 +164,17 @@ func (p *ProgrammaticAccessTokenAssert) HasMinsToBypassNetworkPolicyRequirement(
 	return p
 }
 
+func (p *ProgrammaticAccessTokenAssert) HasNoMinsToBypassNetworkPolicyRequirement() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.MinsToBypassNetworkPolicyRequirement != nil {
+			return fmt.Errorf("expected mins to bypass network policy requirement to be nil; got: %v", *o.MinsToBypassNetworkPolicyRequirement)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProgrammaticAccessTokenAssert) HasRotatedTo(expected string) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
@@ -150,6 +183,17 @@ func (p *ProgrammaticAccessTokenAssert) HasRotatedTo(expected string) *Programma
 		}
 		if *o.RotatedTo != expected {
 			return fmt.Errorf("expected rotated to: %v; got: %v", expected, *o.RotatedTo)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProgrammaticAccessTokenAssert) HasNoRotatedTo() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.RotatedTo != nil {
+			return fmt.Errorf("expected rotated to to be nil; got: %v", *o.RotatedTo)
 		}
 		return nil
 	})

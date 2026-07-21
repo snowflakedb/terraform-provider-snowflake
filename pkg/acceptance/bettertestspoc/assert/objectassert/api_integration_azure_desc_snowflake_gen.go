@@ -134,6 +134,17 @@ func (a *ApiIntegrationAzureDetailsAssert) HasAllowedPrefixes(expected ...string
 	return a
 }
 
+func (a *ApiIntegrationAzureDetailsAssert) HasNoAllowedPrefixes() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if len(o.AllowedPrefixes) > 0 {
+			return fmt.Errorf("expected allowed prefixes to be empty; got: %v", o.AllowedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAzureDetailsAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
@@ -141,6 +152,17 @@ func (a *ApiIntegrationAzureDetailsAssert) HasBlockedPrefixes(expected ...string
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked prefixes: %v; got: %v", expected, o.BlockedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAzureDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if len(o.BlockedPrefixes) > 0 {
+			return fmt.Errorf("expected blocked prefixes to be empty; got: %v", o.BlockedPrefixes)
 		}
 		return nil
 	})

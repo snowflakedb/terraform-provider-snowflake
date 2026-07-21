@@ -178,6 +178,17 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAllowedScopes(expected 
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoOauthAllowedScopes() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if len(o.OauthAllowedScopes) > 0 {
+			return fmt.Errorf("expected oauth allowed scopes to be empty; got: %v", o.OauthAllowedScopes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthUsername(expected string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
@@ -235,6 +246,17 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasTlsTrustedCertificates(expec
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoTlsTrustedCertificates() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if len(o.TlsTrustedCertificates) > 0 {
+			return fmt.Errorf("expected tls trusted certificates to be empty; got: %v", o.TlsTrustedCertificates)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasAllowedPrefixes(expected ...string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
@@ -248,6 +270,17 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasAllowedPrefixes(expected ...
 	return a
 }
 
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoAllowedPrefixes() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if len(o.AllowedPrefixes) > 0 {
+			return fmt.Errorf("expected allowed prefixes to be empty; got: %v", o.AllowedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()
@@ -255,6 +288,17 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasBlockedPrefixes(expected ...
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked prefixes: %v; got: %v", expected, o.BlockedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationGitHttpsApiDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
+		t.Helper()
+		if len(o.BlockedPrefixes) > 0 {
+			return fmt.Errorf("expected blocked prefixes to be empty; got: %v", o.BlockedPrefixes)
 		}
 		return nil
 	})
