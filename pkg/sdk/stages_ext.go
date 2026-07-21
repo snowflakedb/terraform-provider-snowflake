@@ -95,17 +95,23 @@ func ParseStageDetails(properties []StageProperty) (*StageDetails, error) {
 	fileFormatProperties := stageFileFormatProperties(properties)
 	switch formatType {
 	case FileFormatTypeCsv:
-		details.FileFormatCsv = parseFileFormatCsv(fileFormatProperties, SchemaObjectIdentifier{})
+		details.FileFormatCsv, err = parseFileFormatCsv(fileFormatProperties, SchemaObjectIdentifier{})
+		if err != nil {
+			return nil, err
+		}
 	case FileFormatTypeJson:
-		details.FileFormatJson = parseFileFormatJson(fileFormatProperties, SchemaObjectIdentifier{})
+		details.FileFormatJson, err = parseFileFormatJson(fileFormatProperties, SchemaObjectIdentifier{})
 	case FileFormatTypeAvro:
-		details.FileFormatAvro = parseFileFormatAvro(fileFormatProperties, SchemaObjectIdentifier{})
+		details.FileFormatAvro, err = parseFileFormatAvro(fileFormatProperties, SchemaObjectIdentifier{})
 	case FileFormatTypeOrc:
-		details.FileFormatOrc = parseFileFormatOrc(fileFormatProperties, SchemaObjectIdentifier{})
+		details.FileFormatOrc, err = parseFileFormatOrc(fileFormatProperties, SchemaObjectIdentifier{})
 	case FileFormatTypeParquet:
-		details.FileFormatParquet = parseFileFormatParquet(fileFormatProperties, SchemaObjectIdentifier{})
+		details.FileFormatParquet, err = parseFileFormatParquet(fileFormatProperties, SchemaObjectIdentifier{})
 	case FileFormatTypeXml:
-		details.FileFormatXml = parseFileFormatXml(fileFormatProperties, SchemaObjectIdentifier{})
+		details.FileFormatXml, err = parseFileFormatXml(fileFormatProperties, SchemaObjectIdentifier{})
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return details, nil

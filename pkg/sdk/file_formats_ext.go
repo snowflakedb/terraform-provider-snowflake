@@ -2,8 +2,9 @@ package sdk
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"strconv"
-	"strings"
 )
 
 func (opts FileFormatOptions) validate() error {
@@ -123,7 +124,7 @@ func (v *fileFormats) DescribeCsvDetails(ctx context.Context, id SchemaObjectIde
 	if err != nil {
 		return nil, err
 	}
-	return parseFileFormatCsv(properties, id), nil
+	return parseFileFormatCsv(properties, id)
 }
 
 // DescribeJsonDetails fetches and parses describe output for a JSON file format.
@@ -132,7 +133,7 @@ func (v *fileFormats) DescribeJsonDetails(ctx context.Context, id SchemaObjectId
 	if err != nil {
 		return nil, err
 	}
-	return parseFileFormatJson(properties, id), nil
+	return parseFileFormatJson(properties, id)
 }
 
 // DescribeAvroDetails fetches and parses describe output for an Avro file format.
@@ -141,7 +142,7 @@ func (v *fileFormats) DescribeAvroDetails(ctx context.Context, id SchemaObjectId
 	if err != nil {
 		return nil, err
 	}
-	return parseFileFormatAvro(properties, id), nil
+	return parseFileFormatAvro(properties, id)
 }
 
 // DescribeOrcDetails fetches and parses describe output for an ORC file format.
@@ -150,7 +151,7 @@ func (v *fileFormats) DescribeOrcDetails(ctx context.Context, id SchemaObjectIde
 	if err != nil {
 		return nil, err
 	}
-	return parseFileFormatOrc(properties, id), nil
+	return parseFileFormatOrc(properties, id)
 }
 
 // DescribeParquetDetails fetches and parses describe output for a Parquet file format.
@@ -159,7 +160,7 @@ func (v *fileFormats) DescribeParquetDetails(ctx context.Context, id SchemaObjec
 	if err != nil {
 		return nil, err
 	}
-	return parseFileFormatParquet(properties, id), nil
+	return parseFileFormatParquet(properties, id)
 }
 
 // DescribeXmlDetails fetches and parses describe output for an XML file format.
@@ -168,7 +169,7 @@ func (v *fileFormats) DescribeXmlDetails(ctx context.Context, id SchemaObjectIde
 	if err != nil {
 		return nil, err
 	}
-	return parseFileFormatXml(properties, id), nil
+	return parseFileFormatXml(properties, id)
 }
 
 // DescribeAllDetails fetches and parses describe output for any file format type.
@@ -182,8 +183,9 @@ func (v *fileFormats) DescribeAllDetails(ctx context.Context, id SchemaObjectIde
 
 // parseFileFormatCsv parses DESCRIBE FILE FORMAT output for a CSV file format. It is also reused
 // by stages_ext.go to parse the file format properties embedded in DESCRIBE STAGE output.
-func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifier) *FileFormatCsv {
+func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatCsv, error) {
 	csv := &FileFormatCsv{Id: id}
+	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
@@ -195,10 +197,19 @@ func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifi
 		case "FILE_EXTENSION":
 			csv.FileExtension = prop.Value
 		case "SKIP_HEADER":
-			val, _ := strconv.Atoi(prop.Value)
-			csv.SkipHeader = val
+			val, err := strconv.Atoi(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_HEADER value "%s" to int: %w`, prop.Value, err))
+			} else {
+				csv.SkipHeader = val
+			}
 		case "PARSE_HEADER":
-			csv.ParseHeader = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast PARSE_HEADER value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.ParseHeader = val
+			}
 		case "DATE_FORMAT":
 			csv.DateFormat = prop.Value
 		case "TIME_FORMAT":
@@ -212,7 +223,12 @@ func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifi
 		case "ESCAPE_UNENCLOSED_FIELD":
 			csv.EscapeUnenclosedField = prop.Value
 		case "TRIM_SPACE":
-			csv.TrimSpace = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.TrimSpace = val
+			}
 		case "FIELD_OPTIONALLY_ENCLOSED_BY":
 			csv.FieldOptionallyEnclosedBy = prop.Value
 		case "NULL_IF":
@@ -220,28 +236,66 @@ func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifi
 		case "COMPRESSION":
 			csv.Compression = prop.Value
 		case "ERROR_ON_COLUMN_COUNT_MISMATCH":
-			csv.ErrorOnColumnCountMismatch = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast ERROR_ON_COLUMN_COUNT_MISMATCH value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.ErrorOnColumnCountMismatch = val
+			}
 		case "VALIDATE_UTF8":
-			csv.ValidateUtf8 = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast VALIDATE_UTF8 value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.ValidateUtf8 = val
+			}
 		case "SKIP_BLANK_LINES":
-			csv.SkipBlankLines = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BLANK_LINES value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.SkipBlankLines = val
+			}
 		case "REPLACE_INVALID_CHARACTERS":
-			csv.ReplaceInvalidCharacters = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.ReplaceInvalidCharacters = val
+			}
 		case "EMPTY_FIELD_AS_NULL":
-			csv.EmptyFieldAsNull = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast EMPTY_FIELD_AS_NULL value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.EmptyFieldAsNull = val
+			}
 		case "SKIP_BYTE_ORDER_MARK":
-			csv.SkipByteOrderMark = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.SkipByteOrderMark = val
+			}
 		case "ENCODING":
 			csv.Encoding = prop.Value
 		case "MULTI_LINE":
-			csv.MultiLine = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast MULTI_LINE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				csv.MultiLine = val
+			}
+		default:
+			log.Printf("[DEBUG] unknown CSV file format property: %s", prop.Name)
 		}
 	}
-	return csv
+	return csv, JoinErrors(errs...)
 }
 
-func parseFileFormatJson(properties []FileFormatProperty, id SchemaObjectIdentifier) *FileFormatJson {
+func parseFileFormatJson(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatJson, error) {
 	json := &FileFormatJson{Id: id}
+	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
@@ -257,34 +311,82 @@ func parseFileFormatJson(properties []FileFormatProperty, id SchemaObjectIdentif
 		case "BINARY_FORMAT":
 			json.BinaryFormat = prop.Value
 		case "TRIM_SPACE":
-			json.TrimSpace = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.TrimSpace = val
+			}
 		case "MULTI_LINE":
-			json.MultiLine = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast MULTI_LINE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.MultiLine = val
+			}
 		case "NULL_IF":
 			json.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "FILE_EXTENSION":
 			json.FileExtension = prop.Value
 		case "ENABLE_OCTAL":
-			json.EnableOctal = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast ENABLE_OCTAL value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.EnableOctal = val
+			}
 		case "ALLOW_DUPLICATE":
-			json.AllowDuplicate = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast ALLOW_DUPLICATE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.AllowDuplicate = val
+			}
 		case "STRIP_OUTER_ARRAY":
-			json.StripOuterArray = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast STRIP_OUTER_ARRAY value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.StripOuterArray = val
+			}
 		case "STRIP_NULL_VALUES":
-			json.StripNullValues = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast STRIP_NULL_VALUES value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.StripNullValues = val
+			}
 		case "REPLACE_INVALID_CHARACTERS":
-			json.ReplaceInvalidCharacters = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.ReplaceInvalidCharacters = val
+			}
 		case "IGNORE_UTF8_ERRORS":
-			json.IgnoreUtf8Errors = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.IgnoreUtf8Errors = val
+			}
 		case "SKIP_BYTE_ORDER_MARK":
-			json.SkipByteOrderMark = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				json.SkipByteOrderMark = val
+			}
+		default:
+			log.Printf("[DEBUG] unknown JSON file format property: %s", prop.Name)
 		}
 	}
-	return json
+	return json, JoinErrors(errs...)
 }
 
-func parseFileFormatAvro(properties []FileFormatProperty, id SchemaObjectIdentifier) *FileFormatAvro {
+func parseFileFormatAvro(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatAvro, error) {
 	avro := &FileFormatAvro{Id: id}
+	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
@@ -292,35 +394,61 @@ func parseFileFormatAvro(properties []FileFormatProperty, id SchemaObjectIdentif
 		case "COMPRESSION":
 			avro.Compression = prop.Value
 		case "TRIM_SPACE":
-			avro.TrimSpace = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				avro.TrimSpace = val
+			}
 		case "REPLACE_INVALID_CHARACTERS":
-			avro.ReplaceInvalidCharacters = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				avro.ReplaceInvalidCharacters = val
+			}
 		case "NULL_IF":
 			avro.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		default:
+			log.Printf("[DEBUG] unknown Avro file format property: %s", prop.Name)
 		}
 	}
-	return avro
+	return avro, JoinErrors(errs...)
 }
 
-func parseFileFormatOrc(properties []FileFormatProperty, id SchemaObjectIdentifier) *FileFormatOrc {
+func parseFileFormatOrc(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatOrc, error) {
 	orc := &FileFormatOrc{Id: id}
+	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
 			orc.Type = prop.Value
 		case "TRIM_SPACE":
-			orc.TrimSpace = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				orc.TrimSpace = val
+			}
 		case "REPLACE_INVALID_CHARACTERS":
-			orc.ReplaceInvalidCharacters = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				orc.ReplaceInvalidCharacters = val
+			}
 		case "NULL_IF":
 			orc.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		default:
+			log.Printf("[DEBUG] unknown ORC file format property: %s", prop.Name)
 		}
 	}
-	return orc
+	return orc, JoinErrors(errs...)
 }
 
-func parseFileFormatParquet(properties []FileFormatProperty, id SchemaObjectIdentifier) *FileFormatParquet {
+func parseFileFormatParquet(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatParquet, error) {
 	parquet := &FileFormatParquet{Id: id}
+	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
@@ -328,24 +456,52 @@ func parseFileFormatParquet(properties []FileFormatProperty, id SchemaObjectIden
 		case "COMPRESSION":
 			parquet.Compression = prop.Value
 		case "BINARY_AS_TEXT":
-			parquet.BinaryAsText = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast BINARY_AS_TEXT value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				parquet.BinaryAsText = val
+			}
 		case "USE_LOGICAL_TYPE":
-			parquet.UseLogicalType = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast USE_LOGICAL_TYPE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				parquet.UseLogicalType = val
+			}
 		case "TRIM_SPACE":
-			parquet.TrimSpace = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast TRIM_SPACE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				parquet.TrimSpace = val
+			}
 		case "USE_VECTORIZED_SCANNER":
-			parquet.UseVectorizedScanner = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast USE_VECTORIZED_SCANNER value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				parquet.UseVectorizedScanner = val
+			}
 		case "REPLACE_INVALID_CHARACTERS":
-			parquet.ReplaceInvalidCharacters = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				parquet.ReplaceInvalidCharacters = val
+			}
 		case "NULL_IF":
 			parquet.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
+		default:
+			log.Printf("[DEBUG] unknown Parquet file format property: %s", prop.Name)
 		}
 	}
-	return parquet
+	return parquet, JoinErrors(errs...)
 }
 
-func parseFileFormatXml(properties []FileFormatProperty, id SchemaObjectIdentifier) *FileFormatXml {
+func parseFileFormatXml(properties []FileFormatProperty, id SchemaObjectIdentifier) (*FileFormatXml, error) {
 	xml := &FileFormatXml{Id: id}
+	var errs []error
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
@@ -353,22 +509,59 @@ func parseFileFormatXml(properties []FileFormatProperty, id SchemaObjectIdentifi
 		case "COMPRESSION":
 			xml.Compression = prop.Value
 		case "IGNORE_UTF8_ERRORS":
-			xml.IgnoreUtf8Errors = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast IGNORE_UTF8_ERRORS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				xml.IgnoreUtf8Errors = val
+			}
 		case "PRESERVE_SPACE":
-			xml.PreserveSpace = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast PRESERVE_SPACE value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				xml.PreserveSpace = val
+			}
 		case "STRIP_OUTER_ELEMENT":
-			xml.StripOuterElement = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast STRIP_OUTER_ELEMENT value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				xml.StripOuterElement = val
+			}
 		case "DISABLE_SNOWFLAKE_DATA":
-			xml.DisableSnowflakeData = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast DISABLE_SNOWFLAKE_DATA value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				xml.DisableSnowflakeData = val
+			}
 		case "DISABLE_AUTO_CONVERT":
-			xml.DisableAutoConvert = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast DISABLE_AUTO_CONVERT value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				xml.DisableAutoConvert = val
+			}
 		case "REPLACE_INVALID_CHARACTERS":
-			xml.ReplaceInvalidCharacters = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast REPLACE_INVALID_CHARACTERS value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				xml.ReplaceInvalidCharacters = val
+			}
 		case "SKIP_BYTE_ORDER_MARK":
-			xml.SkipByteOrderMark = prop.Value == "true"
+			val, err := strconv.ParseBool(prop.Value)
+			if err != nil {
+				errs = append(errs, fmt.Errorf(`cannot cast SKIP_BYTE_ORDER_MARK value "%s" to bool: %w`, prop.Value, err))
+			} else {
+				xml.SkipByteOrderMark = val
+			}
+		default:
+			log.Printf("[DEBUG] unknown XML file format property: %s", prop.Name)
 		}
 	}
-	return xml
+	return xml, JoinErrors(errs...)
 }
 
 // parseFileFormatAllDetails reuses the per-type parsers instead of re-implementing the property
@@ -386,31 +579,24 @@ func parseFileFormatAllDetails(properties []FileFormatProperty, id SchemaObjectI
 		}
 	}
 
+	var err error
 	switch details.Type {
 	case FileFormatTypeCsv:
-		details.Csv = parseFileFormatCsv(properties, id)
+		details.Csv, err = parseFileFormatCsv(properties, id)
 	case FileFormatTypeJson:
-		details.Json = parseFileFormatJson(properties, id)
+		details.Json, err = parseFileFormatJson(properties, id)
 	case FileFormatTypeAvro:
-		details.Avro = parseFileFormatAvro(properties, id)
+		details.Avro, err = parseFileFormatAvro(properties, id)
 	case FileFormatTypeOrc:
-		details.Orc = parseFileFormatOrc(properties, id)
+		details.Orc, err = parseFileFormatOrc(properties, id)
 	case FileFormatTypeParquet:
-		details.Parquet = parseFileFormatParquet(properties, id)
+		details.Parquet, err = parseFileFormatParquet(properties, id)
 	case FileFormatTypeXml:
-		details.Xml = parseFileFormatXml(properties, id)
+		details.Xml, err = parseFileFormatXml(properties, id)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	return details, nil
-}
-
-func parseNullIfProperty(v string) []NullString {
-	nullIf := []NullString{}
-	for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
-		if s == "" {
-			continue
-		}
-		nullIf = append(nullIf, NullString{s})
-	}
-	return nullIf
 }

@@ -19,7 +19,8 @@ func TestParseFileFormatCsv(t *testing.T) {
 		{Name: "TRIM_SPACE", Value: "true"},
 	}
 
-	csv := parseFileFormatCsv(properties, id)
+	csv, err := parseFileFormatCsv(properties, id)
+	require.NoError(t, err)
 
 	require.Equal(t, id, csv.Id)
 	require.Equal(t, "CSV", csv.Type)
@@ -32,6 +33,17 @@ func TestParseFileFormatCsv(t *testing.T) {
 	require.True(t, csv.TrimSpace)
 }
 
+func TestParseFileFormatCsv_invalidSkipHeader(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+	properties := []FileFormatProperty{
+		{Name: "TYPE", Value: "CSV"},
+		{Name: "SKIP_HEADER", Value: "not-a-number"},
+	}
+
+	_, err := parseFileFormatCsv(properties, id)
+	require.ErrorContains(t, err, `cannot cast SKIP_HEADER value "not-a-number" to int`)
+}
+
 func TestParseFileFormatJson(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	properties := []FileFormatProperty{
@@ -41,7 +53,8 @@ func TestParseFileFormatJson(t *testing.T) {
 		{Name: "NULL_IF", Value: "[]"},
 	}
 
-	json := parseFileFormatJson(properties, id)
+	json, err := parseFileFormatJson(properties, id)
+	require.NoError(t, err)
 
 	require.Equal(t, id, json.Id)
 	require.Equal(t, "JSON", json.Type)
@@ -60,7 +73,8 @@ func TestParseFileFormatAvro(t *testing.T) {
 		{Name: "NULL_IF", Value: "[NULL, ]"},
 	}
 
-	avro := parseFileFormatAvro(properties, id)
+	avro, err := parseFileFormatAvro(properties, id)
+	require.NoError(t, err)
 
 	require.Equal(t, id, avro.Id)
 	require.Equal(t, "AVRO", avro.Type)
@@ -79,7 +93,8 @@ func TestParseFileFormatOrc(t *testing.T) {
 		{Name: "NULL_IF", Value: "[NULL]"},
 	}
 
-	orc := parseFileFormatOrc(properties, id)
+	orc, err := parseFileFormatOrc(properties, id)
+	require.NoError(t, err)
 
 	require.Equal(t, id, orc.Id)
 	require.Equal(t, "ORC", orc.Type)
@@ -99,7 +114,8 @@ func TestParseFileFormatParquet(t *testing.T) {
 		{Name: "NULL_IF", Value: "[NULL]"},
 	}
 
-	parquet := parseFileFormatParquet(properties, id)
+	parquet, err := parseFileFormatParquet(properties, id)
+	require.NoError(t, err)
 
 	require.Equal(t, id, parquet.Id)
 	require.Equal(t, "PARQUET", parquet.Type)
@@ -123,7 +139,8 @@ func TestParseFileFormatXml(t *testing.T) {
 		{Name: "SKIP_BYTE_ORDER_MARK", Value: "true"},
 	}
 
-	xml := parseFileFormatXml(properties, id)
+	xml, err := parseFileFormatXml(properties, id)
+	require.NoError(t, err)
 
 	require.Equal(t, id, xml.Id)
 	require.Equal(t, "XML", xml.Type)
@@ -223,5 +240,10 @@ func TestParseFileFormatAllDetails(t *testing.T) {
 	t.Run("invalid type", func(t *testing.T) {
 		_, err := parseFileFormatAllDetails([]FileFormatProperty{{Name: "TYPE", Value: "NOT_A_TYPE"}}, id)
 		require.Error(t, err)
+	})
+
+	t.Run("missing type", func(t *testing.T) {
+		_, err := parseFileFormatAllDetails([]FileFormatProperty{{Name: "COMPRESSION", Value: "GZIP"}}, id)
+		require.ErrorContains(t, err, "describe did not return a recognized file format type")
 	})
 }
