@@ -45,6 +45,101 @@ var (
 	)
 )
 
+var fileFormatCsvDef = g.PlainStruct("FileFormatCsv").
+	SchemaObjectIdentifier().
+	Text("Type").
+	Text("Compression").
+	Text("RecordDelimiter").
+	Text("FieldDelimiter").
+	Text("FileExtension").
+	Number("SkipHeader").
+	Bool("ParseHeader").
+	Bool("SkipBlankLines").
+	Text("DateFormat").
+	Text("TimeFormat").
+	Text("TimestampFormat").
+	Text("BinaryFormat").
+	Text("Escape").
+	Text("EscapeUnenclosedField").
+	Bool("TrimSpace").
+	Text("FieldOptionallyEnclosedBy").
+	StringList("NullIf").
+	Bool("ErrorOnColumnCountMismatch").
+	Bool("ValidateUtf8").
+	Bool("ReplaceInvalidCharacters").
+	Bool("EmptyFieldAsNull").
+	Bool("SkipByteOrderMark").
+	Text("Encoding").
+	Bool("MultiLine")
+
+var fileFormatJsonDef = g.PlainStruct("FileFormatJson").
+	SchemaObjectIdentifier().
+	Text("Type").
+	Text("Compression").
+	Text("DateFormat").
+	Text("TimeFormat").
+	Text("TimestampFormat").
+	Text("BinaryFormat").
+	Bool("TrimSpace").
+	Bool("MultiLine").
+	StringList("NullIf").
+	Text("FileExtension").
+	Bool("EnableOctal").
+	Bool("AllowDuplicate").
+	Bool("StripOuterArray").
+	Bool("StripNullValues").
+	Bool("ReplaceInvalidCharacters").
+	Bool("IgnoreUtf8Errors").
+	Bool("SkipByteOrderMark")
+
+var fileFormatAvroDef = g.PlainStruct("FileFormatAvro").
+	SchemaObjectIdentifier().
+	Text("Type").
+	Text("Compression").
+	Bool("TrimSpace").
+	Bool("ReplaceInvalidCharacters").
+	StringList("NullIf")
+
+var fileFormatOrcDef = g.PlainStruct("FileFormatOrc").
+	SchemaObjectIdentifier().
+	Text("Type").
+	Bool("TrimSpace").
+	Bool("ReplaceInvalidCharacters").
+	StringList("NullIf")
+
+var fileFormatParquetDef = g.PlainStruct("FileFormatParquet").
+	SchemaObjectIdentifier().
+	Text("Type").
+	Text("Compression").
+	Bool("BinaryAsText").
+	Bool("UseLogicalType").
+	Bool("TrimSpace").
+	Bool("UseVectorizedScanner").
+	Bool("ReplaceInvalidCharacters").
+	StringList("NullIf")
+
+var fileFormatXmlDef = g.PlainStruct("FileFormatXml").
+	SchemaObjectIdentifier().
+	Text("Type").
+	Text("Compression").
+	Bool("IgnoreUtf8Errors").
+	Bool("PreserveSpace").
+	Bool("StripOuterElement").
+	Bool("DisableSnowflakeData").
+	Bool("DisableAutoConvert").
+	Bool("ReplaceInvalidCharacters").
+	Bool("SkipByteOrderMark")
+
+var fileFormatAllDetailsDef = g.PlainStruct("FileFormatAllDetails").
+	SchemaObjectIdentifier().
+	Enum("Type", FileFormatTypeEnumDef).
+	OptionalField("Csv", "FileFormatCsv").
+	OptionalField("Json", "FileFormatJson").
+	OptionalField("Avro", "FileFormatAvro").
+	OptionalField("Orc", "FileFormatOrc").
+	OptionalField("Parquet", "FileFormatParquet").
+	OptionalField("Xml", "FileFormatXml")
+
 func stageFileFormatStringOrAuto() *g.QueryStruct {
 	return g.NewQueryStruct("StageFileFormatStringOrAuto").
 		OptionalText("Value", g.KeywordOptions().SingleQuotes()).
@@ -143,152 +238,12 @@ func xmlFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalBooleanAssignment("IGNORE_UTF8_ERRORS", g.ParameterOptions()).
 		OptionalBooleanAssignment("PRESERVE_SPACE", g.ParameterOptions()).
 		OptionalBooleanAssignment("STRIP_OUTER_ELEMENT", g.ParameterOptions()).
+		OptionalBooleanAssignment("DISABLE_SNOWFLAKE_DATA", g.ParameterOptions()).
 		OptionalBooleanAssignment("DISABLE_AUTO_CONVERT", g.ParameterOptions()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 		OptionalBooleanAssignment("SKIP_BYTE_ORDER_MARK", g.ParameterOptions()).
 		WithValidation(g.ConflictingFields, "IgnoreUtf8Errors", "ReplaceInvalidCharacters")
 }
-
-// fileFormatCsvDetailsDef, fileFormatJsonDetailsDef, ... mirror csv/json/.../xmlFileFormatOptionFields
-// for the DESCRIBE FILE FORMAT output, one struct per file format type, plus fileFormatAllDetailsDef
-// which combines every type's fields (prefixed by type) for DescribeAllDetails.
-var fileFormatCsvDetailsDef = g.PlainStruct("FileFormatCsvDetails").
-	SchemaObjectIdentifier().
-	OptionalField("Compression", CsvCompressionEnumDef.Kind()).
-	OptionalField("RecordDelimiter", "StageFileFormatStringOrNone").
-	OptionalField("FieldDelimiter", "StageFileFormatStringOrNone").
-	OptionalText("FileExtension").
-	OptionalNumber("SkipHeader").
-	OptionalBool("ParseHeader").
-	OptionalBool("SkipBlankLines").
-	OptionalField("DateFormat", "StageFileFormatStringOrAuto").
-	OptionalField("TimeFormat", "StageFileFormatStringOrAuto").
-	OptionalField("TimestampFormat", "StageFileFormatStringOrAuto").
-	OptionalField("BinaryFormat", BinaryFormatEnumDef.Kind()).
-	OptionalField("Escape", "StageFileFormatStringOrNone").
-	OptionalField("EscapeUnenclosedField", "StageFileFormatStringOrNone").
-	OptionalBool("TrimSpace").
-	OptionalField("FieldOptionallyEnclosedBy", "StageFileFormatStringOrNone").
-	Field("NullIf", "[]NullString").
-	OptionalBool("ErrorOnColumnCountMismatch").
-	OptionalBool("ReplaceInvalidCharacters").
-	OptionalBool("EmptyFieldAsNull").
-	OptionalBool("SkipByteOrderMark").
-	OptionalField("Encoding", CsvEncodingEnumDef.Kind())
-
-var fileFormatJsonDetailsDef = g.PlainStruct("FileFormatJsonDetails").
-	SchemaObjectIdentifier().
-	OptionalField("Compression", JsonCompressionEnumDef.Kind()).
-	OptionalField("DateFormat", "StageFileFormatStringOrAuto").
-	OptionalField("TimeFormat", "StageFileFormatStringOrAuto").
-	OptionalField("TimestampFormat", "StageFileFormatStringOrAuto").
-	OptionalField("BinaryFormat", BinaryFormatEnumDef.Kind()).
-	OptionalBool("TrimSpace").
-	OptionalBool("MultiLine").
-	Field("NullIf", "[]NullString").
-	OptionalText("FileExtension").
-	OptionalBool("EnableOctal").
-	OptionalBool("AllowDuplicate").
-	OptionalBool("StripOuterArray").
-	OptionalBool("StripNullValues").
-	OptionalBool("ReplaceInvalidCharacters").
-	OptionalBool("IgnoreUtf8Errors").
-	OptionalBool("SkipByteOrderMark")
-
-var fileFormatAvroDetailsDef = g.PlainStruct("FileFormatAvroDetails").
-	SchemaObjectIdentifier().
-	OptionalField("Compression", AvroCompressionEnumDef.Kind()).
-	OptionalBool("TrimSpace").
-	OptionalBool("ReplaceInvalidCharacters").
-	Field("NullIf", "[]NullString")
-
-var fileFormatOrcDetailsDef = g.PlainStruct("FileFormatOrcDetails").
-	SchemaObjectIdentifier().
-	OptionalBool("TrimSpace").
-	OptionalBool("ReplaceInvalidCharacters").
-	Field("NullIf", "[]NullString")
-
-var fileFormatParquetDetailsDef = g.PlainStruct("FileFormatParquetDetails").
-	SchemaObjectIdentifier().
-	OptionalField("Compression", ParquetCompressionEnumDef.Kind()).
-	OptionalBool("TrimSpace").
-	OptionalBool("BinaryAsText").
-	OptionalBool("UseLogicalType").
-	OptionalBool("UseVectorizedScanner").
-	OptionalBool("ReplaceInvalidCharacters").
-	Field("NullIf", "[]NullString")
-
-var fileFormatXmlDetailsDef = g.PlainStruct("FileFormatXmlDetails").
-	SchemaObjectIdentifier().
-	OptionalField("Compression", XmlCompressionEnumDef.Kind()).
-	OptionalBool("IgnoreUtf8Errors").
-	OptionalBool("PreserveSpace").
-	OptionalBool("StripOuterElement").
-	OptionalBool("DisableAutoConvert").
-	OptionalBool("ReplaceInvalidCharacters").
-	OptionalBool("SkipByteOrderMark")
-
-var fileFormatAllDetailsDef = g.PlainStruct("FileFormatAllDetails").
-	SchemaObjectIdentifier().
-	Field("Type", FileFormatTypeEnumDef.Kind()).
-	OptionalField("CsvCompression", CsvCompressionEnumDef.Kind()).
-	OptionalField("CsvRecordDelimiter", "StageFileFormatStringOrNone").
-	OptionalField("CsvFieldDelimiter", "StageFileFormatStringOrNone").
-	OptionalText("CsvFileExtension").
-	OptionalNumber("CsvSkipHeader").
-	OptionalBool("CsvParseHeader").
-	OptionalBool("CsvSkipBlankLines").
-	OptionalField("CsvDateFormat", "StageFileFormatStringOrAuto").
-	OptionalField("CsvTimeFormat", "StageFileFormatStringOrAuto").
-	OptionalField("CsvTimestampFormat", "StageFileFormatStringOrAuto").
-	OptionalField("CsvBinaryFormat", BinaryFormatEnumDef.Kind()).
-	OptionalField("CsvEscape", "StageFileFormatStringOrNone").
-	OptionalField("CsvEscapeUnenclosedField", "StageFileFormatStringOrNone").
-	OptionalBool("CsvTrimSpace").
-	OptionalField("CsvFieldOptionallyEnclosedBy", "StageFileFormatStringOrNone").
-	Field("CsvNullIf", "[]NullString").
-	OptionalBool("CsvErrorOnColumnCountMismatch").
-	OptionalBool("CsvReplaceInvalidCharacters").
-	OptionalBool("CsvEmptyFieldAsNull").
-	OptionalBool("CsvSkipByteOrderMark").
-	OptionalField("CsvEncoding", CsvEncodingEnumDef.Kind()).
-	OptionalField("JsonCompression", JsonCompressionEnumDef.Kind()).
-	OptionalField("JsonDateFormat", "StageFileFormatStringOrAuto").
-	OptionalField("JsonTimeFormat", "StageFileFormatStringOrAuto").
-	OptionalField("JsonTimestampFormat", "StageFileFormatStringOrAuto").
-	OptionalField("JsonBinaryFormat", BinaryFormatEnumDef.Kind()).
-	OptionalBool("JsonTrimSpace").
-	OptionalBool("JsonMultiLine").
-	Field("JsonNullIf", "[]NullString").
-	OptionalText("JsonFileExtension").
-	OptionalBool("JsonEnableOctal").
-	OptionalBool("JsonAllowDuplicate").
-	OptionalBool("JsonStripOuterArray").
-	OptionalBool("JsonStripNullValues").
-	OptionalBool("JsonReplaceInvalidCharacters").
-	OptionalBool("JsonIgnoreUtf8Errors").
-	OptionalBool("JsonSkipByteOrderMark").
-	OptionalField("AvroCompression", AvroCompressionEnumDef.Kind()).
-	OptionalBool("AvroTrimSpace").
-	OptionalBool("AvroReplaceInvalidCharacters").
-	Field("AvroNullIf", "[]NullString").
-	OptionalBool("OrcTrimSpace").
-	OptionalBool("OrcReplaceInvalidCharacters").
-	Field("OrcNullIf", "[]NullString").
-	OptionalField("ParquetCompression", ParquetCompressionEnumDef.Kind()).
-	OptionalBool("ParquetTrimSpace").
-	OptionalBool("ParquetBinaryAsText").
-	OptionalBool("ParquetUseLogicalType").
-	OptionalBool("ParquetUseVectorizedScanner").
-	OptionalBool("ParquetReplaceInvalidCharacters").
-	Field("ParquetNullIf", "[]NullString").
-	OptionalField("XmlCompression", XmlCompressionEnumDef.Kind()).
-	OptionalBool("XmlIgnoreUtf8Errors").
-	OptionalBool("XmlPreserveSpace").
-	OptionalBool("XmlStripOuterElement").
-	OptionalBool("XmlDisableAutoConvert").
-	OptionalBool("XmlReplaceInvalidCharacters").
-	OptionalBool("XmlSkipByteOrderMark")
 
 // fileFormatDef models the nested, per-type FILE_FORMAT = (TYPE = CSV, ...) options used for
 // embedding a file format directly into another object (e.g. CREATE/ALTER STAGE). Its structs
@@ -475,49 +430,49 @@ var fileFormatsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 		fileFormatDef(),
-		fileFormatCsvDetailsDef,
-		fileFormatJsonDetailsDef,
-		fileFormatAvroDetailsDef,
-		fileFormatOrcDetailsDef,
-		fileFormatParquetDetailsDef,
-		fileFormatXmlDetailsDef,
+		fileFormatCsvDef,
+		fileFormatJsonDef,
+		fileFormatAvroDef,
+		fileFormatOrcDef,
+		fileFormatParquetDef,
+		fileFormatXmlDef,
 		fileFormatAllDetailsDef,
 	).
 	WithCustomInterfaceMethod(
 		"DescribeCsvDetails",
 		"DescribeCsvDetails returns converted describe output for CSV file formats.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*FileFormatCsvDetails", "error",
+		"*FileFormatCsv", "error",
 	).
 	WithCustomInterfaceMethod(
 		"DescribeJsonDetails",
 		"DescribeJsonDetails returns converted describe output for JSON file formats.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*FileFormatJsonDetails", "error",
+		"*FileFormatJson", "error",
 	).
 	WithCustomInterfaceMethod(
 		"DescribeAvroDetails",
 		"DescribeAvroDetails returns converted describe output for Avro file formats.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*FileFormatAvroDetails", "error",
+		"*FileFormatAvro", "error",
 	).
 	WithCustomInterfaceMethod(
 		"DescribeOrcDetails",
 		"DescribeOrcDetails returns converted describe output for ORC file formats.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*FileFormatOrcDetails", "error",
+		"*FileFormatOrc", "error",
 	).
 	WithCustomInterfaceMethod(
 		"DescribeParquetDetails",
 		"DescribeParquetDetails returns converted describe output for Parquet file formats.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*FileFormatParquetDetails", "error",
+		"*FileFormatParquet", "error",
 	).
 	WithCustomInterfaceMethod(
 		"DescribeXmlDetails",
 		"DescribeXmlDetails returns converted describe output for XML file formats.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*FileFormatXmlDetails", "error",
+		"*FileFormatXml", "error",
 	).
 	WithCustomInterfaceMethod(
 		"DescribeAllDetails",

@@ -229,7 +229,7 @@ func TestInt_Table(t *testing.T) {
 
 	// TODO [SNOW-1007542]: fix this test, it should create two integer column but is creating 3 text ones instead
 	t.Run("create table using template", func(t *testing.T) {
-		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateCsv(t)
 		t.Cleanup(fileFormatCleanup)
 		stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 		t.Cleanup(stageCleanup)

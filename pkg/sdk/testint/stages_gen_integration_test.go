@@ -72,7 +72,7 @@ func TestInt_Stages(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := "test comment"
 
-		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateCsv(t)
 		t.Cleanup(fileFormatCleanup)
 
 		request := sdk.NewCreateInternalStageRequest(id).

@@ -764,7 +764,7 @@ func TestAcc_ExternalS3Stage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	awsUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 
-	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateCsv(t)
 	t.Cleanup(fileFormatCleanup)
 
 	modelBasic := model.ExternalS3StageWithId(id, awsUrl)
@@ -952,7 +952,7 @@ func TestAcc_ExternalS3Stage_DescribeOutputPermadiff(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	awsUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
 
-	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateCsv(t)
 	t.Cleanup(fileFormatCleanup)
 
 	providerModel := providermodel.SnowflakeProvider().

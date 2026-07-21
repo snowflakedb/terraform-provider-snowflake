@@ -422,7 +422,7 @@ func TestAcc_InternalStage_Validations(t *testing.T) {
 func TestAcc_InternalStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateCsv(t)
 	t.Cleanup(fileFormatCleanup)
 
 	modelBasic := model.InternalStageWithId(id)

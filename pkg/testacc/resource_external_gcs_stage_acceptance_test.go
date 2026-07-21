@@ -521,7 +521,7 @@ func TestAcc_ExternalGcsStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 	storageIntegrationId := ids.PrecreatedGcpStorageIntegration
 	gcsUrl := testenvs.GetOrSkipTest(t, testenvs.GcsExternalBucketUrl)
 
-	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateCsv(t)
 	t.Cleanup(fileFormatCleanup)
 
 	modelBasic := model.ExternalGcsStageWithId(id, storageIntegrationId.Name(), gcsUrl)

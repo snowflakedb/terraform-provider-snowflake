@@ -739,10 +739,11 @@ func TestFileFormats_CreateXml(t *testing.T) {
 		opts.IgnoreUtf8Errors = new(true)
 		opts.PreserveSpace = new(true)
 		opts.StripOuterElement = new(true)
+		opts.DisableSnowflakeData = new(true)
 		opts.DisableAutoConvert = new(true)
 		opts.SkipByteOrderMark = new(true)
 		opts.Comment = new("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = XML COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = XML COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -791,15 +792,16 @@ func TestFileFormats_AlterXml(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = new(true)
 		opts.Set = &AlterXmlFileFormatSet{
-			Compression:        new(XmlCompressionGzip),
-			IgnoreUtf8Errors:   new(true),
-			PreserveSpace:      new(true),
-			StripOuterElement:  new(true),
-			DisableAutoConvert: new(true),
-			SkipByteOrderMark:  new(true),
-			Comment:            new("some comment"),
+			Compression:          new(XmlCompressionGzip),
+			IgnoreUtf8Errors:     new(true),
+			PreserveSpace:        new(true),
+			StripOuterElement:    new(true),
+			DisableSnowflakeData: new(true),
+			DisableAutoConvert:   new(true),
+			SkipByteOrderMark:    new(true),
+			Comment:              new("some comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
 }
 

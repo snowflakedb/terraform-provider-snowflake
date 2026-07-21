@@ -109,7 +109,7 @@ func TestInt_ExternalTables(t *testing.T) {
 	})
 
 	t.Run("Create: infer schema", func(t *testing.T) {
-		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateCsv(t)
 		t.Cleanup(fileFormatCleanup)
 
 		err := client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(testClientHelper().Ids.WarehouseId()))

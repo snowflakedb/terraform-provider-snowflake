@@ -126,6 +126,7 @@ type CreateXmlFileFormatRequest struct {
 	IgnoreUtf8Errors         *bool
 	PreserveSpace            *bool
 	StripOuterElement        *bool
+	DisableSnowflakeData     *bool
 	DisableAutoConvert       *bool
 	ReplaceInvalidCharacters *bool
 	SkipByteOrderMark        *bool
@@ -252,6 +253,7 @@ type AlterXmlFileFormatSetRequest struct {
 	IgnoreUtf8Errors         *bool
 	PreserveSpace            *bool
 	StripOuterElement        *bool
+	DisableSnowflakeData     *bool
 	DisableAutoConvert       *bool
 	ReplaceInvalidCharacters *bool
 	SkipByteOrderMark        *bool

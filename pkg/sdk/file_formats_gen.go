@@ -27,17 +27,17 @@ type FileFormats interface {
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]FileFormatProperty, error)
 	// DescribeCsvDetails returns converted describe output for CSV file formats.
-	DescribeCsvDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatCsvDetails, error)
+	DescribeCsvDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatCsv, error)
 	// DescribeJsonDetails returns converted describe output for JSON file formats.
-	DescribeJsonDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatJsonDetails, error)
+	DescribeJsonDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatJson, error)
 	// DescribeAvroDetails returns converted describe output for Avro file formats.
-	DescribeAvroDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatAvroDetails, error)
+	DescribeAvroDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatAvro, error)
 	// DescribeOrcDetails returns converted describe output for ORC file formats.
-	DescribeOrcDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatOrcDetails, error)
+	DescribeOrcDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatOrc, error)
 	// DescribeParquetDetails returns converted describe output for Parquet file formats.
-	DescribeParquetDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatParquetDetails, error)
+	DescribeParquetDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatParquet, error)
 	// DescribeXmlDetails returns converted describe output for XML file formats.
-	DescribeXmlDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatXmlDetails, error)
+	DescribeXmlDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatXml, error)
 	// DescribeAllDetails returns parsed describe output for any file format type.
 	DescribeAllDetails(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatAllDetails, error)
 }
@@ -172,6 +172,7 @@ type CreateXmlFileFormatOptions struct {
 	IgnoreUtf8Errors         *bool                  `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	PreserveSpace            *bool                  `ddl:"parameter" sql:"PRESERVE_SPACE"`
 	StripOuterElement        *bool                  `ddl:"parameter" sql:"STRIP_OUTER_ELEMENT"`
+	DisableSnowflakeData     *bool                  `ddl:"parameter" sql:"DISABLE_SNOWFLAKE_DATA"`
 	DisableAutoConvert       *bool                  `ddl:"parameter" sql:"DISABLE_AUTO_CONVERT"`
 	ReplaceInvalidCharacters *bool                  `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	SkipByteOrderMark        *bool                  `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
@@ -316,6 +317,7 @@ type AlterXmlFileFormatSet struct {
 	IgnoreUtf8Errors         *bool           `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	PreserveSpace            *bool           `ddl:"parameter" sql:"PRESERVE_SPACE"`
 	StripOuterElement        *bool           `ddl:"parameter" sql:"STRIP_OUTER_ELEMENT"`
+	DisableSnowflakeData     *bool           `ddl:"parameter" sql:"DISABLE_SNOWFLAKE_DATA"`
 	DisableAutoConvert       *bool           `ddl:"parameter" sql:"DISABLE_AUTO_CONVERT"`
 	ReplaceInvalidCharacters *bool           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	SkipByteOrderMark        *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
@@ -479,152 +481,110 @@ type FileFormatXmlOptions struct {
 	IgnoreUtf8Errors         *bool           `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	PreserveSpace            *bool           `ddl:"parameter" sql:"PRESERVE_SPACE"`
 	StripOuterElement        *bool           `ddl:"parameter" sql:"STRIP_OUTER_ELEMENT"`
+	DisableSnowflakeData     *bool           `ddl:"parameter" sql:"DISABLE_SNOWFLAKE_DATA"`
 	DisableAutoConvert       *bool           `ddl:"parameter" sql:"DISABLE_AUTO_CONVERT"`
 	ReplaceInvalidCharacters *bool           `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	SkipByteOrderMark        *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 }
 
-type FileFormatCsvDetails struct {
+type FileFormatCsv struct {
 	Id                         SchemaObjectIdentifier
-	Compression                *CsvCompression
-	RecordDelimiter            *StageFileFormatStringOrNone
-	FieldDelimiter             *StageFileFormatStringOrNone
-	FileExtension              *string
-	SkipHeader                 *int
-	ParseHeader                *bool
-	SkipBlankLines             *bool
-	DateFormat                 *StageFileFormatStringOrAuto
-	TimeFormat                 *StageFileFormatStringOrAuto
-	TimestampFormat            *StageFileFormatStringOrAuto
-	BinaryFormat               *BinaryFormat
-	Escape                     *StageFileFormatStringOrNone
-	EscapeUnenclosedField      *StageFileFormatStringOrNone
-	TrimSpace                  *bool
-	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone
-	NullIf                     []NullString
-	ErrorOnColumnCountMismatch *bool
-	ReplaceInvalidCharacters   *bool
-	EmptyFieldAsNull           *bool
-	SkipByteOrderMark          *bool
-	Encoding                   *CsvEncoding
+	Type                       string
+	Compression                string
+	RecordDelimiter            string
+	FieldDelimiter             string
+	FileExtension              string
+	SkipHeader                 int
+	ParseHeader                bool
+	SkipBlankLines             bool
+	DateFormat                 string
+	TimeFormat                 string
+	TimestampFormat            string
+	BinaryFormat               string
+	Escape                     string
+	EscapeUnenclosedField      string
+	TrimSpace                  bool
+	FieldOptionallyEnclosedBy  string
+	NullIf                     []string
+	ErrorOnColumnCountMismatch bool
+	ValidateUtf8               bool
+	ReplaceInvalidCharacters   bool
+	EmptyFieldAsNull           bool
+	SkipByteOrderMark          bool
+	Encoding                   string
+	MultiLine                  bool
 }
 
-type FileFormatJsonDetails struct {
+type FileFormatJson struct {
 	Id                       SchemaObjectIdentifier
-	Compression              *JsonCompression
-	DateFormat               *StageFileFormatStringOrAuto
-	TimeFormat               *StageFileFormatStringOrAuto
-	TimestampFormat          *StageFileFormatStringOrAuto
-	BinaryFormat             *BinaryFormat
-	TrimSpace                *bool
-	MultiLine                *bool
-	NullIf                   []NullString
-	FileExtension            *string
-	EnableOctal              *bool
-	AllowDuplicate           *bool
-	StripOuterArray          *bool
-	StripNullValues          *bool
-	ReplaceInvalidCharacters *bool
-	IgnoreUtf8Errors         *bool
-	SkipByteOrderMark        *bool
+	Type                     string
+	Compression              string
+	DateFormat               string
+	TimeFormat               string
+	TimestampFormat          string
+	BinaryFormat             string
+	TrimSpace                bool
+	MultiLine                bool
+	NullIf                   []string
+	FileExtension            string
+	EnableOctal              bool
+	AllowDuplicate           bool
+	StripOuterArray          bool
+	StripNullValues          bool
+	ReplaceInvalidCharacters bool
+	IgnoreUtf8Errors         bool
+	SkipByteOrderMark        bool
 }
 
-type FileFormatAvroDetails struct {
+type FileFormatAvro struct {
 	Id                       SchemaObjectIdentifier
-	Compression              *AvroCompression
-	TrimSpace                *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	Type                     string
+	Compression              string
+	TrimSpace                bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
 }
 
-type FileFormatOrcDetails struct {
+type FileFormatOrc struct {
 	Id                       SchemaObjectIdentifier
-	TrimSpace                *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	Type                     string
+	TrimSpace                bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
 }
 
-type FileFormatParquetDetails struct {
+type FileFormatParquet struct {
 	Id                       SchemaObjectIdentifier
-	Compression              *ParquetCompression
-	TrimSpace                *bool
-	BinaryAsText             *bool
-	UseLogicalType           *bool
-	UseVectorizedScanner     *bool
-	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	Type                     string
+	Compression              string
+	BinaryAsText             bool
+	UseLogicalType           bool
+	TrimSpace                bool
+	UseVectorizedScanner     bool
+	ReplaceInvalidCharacters bool
+	NullIf                   []string
 }
 
-type FileFormatXmlDetails struct {
+type FileFormatXml struct {
 	Id                       SchemaObjectIdentifier
-	Compression              *XmlCompression
-	IgnoreUtf8Errors         *bool
-	PreserveSpace            *bool
-	StripOuterElement        *bool
-	DisableAutoConvert       *bool
-	ReplaceInvalidCharacters *bool
-	SkipByteOrderMark        *bool
+	Type                     string
+	Compression              string
+	IgnoreUtf8Errors         bool
+	PreserveSpace            bool
+	StripOuterElement        bool
+	DisableSnowflakeData     bool
+	DisableAutoConvert       bool
+	ReplaceInvalidCharacters bool
+	SkipByteOrderMark        bool
 }
 
 type FileFormatAllDetails struct {
-	Id                              SchemaObjectIdentifier
-	Type                            FileFormatType
-	CsvCompression                  *CsvCompression
-	CsvRecordDelimiter              *StageFileFormatStringOrNone
-	CsvFieldDelimiter               *StageFileFormatStringOrNone
-	CsvFileExtension                *string
-	CsvSkipHeader                   *int
-	CsvParseHeader                  *bool
-	CsvSkipBlankLines               *bool
-	CsvDateFormat                   *StageFileFormatStringOrAuto
-	CsvTimeFormat                   *StageFileFormatStringOrAuto
-	CsvTimestampFormat              *StageFileFormatStringOrAuto
-	CsvBinaryFormat                 *BinaryFormat
-	CsvEscape                       *StageFileFormatStringOrNone
-	CsvEscapeUnenclosedField        *StageFileFormatStringOrNone
-	CsvTrimSpace                    *bool
-	CsvFieldOptionallyEnclosedBy    *StageFileFormatStringOrNone
-	CsvNullIf                       []NullString
-	CsvErrorOnColumnCountMismatch   *bool
-	CsvReplaceInvalidCharacters     *bool
-	CsvEmptyFieldAsNull             *bool
-	CsvSkipByteOrderMark            *bool
-	CsvEncoding                     *CsvEncoding
-	JsonCompression                 *JsonCompression
-	JsonDateFormat                  *StageFileFormatStringOrAuto
-	JsonTimeFormat                  *StageFileFormatStringOrAuto
-	JsonTimestampFormat             *StageFileFormatStringOrAuto
-	JsonBinaryFormat                *BinaryFormat
-	JsonTrimSpace                   *bool
-	JsonMultiLine                   *bool
-	JsonNullIf                      []NullString
-	JsonFileExtension               *string
-	JsonEnableOctal                 *bool
-	JsonAllowDuplicate              *bool
-	JsonStripOuterArray             *bool
-	JsonStripNullValues             *bool
-	JsonReplaceInvalidCharacters    *bool
-	JsonIgnoreUtf8Errors            *bool
-	JsonSkipByteOrderMark           *bool
-	AvroCompression                 *AvroCompression
-	AvroTrimSpace                   *bool
-	AvroReplaceInvalidCharacters    *bool
-	AvroNullIf                      []NullString
-	OrcTrimSpace                    *bool
-	OrcReplaceInvalidCharacters     *bool
-	OrcNullIf                       []NullString
-	ParquetCompression              *ParquetCompression
-	ParquetTrimSpace                *bool
-	ParquetBinaryAsText             *bool
-	ParquetUseLogicalType           *bool
-	ParquetUseVectorizedScanner     *bool
-	ParquetReplaceInvalidCharacters *bool
-	ParquetNullIf                   []NullString
-	XmlCompression                  *XmlCompression
-	XmlIgnoreUtf8Errors             *bool
-	XmlPreserveSpace                *bool
-	XmlStripOuterElement            *bool
-	XmlDisableAutoConvert           *bool
-	XmlReplaceInvalidCharacters     *bool
-	XmlSkipByteOrderMark            *bool
+	Id      SchemaObjectIdentifier
+	Type    FileFormatType
+	Csv     *FileFormatCsv
+	Json    *FileFormatJson
+	Avro    *FileFormatAvro
+	Orc     *FileFormatOrc
+	Parquet *FileFormatParquet
+	Xml     *FileFormatXml
 }

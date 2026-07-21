@@ -90,6 +90,7 @@ var (
 	objectsNotBeingResources = []any{
 		sdk.BearerRestAuthenticationDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
+		sdk.FileFormatAllDetails{},
 		sdk.IcebergRestRestConfigDetails{},
 		sdk.OAuthRestAuthenticationDetails{},
 		sdk.OpenCatalogRestConfigDetails{},
