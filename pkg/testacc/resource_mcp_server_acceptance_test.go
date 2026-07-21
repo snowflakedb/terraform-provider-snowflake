@@ -95,30 +95,6 @@ func TestAcc_McpServer_BasicUseCase(t *testing.T) {
 			HasServerSpec(altNormalizedSpec),
 	}
 
-	basicAssertionsWithEmptyValues := []assert.TestCheckFuncProvider{
-		resourceassert.McpServerResource(t, ref).
-			HasName(id.Name()).
-			HasSchema(id.SchemaName()).
-			HasDatabase(id.DatabaseName()).
-			HasSpecification(normalizedSpec).
-			HasCommentEmpty(),
-		resourceshowoutputassert.McpServerShowOutput(t, ref).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment(""),
-		resourceshowoutputassert.McpServerDescribeOutput(t, ref).
-			HasCreatedOnNotEmpty().
-			HasName(id.Name()).
-			HasDatabaseName(id.DatabaseName()).
-			HasSchemaName(id.SchemaName()).
-			HasOwner(snowflakeroles.Accountadmin.Name()).
-			HasComment("").
-			HasServerSpec(normalizedSpec),
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -168,12 +144,12 @@ func TestAcc_McpServer_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertionsWithEmptyValues...),
+				Check:  assertThat(t, basicAssertions...),
 			},
-			// Change all props externally (via CREATE OR REPLACE — no ALTER available)
+			// Change comment externally
 			{
 				PreConfig: func() {
-					// Replace the MCP server with a different spec and comment externally.
+					// Replace the MCP server with a different comment externally.
 					testClient().McpServer.CreateWithRequest(
 						t,
 						sdk.NewCreateMcpServerRequest(id, testClient().McpServer.DefaultSpec()).
@@ -187,7 +163,7 @@ func TestAcc_McpServer_BasicUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertionsWithEmptyValues...),
+				Check:  assertThat(t, basicAssertions...),
 			},
 		},
 	})
