@@ -42,6 +42,17 @@ func (l *ListingAssert) HasGlobalName(expected string) *ListingAssert {
 	return l
 }
 
+func (l *ListingAssert) HasGlobalNameNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.GlobalName == "" {
+			return fmt.Errorf("expected global name to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingAssert) HasName(expected string) *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
@@ -53,11 +64,33 @@ func (l *ListingAssert) HasName(expected string) *ListingAssert {
 	return l
 }
 
+func (l *ListingAssert) HasNameNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingAssert) HasTitle(expected string) *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
 		if o.Title != expected {
 			return fmt.Errorf("expected title: %v; got: %v", expected, o.Title)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingAssert) HasTitleNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.Title == "" {
+			return fmt.Errorf("expected title to be non-empty")
 		}
 		return nil
 	})
@@ -100,6 +133,17 @@ func (l *ListingAssert) HasProfile(expected string) *ListingAssert {
 	return l
 }
 
+func (l *ListingAssert) HasProfileNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.Profile == "" {
+			return fmt.Errorf("expected profile to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingAssert) HasCreatedOn(expected string) *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
@@ -111,11 +155,33 @@ func (l *ListingAssert) HasCreatedOn(expected string) *ListingAssert {
 	return l
 }
 
+func (l *ListingAssert) HasCreatedOnNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingAssert) HasUpdatedOn(expected string) *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
 		if o.UpdatedOn != expected {
 			return fmt.Errorf("expected updated on: %v; got: %v", expected, o.UpdatedOn)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingAssert) HasUpdatedOnNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.UpdatedOn == "" {
+			return fmt.Errorf("expected updated on to be non-empty")
 		}
 		return nil
 	})
@@ -219,11 +285,33 @@ func (l *ListingAssert) HasOwner(expected string) *ListingAssert {
 	return l
 }
 
+func (l *ListingAssert) HasOwnerNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingAssert) HasOwnerRoleType(expected string) *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingAssert) HasOwnerRoleTypeNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})
@@ -260,6 +348,17 @@ func (l *ListingAssert) HasTargetAccounts(expected string) *ListingAssert {
 		t.Helper()
 		if o.TargetAccounts != expected {
 			return fmt.Errorf("expected target accounts: %v; got: %v", expected, o.TargetAccounts)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingAssert) HasTargetAccountsNotEmpty() *ListingAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
+		t.Helper()
+		if o.TargetAccounts == "" {
+			return fmt.Errorf("expected target accounts to be non-empty")
 		}
 		return nil
 	})
