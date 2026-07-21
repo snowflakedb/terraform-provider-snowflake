@@ -68,6 +68,17 @@ func (f *FileFormatAllDetailsAssert) HasCsv(expected sdk.FileFormatCsv) *FileFor
 	return f
 }
 
+func (f *FileFormatAllDetailsAssert) HasNoCsv() *FileFormatAllDetailsAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
+		t.Helper()
+		if o.Csv != nil {
+			return fmt.Errorf("expected csv to be nil; got: %v", *o.Csv)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAllDetailsAssert) HasJson(expected sdk.FileFormatJson) *FileFormatAllDetailsAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
 		t.Helper()
@@ -76,6 +87,17 @@ func (f *FileFormatAllDetailsAssert) HasJson(expected sdk.FileFormatJson) *FileF
 		}
 		if !reflect.DeepEqual(*o.Json, expected) {
 			return fmt.Errorf("expected json: %v; got: %v", expected, *o.Json)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAllDetailsAssert) HasNoJson() *FileFormatAllDetailsAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
+		t.Helper()
+		if o.Json != nil {
+			return fmt.Errorf("expected json to be nil; got: %v", *o.Json)
 		}
 		return nil
 	})
@@ -96,6 +118,17 @@ func (f *FileFormatAllDetailsAssert) HasAvro(expected sdk.FileFormatAvro) *FileF
 	return f
 }
 
+func (f *FileFormatAllDetailsAssert) HasNoAvro() *FileFormatAllDetailsAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
+		t.Helper()
+		if o.Avro != nil {
+			return fmt.Errorf("expected avro to be nil; got: %v", *o.Avro)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAllDetailsAssert) HasOrc(expected sdk.FileFormatOrc) *FileFormatAllDetailsAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
 		t.Helper()
@@ -104,6 +137,17 @@ func (f *FileFormatAllDetailsAssert) HasOrc(expected sdk.FileFormatOrc) *FileFor
 		}
 		if !reflect.DeepEqual(*o.Orc, expected) {
 			return fmt.Errorf("expected orc: %v; got: %v", expected, *o.Orc)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAllDetailsAssert) HasNoOrc() *FileFormatAllDetailsAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
+		t.Helper()
+		if o.Orc != nil {
+			return fmt.Errorf("expected orc to be nil; got: %v", *o.Orc)
 		}
 		return nil
 	})
@@ -124,6 +168,17 @@ func (f *FileFormatAllDetailsAssert) HasParquet(expected sdk.FileFormatParquet) 
 	return f
 }
 
+func (f *FileFormatAllDetailsAssert) HasNoParquet() *FileFormatAllDetailsAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
+		t.Helper()
+		if o.Parquet != nil {
+			return fmt.Errorf("expected parquet to be nil; got: %v", *o.Parquet)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAllDetailsAssert) HasXml(expected sdk.FileFormatXml) *FileFormatAllDetailsAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
 		t.Helper()
@@ -132,6 +187,17 @@ func (f *FileFormatAllDetailsAssert) HasXml(expected sdk.FileFormatXml) *FileFor
 		}
 		if !reflect.DeepEqual(*o.Xml, expected) {
 			return fmt.Errorf("expected xml: %v; got: %v", expected, *o.Xml)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAllDetailsAssert) HasNoXml() *FileFormatAllDetailsAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAllDetails) error {
+		t.Helper()
+		if o.Xml != nil {
+			return fmt.Errorf("expected xml to be nil; got: %v", *o.Xml)
 		}
 		return nil
 	})

@@ -89,3 +89,14 @@ func (f *FileFormatOrcAssert) HasNullIf(expected ...string) *FileFormatOrcAssert
 	})
 	return f
 }
+
+func (f *FileFormatOrcAssert) HasNoNullIf() *FileFormatOrcAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatOrc) error {
+		t.Helper()
+		if len(o.NullIf) > 0 {
+			return fmt.Errorf("expected null if to be empty; got: %v", o.NullIf)
+		}
+		return nil
+	})
+	return f
+}

@@ -145,6 +145,17 @@ func (f *FileFormatJsonAssert) HasNullIf(expected ...string) *FileFormatJsonAsse
 	return f
 }
 
+func (f *FileFormatJsonAssert) HasNoNullIf() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if len(o.NullIf) > 0 {
+			return fmt.Errorf("expected null if to be empty; got: %v", o.NullIf)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatJsonAssert) HasFileExtension(expected string) *FileFormatJsonAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
 		t.Helper()

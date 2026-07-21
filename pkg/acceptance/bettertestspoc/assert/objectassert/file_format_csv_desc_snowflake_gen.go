@@ -233,6 +233,17 @@ func (f *FileFormatCsvAssert) HasNullIf(expected ...string) *FileFormatCsvAssert
 	return f
 }
 
+func (f *FileFormatCsvAssert) HasNoNullIf() *FileFormatCsvAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
+		t.Helper()
+		if len(o.NullIf) > 0 {
+			return fmt.Errorf("expected null if to be empty; got: %v", o.NullIf)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatCsvAssert) HasErrorOnColumnCountMismatch(expected bool) *FileFormatCsvAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
 		t.Helper()

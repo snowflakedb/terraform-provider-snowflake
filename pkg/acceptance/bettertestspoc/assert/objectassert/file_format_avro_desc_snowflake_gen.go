@@ -100,3 +100,14 @@ func (f *FileFormatAvroAssert) HasNullIf(expected ...string) *FileFormatAvroAsse
 	})
 	return f
 }
+
+func (f *FileFormatAvroAssert) HasNoNullIf() *FileFormatAvroAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatAvro) error {
+		t.Helper()
+		if len(o.NullIf) > 0 {
+			return fmt.Errorf("expected null if to be empty; got: %v", o.NullIf)
+		}
+		return nil
+	})
+	return f
+}

@@ -593,6 +593,8 @@ func parseFileFormatAllDetails(properties []FileFormatProperty, id SchemaObjectI
 		details.Parquet, err = parseFileFormatParquet(properties, id)
 	case FileFormatTypeXml:
 		details.Xml, err = parseFileFormatXml(properties, id)
+	default:
+		return nil, fmt.Errorf("describe did not return a recognized file format type")
 	}
 	if err != nil {
 		return nil, err

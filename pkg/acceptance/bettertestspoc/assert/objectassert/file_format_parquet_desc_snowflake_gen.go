@@ -133,3 +133,14 @@ func (f *FileFormatParquetAssert) HasNullIf(expected ...string) *FileFormatParqu
 	})
 	return f
 }
+
+func (f *FileFormatParquetAssert) HasNoNullIf() *FileFormatParquetAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatParquet) error {
+		t.Helper()
+		if len(o.NullIf) > 0 {
+			return fmt.Errorf("expected null if to be empty; got: %v", o.NullIf)
+		}
+		return nil
+	})
+	return f
+}
