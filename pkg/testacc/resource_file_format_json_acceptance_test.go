@@ -312,7 +312,8 @@ func TestAcc_FileFormatJson_CompleteUseCase(t *testing.T) {
 			// create with all fields set
 			{
 				Config: config.FromModels(t, completeModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FileFormatJsonResource(t, ref).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
@@ -371,7 +372,8 @@ func TestAcc_FileFormatJson_CompleteUseCase(t *testing.T) {
 			},
 			{
 				Config: config.FromModels(t, modelWithReplaceInvalidCharacters),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.FileFormatJsonResource(t, ref).
 						HasReplaceInvalidCharacters("true"),
 					resourceshowoutputassert.FileFormatJsonDescribeOutput(t, ref).

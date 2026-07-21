@@ -32,6 +32,7 @@ type FileFormatJsonModel struct {
 	TimeFormat               tfconfig.Variable `json:"time_format,omitempty"`
 	TimestampFormat          tfconfig.Variable `json:"timestamp_format,omitempty"`
 	TrimSpace                tfconfig.Variable `json:"trim_space,omitempty"`
+	Type_                    tfconfig.Variable `json:"type,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -205,6 +206,11 @@ func (f *FileFormatJsonModel) WithTrimSpace(trimSpace string) *FileFormatJsonMod
 	return f
 }
 
+func (f *FileFormatJsonModel) WithType(type_ string) *FileFormatJsonModel {
+	f.Type_ = tfconfig.StringVariable(type_)
+	return f
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -311,5 +317,10 @@ func (f *FileFormatJsonModel) WithTimestampFormatValue(value tfconfig.Variable) 
 
 func (f *FileFormatJsonModel) WithTrimSpaceValue(value tfconfig.Variable) *FileFormatJsonModel {
 	f.TrimSpace = value
+	return f
+}
+
+func (f *FileFormatJsonModel) WithTypeValue(value tfconfig.Variable) *FileFormatJsonModel {
+	f.Type_ = value
 	return f
 }
