@@ -30,7 +30,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 The [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3) resource now supports the `aws_sns_topic` attribute inside the `directory` block. It specifies the AWS SNS topic ARN used to trigger automatic directory table refreshes. This attribute is S3-specific (not available on S3-compatible stages) and causes resource recreation when changed (`ForceNew`).
 
-In most cases no action is required; this is a non-breaking addition. Note that because Snowflake does not expose the original SNS topic ARN in `DESCRIBE STAGE` output, the provider cannot detect external changes to this field.
+In most cases no action is required; this is a non-breaking addition. Note that external change detection for this field is not yet supported and will be addressed in a future update.
 
 ### *(new preview resource)* New interactive warehouse resource
 

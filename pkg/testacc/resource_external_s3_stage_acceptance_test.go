@@ -281,6 +281,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					// TODO(SNOW-3818978): add assertion for describe_output.0.directory_table.0.aws_sns_topic once the field is added to describe_output
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.aws_access_point_arn", "arn:aws:s3:us-west-2:123456789012:accesspoint/complete")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
@@ -737,6 +738,7 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					// TODO(SNOW-3818978): add assertion for describe_output.0.directory_table.0.aws_sns_topic once the field is added to describe_output
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),
