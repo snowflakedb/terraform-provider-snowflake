@@ -49,6 +49,17 @@ func (c *ConnectionAssert) HasRegionGroup(expected string) *ConnectionAssert {
 	return c
 }
 
+func (c *ConnectionAssert) HasNoRegionGroup() *ConnectionAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
+		t.Helper()
+		if o.RegionGroup != nil {
+			return fmt.Errorf("expected region group to be nil; got: %v", *o.RegionGroup)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *ConnectionAssert) HasSnowflakeRegion(expected string) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
@@ -107,6 +118,17 @@ func (c *ConnectionAssert) HasComment(expected string) *ConnectionAssert {
 	return c
 }
 
+func (c *ConnectionAssert) HasNoComment() *ConnectionAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *ConnectionAssert) HasIsPrimary(expected bool) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
@@ -136,6 +158,17 @@ func (c *ConnectionAssert) HasFailoverAllowedToAccounts(expected ...sdk.AccountI
 		mappedExpected := collections.Map(expected, func(item sdk.AccountIdentifier) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected failover allowed to accounts: %v; got: %v", expected, o.FailoverAllowedToAccounts)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *ConnectionAssert) HasNoFailoverAllowedToAccounts() *ConnectionAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
+		t.Helper()
+		if len(o.FailoverAllowedToAccounts) > 0 {
+			return fmt.Errorf("expected failover allowed to accounts to be empty; got: %v", o.FailoverAllowedToAccounts)
 		}
 		return nil
 	})

@@ -112,6 +112,17 @@ func (s *SessionPolicyDetailsAssert) HasAllowedSecondaryRoles(expected ...string
 	return s
 }
 
+func (s *SessionPolicyDetailsAssert) HasNoAllowedSecondaryRoles() *SessionPolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
+		t.Helper()
+		if len(o.AllowedSecondaryRoles) > 0 {
+			return fmt.Errorf("expected allowed secondary roles to be empty; got: %v", o.AllowedSecondaryRoles)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyDetailsAssert) HasBlockedSecondaryRoles(expected ...string) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
@@ -119,6 +130,17 @@ func (s *SessionPolicyDetailsAssert) HasBlockedSecondaryRoles(expected ...string
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked secondary roles: %v; got: %v", expected, o.BlockedSecondaryRoles)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyDetailsAssert) HasNoBlockedSecondaryRoles() *SessionPolicyDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
+		t.Helper()
+		if len(o.BlockedSecondaryRoles) > 0 {
+			return fmt.Errorf("expected blocked secondary roles to be empty; got: %v", o.BlockedSecondaryRoles)
 		}
 		return nil
 	})

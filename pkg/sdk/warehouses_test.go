@@ -152,8 +152,9 @@ func TestWarehouseCreateInteractive(t *testing.T) {
 			MaxConcurrencyLevel:             Int(8),
 			StatementQueuedTimeoutInSeconds: Int(30),
 			StatementTimeoutInSeconds:       Int(5),
+			FallbackWarehouse:               Pointer(NewAccountObjectIdentifier("fallbackwh")),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE INTERACTIVE WAREHOUSE "myinteractivewh" TABLES (%s, %s) WAREHOUSE_SIZE = 'XSMALL' MAX_CLUSTER_COUNT = 2 MIN_CLUSTER_COUNT = 1 AUTO_SUSPEND = 86400 AUTO_RESUME = true INITIALLY_SUSPENDED = true RESOURCE_MONITOR = "resmon" COMMENT = 'interactive warehouse' MAX_CONCURRENCY_LEVEL = 8 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 5`,
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE INTERACTIVE WAREHOUSE "myinteractivewh" TABLES (%s, %s) WAREHOUSE_SIZE = 'XSMALL' MAX_CLUSTER_COUNT = 2 MIN_CLUSTER_COUNT = 1 AUTO_SUSPEND = 86400 AUTO_RESUME = true INITIALLY_SUSPENDED = true RESOURCE_MONITOR = "resmon" COMMENT = 'interactive warehouse' MAX_CONCURRENCY_LEVEL = 8 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 30 STATEMENT_TIMEOUT_IN_SECONDS = 5 FALLBACK_WAREHOUSE = "fallbackwh"`,
 			tableId1.FullyQualifiedName(), tableId2.FullyQualifiedName())
 	})
 

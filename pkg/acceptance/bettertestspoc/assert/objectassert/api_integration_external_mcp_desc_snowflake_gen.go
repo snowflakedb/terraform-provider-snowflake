@@ -167,6 +167,17 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthAllowedScopes(expected 
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasNoOauthAllowedScopes() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if len(o.OauthAllowedScopes) > 0 {
+			return fmt.Errorf("expected oauth allowed scopes to be empty; got: %v", o.OauthAllowedScopes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasOauthUsername(expected string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
@@ -213,6 +224,17 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasAllowedPrefixes(expected ...
 	return a
 }
 
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasNoAllowedPrefixes() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if len(o.AllowedPrefixes) > 0 {
+			return fmt.Errorf("expected allowed prefixes to be empty; got: %v", o.AllowedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationExternalMcpDetailsAssert) HasBlockedPrefixes(expected ...string) *ApiIntegrationExternalMcpDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
 		t.Helper()
@@ -220,6 +242,17 @@ func (a *ApiIntegrationExternalMcpDetailsAssert) HasBlockedPrefixes(expected ...
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked prefixes: %v; got: %v", expected, o.BlockedPrefixes)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationExternalMcpDetailsAssert) HasNoBlockedPrefixes() *ApiIntegrationExternalMcpDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationExternalMcpDetails) error {
+		t.Helper()
+		if len(o.BlockedPrefixes) > 0 {
+			return fmt.Errorf("expected blocked prefixes to be empty; got: %v", o.BlockedPrefixes)
 		}
 		return nil
 	})

@@ -92,6 +92,17 @@ func (i *IcebergTableAssert) HasOwner(expected string) *IcebergTableAssert {
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoOwner() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.Owner != nil {
+			return fmt.Errorf("expected owner to be nil; got: %v", *o.Owner)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasExternalVolumeName(expected sdk.AccountObjectIdentifier) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -106,6 +117,17 @@ func (i *IcebergTableAssert) HasExternalVolumeName(expected sdk.AccountObjectIde
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoExternalVolumeName() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.ExternalVolumeName != nil {
+			return fmt.Errorf("expected external volume name to be nil; got: %v", *o.ExternalVolumeName)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasCatalogName(expected sdk.AccountObjectIdentifier) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -114,6 +136,17 @@ func (i *IcebergTableAssert) HasCatalogName(expected sdk.AccountObjectIdentifier
 		}
 		if (*o.CatalogName).FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected catalog name: %v; got: %v", expected.FullyQualifiedName(), (*o.CatalogName).FullyQualifiedName())
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoCatalogName() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CatalogName != nil {
+			return fmt.Errorf("expected catalog name to be nil; got: %v", *o.CatalogName)
 		}
 		return nil
 	})
@@ -145,6 +178,17 @@ func (i *IcebergTableAssert) HasCatalogTableName(expected string) *IcebergTableA
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoCatalogTableName() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CatalogTableName != nil {
+			return fmt.Errorf("expected catalog table name to be nil; got: %v", *o.CatalogTableName)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasCatalogNamespace(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -159,6 +203,17 @@ func (i *IcebergTableAssert) HasCatalogNamespace(expected string) *IcebergTableA
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoCatalogNamespace() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CatalogNamespace != nil {
+			return fmt.Errorf("expected catalog namespace to be nil; got: %v", *o.CatalogNamespace)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasBaseLocation(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -167,6 +222,17 @@ func (i *IcebergTableAssert) HasBaseLocation(expected string) *IcebergTableAsser
 		}
 		if *o.BaseLocation != expected {
 			return fmt.Errorf("expected base location: %v; got: %v", expected, *o.BaseLocation)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoBaseLocation() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.BaseLocation != nil {
+			return fmt.Errorf("expected base location to be nil; got: %v", *o.BaseLocation)
 		}
 		return nil
 	})
@@ -198,6 +264,17 @@ func (i *IcebergTableAssert) HasComment(expected string) *IcebergTableAssert {
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoComment() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasNameMapping(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -206,6 +283,17 @@ func (i *IcebergTableAssert) HasNameMapping(expected string) *IcebergTableAssert
 		}
 		if *o.NameMapping != expected {
 			return fmt.Errorf("expected name mapping: %v; got: %v", expected, *o.NameMapping)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoNameMapping() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.NameMapping != nil {
+			return fmt.Errorf("expected name mapping to be nil; got: %v", *o.NameMapping)
 		}
 		return nil
 	})
@@ -241,6 +329,17 @@ func (i *IcebergTableAssert) HasPartitionSpecs(expected ...sdk.IcebergTableParti
 		mappedExpected := collections.Map(expected, func(item sdk.IcebergTablePartitionSpec) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected partition specs: %v; got: %v", expected, o.PartitionSpecs)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoPartitionSpecs() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if len(o.PartitionSpecs) > 0 {
+			return fmt.Errorf("expected partition specs to be empty; got: %v", o.PartitionSpecs)
 		}
 		return nil
 	})

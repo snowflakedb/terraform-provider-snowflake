@@ -145,6 +145,17 @@ func (f *FunctionAssert) HasArgumentsOld(expected ...sdk.DataType) *FunctionAsse
 	return f
 }
 
+func (f *FunctionAssert) HasNoArgumentsOld() *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if len(o.ArgumentsOld) > 0 {
+			return fmt.Errorf("expected arguments old to be empty; got: %v", o.ArgumentsOld)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FunctionAssert) HasReturnTypeOld(expected sdk.DataType) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
@@ -225,6 +236,17 @@ func (f *FunctionAssert) HasSecrets(expected string) *FunctionAssert {
 	return f
 }
 
+func (f *FunctionAssert) HasNoSecrets() *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if o.Secrets != nil {
+			return fmt.Errorf("expected secrets to be nil; got: %v", *o.Secrets)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FunctionAssert) HasExternalAccessIntegrations(expected string) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
@@ -233,6 +255,17 @@ func (f *FunctionAssert) HasExternalAccessIntegrations(expected string) *Functio
 		}
 		if *o.ExternalAccessIntegrations != expected {
 			return fmt.Errorf("expected external access integrations: %v; got: %v", expected, *o.ExternalAccessIntegrations)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FunctionAssert) HasNoExternalAccessIntegrations() *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if o.ExternalAccessIntegrations != nil {
+			return fmt.Errorf("expected external access integrations to be nil; got: %v", *o.ExternalAccessIntegrations)
 		}
 		return nil
 	})
