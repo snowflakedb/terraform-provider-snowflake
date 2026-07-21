@@ -61,7 +61,7 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTime("").
 						HasSuspendAt(0).
-						HasSuspendImmediatelyAt(0).
+						HasSuspendImmediateAt(0).
 						HasCreatedOnNotEmpty().
 						HasOwnerNotEmpty().
 						HasComment(""),
@@ -136,7 +136,7 @@ func TestAcc_ResourceMonitor_Complete(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTimeNotEmpty().
 						HasSuspendAt(120).
-						HasSuspendImmediatelyAt(150).
+						HasSuspendImmediateAt(150).
 						HasCreatedOnNotEmpty().
 						HasOwnerNotEmpty().
 						HasComment(""),
@@ -231,7 +231,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTime("").
 						HasSuspendAt(0).
-						HasSuspendImmediatelyAt(0).
+						HasSuspendImmediateAt(0).
 						HasCreatedOnNotEmpty().
 						HasOwnerNotEmpty().
 						HasComment(""),
@@ -263,7 +263,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTimeNotEmpty().
 						HasSuspendAt(120).
-						HasSuspendImmediatelyAt(150).
+						HasSuspendImmediateAt(150).
 						HasCreatedOnNotEmpty().
 						HasOwnerNotEmpty().
 						HasComment(""),
@@ -295,7 +295,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTimeNotEmpty().
 						HasSuspendAt(130).
-						HasSuspendImmediatelyAt(160).
+						HasSuspendImmediateAt(160).
 						HasCreatedOnNotEmpty().
 						HasOwnerNotEmpty().
 						HasComment(""),
@@ -325,7 +325,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasStartTimeNotEmpty().
 						HasEndTime("").
 						HasSuspendAt(130).
-						HasSuspendImmediatelyAt(0).
+						HasSuspendImmediateAt(0).
 						HasCreatedOnNotEmpty().
 						HasOwnerNotEmpty().
 						HasComment(""),
