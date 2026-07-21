@@ -34,7 +34,7 @@ This feature will be marked as stable in future releases. To use it, add `snowfl
 
 Interactive warehouses behave differently from standard warehouses in a few ways that are described in the [resource documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive).
 
-The `show_output` field in the `snowflake_warehouses` data source now includes an additional computed `tables` attribute surfacing interactive warehouse table associations.
+The `show_output` field in the `snowflake_warehouses` data source now includes an additional computed `tables` attribute surfacing interactive warehouse table associations, and the `parameters` field now includes the `fallback_warehouse` parameter.
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
