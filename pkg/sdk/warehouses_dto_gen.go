@@ -64,6 +64,7 @@ type CreateInteractiveWarehouseRequest struct {
 	MaxConcurrencyLevel             *int
 	StatementQueuedTimeoutInSeconds *int
 	StatementTimeoutInSeconds       *int
+	FallbackWarehouse               *AccountObjectIdentifier
 	Tag                             []TagAssociation
 }
 

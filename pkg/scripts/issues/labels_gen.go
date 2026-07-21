@@ -164,6 +164,7 @@ var RepositoryLabels = []string{
 	"resource:view",
 	"resource:warehouse",
 	"resource:warehouse_adaptive",
+	"resource:warehouse_interactive",
 
 	"data_source:account_roles",
 	"data_source:accounts",

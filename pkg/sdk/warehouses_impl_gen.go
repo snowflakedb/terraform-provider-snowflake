@@ -141,6 +141,7 @@ func (r *CreateInteractiveWarehouseRequest) toOpts() *CreateInteractiveWarehouse
 		MaxConcurrencyLevel:             r.MaxConcurrencyLevel,
 		StatementQueuedTimeoutInSeconds: r.StatementQueuedTimeoutInSeconds,
 		StatementTimeoutInSeconds:       r.StatementTimeoutInSeconds,
+		FallbackWarehouse:               r.FallbackWarehouse,
 		Tag:                             r.Tag,
 	}
 	return opts

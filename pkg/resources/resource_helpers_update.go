@@ -62,6 +62,20 @@ func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, se
 	return nil
 }
 
+// intAttributeWithSpecialDefaultUnsetFallbackUpdate handles an int attribute whose "not set" sentinel
+// is IntDefault (rather than the zero value). Removing it from config re-applies fallbackValue via SET
+// instead of unsetting, for attributes where UNSET is unavailable or misbehaves (e.g. auto_suspend).
+func intAttributeWithSpecialDefaultUnsetFallbackUpdate(d *schema.ResourceData, key string, setField **int, fallbackValue int) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(int); v != IntDefault {
+			*setField = sdk.Int(v)
+		} else {
+			*setField = sdk.Int(fallbackValue)
+		}
+	}
+	return nil
+}
+
 func intAttributeUnsetFallbackUpdateWithZeroDefault(d *schema.ResourceData, key string, setField **int, fallbackValue int) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(int); v != 0 {

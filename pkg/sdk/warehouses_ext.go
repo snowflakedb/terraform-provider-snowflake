@@ -162,41 +162,52 @@ func (v *warehouses) ShowParameters(ctx context.Context, id AccountObjectIdentif
 	})
 }
 
-// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type.
+// AlterWithSuspend wraps Alter with automatic suspend/resume for changes that Snowflake refuses to
+// apply to a running warehouse. Changing the warehouse type requires a suspended warehouse for any
+// warehouse, and an interactive warehouse additionally cannot be resized while running. In both
+// cases the warehouse is suspended before the alter and resumed afterwards.
 func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error {
-	if request.Set != nil && request.Set.WarehouseType != nil {
-		warehouse, err := v.ShowByID(ctx, request.name)
+	changesType := request.Set != nil && request.Set.WarehouseType != nil
+	changesSize := request.Set != nil && request.Set.WarehouseSize != nil
+	if !changesType && !changesSize {
+		return v.Alter(ctx, request)
+	}
+
+	warehouse, err := v.ShowByID(ctx, request.name)
+	if err != nil {
+		return err
+	}
+
+	// A type change always needs a suspended warehouse; a size change needs it only for interactive
+	// warehouses (regular warehouses resize live).
+	mustSuspend := changesType || (changesSize && warehouse.IsInteractiveWarehouse())
+	if mustSuspend && warehouse.State == WarehouseStateStarted {
+		err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithSuspend(true))
 		if err != nil {
 			return err
 		}
-		if warehouse.State == WarehouseStateStarted {
-			err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithSuspend(true))
+		defer func() {
+			err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithResume(true).WithIfSuspended(true))
 			if err != nil {
-				return err
+				log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
 			}
-			defer func() {
-				err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithResume(true).WithIfSuspended(true))
-				if err != nil {
-					log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
-				}
-			}()
+		}()
 
-			// needed to make sure that warehouse is suspended
-			var warehouseSuspensionErrs []error
-			err = util.Retry(5, 1*time.Second, func() (error, bool) {
-				warehouse, err = v.ShowByID(ctx, request.name)
-				if err != nil {
-					warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
-					return nil, false
-				}
-				if warehouse.State != WarehouseStateSuspended {
-					return nil, false
-				}
-				return nil, true
-			})
+		// needed to make sure that warehouse is suspended
+		var warehouseSuspensionErrs []error
+		err = util.Retry(5, 1*time.Second, func() (error, bool) {
+			warehouse, err = v.ShowByID(ctx, request.name)
 			if err != nil {
-				return fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
+				warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
+				return nil, false
 			}
+			if warehouse.State != WarehouseStateSuspended {
+				return nil, false
+			}
+			return nil, true
+		})
+		if err != nil {
+			return fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
 		}
 	}
 	return v.Alter(ctx, request)

@@ -156,10 +156,48 @@ var ShowWarehouseSchemaAdaptive = collections.MergeMaps(showWarehouseSchemaCommo
 
 var _ = ShowWarehouseSchemaAdaptive
 
-// ShowAllWarehousesSchema merges common, regular, and adaptive fields.
+// showWarehouseSchemaInteractive contains fields only present for interactive warehouses.
+// Adjusted manually.
+var showWarehouseSchemaInteractive = map[string]*schema.Schema{
+	"size": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"min_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"max_cluster_count": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"started_clusters": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"auto_suspend": {
+		Type:     schema.TypeInt,
+		Computed: true,
+	},
+	"tables": {
+		Type:     schema.TypeList,
+		Computed: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+	},
+}
+
+// ShowWarehouseSchemaInteractive contains common and interactive fields (used by the interactive warehouse resource).
+// Adjusted manually.
+var ShowWarehouseSchemaInteractive = collections.MergeMaps(showWarehouseSchemaCommon, showWarehouseSchemaInteractive)
+
+var _ = ShowWarehouseSchemaInteractive
+
+// ShowAllWarehousesSchema merges common, regular, adaptive, and interactive fields.
 // Used in the warehouses data source to cover all warehouse types in a single schema.
 // Adjusted manually.
-var ShowAllWarehousesSchema = collections.MergeMaps(ShowWarehouseSchema, showWarehouseSchemaAdaptive)
+var ShowAllWarehousesSchema = collections.MergeMaps(collections.MergeMaps(ShowWarehouseSchema, showWarehouseSchemaAdaptive), showWarehouseSchemaInteractive)
 
 var _ = ShowAllWarehousesSchema
 
@@ -234,6 +272,9 @@ var _ = WarehouseToSchema
 // Dispatches to the adaptive or regular mapper based on warehouse type.
 // Adjusted manually.
 func AnyWarehouseToSchema(warehouse *sdk.Warehouse) map[string]any {
+	if warehouse.IsInteractiveWarehouse() {
+		return WarehouseInteractiveToSchema(warehouse)
+	}
 	if warehouse.Type == sdk.WarehouseTypeAdaptive {
 		return WarehouseAdaptiveToSchema(warehouse)
 	}
@@ -250,5 +291,32 @@ func WarehouseAdaptiveToSchema(warehouse *sdk.Warehouse) map[string]any {
 	if warehouse.QueryThroughputMultiplier != nil {
 		warehouseSchema["query_throughput_multiplier"] = *warehouse.QueryThroughputMultiplier
 	}
+	return warehouseSchema
+}
+
+// WarehouseInteractiveToSchema maps fields in the show output of an interactive warehouse (showWarehouseSchemaInteractive).
+// Adjusted manually.
+func WarehouseInteractiveToSchema(warehouse *sdk.Warehouse) map[string]any {
+	warehouseSchema := commonWarehouseToSchema(warehouse)
+	if warehouse.Size != nil {
+		warehouseSchema["size"] = string((*warehouse.Size))
+	}
+	if warehouse.MinClusterCount != nil {
+		warehouseSchema["min_cluster_count"] = (*warehouse.MinClusterCount)
+	}
+	if warehouse.MaxClusterCount != nil {
+		warehouseSchema["max_cluster_count"] = (*warehouse.MaxClusterCount)
+	}
+	if warehouse.StartedClusters != nil {
+		warehouseSchema["started_clusters"] = (*warehouse.StartedClusters)
+	}
+	if warehouse.AutoSuspend != nil {
+		warehouseSchema["auto_suspend"] = (*warehouse.AutoSuspend)
+	}
+	tables := make([]string, len(warehouse.Tables))
+	for i, table := range warehouse.Tables {
+		tables[i] = table.FullyQualifiedName()
+	}
+	warehouseSchema["tables"] = tables
 	return warehouseSchema
 }
