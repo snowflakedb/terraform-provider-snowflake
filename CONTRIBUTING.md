@@ -5,6 +5,7 @@
 - [Contributing](#contributing)
   - [Setting up the development environment](#setting-up-the-development-environment)
   - [Repository structure](#repository-structure)
+  - [Code Generation](#code-generation)
   - [Running the tests locally](#running-the-tests-locally)
   - [Making a contribution](#making-a-contribution)
     - [Discuss a change with us!](#discuss-a-change-with-us)
@@ -45,6 +46,10 @@ The notable technical files/directories inside the repository:
 - `pkg/sdk/testint` - integration tests for the SDK (consult section [Running the tests locally](#running-the-tests-locally) below)
 
 **⚠️ Important ⚠️** We are in progress of cleaning up the repository structure, so beware of the changes in the packages/directories.
+
+## Code Generation
+
+Much of the codebase is produced by a custom generation framework. Before making changes that touch generated files, read the [Running Generators](pkg/internal/genhelpers/README.md#running-generators) section of the genhelpers README. It covers which files are generated (never edit `*_gen.go`), which `make` targets regenerate which outputs, when to regenerate after a change, CLI filtering flags, and troubleshooting.
 
 ## Running the tests locally
 
@@ -259,9 +264,9 @@ Reviewers can engage earlier with smaller PRs, and CI is faster to re-run on nar
 
 Take a look at an example [SDK implementation for Storage Lifecycle Policy](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4818).
 
-- Follow the [SDK Generator guide](pkg/sdk/generator/README.md) to generate the object's SDK.
+Follow the [Developer Workflow](pkg/sdk/generator/README.md#developer-workflow) section of the SDK Generator README to create the definition file, register it, run generation, and verify idempotency. It covers file conventions, a step-by-step workflow, and the Request DTO builder pattern required when using the generated SDK.
 
-- Implement unit tests.
+Implement unit tests.
 
 #### 2. Add integration tests
 
