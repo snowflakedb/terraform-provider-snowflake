@@ -632,7 +632,7 @@ func TestAcc_ExternalAzureStage_FileFormat_SwitchBetweenTypes(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	azureUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
 
-	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateFileFormat(t)
+	fileFormat, fileFormatCleanup := testClient().FileFormat.CreateCsv(t)
 	t.Cleanup(fileFormatCleanup)
 
 	modelBasic := model.ExternalAzureStageWithId(id, azureUrl)

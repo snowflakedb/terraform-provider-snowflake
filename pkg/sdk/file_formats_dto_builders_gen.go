@@ -450,6 +450,11 @@ func (s *CreateXmlFileFormatRequest) WithStripOuterElement(stripOuterElement boo
 	return s
 }
 
+func (s *CreateXmlFileFormatRequest) WithDisableSnowflakeData(disableSnowflakeData bool) *CreateXmlFileFormatRequest {
+	s.DisableSnowflakeData = &disableSnowflakeData
+	return s
+}
+
 func (s *CreateXmlFileFormatRequest) WithDisableAutoConvert(disableAutoConvert bool) *CreateXmlFileFormatRequest {
 	s.DisableAutoConvert = &disableAutoConvert
 	return s
@@ -945,6 +950,11 @@ func (s *AlterXmlFileFormatSetRequest) WithPreserveSpace(preserveSpace bool) *Al
 
 func (s *AlterXmlFileFormatSetRequest) WithStripOuterElement(stripOuterElement bool) *AlterXmlFileFormatSetRequest {
 	s.StripOuterElement = &stripOuterElement
+	return s
+}
+
+func (s *AlterXmlFileFormatSetRequest) WithDisableSnowflakeData(disableSnowflakeData bool) *AlterXmlFileFormatSetRequest {
+	s.DisableSnowflakeData = &disableSnowflakeData
 	return s
 }
 

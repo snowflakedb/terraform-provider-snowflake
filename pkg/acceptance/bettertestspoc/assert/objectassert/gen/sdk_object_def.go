@@ -485,6 +485,52 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.PolicyReference{},
 		NoShowById:   true,
 	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.FileFormat{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.FileFormatCsv{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeCsvDetails"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.FileFormatJson{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeJsonDetails"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.FileFormatAvro{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeAvroDetails"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.FileFormatOrc{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeOrcDetails"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.FileFormatParquet{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeParquetDetails"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.FileFormatXml{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeXmlDetails"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.FileFormatAllDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeAllDetails"},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
