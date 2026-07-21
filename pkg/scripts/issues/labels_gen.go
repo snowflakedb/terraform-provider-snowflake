@@ -89,6 +89,7 @@ var RepositoryLabels = []string{
 	"resource:managed_account",
 	"resource:masking_policy",
 	"resource:materialized_view",
+	"resource:mcp_server",
 	"resource:network_policy",
 	"resource:network_policy_attachment",
 	"resource:network_rule",

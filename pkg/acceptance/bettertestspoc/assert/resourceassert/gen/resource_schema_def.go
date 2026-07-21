@@ -238,6 +238,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.MaterializedView().Schema,
 	},
 	{
+		name:   "McpServer",
+		schema: resources.McpServer().Schema,
+	},
+	{
 		name:   "NetworkPolicy",
 		schema: resources.NetworkPolicy().Schema,
 	},
