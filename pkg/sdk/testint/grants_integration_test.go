@@ -2464,9 +2464,10 @@ func TestInt_ShowGrants(t *testing.T) {
 		assert.Empty(t, grant.Name)
 		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
 		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
-		assert.True(t, grant.IsInherited)
+		// The "is_inherited" column is absent for the SHOW INHERITED GRANTS IN ... syntax.
+		require.Nil(t, grant.IsInherited)
 		require.NotNil(t, grant.InheritedFrom)
-		assert.Equal(t, "DATABASE", *grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromDatabase, *grant.InheritedFrom)
 		require.NotNil(t, grant.InheritedFromDatabase)
 		assert.Equal(t, database.ID().Name(), *grant.InheritedFromDatabase)
 		assert.Nil(t, grant.InheritedFromSchema)
@@ -2498,9 +2499,10 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 		assert.Empty(t, grant.Name)
 		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
 		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
-		assert.True(t, grant.IsInherited)
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
 		require.NotNil(t, grant.InheritedFrom)
-		assert.Equal(t, "ACCOUNT", *grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromAccount, *grant.InheritedFrom)
 		assert.Nil(t, grant.InheritedFromDatabase)
 		assert.Nil(t, grant.InheritedFromSchema)
 
@@ -2527,11 +2529,12 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 		assert.Empty(t, grant.Name)
 		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
 		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
-		assert.True(t, grant.IsInherited)
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
 		require.NotNil(t, grant.InheritedFrom)
-		assert.Equal(t, "DATABASE", *grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromDatabase, *grant.InheritedFrom)
 		require.NotNil(t, grant.InheritedFromDatabase)
-		assert.Equal(t, fmt.Sprintf("\"%s\"", databaseId.Name()), *grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
 		assert.Nil(t, grant.InheritedFromSchema)
 
 		err = client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
@@ -2557,11 +2560,12 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 		assert.Empty(t, grant.Name)
 		assert.Equal(t, sdk.ObjectTypeRole, grant.GrantedTo)
 		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
-		assert.True(t, grant.IsInherited)
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
 		require.NotNil(t, grant.InheritedFrom)
-		assert.Equal(t, "SCHEMA", *grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromSchema, *grant.InheritedFrom)
 		require.NotNil(t, grant.InheritedFromDatabase)
-		assert.Equal(t, fmt.Sprintf("\"%s\"", databaseId.Name()), *grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
 		require.NotNil(t, grant.InheritedFromSchema)
 		assert.Equal(t, schemaId.Name(), *grant.InheritedFromSchema)
 
@@ -2596,11 +2600,12 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToDatabaseRole(t *testing.T) {
 		assert.Empty(t, grant.Name)
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, grant.GrantedTo)
 		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
-		assert.True(t, grant.IsInherited)
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
 		require.NotNil(t, grant.InheritedFrom)
-		assert.Equal(t, "DATABASE", *grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromDatabase, *grant.InheritedFrom)
 		require.NotNil(t, grant.InheritedFromDatabase)
-		assert.Equal(t, fmt.Sprintf("\"%s\"", databaseId.Name()), *grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
 		assert.Nil(t, grant.InheritedFromSchema)
 
 		err = client.Grants.RevokeInheritedPrivilegesFromDatabaseRole(ctx, privileges, sdk.PluralObjectTypeTables, in, role.ID())
@@ -2626,11 +2631,12 @@ func TestInt_GrantAndRevokeInheritedPrivilegesToDatabaseRole(t *testing.T) {
 		assert.Empty(t, grant.Name)
 		assert.Equal(t, sdk.ObjectTypeDatabaseRole, grant.GrantedTo)
 		assert.Equal(t, role.ID().Name(), grant.GranteeName.Name())
-		assert.True(t, grant.IsInherited)
+		require.NotNil(t, grant.IsInherited)
+		assert.True(t, *grant.IsInherited)
 		require.NotNil(t, grant.InheritedFrom)
-		assert.Equal(t, "SCHEMA", *grant.InheritedFrom)
+		assert.Equal(t, sdk.GrantInheritedFromSchema, *grant.InheritedFrom)
 		require.NotNil(t, grant.InheritedFromDatabase)
-		assert.Equal(t, fmt.Sprintf("\"%s\"", databaseId.Name()), *grant.InheritedFromDatabase)
+		assert.Equal(t, databaseId.Name(), *grant.InheritedFromDatabase)
 		require.NotNil(t, grant.InheritedFromSchema)
 		assert.Equal(t, schemaId.Name(), *grant.InheritedFromSchema)
 
@@ -2647,7 +2653,7 @@ func findInheritedGrant(t *testing.T, to sdk.ShowGrantsTo, privilege string) *sd
 	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &to})
 	require.NoError(t, err)
 	grant, err := collections.FindFirst(grants, func(g sdk.Grant) bool {
-		return g.Privilege == privilege && g.IsInherited
+		return g.IsInherited != nil && *g.IsInherited && g.Privilege == privilege
 	})
 	require.NoError(t, err)
 	return grant
@@ -2660,7 +2666,8 @@ func assertNoInheritedGrants(t *testing.T, to sdk.ShowGrantsTo) {
 	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{To: &to})
 	require.NoError(t, err)
 	for _, grant := range grants {
-		assert.False(t, grant.IsInherited)
+		require.NotNil(t, grant.IsInherited)
+		assert.False(t, *grant.IsInherited)
 	}
 }
 

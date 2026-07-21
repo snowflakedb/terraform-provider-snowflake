@@ -1224,7 +1224,7 @@ func computeInheritedAccountRolePrivileges(id GrantPrivilegesToAccountRoleId, gr
 	grantedOn, container, database, schema := inheritedAccountRoleGrantScope(id)
 
 	for _, grant := range grants {
-		if !grant.IsInherited {
+		if grant.IsInherited != nil && !*grant.IsInherited {
 			continue
 		}
 		if (grant.GrantTo != sdk.ObjectTypeRole && grant.GrantedTo != sdk.ObjectTypeRole) || grant.GranteeName.Name() != id.RoleName.Name() {
@@ -1266,25 +1266,19 @@ func inheritedAccountRoleGrantMatchesContainer(grant sdk.Grant, container Inheri
 	}
 	switch container {
 	case InAccountInheritedContainerKind:
-		return *grant.InheritedFrom == "ACCOUNT"
+		return *grant.InheritedFrom == sdk.GrantInheritedFromAccount
 	case InDatabaseInheritedContainerKind:
-		return *grant.InheritedFrom == "DATABASE" &&
+		return *grant.InheritedFrom == sdk.GrantInheritedFromDatabase &&
 			database != nil && grant.InheritedFromDatabase != nil &&
-			trimIdentifierQuotes(*grant.InheritedFromDatabase) == database.Name()
+			*grant.InheritedFromDatabase == database.Name()
 	case InSchemaInheritedContainerKind:
-		return *grant.InheritedFrom == "SCHEMA" &&
+		return *grant.InheritedFrom == sdk.GrantInheritedFromSchema &&
 			schema != nil && grant.InheritedFromDatabase != nil && grant.InheritedFromSchema != nil &&
-			trimIdentifierQuotes(*grant.InheritedFromDatabase) == schema.DatabaseName() &&
-			trimIdentifierQuotes(*grant.InheritedFromSchema) == schema.Name()
+			*grant.InheritedFromDatabase == schema.DatabaseName() &&
+			*grant.InheritedFromSchema == schema.Name()
 	default:
 		return false
 	}
-}
-
-// trimIdentifierQuotes strips the surrounding double quotes Snowflake may add to the inherited_from_*
-// identifier columns, so the values can be compared against the parsed identifier names.
-func trimIdentifierQuotes(s string) string {
-	return strings.Trim(s, `"`)
 }
 
 func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, *sdk.ObjectType) {

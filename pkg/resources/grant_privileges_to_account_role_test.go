@@ -63,15 +63,23 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 			Name: "on account object - matching inherited grant is returned",
 			Id:   onAccountWarehousesId("USAGE"),
 			Grants: []sdk.Grant{
-				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, "ACCOUNT", "", ""),
+				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, sdk.GrantInheritedFromAccount, "", ""),
 			},
 			Expected: []string{"USAGE"},
 		},
 		{
-			Name: "non-inherited grants are ignored",
+			Name: "non-inherited grants are ignored - is_inherited is nil",
 			Id:   onAccountWarehousesId("USAGE"),
 			Grants: []sdk.Grant{
-				{Privilege: "USAGE", GrantedOn: sdk.ObjectTypeWarehouse, GrantedTo: sdk.ObjectTypeRole, GranteeName: roleId, IsInherited: false},
+				{Privilege: "USAGE", GrantedOn: sdk.ObjectTypeWarehouse, GrantedTo: sdk.ObjectTypeRole, GranteeName: roleId, IsInherited: nil},
+			},
+			Expected: nil,
+		},
+		{
+			Name: "non-inherited grants are ignored - is_inherited is false",
+			Id:   onAccountWarehousesId("USAGE"),
+			Grants: []sdk.Grant{
+				{Privilege: "USAGE", GrantedOn: sdk.ObjectTypeWarehouse, GrantedTo: sdk.ObjectTypeRole, GranteeName: roleId, IsInherited: new(false)},
 			},
 			Expected: nil,
 		},
@@ -79,7 +87,7 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 			Name: "grants to a different role are ignored",
 			Id:   onAccountWarehousesId("USAGE"),
 			Grants: []sdk.Grant{
-				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, "other-role", "ACCOUNT", "", ""),
+				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, "other-role", sdk.GrantInheritedFromAccount, "", ""),
 			},
 			Expected: nil,
 		},
@@ -87,7 +95,7 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 			Name: "grants on a different object type are ignored",
 			Id:   onAccountWarehousesId("USAGE"),
 			Grants: []sdk.Grant{
-				inheritedGrant("USAGE", sdk.ObjectTypeDatabase, roleName, "ACCOUNT", "", ""),
+				inheritedGrant("USAGE", sdk.ObjectTypeDatabase, roleName, sdk.GrantInheritedFromAccount, "", ""),
 			},
 			Expected: nil,
 		},
@@ -95,7 +103,7 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 			Name: "grants from a different container are ignored",
 			Id:   onAccountWarehousesId("USAGE"),
 			Grants: []sdk.Grant{
-				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, "DATABASE", "my_db", ""),
+				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, sdk.GrantInheritedFromDatabase, "my_db", ""),
 			},
 			Expected: nil,
 		},
@@ -112,8 +120,8 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 			Id:     onAccountWarehousesId("USAGE"),
 			Strict: false,
 			Grants: []sdk.Grant{
-				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, "ACCOUNT", "", ""),
-				inheritedGrant("MONITOR", sdk.ObjectTypeWarehouse, roleName, "ACCOUNT", "", ""),
+				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, sdk.GrantInheritedFromAccount, "", ""),
+				inheritedGrant("MONITOR", sdk.ObjectTypeWarehouse, roleName, sdk.GrantInheritedFromAccount, "", ""),
 			},
 			Expected: []string{"USAGE"},
 		},
@@ -122,40 +130,24 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 			Id:     onAccountWarehousesId("USAGE"),
 			Strict: true,
 			Grants: []sdk.Grant{
-				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, "ACCOUNT", "", ""),
-				inheritedGrant("MONITOR", sdk.ObjectTypeWarehouse, roleName, "ACCOUNT", "", ""),
+				inheritedGrant("USAGE", sdk.ObjectTypeWarehouse, roleName, sdk.GrantInheritedFromAccount, "", ""),
+				inheritedGrant("MONITOR", sdk.ObjectTypeWarehouse, roleName, sdk.GrantInheritedFromAccount, "", ""),
 			},
 			Expected: []string{"USAGE", "MONITOR"},
-		},
-		{
-			Name: "on schema object in database - matching quoted database name",
-			Id:   onSchemaObjectTablesInDatabaseId("SELECT"),
-			Grants: []sdk.Grant{
-				inheritedGrant("SELECT", sdk.ObjectTypeTable, roleName, "DATABASE", `"my_db"`, ""),
-			},
-			Expected: []string{"SELECT"},
 		},
 		{
 			Name: "on schema object in database - different database is ignored",
 			Id:   onSchemaObjectTablesInDatabaseId("SELECT"),
 			Grants: []sdk.Grant{
-				inheritedGrant("SELECT", sdk.ObjectTypeTable, roleName, "DATABASE", `"other_db"`, ""),
+				inheritedGrant("SELECT", sdk.ObjectTypeTable, roleName, sdk.GrantInheritedFromDatabase, "other_db", ""),
 			},
 			Expected: nil,
-		},
-		{
-			Name: "on schema object in schema - matching quoted database and schema names",
-			Id:   onSchemaObjectTablesInSchemaId("SELECT"),
-			Grants: []sdk.Grant{
-				inheritedGrant("SELECT", sdk.ObjectTypeTable, roleName, "SCHEMA", `"my_db"`, "my_schema"),
-			},
-			Expected: []string{"SELECT"},
 		},
 		{
 			Name: "on schema object in schema - different schema is ignored",
 			Id:   onSchemaObjectTablesInSchemaId("SELECT"),
 			Grants: []sdk.Grant{
-				inheritedGrant("SELECT", sdk.ObjectTypeTable, roleName, "SCHEMA", `"my_db"`, "other_schema"),
+				inheritedGrant("SELECT", sdk.ObjectTypeTable, roleName, sdk.GrantInheritedFromSchema, "my_db", "other_schema"),
 			},
 			Expected: nil,
 		},
@@ -163,7 +155,7 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 			Name: "on schema in account - matching schemas inherited from account",
 			Id:   onSchemaInAccountId("USAGE"),
 			Grants: []sdk.Grant{
-				inheritedGrant("USAGE", sdk.ObjectTypeSchema, roleName, "ACCOUNT", "", ""),
+				inheritedGrant("USAGE", sdk.ObjectTypeSchema, roleName, sdk.GrantInheritedFromAccount, "", ""),
 			},
 			Expected: []string{"USAGE"},
 		},
@@ -177,13 +169,13 @@ func TestComputeInheritedAccountRolePrivileges(t *testing.T) {
 	}
 }
 
-func inheritedGrant(privilege string, grantedOn sdk.ObjectType, grantee string, inheritedFrom string, inheritedFromDatabase string, inheritedFromSchema string) sdk.Grant {
+func inheritedGrant(privilege string, grantedOn sdk.ObjectType, grantee string, inheritedFrom sdk.GrantInheritedFrom, inheritedFromDatabase string, inheritedFromSchema string) sdk.Grant {
 	grant := sdk.Grant{
 		Privilege:   privilege,
 		GrantedOn:   grantedOn,
 		GrantedTo:   sdk.ObjectTypeRole,
 		GranteeName: sdk.NewAccountObjectIdentifier(grantee),
-		IsInherited: true,
+		IsInherited: new(true),
 	}
 	if inheritedFrom != "" {
 		grant.InheritedFrom = &inheritedFrom

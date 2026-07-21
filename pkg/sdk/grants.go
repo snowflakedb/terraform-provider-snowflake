@@ -288,11 +288,11 @@ type grantRow struct {
 	GranteeName string    `db:"grantee_name"`
 	GrantOption bool      `db:"grant_option"`
 	GrantedBy   string    `db:"granted_by"`
-	// IsInherited column is missing for the SHOW INHERITED GRANTS IN ... syntax.
+	// The inherited-grant columns below are not returned by every SHOW GRANTS variant.
 	IsInherited           sql.NullString `db:"is_inherited"`
-	InheritedFrom         string         `db:"inherited_from"`
-	InheritedFromDatabase string         `db:"inherited_from_database"`
-	InheritedFromSchema   string         `db:"inherited_from_schema"`
+	InheritedFrom         sql.NullString `db:"inherited_from"`
+	InheritedFromDatabase sql.NullString `db:"inherited_from_database"`
+	InheritedFromSchema   sql.NullString `db:"inherited_from_schema"`
 }
 
 type Grant struct {
@@ -306,8 +306,8 @@ type Grant struct {
 	GranteeName           ObjectIdentifier
 	GrantOption           bool
 	GrantedBy             AccountObjectIdentifier
-	IsInherited           bool
-	InheritedFrom         *string
+	IsInherited           *bool
+	InheritedFrom         *GrantInheritedFrom
 	InheritedFromDatabase *string
 	InheritedFromSchema   *string
 }
@@ -386,28 +386,15 @@ func (row grantRow) convert() (*Grant, error) {
 		// GranteeName is computed in Show operation. Its format is depending on the grant request options.
 		GrantOption: row.GrantOption,
 		GrantedBy:   NewAccountObjectIdentifier(row.GrantedBy),
-		IsInherited: isInherited(row.IsInherited),
 	}
-	if row.InheritedFrom != "" {
-		grant.InheritedFrom = new(row.InheritedFrom)
-		if row.InheritedFrom == "SCHEMA" {
-			grant.InheritedFromDatabase = new(row.InheritedFromDatabase)
-			grant.InheritedFromSchema = new(row.InheritedFromSchema)
-		} else if row.InheritedFrom == "DATABASE" {
-			grant.InheritedFromDatabase = new(row.InheritedFromDatabase)
-		}
+	mapNullStringToBoolValue(&grant.IsInherited, row.IsInherited, "true")
+	mapNullStringWithMapping(&grant.InheritedFrom, row.InheritedFrom, ToGrantInheritedFrom)
+	trimQuotes := func(v string) (string, error) {
+		return strings.Trim(v, `"`), nil
 	}
+	mapNullStringWithMapping(&grant.InheritedFromDatabase, row.InheritedFromDatabase, trimQuotes)
+	mapNullStringWithMapping(&grant.InheritedFromSchema, row.InheritedFromSchema, trimQuotes)
 	return &grant, nil
-}
-
-// isInherited determines whether a grant is inherited. When the is_inherited
-// column is missing (dbRow is not valid), we can be sure the grant is inherited,
-// because that column is only absent for the SHOW INHERITED GRANTS IN ... syntax.
-func isInherited(dbRow sql.NullString) bool {
-	if dbRow.Valid {
-		return dbRow.String == "true"
-	}
-	return true
 }
 
 // GrantOwnershipOptions is based on https://docs.snowflake.com/en/sql-reference/sql/grant-ownership#syntax.

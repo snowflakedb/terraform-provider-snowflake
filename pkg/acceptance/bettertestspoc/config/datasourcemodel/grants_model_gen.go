@@ -11,12 +11,13 @@ import (
 )
 
 type GrantsModel struct {
-	FutureGrantsIn tfconfig.Variable `json:"future_grants_in,omitempty"`
-	FutureGrantsTo tfconfig.Variable `json:"future_grants_to,omitempty"`
-	Grants         tfconfig.Variable `json:"grants,omitempty"`
-	GrantsOf       tfconfig.Variable `json:"grants_of,omitempty"`
-	GrantsOn       tfconfig.Variable `json:"grants_on,omitempty"`
-	GrantsTo       tfconfig.Variable `json:"grants_to,omitempty"`
+	FutureGrantsIn    tfconfig.Variable `json:"future_grants_in,omitempty"`
+	FutureGrantsTo    tfconfig.Variable `json:"future_grants_to,omitempty"`
+	Grants            tfconfig.Variable `json:"grants,omitempty"`
+	GrantsOf          tfconfig.Variable `json:"grants_of,omitempty"`
+	GrantsOn          tfconfig.Variable `json:"grants_on,omitempty"`
+	GrantsTo          tfconfig.Variable `json:"grants_to,omitempty"`
+	InheritedGrantsIn tfconfig.Variable `json:"inherited_grants_in,omitempty"`
 
 	*config.DatasourceModelMeta
 }
@@ -75,6 +76,8 @@ func (g *GrantsModel) WithDependsOn(values ...string) *GrantsModel {
 
 // grants_to attribute type is not yet supported, so WithGrantsTo can't be generated
 
+// inherited_grants_in attribute type is not yet supported, so WithInheritedGrantsIn can't be generated
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -106,5 +109,10 @@ func (g *GrantsModel) WithGrantsOnValue(value tfconfig.Variable) *GrantsModel {
 
 func (g *GrantsModel) WithGrantsToValue(value tfconfig.Variable) *GrantsModel {
 	g.GrantsTo = value
+	return g
+}
+
+func (g *GrantsModel) WithInheritedGrantsInValue(value tfconfig.Variable) *GrantsModel {
+	g.InheritedGrantsIn = value
 	return g
 }
