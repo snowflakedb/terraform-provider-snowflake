@@ -1076,7 +1076,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 			parameters, err := client.Warehouses.ShowParameters(ctx, id)
 			require.NoError(t, err)
 			for _, p := range parameters {
-				if p.Key == "FALLBACK_WAREHOUSE" {
+				if p.Key == string(sdk.WarehouseParameterFallbackWarehouse) {
 					return p.Value
 				}
 			}

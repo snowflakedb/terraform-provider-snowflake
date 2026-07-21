@@ -236,6 +236,11 @@ func (s *CreateInteractiveWarehouseRequest) WithStatementTimeoutInSeconds(statem
 	return s
 }
 
+func (s *CreateInteractiveWarehouseRequest) WithFallbackWarehouse(fallbackWarehouse AccountObjectIdentifier) *CreateInteractiveWarehouseRequest {
+	s.FallbackWarehouse = &fallbackWarehouse
+	return s
+}
+
 func (s *CreateInteractiveWarehouseRequest) WithTag(tag []TagAssociation) *CreateInteractiveWarehouseRequest {
 	s.Tag = tag
 	return s
