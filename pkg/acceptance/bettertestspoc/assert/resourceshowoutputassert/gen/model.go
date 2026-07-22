@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -21,12 +22,17 @@ type ResourceShowOutputAssertionModel struct {
 	AssertionCreator string
 	Mapper           genhelpers.Mapper
 	IsSdkStruct      bool
+	SkipGeneration   bool
 }
 
 func ModelFromSdkObjectDetails(sdkObject SdkObjectShowOutputDetails, preamble *genhelpers.PreambleModel) ResourceShowOutputAssertionsModel {
 	attributes := make([]ResourceShowOutputAssertionModel, len(sdkObject.Fields))
 	for idx, field := range sdkObject.Fields {
-		attributes[idx] = MapToResourceShowOutputAssertion(field)
+		attr := MapToResourceShowOutputAssertion(field)
+		if slices.Contains(sdkObject.SkipFields, field.Name) {
+			attr.SkipGeneration = true
+		}
+		attributes[idx] = attr
 	}
 
 	name, _ := strings.CutPrefix(sdkObject.Name, "sdk.")
