@@ -109,3 +109,8 @@ func (w *WarehouseShowOutputAssert) HasTables(expected ...string) *WarehouseShow
 	w.SetContainsExactlyStringValues("tables", expected...)
 	return w
 }
+
+func (w *WarehouseShowOutputAssert) HasNoTables() *WarehouseShowOutputAssert {
+	w.ValueSet("tables.#", "0")
+	return w
+}
