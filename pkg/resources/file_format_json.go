@@ -24,6 +24,19 @@ func fileFormatJsonSchema() map[string]*schema.Schema {
 	return collections.MergeMaps(fileFormatCommonSchema, jsonFileFormatSchema(""), jsonDescOutputSchema())
 }
 
+func jsonDescOutputSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE FILE FORMAT` for this file format.",
+			Elem: &schema.Resource{
+				Schema: schemas.DescribeFileFormatJsonSchema,
+			},
+		},
+	}
+}
+
 func FileFormatJson() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
 		sdk.ParseSchemaObjectIdentifier,
@@ -91,8 +104,6 @@ func ImportFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 
 	return []*schema.ResourceData{d}, nil
 }
-
-var fileFormatStringOrAutoFallback = *sdk.NewStageFileFormatStringOrAutoRequest().WithAuto(true)
 
 func CreateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
@@ -211,6 +222,7 @@ func UpdateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	set := sdk.NewAlterJsonFileFormatSetRequest()
+	fileFormatStringOrAutoFallback := *sdk.NewStageFileFormatStringOrAutoRequest().WithAuto(true)
 
 	errs := errors.Join(
 		attributeMappedValueUpdateSetOnlyFallback(d, "compression", &set.Compression, sdk.ToJsonCompression, sdk.JsonCompressionAuto),
@@ -277,17 +289,4 @@ func jsonFileFormatToSchema(json *sdk.FileFormatJson, setDefaults bool) map[stri
 		state["enable_octal"] = booleanStringFromBool(json.EnableOctal)
 	}
 	return state
-}
-
-func jsonDescOutputSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE FILE FORMAT` for this file format.",
-			Elem: &schema.Resource{
-				Schema: schemas.DescribeFileFormatJsonSchema,
-			},
-		},
-	}
 }

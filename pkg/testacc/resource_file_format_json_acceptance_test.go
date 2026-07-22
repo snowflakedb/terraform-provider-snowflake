@@ -23,11 +23,14 @@ import (
 
 func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	renamedId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
 
 	basicModel := model.FileFormatJson("test", id.DatabaseName(), id.SchemaName(), id.Name())
 	ref := basicModel.ResourceReference()
+
+	renamedModel := model.FileFormatJson("test", id.DatabaseName(), id.SchemaName(), renamedId.Name())
 
 	completeModel := model.FileFormatJson("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithCompression("GZIP").
@@ -37,6 +40,7 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 		WithBinaryFormat("BASE64").
 		WithTrimSpace("true").
 		WithMultiLine("false").
+		WithNullIf("NULL_A", "NULL_B").
 		WithFileExtension(".json").
 		WithEnableOctal("true").
 		WithAllowDuplicate("true").
@@ -55,6 +59,7 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 		WithBinaryFormat("UTF8").
 		WithTrimSpace("false").
 		WithMultiLine("true").
+		WithNullIf("NULL_C").
 		WithFileExtension(".jsonl").
 		WithEnableOctal("false").
 		WithAllowDuplicate("false").
@@ -79,7 +84,8 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			HasStripNullValues(r.BooleanDefault).
 			HasReplaceInvalidCharacters(r.BooleanDefault).
 			HasIgnoreUtf8Errors(r.BooleanDefault).
-			HasSkipByteOrderMark(r.BooleanDefault),
+			HasSkipByteOrderMark(r.BooleanDefault).
+			HasNullIfEmpty(),
 		resourceshowoutputassert.FileFormatShowOutput(t, ref).
 			HasName(id.Name()).
 			HasDatabaseName(id.DatabaseName()).
@@ -99,7 +105,8 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			HasStripNullValues(false).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(false).
-			HasSkipByteOrderMark(true),
+			HasSkipByteOrderMark(true).
+			HasNoNullIf(),
 	}
 
 	completeAssertions := []assert.TestCheckFuncProvider{
@@ -122,6 +129,7 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(r.BooleanDefault).
 			HasIgnoreUtf8Errors(r.BooleanTrue).
 			HasSkipByteOrderMark(r.BooleanFalse).
+			HasNullIf("NULL_A", "NULL_B").
 			HasCommentString(comment),
 		resourceshowoutputassert.FileFormatShowOutput(t, ref).
 			HasName(id.Name()).
@@ -146,7 +154,8 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			HasStripNullValues(true).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(true).
-			HasSkipByteOrderMark(false),
+			HasSkipByteOrderMark(false).
+			HasNullIf("NULL_A", "NULL_B"),
 	}
 
 	alteredAssertions := []assert.TestCheckFuncProvider{
@@ -169,6 +178,7 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(r.BooleanDefault).
 			HasIgnoreUtf8Errors(r.BooleanFalse).
 			HasSkipByteOrderMark(r.BooleanTrue).
+			HasNullIf("NULL_C").
 			HasCommentString(externalComment),
 		resourceshowoutputassert.FileFormatShowOutput(t, ref).
 			HasName(id.Name()).
@@ -193,7 +203,8 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			HasStripNullValues(false).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(false).
-			HasSkipByteOrderMark(true),
+			HasSkipByteOrderMark(true).
+			HasNullIf("NULL_C"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -272,6 +283,21 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			{
 				Config: config.FromModels(t, basicModel),
 				Check:  assertThat(t, basicAssertions...),
+			},
+			// rename
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, renamedModel),
+				Check: assertThat(
+					t,
+					resourceassert.FileFormatJsonResource(t, ref).
+						HasNameString(renamedId.Name()).
+						HasFullyQualifiedNameString(renamedId.FullyQualifiedName()),
+				),
 			},
 		},
 	})

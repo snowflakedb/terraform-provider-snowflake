@@ -183,6 +183,12 @@ func csvFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 		WithValidation(g.ConflictingFields, "SkipHeader", "ParseHeader")
 }
 
+// nullIfList wraps NullIf in its own struct (rather than a plain ListAssignment) so that
+// NullIf can be a pointer field: nil means "untouched" (omitted from the statement), while a non-nil
+// *JsonNullIf with an empty list still renders `NULL_IF = ()`.
+var nullIfList = g.NewQueryStruct("JsonNullIf").
+	List("NullIf", "NullString", g.ListOptions().MustParentheses())
+
 func jsonFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 	return qs.
 		OptionalEnumAssignment("COMPRESSION", JsonCompressionEnumDef, g.ParameterOptions().NoQuotes()).
@@ -192,7 +198,7 @@ func jsonFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalEnumAssignment("BINARY_FORMAT", BinaryFormatEnumDef, g.ParameterOptions().NoQuotes()).
 		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 		OptionalBooleanAssignment("MULTI_LINE", g.ParameterOptions()).
-		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+		OptionalQueryStructField("NullIf", nullIfList, g.ParameterOptions().SQL("NULL_IF").Parentheses()).
 		OptionalTextAssignment("FILE_EXTENSION", g.ParameterOptions().SingleQuotes()).
 		OptionalBooleanAssignment("ENABLE_OCTAL", g.ParameterOptions()).
 		OptionalBooleanAssignment("ALLOW_DUPLICATE", g.ParameterOptions()).
