@@ -131,10 +131,13 @@ func CreateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 		booleanStringAttributeCreateBuilder(d, "replace_invalid_characters", request.WithReplaceInvalidCharacters),
 		booleanStringAttributeCreateBuilder(d, "ignore_utf8_errors", request.WithIgnoreUtf8Errors),
 		booleanStringAttributeCreateBuilder(d, "skip_byte_order_mark", request.WithSkipByteOrderMark),
-		attributeMappedValueCreateBuilder(d, "null_if", func(nullIf []sdk.NullString) *sdk.CreateJsonFileFormatRequest {
-			request.WithNullIf(nullIf)
-			return request
-		}, parseNullIf),
+		attributeMappedValueCreateBuilder(d, "null_if", request.WithNullIf, func(v any) (sdk.NullIfListRequest, error) {
+			nullIf, err := parseNullIf(v)
+			if err != nil {
+				return sdk.NullIfListRequest{}, err
+			}
+			return *sdk.NewNullIfListRequest().WithNullIf(nullIf), nil
+		}),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
 	if errs != nil {
@@ -240,7 +243,9 @@ func UpdateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 		booleanStringAttributeUnsetFallbackUpdate(d, "replace_invalid_characters", &set.ReplaceInvalidCharacters, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "ignore_utf8_errors", &set.IgnoreUtf8Errors, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "skip_byte_order_mark", &set.SkipByteOrderMark, true),
-		attributeMappedValueUpdateSetOnlySliceFallback(d, "null_if", &set.NullIf, parseNullIf, []sdk.NullString{{S: `\N`}}),
+		attributeMappedValueUpdateSetOnlySliceFallbackWrapped(d, "null_if", &set.NullIf, parseNullIf, func(nullIf []sdk.NullString) sdk.NullIfListRequest {
+			return *sdk.NewNullIfListRequest().WithNullIf(nullIf)
+		}, []sdk.NullString{}),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
 	)
 	if errs != nil {

@@ -232,7 +232,7 @@ func (r *CreateJsonFileFormatRequest) toOpts() *CreateJsonFileFormatOptions {
 		}
 	}
 	if r.NullIf != nil {
-		opts.NullIf = &JsonNullIf{
+		opts.NullIf = &NullIfList{
 			NullIf: r.NullIf.NullIf,
 		}
 	}
@@ -419,7 +419,7 @@ func (r *AlterJsonFileFormatRequest) toOpts() *AlterJsonFileFormatOptions {
 			}
 		}
 		if r.Set.NullIf != nil {
-			opts.Set.NullIf = &JsonNullIf{
+			opts.Set.NullIf = &NullIfList{
 				NullIf: r.Set.NullIf.NullIf,
 			}
 		}

@@ -185,8 +185,8 @@ func csvFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 
 // nullIfList wraps NullIf in its own struct (rather than a plain ListAssignment) so that
 // NullIf can be a pointer field: nil means "untouched" (omitted from the statement), while a non-nil
-// *JsonNullIf with an empty list still renders `NULL_IF = ()`.
-var nullIfList = g.NewQueryStruct("JsonNullIf").
+// with an empty list still renders `NULL_IF = ()`.
+var nullIfList = g.NewQueryStruct("NullIfList").
 	List("NullIf", "NullString", g.ListOptions().MustParentheses())
 
 func jsonFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {

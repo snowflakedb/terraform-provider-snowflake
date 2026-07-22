@@ -303,6 +303,25 @@ func attributeMappedValueUpdateSetOnlySliceFallback[T, E any](d *schema.Resource
 	return nil
 }
 
+// attributeMappedValueUpdateSetOnlySliceFallbackWrapped is attributeMappedValueUpdateSetOnlySliceFallback
+// for set fields whose slice is wrapped in its own request struct (e.g. *sdk.JsonNullIfRequest) rather
+// than being a plain slice field, so that an explicit empty list can still be told apart from an absent
+// one all the way down to the generated SQL (see JsonNullIf in file_formats_gen.go for why that matters).
+func attributeMappedValueUpdateSetOnlySliceFallbackWrapped[T, E, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) ([]E, error), wrap func([]E) R, fallbackValue []E) error {
+	if d.HasChange(key) {
+		if !d.GetRawConfig().AsValueMap()[key].IsNull() {
+			mappedValue, err := mapper(d.Get(key).(T))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(wrap(mappedValue))
+		} else {
+			*setField = sdk.Pointer(wrap(fallbackValue))
+		}
+	}
+	return nil
+}
+
 func attributeMappedValueUpdateSetOnlyFallbackNested[R any](d *schema.ResourceData, key string, setField **R, mapper func(*schema.ResourceData) (R, error), fallbackValue R) error {
 	if d.HasChange(key) {
 		if _, ok := d.GetOk(key); ok {

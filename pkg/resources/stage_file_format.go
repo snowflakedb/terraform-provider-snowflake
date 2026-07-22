@@ -539,7 +539,7 @@ func parseJsonFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatJsonOpti
 		booleanStringAttributeCreate(d, prefix+"ignore_utf8_errors", &jsonOptions.IgnoreUtf8Errors),
 		booleanStringAttributeCreate(d, prefix+"skip_byte_order_mark", &jsonOptions.SkipByteOrderMark),
 		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatJsonOptions {
-			jsonOptions.NullIf = nullIf
+			jsonOptions.NullIf = &sdk.NullIfList{NullIf: nullIf}
 			return jsonOptions
 		}, parseNullIf),
 	)
