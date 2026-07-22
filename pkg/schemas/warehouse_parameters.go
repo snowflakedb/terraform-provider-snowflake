@@ -27,6 +27,12 @@ var ShowWarehouseParametersSchemaInteractive = collections.MergeMaps(showWarehou
 	"fallback_warehouse": ParameterListSchema,
 })
 
+// ShowAllWarehouseParametersSchema returns a schema containing all warehouse parameters for every warehouse type.
+// Used in the warehouses data source to cover all warehouse types in a single schema.
+func ShowAllWarehouseParametersSchema() map[string]*schema.Schema {
+	return ShowWarehouseParametersSchemaInteractive
+}
+
 // commonWarehouseParametersToSchema maps the warehouse parameters present for all warehouse types
 // (showWarehouseParametersSchemaCommon) into the given map.
 func commonWarehouseParametersToSchema(warehouseParameters map[string]any, parameters []*sdk.Parameter, providerCtx *provider.Context) {
@@ -59,4 +65,10 @@ func WarehouseInteractiveParametersToSchema(parameters []*sdk.Parameter, provide
 		}
 	}
 	return warehouseParameters
+}
+
+// AllWarehouseParametersToSchema maps every warehouse parameter across all warehouse types into the
+// ShowAllWarehouseParametersSchema fields.
+func AllWarehouseParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context) map[string]any {
+	return WarehouseInteractiveParametersToSchema(parameters, providerCtx)
 }

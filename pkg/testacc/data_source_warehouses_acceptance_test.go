@@ -16,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -113,7 +114,10 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			HasResourceMonitorEmpty().
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasOwnerRoleTypeNotEmpty().
-			HasResourceConstraintEmpty()
+			HasResourceConstraintEmpty().
+			HasMaxQueryPerformanceLevelEmpty().
+			HasQueryThroughputMultiplier(0).
+			HasNoTables()
 		if testClient().SnowflakeDefaults.WarehouseGenerationEmptyByDefault(t) {
 			assert = assert.HasGenerationEmpty()
 		} else {
@@ -154,14 +158,15 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 					resourceparametersassert.WarehousesDatasourceParameters(t, warehousesModel.DatasourceReference()).
 						HasDefaultMaxConcurrencyLevel().
 						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasDefaultStatementTimeoutInSeconds(),
+						HasDefaultStatementTimeoutInSeconds().
+						HasDefaultFallbackWarehouse(),
 				),
 			},
 		},
 	})
 }
 
-func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
+func TestAcc_Warehouses_CompleteUseCase_AdaptiveWarehouse(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
@@ -181,6 +186,35 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 		WithLike(id.Name()).
 		WithDependsOn(warehouseModel.ResourceReference())
 
+	commonShowAssert := func(t *testing.T, datasourceReference string) *resourceshowoutputassert.WarehouseShowOutputAssert {
+		t.Helper()
+		return resourceshowoutputassert.WarehousesDatasourceShowOutput(t, datasourceReference).
+			HasName(id.Name()).
+			HasStateNotEmpty().
+			HasType(sdk.WarehouseTypeAdaptive).
+			HasSizeEmpty().
+			HasMinClusterCount(0).
+			HasMaxClusterCount(0).
+			HasIsDefault(false).
+			HasAutoSuspend(0).
+			HasAutoResume(true).
+			HasCreatedOnNotEmpty().
+			HasResumedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasEnableQueryAcceleration(false).
+			HasQueryAccelerationMaxScaleFactor(0).
+			HasResourceMonitorEmpty().
+			HasScalingPolicyEmpty().
+			HasOwnerRoleTypeNotEmpty().
+			HasResourceConstraintEmpty().
+			HasGenerationEmpty().
+			HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
+			HasQueryThroughputMultiplier(2).
+			HasNoTables()
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -192,15 +226,7 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutOptionals),
 				Check: assertThat(
 					t,
-					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModelWithoutOptionals.DatasourceReference()).
-						HasName(id.Name()).
-						HasType(sdk.WarehouseTypeAdaptive).
-						HasStateNotEmpty().
-						HasComment(comment).
-						HasOwnerNotEmpty().
-						HasOwnerRoleTypeNotEmpty().
-						HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-						HasQueryThroughputMultiplier(2),
+					commonShowAssert(t, warehousesModelWithoutOptionals.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
 					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.parameters.#", "0")),
@@ -210,15 +236,7 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 				Config: config.FromModels(t, warehouseModel, warehousesModel),
 				Check: assertThat(
 					t,
-					resourceshowoutputassert.WarehousesDatasourceShowOutput(t, warehousesModel.DatasourceReference()).
-						HasName(id.Name()).
-						HasType(sdk.WarehouseTypeAdaptive).
-						HasStateNotEmpty().
-						HasComment(comment).
-						HasOwnerNotEmpty().
-						HasOwnerRoleTypeNotEmpty().
-						HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-						HasQueryThroughputMultiplier(2),
+					commonShowAssert(t, warehousesModel.DatasourceReference()),
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.created_on")),
@@ -229,7 +247,118 @@ func TestAcc_Warehouses_AdaptiveWarehouse(t *testing.T) {
 						HasStatementQueuedTimeoutInSeconds(300).
 						HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
 						HasStatementTimeoutInSeconds(86400).
-						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse),
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+						HasDefaultFallbackWarehouse(),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Warehouses_CompleteUseCase_InteractiveWarehouse(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(resourceMonitorCleanup)
+
+	fallbackWarehouse, fallbackWarehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(fallbackWarehouseCleanup)
+
+	interactiveTable, interactiveTableCleanup := testClient().Table.CreateInteractiveTable(t)
+	t.Cleanup(interactiveTableCleanup)
+
+	interactiveWarehouseModel := model.WarehouseInteractiveWithId(id).
+		WithInitiallySuspended(true).
+		WithWarehouseSize(string(sdk.WarehouseSizeSmall)).
+		WithMinClusterCount(2).
+		WithMaxClusterCount(3).
+		WithAutoSuspend(98000).
+		WithAutoResume(r.BooleanFalse).
+		WithResourceMonitor(resourceMonitor.ID().Name()).
+		WithFallbackWarehouse(fallbackWarehouse.ID().Name()).
+		WithComment(comment).
+		WithMaxConcurrencyLevel(4).
+		WithStatementQueuedTimeoutInSeconds(30).
+		WithStatementTimeoutInSeconds(45).
+		WithTables(interactiveTable.FullyQualifiedName())
+
+	warehousesModelWithoutOptionals := datasourcemodel.Warehouses("test").
+		WithLike(id.Name()).
+		WithWithDescribe(false).
+		WithWithParameters(false).
+		WithDependsOn(interactiveWarehouseModel.ResourceReference())
+
+	warehousesModel := datasourcemodel.Warehouses("test").
+		WithLike(id.Name()).
+		WithDependsOn(interactiveWarehouseModel.ResourceReference())
+
+	commonShowAssert := func(t *testing.T, datasourceReference string) *resourceshowoutputassert.WarehouseShowOutputAssert {
+		t.Helper()
+		return resourceshowoutputassert.WarehousesDatasourceShowOutput(t, datasourceReference).
+			HasName(id.Name()).
+			HasStateNotEmpty().
+			HasType(sdk.WarehouseTypeInteractive).
+			HasSize(sdk.WarehouseSizeSmall).
+			HasMinClusterCount(2).
+			HasMaxClusterCount(3).
+			HasIsDefault(false).
+			HasAutoSuspend(98000).
+			HasAutoResume(false).
+			HasCreatedOnNotEmpty().
+			HasResumedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasEnableQueryAcceleration(false).
+			HasQueryAccelerationMaxScaleFactor(0).
+			HasResourceMonitor(resourceMonitor.ID()).
+			HasScalingPolicyEmpty().
+			HasOwnerRoleTypeNotEmpty().
+			HasResourceConstraintEmpty().
+			HasGenerationEmpty().
+			HasMaxQueryPerformanceLevelEmpty().
+			HasQueryThroughputMultiplier(0).
+			HasTables(interactiveTable.FullyQualifiedName())
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: interactiveWarehouseProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseInteractive),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, interactiveWarehouseModel, warehousesModelWithoutOptionals),
+				Check: assertThat(
+					t,
+					commonShowAssert(t, warehousesModelWithoutOptionals.DatasourceReference()),
+
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.parameters.#", "0")),
+				),
+			},
+			{
+				Config: config.FromModels(t, interactiveWarehouseModel, warehousesModel),
+				Check: assertThat(
+					t,
+					commonShowAssert(t, warehousesModel.DatasourceReference()),
+
+					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.created_on")),
+					assert.Check(resource.TestCheckResourceAttrSet(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.name")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModel.DatasourceReference(), "warehouses.0.describe_output.0.kind", "WAREHOUSE")),
+
+					resourceparametersassert.WarehousesDatasourceParameters(t, warehousesModel.DatasourceReference()).
+						HasMaxConcurrencyLevel(4).
+						HasMaxConcurrencyLevelLevel(sdk.ParameterTypeWarehouse).
+						HasStatementQueuedTimeoutInSeconds(30).
+						HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+						HasStatementTimeoutInSeconds(45).
+						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
+						HasFallbackWarehouse(fallbackWarehouse.ID().Name()).
+						HasFallbackWarehouseLevel(sdk.ParameterTypeWarehouse),
 				),
 			},
 		},

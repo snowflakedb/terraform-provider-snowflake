@@ -993,10 +993,11 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasTables(),
 		)
 		assertThatObject(
-			t, objectparametersassert.WarehouseParameters(t, id).
+			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
 				HasMaxConcurrencyLevel(8).
 				HasStatementQueuedTimeoutInSeconds(0).
-				HasStatementTimeoutInSeconds(172800),
+				HasStatementTimeoutInSeconds(172800).
+				HasFallbackWarehouse(""),
 		)
 	})
 
@@ -1034,10 +1035,11 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasTables(table1, table2),
 		)
 		assertThatObject(
-			t, objectparametersassert.WarehouseParameters(t, id).
+			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
 				HasMaxConcurrencyLevel(8).
 				HasStatementQueuedTimeoutInSeconds(0).
-				HasStatementTimeoutInSeconds(172800),
+				HasStatementTimeoutInSeconds(172800).
+				HasFallbackWarehouse(""),
 		)
 	})
 
@@ -1071,26 +1073,22 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		// FALLBACK_WAREHOUSE is exposed as a warehouse parameter, not a SHOW WAREHOUSES column.
-		fallbackParam := func() string {
-			parameters, err := client.Warehouses.ShowParameters(ctx, id)
-			require.NoError(t, err)
-			for _, p := range parameters {
-				if p.Key == string(sdk.WarehouseParameterFallbackWarehouse) {
-					return p.Value
-				}
-			}
-			return ""
-		}
-
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
 			WithSet(*sdk.NewWarehouseSetRequest().WithFallbackWarehouse(fallback.ID())))
 		require.NoError(t, err)
-		assert.Equal(t, fallback.ID().Name(), fallbackParam())
+
+		assertThatObject(
+			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
+				HasFallbackWarehouse(fallback.ID().Name()),
+		)
 
 		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
 			WithUnset(*sdk.NewWarehouseUnsetRequest().WithFallbackWarehouse(true)))
 		require.NoError(t, err)
-		assert.Empty(t, fallbackParam())
+
+		assertThatObject(
+			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
+				HasFallbackWarehouse(""),
+		)
 	})
 }

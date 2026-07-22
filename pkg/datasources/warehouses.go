@@ -58,8 +58,7 @@ var warehousesSchema = map[string]*schema.Schema{
 					Computed:    true,
 					Description: "Holds the output of SHOW PARAMETERS FOR WAREHOUSE.",
 					Elem: &schema.Resource{
-						// Here, and in the converter, we can use ShowWarehouseParametersSchema because it already contains all the parameters for both regular and adaptive warehouses.
-						Schema: schemas.ShowWarehouseParametersSchema,
+						Schema: schemas.ShowAllWarehouseParametersSchema(),
 					},
 				},
 			},
@@ -110,7 +109,7 @@ func ReadWarehouses(ctx context.Context, d *schema.ResourceData, meta any) diag.
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			warehouseParameters = []map[string]any{schemas.WarehouseParametersToSchema(parameters, providerCtx)}
+			warehouseParameters = []map[string]any{schemas.AllWarehouseParametersToSchema(parameters, providerCtx)}
 		}
 
 		flattenedWarehouses[i] = map[string]any{
