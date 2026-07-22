@@ -67,6 +67,22 @@ The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io
 
 Both changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
 
+### *(new feature)* OBJECT_PARAMETER_UNSET_ON_DELETE experiment
+
+A new `OBJECT_PARAMETER_UNSET_ON_DELETE` experiment has been added. When enabled, deleting a `snowflake_object_parameter` resource uses `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.
+
+Previously, the provider fetched the parameter's default and explicitly set it back on delete.
+This was fragile - it required a working default value lookup, had workarounds for parameters where the default isn't settable (e.g. `REPLICABLE_WITH_FAILOVER_GROUPS`),
+and didn't truly remove the object-level override.
+With this experiment, the parameter is properly unset, allowing the inherited value from the higher hierarchy level (account → database → schema) to take effect.
+
+To enable, add `OBJECT_PARAMETER_UNSET_ON_DELETE` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["OBJECT_PARAMETER_UNSET_ON_DELETE"]
+}
+```
+
 ### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
 
 The `default_workload_identity.aws` nested block on the [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) resources now supports an optional `issuer` attribute, which maps to the `ISSUER` parameter of Snowflake's `WORKLOAD_IDENTITY` user property. It is required when configuring JWT-based (`GetWebIdentityToken`) AWS workload identity federation; existing configurations using only `arn` (the `GetCallerIdentity` attestation method) continue to work unchanged.
