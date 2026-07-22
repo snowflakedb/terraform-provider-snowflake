@@ -23,5 +23,7 @@ jobs:
               "summary": "terraform-provider-snowflake issue ${{ github.event.issue.number }}",
               "description": "*URL*\n${{ github.event.issue.html_url }}",
               "parent": "${{ secrets.JIRA_ISSUES_EPIC }}"
+              "component": "${{ secrets.JIRA_COMPONENT }}"
+              "label": [ ${{ secrets.JIRA_LABELS }} ]
             }
           }'
