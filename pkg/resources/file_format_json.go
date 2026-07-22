@@ -21,7 +21,7 @@ import (
 )
 
 func fileFormatJsonSchema() map[string]*schema.Schema {
-	return collections.MergeMaps(fileFormatCommonSchema, jsonFileFormatSchema(""))
+	return collections.MergeMaps(fileFormatCommonSchema, jsonFileFormatSchema(""), jsonDescOutputSchema())
 }
 
 func FileFormatJson() *schema.Resource {
@@ -32,7 +32,7 @@ func FileFormatJson() *schema.Resource {
 		},
 	)
 
-	descKeys := append(slices.Collect(maps.Keys(jsonFileFormatSchema(""))), "name")
+	resourceSchema := fileFormatJsonSchema()
 
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingCreateWrapper(resources.FileFormatJson, CreateFileFormatJson)),
@@ -42,13 +42,18 @@ func FileFormatJson() *schema.Resource {
 		Description:   "Resource used to manage JSON file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatJson, customdiff.All(
-			ComputedIfAnyAttributeChanged(fileFormatJsonSchema(), ShowOutputAttributeName, "name", "comment"),
-			ComputedIfAnyAttributeChanged(fileFormatJsonSchema(), DescribeOutputAttributeName, descKeys...),
-			ComputedIfAnyAttributeChanged(fileFormatJsonSchema(), FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
+			ComputedIfAnyAttributeChanged(
+				resourceSchema, DescribeOutputAttributeName,
+				"name", "type", "compression", "date_format", "time_format", "timestamp_format", "binary_format",
+				"trim_space", "multi_line", "null_if", "file_extension", "enable_octal", "allow_duplicate",
+				"strip_outer_array", "strip_null_values", "replace_invalid_characters", "ignore_utf8_errors", "skip_byte_order_mark",
+			),
+			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
 			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeJson, sdk.ToFileFormatType),
 		)),
 
-		Schema: fileFormatJsonSchema(),
+		Schema: resourceSchema,
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.FileFormatJson, ImportFileFormatJson),
 		},
@@ -77,7 +82,7 @@ func ImportFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	// Setting defaults is always enabled.
-	for key, value := range stageJsonFileFormatToSchema(details, true) {
+	for key, value := range jsonFileFormatToSchema(details, true) {
 		errs = append(errs, d.Set(key, value))
 	}
 	if len(errs) > 0 {
@@ -87,7 +92,7 @@ func ImportFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 	return []*schema.ResourceData{d}, nil
 }
 
-var stageFileFormatStringOrAutoFallback = *sdk.NewStageFileFormatStringOrAutoRequest().WithAuto(true)
+var fileFormatStringOrAutoFallback = *sdk.NewStageFileFormatStringOrAutoRequest().WithAuto(true)
 
 func CreateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
@@ -101,9 +106,9 @@ func CreateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 
 	errs := errors.Join(
 		attributeMappedValueCreateBuilder(d, "compression", request.WithCompression, sdk.ToJsonCompression),
-		attributeMappedValueCreateBuilder(d, "date_format", request.WithDateFormat, stageFileFormatStringOrAutoMapper),
-		attributeMappedValueCreateBuilder(d, "time_format", request.WithTimeFormat, stageFileFormatStringOrAutoMapper),
-		attributeMappedValueCreateBuilder(d, "timestamp_format", request.WithTimestampFormat, stageFileFormatStringOrAutoMapper),
+		attributeMappedValueCreateBuilder(d, "date_format", request.WithDateFormat, fileFormatStringOrAutoMapper),
+		attributeMappedValueCreateBuilder(d, "time_format", request.WithTimeFormat, fileFormatStringOrAutoMapper),
+		attributeMappedValueCreateBuilder(d, "timestamp_format", request.WithTimestampFormat, fileFormatStringOrAutoMapper),
 		attributeMappedValueCreateBuilder(d, "binary_format", request.WithBinaryFormat, sdk.ToBinaryFormat),
 		booleanStringAttributeCreateBuilder(d, "trim_space", request.WithTrimSpace),
 		booleanStringAttributeCreateBuilder(d, "multi_line", request.WithMultiLine),
@@ -163,7 +168,7 @@ func GetReadFileFormatJsonFunc(withExternalChangesMarking bool) schema.ReadConte
 
 		if withExternalChangesMarking {
 			currentValues := schemas.StageFileFormatJsonToSchema(details)
-			valuesToSet := stageJsonFileFormatToSchema(details, false)
+			valuesToSet := jsonFileFormatToSchema(details, false)
 			mappings := collections.Map(slices.Collect(maps.Keys(valuesToSet)), func(key string) outputMapping {
 				return outputMapping{key, key, currentValues[key], valuesToSet[key], nil}
 			})
@@ -208,9 +213,9 @@ func UpdateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 
 	errs := errors.Join(
 		attributeMappedValueUpdateSetOnlyFallback(d, "compression", &set.Compression, sdk.ToJsonCompression, sdk.JsonCompressionAuto),
-		attributeMappedValueUpdateSetOnlyFallback(d, "date_format", &set.DateFormat, stageFileFormatStringOrAutoMapper, stageFileFormatStringOrAutoFallback),
-		attributeMappedValueUpdateSetOnlyFallback(d, "time_format", &set.TimeFormat, stageFileFormatStringOrAutoMapper, stageFileFormatStringOrAutoFallback),
-		attributeMappedValueUpdateSetOnlyFallback(d, "timestamp_format", &set.TimestampFormat, stageFileFormatStringOrAutoMapper, stageFileFormatStringOrAutoFallback),
+		attributeMappedValueUpdateSetOnlyFallback(d, "date_format", &set.DateFormat, fileFormatStringOrAutoMapper, fileFormatStringOrAutoFallback),
+		attributeMappedValueUpdateSetOnlyFallback(d, "time_format", &set.TimeFormat, fileFormatStringOrAutoMapper, fileFormatStringOrAutoFallback),
+		attributeMappedValueUpdateSetOnlyFallback(d, "timestamp_format", &set.TimestampFormat, fileFormatStringOrAutoMapper, fileFormatStringOrAutoFallback),
 		attributeMappedValueUpdateSetOnlyFallback(d, "binary_format", &set.BinaryFormat, sdk.ToBinaryFormat, sdk.BinaryFormatHex),
 		booleanStringAttributeUnsetFallbackUpdate(d, "trim_space", &set.TrimSpace, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "multi_line", &set.MultiLine, true),
@@ -236,4 +241,52 @@ func UpdateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	return GetReadFileFormatJsonFunc(false)(ctx, d, meta)
+}
+
+// jsonFileFormatToSchema converts the SDK details for a JSON file format to a Terraform schema.
+func jsonFileFormatToSchema(json *sdk.FileFormatJson, setDefaults bool) map[string]any {
+	state := map[string]any{
+		"compression":      json.Compression,
+		"date_format":      json.DateFormat,
+		"time_format":      json.TimeFormat,
+		"timestamp_format": json.TimestampFormat,
+		"binary_format":    json.BinaryFormat,
+		"null_if":          collections.Map(json.NullIf, func(v string) any { return v }),
+		"file_extension":   json.FileExtension,
+	}
+	if setDefaults {
+		state["ignore_utf8_errors"] = BooleanDefault
+		state["skip_byte_order_mark"] = BooleanDefault
+		state["trim_space"] = BooleanDefault
+		state["multi_line"] = BooleanDefault
+		state["allow_duplicate"] = BooleanDefault
+		state["strip_outer_array"] = BooleanDefault
+		state["strip_null_values"] = BooleanDefault
+		state["replace_invalid_characters"] = BooleanDefault
+		state["enable_octal"] = BooleanDefault
+	} else {
+		state["ignore_utf8_errors"] = booleanStringFromBool(json.IgnoreUtf8Errors)
+		state["skip_byte_order_mark"] = booleanStringFromBool(json.SkipByteOrderMark)
+		state["trim_space"] = booleanStringFromBool(json.TrimSpace)
+		state["multi_line"] = booleanStringFromBool(json.MultiLine)
+		state["allow_duplicate"] = booleanStringFromBool(json.AllowDuplicate)
+		state["strip_outer_array"] = booleanStringFromBool(json.StripOuterArray)
+		state["strip_null_values"] = booleanStringFromBool(json.StripNullValues)
+		state["replace_invalid_characters"] = booleanStringFromBool(json.ReplaceInvalidCharacters)
+		state["enable_octal"] = booleanStringFromBool(json.EnableOctal)
+	}
+	return state
+}
+
+func jsonDescOutputSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE FILE FORMAT` for this file format.",
+			Elem: &schema.Resource{
+				Schema: schemas.DescribeFileFormatJsonSchema,
+			},
+		},
+	}
 }

@@ -1,7 +1,6 @@
 package schemas
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -85,27 +84,11 @@ var DescribeFileFormatJsonSchema = map[string]*schema.Schema{
 
 var _ = DescribeFileFormatJsonSchema
 
+// FileFormatJsonToSchema converts the SDK details for a JSON file format into the DescribeOutputAttributeName schema,
+// reusing the field mapping already defined for stages and adding the file format's own id.
 func FileFormatJsonToSchema(fileFormatJson *sdk.FileFormatJson) map[string]any {
-	fileFormatJsonSchema := make(map[string]any)
+	fileFormatJsonSchema := StageFileFormatJsonToSchema(fileFormatJson)
 	fileFormatJsonSchema["id"] = fileFormatJson.Id.FullyQualifiedName()
-	fileFormatJsonSchema["type"] = fileFormatJson.Type
-	fileFormatJsonSchema["compression"] = fileFormatJson.Compression
-	fileFormatJsonSchema["date_format"] = fileFormatJson.DateFormat
-	fileFormatJsonSchema["time_format"] = fileFormatJson.TimeFormat
-	fileFormatJsonSchema["timestamp_format"] = fileFormatJson.TimestampFormat
-	fileFormatJsonSchema["binary_format"] = fileFormatJson.BinaryFormat
-	fileFormatJsonSchema["trim_space"] = fileFormatJson.TrimSpace
-	fileFormatJsonSchema["multi_line"] = fileFormatJson.MultiLine
-	// Adjusted manually
-	fileFormatJsonSchema["null_if"] = collections.Map(fileFormatJson.NullIf, func(v string) any { return v })
-	fileFormatJsonSchema["file_extension"] = fileFormatJson.FileExtension
-	fileFormatJsonSchema["enable_octal"] = fileFormatJson.EnableOctal
-	fileFormatJsonSchema["allow_duplicate"] = fileFormatJson.AllowDuplicate
-	fileFormatJsonSchema["strip_outer_array"] = fileFormatJson.StripOuterArray
-	fileFormatJsonSchema["strip_null_values"] = fileFormatJson.StripNullValues
-	fileFormatJsonSchema["replace_invalid_characters"] = fileFormatJson.ReplaceInvalidCharacters
-	fileFormatJsonSchema["ignore_utf8_errors"] = fileFormatJson.IgnoreUtf8Errors
-	fileFormatJsonSchema["skip_byte_order_mark"] = fileFormatJson.SkipByteOrderMark
 	return fileFormatJsonSchema
 }
 

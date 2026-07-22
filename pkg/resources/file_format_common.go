@@ -47,18 +47,10 @@ var fileFormatCommonSchema = map[string]*schema.Schema{
 			Schema: schemas.ShowFileFormatSchema,
 		},
 	},
-	DescribeOutputAttributeName: {
-		Type:        schema.TypeList,
-		Computed:    true,
-		Description: "Outputs the result of `DESCRIBE FILE FORMAT` for this file format.",
-		Elem: &schema.Resource{
-			Schema: schemas.DescribeFileFormatJsonSchema,
-		},
-	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
-func stageFileFormatStringOrAutoMapper(v string) (sdk.StageFileFormatStringOrAutoRequest, error) {
+func fileFormatStringOrAutoMapper(v string) (sdk.StageFileFormatStringOrAutoRequest, error) {
 	if strings.ToUpper(v) == "AUTO" {
 		return *sdk.NewStageFileFormatStringOrAutoRequest().WithAuto(true), nil
 	}
