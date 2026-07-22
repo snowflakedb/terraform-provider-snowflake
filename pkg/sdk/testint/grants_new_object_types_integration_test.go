@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -234,30 +235,53 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 	ctx := testContext(t)
 
 	type testCase struct {
-		objectTypePlural             sdk.PluralObjectType
-		privilege                    sdk.SchemaObjectPrivilege
-		expectedFutureError          *regexp.Regexp
-		expectedAllError             *regexp.Regexp
-		expectedOwnershipFutureError *regexp.Regexp
-		expectedOwnershipAllError    *regexp.Regexp
+		objectTypePlural    sdk.PluralObjectType
+		privilege           sdk.SchemaObjectPrivilege
+		createObject        func(t *testing.T) (sdk.SchemaObjectIdentifier, func())
+		expectedFutureError *regexp.Regexp
+		expectedAllError    *regexp.Regexp
 	}
 
 	testCases := []testCase{
 		{
-			objectTypePlural:             sdk.PluralObjectTypeExperiments,
-			privilege:                    sdk.SchemaObjectPrivilegeUsage,
-			expectedFutureError:          regexp.MustCompile(`Unsupported feature 'EXPERIMENT'`),
-			expectedAllError:             regexp.MustCompile(`Unsupported feature 'GRANT on all objects of type EXPERIMENT'`),
-			expectedOwnershipFutureError: regexp.MustCompile(`Unsupported feature 'EXPERIMENT'`),
-			expectedOwnershipAllError:    regexp.MustCompile(`Unsupported feature 'GRANT on all objects of type EXPERIMENT'`),
+			objectTypePlural: sdk.PluralObjectTypeExperiments,
+			privilege:        sdk.SchemaObjectPrivilegeUsage,
+			createObject: func(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+				t.Helper()
+				return testClientHelper().Experiment.Create(t)
+			},
+			expectedFutureError: regexp.MustCompile(`Unsupported feature 'EXPERIMENT'`),
+			expectedAllError:    regexp.MustCompile(`Unsupported feature 'GRANT on all objects of type EXPERIMENT'`),
 		},
 		{
-			objectTypePlural:             sdk.PluralObjectTypeGateways,
-			privilege:                    sdk.SchemaObjectPrivilegeUsage,
-			expectedFutureError:          regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
-			expectedAllError:             regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
-			expectedOwnershipFutureError: regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
-			expectedOwnershipAllError:    regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
+			objectTypePlural: sdk.PluralObjectTypeGateways,
+			privilege:        sdk.SchemaObjectPrivilegeUsage,
+			createObject: func(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+				t.Helper()
+
+				computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
+				t.Cleanup(computePoolCleanup)
+
+				endpointName := "endpoint"
+				spec := testClientHelper().Service.SampleSpecWithEndpoint(t, endpointName)
+				serviceId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+				_, serviceCleanup := testClientHelper().Service.CreateWithRequest(t,
+					sdk.NewCreateServiceRequest(serviceId, computePool.ID()).
+						WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)),
+				)
+				t.Cleanup(serviceCleanup)
+
+				// TODO [SNOW-3825229]: uncomment when the below is fixed
+				// testClientHelper().Service.WaitForStatus(t, serviceId, sdk.ServiceStatusRunning, 90*time.Second)
+				testClientHelper().Gateway.GrantUsageOfAllServiceEndpointsToRole(t, serviceId, snowflakeroles.Accountadmin)
+
+				// TODO [SNOW-3825229]: fix it
+				// err: 398529 (02000): Service specified in gateway does not exist or not authorized: <FQN>
+				// return testClientHelper().Gateway.Create(t, serviceId, endpointName)
+				return sdk.SchemaObjectIdentifier{}, func() {}
+			},
+			expectedFutureError: regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
+			expectedAllError:    regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
 		},
 	}
 
@@ -288,8 +312,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 		})
 
 		t.Run("account role - all "+tc.objectTypePlural.String(), func(t *testing.T) {
-			database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
-			t.Cleanup(databaseCleanup)
+			_, objectCleanup := tc.createObject(t)
+			t.Cleanup(objectCleanup)
 
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
@@ -302,7 +326,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 					SchemaObject: &sdk.GrantOnSchemaObject{
 						All: &sdk.GrantOnSchemaObjectIn{
 							PluralObjectType: tc.objectTypePlural,
-							InDatabase:       sdk.Pointer(database.ID()),
+							InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
 						},
 					},
 				},
@@ -331,12 +355,12 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				nil,
 			)
 			require.Error(t, err)
-			assert.Regexp(t, tc.expectedOwnershipFutureError, err.Error())
+			assert.Regexp(t, tc.expectedFutureError, err.Error())
 		})
 
 		t.Run("ownership - all "+tc.objectTypePlural.String(), func(t *testing.T) {
-			database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
-			t.Cleanup(databaseCleanup)
+			_, objectCleanup := tc.createObject(t)
+			t.Cleanup(objectCleanup)
 
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
@@ -346,14 +370,14 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				sdk.OwnershipGrantOn{
 					All: &sdk.GrantOnSchemaObjectIn{
 						PluralObjectType: tc.objectTypePlural,
-						InDatabase:       sdk.Pointer(database.ID()),
+						InSchema:         sdk.Pointer(testClientHelper().Ids.SchemaId()),
 					},
 				},
 				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
 				nil,
 			)
 			require.Error(t, err)
-			assert.Regexp(t, tc.expectedOwnershipAllError, err.Error())
+			assert.Regexp(t, tc.expectedAllError, err.Error())
 		})
 	}
 }

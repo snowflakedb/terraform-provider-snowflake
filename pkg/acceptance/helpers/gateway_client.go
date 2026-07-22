@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [fill]: change raw sqls to proper client
+// TODO [SNOW-3825229]: change raw sqls to proper client
 type GatewayClient struct {
 	context *TestClientContext
 	ids     *IdsGenerator
@@ -47,6 +47,15 @@ func (c *GatewayClient) Create(t *testing.T, serviceId sdk.SchemaObjectIdentifie
 	_, err := c.client().ExecForTests(ctx, query)
 	require.NoError(t, err)
 	return id, c.DropFunc(t, id)
+}
+
+func (c *GatewayClient) GrantUsageOfAllServiceEndpointsToRole(t *testing.T, serviceId sdk.SchemaObjectIdentifier, roleId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`GRANT SERVICE ROLE %s!ALL_ENDPOINTS_USAGE TO ROLE %s`, serviceId.FullyQualifiedName(), roleId.FullyQualifiedName())
+	_, err := c.client().ExecForTests(ctx, query)
+	require.NoError(t, err)
 }
 
 func (c *GatewayClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {

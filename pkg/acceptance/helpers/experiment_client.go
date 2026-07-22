@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [fill]: change raw sqls to proper client
+// TODO [SNOW-3825230]: change raw sqls to proper client
 type ExperimentClient struct {
 	context *TestClientContext
 	ids     *IdsGenerator

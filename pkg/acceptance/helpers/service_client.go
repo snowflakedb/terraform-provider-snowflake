@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -95,6 +96,19 @@ func (c *ServiceClient) Alter(t *testing.T, req *sdk.AlterServiceRequest) {
 
 	err := c.client().Alter(ctx, req)
 	require.NoError(t, err)
+}
+
+func (c *ServiceClient) WaitForStatus(t *testing.T, id sdk.SchemaObjectIdentifier, status sdk.ServiceStatus, timeout time.Duration) {
+	t.Helper()
+	ctx := context.Background()
+
+	require.Eventually(t, func() bool {
+		service, err := c.client().ShowByID(ctx, id)
+		if err != nil {
+			return false
+		}
+		return service.Status == status
+	}, timeout, 5*time.Second)
 }
 
 func (c *ServiceClient) SampleSpec(t *testing.T) string {
