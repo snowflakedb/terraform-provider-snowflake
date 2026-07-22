@@ -1542,7 +1542,8 @@ func TestAcc_GrantOwnership_OnObject_SnowflakeIntelligence_ToAccountRole(t *test
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, resourceModel),
-				Check: assertThat(t,
+				Check: assertThat(
+					t,
 					resourceassert.GrantOwnershipResource(t, ref).
 						HasAccountRoleName(accountRoleId.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(ref, "on.0.object_type", string(sdk.ObjectTypeSnowflakeIntelligence))),
