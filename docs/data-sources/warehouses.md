@@ -118,9 +118,22 @@ Read-Only:
 
 Read-Only:
 
+- `fallback_warehouse` (List of Object) (see [below for nested schema](#nestedobjatt--warehouses--parameters--fallback_warehouse))
 - `max_concurrency_level` (List of Object) (see [below for nested schema](#nestedobjatt--warehouses--parameters--max_concurrency_level))
 - `statement_queued_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--warehouses--parameters--statement_queued_timeout_in_seconds))
 - `statement_timeout_in_seconds` (List of Object) (see [below for nested schema](#nestedobjatt--warehouses--parameters--statement_timeout_in_seconds))
+
+<a id="nestedobjatt--warehouses--parameters--fallback_warehouse"></a>
+### Nested Schema for `warehouses.parameters.fallback_warehouse`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
 
 <a id="nestedobjatt--warehouses--parameters--max_concurrency_level"></a>
 ### Nested Schema for `warehouses.parameters.max_concurrency_level`

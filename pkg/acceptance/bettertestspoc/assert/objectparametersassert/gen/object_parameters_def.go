@@ -121,6 +121,19 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		},
 	},
 	{
+		Name:                    "WarehouseInteractive",
+		IdType:                  "sdk.AccountObjectIdentifier",
+		Level:                   sdk.ParameterTypeWarehouse,
+		ParameterConstantPrefix: "Warehouse",
+		ObjectTypeName:          "Warehouse",
+		Parameters: []SnowflakeParameter{
+			{ParameterName: string(sdk.WarehouseParameterMaxConcurrencyLevel), ParameterType: "int", DefaultValue: "8", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds), ParameterType: "int", DefaultValue: "0", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.WarehouseParameterStatementTimeoutInSeconds), ParameterType: "int", DefaultValue: "172800", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.WarehouseParameterFallbackWarehouse), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+		},
+	},
+	{
 		Name:   "Database",
 		IdType: "sdk.AccountObjectIdentifier",
 		Level:  sdk.ParameterTypeDatabase,

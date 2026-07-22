@@ -31,21 +31,6 @@ func ImportedWarehouseResourceParameters(t *testing.T, id string) *WarehouseReso
 	return &resourceParameterAssert
 }
 
-func WarehousesDatasourceParameters(t *testing.T, name string) *WarehouseResourceParametersAssert {
-	t.Helper()
-
-	return WarehousesDatasourceParametersOnIdx(t, name, 0)
-}
-
-func WarehousesDatasourceParametersOnIdx(t *testing.T, name string, idx int) *WarehouseResourceParametersAssert {
-	t.Helper()
-
-	resourceParameterAssert := WarehouseResourceParametersAssert{
-		ResourceAssert: assert.NewDatasourceParametersAssert(name, "warehouses", idx),
-	}
-	return &resourceParameterAssert
-}
-
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////
