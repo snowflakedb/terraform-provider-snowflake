@@ -29,11 +29,33 @@ func (s *StorageLocationS3DetailsAssert) HasStorageAwsRoleArn(expected string) *
 	return s
 }
 
+func (s *StorageLocationS3DetailsAssert) HasStorageAwsRoleArnNotEmpty() *StorageLocationS3DetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
+		t.Helper()
+		if o.StorageAwsRoleArn == "" {
+			return fmt.Errorf("expected storage aws role arn to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLocationS3DetailsAssert) HasStorageAwsIamUserArn(expected string) *StorageLocationS3DetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
 		t.Helper()
 		if o.StorageAwsIamUserArn != expected {
 			return fmt.Errorf("expected storage aws iam user arn: %v; got: %v", expected, o.StorageAwsIamUserArn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationS3DetailsAssert) HasStorageAwsIamUserArnNotEmpty() *StorageLocationS3DetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
+		t.Helper()
+		if o.StorageAwsIamUserArn == "" {
+			return fmt.Errorf("expected storage aws iam user arn to be non-empty")
 		}
 		return nil
 	})
@@ -51,11 +73,33 @@ func (s *StorageLocationS3DetailsAssert) HasStorageAwsExternalId(expected string
 	return s
 }
 
+func (s *StorageLocationS3DetailsAssert) HasStorageAwsExternalIdNotEmpty() *StorageLocationS3DetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
+		t.Helper()
+		if o.StorageAwsExternalId == "" {
+			return fmt.Errorf("expected storage aws external id to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLocationS3DetailsAssert) HasStorageAwsAccessPointArn(expected string) *StorageLocationS3DetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
 		t.Helper()
 		if o.StorageAwsAccessPointArn != expected {
 			return fmt.Errorf("expected storage aws access point arn: %v; got: %v", expected, o.StorageAwsAccessPointArn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationS3DetailsAssert) HasStorageAwsAccessPointArnNotEmpty() *StorageLocationS3DetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
+		t.Helper()
+		if o.StorageAwsAccessPointArn == "" {
+			return fmt.Errorf("expected storage aws access point arn to be non-empty")
 		}
 		return nil
 	})
@@ -92,6 +136,17 @@ func (s *StorageLocationS3DetailsAssert) HasEncryptionKmsKeyId(expected string) 
 		t.Helper()
 		if o.EncryptionKmsKeyId != expected {
 			return fmt.Errorf("expected encryption kms key id: %v; got: %v", expected, o.EncryptionKmsKeyId)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationS3DetailsAssert) HasEncryptionKmsKeyIdNotEmpty() *StorageLocationS3DetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3Details) error {
+		t.Helper()
+		if o.EncryptionKmsKeyId == "" {
+			return fmt.Errorf("expected encryption kms key id to be non-empty")
 		}
 		return nil
 	})

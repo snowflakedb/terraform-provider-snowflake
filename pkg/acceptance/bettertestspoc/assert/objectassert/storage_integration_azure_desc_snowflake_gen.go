@@ -66,6 +66,17 @@ func (s *StorageIntegrationAzureDetailsAssert) HasProvider(expected string) *Sto
 	return s
 }
 
+func (s *StorageIntegrationAzureDetailsAssert) HasProviderNotEmpty() *StorageIntegrationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
+		t.Helper()
+		if o.Provider == "" {
+			return fmt.Errorf("expected provider to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAzureDetailsAssert) HasAllowedLocations(expected ...string) *StorageIntegrationAzureDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
 		t.Helper()
@@ -125,6 +136,17 @@ func (s *StorageIntegrationAzureDetailsAssert) HasComment(expected string) *Stor
 	return s
 }
 
+func (s *StorageIntegrationAzureDetailsAssert) HasCommentNotEmpty() *StorageIntegrationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAzureDetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageIntegrationAzureDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
 		t.Helper()
@@ -147,6 +169,17 @@ func (s *StorageIntegrationAzureDetailsAssert) HasTenantId(expected string) *Sto
 	return s
 }
 
+func (s *StorageIntegrationAzureDetailsAssert) HasTenantIdNotEmpty() *StorageIntegrationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
+		t.Helper()
+		if o.TenantId == "" {
+			return fmt.Errorf("expected tenant id to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAzureDetailsAssert) HasConsentUrl(expected string) *StorageIntegrationAzureDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
 		t.Helper()
@@ -158,11 +191,33 @@ func (s *StorageIntegrationAzureDetailsAssert) HasConsentUrl(expected string) *S
 	return s
 }
 
+func (s *StorageIntegrationAzureDetailsAssert) HasConsentUrlNotEmpty() *StorageIntegrationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
+		t.Helper()
+		if o.ConsentUrl == "" {
+			return fmt.Errorf("expected consent url to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAzureDetailsAssert) HasMultiTenantAppName(expected string) *StorageIntegrationAzureDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
 		t.Helper()
 		if o.MultiTenantAppName != expected {
 			return fmt.Errorf("expected multi tenant app name: %v; got: %v", expected, o.MultiTenantAppName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAzureDetailsAssert) HasMultiTenantAppNameNotEmpty() *StorageIntegrationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAzureDetails) error {
+		t.Helper()
+		if o.MultiTenantAppName == "" {
+			return fmt.Errorf("expected multi tenant app name to be non-empty")
 		}
 		return nil
 	})

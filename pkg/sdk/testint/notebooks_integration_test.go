@@ -96,7 +96,7 @@ func TestInt_Notebooks(t *testing.T) {
 				HasMainFile("example.ipynb").
 				HasQueryWarehouse(queryWarehouse.ID()).
 				HasUrlIdNotEmpty().
-				HasNonEmptyDefaultPackages().
+				HasDefaultPackagesNotEmpty().
 				HasUserPackages("").
 				HasComputePool(computePool.ID()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -111,12 +111,12 @@ func TestInt_Notebooks(t *testing.T) {
 				HasDefaultVersion("FIRST").
 				HasDefaultVersionName("VERSION$1").
 				HasNoDefaultVersionAlias().
-				HasNonEmptyDefaultVersionLocationUri().
+				HasDefaultVersionLocationUriNotEmpty().
 				HasDefaultVersionSourceLocationUri(stage.Location()).
 				HasNoDefaultVersionGitCommitHash().
 				HasLastVersionName("VERSION$1").
 				HasNoLastVersionAlias().
-				HasNonEmptyLastVersionLocationUri().
+				HasLastVersionLocationUriNotEmpty().
 				HasLastVersionSourceLocationUri(stage.Location()).
 				HasNoLastVersionGitCommitHash().
 				HasNoLiveVersionLocationUri(),
@@ -175,7 +175,7 @@ func TestInt_Notebooks(t *testing.T) {
 				HasMainFile("example.ipynb").
 				HasQueryWarehouse(queryWarehouse.ID()).
 				HasUrlIdNotEmpty().
-				HasNonEmptyDefaultPackages().
+				HasDefaultPackagesNotEmpty().
 				HasUserPackages("").
 				HasComputePool(computePool.ID()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -190,12 +190,12 @@ func TestInt_Notebooks(t *testing.T) {
 				HasDefaultVersion("LAST").
 				HasDefaultVersionName("VERSION$1").
 				HasNoDefaultVersionAlias().
-				HasNonEmptyDefaultVersionLocationUri().
+				HasDefaultVersionLocationUriNotEmpty().
 				HasNoDefaultVersionSourceLocationUri().
 				HasNoDefaultVersionGitCommitHash().
 				HasLastVersionName("VERSION$1").
 				HasNoLastVersionAlias().
-				HasNonEmptyLastVersionLocationUri().
+				HasLastVersionLocationUriNotEmpty().
 				HasNoDefaultVersionSourceLocationUri().
 				HasNoLastVersionGitCommitHash().
 				HasNoLiveVersionLocationUri(),
@@ -289,7 +289,7 @@ func TestInt_Notebooks(t *testing.T) {
 				HasMainFile("example.ipynb").
 				HasNoQueryWarehouse().
 				HasUrlIdNotEmpty().
-				HasNonEmptyDefaultPackages().
+				HasDefaultPackagesNotEmpty().
 				HasUserPackages("").
 				HasNoComputePool().
 				HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -304,12 +304,12 @@ func TestInt_Notebooks(t *testing.T) {
 				HasDefaultVersion("FIRST").
 				HasDefaultVersionName("VERSION$1").
 				HasNoDefaultVersionAlias().
-				HasNonEmptyDefaultVersionLocationUri().
+				HasDefaultVersionLocationUriNotEmpty().
 				HasDefaultVersionSourceLocationUri(stage.Location()).
 				HasNoDefaultVersionGitCommitHash().
 				HasLastVersionName("VERSION$1").
 				HasNoLastVersionAlias().
-				HasNonEmptyLastVersionLocationUri().
+				HasLastVersionLocationUriNotEmpty().
 				HasDefaultVersionSourceLocationUri(stage.Location()).
 				HasNoLastVersionGitCommitHash().
 				HasNoLiveVersionLocationUri(),
@@ -346,7 +346,7 @@ func TestInt_Notebooks(t *testing.T) {
 				HasMainFile("notebook_app.ipynb").
 				HasNoQueryWarehouse().
 				HasUrlIdNotEmpty().
-				HasNonEmptyDefaultPackages().
+				HasDefaultPackagesNotEmpty().
 				HasUserPackages("").
 				HasNoComputePool().
 				HasOwner(snowflakeroles.Accountadmin.Name()).
@@ -361,12 +361,12 @@ func TestInt_Notebooks(t *testing.T) {
 				HasDefaultVersion("LAST").
 				HasDefaultVersionName("VERSION$1").
 				HasNoDefaultVersionAlias().
-				HasNonEmptyDefaultVersionLocationUri().
+				HasDefaultVersionLocationUriNotEmpty().
 				HasNoDefaultVersionSourceLocationUri().
 				HasNoDefaultVersionGitCommitHash().
 				HasLastVersionName("VERSION$1").
 				HasNoLastVersionAlias().
-				HasNonEmptyLastVersionLocationUri().
+				HasLastVersionLocationUriNotEmpty().
 				HasNoLastVersionSourceLocationUri().
 				HasNoLastVersionGitCommitHash().
 				HasNoLiveVersionLocationUri(),

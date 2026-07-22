@@ -29,6 +29,17 @@ func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogUri(expected string) *Ope
 	return o
 }
 
+func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogUriNotEmpty() *OpenCatalogRestConfigDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenCatalogRestConfigDetails) error {
+		t.Helper()
+		if o.CatalogUri == "" {
+			return fmt.Errorf("expected catalog uri to be non-empty")
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogApiType(expected sdk.CatalogIntegrationCatalogApiType) *OpenCatalogRestConfigDetailsAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OpenCatalogRestConfigDetails) error {
 		t.Helper()
@@ -45,6 +56,17 @@ func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogName(expected string) *Op
 		t.Helper()
 		if o.CatalogName != expected {
 			return fmt.Errorf("expected catalog name: %v; got: %v", expected, o.CatalogName)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogNameNotEmpty() *OpenCatalogRestConfigDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenCatalogRestConfigDetails) error {
+		t.Helper()
+		if o.CatalogName == "" {
+			return fmt.Errorf("expected catalog name to be non-empty")
 		}
 		return nil
 	})

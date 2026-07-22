@@ -42,11 +42,33 @@ func (s *StreamlitAssert) HasCreatedOn(expected string) *StreamlitAssert {
 	return s
 }
 
+func (s *StreamlitAssert) HasCreatedOnNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamlitAssert) HasName(expected string) *StreamlitAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamlitAssert) HasNameNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -64,11 +86,33 @@ func (s *StreamlitAssert) HasDatabaseName(expected string) *StreamlitAssert {
 	return s
 }
 
+func (s *StreamlitAssert) HasDatabaseNameNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamlitAssert) HasSchemaName(expected string) *StreamlitAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamlitAssert) HasSchemaNameNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -86,11 +130,33 @@ func (s *StreamlitAssert) HasTitle(expected string) *StreamlitAssert {
 	return s
 }
 
+func (s *StreamlitAssert) HasTitleNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.Title == "" {
+			return fmt.Errorf("expected title to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamlitAssert) HasOwner(expected string) *StreamlitAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamlitAssert) HasOwnerNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -108,11 +174,33 @@ func (s *StreamlitAssert) HasComment(expected string) *StreamlitAssert {
 	return s
 }
 
+func (s *StreamlitAssert) HasCommentNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamlitAssert) HasQueryWarehouse(expected string) *StreamlitAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
 		t.Helper()
 		if o.QueryWarehouse != expected {
 			return fmt.Errorf("expected query warehouse: %v; got: %v", expected, o.QueryWarehouse)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamlitAssert) HasQueryWarehouseNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.QueryWarehouse == "" {
+			return fmt.Errorf("expected query warehouse to be non-empty")
 		}
 		return nil
 	})
@@ -130,11 +218,33 @@ func (s *StreamlitAssert) HasUrlId(expected string) *StreamlitAssert {
 	return s
 }
 
+func (s *StreamlitAssert) HasUrlIdNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.UrlId == "" {
+			return fmt.Errorf("expected url id to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamlitAssert) HasOwnerRoleType(expected string) *StreamlitAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamlitAssert) HasOwnerRoleTypeNotEmpty() *StreamlitAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Streamlit) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

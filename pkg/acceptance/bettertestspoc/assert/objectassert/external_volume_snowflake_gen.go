@@ -42,6 +42,17 @@ func (e *ExternalVolumeAssert) HasName(expected string) *ExternalVolumeAssert {
 	return e
 }
 
+func (e *ExternalVolumeAssert) HasNameNotEmpty() *ExternalVolumeAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolume) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeAssert) HasAllowWrites(expected bool) *ExternalVolumeAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolume) error {
 		t.Helper()
@@ -58,6 +69,17 @@ func (e *ExternalVolumeAssert) HasComment(expected string) *ExternalVolumeAssert
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeAssert) HasCommentNotEmpty() *ExternalVolumeAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolume) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

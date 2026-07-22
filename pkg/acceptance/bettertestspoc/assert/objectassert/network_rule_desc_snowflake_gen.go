@@ -45,11 +45,33 @@ func (n *NetworkRuleDetailsAssert) HasCreatedOn(expected time.Time) *NetworkRule
 	return n
 }
 
+func (n *NetworkRuleDetailsAssert) HasCreatedOnNotEmpty() *NetworkRuleDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NetworkRuleDetailsAssert) HasName(expected string) *NetworkRuleDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NetworkRuleDetailsAssert) HasNameNotEmpty() *NetworkRuleDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -67,11 +89,33 @@ func (n *NetworkRuleDetailsAssert) HasDatabaseName(expected string) *NetworkRule
 	return n
 }
 
+func (n *NetworkRuleDetailsAssert) HasDatabaseNameNotEmpty() *NetworkRuleDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NetworkRuleDetailsAssert) HasSchemaName(expected string) *NetworkRuleDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NetworkRuleDetailsAssert) HasSchemaNameNotEmpty() *NetworkRuleDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -89,11 +133,33 @@ func (n *NetworkRuleDetailsAssert) HasOwner(expected string) *NetworkRuleDetails
 	return n
 }
 
+func (n *NetworkRuleDetailsAssert) HasOwnerNotEmpty() *NetworkRuleDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NetworkRuleDetailsAssert) HasComment(expected string) *NetworkRuleDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NetworkRuleDetailsAssert) HasCommentNotEmpty() *NetworkRuleDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkRuleDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

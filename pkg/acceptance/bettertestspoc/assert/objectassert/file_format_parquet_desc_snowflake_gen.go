@@ -55,11 +55,33 @@ func (f *FileFormatParquetAssert) HasType(expected string) *FileFormatParquetAss
 	return f
 }
 
+func (f *FileFormatParquetAssert) HasTypeNotEmpty() *FileFormatParquetAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatParquet) error {
+		t.Helper()
+		if o.Type == "" {
+			return fmt.Errorf("expected type to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatParquetAssert) HasCompression(expected string) *FileFormatParquetAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatParquet) error {
 		t.Helper()
 		if o.Compression != expected {
 			return fmt.Errorf("expected compression: %v; got: %v", expected, o.Compression)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatParquetAssert) HasCompressionNotEmpty() *FileFormatParquetAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatParquet) error {
+		t.Helper()
+		if o.Compression == "" {
+			return fmt.Errorf("expected compression to be non-empty")
 		}
 		return nil
 	})

@@ -144,7 +144,7 @@ func TestInt_PipeCreate(t *testing.T) {
 	assertPipe := func(t *testing.T, pipeDetails *sdk.Pipe, expectedName string, expectedComment string) {
 		t.Helper()
 		assertThatObject(t, objectassert.PipeFromObject(t, pipeDetails).
-			HasNotEmptyCreatedOn().
+			HasCreatedOnNotEmpty().
 			HasName(expectedName).
 			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).

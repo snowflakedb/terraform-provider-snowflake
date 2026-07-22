@@ -43,11 +43,33 @@ func (a *AccountAssert) HasOrganizationName(expected string) *AccountAssert {
 	return a
 }
 
+func (a *AccountAssert) HasOrganizationNameNotEmpty() *AccountAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
+		t.Helper()
+		if o.OrganizationName == "" {
+			return fmt.Errorf("expected organization name to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *AccountAssert) HasAccountName(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
 		if o.AccountName != expected {
 			return fmt.Errorf("expected account name: %v; got: %v", expected, o.AccountName)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AccountAssert) HasAccountNameNotEmpty() *AccountAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
+		t.Helper()
+		if o.AccountName == "" {
+			return fmt.Errorf("expected account name to be non-empty")
 		}
 		return nil
 	})
@@ -84,6 +106,17 @@ func (a *AccountAssert) HasSnowflakeRegion(expected string) *AccountAssert {
 		t.Helper()
 		if o.SnowflakeRegion != expected {
 			return fmt.Errorf("expected snowflake region: %v; got: %v", expected, o.SnowflakeRegion)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AccountAssert) HasSnowflakeRegionNotEmpty() *AccountAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
+		t.Helper()
+		if o.SnowflakeRegion == "" {
+			return fmt.Errorf("expected snowflake region to be non-empty")
 		}
 		return nil
 	})
@@ -195,6 +228,17 @@ func (a *AccountAssert) HasAccountLocator(expected string) *AccountAssert {
 		t.Helper()
 		if o.AccountLocator != expected {
 			return fmt.Errorf("expected account locator: %v; got: %v", expected, o.AccountLocator)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AccountAssert) HasAccountLocatorNotEmpty() *AccountAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
+		t.Helper()
+		if o.AccountLocator == "" {
+			return fmt.Errorf("expected account locator to be non-empty")
 		}
 		return nil
 	})

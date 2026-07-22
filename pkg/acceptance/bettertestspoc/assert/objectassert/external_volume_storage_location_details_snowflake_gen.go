@@ -31,6 +31,17 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasName(expected string) *E
 	return e
 }
 
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasNameNotEmpty() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeStorageLocationDetailsAssert) HasStorageProvider(expected string) *ExternalVolumeStorageLocationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
 		t.Helper()
@@ -42,11 +53,33 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasStorageProvider(expected
 	return e
 }
 
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasStorageProviderNotEmpty() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.StorageProvider == "" {
+			return fmt.Errorf("expected storage provider to be non-empty")
+		}
+		return nil
+	})
+	return e
+}
+
 func (e *ExternalVolumeStorageLocationDetailsAssert) HasStorageBaseUrl(expected string) *ExternalVolumeStorageLocationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
 		t.Helper()
 		if o.StorageBaseUrl != expected {
 			return fmt.Errorf("expected storage base url: %v; got: %v", expected, o.StorageBaseUrl)
+		}
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasStorageBaseUrlNotEmpty() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.StorageBaseUrl == "" {
+			return fmt.Errorf("expected storage base url to be non-empty")
 		}
 		return nil
 	})
@@ -82,6 +115,17 @@ func (e *ExternalVolumeStorageLocationDetailsAssert) HasEncryptionType(expected 
 		t.Helper()
 		if o.EncryptionType != expected {
 			return fmt.Errorf("expected encryption type: %v; got: %v", expected, o.EncryptionType)
+		}
+		return nil
+	})
+	return e
+}
+
+func (e *ExternalVolumeStorageLocationDetailsAssert) HasEncryptionTypeNotEmpty() *ExternalVolumeStorageLocationDetailsAssert {
+	e.AddAssertion(func(t *testing.T, o *sdk.ExternalVolumeStorageLocationDetails) error {
+		t.Helper()
+		if o.EncryptionType == "" {
+			return fmt.Errorf("expected encryption type to be non-empty")
 		}
 		return nil
 	})

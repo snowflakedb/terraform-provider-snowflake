@@ -97,11 +97,33 @@ func (c *CatalogIntegrationAwsGlueDetailsAssert) HasComment(expected string) *Ca
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasCommentNotEmpty() *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsRoleArn(expected string) *CatalogIntegrationAwsGlueDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
 		t.Helper()
 		if o.GlueAwsRoleArn != expected {
 			return fmt.Errorf("expected glue aws role arn: %v; got: %v", expected, o.GlueAwsRoleArn)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsRoleArnNotEmpty() *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.GlueAwsRoleArn == "" {
+			return fmt.Errorf("expected glue aws role arn to be non-empty")
 		}
 		return nil
 	})
@@ -119,11 +141,33 @@ func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueCatalogId(expected strin
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueCatalogIdNotEmpty() *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.GlueCatalogId == "" {
+			return fmt.Errorf("expected glue catalog id to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueRegion(expected string) *CatalogIntegrationAwsGlueDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
 		t.Helper()
 		if o.GlueRegion != expected {
 			return fmt.Errorf("expected glue region: %v; got: %v", expected, o.GlueRegion)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueRegionNotEmpty() *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.GlueRegion == "" {
+			return fmt.Errorf("expected glue region to be non-empty")
 		}
 		return nil
 	})
@@ -141,6 +185,17 @@ func (c *CatalogIntegrationAwsGlueDetailsAssert) HasCatalogNamespace(expected st
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.CatalogNamespace == "" {
+			return fmt.Errorf("expected catalog namespace to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsIamUserArn(expected string) *CatalogIntegrationAwsGlueDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
 		t.Helper()
@@ -152,11 +207,33 @@ func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsIamUserArn(expected s
 	return c
 }
 
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsIamUserArnNotEmpty() *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.GlueAwsIamUserArn == "" {
+			return fmt.Errorf("expected glue aws iam user arn to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsExternalId(expected string) *CatalogIntegrationAwsGlueDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
 		t.Helper()
 		if o.GlueAwsExternalId != expected {
 			return fmt.Errorf("expected glue aws external id: %v; got: %v", expected, o.GlueAwsExternalId)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueDetailsAssert) HasGlueAwsExternalIdNotEmpty() *CatalogIntegrationAwsGlueDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationAwsGlueDetails) error {
+		t.Helper()
+		if o.GlueAwsExternalId == "" {
+			return fmt.Errorf("expected glue aws external id to be non-empty")
 		}
 		return nil
 	})

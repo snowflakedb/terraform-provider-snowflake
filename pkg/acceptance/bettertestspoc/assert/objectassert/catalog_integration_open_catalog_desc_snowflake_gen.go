@@ -97,11 +97,33 @@ func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasComment(expected string)
 	return c
 }
 
+func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasCommentNotEmpty() *CatalogIntegrationOpenCatalogDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasCatalogNamespace(expected string) *CatalogIntegrationOpenCatalogDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
 		t.Helper()
 		if o.CatalogNamespace != expected {
 			return fmt.Errorf("expected catalog namespace: %v; got: %v", expected, o.CatalogNamespace)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationOpenCatalogDetailsAssert) HasCatalogNamespaceNotEmpty() *CatalogIntegrationOpenCatalogDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationOpenCatalogDetails) error {
+		t.Helper()
+		if o.CatalogNamespace == "" {
+			return fmt.Errorf("expected catalog namespace to be non-empty")
 		}
 		return nil
 	})

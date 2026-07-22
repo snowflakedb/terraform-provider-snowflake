@@ -43,11 +43,33 @@ func (r *RoleAssert) HasCreatedOn(expected time.Time) *RoleAssert {
 	return r
 }
 
+func (r *RoleAssert) HasCreatedOnNotEmpty() *RoleAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.Role) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *RoleAssert) HasName(expected string) *RoleAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.Role) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *RoleAssert) HasNameNotEmpty() *RoleAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.Role) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -131,11 +153,33 @@ func (r *RoleAssert) HasOwner(expected string) *RoleAssert {
 	return r
 }
 
+func (r *RoleAssert) HasOwnerNotEmpty() *RoleAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.Role) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return r
+}
+
 func (r *RoleAssert) HasComment(expected string) *RoleAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.Role) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *RoleAssert) HasCommentNotEmpty() *RoleAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.Role) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

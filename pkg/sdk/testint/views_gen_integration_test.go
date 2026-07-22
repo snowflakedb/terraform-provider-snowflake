@@ -40,7 +40,7 @@ func TestInt_Views(t *testing.T) {
 			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment(comment).
-			HasNonEmptyText().
+			HasTextNotEmpty().
 			HasIsSecure(isSecure).
 			HasIsMaterialized(false).
 			HasOwnerRoleType("ROLE").
