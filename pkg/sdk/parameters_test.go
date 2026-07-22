@@ -25,6 +25,38 @@ func TestSetObjectParameterOnObject(t *testing.T) {
 	})
 }
 
+func TestUnsetObjectParameterOnObject(t *testing.T) {
+	t.Run("unset on user", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		opts := &unsetParameterOnObject{
+			objectType:       ObjectTypeUser,
+			objectIdentifier: id,
+			parameterKey:     "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR", id.FullyQualifiedName())
+	})
+
+	t.Run("unset on database", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		opts := &unsetParameterOnObject{
+			objectType:       ObjectTypeDatabase,
+			objectIdentifier: id,
+			parameterKey:     "USER_TASK_TIMEOUT_MS",
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER DATABASE %s UNSET USER_TASK_TIMEOUT_MS", id.FullyQualifiedName())
+	})
+
+	t.Run("unset on schema", func(t *testing.T) {
+		id := randomDatabaseObjectIdentifier()
+		opts := &unsetParameterOnObject{
+			objectType:       ObjectTypeSchema,
+			objectIdentifier: id,
+			parameterKey:     "DATA_RETENTION_TIME_IN_DAYS",
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER SCHEMA %s UNSET DATA_RETENTION_TIME_IN_DAYS", id.FullyQualifiedName())
+	})
+}
+
 func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
 	opts := &AlterAccountOptions{
 		Unset: &AccountUnset{
