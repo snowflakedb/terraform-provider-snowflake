@@ -171,7 +171,7 @@ func TestAcc_LegacyServiceUser_WIF_AWS(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	accountNumber := random.NumericN(12)
 	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber)
-	issuer := "https://sts.amazonaws.com"
+	issuer := fmt.Sprintf("https://%s.tokens.sts.global.api.aws", accountNumber)
 
 	providerModelWithWIF := providermodel.SnowflakeProvider().
 		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
