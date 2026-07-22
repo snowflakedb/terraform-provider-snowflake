@@ -537,6 +537,12 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput:   true,
 		NoIdentifiableObject: true,
 	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.SemanticViewDetails{},
+		IsDataSourceOutput: true,
+		SkipFields:         []string{"Id", "Tables", "Relationships", "Dimensions", "Facts", "Metrics"},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {

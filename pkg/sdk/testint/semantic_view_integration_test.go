@@ -309,7 +309,7 @@ func TestInt_SemanticView(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.SemanticViewDetails(t, id).
-				HasDetailsCount(37).
+				HasDescribeRowCount(37).
 				HasComment("comment").
 				ContainsTable(expectedTable1).
 				ContainsTable(expectedTable2).
@@ -366,7 +366,7 @@ func TestInt_SemanticView(t *testing.T) {
 		// confirm the semantic view details are correct
 		assertThatObject(
 			t, objectassert.SemanticViewDetails(t, id).
-				HasDetailsCount(11).
+				HasDescribeRowCount(11).
 				ContainsTable(expectedTable1).
 				ContainsTable(expectedTable2).
 				ContainsMetric(expectedMetric),
