@@ -78,7 +78,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRoleInDatabase(t, database.ID())
 			t.Cleanup(databaseRoleCleanup)
 
-			err := client.Grants.GrantPrivilegesToDatabaseRole(ctx,
+			err := client.Grants.GrantPrivilegesToDatabaseRole(
+				ctx,
 				&sdk.DatabaseRoleGrantPrivileges{
 					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
 				},
@@ -113,7 +114,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(ctx,
+			err := client.Grants.GrantOwnership(
+				ctx,
 				sdk.OwnershipGrantOn{
 					Future: &sdk.GrantOnSchemaObjectIn{
 						PluralObjectType: tc.objectTypePlural,
@@ -146,7 +148,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
 
-			err := client.Grants.GrantPrivilegesToAccountRole(ctx,
+			err := client.Grants.GrantPrivilegesToAccountRole(
+				ctx,
 				&sdk.AccountRoleGrantPrivileges{
 					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
 				},
@@ -187,7 +190,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 			t.Cleanup(databaseRoleCleanup)
 
-			err := client.Grants.GrantPrivilegesToDatabaseRole(ctx,
+			err := client.Grants.GrantPrivilegesToDatabaseRole(
+				ctx,
 				&sdk.DatabaseRoleGrantPrivileges{
 					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
 				},
@@ -212,7 +216,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(ctx,
+			err := client.Grants.GrantOwnership(
+				ctx,
 				sdk.OwnershipGrantOn{
 					All: &sdk.GrantOnSchemaObjectIn{
 						PluralObjectType: tc.objectTypePlural,
@@ -265,7 +270,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				endpointName := "endpoint"
 				spec := testClientHelper().Service.SampleSpecWithEndpoint(t, endpointName)
 				serviceId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-				_, serviceCleanup := testClientHelper().Service.CreateWithRequest(t,
+				_, serviceCleanup := testClientHelper().Service.CreateWithRequest(
+					t,
 					sdk.NewCreateServiceRequest(serviceId, computePool.ID()).
 						WithFromSpecification(*sdk.NewServiceFromSpecificationRequest().WithSpecification(spec)),
 				)
@@ -293,7 +299,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
 
-			err := client.Grants.GrantPrivilegesToAccountRole(ctx,
+			err := client.Grants.GrantPrivilegesToAccountRole(
+				ctx,
 				&sdk.AccountRoleGrantPrivileges{
 					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
 				},
@@ -318,7 +325,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
 			t.Cleanup(roleCleanup)
 
-			err := client.Grants.GrantPrivilegesToAccountRole(ctx,
+			err := client.Grants.GrantPrivilegesToAccountRole(
+				ctx,
 				&sdk.AccountRoleGrantPrivileges{
 					SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{tc.privilege},
 				},
@@ -344,7 +352,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(ctx,
+			err := client.Grants.GrantOwnership(
+				ctx,
 				sdk.OwnershipGrantOn{
 					Future: &sdk.GrantOnSchemaObjectIn{
 						PluralObjectType: tc.objectTypePlural,
@@ -366,7 +375,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			t.Cleanup(roleCleanup)
 			roleId := role.ID()
 
-			err := client.Grants.GrantOwnership(ctx,
+			err := client.Grants.GrantOwnership(
+				ctx,
 				sdk.OwnershipGrantOn{
 					All: &sdk.GrantOnSchemaObjectIn{
 						PluralObjectType: tc.objectTypePlural,
