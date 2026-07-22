@@ -22,25 +22,3 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasApiKeyEmpty() *ApiIntegrationGoog
 	})
 	return a
 }
-
-func (a *ApiIntegrationGoogleDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationGoogleDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
-		t.Helper()
-		if o.ApiKey == "" {
-			return fmt.Errorf("expected api key not empty; got empty")
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleApiServiceAccountNotEmpty() *ApiIntegrationGoogleDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
-		t.Helper()
-		if o.GoogleApiServiceAccount == "" {
-			return fmt.Errorf("expected google api service account not empty; got empty")
-		}
-		return nil
-	})
-	return a
-}

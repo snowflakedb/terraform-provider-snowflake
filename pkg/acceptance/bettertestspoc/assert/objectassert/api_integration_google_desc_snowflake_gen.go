@@ -66,11 +66,33 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasApiKey(expected string) *ApiInteg
 	return a
 }
 
+func (a *ApiIntegrationGoogleDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if o.ApiKey == "" {
+			return fmt.Errorf("expected api key to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGoogleDetailsAssert) HasApiProvider(expected string) *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()
 		if o.ApiProvider != expected {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGoogleDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if o.ApiProvider == "" {
+			return fmt.Errorf("expected api provider to be non-empty")
 		}
 		return nil
 	})
@@ -88,11 +110,33 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleAudience(expected string) *
 	return a
 }
 
+func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleAudienceNotEmpty() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if o.GoogleAudience == "" {
+			return fmt.Errorf("expected google audience to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleApiServiceAccount(expected string) *ApiIntegrationGoogleDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
 		t.Helper()
 		if o.GoogleApiServiceAccount != expected {
 			return fmt.Errorf("expected google api service account: %v; got: %v", expected, o.GoogleApiServiceAccount)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGoogleDetailsAssert) HasGoogleApiServiceAccountNotEmpty() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if o.GoogleApiServiceAccount == "" {
+			return fmt.Errorf("expected google api service account to be non-empty")
 		}
 		return nil
 	})
@@ -152,6 +196,17 @@ func (a *ApiIntegrationGoogleDetailsAssert) HasComment(expected string) *ApiInte
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationGoogleDetailsAssert) HasCommentNotEmpty() *ApiIntegrationGoogleDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGoogleDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

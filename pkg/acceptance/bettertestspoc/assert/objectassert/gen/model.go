@@ -51,6 +51,16 @@ type SnowflakeObjectFieldAssertion struct {
 	SkipGeneration           bool // true for SkipFields — suppresses Has* generation entirely
 }
 
+// IsTimeType reports whether this field is a non-pointer, non-slice time.Time field.
+func (f SnowflakeObjectFieldAssertion) IsTimeType() bool {
+	return f.ConcreteType == "time.Time" && !f.IsOriginalTypePointer && !f.IsOriginalTypeSlice
+}
+
+// IsStringType reports whether this field is a non-pointer, non-slice string field.
+func (f SnowflakeObjectFieldAssertion) IsStringType() bool {
+	return f.ConcreteType == "string" && !f.IsOriginalTypePointer && !f.IsOriginalTypeSlice
+}
+
 // ComparisonFunc returns the function to use in a `!ComparisonFunc(actual, expected)` comparison,
 // or an empty string when identity (`!=`) should be used instead.
 func (f SnowflakeObjectFieldAssertion) ComparisonFunc() string {

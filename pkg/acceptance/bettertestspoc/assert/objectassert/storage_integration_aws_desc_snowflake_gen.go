@@ -66,6 +66,17 @@ func (s *StorageIntegrationAwsDetailsAssert) HasProvider(expected string) *Stora
 	return s
 }
 
+func (s *StorageIntegrationAwsDetailsAssert) HasProviderNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.Provider == "" {
+			return fmt.Errorf("expected provider to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAwsDetailsAssert) HasAllowedLocations(expected ...string) *StorageIntegrationAwsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
 		t.Helper()
@@ -125,6 +136,17 @@ func (s *StorageIntegrationAwsDetailsAssert) HasComment(expected string) *Storag
 	return s
 }
 
+func (s *StorageIntegrationAwsDetailsAssert) HasCommentNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAwsDetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageIntegrationAwsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
 		t.Helper()
@@ -147,11 +169,33 @@ func (s *StorageIntegrationAwsDetailsAssert) HasIamUserArn(expected string) *Sto
 	return s
 }
 
+func (s *StorageIntegrationAwsDetailsAssert) HasIamUserArnNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.IamUserArn == "" {
+			return fmt.Errorf("expected iam user arn to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAwsDetailsAssert) HasRoleArn(expected string) *StorageIntegrationAwsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
 		t.Helper()
 		if o.RoleArn != expected {
 			return fmt.Errorf("expected role arn: %v; got: %v", expected, o.RoleArn)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAwsDetailsAssert) HasRoleArnNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.RoleArn == "" {
+			return fmt.Errorf("expected role arn to be non-empty")
 		}
 		return nil
 	})
@@ -169,11 +213,33 @@ func (s *StorageIntegrationAwsDetailsAssert) HasObjectAcl(expected string) *Stor
 	return s
 }
 
+func (s *StorageIntegrationAwsDetailsAssert) HasObjectAclNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ObjectAcl == "" {
+			return fmt.Errorf("expected object acl to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationAwsDetailsAssert) HasExternalId(expected string) *StorageIntegrationAwsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
 		t.Helper()
 		if o.ExternalId != expected {
 			return fmt.Errorf("expected external id: %v; got: %v", expected, o.ExternalId)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationAwsDetailsAssert) HasExternalIdNotEmpty() *StorageIntegrationAwsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ExternalId == "" {
+			return fmt.Errorf("expected external id to be non-empty")
 		}
 		return nil
 	})

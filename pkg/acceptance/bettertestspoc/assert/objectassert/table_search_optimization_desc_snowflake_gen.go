@@ -44,11 +44,33 @@ func (t *TableSearchOptimizationDetailsAssert) HasMethod(expected string) *Table
 	return t
 }
 
+func (t *TableSearchOptimizationDetailsAssert) HasMethodNotEmpty() *TableSearchOptimizationDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableSearchOptimizationDetails) error {
+		t.Helper()
+		if o.Method == "" {
+			return fmt.Errorf("expected method to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableSearchOptimizationDetailsAssert) HasTarget(expected string) *TableSearchOptimizationDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableSearchOptimizationDetails) error {
 		t.Helper()
 		if o.Target != expected {
 			return fmt.Errorf("expected target: %v; got: %v", expected, o.Target)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableSearchOptimizationDetailsAssert) HasTargetNotEmpty() *TableSearchOptimizationDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableSearchOptimizationDetails) error {
+		t.Helper()
+		if o.Target == "" {
+			return fmt.Errorf("expected target to be non-empty")
 		}
 		return nil
 	})

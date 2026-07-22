@@ -78,6 +78,17 @@ func (n *NotebookDetailsAssert) HasMainFile(expected string) *NotebookDetailsAss
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasMainFileNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.MainFile == "" {
+			return fmt.Errorf("expected main file to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasQueryWarehouse(expected sdk.AccountObjectIdentifier) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -114,11 +125,33 @@ func (n *NotebookDetailsAssert) HasUrlId(expected string) *NotebookDetailsAssert
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasUrlIdNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.UrlId == "" {
+			return fmt.Errorf("expected url id to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasDefaultPackages(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
 		if o.DefaultPackages != expected {
 			return fmt.Errorf("expected default packages: %v; got: %v", expected, o.DefaultPackages)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasDefaultPackagesNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.DefaultPackages == "" {
+			return fmt.Errorf("expected default packages to be non-empty")
 		}
 		return nil
 	})
@@ -211,11 +244,33 @@ func (n *NotebookDetailsAssert) HasOwner(expected string) *NotebookDetailsAssert
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasOwnerNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasImportUrls(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
 		if o.ImportUrls != expected {
 			return fmt.Errorf("expected import urls: %v; got: %v", expected, o.ImportUrls)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasImportUrlsNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.ImportUrls == "" {
+			return fmt.Errorf("expected import urls to be non-empty")
 		}
 		return nil
 	})
@@ -233,6 +288,17 @@ func (n *NotebookDetailsAssert) HasExternalAccessIntegrations(expected string) *
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasExternalAccessIntegrationsNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.ExternalAccessIntegrations == "" {
+			return fmt.Errorf("expected external access integrations to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasExternalAccessSecrets(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -244,11 +310,33 @@ func (n *NotebookDetailsAssert) HasExternalAccessSecrets(expected string) *Noteb
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasExternalAccessSecretsNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.ExternalAccessSecrets == "" {
+			return fmt.Errorf("expected external access secrets to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasCodeWarehouse(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
 		if o.CodeWarehouse != expected {
 			return fmt.Errorf("expected code warehouse: %v; got: %v", expected, o.CodeWarehouse)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasCodeWarehouseNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.CodeWarehouse == "" {
+			return fmt.Errorf("expected code warehouse to be non-empty")
 		}
 		return nil
 	})
@@ -277,11 +365,33 @@ func (n *NotebookDetailsAssert) HasRuntimeEnvironmentVersion(expected string) *N
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasRuntimeEnvironmentVersionNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.RuntimeEnvironmentVersion == "" {
+			return fmt.Errorf("expected runtime environment version to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasName(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasNameNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -324,11 +434,33 @@ func (n *NotebookDetailsAssert) HasDefaultVersion(expected string) *NotebookDeta
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasDefaultVersionNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.DefaultVersion == "" {
+			return fmt.Errorf("expected default version to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasDefaultVersionName(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
 		if o.DefaultVersionName != expected {
 			return fmt.Errorf("expected default version name: %v; got: %v", expected, o.DefaultVersionName)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasDefaultVersionNameNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.DefaultVersionName == "" {
+			return fmt.Errorf("expected default version name to be non-empty")
 		}
 		return nil
 	})
@@ -365,6 +497,17 @@ func (n *NotebookDetailsAssert) HasDefaultVersionLocationUri(expected string) *N
 		t.Helper()
 		if o.DefaultVersionLocationUri != expected {
 			return fmt.Errorf("expected default version location uri: %v; got: %v", expected, o.DefaultVersionLocationUri)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasDefaultVersionLocationUriNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.DefaultVersionLocationUri == "" {
+			return fmt.Errorf("expected default version location uri to be non-empty")
 		}
 		return nil
 	})
@@ -432,6 +575,17 @@ func (n *NotebookDetailsAssert) HasLastVersionName(expected string) *NotebookDet
 	return n
 }
 
+func (n *NotebookDetailsAssert) HasLastVersionNameNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.LastVersionName == "" {
+			return fmt.Errorf("expected last version name to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NotebookDetailsAssert) HasLastVersionAlias(expected string) *NotebookDetailsAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
 		t.Helper()
@@ -462,6 +616,17 @@ func (n *NotebookDetailsAssert) HasLastVersionLocationUri(expected string) *Note
 		t.Helper()
 		if o.LastVersionLocationUri != expected {
 			return fmt.Errorf("expected last version location uri: %v; got: %v", expected, o.LastVersionLocationUri)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NotebookDetailsAssert) HasLastVersionLocationUriNotEmpty() *NotebookDetailsAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NotebookDetails) error {
+		t.Helper()
+		if o.LastVersionLocationUri == "" {
+			return fmt.Errorf("expected last version location uri to be non-empty")
 		}
 		return nil
 	})

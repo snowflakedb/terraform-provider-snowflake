@@ -66,11 +66,33 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiKey(expected string) *ApiIntegrat
 	return a
 }
 
+func (a *ApiIntegrationAwsDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ApiKey == "" {
+			return fmt.Errorf("expected api key to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAwsDetailsAssert) HasApiProvider(expected string) *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
 		if o.ApiProvider != expected {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAwsDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ApiProvider == "" {
+			return fmt.Errorf("expected api provider to be non-empty")
 		}
 		return nil
 	})
@@ -88,6 +110,17 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsRoleArn(expected string) *ApiI
 	return a
 }
 
+func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsRoleArnNotEmpty() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ApiAwsRoleArn == "" {
+			return fmt.Errorf("expected api aws role arn to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsIamUserArn(expected string) *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
@@ -99,11 +132,33 @@ func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsIamUserArn(expected string) *A
 	return a
 }
 
+func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsIamUserArnNotEmpty() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ApiAwsIamUserArn == "" {
+			return fmt.Errorf("expected api aws iam user arn to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsExternalId(expected string) *ApiIntegrationAwsDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
 		t.Helper()
 		if o.ApiAwsExternalId != expected {
 			return fmt.Errorf("expected api aws external id: %v; got: %v", expected, o.ApiAwsExternalId)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAwsDetailsAssert) HasApiAwsExternalIdNotEmpty() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if o.ApiAwsExternalId == "" {
+			return fmt.Errorf("expected api aws external id to be non-empty")
 		}
 		return nil
 	})
@@ -163,6 +218,17 @@ func (a *ApiIntegrationAwsDetailsAssert) HasComment(expected string) *ApiIntegra
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAwsDetailsAssert) HasCommentNotEmpty() *ApiIntegrationAwsDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAwsDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

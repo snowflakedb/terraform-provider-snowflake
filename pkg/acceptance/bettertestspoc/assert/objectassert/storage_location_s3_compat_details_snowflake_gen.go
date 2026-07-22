@@ -29,6 +29,17 @@ func (s *StorageLocationS3CompatDetailsAssert) HasEndpoint(expected string) *Sto
 	return s
 }
 
+func (s *StorageLocationS3CompatDetailsAssert) HasEndpointNotEmpty() *StorageLocationS3CompatDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3CompatDetails) error {
+		t.Helper()
+		if o.Endpoint == "" {
+			return fmt.Errorf("expected endpoint to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLocationS3CompatDetailsAssert) HasAwsAccessKeyId(expected string) *StorageLocationS3CompatDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3CompatDetails) error {
 		t.Helper()
@@ -40,11 +51,33 @@ func (s *StorageLocationS3CompatDetailsAssert) HasAwsAccessKeyId(expected string
 	return s
 }
 
+func (s *StorageLocationS3CompatDetailsAssert) HasAwsAccessKeyIdNotEmpty() *StorageLocationS3CompatDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3CompatDetails) error {
+		t.Helper()
+		if o.AwsAccessKeyId == "" {
+			return fmt.Errorf("expected aws access key id to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLocationS3CompatDetailsAssert) HasEncryptionKmsKeyId(expected string) *StorageLocationS3CompatDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3CompatDetails) error {
 		t.Helper()
 		if o.EncryptionKmsKeyId != expected {
 			return fmt.Errorf("expected encryption kms key id: %v; got: %v", expected, o.EncryptionKmsKeyId)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationS3CompatDetailsAssert) HasEncryptionKmsKeyIdNotEmpty() *StorageLocationS3CompatDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationS3CompatDetails) error {
+		t.Helper()
+		if o.EncryptionKmsKeyId == "" {
+			return fmt.Errorf("expected encryption kms key id to be non-empty")
 		}
 		return nil
 	})

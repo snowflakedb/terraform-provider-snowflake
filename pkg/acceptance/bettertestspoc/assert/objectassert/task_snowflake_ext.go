@@ -11,28 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (t *TaskAssert) HasNotEmptyCreatedOn() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created on not empty; got: %v", o.CreatedOn)
-		}
-		return nil
-	})
-	return t
-}
-
-func (t *TaskAssert) HasNotEmptyId() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.Id == "" {
-			return fmt.Errorf("expected id not empty; got: %v", o.CreatedOn)
-		}
-		return nil
-	})
-	return t
-}
-
 func (t *TaskAssert) HasPredecessorsInAnyOrder(ids ...sdk.SchemaObjectIdentifier) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()

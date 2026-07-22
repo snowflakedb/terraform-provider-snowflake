@@ -43,6 +43,17 @@ func (a *ApiIntegrationAssert) HasName(expected string) *ApiIntegrationAssert {
 	return a
 }
 
+func (a *ApiIntegrationAssert) HasNameNotEmpty() *ApiIntegrationAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAssert) HasApiType(expected string) *ApiIntegrationAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
 		t.Helper()
@@ -54,11 +65,33 @@ func (a *ApiIntegrationAssert) HasApiType(expected string) *ApiIntegrationAssert
 	return a
 }
 
+func (a *ApiIntegrationAssert) HasApiTypeNotEmpty() *ApiIntegrationAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
+		t.Helper()
+		if o.ApiType == "" {
+			return fmt.Errorf("expected api type to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAssert) HasCategory(expected string) *ApiIntegrationAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
 		t.Helper()
 		if o.Category != expected {
 			return fmt.Errorf("expected category: %v; got: %v", expected, o.Category)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAssert) HasCategoryNotEmpty() *ApiIntegrationAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
+		t.Helper()
+		if o.Category == "" {
+			return fmt.Errorf("expected category to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +120,33 @@ func (a *ApiIntegrationAssert) HasComment(expected string) *ApiIntegrationAssert
 	return a
 }
 
+func (a *ApiIntegrationAssert) HasCommentNotEmpty() *ApiIntegrationAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAssert) HasCreatedOn(expected time.Time) *ApiIntegrationAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAssert) HasCreatedOnNotEmpty() *ApiIntegrationAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegration) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

@@ -43,6 +43,17 @@ func (w *WarehouseAssert) HasName(expected string) *WarehouseAssert {
 	return w
 }
 
+func (w *WarehouseAssert) HasNameNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasState(expected sdk.WarehouseState) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
@@ -328,11 +339,33 @@ func (w *WarehouseAssert) HasCreatedOn(expected time.Time) *WarehouseAssert {
 	return w
 }
 
+func (w *WarehouseAssert) HasCreatedOnNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasResumedOn(expected time.Time) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
 		if o.ResumedOn != expected {
 			return fmt.Errorf("expected resumed on: %v; got: %v", expected, o.ResumedOn)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasResumedOnNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.ResumedOn.IsZero() {
+			return fmt.Errorf("expected resumed on to be set; got zero value")
 		}
 		return nil
 	})
@@ -350,6 +383,17 @@ func (w *WarehouseAssert) HasUpdatedOn(expected time.Time) *WarehouseAssert {
 	return w
 }
 
+func (w *WarehouseAssert) HasUpdatedOnNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.UpdatedOn.IsZero() {
+			return fmt.Errorf("expected updated on to be set; got zero value")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasOwner(expected string) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
@@ -361,11 +405,33 @@ func (w *WarehouseAssert) HasOwner(expected string) *WarehouseAssert {
 	return w
 }
 
+func (w *WarehouseAssert) HasOwnerNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasComment(expected string) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasCommentNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -444,11 +510,33 @@ func (w *WarehouseAssert) HasActives(expected string) *WarehouseAssert {
 	return w
 }
 
+func (w *WarehouseAssert) HasActivesNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Actives == "" {
+			return fmt.Errorf("expected actives to be non-empty")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasPendings(expected string) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
 		if o.Pendings != expected {
 			return fmt.Errorf("expected pendings: %v; got: %v", expected, o.Pendings)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasPendingsNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Pendings == "" {
+			return fmt.Errorf("expected pendings to be non-empty")
 		}
 		return nil
 	})
@@ -466,6 +554,17 @@ func (w *WarehouseAssert) HasFailed(expected string) *WarehouseAssert {
 	return w
 }
 
+func (w *WarehouseAssert) HasFailedNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Failed == "" {
+			return fmt.Errorf("expected failed to be non-empty")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasSuspended(expected string) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
@@ -477,11 +576,33 @@ func (w *WarehouseAssert) HasSuspended(expected string) *WarehouseAssert {
 	return w
 }
 
+func (w *WarehouseAssert) HasSuspendedNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Suspended == "" {
+			return fmt.Errorf("expected suspended to be non-empty")
+		}
+		return nil
+	})
+	return w
+}
+
 func (w *WarehouseAssert) HasUuid(expected string) *WarehouseAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
 		t.Helper()
 		if o.Uuid != expected {
 			return fmt.Errorf("expected uuid: %v; got: %v", expected, o.Uuid)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasUuidNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.Uuid == "" {
+			return fmt.Errorf("expected uuid to be non-empty")
 		}
 		return nil
 	})
@@ -518,6 +639,17 @@ func (w *WarehouseAssert) HasOwnerRoleType(expected string) *WarehouseAssert {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return w
+}
+
+func (w *WarehouseAssert) HasOwnerRoleTypeNotEmpty() *WarehouseAssert {
+	w.AddAssertion(func(t *testing.T, o *sdk.Warehouse) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

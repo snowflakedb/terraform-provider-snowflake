@@ -44,11 +44,33 @@ func (c *CortexAgentAssert) HasCreatedOn(expected time.Time) *CortexAgentAssert 
 	return c
 }
 
+func (c *CortexAgentAssert) HasCreatedOnNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentAssert) HasName(expected string) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentAssert) HasNameNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -66,11 +88,33 @@ func (c *CortexAgentAssert) HasDatabaseName(expected string) *CortexAgentAssert 
 	return c
 }
 
+func (c *CortexAgentAssert) HasDatabaseNameNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentAssert) HasSchemaName(expected string) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentAssert) HasSchemaNameNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -88,11 +132,33 @@ func (c *CortexAgentAssert) HasOwner(expected string) *CortexAgentAssert {
 	return c
 }
 
+func (c *CortexAgentAssert) HasOwnerNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentAssert) HasComment(expected string) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentAssert) HasCommentNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

@@ -96,3 +96,14 @@ func (c *CatalogIntegrationObjectStorageDetailsAssert) HasComment(expected strin
 	})
 	return c
 }
+
+func (c *CatalogIntegrationObjectStorageDetailsAssert) HasCommentNotEmpty() *CatalogIntegrationObjectStorageDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationObjectStorageDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return c
+}

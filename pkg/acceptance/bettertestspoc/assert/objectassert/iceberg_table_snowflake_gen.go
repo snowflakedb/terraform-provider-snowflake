@@ -45,11 +45,33 @@ func (i *IcebergTableAssert) HasCreatedOn(expected time.Time) *IcebergTableAsser
 	return i
 }
 
+func (i *IcebergTableAssert) HasCreatedOnNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasName(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNameNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -67,11 +89,33 @@ func (i *IcebergTableAssert) HasDatabaseName(expected string) *IcebergTableAsser
 	return i
 }
 
+func (i *IcebergTableAssert) HasDatabaseNameNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasSchemaName(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasSchemaNameNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -311,11 +355,33 @@ func (i *IcebergTableAssert) HasOwnerRoleType(expected string) *IcebergTableAsse
 	return i
 }
 
+func (i *IcebergTableAssert) HasOwnerRoleTypeNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasCatalogSyncName(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.CatalogSyncName != expected {
 			return fmt.Errorf("expected catalog sync name: %v; got: %v", expected, o.CatalogSyncName)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasCatalogSyncNameNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CatalogSyncName == "" {
+			return fmt.Errorf("expected catalog sync name to be non-empty")
 		}
 		return nil
 	})

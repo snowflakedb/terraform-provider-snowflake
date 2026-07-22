@@ -47,6 +47,17 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasName(expected string
 	return u
 }
 
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasNameNotEmpty() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasType(expected sdk.WIFType) *UserWorkloadIdentityAuthenticationMethodAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
@@ -69,6 +80,17 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasComment(expected str
 	return u
 }
 
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasCommentNotEmpty() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasLastUsed(expected time.Time) *UserWorkloadIdentityAuthenticationMethodAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
@@ -80,11 +102,33 @@ func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasLastUsed(expected ti
 	return u
 }
 
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasLastUsedNotEmpty() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.LastUsed.IsZero() {
+			return fmt.Errorf("expected last used to be set; got zero value")
+		}
+		return nil
+	})
+	return u
+}
+
 func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasCreatedOn(expected time.Time) *UserWorkloadIdentityAuthenticationMethodAssert {
 	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return u
+}
+
+func (u *UserWorkloadIdentityAuthenticationMethodAssert) HasCreatedOnNotEmpty() *UserWorkloadIdentityAuthenticationMethodAssert {
+	u.AddAssertion(func(t *testing.T, o *sdk.UserWorkloadIdentityAuthenticationMethod) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

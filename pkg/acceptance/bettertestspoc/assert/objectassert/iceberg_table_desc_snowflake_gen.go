@@ -33,6 +33,17 @@ func (i *IcebergTableDetailsAssert) HasName(expected string) *IcebergTableDetail
 	return i
 }
 
+func (i *IcebergTableDetailsAssert) HasNameNotEmpty() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasType(expected datatypes.DataType) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -74,6 +85,17 @@ func (i *IcebergTableDetailsAssert) HasKind(expected string) *IcebergTableDetail
 		t.Helper()
 		if o.Kind != expected {
 			return fmt.Errorf("expected kind: %v; got: %v", expected, o.Kind)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableDetailsAssert) HasKindNotEmpty() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
 		}
 		return nil
 	})

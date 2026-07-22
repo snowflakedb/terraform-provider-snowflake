@@ -43,11 +43,33 @@ func (m *McpServerDetailsAssert) HasName(expected string) *McpServerDetailsAsser
 	return m
 }
 
+func (m *McpServerDetailsAssert) HasNameNotEmpty() *McpServerDetailsAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *McpServerDetailsAssert) HasDatabaseName(expected string) *McpServerDetailsAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
 		t.Helper()
 		if o.DatabaseName != expected {
 			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *McpServerDetailsAssert) HasDatabaseNameNotEmpty() *McpServerDetailsAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (m *McpServerDetailsAssert) HasSchemaName(expected string) *McpServerDetail
 	return m
 }
 
+func (m *McpServerDetailsAssert) HasSchemaNameNotEmpty() *McpServerDetailsAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *McpServerDetailsAssert) HasOwner(expected string) *McpServerDetailsAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *McpServerDetailsAssert) HasOwnerNotEmpty() *McpServerDetailsAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -87,6 +131,17 @@ func (m *McpServerDetailsAssert) HasComment(expected string) *McpServerDetailsAs
 	return m
 }
 
+func (m *McpServerDetailsAssert) HasCommentNotEmpty() *McpServerDetailsAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *McpServerDetailsAssert) HasServerSpec(expected string) *McpServerDetailsAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
 		t.Helper()
@@ -98,11 +153,33 @@ func (m *McpServerDetailsAssert) HasServerSpec(expected string) *McpServerDetail
 	return m
 }
 
+func (m *McpServerDetailsAssert) HasServerSpecNotEmpty() *McpServerDetailsAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
+		t.Helper()
+		if o.ServerSpec == "" {
+			return fmt.Errorf("expected server spec to be non-empty")
+		}
+		return nil
+	})
+	return m
+}
+
 func (m *McpServerDetailsAssert) HasCreatedOn(expected time.Time) *McpServerDetailsAssert {
 	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return m
+}
+
+func (m *McpServerDetailsAssert) HasCreatedOnNotEmpty() *McpServerDetailsAssert {
+	m.AddAssertion(func(t *testing.T, o *sdk.McpServerDetails) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

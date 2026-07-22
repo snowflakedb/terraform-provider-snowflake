@@ -38,28 +38,6 @@ func (w *UserAssert) HasDefaults(name string) *UserAssert {
 		HasHasRsaPublicKey(false)
 }
 
-func (w *UserAssert) HasCreatedOnNotEmpty() *UserAssert {
-	w.AddAssertion(func(t *testing.T, o *sdk.User) error {
-		t.Helper()
-		if o.CreatedOn == (time.Time{}) {
-			return fmt.Errorf("expected created on not empty; got: %v", o.CreatedOn)
-		}
-		return nil
-	})
-	return w
-}
-
-func (w *UserAssert) HasOwnerNotEmpty() *UserAssert {
-	w.AddAssertion(func(t *testing.T, o *sdk.User) error {
-		t.Helper()
-		if o.Owner == "" {
-			return fmt.Errorf("expected owner not empty; got empty")
-		}
-		return nil
-	})
-	return w
-}
-
 func (w *UserAssert) HasLastSuccessLoginEmpty() *UserAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
@@ -93,44 +71,11 @@ func (w *UserAssert) HasLockedUntilTimeEmpty() *UserAssert {
 	return w
 }
 
-func (w *UserAssert) HasExpiresAtTimeNotEmpty() *UserAssert {
-	w.AddAssertion(func(t *testing.T, o *sdk.User) error {
-		t.Helper()
-		if o.ExpiresAtTime == (time.Time{}) {
-			return fmt.Errorf("expected expires at time not empty; got: %v", o.ExpiresAtTime)
-		}
-		return nil
-	})
-	return w
-}
-
-func (w *UserAssert) HasLockedUntilTimeNotEmpty() *UserAssert {
-	w.AddAssertion(func(t *testing.T, o *sdk.User) error {
-		t.Helper()
-		if o.LockedUntilTime == (time.Time{}) {
-			return fmt.Errorf("expected locked until time not empty; got: %v", o.LockedUntilTime)
-		}
-		return nil
-	})
-	return w
-}
-
 func (w *UserAssert) HasDefaultNamespaceId(expected sdk.DatabaseObjectIdentifier) *UserAssert {
 	w.AddAssertion(func(t *testing.T, o *sdk.User) error {
 		t.Helper()
 		if sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(o.DefaultNamespace).FullyQualifiedName() != expected.FullyQualifiedName() {
 			return fmt.Errorf("expected default namespace: %v; got: %v", expected, o.DefaultNamespace)
-		}
-		return nil
-	})
-	return w
-}
-
-func (w *UserAssert) HasDaysToExpiryNotEmpty() *UserAssert {
-	w.AddAssertion(func(t *testing.T, o *sdk.User) error {
-		t.Helper()
-		if o.DaysToExpiry == "" {
-			return fmt.Errorf("expected days to expiry not empty; got empty")
 		}
 		return nil
 	})

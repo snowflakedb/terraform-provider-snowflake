@@ -9,17 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (p *ProcedureAssert) HasCreatedOnNotEmpty() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created_on to be not empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProcedureAssert) HasExternalAccessIntegrationsNil() *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()

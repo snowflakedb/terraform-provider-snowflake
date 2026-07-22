@@ -127,5 +127,29 @@
         return {{ $assertVar }}
     }
 {{- end }}
+{{- if .IsTimeType }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}NotEmpty() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            t.Helper()
+            if o.{{ .Name }}.IsZero() {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to be set; got zero value")
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+{{- end }}
+{{- if .IsStringType }}
+    func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}NotEmpty() *{{ $assertName }} {
+        {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
+            t.Helper()
+            if o.{{ .Name }} == "" {
+                return fmt.Errorf("expected {{ CamelToWords .Name }} to be non-empty")
+            }
+            return nil
+        })
+        return {{ $assertVar }}
+    }
+{{- end }}
 {{- end }}
 {{ end }}

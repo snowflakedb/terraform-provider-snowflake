@@ -43,11 +43,33 @@ func (i *ImageRepositoryAssert) HasCreatedOn(expected time.Time) *ImageRepositor
 	return i
 }
 
+func (i *ImageRepositoryAssert) HasCreatedOnNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *ImageRepositoryAssert) HasName(expected string) *ImageRepositoryAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *ImageRepositoryAssert) HasNameNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (i *ImageRepositoryAssert) HasDatabaseName(expected string) *ImageRepositor
 	return i
 }
 
+func (i *ImageRepositoryAssert) HasDatabaseNameNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *ImageRepositoryAssert) HasSchemaName(expected string) *ImageRepositoryAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *ImageRepositoryAssert) HasSchemaNameNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +131,33 @@ func (i *ImageRepositoryAssert) HasRepositoryUrl(expected string) *ImageReposito
 	return i
 }
 
+func (i *ImageRepositoryAssert) HasRepositoryUrlNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.RepositoryUrl == "" {
+			return fmt.Errorf("expected repository url to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *ImageRepositoryAssert) HasOwner(expected string) *ImageRepositoryAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *ImageRepositoryAssert) HasOwnerNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -109,11 +175,33 @@ func (i *ImageRepositoryAssert) HasOwnerRoleType(expected string) *ImageReposito
 	return i
 }
 
+func (i *ImageRepositoryAssert) HasOwnerRoleTypeNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *ImageRepositoryAssert) HasComment(expected string) *ImageRepositoryAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *ImageRepositoryAssert) HasCommentNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -136,6 +224,17 @@ func (i *ImageRepositoryAssert) HasPrivatelinkRepositoryUrl(expected string) *Im
 		t.Helper()
 		if o.PrivatelinkRepositoryUrl != expected {
 			return fmt.Errorf("expected privatelink repository url: %v; got: %v", expected, o.PrivatelinkRepositoryUrl)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *ImageRepositoryAssert) HasPrivatelinkRepositoryUrlNotEmpty() *ImageRepositoryAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.ImageRepository) error {
+		t.Helper()
+		if o.PrivatelinkRepositoryUrl == "" {
+			return fmt.Errorf("expected privatelink repository url to be non-empty")
 		}
 		return nil
 	})

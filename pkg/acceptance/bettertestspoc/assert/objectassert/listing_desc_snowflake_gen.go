@@ -42,11 +42,33 @@ func (l *ListingDetailsAssert) HasGlobalName(expected string) *ListingDetailsAss
 	return l
 }
 
+func (l *ListingDetailsAssert) HasGlobalNameNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.GlobalName == "" {
+			return fmt.Errorf("expected global name to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasName(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasNameNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -64,11 +86,33 @@ func (l *ListingDetailsAssert) HasOwner(expected string) *ListingDetailsAssert {
 	return l
 }
 
+func (l *ListingDetailsAssert) HasOwnerNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasOwnerRoleType(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasOwnerRoleTypeNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})
@@ -86,11 +130,33 @@ func (l *ListingDetailsAssert) HasCreatedOn(expected string) *ListingDetailsAsse
 	return l
 }
 
+func (l *ListingDetailsAssert) HasCreatedOnNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasUpdatedOn(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
 		if o.UpdatedOn != expected {
 			return fmt.Errorf("expected updated on: %v; got: %v", expected, o.UpdatedOn)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasUpdatedOnNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.UpdatedOn == "" {
+			return fmt.Errorf("expected updated on to be non-empty")
 		}
 		return nil
 	})
@@ -127,6 +193,17 @@ func (l *ListingDetailsAssert) HasTitle(expected string) *ListingDetailsAssert {
 		t.Helper()
 		if o.Title != expected {
 			return fmt.Errorf("expected title: %v; got: %v", expected, o.Title)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasTitleNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Title == "" {
+			return fmt.Errorf("expected title to be non-empty")
 		}
 		return nil
 	})
@@ -530,6 +607,17 @@ func (l *ListingDetailsAssert) HasRevisions(expected string) *ListingDetailsAsse
 	return l
 }
 
+func (l *ListingDetailsAssert) HasRevisionsNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.Revisions == "" {
+			return fmt.Errorf("expected revisions to be non-empty")
+		}
+		return nil
+	})
+	return l
+}
+
 func (l *ListingDetailsAssert) HasTargetAccounts(expected string) *ListingDetailsAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
 		t.Helper()
@@ -868,6 +956,17 @@ func (l *ListingDetailsAssert) HasManifestYaml(expected string) *ListingDetailsA
 		t.Helper()
 		if o.ManifestYaml != expected {
 			return fmt.Errorf("expected manifest yaml: %v; got: %v", expected, o.ManifestYaml)
+		}
+		return nil
+	})
+	return l
+}
+
+func (l *ListingDetailsAssert) HasManifestYamlNotEmpty() *ListingDetailsAssert {
+	l.AddAssertion(func(t *testing.T, o *sdk.ListingDetails) error {
+		t.Helper()
+		if o.ManifestYaml == "" {
+			return fmt.Errorf("expected manifest yaml to be non-empty")
 		}
 		return nil
 	})

@@ -45,11 +45,33 @@ func (s *StreamAssert) HasCreatedOn(expected time.Time) *StreamAssert {
 	return s
 }
 
+func (s *StreamAssert) HasCreatedOnNotEmpty() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamAssert) HasName(expected string) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamAssert) HasNameNotEmpty() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -67,11 +89,33 @@ func (s *StreamAssert) HasDatabaseName(expected string) *StreamAssert {
 	return s
 }
 
+func (s *StreamAssert) HasDatabaseNameNotEmpty() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StreamAssert) HasSchemaName(expected string) *StreamAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StreamAssert) HasSchemaNameNotEmpty() *StreamAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stream) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})

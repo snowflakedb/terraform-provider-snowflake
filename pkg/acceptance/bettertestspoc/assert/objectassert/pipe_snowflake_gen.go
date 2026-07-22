@@ -42,11 +42,33 @@ func (p *PipeAssert) HasCreatedOn(expected string) *PipeAssert {
 	return p
 }
 
+func (p *PipeAssert) HasCreatedOnNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PipeAssert) HasName(expected string) *PipeAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PipeAssert) HasNameNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -64,11 +86,33 @@ func (p *PipeAssert) HasDatabaseName(expected string) *PipeAssert {
 	return p
 }
 
+func (p *PipeAssert) HasDatabaseNameNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PipeAssert) HasSchemaName(expected string) *PipeAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PipeAssert) HasSchemaNameNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -86,11 +130,33 @@ func (p *PipeAssert) HasDefinition(expected string) *PipeAssert {
 	return p
 }
 
+func (p *PipeAssert) HasDefinitionNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.Definition == "" {
+			return fmt.Errorf("expected definition to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PipeAssert) HasOwner(expected string) *PipeAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PipeAssert) HasOwnerNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -108,11 +174,33 @@ func (p *PipeAssert) HasNotificationChannel(expected string) *PipeAssert {
 	return p
 }
 
+func (p *PipeAssert) HasNotificationChannelNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.NotificationChannel == "" {
+			return fmt.Errorf("expected notification channel to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PipeAssert) HasComment(expected string) *PipeAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PipeAssert) HasCommentNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -130,11 +218,33 @@ func (p *PipeAssert) HasIntegration(expected string) *PipeAssert {
 	return p
 }
 
+func (p *PipeAssert) HasIntegrationNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.Integration == "" {
+			return fmt.Errorf("expected integration to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PipeAssert) HasPattern(expected string) *PipeAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
 		t.Helper()
 		if o.Pattern != expected {
 			return fmt.Errorf("expected pattern: %v; got: %v", expected, o.Pattern)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PipeAssert) HasPatternNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.Pattern == "" {
+			return fmt.Errorf("expected pattern to be non-empty")
 		}
 		return nil
 	})
@@ -152,6 +262,17 @@ func (p *PipeAssert) HasErrorIntegration(expected string) *PipeAssert {
 	return p
 }
 
+func (p *PipeAssert) HasErrorIntegrationNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.ErrorIntegration == "" {
+			return fmt.Errorf("expected error integration to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PipeAssert) HasOwnerRoleType(expected string) *PipeAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
 		t.Helper()
@@ -163,11 +284,33 @@ func (p *PipeAssert) HasOwnerRoleType(expected string) *PipeAssert {
 	return p
 }
 
+func (p *PipeAssert) HasOwnerRoleTypeNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PipeAssert) HasInvalidReason(expected string) *PipeAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
 		t.Helper()
 		if o.InvalidReason != expected {
 			return fmt.Errorf("expected invalid reason: %v; got: %v", expected, o.InvalidReason)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PipeAssert) HasInvalidReasonNotEmpty() *PipeAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Pipe) error {
+		t.Helper()
+		if o.InvalidReason == "" {
+			return fmt.Errorf("expected invalid reason to be non-empty")
 		}
 		return nil
 	})

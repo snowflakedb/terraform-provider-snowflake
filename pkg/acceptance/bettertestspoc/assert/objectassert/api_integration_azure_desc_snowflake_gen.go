@@ -66,11 +66,33 @@ func (a *ApiIntegrationAzureDetailsAssert) HasApiKey(expected string) *ApiIntegr
 	return a
 }
 
+func (a *ApiIntegrationAzureDetailsAssert) HasApiKeyNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.ApiKey == "" {
+			return fmt.Errorf("expected api key to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAzureDetailsAssert) HasApiProvider(expected string) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
 		if o.ApiProvider != expected {
 			return fmt.Errorf("expected api provider: %v; got: %v", expected, o.ApiProvider)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAzureDetailsAssert) HasApiProviderNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.ApiProvider == "" {
+			return fmt.Errorf("expected api provider to be non-empty")
 		}
 		return nil
 	})
@@ -88,11 +110,33 @@ func (a *ApiIntegrationAzureDetailsAssert) HasAzureTenantId(expected string) *Ap
 	return a
 }
 
+func (a *ApiIntegrationAzureDetailsAssert) HasAzureTenantIdNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.AzureTenantId == "" {
+			return fmt.Errorf("expected azure tenant id to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAzureDetailsAssert) HasAzureAdApplicationId(expected string) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
 		if o.AzureAdApplicationId != expected {
 			return fmt.Errorf("expected azure ad application id: %v; got: %v", expected, o.AzureAdApplicationId)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAzureDetailsAssert) HasAzureAdApplicationIdNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.AzureAdApplicationId == "" {
+			return fmt.Errorf("expected azure ad application id to be non-empty")
 		}
 		return nil
 	})
@@ -110,11 +154,33 @@ func (a *ApiIntegrationAzureDetailsAssert) HasAzureMultiTenantAppName(expected s
 	return a
 }
 
+func (a *ApiIntegrationAzureDetailsAssert) HasAzureMultiTenantAppNameNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.AzureMultiTenantAppName == "" {
+			return fmt.Errorf("expected azure multi tenant app name to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
 func (a *ApiIntegrationAzureDetailsAssert) HasAzureConsentUrl(expected string) *ApiIntegrationAzureDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
 		t.Helper()
 		if o.AzureConsentUrl != expected {
 			return fmt.Errorf("expected azure consent url: %v; got: %v", expected, o.AzureConsentUrl)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAzureDetailsAssert) HasAzureConsentUrlNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.AzureConsentUrl == "" {
+			return fmt.Errorf("expected azure consent url to be non-empty")
 		}
 		return nil
 	})
@@ -174,6 +240,17 @@ func (a *ApiIntegrationAzureDetailsAssert) HasComment(expected string) *ApiInteg
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *ApiIntegrationAzureDetailsAssert) HasCommentNotEmpty() *ApiIntegrationAzureDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationAzureDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

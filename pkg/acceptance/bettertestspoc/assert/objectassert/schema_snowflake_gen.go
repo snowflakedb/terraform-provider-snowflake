@@ -43,6 +43,17 @@ func (s *SchemaAssert) HasCreatedOn(expected time.Time) *SchemaAssert {
 	return s
 }
 
+func (s *SchemaAssert) HasCreatedOnNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SchemaAssert) HasDroppedOn(expected time.Time) *SchemaAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
 		t.Helper()
@@ -54,11 +65,33 @@ func (s *SchemaAssert) HasDroppedOn(expected time.Time) *SchemaAssert {
 	return s
 }
 
+func (s *SchemaAssert) HasDroppedOnNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.DroppedOn.IsZero() {
+			return fmt.Errorf("expected dropped on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SchemaAssert) HasName(expected string) *SchemaAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SchemaAssert) HasNameNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -98,6 +131,17 @@ func (s *SchemaAssert) HasDatabaseName(expected string) *SchemaAssert {
 	return s
 }
 
+func (s *SchemaAssert) HasDatabaseNameNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SchemaAssert) HasOwner(expected string) *SchemaAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
 		t.Helper()
@@ -109,11 +153,33 @@ func (s *SchemaAssert) HasOwner(expected string) *SchemaAssert {
 	return s
 }
 
+func (s *SchemaAssert) HasOwnerNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SchemaAssert) HasComment(expected string) *SchemaAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SchemaAssert) HasCommentNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -156,11 +222,33 @@ func (s *SchemaAssert) HasRetentionTime(expected string) *SchemaAssert {
 	return s
 }
 
+func (s *SchemaAssert) HasRetentionTimeNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.RetentionTime == "" {
+			return fmt.Errorf("expected retention time to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SchemaAssert) HasOwnerRoleType(expected string) *SchemaAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SchemaAssert) HasOwnerRoleTypeNotEmpty() *SchemaAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Schema) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

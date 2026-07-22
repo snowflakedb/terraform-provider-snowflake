@@ -55,11 +55,33 @@ func (f *FileFormatJsonAssert) HasType(expected string) *FileFormatJsonAssert {
 	return f
 }
 
+func (f *FileFormatJsonAssert) HasTypeNotEmpty() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if o.Type == "" {
+			return fmt.Errorf("expected type to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatJsonAssert) HasCompression(expected string) *FileFormatJsonAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
 		t.Helper()
 		if o.Compression != expected {
 			return fmt.Errorf("expected compression: %v; got: %v", expected, o.Compression)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatJsonAssert) HasCompressionNotEmpty() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if o.Compression == "" {
+			return fmt.Errorf("expected compression to be non-empty")
 		}
 		return nil
 	})
@@ -77,11 +99,33 @@ func (f *FileFormatJsonAssert) HasDateFormat(expected string) *FileFormatJsonAss
 	return f
 }
 
+func (f *FileFormatJsonAssert) HasDateFormatNotEmpty() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if o.DateFormat == "" {
+			return fmt.Errorf("expected date format to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatJsonAssert) HasTimeFormat(expected string) *FileFormatJsonAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
 		t.Helper()
 		if o.TimeFormat != expected {
 			return fmt.Errorf("expected time format: %v; got: %v", expected, o.TimeFormat)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatJsonAssert) HasTimeFormatNotEmpty() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if o.TimeFormat == "" {
+			return fmt.Errorf("expected time format to be non-empty")
 		}
 		return nil
 	})
@@ -99,11 +143,33 @@ func (f *FileFormatJsonAssert) HasTimestampFormat(expected string) *FileFormatJs
 	return f
 }
 
+func (f *FileFormatJsonAssert) HasTimestampFormatNotEmpty() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if o.TimestampFormat == "" {
+			return fmt.Errorf("expected timestamp format to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatJsonAssert) HasBinaryFormat(expected string) *FileFormatJsonAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
 		t.Helper()
 		if o.BinaryFormat != expected {
 			return fmt.Errorf("expected binary format: %v; got: %v", expected, o.BinaryFormat)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatJsonAssert) HasBinaryFormatNotEmpty() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if o.BinaryFormat == "" {
+			return fmt.Errorf("expected binary format to be non-empty")
 		}
 		return nil
 	})
@@ -161,6 +227,17 @@ func (f *FileFormatJsonAssert) HasFileExtension(expected string) *FileFormatJson
 		t.Helper()
 		if o.FileExtension != expected {
 			return fmt.Errorf("expected file extension: %v; got: %v", expected, o.FileExtension)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatJsonAssert) HasFileExtensionNotEmpty() *FileFormatJsonAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
+		t.Helper()
+		if o.FileExtension == "" {
+			return fmt.Errorf("expected file extension to be non-empty")
 		}
 		return nil
 	})

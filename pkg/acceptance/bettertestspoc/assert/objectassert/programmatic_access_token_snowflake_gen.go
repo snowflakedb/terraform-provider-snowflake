@@ -45,6 +45,17 @@ func (p *ProgrammaticAccessTokenAssert) HasName(expected string) *ProgrammaticAc
 	return p
 }
 
+func (p *ProgrammaticAccessTokenAssert) HasNameNotEmpty() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProgrammaticAccessTokenAssert) HasUserName(expected sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
@@ -86,6 +97,17 @@ func (p *ProgrammaticAccessTokenAssert) HasExpiresAt(expected time.Time) *Progra
 		t.Helper()
 		if o.ExpiresAt != expected {
 			return fmt.Errorf("expected expires at: %v; got: %v", expected, o.ExpiresAt)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProgrammaticAccessTokenAssert) HasExpiresAtNotEmpty() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.ExpiresAt.IsZero() {
+			return fmt.Errorf("expected expires at to be set; got zero value")
 		}
 		return nil
 	})
@@ -139,11 +161,33 @@ func (p *ProgrammaticAccessTokenAssert) HasCreatedOn(expected time.Time) *Progra
 	return p
 }
 
+func (p *ProgrammaticAccessTokenAssert) HasCreatedOnNotEmpty() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProgrammaticAccessTokenAssert) HasCreatedBy(expected string) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
 		if o.CreatedBy != expected {
 			return fmt.Errorf("expected created by: %v; got: %v", expected, o.CreatedBy)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProgrammaticAccessTokenAssert) HasCreatedByNotEmpty() *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+		t.Helper()
+		if o.CreatedBy == "" {
+			return fmt.Errorf("expected created by to be non-empty")
 		}
 		return nil
 	})

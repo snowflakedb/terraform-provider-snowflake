@@ -48,7 +48,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		t.Cleanup(cleanupDatabaseRoleProvider(id))
 
 		assertThatObject(t, objectassert.DatabaseRole(t, id).
-			HasNotEmptyCreatedOn().
+			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
 			HasOwner("ACCOUNTADMIN").
 			HasComment(comment).
@@ -65,7 +65,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		t.Cleanup(cleanupDatabaseRoleProvider(id))
 
 		assertThatObject(t, objectassert.DatabaseRole(t, id).
-			HasNotEmptyCreatedOn().
+			HasCreatedOnNotEmpty().
 			HasName(id.Name()).
 			HasOwner("ACCOUNTADMIN").
 			HasComment("").
@@ -137,7 +137,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		assert.ErrorIs(t, err, collections.ErrObjectNotFound)
 
 		assertThatObject(t, objectassert.DatabaseRole(t, newId).
-			HasNotEmptyCreatedOn().
+			HasCreatedOnNotEmpty().
 			HasName(newId.Name()).
 			HasOwner("ACCOUNTADMIN").
 			HasComment("").

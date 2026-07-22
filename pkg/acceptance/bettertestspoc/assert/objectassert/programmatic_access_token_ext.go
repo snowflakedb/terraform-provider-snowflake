@@ -8,37 +8,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (c *ProgrammaticAccessTokenAssert) HasExpiresAtNotEmpty() *ProgrammaticAccessTokenAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.ExpiresAt == (time.Time{}) {
-			return fmt.Errorf("expected expires_at to be not empty")
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ProgrammaticAccessTokenAssert) HasExpiresAtBefore(expected time.Time) *ProgrammaticAccessTokenAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
+func (p *ProgrammaticAccessTokenAssert) HasExpiresAtBefore(expected time.Time) *ProgrammaticAccessTokenAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
 		if !o.ExpiresAt.Before(expected) {
 			return fmt.Errorf("expected expires_at to be before %s; got: %s", expected, o.ExpiresAt)
 		}
 		return nil
 	})
-	return c
-}
-
-func (c *ProgrammaticAccessTokenAssert) HasCreatedOnNotEmpty() *ProgrammaticAccessTokenAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.CreatedOn == (time.Time{}) {
-			return fmt.Errorf("expected created_on to be not empty")
-		}
-		return nil
-	})
-	return c
+	return p
 }
 
 // HasMinsToBypassNetworkPolicyRequirementWithTolerance can be used to match with an allowed tolerance of 1 minute.

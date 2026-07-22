@@ -43,11 +43,33 @@ func (d *DatabaseAssert) HasCreatedOn(expected time.Time) *DatabaseAssert {
 	return d
 }
 
+func (d *DatabaseAssert) HasCreatedOnNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return d
+}
+
 func (d *DatabaseAssert) HasName(expected string) *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return d
+}
+
+func (d *DatabaseAssert) HasNameNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -98,6 +120,17 @@ func (d *DatabaseAssert) HasOwner(expected string) *DatabaseAssert {
 	return d
 }
 
+func (d *DatabaseAssert) HasOwnerNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return d
+}
+
 func (d *DatabaseAssert) HasComment(expected string) *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
@@ -109,11 +142,33 @@ func (d *DatabaseAssert) HasComment(expected string) *DatabaseAssert {
 	return d
 }
 
+func (d *DatabaseAssert) HasCommentNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return d
+}
+
 func (d *DatabaseAssert) HasOptions(expected string) *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
 		if o.Options != expected {
 			return fmt.Errorf("expected options: %v; got: %v", expected, o.Options)
+		}
+		return nil
+	})
+	return d
+}
+
+func (d *DatabaseAssert) HasOptionsNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.Options == "" {
+			return fmt.Errorf("expected options to be non-empty")
 		}
 		return nil
 	})
@@ -142,11 +197,33 @@ func (d *DatabaseAssert) HasResourceGroup(expected string) *DatabaseAssert {
 	return d
 }
 
+func (d *DatabaseAssert) HasResourceGroupNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.ResourceGroup == "" {
+			return fmt.Errorf("expected resource group to be non-empty")
+		}
+		return nil
+	})
+	return d
+}
+
 func (d *DatabaseAssert) HasDroppedOn(expected time.Time) *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
 		if o.DroppedOn != expected {
 			return fmt.Errorf("expected dropped on: %v; got: %v", expected, o.DroppedOn)
+		}
+		return nil
+	})
+	return d
+}
+
+func (d *DatabaseAssert) HasDroppedOnNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.DroppedOn.IsZero() {
+			return fmt.Errorf("expected dropped on to be set; got zero value")
 		}
 		return nil
 	})
@@ -175,11 +252,33 @@ func (d *DatabaseAssert) HasKind(expected string) *DatabaseAssert {
 	return d
 }
 
+func (d *DatabaseAssert) HasKindNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return d
+}
+
 func (d *DatabaseAssert) HasOwnerRoleType(expected string) *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
+		}
+		return nil
+	})
+	return d
+}
+
+func (d *DatabaseAssert) HasOwnerRoleTypeNotEmpty() *DatabaseAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})

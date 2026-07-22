@@ -43,11 +43,33 @@ func (f *FileFormatAssert) HasCreatedOn(expected time.Time) *FileFormatAssert {
 	return f
 }
 
+func (f *FileFormatAssert) HasCreatedOnNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAssert) HasName(expected string) *FileFormatAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAssert) HasNameNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (f *FileFormatAssert) HasDatabaseName(expected string) *FileFormatAssert {
 	return f
 }
 
+func (f *FileFormatAssert) HasDatabaseNameNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAssert) HasSchemaName(expected string) *FileFormatAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAssert) HasSchemaNameNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -98,11 +142,33 @@ func (f *FileFormatAssert) HasOwner(expected string) *FileFormatAssert {
 	return f
 }
 
+func (f *FileFormatAssert) HasOwnerNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAssert) HasComment(expected string) *FileFormatAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAssert) HasCommentNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -120,11 +186,33 @@ func (f *FileFormatAssert) HasOwnerRoleType(expected string) *FileFormatAssert {
 	return f
 }
 
+func (f *FileFormatAssert) HasOwnerRoleTypeNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FileFormatAssert) HasFormatOptions(expected string) *FileFormatAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
 		t.Helper()
 		if o.FormatOptions != expected {
 			return fmt.Errorf("expected format options: %v; got: %v", expected, o.FormatOptions)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FileFormatAssert) HasFormatOptionsNotEmpty() *FileFormatAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FileFormat) error {
+		t.Helper()
+		if o.FormatOptions == "" {
+			return fmt.Errorf("expected format options to be non-empty")
 		}
 		return nil
 	})

@@ -42,11 +42,33 @@ func (s *SessionPolicyAssert) HasCreatedOn(expected string) *SessionPolicyAssert
 	return s
 }
 
+func (s *SessionPolicyAssert) HasCreatedOnNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyAssert) HasName(expected string) *SessionPolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyAssert) HasNameNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -64,11 +86,33 @@ func (s *SessionPolicyAssert) HasDatabaseName(expected string) *SessionPolicyAss
 	return s
 }
 
+func (s *SessionPolicyAssert) HasDatabaseNameNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyAssert) HasSchemaName(expected string) *SessionPolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyAssert) HasSchemaNameNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -86,11 +130,33 @@ func (s *SessionPolicyAssert) HasKind(expected string) *SessionPolicyAssert {
 	return s
 }
 
+func (s *SessionPolicyAssert) HasKindNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyAssert) HasOwner(expected string) *SessionPolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyAssert) HasOwnerNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -108,6 +174,17 @@ func (s *SessionPolicyAssert) HasComment(expected string) *SessionPolicyAssert {
 	return s
 }
 
+func (s *SessionPolicyAssert) HasCommentNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyAssert) HasOwnerRoleType(expected string) *SessionPolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
 		t.Helper()
@@ -119,11 +196,33 @@ func (s *SessionPolicyAssert) HasOwnerRoleType(expected string) *SessionPolicyAs
 	return s
 }
 
+func (s *SessionPolicyAssert) HasOwnerRoleTypeNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SessionPolicyAssert) HasOptions(expected string) *SessionPolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
 		t.Helper()
 		if o.Options != expected {
 			return fmt.Errorf("expected options: %v; got: %v", expected, o.Options)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyAssert) HasOptionsNotEmpty() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if o.Options == "" {
+			return fmt.Errorf("expected options to be non-empty")
 		}
 		return nil
 	})

@@ -66,6 +66,17 @@ func (s *StorageIntegrationGcsDetailsAssert) HasProvider(expected string) *Stora
 	return s
 }
 
+func (s *StorageIntegrationGcsDetailsAssert) HasProviderNotEmpty() *StorageIntegrationGcsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
+		t.Helper()
+		if o.Provider == "" {
+			return fmt.Errorf("expected provider to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationGcsDetailsAssert) HasAllowedLocations(expected ...string) *StorageIntegrationGcsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
 		t.Helper()
@@ -125,6 +136,17 @@ func (s *StorageIntegrationGcsDetailsAssert) HasComment(expected string) *Storag
 	return s
 }
 
+func (s *StorageIntegrationGcsDetailsAssert) HasCommentNotEmpty() *StorageIntegrationGcsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageIntegrationGcsDetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageIntegrationGcsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
 		t.Helper()
@@ -141,6 +163,17 @@ func (s *StorageIntegrationGcsDetailsAssert) HasServiceAccount(expected string) 
 		t.Helper()
 		if o.ServiceAccount != expected {
 			return fmt.Errorf("expected service account: %v; got: %v", expected, o.ServiceAccount)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageIntegrationGcsDetailsAssert) HasServiceAccountNotEmpty() *StorageIntegrationGcsDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageIntegrationGcsDetails) error {
+		t.Helper()
+		if o.ServiceAccount == "" {
+			return fmt.Errorf("expected service account to be non-empty")
 		}
 		return nil
 	})

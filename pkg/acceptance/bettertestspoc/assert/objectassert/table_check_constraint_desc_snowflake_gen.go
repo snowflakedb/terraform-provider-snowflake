@@ -32,11 +32,33 @@ func (t *TableCheckConstraintDetailsAssert) HasConstraintCatalog(expected string
 	return t
 }
 
+func (t *TableCheckConstraintDetailsAssert) HasConstraintCatalogNotEmpty() *TableCheckConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
+		t.Helper()
+		if o.ConstraintCatalog == "" {
+			return fmt.Errorf("expected constraint catalog to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableCheckConstraintDetailsAssert) HasConstraintSchema(expected string) *TableCheckConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
 		t.Helper()
 		if o.ConstraintSchema != expected {
 			return fmt.Errorf("expected constraint schema: %v; got: %v", expected, o.ConstraintSchema)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableCheckConstraintDetailsAssert) HasConstraintSchemaNotEmpty() *TableCheckConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
+		t.Helper()
+		if o.ConstraintSchema == "" {
+			return fmt.Errorf("expected constraint schema to be non-empty")
 		}
 		return nil
 	})
@@ -54,6 +76,17 @@ func (t *TableCheckConstraintDetailsAssert) HasConstraintTable(expected string) 
 	return t
 }
 
+func (t *TableCheckConstraintDetailsAssert) HasConstraintTableNotEmpty() *TableCheckConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
+		t.Helper()
+		if o.ConstraintTable == "" {
+			return fmt.Errorf("expected constraint table to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableCheckConstraintDetailsAssert) HasConstraintName(expected string) *TableCheckConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
 		t.Helper()
@@ -65,11 +98,33 @@ func (t *TableCheckConstraintDetailsAssert) HasConstraintName(expected string) *
 	return t
 }
 
+func (t *TableCheckConstraintDetailsAssert) HasConstraintNameNotEmpty() *TableCheckConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
+		t.Helper()
+		if o.ConstraintName == "" {
+			return fmt.Errorf("expected constraint name to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TableCheckConstraintDetailsAssert) HasCheckClause(expected string) *TableCheckConstraintDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
 		t.Helper()
 		if o.CheckClause != expected {
 			return fmt.Errorf("expected check clause: %v; got: %v", expected, o.CheckClause)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableCheckConstraintDetailsAssert) HasCheckClauseNotEmpty() *TableCheckConstraintDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableCheckConstraintDetails) error {
+		t.Helper()
+		if o.CheckClause == "" {
+			return fmt.Errorf("expected check clause to be non-empty")
 		}
 		return nil
 	})

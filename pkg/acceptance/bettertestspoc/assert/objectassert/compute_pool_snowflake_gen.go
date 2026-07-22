@@ -43,6 +43,17 @@ func (c *ComputePoolAssert) HasName(expected string) *ComputePoolAssert {
 	return c
 }
 
+func (c *ComputePoolAssert) HasNameNotEmpty() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *ComputePoolAssert) HasState(expected sdk.ComputePoolState) *ComputePoolAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
 		t.Helper()
@@ -175,11 +186,33 @@ func (c *ComputePoolAssert) HasCreatedOn(expected time.Time) *ComputePoolAssert 
 	return c
 }
 
+func (c *ComputePoolAssert) HasCreatedOnNotEmpty() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *ComputePoolAssert) HasResumedOn(expected time.Time) *ComputePoolAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
 		t.Helper()
 		if o.ResumedOn != expected {
 			return fmt.Errorf("expected resumed on: %v; got: %v", expected, o.ResumedOn)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *ComputePoolAssert) HasResumedOnNotEmpty() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if o.ResumedOn.IsZero() {
+			return fmt.Errorf("expected resumed on to be set; got zero value")
 		}
 		return nil
 	})
@@ -197,11 +230,33 @@ func (c *ComputePoolAssert) HasUpdatedOn(expected time.Time) *ComputePoolAssert 
 	return c
 }
 
+func (c *ComputePoolAssert) HasUpdatedOnNotEmpty() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if o.UpdatedOn.IsZero() {
+			return fmt.Errorf("expected updated on to be set; got zero value")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *ComputePoolAssert) HasOwner(expected string) *ComputePoolAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *ComputePoolAssert) HasOwnerNotEmpty() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})

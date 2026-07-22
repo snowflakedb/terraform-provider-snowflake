@@ -43,11 +43,33 @@ func (s *StorageLifecyclePolicyAssert) HasCreatedOn(expected time.Time) *Storage
 	return s
 }
 
+func (s *StorageLifecyclePolicyAssert) HasCreatedOnNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyAssert) HasName(expected string) *StorageLifecyclePolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyAssert) HasNameNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (s *StorageLifecyclePolicyAssert) HasDatabaseName(expected string) *Storage
 	return s
 }
 
+func (s *StorageLifecyclePolicyAssert) HasDatabaseNameNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyAssert) HasSchemaName(expected string) *StorageLifecyclePolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyAssert) HasSchemaNameNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -87,11 +131,33 @@ func (s *StorageLifecyclePolicyAssert) HasKind(expected string) *StorageLifecycl
 	return s
 }
 
+func (s *StorageLifecyclePolicyAssert) HasKindNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyAssert) HasOwner(expected string) *StorageLifecyclePolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyAssert) HasOwnerNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -109,6 +175,17 @@ func (s *StorageLifecyclePolicyAssert) HasComment(expected string) *StorageLifec
 	return s
 }
 
+func (s *StorageLifecyclePolicyAssert) HasCommentNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyAssert) HasOwnerRoleType(expected string) *StorageLifecyclePolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
 		t.Helper()
@@ -120,11 +197,33 @@ func (s *StorageLifecyclePolicyAssert) HasOwnerRoleType(expected string) *Storag
 	return s
 }
 
+func (s *StorageLifecyclePolicyAssert) HasOwnerRoleTypeNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLifecyclePolicyAssert) HasOptions(expected string) *StorageLifecyclePolicyAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
 		t.Helper()
 		if o.Options != expected {
 			return fmt.Errorf("expected options: %v; got: %v", expected, o.Options)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLifecyclePolicyAssert) HasOptionsNotEmpty() *StorageLifecyclePolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicy) error {
+		t.Helper()
+		if o.Options == "" {
+			return fmt.Errorf("expected options to be non-empty")
 		}
 		return nil
 	})

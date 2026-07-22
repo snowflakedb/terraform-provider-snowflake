@@ -43,11 +43,33 @@ func (p *PostgresInstanceAssert) HasName(expected string) *PostgresInstanceAsser
 	return p
 }
 
+func (p *PostgresInstanceAssert) HasNameNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PostgresInstanceAssert) HasOwner(expected string) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceAssert) HasOwnerNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (p *PostgresInstanceAssert) HasOwnerRoleType(expected string) *PostgresInst
 	return p
 }
 
+func (p *PostgresInstanceAssert) HasOwnerRoleTypeNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PostgresInstanceAssert) HasCreatedOn(expected time.Time) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceAssert) HasCreatedOnNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})
@@ -87,11 +131,33 @@ func (p *PostgresInstanceAssert) HasUpdatedOn(expected time.Time) *PostgresInsta
 	return p
 }
 
+func (p *PostgresInstanceAssert) HasUpdatedOnNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.UpdatedOn.IsZero() {
+			return fmt.Errorf("expected updated on to be set; got zero value")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PostgresInstanceAssert) HasType(expected string) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
 		if o.Type != expected {
 			return fmt.Errorf("expected type: %v; got: %v", expected, o.Type)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceAssert) HasTypeNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.Type == "" {
+			return fmt.Errorf("expected type to be non-empty")
 		}
 		return nil
 	})
@@ -184,11 +250,33 @@ func (p *PostgresInstanceAssert) HasComputeFamily(expected string) *PostgresInst
 	return p
 }
 
+func (p *PostgresInstanceAssert) HasComputeFamilyNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.ComputeFamily == "" {
+			return fmt.Errorf("expected compute family to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PostgresInstanceAssert) HasAuthenticationAuthority(expected string) *PostgresInstanceAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
 		t.Helper()
 		if o.AuthenticationAuthority != expected {
 			return fmt.Errorf("expected authentication authority: %v; got: %v", expected, o.AuthenticationAuthority)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceAssert) HasAuthenticationAuthorityNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.AuthenticationAuthority == "" {
+			return fmt.Errorf("expected authentication authority to be non-empty")
 		}
 		return nil
 	})
@@ -211,6 +299,17 @@ func (p *PostgresInstanceAssert) HasPostgresVersion(expected string) *PostgresIn
 		t.Helper()
 		if o.PostgresVersion != expected {
 			return fmt.Errorf("expected postgres version: %v; got: %v", expected, o.PostgresVersion)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PostgresInstanceAssert) HasPostgresVersionNotEmpty() *PostgresInstanceAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstance) error {
+		t.Helper()
+		if o.PostgresVersion == "" {
+			return fmt.Errorf("expected postgres version to be non-empty")
 		}
 		return nil
 	})

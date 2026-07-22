@@ -45,11 +45,33 @@ func (t *TaskAssert) HasCreatedOn(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasCreatedOnNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasName(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasNameNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -67,11 +89,33 @@ func (t *TaskAssert) HasId(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasIdNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Id == "" {
+			return fmt.Errorf("expected id to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasDatabaseName(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.DatabaseName != expected {
 			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasDatabaseNameNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
 		}
 		return nil
 	})
@@ -89,6 +133,17 @@ func (t *TaskAssert) HasSchemaName(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasSchemaNameNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasOwner(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
@@ -100,11 +155,33 @@ func (t *TaskAssert) HasOwner(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasOwnerNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasComment(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasCommentNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -141,6 +218,17 @@ func (t *TaskAssert) HasSchedule(expected string) *TaskAssert {
 		t.Helper()
 		if o.Schedule != expected {
 			return fmt.Errorf("expected schedule: %v; got: %v", expected, o.Schedule)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasScheduleNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Schedule == "" {
+			return fmt.Errorf("expected schedule to be non-empty")
 		}
 		return nil
 	})
@@ -193,11 +281,33 @@ func (t *TaskAssert) HasDefinition(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasDefinitionNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Definition == "" {
+			return fmt.Errorf("expected definition to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasCondition(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.Condition != expected {
 			return fmt.Errorf("expected condition: %v; got: %v", expected, o.Condition)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasConditionNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Condition == "" {
+			return fmt.Errorf("expected condition to be non-empty")
 		}
 		return nil
 	})
@@ -251,11 +361,33 @@ func (t *TaskAssert) HasLastCommittedOn(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasLastCommittedOnNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.LastCommittedOn == "" {
+			return fmt.Errorf("expected last committed on to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasLastSuspendedOn(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.LastSuspendedOn != expected {
 			return fmt.Errorf("expected last suspended on: %v; got: %v", expected, o.LastSuspendedOn)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasLastSuspendedOnNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.LastSuspendedOn == "" {
+			return fmt.Errorf("expected last suspended on to be non-empty")
 		}
 		return nil
 	})
@@ -273,11 +405,33 @@ func (t *TaskAssert) HasOwnerRoleType(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasOwnerRoleTypeNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasConfig(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.Config != expected {
 			return fmt.Errorf("expected config: %v; got: %v", expected, o.Config)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasConfigNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Config == "" {
+			return fmt.Errorf("expected config to be non-empty")
 		}
 		return nil
 	})
@@ -295,11 +449,33 @@ func (t *TaskAssert) HasBudget(expected string) *TaskAssert {
 	return t
 }
 
+func (t *TaskAssert) HasBudgetNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.Budget == "" {
+			return fmt.Errorf("expected budget to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TaskAssert) HasLastSuspendedReason(expected string) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
 		if o.LastSuspendedReason != expected {
 			return fmt.Errorf("expected last suspended reason: %v; got: %v", expected, o.LastSuspendedReason)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TaskAssert) HasLastSuspendedReasonNotEmpty() *TaskAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
+		t.Helper()
+		if o.LastSuspendedReason == "" {
+			return fmt.Errorf("expected last suspended reason to be non-empty")
 		}
 		return nil
 	})
