@@ -243,9 +243,7 @@ func UpdateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 		booleanStringAttributeUnsetFallbackUpdate(d, "replace_invalid_characters", &set.ReplaceInvalidCharacters, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "ignore_utf8_errors", &set.IgnoreUtf8Errors, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "skip_byte_order_mark", &set.SkipByteOrderMark, true),
-		attributeMappedValueUpdateSetOnlySliceFallbackWrapped(d, "null_if", &set.NullIf, parseNullIf, func(nullIf []sdk.NullString) sdk.NullIfListRequest {
-			return *sdk.NewNullIfListRequest().WithNullIf(nullIf)
-		}, []sdk.NullString{}),
+		attributeMappedValueUpdateSetOnlyFallback(d, "null_if", &set.NullIf, parseNullIfRequest, *sdk.NewNullIfListRequest()),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
 	)
 	if errs != nil {

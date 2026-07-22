@@ -64,6 +64,14 @@ func fileFormatStringOrAutoMapper(v string) (sdk.StageFileFormatStringOrAutoRequ
 	return *sdk.NewStageFileFormatStringOrAutoRequest().WithValue(v), nil
 }
 
+func parseNullIfRequest(v any) (sdk.NullIfListRequest, error) {
+	nullIf, err := parseNullIf(v)
+	if err != nil {
+		return sdk.NullIfListRequest{}, err
+	}
+	return *sdk.NewNullIfListRequest().WithNullIf(nullIf), nil
+}
+
 func parseNullIf(v any) ([]sdk.NullString, error) {
 	nullIfList := v.([]any)
 	if len(nullIfList) == 0 {
