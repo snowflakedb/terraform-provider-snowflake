@@ -635,7 +635,7 @@ func TestInt_Users(t *testing.T) {
 				return awsWifData{
 					accountNumber: accountNumber,
 					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
-					issuer:        "https://sts.amazonaws.com",
+					issuer:        fmt.Sprintf("https://%s.tokens.sts.global.api.aws", accountNumber),
 				}
 			},
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
