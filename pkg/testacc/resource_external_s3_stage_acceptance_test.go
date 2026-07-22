@@ -29,6 +29,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// TODO(SNOW-3818978): Add tests for aws_sns_topic
+
 func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -45,7 +47,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 	modelBasic := model.ExternalS3StageWithId(id, awsUrl)
 	modelAlter := model.ExternalS3StageWithId(newId, awsUrl).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 		}).
@@ -57,7 +59,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/complete").
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 			AutoRefresh:     sdk.Bool(false),
@@ -68,7 +70,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/updated").
 		WithComment(changedComment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          false,
 			RefreshOnCreate: sdk.Bool(false),
 			AutoRefresh:     sdk.Bool(false),
@@ -279,6 +281,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					// TODO(SNOW-3818978): add assertion for describe_output.0.directory_table.0.aws_sns_topic once the field is added to describe_output
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.aws_access_point_arn", "arn:aws:s3:us-west-2:123456789012:accesspoint/complete")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
@@ -303,6 +306,7 @@ func TestAcc_ExternalS3Stage_BasicUseCase(t *testing.T) {
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "cloud", string(sdk.StageCloudAws)),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.enable", "true"),
 					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.auto_refresh", "false"),
+					importchecks.TestCheckResourceAttrInstanceState(resourcehelpers.EncodeResourceIdentifier(id), "directory.0.aws_sns_topic", ""),
 				),
 			},
 			// Alter (update comment, directory.enable, encryption)
@@ -689,7 +693,7 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 	modelComplete := model.ExternalS3StageWithId(id, awsUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 			AutoRefresh:     sdk.Bool(false),
@@ -734,6 +738,7 @@ func TestAcc_ExternalS3Stage_CompleteUseCase(t *testing.T) {
 						HasCreatedOnNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.enable", "true")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.directory_table.0.auto_refresh", "false")),
+					// TODO(SNOW-3818978): add assertion for describe_output.0.directory_table.0.aws_sns_topic once the field is added to describe_output
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.privatelink.0.use_privatelink_endpoint", "false")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.location.0.url.0", awsUrl)),

@@ -56,7 +56,7 @@ type CreateOnS3StageRequest struct {
 	IfNotExists           *bool
 	name                  SchemaObjectIdentifier       // required
 	ExternalStageParams   ExternalS3StageParamsRequest // required
-	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
+	DirectoryTableOptions *StageS3DirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	Comment               *string
 	Tag                   []TagAssociation
@@ -97,10 +97,11 @@ type ExternalStageS3EncryptionAwsSseKmsRequest struct {
 
 type ExternalStageS3EncryptionNoneRequest struct{}
 
-type StageS3CommonDirectoryTableOptionsRequest struct {
+type StageS3DirectoryTableOptionsRequest struct {
 	Enable          bool
 	RefreshOnCreate *bool
 	AutoRefresh     *bool
+	AwsSnsTopic     *string
 }
 
 type CreateOnGCSStageRequest struct {
@@ -187,7 +188,7 @@ type CreateOnS3CompatibleStageRequest struct {
 	IfNotExists           *bool
 	name                  SchemaObjectIdentifier                 // required
 	ExternalStageParams   ExternalS3CompatibleStageParamsRequest // required
-	DirectoryTableOptions *StageS3CommonDirectoryTableOptionsRequest
+	DirectoryTableOptions *StageS3CompatibleDirectoryTableOptionsRequest
 	FileFormat            *StageFileFormatRequest
 	Comment               *string
 	Tag                   []TagAssociation
@@ -202,6 +203,12 @@ type ExternalS3CompatibleStageParamsRequest struct {
 type ExternalStageS3CompatibleCredentialsRequest struct {
 	AwsKeyId     string // required
 	AwsSecretKey string // required
+}
+
+type StageS3CompatibleDirectoryTableOptionsRequest struct {
+	Enable          bool
+	RefreshOnCreate *bool
+	AutoRefresh     *bool
 }
 
 type AlterStageRequest struct {

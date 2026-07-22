@@ -12,6 +12,7 @@ type ExternalS3StageDirectoryTableAssert struct {
 	Enable          bool
 	RefreshOnCreate *bool
 	AutoRefresh     *string
+	AwsSnsTopic     *string
 }
 
 func (e *ExternalS3StageResourceAssert) HasDirectory(opts ExternalS3StageDirectoryTableAssert) *ExternalS3StageResourceAssert {
@@ -23,10 +24,15 @@ func (e *ExternalS3StageResourceAssert) HasDirectory(opts ExternalS3StageDirecto
 	if opts.AutoRefresh != nil {
 		autoRefresh = *opts.AutoRefresh
 	}
+	var awsSnsTopic string
+	if opts.AwsSnsTopic != nil {
+		awsSnsTopic = *opts.AwsSnsTopic
+	}
 	e.ValueSet("directory.#", "1")
 	e.ValueSet("directory.0.enable", strconv.FormatBool(opts.Enable))
 	e.ValueSet("directory.0.auto_refresh", autoRefresh)
 	e.ValueSet("directory.0.refresh_on_create", refreshOnCreate)
+	e.ValueSet("directory.0.aws_sns_topic", awsSnsTopic)
 	return e
 }
 

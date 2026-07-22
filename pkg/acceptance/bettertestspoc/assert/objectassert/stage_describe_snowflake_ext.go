@@ -97,6 +97,23 @@ func (s *StageDetailsAssert) HasDirectoryTableAutoRefresh(expected bool) *StageD
 	return s
 }
 
+func (s *StageDetailsAssert) HasDirectoryTableAwsSnsTopic(expected string) *StageDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
+		t.Helper()
+		if o.DirectoryTable == nil {
+			return fmt.Errorf("expected directory table to have value; got: nil")
+		}
+		if o.DirectoryTable.AwsSnsTopic == nil {
+			return fmt.Errorf("expected directory table aws sns topic to have value; got: nil")
+		}
+		if *o.DirectoryTable.AwsSnsTopic != expected {
+			return fmt.Errorf("expected directory table aws sns topic: %v; got: %v", expected, *o.DirectoryTable.AwsSnsTopic)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageDetailsAssert) HasDirectoryTableNotificationChannelEmpty() *StageDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StageDetails) error {
 		t.Helper()

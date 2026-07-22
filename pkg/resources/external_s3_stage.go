@@ -178,6 +178,12 @@ var externalS3StageSchema = func() map[string]*schema.Schema {
 						Description:      "Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.",
 						DiffSuppressFunc: IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.directory_table", "auto_refresh"),
 					},
+					"aws_sns_topic": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						ForceNew:    true,
+						Description: "Specifies the AWS SNS topic ARN used for directory table auto-refresh notifications. Changing this field causes resource recreation (ForceNew). External change detection for this field is not yet supported and will be addressed in a future update.",
+					},
 				},
 			},
 		},
@@ -553,18 +559,18 @@ func parseS3StageEncryption(v any) (sdk.ExternalStageS3EncryptionRequest, error)
 	return *encryptionReq, nil
 }
 
-func parseS3StageDirectory(v any) (sdk.StageS3CommonDirectoryTableOptionsRequest, error) {
+func parseS3StageDirectory(v any) (sdk.StageS3DirectoryTableOptionsRequest, error) {
 	directoryList := v.([]any)
 	if len(directoryList) == 0 {
-		return sdk.StageS3CommonDirectoryTableOptionsRequest{}, nil
+		return sdk.StageS3DirectoryTableOptionsRequest{}, nil
 	}
 	directoryConfig := directoryList[0].(map[string]any)
-	directoryReq := sdk.NewStageS3CommonDirectoryTableOptionsRequest().WithEnable(directoryConfig["enable"].(bool))
+	directoryReq := sdk.NewStageS3DirectoryTableOptionsRequest().WithEnable(directoryConfig["enable"].(bool))
 
 	if v, ok := directoryConfig["refresh_on_create"]; ok && v.(string) != BooleanDefault {
 		refreshOnCreateBool, err := booleanStringToBool(v.(string))
 		if err != nil {
-			return sdk.StageS3CommonDirectoryTableOptionsRequest{}, fmt.Errorf("parsing refresh_on_create: %w", err)
+			return sdk.StageS3DirectoryTableOptionsRequest{}, fmt.Errorf("parsing refresh_on_create: %w", err)
 		}
 		directoryReq.WithRefreshOnCreate(refreshOnCreateBool)
 	}
@@ -572,9 +578,13 @@ func parseS3StageDirectory(v any) (sdk.StageS3CommonDirectoryTableOptionsRequest
 	if v, ok := directoryConfig["auto_refresh"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
 		autoRefreshBool, err := booleanStringToBool(v.(string))
 		if err != nil {
-			return sdk.StageS3CommonDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
+			return sdk.StageS3DirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
 		}
 		directoryReq.WithAutoRefresh(autoRefreshBool)
+	}
+
+	if awsSnsTopic, ok := directoryConfig["aws_sns_topic"]; ok && awsSnsTopic.(string) != "" {
+		directoryReq.WithAwsSnsTopic(awsSnsTopic.(string))
 	}
 
 	return *directoryReq, nil

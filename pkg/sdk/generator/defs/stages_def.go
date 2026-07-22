@@ -84,8 +84,16 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		WithValidation(g.ValidIdentifier, "name")
 }
 
-var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {
-	return g.NewQueryStruct("StageS3CommonDirectoryTableOptions").
+var stageS3DirectoryTableOptionsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("StageS3DirectoryTableOptions").
+		BooleanAssignment("ENABLE", nil).
+		OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
+		OptionalBooleanAssignment("AUTO_REFRESH", nil).
+		OptionalTextAssignment("AWS_SNS_TOPIC", g.ParameterOptions().SingleQuotes())
+}
+
+var stageS3CompatibleDirectoryTableOptionsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("StageS3CompatibleDirectoryTableOptions").
 		BooleanAssignment("ENABLE", nil).
 		OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
 		OptionalBooleanAssignment("AUTO_REFRESH", nil)
@@ -261,7 +269,7 @@ var stagesDef = g.NewInterface(
 				QueryStructField("ExternalStageParams", externalS3StageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					stageS3CommonDirectoryTableOptionsDef(),
+					stageS3DirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
@@ -308,7 +316,7 @@ var stagesDef = g.NewInterface(
 				QueryStructField("ExternalStageParams", externalS3CompatibleStageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					stageS3CommonDirectoryTableOptionsDef(),
+					stageS3CompatibleDirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),

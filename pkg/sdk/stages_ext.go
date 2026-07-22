@@ -39,6 +39,7 @@ type StageDirectoryTable struct {
 	AutoRefresh                  bool
 	DirectoryNotificationChannel *string
 	LastRefreshedOn              *string
+	AwsSnsTopic                  *string
 }
 
 // StageDetails represents the parsed result of DESCRIBE STAGE
@@ -161,6 +162,8 @@ func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
 			if prop.Value != "" {
 				dt.LastRefreshedOn = &prop.Value
 			}
+		case "AWS_SNS_TOPIC":
+			dt.AwsSnsTopic = &prop.Value
 		}
 	}
 
