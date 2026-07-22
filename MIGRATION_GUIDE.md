@@ -57,15 +57,21 @@ The [`snowflake_grants`](https://registry.terraform.io/providers/snowflakedb/sno
 - A new `inherited_grants_in` query block was added. It maps to the `SHOW INHERITED GRANTS IN { ACCOUNT | DATABASE <name> | SCHEMA <name> }` command and enumerates the inherited grants defined in a container.
 - Each element of the computed `grants` list now additionally exposes the `is_inherited`, `inherited_from`, `inherited_from_database`, and `inherited_from_schema` attributes.
 
-#### Resource
+#### Resources
 
-The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports creating inherited grants. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks. Notes:
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports creating inherited grants. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.
+
+The [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) resource now supports creating inherited grants as well:
+- `on_schema` gains an `inherited` attribute. It takes the fully qualified name of a database and works just like the existing `all_schemas_in_database` and `future_schemas_in_database` attributes.
+- `on_schema_object` gains an `inherited` block that targets a plural object type in a chosen database (`in_database`) or schema (`in_schema`).
+
+Notes (both resources):
 - Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
 - External drift is detected for inherited grants (e.g. an externally revoked privilege reappears in the plan).
 - `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.
 - `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
 
-Both changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
+All changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
 
 ### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
 

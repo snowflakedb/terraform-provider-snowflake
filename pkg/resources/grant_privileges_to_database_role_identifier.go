@@ -12,10 +12,35 @@ import (
 type DatabaseRoleGrantKind string
 
 const (
-	OnDatabaseDatabaseRoleGrantKind     DatabaseRoleGrantKind = "OnDatabase"
-	OnSchemaDatabaseRoleGrantKind       DatabaseRoleGrantKind = "OnSchema"
-	OnSchemaObjectDatabaseRoleGrantKind DatabaseRoleGrantKind = "OnSchemaObject"
+	OnDatabaseDatabaseRoleGrantKind              DatabaseRoleGrantKind = "OnDatabase"
+	OnSchemaDatabaseRoleGrantKind                DatabaseRoleGrantKind = "OnSchema"
+	OnSchemaInheritedDatabaseRoleGrantKind       DatabaseRoleGrantKind = "OnSchemaInherited"
+	OnSchemaObjectDatabaseRoleGrantKind          DatabaseRoleGrantKind = "OnSchemaObject"
+	OnSchemaObjectInheritedDatabaseRoleGrantKind DatabaseRoleGrantKind = "OnSchemaObjectInherited"
 )
+
+// IsInherited reports whether the grant kind corresponds to an inherited grant.
+func (kind DatabaseRoleGrantKind) IsInherited() bool {
+	switch kind {
+	case OnSchemaInheritedDatabaseRoleGrantKind, OnSchemaObjectInheritedDatabaseRoleGrantKind:
+		return true
+	default:
+		return false
+	}
+}
+
+// Plain collapses an inherited grant kind into its plain counterpart (e.g.
+// OnSchemaObjectInheritedDatabaseRoleGrantKind -> OnSchemaObjectDatabaseRoleGrantKind).
+func (kind DatabaseRoleGrantKind) Plain() DatabaseRoleGrantKind {
+	switch kind {
+	case OnSchemaInheritedDatabaseRoleGrantKind:
+		return OnSchemaDatabaseRoleGrantKind
+	case OnSchemaObjectInheritedDatabaseRoleGrantKind:
+		return OnSchemaObjectDatabaseRoleGrantKind
+	default:
+		return kind
+	}
+}
 
 type GrantPrivilegesToDatabaseRoleId struct {
 	DatabaseRoleName sdk.DatabaseObjectIdentifier
@@ -172,6 +197,59 @@ func ParseGrantPrivilegesToDatabaseRoleId(id string) (GrantPrivilegesToDatabaseR
 			return databaseRoleId, sdk.NewError(fmt.Sprintf("invalid OnSchemaGrantKind: %s", onSchemaGrantData.Kind))
 		}
 		databaseRoleId.Data = &onSchemaGrantData
+	case OnSchemaInheritedDatabaseRoleGrantKind:
+		if len(parts) != 7 {
+			return databaseRoleId, sdk.NewError(`database role identifier should hold 7 parts "<database_role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaInherited|InDatabase|<database_name>"`)
+		}
+		onSchemaInheritedGrantData := OnSchemaInheritedGrantData{
+			Kind: InheritedContainerKind(parts[5]),
+		}
+		switch onSchemaInheritedGrantData.Kind {
+		case InDatabaseInheritedContainerKind:
+			databaseId, err := sdk.ParseAccountObjectIdentifier(parts[6])
+			if err != nil {
+				return databaseRoleId, err
+			}
+			onSchemaInheritedGrantData.DatabaseName = new(databaseId)
+		default:
+			return databaseRoleId, sdk.NewError(fmt.Sprintf(
+				"database roles only support %s container for on_schema inherited grants; got: %s",
+				InDatabaseInheritedContainerKind, onSchemaInheritedGrantData.Kind,
+			))
+		}
+		databaseRoleId.Data = &onSchemaInheritedGrantData
+	case OnSchemaObjectInheritedDatabaseRoleGrantKind:
+		if len(parts) != 8 {
+			return databaseRoleId, sdk.NewError(`database role identifier should hold 8 parts "<database_role_name>|<with_grant_option>|<always_apply>|<privileges>|OnSchemaObjectInherited|<object_type_plural>|In[Database or Schema]|<identifier>"`)
+		}
+		objectNamePlural, err := sdk.ToPluralObjectType(parts[5])
+		if err != nil {
+			return databaseRoleId, err
+		}
+		onSchemaObjectInheritedGrantData := OnSchemaObjectInheritedGrantData{
+			ObjectNamePlural: objectNamePlural,
+			Kind:             InheritedContainerKind(parts[6]),
+		}
+		switch onSchemaObjectInheritedGrantData.Kind {
+		case InDatabaseInheritedContainerKind:
+			databaseId, err := sdk.ParseAccountObjectIdentifier(parts[7])
+			if err != nil {
+				return databaseRoleId, err
+			}
+			onSchemaObjectInheritedGrantData.DatabaseName = new(databaseId)
+		case InSchemaInheritedContainerKind:
+			schemaId, err := sdk.ParseDatabaseObjectIdentifier(parts[7])
+			if err != nil {
+				return databaseRoleId, err
+			}
+			onSchemaObjectInheritedGrantData.SchemaName = new(schemaId)
+		default:
+			return databaseRoleId, sdk.NewError(fmt.Sprintf(
+				"database roles only support %s or %s containers for on_schema_object inherited grants; got: %s",
+				InDatabaseInheritedContainerKind, InSchemaInheritedContainerKind, onSchemaObjectInheritedGrantData.Kind,
+			))
+		}
+		databaseRoleId.Data = &onSchemaObjectInheritedGrantData
 	case OnSchemaObjectDatabaseRoleGrantKind:
 		if len(parts) < 7 {
 			return databaseRoleId, sdk.NewError(`database role identifier should hold at least 7 parts "<database_role_name>|<with_grant_option>|<always_apply>|<privileges>|<grant_type>|<grant_on_schema_object_type>|<on_schema_object_grant_data>..."`)

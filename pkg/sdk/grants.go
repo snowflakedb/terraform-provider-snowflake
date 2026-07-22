@@ -152,6 +152,14 @@ type DatabaseRoleGrantPrivileges struct {
 	AllPrivileges          *bool                    `ddl:"keyword" sql:"ALL PRIVILEGES"`
 }
 
+func (v *DatabaseRoleGrantPrivileges) ToInheritedDatabaseRoleGrantPrivileges() InheritedDatabaseRoleGrantPrivileges {
+	return InheritedDatabaseRoleGrantPrivileges{
+		SchemaPrivileges:       v.SchemaPrivileges,
+		SchemaObjectPrivileges: v.SchemaObjectPrivileges,
+		AllPrivileges:          v.AllPrivileges,
+	}
+}
+
 type DatabaseRoleGrantOn struct {
 	Database     *AccountObjectIdentifier `ddl:"identifier" sql:"DATABASE"`
 	Schema       *GrantOnSchema           `ddl:"-"`

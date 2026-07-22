@@ -72,6 +72,18 @@ func (c *GrantClient) RevokeInheritedPrivilegesFromAccountRole(
 	require.NoError(t, err)
 }
 
+func (c *GrantClient) RevokeInheritedPrivilegesFromDatabaseRole(
+	t *testing.T,
+	databaseRoleId sdk.DatabaseObjectIdentifier,
+	privileges sdk.InheritedDatabaseRoleGrantPrivileges,
+	onAll sdk.PluralObjectType,
+	in sdk.InheritedDatabaseRoleGrantIn,
+) {
+	t.Helper()
+	err := c.client().RevokeInheritedPrivilegesFromDatabaseRole(context.Background(), privileges, onAll, in, databaseRoleId)
+	require.NoError(t, err)
+}
+
 func (c *GrantClient) RevokeGlobalPrivilegesFromAccountRole(
 	t *testing.T,
 	accountRoleId sdk.AccountObjectIdentifier,
