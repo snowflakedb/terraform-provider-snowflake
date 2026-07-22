@@ -41,10 +41,12 @@ type TestClient struct {
 	ExternalFunction             *ExternalFunctionClient
 	ExternalTable                *ExternalTableClient
 	ExternalVolume               *ExternalVolumeClient
+	Experiment                   *ExperimentClient
 	FailoverGroup                *FailoverGroupClient
 	FeaturePolicy                *FeaturePolicyClient
 	FileFormat                   *FileFormatClient
 	Function                     *FunctionClient
+	Gateway                      *GatewayClient
 	GitRepository                *GitRepositoryClient
 	Grant                        *GrantClient
 	HybridTable                  *HybridTableClient
@@ -93,6 +95,7 @@ type TestClient struct {
 	User                         *UserClient
 	View                         *ViewClient
 	Warehouse                    *WarehouseClient
+	Workspace                    *WorkspaceClient
 }
 
 func NewTestClient(
@@ -145,10 +148,12 @@ func NewTestClient(
 		ExternalFunction:             NewExternalFunctionClient(context, idsGenerator),
 		ExternalTable:                NewExternalTableClient(context, idsGenerator),
 		ExternalVolume:               NewExternalVolumeClient(context, idsGenerator),
+		Experiment:                   NewExperimentClient(context, idsGenerator),
 		FailoverGroup:                NewFailoverGroupClient(context, idsGenerator),
 		FeaturePolicy:                NewFeaturePolicyClient(context, idsGenerator),
 		FileFormat:                   NewFileFormatClient(context, idsGenerator),
 		Function:                     NewFunctionClient(context, idsGenerator),
+		Gateway:                      NewGatewayClient(context, idsGenerator),
 		GitRepository:                NewGitRepositoryClient(context, idsGenerator),
 		Grant:                        NewGrantClient(context, idsGenerator),
 		HybridTable:                  NewHybridTableClient(context, idsGenerator),
@@ -197,6 +202,7 @@ func NewTestClient(
 		User:                         NewUserClient(context, idsGenerator),
 		View:                         NewViewClient(context, idsGenerator),
 		Warehouse:                    NewWarehouseClient(context, idsGenerator),
+		Workspace:                    NewWorkspaceClient(context, idsGenerator),
 	}
 }
 

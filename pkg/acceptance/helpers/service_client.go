@@ -114,6 +114,21 @@ spec:
 `, containerName)
 }
 
+func (c *ServiceClient) SampleSpecWithEndpoint(t *testing.T, endpointName string) string {
+	t.Helper()
+
+	return fmt.Sprintf(`
+spec:
+  containers:
+  - name: example-container
+    image: /snowflake/images/snowflake_images/exampleimage:latest
+  endpoints:
+  - name: %s
+    port: 4242
+    protocol: TCP
+`, endpointName)
+}
+
 func (c *ServiceClient) SampleSpecWithBlockVolume(t *testing.T) string {
 	t.Helper()
 	return `
