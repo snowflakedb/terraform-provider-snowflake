@@ -465,7 +465,7 @@ func TestInt_Stages(t *testing.T) {
 
 		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
 			WithIfNotExists(true).
-			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
+			WithDirectoryTableOptions(*sdk.NewStageS3DirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(true).
 				WithAutoRefresh(false)).
@@ -492,6 +492,35 @@ func TestInt_Stages(t *testing.T) {
 			HasDirectoryTableAutoRefresh(false).
 			HasLocationAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
 			HasPrivateLinkUsePrivatelinkEndpoint(false))
+	})
+
+	t.Run("CreateOnS3 - with aws_sns_topic", func(t *testing.T) {
+		// TODO(SNOW-3818978): Adjust the test for aws_sns_topic
+		snsTopicArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSnsTopicArn)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		s3Req := sdk.NewExternalS3StageParamsRequest(awsBucketUrl).
+			WithStorageIntegration(ids.PrecreatedS3StorageIntegration)
+
+		request := sdk.NewCreateOnS3StageRequest(id, *s3Req).
+			WithDirectoryTableOptions(*sdk.NewStageS3DirectoryTableOptionsRequest().
+				WithEnable(true).
+				WithAutoRefresh(true).
+				WithAwsSnsTopic(snsTopicArn))
+
+		err := client.Stages.CreateOnS3(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Stage.DropStageFunc(t, id))
+
+		assertThatObject(t, objectassert.Stage(t, id).
+			HasName(id.Name()).
+			HasType(sdk.StageTypeExternal).
+			HasDirectoryEnabled(true))
+
+		assertThatObject(t, objectassert.StageDetails(t, id).
+			HasDirectoryTableEnable(true).
+			HasDirectoryTableAutoRefresh(true).
+			HasDirectoryTableAwsSnsTopic(snsTopicArn))
 	})
 
 	t.Run("CreateOnS3 - temporary and or replace", func(t *testing.T) {
@@ -864,7 +893,7 @@ func TestInt_Stages(t *testing.T) {
 
 		request := sdk.NewCreateOnS3CompatibleStageRequest(id, *s3CompatReq).
 			WithIfNotExists(true).
-			WithDirectoryTableOptions(*sdk.NewStageS3CommonDirectoryTableOptionsRequest().
+			WithDirectoryTableOptions(*sdk.NewStageS3CompatibleDirectoryTableOptionsRequest().
 				WithEnable(true).
 				WithRefreshOnCreate(false).
 				WithAutoRefresh(false)).

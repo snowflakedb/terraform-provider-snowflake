@@ -6,7 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (e *ExternalS3CompatibleStageResourceAssert) HasDirectory(opts sdk.StageS3CommonDirectoryTableOptionsRequest) *ExternalS3CompatibleStageResourceAssert {
+func (e *ExternalS3CompatibleStageResourceAssert) HasDirectory(opts sdk.StageS3CompatibleDirectoryTableOptionsRequest) *ExternalS3CompatibleStageResourceAssert {
 	var refreshOnCreate string
 	if opts.RefreshOnCreate != nil {
 		refreshOnCreate = strconv.FormatBool(*opts.RefreshOnCreate)

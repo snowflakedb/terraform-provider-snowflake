@@ -53,6 +53,7 @@ resource "snowflake_stage_external_s3" "complete" {
     enable            = true
     refresh_on_create = true
     auto_refresh      = false
+    aws_sns_topic     = "arn:aws:sns:us-west-2:123456789012:s3-stage-directory-topic"
   }
 
   comment = "Fully configured S3 external stage"
@@ -326,6 +327,7 @@ Required:
 Optional:
 
 - `auto_refresh` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether Snowflake should enable triggering automatic refreshes of the directory table metadata.
+- `aws_sns_topic` (String) Specifies the AWS SNS topic ARN used for directory table auto-refresh notifications. Changing this field causes resource recreation (ForceNew). External change detection for this field is not yet supported and will be addressed in a future update.
 - `refresh_on_create` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to automatically refresh the directory table metadata once, immediately after the stage is created.This field is used only when creating the object. Changes on this field are ignored after creation.
 
 

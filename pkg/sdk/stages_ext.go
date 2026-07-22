@@ -141,6 +141,8 @@ func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
 			if prop.Value != "" {
 				dt.LastRefreshedOn = &prop.Value
 			}
+		case "AWS_SNS_TOPIC":
+			dt.AwsSnsTopic = &prop.Value
 		}
 	}
 

@@ -19,7 +19,7 @@ func (e *ExternalS3CompatibleStageModel) WithDirectoryEnabled(enable string) *Ex
 	return e
 }
 
-func (e *ExternalS3CompatibleStageModel) WithDirectoryEnabledAndOptions(opts sdk.StageS3CommonDirectoryTableOptionsRequest) *ExternalS3CompatibleStageModel {
+func (e *ExternalS3CompatibleStageModel) WithDirectoryEnabledAndOptions(opts sdk.StageS3CompatibleDirectoryTableOptionsRequest) *ExternalS3CompatibleStageModel {
 	directoryMap := map[string]tfconfig.Variable{
 		"enable": tfconfig.BoolVariable(opts.Enable),
 	}
