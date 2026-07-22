@@ -66,6 +66,7 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeSecret,
 	ObjectTypeSemanticView,
 	ObjectTypeSequence,
+	ObjectTypeSnowflakeIntelligence,
 	ObjectTypeStage,
 	ObjectTypeStream,
 	ObjectTypeTable,
@@ -117,6 +118,7 @@ var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeSecret,
 	ObjectTypeSemanticView,
 	ObjectTypeSequence,
+	ObjectTypeSnowflakeIntelligence,
 	ObjectTypeStage,
 	ObjectTypeStream,
 	ObjectTypeTable,
@@ -138,6 +140,7 @@ var validGrantToAccountObjectTypes = []ObjectType{
 	ObjectTypeFailoverGroup,
 	ObjectTypeReplicationGroup,
 	ObjectTypeExternalVolume,
+	ObjectTypeSnowflakeIntelligence,
 }
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#required-parameters
@@ -363,8 +366,8 @@ func (v *AccountRoleGrantOn) validate() error {
 }
 
 func (v *GrantOnAccountObject) validate() error {
-	if !exactlyOneValueSet(v.User, v.ResourceMonitor, v.Warehouse, v.ComputePool, v.Database, v.Integration, v.Connection, v.FailoverGroup, v.ReplicationGroup, v.ExternalVolume) {
-		return errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume")
+	if !exactlyOneValueSet(v.User, v.ResourceMonitor, v.Warehouse, v.ComputePool, v.Database, v.Integration, v.Connection, v.FailoverGroup, v.ReplicationGroup, v.ExternalVolume, v.SnowflakeIntelligence) {
+		return errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume", "SnowflakeIntelligence")
 	}
 	return nil
 }

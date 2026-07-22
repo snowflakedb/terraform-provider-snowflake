@@ -7,6 +7,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -1507,6 +1511,55 @@ func TestAcc_GrantOwnership_OnObject_ResourceMonitor_ToAccountRole(t *testing.T)
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_GrantOwnership_OnObject_SnowflakeIntelligence_ToAccountRole(t *testing.T) {
+	snowflakeIntelligenceId, snowflakeIntelligenceCleanup := testClient().SnowflakeIntelligence.Create(t)
+	t.Cleanup(snowflakeIntelligenceCleanup)
+
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+	accountRoleId := role.ID()
+
+	resourceModel := model.GrantOwnership("test", []sdk.OwnershipGrantOn{
+		{
+			Object: &sdk.Object{
+				ObjectType: sdk.ObjectTypeSnowflakeIntelligence,
+				Name:       snowflakeIntelligenceId,
+			},
+		},
+	}).WithAccountRoleName(accountRoleId.FullyQualifiedName())
+	ref := resourceModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, resourceModel),
+				Check: assertThat(t,
+					resourceassert.GrantOwnershipResource(t, ref).
+						HasAccountRoleName(accountRoleId.FullyQualifiedName()),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on.0.object_type", string(sdk.ObjectTypeSnowflakeIntelligence))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on.0.object_name", snowflakeIntelligenceId.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|%s|%s", accountRoleId.FullyQualifiedName(), sdk.ObjectTypeSnowflakeIntelligence, snowflakeIntelligenceId.FullyQualifiedName()))),
+					assert.Check(checkResourceOwnershipIsGranted(&sdk.ShowGrantOptions{
+						To: &sdk.ShowGrantsTo{
+							Role: accountRoleId,
+						},
+					}, sdk.ObjectTypeSnowflakeIntelligence, accountRoleId.Name(), snowflakeIntelligenceId.FullyQualifiedName())),
+				),
+			},
+			{
+				Config:                  accconfig.FromModels(t, resourceModel),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"on_account_object.0.object_name"},
 			},
 		},
 	})

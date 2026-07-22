@@ -82,6 +82,7 @@ type TestClient struct {
 	SemanticView                 *SemanticViewClient
 	Snapshot                     *SnapshotClient
 	SnowflakeDefaults            *SnowflakeDefaultsClient
+	SnowflakeIntelligence        *SnowflakeIntelligenceClient
 	Stage                        *StageClient
 	StorageIntegration           *StorageIntegrationClient
 	StorageLifecyclePolicy       *StorageLifecyclePolicyClient
@@ -182,6 +183,7 @@ func NewTestClient(
 		SemanticView:                 NewSemanticViewClient(context, idsGenerator),
 		Snapshot:                     NewSnapshotClient(context, idsGenerator),
 		SnowflakeDefaults:            NewSnowflakeDefaultsClient(context),
+		SnowflakeIntelligence:        NewSnowflakeIntelligenceClient(context, idsGenerator),
 		Service:                      NewServiceClient(context, idsGenerator),
 		Sequence:                     NewSequenceClient(context, idsGenerator),
 		SessionPolicy:                NewSessionPolicyClient(context, idsGenerator),

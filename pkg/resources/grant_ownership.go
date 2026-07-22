@@ -457,6 +457,7 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeResourceMonitor,
 		sdk.ObjectTypeRole,
 		sdk.ObjectTypeShare,
+		sdk.ObjectTypeSnowflakeIntelligence,
 		sdk.ObjectTypeStorageIntegration,
 		sdk.ObjectTypeUser,
 		sdk.ObjectTypeWarehouse:
