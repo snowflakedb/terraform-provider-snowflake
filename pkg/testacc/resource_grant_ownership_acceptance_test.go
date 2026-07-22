@@ -1557,10 +1557,9 @@ func TestAcc_GrantOwnership_OnObject_SnowflakeIntelligence_ToAccountRole(t *test
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, resourceModel),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"on_account_object.0.object_name"},
+				Config:       accconfig.FromModels(t, resourceModel),
+				ResourceName: ref,
+				ImportState:  true,
 			},
 		},
 	})
