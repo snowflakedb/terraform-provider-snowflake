@@ -42,7 +42,7 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 	modelComplete := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3CompatibleDirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(false),
 			AutoRefresh:     sdk.Bool(false),
@@ -51,7 +51,7 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 	modelUpdated := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3CompatibleDirectoryTableOptionsRequest{
 			Enable:          false,
 			RefreshOnCreate: sdk.Bool(false),
 			AutoRefresh:     sdk.Bool(false),
@@ -122,7 +122,7 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
+						HasDirectory(sdk.StageS3CompatibleDirectoryTableOptionsRequest{
 							Enable:          true,
 							AutoRefresh:     sdk.Bool(false),
 							RefreshOnCreate: sdk.Bool(false),
@@ -180,7 +180,7 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
+						HasDirectory(sdk.StageS3CompatibleDirectoryTableOptionsRequest{
 							Enable:          false,
 							AutoRefresh:     sdk.Bool(false),
 							RefreshOnCreate: sdk.Bool(false),
@@ -224,7 +224,7 @@ func TestAcc_ExternalS3CompatStage_BasicUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
+						HasDirectory(sdk.StageS3CompatibleDirectoryTableOptionsRequest{
 							Enable:          false,
 							AutoRefresh:     sdk.Bool(false),
 							RefreshOnCreate: sdk.Bool(false),
@@ -353,7 +353,7 @@ func TestAcc_ExternalS3CompatStage_CompleteUseCase(t *testing.T) {
 	modelComplete := model.ExternalS3CompatibleStageWithId(id, s3CompatUrl, s3CompatEndpoint).
 		WithCredentials(awsKeyId, awsSecretKey).
 		WithComment(comment).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3CompatibleDirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(false),
 			AutoRefresh:     sdk.Bool(false),
@@ -377,7 +377,7 @@ func TestAcc_ExternalS3CompatStage_CompleteUseCase(t *testing.T) {
 						HasUrlString(s3CompatUrl).
 						HasEndpointString(s3CompatEndpoint).
 						HasCommentString(comment).
-						HasDirectory(sdk.StageS3CommonDirectoryTableOptionsRequest{
+						HasDirectory(sdk.StageS3CompatibleDirectoryTableOptionsRequest{
 							Enable:          true,
 							RefreshOnCreate: sdk.Bool(false),
 							AutoRefresh:     sdk.Bool(false),

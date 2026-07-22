@@ -19,7 +19,7 @@ func (e *ExternalS3StageModel) WithDirectoryEnabled(enable string) *ExternalS3St
 	return e
 }
 
-func (e *ExternalS3StageModel) WithDirectoryEnabledAndOptions(opts sdk.StageS3CommonDirectoryTableOptionsRequest) *ExternalS3StageModel {
+func (e *ExternalS3StageModel) WithDirectoryEnabledAndOptions(opts sdk.StageS3DirectoryTableOptionsRequest) *ExternalS3StageModel {
 	directoryMap := map[string]tfconfig.Variable{
 		"enable": tfconfig.BoolVariable(opts.Enable),
 	}
@@ -28,6 +28,9 @@ func (e *ExternalS3StageModel) WithDirectoryEnabledAndOptions(opts sdk.StageS3Co
 	}
 	if opts.AutoRefresh != nil {
 		directoryMap["auto_refresh"] = tfconfig.BoolVariable(*opts.AutoRefresh)
+	}
+	if opts.AwsSnsTopic != nil {
+		directoryMap["aws_sns_topic"] = tfconfig.StringVariable(*opts.AwsSnsTopic)
 	}
 	e.Directory = tfconfig.ListVariable(tfconfig.ObjectVariable(directoryMap))
 	return e
