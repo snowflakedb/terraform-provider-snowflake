@@ -29,7 +29,7 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 ### *(new feature)* New file format resources
 
 We have added new preview resources for file formats:
-- [snowflake_file_format_json](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json) for managing JSON file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_json` feature name.
+- [snowflake_file_format_json](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json) for managing JSON file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_json_resource` feature name.
 
 These features will be marked as stable in future releases. To use them, add the relevant feature name to the `preview_features_enabled` field in the provider configuration.
 

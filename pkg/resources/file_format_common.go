@@ -50,8 +50,14 @@ var fileFormatCommonSchema = map[string]*schema.Schema{
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
 
+// isFileFormatAutoSentinel reports whether v is the special "AUTO" value Snowflake uses to
+// mean "detect the format automatically", as opposed to a literal format string.
+func isFileFormatAutoSentinel(v string) bool {
+	return strings.ToUpper(v) == "AUTO"
+}
+
 func fileFormatStringOrAutoMapper(v string) (sdk.StageFileFormatStringOrAutoRequest, error) {
-	if strings.ToUpper(v) == "AUTO" {
+	if isFileFormatAutoSentinel(v) {
 		return *sdk.NewStageFileFormatStringOrAutoRequest().WithAuto(true), nil
 	}
 	return *sdk.NewStageFileFormatStringOrAutoRequest().WithValue(v), nil

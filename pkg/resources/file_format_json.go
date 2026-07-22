@@ -62,7 +62,8 @@ func FileFormatJson() *schema.Resource {
 }
 
 func ImportFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -81,7 +82,6 @@ func ImportFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 		errs = append(errs, err)
 	}
 
-	// Setting defaults is always enabled.
 	for key, value := range jsonFileFormatToSchema(details, true) {
 		errs = append(errs, d.Set(key, value))
 	}
@@ -166,11 +166,12 @@ func GetReadFileFormatJsonFunc(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
+		describeOutputValues := schemas.FileFormatJsonToSchema(details)
+
 		if withExternalChangesMarking {
-			currentValues := schemas.StageFileFormatJsonToSchema(details)
 			valuesToSet := jsonFileFormatToSchema(details, false)
 			mappings := collections.Map(slices.Collect(maps.Keys(valuesToSet)), func(key string) outputMapping {
-				return outputMapping{key, key, currentValues[key], valuesToSet[key], nil}
+				return outputMapping{key, key, describeOutputValues[key], valuesToSet[key], nil}
 			})
 			if err := handleExternalChangesToObjectInFlatDescribeDeepEqual(d, mappings...); err != nil {
 				return diag.FromErr(err)
@@ -181,7 +182,7 @@ func GetReadFileFormatJsonFunc(withExternalChangesMarking bool) schema.ReadConte
 			d.Set("comment", fileFormat.Comment),
 			d.Set("type", string(fileFormat.Type)),
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.FileFormatToSchema(fileFormat)}),
-			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.FileFormatJsonToSchema(details)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{describeOutputValues}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)
 		if errs != nil {

@@ -779,7 +779,7 @@ func parseStageFileFormatStringOrNone(v string) *sdk.StageFileFormatStringOrNone
 }
 
 func parseStageFileFormatStringOrAuto(v string) *sdk.StageFileFormatStringOrAuto {
-	if strings.ToUpper(v) == "AUTO" {
+	if isFileFormatAutoSentinel(v) {
 		return &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)}
 	}
 	return &sdk.StageFileFormatStringOrAuto{Value: sdk.String(v)}

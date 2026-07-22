@@ -41,16 +41,16 @@ var ShowFileFormatLegacySchema = map[string]*schema.Schema{
 
 var _ = ShowFileFormatLegacySchema
 
-func FileFormatLegacyToSchema(fileFormat *sdk.FileFormatLegacy) map[string]any {
-	fileFormatSchema := make(map[string]any)
-	fileFormatSchema["name"] = fileFormat.Name.FullyQualifiedName()
-	fileFormatSchema["created_on"] = fileFormat.CreatedOn.String()
-	fileFormatSchema["type"] = string(fileFormat.Type)
-	fileFormatSchema["owner"] = fileFormat.Owner
-	fileFormatSchema["comment"] = fileFormat.Comment
-	fileFormatSchema["owner_role_type"] = fileFormat.OwnerRoleType
-	fileFormatSchema["options"] = fileFormat.Options
-	return fileFormatSchema
+func FileFormatLegacyToSchema(fileFormatLegacy *sdk.FileFormatLegacy) map[string]any {
+	fileFormatLegacySchema := make(map[string]any)
+	fileFormatLegacySchema["name"] = fileFormatLegacy.Name.FullyQualifiedName()
+	fileFormatLegacySchema["created_on"] = fileFormatLegacy.CreatedOn.String()
+	fileFormatLegacySchema["type"] = string(fileFormatLegacy.Type)
+	fileFormatLegacySchema["owner"] = fileFormatLegacy.Owner
+	fileFormatLegacySchema["comment"] = fileFormatLegacy.Comment
+	fileFormatLegacySchema["owner_role_type"] = fileFormatLegacy.OwnerRoleType
+	fileFormatLegacySchema["options"] = fileFormatLegacy.Options
+	return fileFormatLegacySchema
 }
 
 var _ = FileFormatLegacyToSchema
