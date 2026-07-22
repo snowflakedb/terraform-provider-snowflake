@@ -26,6 +26,8 @@ type Stages interface {
 	Show(ctx context.Context, request *ShowStageRequest) ([]Stage, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stage, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Stage, error)
+	// DescribeDetails returns parsed describe output for stages.
+	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StageDetails, error)
 }
 
 // CreateInternalStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
@@ -349,6 +351,41 @@ type StageProperty struct {
 	Type    string
 	Value   string
 	Default string
+}
+
+type StageDirectoryTable struct {
+	Enable                       bool
+	AutoRefresh                  bool
+	DirectoryNotificationChannel *string
+	LastRefreshedOn              *string
+}
+
+type StagePrivateLink struct {
+	UsePrivatelinkEndpoint bool
+}
+
+type StageLocationDetails struct {
+	Url               []string
+	AwsAccessPointArn string
+}
+
+type StageCredentials struct {
+	AwsKeyId string
+}
+
+type StageDetails struct {
+	Id                SchemaObjectIdentifier
+	FileFormatName    *SchemaObjectIdentifier
+	FileFormatCsv     *FileFormatCsv
+	FileFormatJson    *FileFormatJson
+	FileFormatAvro    *FileFormatAvro
+	FileFormatOrc     *FileFormatOrc
+	FileFormatParquet *FileFormatParquet
+	FileFormatXml     *FileFormatXml
+	DirectoryTable    *StageDirectoryTable
+	PrivateLink       *StagePrivateLink
+	Location          *StageLocationDetails
+	Credentials       *StageCredentials
 }
 
 // ShowStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-stages.

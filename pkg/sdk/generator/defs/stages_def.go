@@ -397,6 +397,31 @@ var stagesDef = g.NewInterface(
 			SQL("STAGE").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
+		g.PlainStruct("StageDirectoryTable").
+			Bool("Enable").
+			Bool("AutoRefresh").
+			OptionalText("DirectoryNotificationChannel").
+			OptionalText("LastRefreshedOn"),
+		g.PlainStruct("StagePrivateLink").
+			Bool("UsePrivatelinkEndpoint"),
+		g.PlainStruct("StageLocationDetails").
+			StringList("Url").
+			Text("AwsAccessPointArn"),
+		g.PlainStruct("StageCredentials").
+			Text("AwsKeyId"),
+		g.PlainStruct("StageDetails").
+			SchemaObjectIdentifier().
+			OptionalField("FileFormatName", "SchemaObjectIdentifier").
+			OptionalField("FileFormatCsv", "FileFormatCsv").
+			OptionalField("FileFormatJson", "FileFormatJson").
+			OptionalField("FileFormatAvro", "FileFormatAvro").
+			OptionalField("FileFormatOrc", "FileFormatOrc").
+			OptionalField("FileFormatParquet", "FileFormatParquet").
+			OptionalField("FileFormatXml", "FileFormatXml").
+			OptionalField("DirectoryTable", "StageDirectoryTable").
+			OptionalField("PrivateLink", "StagePrivateLink").
+			OptionalField("Location", "StageLocationDetails").
+			OptionalField("Credentials", "StageCredentials"),
 	).
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-stages",
@@ -434,4 +459,10 @@ var stagesDef = g.NewInterface(
 		StageCopyColumnMapOptionEnumDef,
 		StageCloudEnumDef,
 		StageTypeEnumDef,
+	).
+	WithCustomInterfaceMethod(
+		"DescribeDetails",
+		"DescribeDetails returns parsed describe output for stages.",
+		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
+		"*StageDetails", "error",
 	)

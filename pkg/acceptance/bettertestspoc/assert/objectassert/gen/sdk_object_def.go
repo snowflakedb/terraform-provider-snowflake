@@ -543,6 +543,12 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 		SkipFields:         []string{"Id", "Tables", "Relationships", "Dimensions", "Facts", "Metrics"},
 	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.StageDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "Stage", MethodName: "DescribeDetails"},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
