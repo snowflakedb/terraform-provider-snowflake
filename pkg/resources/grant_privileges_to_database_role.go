@@ -1121,7 +1121,7 @@ func inheritedDatabaseRoleGrantParams(id GrantPrivilegesToDatabaseRoleId) (sdk.P
 // when no inherited block is configured.
 func getDatabaseRoleInheritedGrantData(d *schema.ResourceData) (DatabaseRoleGrantKind, fmt.Stringer, error) {
 	if block, ok := d.GetOk("on_schema"); ok {
-		if inherited, ok := block.([]any)[0].(map[string]any)["inherited"].(string); ok {
+		if inherited, ok := block.([]any)[0].(map[string]any)["inherited"].(string); ok && len(inherited) > 0 {
 			databaseId, err := sdk.ParseAccountObjectIdentifier(inherited)
 			if err != nil {
 				return "", nil, err
