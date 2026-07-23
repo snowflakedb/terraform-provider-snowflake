@@ -23,6 +23,7 @@ func (v *Procedure) ID() SchemaObjectIdentifierWithArguments {
 
 // ProcedureDetails contains aggregated describe results for the given procedure.
 type ProcedureDetails struct {
+	Id                         SchemaObjectIdentifierWithArguments
 	Signature                  string  // present for all procedure types
 	Returns                    string  // present for all procedure types
 	Language                   string  // present for all procedure types
@@ -212,12 +213,21 @@ func (d *ProcedureDetail) setOptionalBoolValueOrError(property string, field **b
 	return nil
 }
 
+func (d *ProcedureDetails) ID() SchemaObjectIdentifierWithArguments {
+	return d.Id
+}
+
 func (v *procedures) DescribeDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ProcedureDetails, error) {
 	rows, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return procedureDetailsFromRows(rows)
+	details, err := procedureDetailsFromRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return details, nil
 }
 
 func (v *procedures) ShowParameters(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]*Parameter, error) {

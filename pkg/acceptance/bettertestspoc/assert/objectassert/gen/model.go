@@ -82,6 +82,8 @@ func (m SnowflakeObjectAssertionsModel) PlaceholderIdentifier() string {
 		return `sdk.NewSchemaObjectIdentifier("", "", "")`
 	case "sdk.DatabaseObjectIdentifier":
 		return `sdk.NewDatabaseObjectIdentifier("", "")`
+	case "sdk.SchemaObjectIdentifierWithArguments":
+		return `sdk.NewSchemaObjectIdentifierWithArguments("", "", "")`
 	default:
 		return `sdk.NewAccountObjectIdentifier("")`
 	}

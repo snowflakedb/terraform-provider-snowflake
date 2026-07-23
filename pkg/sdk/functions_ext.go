@@ -55,6 +55,7 @@ func (v *Function) ID() SchemaObjectIdentifierWithArguments {
 
 // FunctionDetails contains aggregated describe results for the given function.
 type FunctionDetails struct {
+	Id                         SchemaObjectIdentifierWithArguments
 	Signature                  string  // present for all function types
 	Returns                    string  // present for all function types
 	Language                   string  // present for all function types
@@ -182,12 +183,21 @@ func functionDetailsFromRows(rows []FunctionDetail) (*FunctionDetails, error) {
 	return v, errors.Join(errs...)
 }
 
+func (d *FunctionDetails) ID() SchemaObjectIdentifierWithArguments {
+	return d.Id
+}
+
 func (v *functions) DescribeDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*FunctionDetails, error) {
 	rows, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return functionDetailsFromRows(rows)
+	details, err := functionDetailsFromRows(rows)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return details, nil
 }
 
 func (v *functions) ShowParameters(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]*Parameter, error) {

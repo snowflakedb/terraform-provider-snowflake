@@ -98,11 +98,6 @@ func (s *StorageLifecyclePolicyDescribeOutputAssert) HasNoSchemaName() *StorageL
 	return s
 }
 
-func (s *StorageLifecyclePolicyDescribeOutputAssert) HasNoSignature() *StorageLifecyclePolicyDescribeOutputAssert {
-	s.ValueSet("signature.#", "0")
-	return s
-}
-
 func (s *StorageLifecyclePolicyDescribeOutputAssert) HasNoReturnType() *StorageLifecyclePolicyDescribeOutputAssert {
 	s.ValueNotSet("return_type")
 	return s

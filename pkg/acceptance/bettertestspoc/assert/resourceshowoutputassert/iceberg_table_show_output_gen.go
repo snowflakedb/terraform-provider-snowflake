@@ -225,11 +225,6 @@ func (i *IcebergTableShowOutputAssert) HasNoCatalogSyncName() *IcebergTableShowO
 	return i
 }
 
-func (i *IcebergTableShowOutputAssert) HasNoAutoRefreshStatus() *IcebergTableShowOutputAssert {
-	i.ValueNotSet("auto_refresh_status")
-	return i
-}
-
 func (i *IcebergTableShowOutputAssert) HasNoPartitionSpecs() *IcebergTableShowOutputAssert {
 	i.ValueSet("partition_specs.#", "0")
 	return i
