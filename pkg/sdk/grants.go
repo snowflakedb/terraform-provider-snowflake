@@ -64,16 +64,17 @@ type AccountRoleGrantOn struct {
 }
 
 type GrantOnAccountObject struct {
-	User             *AccountObjectIdentifier `ddl:"identifier" sql:"USER"`
-	ResourceMonitor  *AccountObjectIdentifier `ddl:"identifier" sql:"RESOURCE MONITOR"`
-	Warehouse        *AccountObjectIdentifier `ddl:"identifier" sql:"WAREHOUSE"`
-	ComputePool      *AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
-	Database         *AccountObjectIdentifier `ddl:"identifier" sql:"DATABASE"`
-	Integration      *AccountObjectIdentifier `ddl:"identifier" sql:"INTEGRATION"`
-	Connection       *AccountObjectIdentifier `ddl:"identifier" sql:"CONNECTION"`
-	FailoverGroup    *AccountObjectIdentifier `ddl:"identifier" sql:"FAILOVER GROUP"`
-	ReplicationGroup *AccountObjectIdentifier `ddl:"identifier" sql:"REPLICATION GROUP"`
-	ExternalVolume   *AccountObjectIdentifier `ddl:"identifier" sql:"EXTERNAL VOLUME"`
+	User                  *AccountObjectIdentifier `ddl:"identifier" sql:"USER"`
+	ResourceMonitor       *AccountObjectIdentifier `ddl:"identifier" sql:"RESOURCE MONITOR"`
+	Warehouse             *AccountObjectIdentifier `ddl:"identifier" sql:"WAREHOUSE"`
+	ComputePool           *AccountObjectIdentifier `ddl:"identifier" sql:"COMPUTE POOL"`
+	Database              *AccountObjectIdentifier `ddl:"identifier" sql:"DATABASE"`
+	Integration           *AccountObjectIdentifier `ddl:"identifier" sql:"INTEGRATION"`
+	Connection            *AccountObjectIdentifier `ddl:"identifier" sql:"CONNECTION"`
+	FailoverGroup         *AccountObjectIdentifier `ddl:"identifier" sql:"FAILOVER GROUP"`
+	ReplicationGroup      *AccountObjectIdentifier `ddl:"identifier" sql:"REPLICATION GROUP"`
+	ExternalVolume        *AccountObjectIdentifier `ddl:"identifier" sql:"EXTERNAL VOLUME"`
+	SnowflakeIntelligence *AccountObjectIdentifier `ddl:"identifier" sql:"SNOWFLAKE INTELLIGENCE"`
 }
 
 type GrantOnSchema struct {

@@ -123,7 +123,7 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 			},
 			accountRole: NewAccountObjectIdentifier("role1"),
 		}
-		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume"))
+		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume", "SnowflakeIntelligence"))
 	})
 
 	t.Run("on account object - exactly one of validation - empty options", func(t *testing.T) {
@@ -136,7 +136,7 @@ func TestGrantPrivilegesToAccountRole(t *testing.T) {
 			},
 			accountRole: NewAccountObjectIdentifier("role1"),
 		}
-		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume"))
+		assertOptsInvalid(t, opts, errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume", "SnowflakeIntelligence"))
 	})
 
 	t.Run("on schema", func(t *testing.T) {
