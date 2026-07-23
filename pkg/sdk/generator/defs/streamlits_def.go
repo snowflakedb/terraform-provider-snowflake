@@ -6,14 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var externalAccessIntegrations = g.NewQueryStruct("ExternalAccessIntegrations").
-	List("ExternalAccessIntegrations", "AccountObjectIdentifier", g.ListOptions().Required().MustParentheses())
-
 var streamlitSet = g.NewQueryStruct("StreamlitSet").
 	OptionalTextAssignment("ROOT_LOCATION", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes()).
 	OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
-	OptionalQueryStructField("ExternalAccessIntegrations", externalAccessIntegrations, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
+	ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
 	WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse").
@@ -23,7 +20,8 @@ var streamlitUnset = g.NewQueryStruct("StreamlitUnset").
 	OptionalSQL("QUERY_WAREHOUSE").
 	OptionalSQL("COMMENT").
 	OptionalSQL("TITLE").
-	WithValidation(g.AtLeastOneValueSet, "QueryWarehouse", "Title", "Comment")
+	OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
+	WithValidation(g.AtLeastOneValueSet, "QueryWarehouse", "Title", "Comment", "ExternalAccessIntegrations")
 
 var streamlitsDef = g.NewInterface(
 	"Streamlits",
@@ -40,7 +38,7 @@ var streamlitsDef = g.NewInterface(
 		TextAssignment("ROOT_LOCATION", g.ParameterOptions().SingleQuotes().Required()).
 		TextAssignment("MAIN_FILE", g.ParameterOptions().SingleQuotes().Required()).
 		OptionalIdentifier("QueryWarehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("QUERY_WAREHOUSE")).
-		OptionalQueryStructField("ExternalAccessIntegrations", externalAccessIntegrations, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
+		ListAssignment("EXTERNAL_ACCESS_INTEGRATIONS", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.ParameterOptions().Parentheses()).
 		OptionalTextAssignment("TITLE", g.ParameterOptions().SingleQuotes()).
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name").
