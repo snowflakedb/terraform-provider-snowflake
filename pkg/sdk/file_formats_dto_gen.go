@@ -93,7 +93,7 @@ type CreateAvroFileFormatRequest struct {
 	Compression              *AvroCompression
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -208,7 +208,7 @@ type AlterAvroFileFormatSetRequest struct {
 	Compression              *AvroCompression
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 

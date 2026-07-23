@@ -57,7 +57,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "AVRO file format options.",
 					Elem: &schema.Resource{
-						Schema: avroFileFormatSchema,
+						Schema: avroFileFormatSchema("file_format.0.avro.0."),
 					},
 				},
 				"orc": {
@@ -232,36 +232,6 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 		Description:      fmt.Sprintf("Specifies the character set of the source data when loading data into a table. Valid values: %s.", possibleValuesListed(sdk.AllCsvEncodings)),
 		ValidateDiagFunc: sdkValidation(sdk.ToCsvEncoding),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToCsvEncoding),
-	},
-}
-
-var avroFileFormatSchema = map[string]*schema.Schema{
-	"compression": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllAvroCompressions)),
-		ValidateDiagFunc: sdkValidation(sdk.ToAvroCompression),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToAvroCompression),
-	},
-	"trim_space": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
-	},
-	"replace_invalid_characters": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
-	},
-	"null_if": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "String used to convert to and from SQL NULL.",
-		Elem:        &schema.Schema{Type: schema.TypeString},
 	},
 }
 
@@ -563,7 +533,7 @@ func parseAvroFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatAvroOpti
 		booleanStringAttributeCreate(d, prefix+"trim_space", &avroOptions.TrimSpace),
 		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &avroOptions.ReplaceInvalidCharacters),
 		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatAvroOptions {
-			avroOptions.NullIf = nullIf
+			avroOptions.NullIf = &sdk.NullIfList{NullIf: nullIf}
 			return avroOptions
 		}, parseNullIf),
 	)
