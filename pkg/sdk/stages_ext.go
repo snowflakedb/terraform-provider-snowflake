@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -33,43 +34,21 @@ func (s *CreateOnS3StageRequest) ID() SchemaObjectIdentifier {
 	return s.name
 }
 
-// StageDirectoryTable represents directory table properties from DESCRIBE STAGE
-type StageDirectoryTable struct {
-	Enable                       bool
-	AutoRefresh                  bool
-	DirectoryNotificationChannel *string
-	LastRefreshedOn              *string
-	AwsSnsTopic                  *string
+func (d StageDetails) ID() SchemaObjectIdentifier {
+	return d.Id
 }
 
-// StageDetails represents the parsed result of DESCRIBE STAGE
-type StageDetails struct {
-	FileFormatName    *SchemaObjectIdentifier
-	FileFormatCsv     *FileFormatCsv
-	FileFormatJson    *FileFormatJson
-	FileFormatAvro    *FileFormatAvro
-	FileFormatOrc     *FileFormatOrc
-	FileFormatParquet *FileFormatParquet
-	FileFormatXml     *FileFormatXml
-	DirectoryTable    *StageDirectoryTable
-	PrivateLink       *StagePrivateLink
-	Location          *StageLocationDetails
-	Credentials       *StageCredentials
-}
-
-type StagePrivateLink struct {
-	UsePrivatelinkEndpoint bool
-}
-
-// StageLocationDetails represents location properties from DESCRIBE STAGE
-type StageLocationDetails struct {
-	Url               []string
-	AwsAccessPointArn string
-}
-
-// StageCredentials represents credentials properties from DESCRIBE STAGE
-type StageCredentials struct {
-	AwsKeyId string
+func (s *stages) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StageDetails, error) {
+	props, err := s.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := ParseStageDetails(props)
+	if err != nil {
+		return nil, err
+	}
+	details.Id = id
+	return details, nil
 }
 
 // ParseStageDetails parses []StageProperty into StageDetails

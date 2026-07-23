@@ -10,22 +10,16 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-// TODO [SNOW-1501905]: this file should be fully regenerated when adding and option to assert the results of describe
-type DatabaseDescribeAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.DatabaseDetails, sdk.AccountObjectIdentifier]
-}
-
-func DatabaseDescribe(t *testing.T, id sdk.AccountObjectIdentifier) *DatabaseDescribeAssert {
+func DatabaseDetails(t *testing.T, id sdk.AccountObjectIdentifier) *DatabaseDetailsAssert {
 	t.Helper()
-
-	return &DatabaseDescribeAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("DATABASE_DETAILS"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.DatabaseDetails, sdk.AccountObjectIdentifier] {
+	return &DatabaseDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("DatabaseDetails"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.DatabaseDetails, sdk.AccountObjectIdentifier] {
 			return testClient.Database.Describe
 		}),
 	}
 }
 
-func (d *DatabaseDescribeAssert) DoesNotContainPublicSchema() *DatabaseDescribeAssert {
+func (d *DatabaseDetailsAssert) DoesNotContainPublicSchema() *DatabaseDetailsAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.DatabaseDetails) error {
 		t.Helper()
 		if slices.ContainsFunc(o.Rows, func(row sdk.DatabaseDetailsRow) bool { return row.Name == "PUBLIC" && row.Kind == "SCHEMA" }) {
@@ -36,7 +30,7 @@ func (d *DatabaseDescribeAssert) DoesNotContainPublicSchema() *DatabaseDescribeA
 	return d
 }
 
-func (d *DatabaseDescribeAssert) ContainsPublicSchema() *DatabaseDescribeAssert {
+func (d *DatabaseDetailsAssert) ContainsPublicSchema() *DatabaseDetailsAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.DatabaseDetails) error {
 		t.Helper()
 		if !slices.ContainsFunc(o.Rows, func(row sdk.DatabaseDetailsRow) bool { return row.Name == "PUBLIC" && row.Kind == "SCHEMA" }) {

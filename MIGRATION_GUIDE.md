@@ -26,6 +26,13 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(new feature)* New file format resources
+
+We have added new preview resources for file formats:
+- [snowflake_file_format_json](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json) for managing JSON file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_json_resource` feature name.
+
+These features will be marked as stable in future releases. To use them, add the relevant feature name to the `preview_features_enabled` field in the provider configuration.
+
 ### *(new feature)* `aws_sns_topic` added to `snowflake_stage_external_s3` directory table options
 
 The [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3) resource now supports the `aws_sns_topic` attribute inside the `directory` block. It specifies the AWS SNS topic ARN used to trigger automatic directory table refreshes. This attribute is S3-specific (not available on S3-compatible stages) and causes resource recreation when changed (`ForceNew`).
@@ -73,11 +80,54 @@ The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io
 
 Both changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
 
+### *(new feature)* AUTHENTICATOR_EXPLICIT_ONLY experiment
+
+A new `AUTHENTICATOR_EXPLICIT_ONLY` experiment has been added. When enabled, the provider no longer implicitly derives the `authenticator` value from other configuration fields.
+
+Previously, the provider automatically set `authenticator` to `OAUTH` when `token` or `token_accessor` was configured, even if `authenticator` was not explicitly set. This implicit behavior is confusing and scheduled for removal in v3.
+
+With this experiment enabled, the `authenticator` field must be set explicitly in the provider configuration or TOML profile. The `SNOWFLAKE` default (when no authenticator is configured anywhere) is preserved.
+
+To enable, add `AUTHENTICATOR_EXPLICIT_ONLY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["AUTHENTICATOR_EXPLICIT_ONLY"]
+}
+```
+
+If you currently rely on the implicit token→OAuth derivation, add `authenticator = "OAUTH"` explicitly to your provider configuration before enabling this experiment.
+
+### *(new feature)* OBJECT_PARAMETER_UNSET_ON_DELETE experiment
+
+A new `OBJECT_PARAMETER_UNSET_ON_DELETE` experiment has been added. When enabled, deleting a `snowflake_object_parameter` resource uses `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.
+
+Previously, the provider fetched the parameter's default and explicitly set it back on delete.
+This was fragile - it required a working default value lookup, had workarounds for parameters where the default isn't settable (e.g. `REPLICABLE_WITH_FAILOVER_GROUPS`),
+and didn't truly remove the object-level override.
+With this experiment, the parameter is properly unset, allowing the inherited value from the higher hierarchy level (account → database → schema) to take effect.
+
+To enable, add `OBJECT_PARAMETER_UNSET_ON_DELETE` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["OBJECT_PARAMETER_UNSET_ON_DELETE"]
+}
+```
+
 ### *(new feature)* `issuer` added to `default_workload_identity.aws` on `snowflake_service_user` and `snowflake_legacy_service_user`
 
 The `default_workload_identity.aws` nested block on the [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user) resources now supports an optional `issuer` attribute, which maps to the `ISSUER` parameter of Snowflake's `WORKLOAD_IDENTITY` user property. It is required when configuring JWT-based (`GetWebIdentityToken`) AWS workload identity federation; existing configurations using only `arn` (the `GetCallerIdentity` attestation method) continue to work unchanged.
 
 This is a non-breaking, additive change; no action is required unless you want to adopt JWT-based AWS workload identity federation.
+
+### *(new feature)* Support for future and bulk grants on `WORKSPACES`
+
+Both `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources now support `WORKSPACES` in `on_schema_object.all.object_type_plural` and `on_schema_object.future.object_type_plural` fields. The `snowflake_grant_ownership` resource also supports `WORKSPACES` for bulk ownership transfers.
+
+Previously, `WORKSPACES` was only supported for individual object grants (`on_schema_object.object_type`).
+
+No changes to existing configurations are required.
+
+References: [#5004](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5004).
 
 ### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 

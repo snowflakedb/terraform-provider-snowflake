@@ -63,6 +63,7 @@ var RepositoryLabels = []string{
 	"resource:external_volume",
 	"resource:failover_group",
 	"resource:file_format",
+	"resource:file_format_json",
 	"resource:function",
 	"resource:function_java",
 	"resource:function_javascript",
