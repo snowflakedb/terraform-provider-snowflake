@@ -47,7 +47,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "JSON file format options.",
 					Elem: &schema.Resource{
-						Schema: jsonFileFormatSchema,
+						Schema: jsonFileFormatSchema("file_format.0.json.0."),
 					},
 				},
 				"avro": {
@@ -232,114 +232,6 @@ var csvFileFormatSchema = map[string]*schema.Schema{
 		Description:      fmt.Sprintf("Specifies the character set of the source data when loading data into a table. Valid values: %s.", possibleValuesListed(sdk.AllCsvEncodings)),
 		ValidateDiagFunc: sdkValidation(sdk.ToCsvEncoding),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToCsvEncoding),
-	},
-}
-
-var jsonFileFormatSchema = map[string]*schema.Schema{
-	"compression": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllJsonCompressions)),
-		ValidateDiagFunc: sdkValidation(sdk.ToJsonCompression),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToJsonCompression),
-	},
-	"date_format": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Defines the format of date values in the data files. Use `AUTO` to have Snowflake auto-detect the format.",
-	},
-	"time_format": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Defines the format of time values in the data files. Use `AUTO` to have Snowflake auto-detect the format.",
-	},
-	"timestamp_format": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Defines the format of timestamp values in the data files. Use `AUTO` to have Snowflake auto-detect the format.",
-	},
-	"binary_format": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      fmt.Sprintf("Defines the encoding format for binary input or output. Valid values: %s.", possibleValuesListed(sdk.AllBinaryFormats)),
-		ValidateDiagFunc: sdkValidation(sdk.ToBinaryFormat),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToBinaryFormat),
-	},
-	"trim_space": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
-	},
-	"multi_line": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to allow multiple records on a single line."),
-	},
-	"null_if": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "String used to convert to and from SQL NULL.",
-		Elem:        &schema.Schema{Type: schema.TypeString},
-	},
-	"file_extension": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies the extension for files unloaded to a stage.",
-	},
-	"enable_octal": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that enables parsing of octal numbers."),
-	},
-	"allow_duplicate": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to allow duplicate object field names (only the last one will be preserved)."),
-	},
-	"strip_outer_array": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that instructs the JSON parser to remove outer brackets."),
-	},
-	"strip_null_values": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that instructs the JSON parser to remove object fields or array elements containing null values."),
-	},
-	"replace_invalid_characters": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
-		ConflictsWith:    []string{"file_format.0.json.0.ignore_utf8_errors"},
-	},
-	"ignore_utf8_errors": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether UTF-8 encoding errors produce error conditions."),
-		ConflictsWith:    []string{"file_format.0.json.0.replace_invalid_characters"},
-	},
-	"skip_byte_order_mark": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file."),
 	},
 }
 
@@ -613,22 +505,6 @@ func parseCsvFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatCsvOption
 	return csvOptions, nil
 }
 
-func parseNullIf(v any) ([]sdk.NullString, error) {
-	nullIfList := v.([]any)
-	if len(nullIfList) == 0 {
-		return nil, nil
-	}
-	nullIf := make([]sdk.NullString, len(nullIfList))
-	for i, s := range nullIfList {
-		str := ""
-		if s != nil {
-			str = s.(string)
-		}
-		nullIf[i] = sdk.NullString{S: str}
-	}
-	return nullIf, nil
-}
-
 // parseJsonFileFormatOptions parses the JSON file format options from the resource data to an SDK object.
 func parseJsonFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatJsonOptions, error) {
 	jsonOptions := &sdk.FileFormatJsonOptions{}
@@ -663,7 +539,7 @@ func parseJsonFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatJsonOpti
 		booleanStringAttributeCreate(d, prefix+"ignore_utf8_errors", &jsonOptions.IgnoreUtf8Errors),
 		booleanStringAttributeCreate(d, prefix+"skip_byte_order_mark", &jsonOptions.SkipByteOrderMark),
 		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatJsonOptions {
-			jsonOptions.NullIf = nullIf
+			jsonOptions.NullIf = &sdk.NullIfList{NullIf: nullIf}
 			return jsonOptions
 		}, parseNullIf),
 	)
@@ -777,7 +653,7 @@ func parseStageFileFormatStringOrNone(v string) *sdk.StageFileFormatStringOrNone
 }
 
 func parseStageFileFormatStringOrAuto(v string) *sdk.StageFileFormatStringOrAuto {
-	if strings.ToUpper(v) == "AUTO" {
+	if isFileFormatAutoSentinel(v) {
 		return &sdk.StageFileFormatStringOrAuto{Auto: sdk.Bool(true)}
 	}
 	return &sdk.StageFileFormatStringOrAuto{Value: sdk.String(v)}
@@ -807,7 +683,7 @@ func stageFileFormatToSchema(details *sdk.StageDetails, setDefaults bool) []map[
 	}
 
 	if details.FileFormatJson != nil {
-		jsonSchema := stageJsonFileFormatToSchema(details.FileFormatJson, setDefaults)
+		jsonSchema := jsonFileFormatToSchema(details.FileFormatJson, setDefaults)
 		return []map[string]any{
 			{
 				"json": []map[string]any{jsonSchema},
@@ -890,41 +766,6 @@ func stageCsvFileFormatToSchema(csv *sdk.FileFormatCsv, setDefaults bool) map[st
 		state["empty_field_as_null"] = booleanStringFromBool(csv.EmptyFieldAsNull)
 		state["skip_byte_order_mark"] = booleanStringFromBool(csv.SkipByteOrderMark)
 		state["multi_line"] = booleanStringFromBool(csv.MultiLine)
-	}
-	return state
-}
-
-// stageJsonFileFormatToSchema converts the SDK details for a JSON file format to a Terraform schema.
-func stageJsonFileFormatToSchema(json *sdk.FileFormatJson, setDefaults bool) map[string]any {
-	state := map[string]any{
-		"compression":      json.Compression,
-		"date_format":      json.DateFormat,
-		"time_format":      json.TimeFormat,
-		"timestamp_format": json.TimestampFormat,
-		"binary_format":    json.BinaryFormat,
-		"null_if":          collections.Map(json.NullIf, func(v string) any { return v }),
-		"file_extension":   json.FileExtension,
-	}
-	if setDefaults {
-		state["ignore_utf8_errors"] = BooleanDefault
-		state["skip_byte_order_mark"] = BooleanDefault
-		state["trim_space"] = BooleanDefault
-		state["multi_line"] = BooleanDefault
-		state["allow_duplicate"] = BooleanDefault
-		state["strip_outer_array"] = BooleanDefault
-		state["strip_null_values"] = BooleanDefault
-		state["replace_invalid_characters"] = BooleanDefault
-		state["enable_octal"] = BooleanDefault
-	} else {
-		state["ignore_utf8_errors"] = booleanStringFromBool(json.IgnoreUtf8Errors)
-		state["skip_byte_order_mark"] = booleanStringFromBool(json.SkipByteOrderMark)
-		state["trim_space"] = booleanStringFromBool(json.TrimSpace)
-		state["multi_line"] = booleanStringFromBool(json.MultiLine)
-		state["allow_duplicate"] = booleanStringFromBool(json.AllowDuplicate)
-		state["strip_outer_array"] = booleanStringFromBool(json.StripOuterArray)
-		state["strip_null_values"] = booleanStringFromBool(json.StripNullValues)
-		state["replace_invalid_characters"] = booleanStringFromBool(json.ReplaceInvalidCharacters)
-		state["enable_octal"] = booleanStringFromBool(json.EnableOctal)
 	}
 	return state
 }

@@ -218,8 +218,8 @@ func (s *CreateJsonFileFormatRequest) WithMultiLine(multiLine bool) *CreateJsonF
 	return s
 }
 
-func (s *CreateJsonFileFormatRequest) WithNullIf(nullIf []NullString) *CreateJsonFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateJsonFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateJsonFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -265,6 +265,16 @@ func (s *CreateJsonFileFormatRequest) WithSkipByteOrderMark(skipByteOrderMark bo
 
 func (s *CreateJsonFileFormatRequest) WithComment(comment string) *CreateJsonFileFormatRequest {
 	s.Comment = &comment
+	return s
+}
+
+func NewNullIfListRequest() *NullIfListRequest {
+	s := NullIfListRequest{}
+	return &s
+}
+
+func (s *NullIfListRequest) WithNullIf(nullIf []NullString) *NullIfListRequest {
+	s.NullIf = nullIf
 	return s
 }
 
@@ -681,8 +691,8 @@ func (s *AlterJsonFileFormatSetRequest) WithMultiLine(multiLine bool) *AlterJson
 	return s
 }
 
-func (s *AlterJsonFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterJsonFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterJsonFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterJsonFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 

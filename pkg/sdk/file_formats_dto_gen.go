@@ -70,7 +70,7 @@ type CreateJsonFileFormatRequest struct {
 	BinaryFormat             *BinaryFormat
 	TrimSpace                *bool
 	MultiLine                *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	FileExtension            *string
 	EnableOctal              *bool
 	AllowDuplicate           *bool
@@ -80,6 +80,10 @@ type CreateJsonFileFormatRequest struct {
 	IgnoreUtf8Errors         *bool
 	SkipByteOrderMark        *bool
 	Comment                  *string
+}
+
+type NullIfListRequest struct {
+	NullIf []NullString
 }
 
 type CreateAvroFileFormatRequest struct {
@@ -181,7 +185,7 @@ type AlterJsonFileFormatSetRequest struct {
 	BinaryFormat             *BinaryFormat
 	TrimSpace                *bool
 	MultiLine                *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	FileExtension            *string
 	EnableOctal              *bool
 	AllowDuplicate           *bool

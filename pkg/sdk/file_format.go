@@ -202,6 +202,7 @@ func (row FileFormatRowLegacy) convert() (*FileFormatLegacy, error) {
 	return ff, nil
 }
 
+// TODO (next PRs): Rename it to QuotedItem, move to the def file, and update callers.
 type NullString struct {
 	S string `ddl:"parameter,no_equals,single_quotes"`
 }

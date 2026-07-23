@@ -100,7 +100,7 @@ type CreateJsonFileFormatOptions struct {
 	BinaryFormat             *BinaryFormat                `ddl:"parameter,no_quotes" sql:"BINARY_FORMAT"`
 	TrimSpace                *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
 	MultiLine                *bool                        `ddl:"parameter" sql:"MULTI_LINE"`
-	NullIf                   []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList                  `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	FileExtension            *string                      `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
 	EnableOctal              *bool                        `ddl:"parameter" sql:"ENABLE_OCTAL"`
 	AllowDuplicate           *bool                        `ddl:"parameter" sql:"ALLOW_DUPLICATE"`
@@ -110,6 +110,10 @@ type CreateJsonFileFormatOptions struct {
 	IgnoreUtf8Errors         *bool                        `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	SkipByteOrderMark        *bool                        `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type NullIfList struct {
+	NullIf []NullString `ddl:"list,must_parentheses"`
 }
 
 // CreateAvroFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-file-format.
@@ -233,7 +237,7 @@ type AlterJsonFileFormatSet struct {
 	BinaryFormat             *BinaryFormat                `ddl:"parameter,no_quotes" sql:"BINARY_FORMAT"`
 	TrimSpace                *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
 	MultiLine                *bool                        `ddl:"parameter" sql:"MULTI_LINE"`
-	NullIf                   []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList                  `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	FileExtension            *string                      `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
 	EnableOctal              *bool                        `ddl:"parameter" sql:"ENABLE_OCTAL"`
 	AllowDuplicate           *bool                        `ddl:"parameter" sql:"ALLOW_DUPLICATE"`
@@ -437,7 +441,7 @@ type FileFormatJsonOptions struct {
 	BinaryFormat             *BinaryFormat                `ddl:"parameter,no_quotes" sql:"BINARY_FORMAT"`
 	TrimSpace                *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
 	MultiLine                *bool                        `ddl:"parameter" sql:"MULTI_LINE"`
-	NullIf                   []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList                  `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	FileExtension            *string                      `ddl:"parameter,single_quotes" sql:"FILE_EXTENSION"`
 	EnableOctal              *bool                        `ddl:"parameter" sql:"ENABLE_OCTAL"`
 	AllowDuplicate           *bool                        `ddl:"parameter" sql:"ALLOW_DUPLICATE"`

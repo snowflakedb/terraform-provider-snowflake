@@ -324,7 +324,7 @@ func TestFileFormats_CreateJson(t *testing.T) {
 		opts.BinaryFormat = new(BinaryFormatBase64)
 		opts.TrimSpace = new(true)
 		opts.MultiLine = new(true)
-		opts.NullIf = []NullString{{S: "NULL"}}
+		opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}}}
 		opts.FileExtension = new(".json")
 		opts.EnableOctal = new(true)
 		opts.AllowDuplicate = new(true)
@@ -413,7 +413,7 @@ func TestFileFormats_AlterJson(t *testing.T) {
 			BinaryFormat:      new(BinaryFormatBase64),
 			TrimSpace:         new(true),
 			MultiLine:         new(true),
-			NullIf:            []NullString{{S: "NULL"}},
+			NullIf:            &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 			FileExtension:     new(".json"),
 			EnableOctal:       new(true),
 			AllowDuplicate:    new(true),
@@ -424,6 +424,14 @@ func TestFileFormats_AlterJson(t *testing.T) {
 			Comment:           new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("set NullIf to an empty list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterJsonFileFormatSet{
+			NullIf: &NullIfList{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s SET NULL_IF = ()`, id.FullyQualifiedName())
 	})
 }
 

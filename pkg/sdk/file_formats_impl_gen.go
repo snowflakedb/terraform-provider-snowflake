@@ -203,7 +203,6 @@ func (r *CreateJsonFileFormatRequest) toOpts() *CreateJsonFileFormatOptions {
 		BinaryFormat:             r.BinaryFormat,
 		TrimSpace:                r.TrimSpace,
 		MultiLine:                r.MultiLine,
-		NullIf:                   r.NullIf,
 		FileExtension:            r.FileExtension,
 		EnableOctal:              r.EnableOctal,
 		AllowDuplicate:           r.AllowDuplicate,
@@ -230,6 +229,11 @@ func (r *CreateJsonFileFormatRequest) toOpts() *CreateJsonFileFormatOptions {
 		opts.TimestampFormat = &StageFileFormatStringOrAuto{
 			Value: r.TimestampFormat.Value,
 			Auto:  r.TimestampFormat.Auto,
+		}
+	}
+	if r.NullIf != nil {
+		opts.NullIf = &NullIfList{
+			NullIf: r.NullIf.NullIf,
 		}
 	}
 	return opts
@@ -386,7 +390,6 @@ func (r *AlterJsonFileFormatRequest) toOpts() *AlterJsonFileFormatOptions {
 			BinaryFormat:             r.Set.BinaryFormat,
 			TrimSpace:                r.Set.TrimSpace,
 			MultiLine:                r.Set.MultiLine,
-			NullIf:                   r.Set.NullIf,
 			FileExtension:            r.Set.FileExtension,
 			EnableOctal:              r.Set.EnableOctal,
 			AllowDuplicate:           r.Set.AllowDuplicate,
@@ -413,6 +416,11 @@ func (r *AlterJsonFileFormatRequest) toOpts() *AlterJsonFileFormatOptions {
 			opts.Set.TimestampFormat = &StageFileFormatStringOrAuto{
 				Value: r.Set.TimestampFormat.Value,
 				Auto:  r.Set.TimestampFormat.Auto,
+			}
+		}
+		if r.Set.NullIf != nil {
+			opts.Set.NullIf = &NullIfList{
+				NullIf: r.Set.NullIf.NullIf,
 			}
 		}
 	}
