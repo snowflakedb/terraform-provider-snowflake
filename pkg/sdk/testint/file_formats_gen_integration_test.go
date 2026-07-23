@@ -515,7 +515,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithCompression(sdk.AvroCompressionGzip).
 			WithTrimSpace(true).
 			WithReplaceInvalidCharacters(true).
-			WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}})).
 			WithComment("avro complete")
 
 		err := client.FileFormats.CreateAvro(ctx, request)
@@ -565,7 +565,7 @@ func TestInt_FileFormats(t *testing.T) {
 				WithCompression(sdk.AvroCompressionGzip).
 				WithTrimSpace(true).
 				WithReplaceInvalidCharacters(true).
-				WithNullIf([]sdk.NullString{{S: "NULL"}}).
+				WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 				WithComment("updated comment")))
 		require.NoError(t, err)
 

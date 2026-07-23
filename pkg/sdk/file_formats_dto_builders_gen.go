@@ -311,8 +311,8 @@ func (s *CreateAvroFileFormatRequest) WithReplaceInvalidCharacters(replaceInvali
 	return s
 }
 
-func (s *CreateAvroFileFormatRequest) WithNullIf(nullIf []NullString) *CreateAvroFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateAvroFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateAvroFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -784,8 +784,8 @@ func (s *AlterAvroFileFormatSetRequest) WithReplaceInvalidCharacters(replaceInva
 	return s
 }
 
-func (s *AlterAvroFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterAvroFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterAvroFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterAvroFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 

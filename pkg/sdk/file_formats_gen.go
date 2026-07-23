@@ -127,7 +127,7 @@ type CreateAvroFileFormatOptions struct {
 	Compression              *AvroCompression       `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	TrimSpace                *bool                  `ddl:"parameter" sql:"TRIM_SPACE"`
 	ReplaceInvalidCharacters *bool                  `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString           `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList            `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	Comment                  *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -263,7 +263,7 @@ type AlterAvroFileFormatSet struct {
 	Compression              *AvroCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	TrimSpace                *bool            `ddl:"parameter" sql:"TRIM_SPACE"`
 	ReplaceInvalidCharacters *bool            `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString     `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList      `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	Comment                  *string          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -457,7 +457,7 @@ type FileFormatAvroOptions struct {
 	Compression              *AvroCompression `ddl:"parameter,no_quotes" sql:"COMPRESSION"`
 	TrimSpace                *bool            `ddl:"parameter" sql:"TRIM_SPACE"`
 	ReplaceInvalidCharacters *bool            `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString     `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList      `ddl:"parameter,parentheses" sql:"NULL_IF"`
 }
 
 type FileFormatOrcOptions struct {
