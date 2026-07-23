@@ -1295,7 +1295,7 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 		WithFileFormatOrc(sdk.FileFormatOrcOptions{
 			TrimSpace:                &trimSpace,
 			ReplaceInvalidCharacters: &replaceInvalidCharacters,
-			NullIf:                   []sdk.NullString{{S: "NULL"}, {S: ""}},
+			NullIf:                   &sdk.NullIfList{NullIf: []sdk.NullString{{S: "NULL"}, {S: ""}}},
 		})
 
 	altTrimSpace := false
@@ -1305,7 +1305,7 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 		WithFileFormatOrc(sdk.FileFormatOrcOptions{
 			TrimSpace:                &altTrimSpace,
 			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
-			NullIf:                   []sdk.NullString{{S: "NA"}},
+			NullIf:                   &sdk.NullIfList{NullIf: []sdk.NullString{{S: "NA"}}},
 		})
 
 	defaultAssertions := []assert.TestCheckFuncProvider{
@@ -1409,7 +1409,7 @@ func TestAcc_InternalStage_FileFormat_AllOrcOptions(t *testing.T) {
 							OrcOptions: &sdk.FileFormatOrcOptions{
 								TrimSpace:                sdk.Bool(true),
 								ReplaceInvalidCharacters: sdk.Bool(true),
-								NullIf:                   []sdk.NullString{{S: "EXT"}},
+								NullIf:                   &sdk.NullIfList{NullIf: []sdk.NullString{{S: "EXT"}}},
 							},
 						},
 					}))
