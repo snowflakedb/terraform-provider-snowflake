@@ -112,10 +112,10 @@ func TestStreamlits_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStreamlitOptions.Set", "RootLocation", "MainFile", "QueryWarehouse", "ExternalAccessIntegrations", "Comment", "Title"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.QueryWarehouse opts.Unset.Title opts.Unset.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.QueryWarehouse opts.Unset.Title opts.Unset.Comment opts.Unset.ExternalAccessIntegrations] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = new(StreamlitUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStreamlitOptions.Unset", "QueryWarehouse", "Title", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStreamlitOptions.Unset", "QueryWarehouse", "Title", "Comment", "ExternalAccessIntegrations"))
 	})
 
 	// all variants added manually
@@ -128,7 +128,7 @@ func TestStreamlits_Alter(t *testing.T) {
 			RootLocation:               String("@test"),
 			MainFile:                   String("manifest.yml"),
 			QueryWarehouse:             &warehouse,
-			ExternalAccessIntegrations: &ExternalAccessIntegrations{[]AccountObjectIdentifier{integration}},
+			ExternalAccessIntegrations: []AccountObjectIdentifier{integration},
 			Comment:                    String("test"),
 			Title:                      String("foo"),
 		}
@@ -138,11 +138,12 @@ func TestStreamlits_Alter(t *testing.T) {
 	t.Run("alter: unset options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &StreamlitUnset{
-			QueryWarehouse: Pointer(true),
-			Comment:        Pointer(true),
-			Title:          Pointer(true),
+			QueryWarehouse:             Pointer(true),
+			Comment:                    Pointer(true),
+			Title:                      Pointer(true),
+			ExternalAccessIntegrations: Pointer(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAMLIT IF EXISTS %s UNSET QUERY_WAREHOUSE, COMMENT, TITLE`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAMLIT IF EXISTS %s UNSET QUERY_WAREHOUSE, COMMENT, TITLE, EXTERNAL_ACCESS_INTEGRATIONS`, id.FullyQualifiedName())
 	})
 
 	t.Run("alter: rename", func(t *testing.T) {
