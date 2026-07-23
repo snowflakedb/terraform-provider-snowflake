@@ -23,6 +23,7 @@
 - [snowflake_failover_group](./docs/resources/failover_group)
 - [snowflake_file_format](./docs/resources/file_format)
 - [snowflake_file_format_json](./docs/resources/file_format_json)
+- [snowflake_file_format_xml](./docs/resources/file_format_xml)
 - [snowflake_function_java](./docs/resources/function_java)
 - [snowflake_function_javascript](./docs/resources/function_javascript)
 - [snowflake_function_python](./docs/resources/function_python)
