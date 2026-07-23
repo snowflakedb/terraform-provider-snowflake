@@ -74,6 +74,23 @@ The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io
 
 Both changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
 
+### *(new feature)* AUTHENTICATOR_EXPLICIT_ONLY experiment
+
+A new `AUTHENTICATOR_EXPLICIT_ONLY` experiment has been added. When enabled, the provider no longer implicitly derives the `authenticator` value from other configuration fields.
+
+Previously, the provider automatically set `authenticator` to `OAUTH` when `token` or `token_accessor` was configured, even if `authenticator` was not explicitly set. This implicit behavior is confusing and scheduled for removal in v3.
+
+With this experiment enabled, the `authenticator` field must be set explicitly in the provider configuration or TOML profile. The `SNOWFLAKE` default (when no authenticator is configured anywhere) is preserved.
+
+To enable, add `AUTHENTICATOR_EXPLICIT_ONLY` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["AUTHENTICATOR_EXPLICIT_ONLY"]
+}
+```
+
+If you currently rely on the implicit token→OAuth derivation, add `authenticator = "OAUTH"` explicitly to your provider configuration before enabling this experiment.
+
 ### *(new feature)* OBJECT_PARAMETER_UNSET_ON_DELETE experiment
 
 A new `OBJECT_PARAMETER_UNSET_ON_DELETE` experiment has been added. When enabled, deleting a `snowflake_object_parameter` resource uses `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.
