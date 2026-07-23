@@ -228,9 +228,9 @@ func stageFileFormatAvro(opts sdk.FileFormatAvroOptions) tfconfig.Variable {
 	if opts.ReplaceInvalidCharacters != nil {
 		avroMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
+	if opts.NullIf != nil && len(opts.NullIf.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
+		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		avroMap["null_if"] = tfconfig.ListVariable(nullIfVars...)

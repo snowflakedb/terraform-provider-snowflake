@@ -247,8 +247,12 @@ func (r *CreateAvroFileFormatRequest) toOpts() *CreateAvroFileFormatOptions {
 		Compression:              r.Compression,
 		TrimSpace:                r.TrimSpace,
 		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
-		NullIf:                   r.NullIf,
 		Comment:                  r.Comment,
+	}
+	if r.NullIf != nil {
+		opts.NullIf = &NullIfList{
+			NullIf: r.NullIf.NullIf,
+		}
 	}
 	return opts
 }
@@ -438,8 +442,12 @@ func (r *AlterAvroFileFormatRequest) toOpts() *AlterAvroFileFormatOptions {
 			Compression:              r.Set.Compression,
 			TrimSpace:                r.Set.TrimSpace,
 			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
-			NullIf:                   r.Set.NullIf,
 			Comment:                  r.Set.Comment,
+		}
+		if r.Set.NullIf != nil {
+			opts.Set.NullIf = &NullIfList{
+				NullIf: r.Set.NullIf.NullIf,
+			}
 		}
 	}
 	return opts

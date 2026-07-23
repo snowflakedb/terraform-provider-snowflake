@@ -48,6 +48,7 @@ const (
 	ExternalVolume                                         resource = "snowflake_external_volume"
 	FailoverGroup                                          resource = "snowflake_failover_group"
 	FileFormat                                             resource = "snowflake_file_format"
+	FileFormatAvro                                         resource = "snowflake_file_format_avro"
 	FileFormatJson                                         resource = "snowflake_file_format_json"
 	FunctionJava                                           resource = "snowflake_function_java"
 	FunctionJavascript                                     resource = "snowflake_function_javascript"

@@ -197,3 +197,35 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 		},
 	}
 }
+
+func avroFileFormatSchema(_ string) map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"compression": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllAvroCompressions)),
+			ValidateDiagFunc: sdkValidation(sdk.ToAvroCompression),
+			DiffSuppressFunc: NormalizeAndCompare(sdk.ToAvroCompression),
+		},
+		"trim_space": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
+		},
+		"replace_invalid_characters": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+		},
+		"null_if": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "String used to convert to and from SQL NULL.",
+			Elem:        &schema.Schema{Type: schema.TypeString},
+		},
+	}
+}

@@ -352,6 +352,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.FileFormatJson: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.FileFormats.ShowByID)
 	},
+	resources.FileFormatAvro: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FileFormats.ShowByID)
+	},
 	resources.NetworkPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NetworkPolicies.ShowByID)
 	},
