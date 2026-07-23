@@ -108,4 +108,11 @@ Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_s
 
 Without this experiment, using an `inherited` block results in an error.
 
+#### OBJECT_PARAMETER_UNSET_ON_DELETE
+Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.
+
+Without this experiment, deleting the resource fetches the parameter's default value and explicitly sets it back, which is fragile and doesn't truly remove the object-level override.
+
+When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.
+
 

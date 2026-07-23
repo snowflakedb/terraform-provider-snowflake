@@ -27,6 +27,7 @@ const (
 	GrantAccountRoleShowCaching    ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SHOW_CACHING"
 	HierarchyRenames               ExperimentalFeature = "HIERARCHY_RENAMES"
 	InheritedGrants                ExperimentalFeature = "INHERITED_GRANTS"
+	ObjectParameterUnsetOnDelete   ExperimentalFeature = "OBJECT_PARAMETER_UNSET_ON_DELETE"
 )
 
 type experimentalFeatureState string
@@ -178,6 +179,15 @@ var allExperiments = []Experiment{
 		joinWithDoubleNewline(
 			"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource.",
 			"Without this experiment, using an `inherited` block results in an error.",
+		),
+	},
+	{
+		ObjectParameterUnsetOnDelete,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.",
+			"Without this experiment, deleting the resource fetches the parameter's default value and explicitly sets it back, which is fragile and doesn't truly remove the object-level override.",
+			"When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.",
 		),
 	},
 }
