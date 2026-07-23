@@ -1141,7 +1141,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					TrimSpace:                Bool(true),
 					UseVectorizedScanner:     Bool(true),
 					ReplaceInvalidCharacters: Bool(true),
-					NullIf:                   []NullString{{S: "NULL"}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 				},
 			},
 		}
@@ -1159,7 +1159,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					TrimSpace:                Bool(false),
 					UseVectorizedScanner:     Bool(false),
 					ReplaceInvalidCharacters: Bool(false),
-					NullIf:                   []NullString{{S: ""}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: ""}}},
 				},
 			},
 		}

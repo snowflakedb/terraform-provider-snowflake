@@ -49,6 +49,7 @@ const (
 	FailoverGroup                                          resource = "snowflake_failover_group"
 	FileFormat                                             resource = "snowflake_file_format"
 	FileFormatJson                                         resource = "snowflake_file_format_json"
+	FileFormatParquet                                      resource = "snowflake_file_format_parquet"
 	FunctionJava                                           resource = "snowflake_function_java"
 	FunctionJavascript                                     resource = "snowflake_function_javascript"
 	FunctionPython                                         resource = "snowflake_function_python"

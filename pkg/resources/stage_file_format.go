@@ -77,7 +77,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "Parquet file format options.",
 					Elem: &schema.Resource{
-						Schema: parquetFileFormatSchema,
+						Schema: stageParquetFileFormatSchema,
 					},
 				},
 				"xml": {
@@ -288,7 +288,7 @@ var orcFileFormatSchema = map[string]*schema.Schema{
 	},
 }
 
-var parquetFileFormatSchema = map[string]*schema.Schema{
+var stageParquetFileFormatSchema = map[string]*schema.Schema{
 	"compression": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -610,7 +610,7 @@ func parseParquetFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatParqu
 		booleanStringAttributeCreate(d, prefix+"use_vectorized_scanner", &parquetOptions.UseVectorizedScanner),
 		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &parquetOptions.ReplaceInvalidCharacters),
 		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatParquetOptions {
-			parquetOptions.NullIf = nullIf
+			parquetOptions.NullIf = &sdk.NullIfList{NullIf: nullIf}
 			return parquetOptions
 		}, parseNullIf),
 	)
