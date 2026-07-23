@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type SemanticViewDescribeOutputAssert struct {
@@ -35,11 +34,6 @@ func ImportedSemanticViewDescribeOutput(t *testing.T, id string) *SemanticViewDe
 // Attribute value checks //
 ////////////////////////////
 
-func (s *SemanticViewDescribeOutputAssert) HasId(expected sdk.SchemaObjectIdentifier) *SemanticViewDescribeOutputAssert {
-	s.StringValueSet("id", expected.FullyQualifiedName())
-	return s
-}
-
 func (s *SemanticViewDescribeOutputAssert) HasComment(expected string) *SemanticViewDescribeOutputAssert {
 	s.StringValueSet("comment", expected)
 	return s
@@ -53,36 +47,6 @@ func (s *SemanticViewDescribeOutputAssert) HasDescribeRowCount(expected int) *Se
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
-
-func (s *SemanticViewDescribeOutputAssert) HasNoId() *SemanticViewDescribeOutputAssert {
-	s.ValueNotSet("id")
-	return s
-}
-
-func (s *SemanticViewDescribeOutputAssert) HasNoTables() *SemanticViewDescribeOutputAssert {
-	s.ValueSet("tables.#", "0")
-	return s
-}
-
-func (s *SemanticViewDescribeOutputAssert) HasNoRelationships() *SemanticViewDescribeOutputAssert {
-	s.ValueSet("relationships.#", "0")
-	return s
-}
-
-func (s *SemanticViewDescribeOutputAssert) HasNoDimensions() *SemanticViewDescribeOutputAssert {
-	s.ValueSet("dimensions.#", "0")
-	return s
-}
-
-func (s *SemanticViewDescribeOutputAssert) HasNoFacts() *SemanticViewDescribeOutputAssert {
-	s.ValueSet("facts.#", "0")
-	return s
-}
-
-func (s *SemanticViewDescribeOutputAssert) HasNoMetrics() *SemanticViewDescribeOutputAssert {
-	s.ValueSet("metrics.#", "0")
-	return s
-}
 
 func (s *SemanticViewDescribeOutputAssert) HasNoComment() *SemanticViewDescribeOutputAssert {
 	s.ValueNotSet("comment")
