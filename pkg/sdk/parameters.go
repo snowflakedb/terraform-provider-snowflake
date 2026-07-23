@@ -28,6 +28,8 @@ type Parameters interface {
 	SetSessionParameterOnUser(ctx context.Context, userID AccountObjectIdentifier, parameter SessionParameter, value string) error
 	SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error
 	SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error
+	UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error
+	UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error
 	ShowParameters(ctx context.Context, opts *ShowParametersOptions) ([]*Parameter, error)
 	ShowAccountParameter(ctx context.Context, parameter AccountParameter) (*Parameter, error)
 	ShowSessionParameter(ctx context.Context, parameter SessionParameter) (*Parameter, error)
@@ -197,6 +199,10 @@ func (v *parameters) SetSessionParameterOnUser(ctx context.Context, userId Accou
 func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error {
 	objParams := &ObjectParameters{}
 	switch parameter {
+	case ObjectParameterCatalog:
+		objParams.Catalog = &value
+	case ObjectParameterDataMetricSchedule:
+		objParams.DataMetricSchedule = &value
 	case ObjectParameterDataRetentionTimeInDays:
 		v, err := strconv.Atoi(value)
 		if err != nil {
@@ -205,6 +211,36 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 		objParams.DataRetentionTimeInDays = Pointer(v)
 	case ObjectParameterDefaultDdlCollation:
 		objParams.DefaultDDLCollation = &value
+	case ObjectParameterEnableDataCompaction:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		objParams.EnableDataCompaction = b
+	case ObjectParameterEnableIcebergMergeOnRead:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		objParams.EnableIcebergMergeOnRead = b
+	case ObjectParameterEnableNotebookCreationInPersonalDb:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		objParams.EnableNotebookCreationInPersonalDb = b
+	case ObjectParameterEnableUnredactedQuerySyntaxError:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		objParams.EnableUnredactedQuerySyntaxError = b
+	case ObjectParameterIcebergVersionDefault:
+		v, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("ICEBERG_VERSION_DEFAULT object parameter is an integer, got %v", value)
+		}
+		objParams.IcebergVersionDefault = Pointer(v)
 	case ObjectParameterLogLevel:
 		objParams.LogLevel = Pointer(LogLevel(value))
 	case ObjectParameterLogEventLevel:
@@ -221,6 +257,8 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 			return fmt.Errorf("MAX_DATA_EXTENSION_TIME_IN_DAYS object parameter is an integer, got %v", value)
 		}
 		objParams.MaxDataExtensionTimeInDays = Pointer(v)
+	case ObjectParameterNetworkPolicy:
+		objParams.NetworkPolicy = &value
 	case ObjectParameterPipeExecutionPaused:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
@@ -233,6 +271,18 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 			return err
 		}
 		objParams.PreventUnloadToInternalStages = b
+	case ObjectParameterRowTimestampDefault:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		objParams.RowTimestampDefault = b
+	case ObjectParameterShareRestrictions:
+		b, err := parseBooleanParameter(string(parameter), value)
+		if err != nil {
+			return err
+		}
+		objParams.ShareRestrictions = b
 	case ObjectParameterStatementQueuedTimeoutInSeconds:
 		v, err := strconv.Atoi(value)
 		if err != nil {
@@ -245,14 +295,6 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 			return fmt.Errorf("STATEMENT_TIMEOUT_IN_SECONDS object parameter is an integer, got %v", value)
 		}
 		objParams.StatementTimeoutInSeconds = Pointer(v)
-	case ObjectParameterNetworkPolicy:
-		objParams.NetworkPolicy = &value
-	case ObjectParameterShareRestrictions:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		objParams.ShareRestrictions = b
 	case ObjectParameterStorageSerializationPolicy:
 		objParams.StorageSerializationPolicy = &value
 	case ObjectParameterSuspendTaskAfterNumFailures:
@@ -277,46 +319,6 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 			return fmt.Errorf("USER_TASK_TIMEOUT_MS object parameter is an integer, got %v", value)
 		}
 		objParams.UserTaskTimeoutMs = Pointer(v)
-	case ObjectParameterEnableNotebookCreationInPersonalDb:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		objParams.EnableNotebookCreationInPersonalDb = b
-	case ObjectParameterEnableUnredactedQuerySyntaxError:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		objParams.EnableUnredactedQuerySyntaxError = b
-	case ObjectParameterCatalog:
-		objParams.Catalog = &value
-	case ObjectParameterDataMetricSchedule:
-		objParams.DataMetricSchedule = &value
-	case ObjectParameterEnableDataCompaction:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		objParams.EnableDataCompaction = b
-	case ObjectParameterEnableIcebergMergeOnRead:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		objParams.EnableIcebergMergeOnRead = b
-	case ObjectParameterIcebergVersionDefault:
-		v, err := strconv.Atoi(value)
-		if err != nil {
-			return fmt.Errorf("ICEBERG_VERSION_DEFAULT object parameter is an integer, got %v", value)
-		}
-		objParams.IcebergVersionDefault = Pointer(v)
-	case ObjectParameterRowTimestampDefault:
-		b, err := parseBooleanParameter(string(parameter), value)
-		if err != nil {
-			return err
-		}
-		objParams.RowTimestampDefault = b
 	default:
 		return fmt.Errorf("Invalid object parameter: %v", string(parameter))
 	}
@@ -332,10 +334,22 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 	switch parameter {
 	case ObjectParameterCatalog:
 		objParamsUnset.Catalog = Pointer(true)
+	case ObjectParameterDataMetricSchedule:
+		objParamsUnset.DataMetricSchedule = Pointer(true)
 	case ObjectParameterDataRetentionTimeInDays:
 		objParamsUnset.DataRetentionTimeInDays = Pointer(true)
 	case ObjectParameterDefaultDdlCollation:
 		objParamsUnset.DefaultDDLCollation = Pointer(true)
+	case ObjectParameterEnableDataCompaction:
+		objParamsUnset.EnableDataCompaction = Pointer(true)
+	case ObjectParameterEnableIcebergMergeOnRead:
+		objParamsUnset.EnableIcebergMergeOnRead = Pointer(true)
+	case ObjectParameterEnableNotebookCreationInPersonalDb:
+		objParamsUnset.EnableNotebookCreationInPersonalDb = Pointer(true)
+	case ObjectParameterEnableUnredactedQuerySyntaxError:
+		objParamsUnset.EnableUnredactedQuerySyntaxError = Pointer(true)
+	case ObjectParameterIcebergVersionDefault:
+		objParamsUnset.IcebergVersionDefault = Pointer(true)
 	case ObjectParameterLogLevel:
 		objParamsUnset.LogLevel = Pointer(true)
 	case ObjectParameterLogEventLevel:
@@ -344,18 +358,20 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 		objParamsUnset.MaxConcurrencyLevel = Pointer(true)
 	case ObjectParameterMaxDataExtensionTimeInDays:
 		objParamsUnset.MaxDataExtensionTimeInDays = Pointer(true)
+	case ObjectParameterNetworkPolicy:
+		objParamsUnset.NetworkPolicy = Pointer(true)
 	case ObjectParameterPipeExecutionPaused:
 		objParamsUnset.PipeExecutionPaused = Pointer(true)
 	case ObjectParameterPreventUnloadToInternalStages:
 		objParamsUnset.PreventUnloadToInternalStages = Pointer(true)
+	case ObjectParameterRowTimestampDefault:
+		objParamsUnset.RowTimestampDefault = Pointer(true)
+	case ObjectParameterShareRestrictions:
+		objParamsUnset.ShareRestrictions = Pointer(true)
 	case ObjectParameterStatementQueuedTimeoutInSeconds:
 		objParamsUnset.StatementQueuedTimeoutInSeconds = Pointer(true)
 	case ObjectParameterStatementTimeoutInSeconds:
 		objParamsUnset.StatementTimeoutInSeconds = Pointer(true)
-	case ObjectParameterNetworkPolicy:
-		objParamsUnset.NetworkPolicy = Pointer(true)
-	case ObjectParameterShareRestrictions:
-		objParamsUnset.ShareRestrictions = Pointer(true)
 	case ObjectParameterStorageSerializationPolicy:
 		objParamsUnset.StorageSerializationPolicy = Pointer(true)
 	case ObjectParameterSuspendTaskAfterNumFailures:
@@ -368,20 +384,6 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 		objParamsUnset.UserTaskManagedInitialWarehouseSize = Pointer(true)
 	case ObjectParameterUserTaskTimeoutMs:
 		objParamsUnset.UserTaskTimeoutMs = Pointer(true)
-	case ObjectParameterEnableNotebookCreationInPersonalDb:
-		objParamsUnset.EnableNotebookCreationInPersonalDb = Pointer(true)
-	case ObjectParameterEnableUnredactedQuerySyntaxError:
-		objParamsUnset.EnableUnredactedQuerySyntaxError = Pointer(true)
-	case ObjectParameterDataMetricSchedule:
-		objParamsUnset.DataMetricSchedule = Pointer(true)
-	case ObjectParameterEnableDataCompaction:
-		objParamsUnset.EnableDataCompaction = Pointer(true)
-	case ObjectParameterEnableIcebergMergeOnRead:
-		objParamsUnset.EnableIcebergMergeOnRead = Pointer(true)
-	case ObjectParameterIcebergVersionDefault:
-		objParamsUnset.IcebergVersionDefault = Pointer(true)
-	case ObjectParameterRowTimestampDefault:
-		objParamsUnset.RowTimestampDefault = Pointer(true)
 	default:
 		return fmt.Errorf("invalid object parameter: %v", string(parameter))
 	}
@@ -409,6 +411,35 @@ func (v *parameters) SetObjectParameterOnObject(ctx context.Context, object Obje
 		objectIdentifier: object.Name,
 		parameterKey:     parameter,
 		parameterValue:   value,
+	}
+	if err := opts.validate(); err != nil {
+		return err
+	}
+	sql, err := structToSQL(opts)
+	if err != nil {
+		return err
+	}
+	_, err = v.client.exec(ctx, sql)
+	return err
+}
+
+type unsetParameterOnObject struct {
+	alter            bool             `ddl:"static" sql:"ALTER"`
+	objectType       ObjectType       `ddl:"keyword"`
+	objectIdentifier ObjectIdentifier `ddl:"identifier"`
+	unset            bool             `ddl:"static" sql:"UNSET"`
+	parameterKey     ObjectParameter  `ddl:"keyword"`
+}
+
+func (v *unsetParameterOnObject) validate() error {
+	return nil
+}
+
+func (v *parameters) UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error {
+	opts := &unsetParameterOnObject{
+		objectType:       object.ObjectType,
+		objectIdentifier: object.Name,
+		parameterKey:     parameter,
 	}
 	if err := opts.validate(); err != nil {
 		return err
