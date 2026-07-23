@@ -26,6 +26,15 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(bug fix)* `snowflake_storage_integration_aws` and `snowflake_storage_integration_azure` import fix
+
+Previously, after importing `snowflake_storage_integration_aws` or `snowflake_storage_integration_azure` (for example, when migrating from the older `snowflake_storage_integration` resource), the next `terraform plan` showed an unavoidable diff trying to unset `storage_aws_external_id` (AWS only) and modify `use_privatelink_endpoint` (AWS and Azure) when you did not set these fields in your configuration.
+
+- `storage_aws_external_id` (AWS only): the diff is now gone. No action is required beyond reimporting the affected resources with the new provider version.
+- `use_privatelink_endpoint` (AWS and Azure): the diff is fixed behind the `IMPORT_BOOLEAN_DEFAULT` experiment. To get the fix, add it to the provider configuration and reimport the affected resources. Without the flag, the behavior stays the same as in previous versions.
+
+References: [#5020](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5020)
+
 ### *(new feature)* New file format resources
 
 We have added new preview resources for file formats:
