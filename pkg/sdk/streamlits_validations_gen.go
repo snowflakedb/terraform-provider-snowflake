@@ -50,8 +50,8 @@ func (opts *AlterStreamlitOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.QueryWarehouse, opts.Unset.Title, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterStreamlitOptions.Unset", "QueryWarehouse", "Title", "Comment"))
+		if !anyValueSet(opts.Unset.QueryWarehouse, opts.Unset.Title, opts.Unset.Comment, opts.Unset.ExternalAccessIntegrations) {
+			errs = append(errs, errAtLeastOneOf("AlterStreamlitOptions.Unset", "QueryWarehouse", "Title", "Comment", "ExternalAccessIntegrations"))
 		}
 	}
 	return JoinErrors(errs...)
