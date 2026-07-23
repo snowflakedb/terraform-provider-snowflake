@@ -24,7 +24,7 @@ func TestProvider(t *testing.T) {
 func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{})
 
-	config, err := getDriverConfigFromTerraform(d)
+	config, err := getDriverConfigFromTerraform(d, nil)
 
 	require.NoError(t, err)
 	assert.Equal(t, "terraform-provider-snowflake", config.Application)
@@ -148,7 +148,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"disable_saml_url_check":                 "true",
 	})
 
-	config, err := getDriverConfigFromTerraform(d)
+	config, err := getDriverConfigFromTerraform(d, nil)
 
 	require.NoError(t, err)
 

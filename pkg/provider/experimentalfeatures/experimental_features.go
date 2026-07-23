@@ -28,6 +28,7 @@ const (
 	HierarchyRenames               ExperimentalFeature = "HIERARCHY_RENAMES"
 	InheritedGrants                ExperimentalFeature = "INHERITED_GRANTS"
 	ObjectParameterUnsetOnDelete   ExperimentalFeature = "OBJECT_PARAMETER_UNSET_ON_DELETE"
+	AuthenticatorExplicitOnly      ExperimentalFeature = "AUTHENTICATOR_EXPLICIT_ONLY"
 )
 
 type experimentalFeatureState string
@@ -188,6 +189,15 @@ var allExperiments = []Experiment{
 			"Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.",
 			"Without this experiment, deleting the resource fetches the parameter's default value and explicitly sets it back, which is fragile and doesn't truly remove the object-level override.",
 			"When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.",
+		),
+	},
+	{
+		AuthenticatorExplicitOnly,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Removes implicit authenticator derivation from other provider configuration fields.",
+			"Without this experiment, the provider automatically sets the authenticator to `OAUTH` when the `token` or `token_accessor` field is configured, even if `authenticator` is not explicitly set. This implicit behavior can be confusing and will be removed in v3.",
+			"When enabled, the `authenticator` field must be set explicitly in the provider configuration or TOML profile. The `SNOWFLAKE` default (when no authenticator is configured anywhere) is preserved.",
 		),
 	},
 }

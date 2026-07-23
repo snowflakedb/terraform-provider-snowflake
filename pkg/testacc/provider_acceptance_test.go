@@ -32,6 +32,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -939,6 +940,38 @@ func TestAcc_Provider_testFixedDefaultAuthenticatorForToken(t *testing.T) {
 				ProtoV6ProviderFactories: providerFactoryWithoutCache(),
 				Config:                   providerConfig,
 				ExpectError:              regexp.MustCompile(`390303 \(08004\): Invalid OAuth access token.`),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_Provider_AuthenticatorExplicitOnly(t *testing.T) {
+	accountId := testClient().Context.CurrentAccountId(t)
+
+	// With the experiment enabled, setting token without authenticator should NOT derive OAuth.
+	// Instead, the SNOWFLAKE default is used, resulting in a password error (not an OAuth token error).
+	providerConfig := config.FromModels(
+		t, providermodel.SnowflakeProvider().
+			WithAccountName(accountId.AccountName()).
+			WithOrganizationName(accountId.OrganizationName()).
+			WithUser(random.String()).
+			WithToken(random.String()).
+			WithExperimentalFeaturesEnabled(experimentalfeatures.AuthenticatorExplicitOnly),
+		datasourceModel(),
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			t.Setenv(snowflakeenvs.ConfigPath, random.String())
+		},
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig,
+				ExpectError: regexp.MustCompile("260002: password is empty"),
 			},
 		},
 	})
