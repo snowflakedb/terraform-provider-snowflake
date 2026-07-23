@@ -178,7 +178,7 @@ var allExperiments = []Experiment{
 		InheritedGrants,
 		ExperimentalFeatureStateActive,
 		joinWithDoubleNewline(
-			"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource.",
+			"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.",
 			"Without this experiment, using an `inherited` block results in an error.",
 		),
 	},
