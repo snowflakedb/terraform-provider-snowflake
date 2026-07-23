@@ -58,7 +58,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.StageDetails(t, id).
-				HasStageLocation(sdk.StageLocationDetails{
+				HasLocation(sdk.StageLocationDetails{
 					Url: []string{},
 				}).
 				HasDirectoryTableEnable(false).
@@ -490,7 +490,7 @@ func TestInt_Stages(t *testing.T) {
 		assertThatObject(t, objectassert.StageDetails(t, id).
 			HasDirectoryTableEnable(true).
 			HasDirectoryTableAutoRefresh(false).
-			HasStageLocationAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
+			HasLocationAwsAccessPointArn("arn:aws:s3:us-west-2:123456789012:accesspoint/my-data-ap").
 			HasPrivateLinkUsePrivatelinkEndpoint(false))
 	})
 
@@ -1010,7 +1010,7 @@ func TestInt_Stages(t *testing.T) {
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
 			HasDirectoryTableEnable(false).
 			HasDirectoryTableAutoRefresh(false).
-			HasStageLocationUrl([]string{}))
+			HasLocationUrl([]string{}))
 	})
 
 	t.Run("Describe external s3", func(t *testing.T) {
@@ -1018,7 +1018,7 @@ func TestInt_Stages(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
-			HasStageLocationUrl([]string{awsBucketUrl}))
+			HasLocationUrl([]string{awsBucketUrl}))
 	})
 
 	t.Run("Describe external gcs", func(t *testing.T) {
@@ -1026,7 +1026,7 @@ func TestInt_Stages(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
-			HasStageLocationUrl([]string{gcsBucketUrl}))
+			HasLocationUrl([]string{gcsBucketUrl}))
 	})
 
 	t.Run("Describe external azure", func(t *testing.T) {
@@ -1035,7 +1035,7 @@ func TestInt_Stages(t *testing.T) {
 
 		assertThatObject(t, objectassert.StageDetails(t, stage.ID()).
 			HasDirectoryTableEnable(false).
-			HasStageLocationUrl([]string{azureBucketUrl}))
+			HasLocationUrl([]string{azureBucketUrl}))
 	})
 
 	t.Run("Show internal", func(t *testing.T) {
