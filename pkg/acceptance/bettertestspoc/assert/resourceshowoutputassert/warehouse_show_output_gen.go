@@ -414,8 +414,3 @@ func (w *WarehouseShowOutputAssert) HasNoQueryThroughputMultiplier() *WarehouseS
 	w.ValueNotSet("query_throughput_multiplier")
 	return w
 }
-
-func (w *WarehouseShowOutputAssert) HasNoTables() *WarehouseShowOutputAssert {
-	w.ValueSet("tables.#", "0")
-	return w
-}

@@ -158,6 +158,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ExternalOauthIntegration().Schema,
 	},
 	{
+		name:   "FileFormatJson",
+		schema: resources.FileFormatJson().Schema,
+	},
+	{
 		name:   "FunctionJava",
 		schema: resources.FunctionJava().Schema,
 	},

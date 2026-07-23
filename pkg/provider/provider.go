@@ -626,6 +626,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_external_volume":                                              resources.ExternalVolume(),
 		"snowflake_failover_group":                                               resources.FailoverGroup(),
 		"snowflake_file_format":                                                  resources.FileFormat(),
+		"snowflake_file_format_json":                                             resources.FileFormatJson(),
 		"snowflake_function_java":                                                resources.FunctionJava(),
 		"snowflake_function_javascript":                                          resources.FunctionJavascript(),
 		"snowflake_function_python":                                              resources.FunctionPython(),
@@ -789,7 +790,12 @@ func getDataSources() map[string]*schema.Resource {
 }
 
 func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
-	config, err := getDriverConfigFromTerraform(s)
+	var enabledExperiments []string
+	if v, ok := s.GetOk("experimental_features_enabled"); ok {
+		enabledExperiments = expandStringList(v.(*schema.Set).List())
+	}
+
+	config, err := getDriverConfigFromTerraform(s, enabledExperiments)
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
@@ -816,9 +822,11 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		fixBooleanConfigFields(s, config)
 	}
 	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
-	if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
-		if config.Token != "" {
-			config.Authenticator = gosnowflake.AuthTypeOAuth
+	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+		if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
+			if config.Token != "" {
+				config.Authenticator = gosnowflake.AuthTypeOAuth
+			}
 		}
 	}
 
@@ -844,9 +852,7 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		}
 	}
 
-	if v, ok := s.GetOk("experimental_features_enabled"); ok {
-		providerCtx.EnabledExperiments = expandStringList(v.(*schema.Set).List())
-	}
+	providerCtx.EnabledExperiments = enabledExperiments
 
 	return providerCtx, diags
 }
@@ -914,7 +920,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 	return profileConfig, nil
 }
 
-func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, error) {
+func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []string) (*gosnowflake.Config, error) {
 	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 
 	err := errors.Join(
@@ -1054,7 +1060,9 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 				return nil, fmt.Errorf("could not retrieve access token from refresh token, err = %w", err)
 			}
 			config.Token = accessToken
-			config.Authenticator = gosnowflake.AuthTypeOAuth
+			if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+				config.Authenticator = gosnowflake.AuthTypeOAuth
+			}
 		}
 	}
 

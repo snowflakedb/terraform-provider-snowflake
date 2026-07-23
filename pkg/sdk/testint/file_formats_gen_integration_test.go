@@ -320,7 +320,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithBinaryFormat(sdk.BinaryFormatBase64).
 			WithTrimSpace(true).
 			WithMultiLine(false).
-			WithNullIf([]sdk.NullString{{S: "NULL"}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 			WithFileExtension(".json").
 			WithEnableOctal(true).
 			WithAllowDuplicate(true).
@@ -418,7 +418,7 @@ func TestInt_FileFormats(t *testing.T) {
 				WithBinaryFormat(sdk.BinaryFormatBase64).
 				WithTrimSpace(true).
 				WithMultiLine(false).
-				WithNullIf([]sdk.NullString{{S: "NULL"}}).
+				WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 				WithFileExtension(".json").
 				WithEnableOctal(true).
 				WithAllowDuplicate(true).

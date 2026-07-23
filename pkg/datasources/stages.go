@@ -77,11 +77,7 @@ func ReadStages(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	for i, stage := range stages {
 		var stageDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
-			properties, err := client.Stages.Describe(ctx, stage.ID())
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			details, err := sdk.ParseStageDetails(properties)
+			details, err := client.Stages.DescribeDetails(ctx, stage.ID())
 			if err != nil {
 				return diag.FromErr(err)
 			}

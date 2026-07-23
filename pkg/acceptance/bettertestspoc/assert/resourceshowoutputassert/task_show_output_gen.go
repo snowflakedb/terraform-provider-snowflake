@@ -254,11 +254,6 @@ func (t *TaskShowOutputAssert) HasNoBudget() *TaskShowOutputAssert {
 	return t
 }
 
-func (t *TaskShowOutputAssert) HasNoTaskRelations() *TaskShowOutputAssert {
-	t.ValueNotSet("task_relations")
-	return t
-}
-
 func (t *TaskShowOutputAssert) HasNoLastSuspendedReason() *TaskShowOutputAssert {
 	t.ValueNotSet("last_suspended_reason")
 	return t

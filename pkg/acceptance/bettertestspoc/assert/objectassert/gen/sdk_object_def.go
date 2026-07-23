@@ -531,6 +531,52 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "FileFormat", MethodName: "DescribeAllDetails"},
 	},
+	{
+		IdType:               "sdk.AccountObjectIdentifier",
+		ObjectStruct:         sdk.DatabaseDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.SemanticViewDetails{},
+		IsDataSourceOutput: true,
+		SkipFields:         []string{"Id", "Tables", "Relationships", "Dimensions", "Facts", "Metrics"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.StageDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "Stage", MethodName: "DescribeDetails"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifierWithArguments",
+		ObjectStruct:       sdk.FunctionDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "Function", MethodName: "DescribeDetails"},
+		SkipFields: []string{
+			"NormalizedImports",
+			"NormalizedTargetPath",
+			"NormalizedArguments",
+			"NormalizedExternalAccessIntegrations",
+			"NormalizedSecrets",
+			"NormalizedPackages",
+		},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifierWithArguments",
+		ObjectStruct:       sdk.ProcedureDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "Procedure", MethodName: "DescribeDetails"},
+		SkipFields: []string{
+			"NormalizedImports",
+			"NormalizedTargetPath",
+			"NormalizedArguments",
+			"NormalizedExternalAccessIntegrations",
+			"NormalizedSecrets",
+			"NormalizedPackages",
+		},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
