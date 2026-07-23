@@ -118,7 +118,6 @@ var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeSecret,
 	ObjectTypeSemanticView,
 	ObjectTypeSequence,
-	ObjectTypeSnowflakeIntelligence,
 	ObjectTypeStage,
 	ObjectTypeStream,
 	ObjectTypeTable,
@@ -241,11 +240,16 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeWarehouse,
 }
 
+// A list of object types that are not supported for grant to all or future.
+var invalidGrantToPluralObjectTypes = []ObjectType{
+	ObjectTypeSnowflakeIntelligence,
+}
+
 var (
 	ValidGrantOwnershipObjectTypesString       = make([]string, len(validGrantOwnershipObjectTypes))
 	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipBulkObjectTypes))
 	ValidGrantToAccountObjectTypesString       = make([]string, len(validGrantToAccountObjectTypes))
-	ValidGrantToAccountObjectPluralTypesString = make([]string, len(validGrantToAccountObjectTypes))
+	ValidGrantToAccountObjectPluralTypesString = make([]string, 0)
 	ValidGrantToSchemaObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
 	ValidGrantToAllPluralObjectTypesString     = make([]string, 0)
 	ValidGrantToFuturePluralObjectTypesString  = make([]string, 0)
@@ -260,7 +264,9 @@ func init() {
 	}
 	for i, objectType := range validGrantToAccountObjectTypes {
 		ValidGrantToAccountObjectTypesString[i] = objectType.String()
-		ValidGrantToAccountObjectPluralTypesString[i] = objectType.Plural().String()
+		if !slices.Contains(invalidGrantToPluralObjectTypes, objectType) {
+			ValidGrantToAccountObjectPluralTypesString = append(ValidGrantToAccountObjectPluralTypesString, objectType.Plural().String())
+		}
 	}
 	for i, objectType := range validGrantToSchemaObjectTypes {
 		ValidGrantToSchemaObjectTypesString[i] = objectType.String()

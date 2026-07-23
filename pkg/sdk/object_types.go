@@ -466,6 +466,7 @@ const (
 	PluralObjectTypeOpenflowDeployments      PluralObjectType = "OPENFLOW DEPLOYMENTS"
 	PluralObjectTypeOpenflowRuntimes         PluralObjectType = "OPENFLOW RUNTIMES"
 	PluralObjectTypeOpenflowConnectors       PluralObjectType = "OPENFLOW CONNECTORS"
+	PluralObjectTypeSnowflakeIntelligences   PluralObjectType = "SNOWFLAKE INTELLIGENCES"
 )
 
 func (p PluralObjectType) String() string {
