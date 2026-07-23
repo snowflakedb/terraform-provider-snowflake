@@ -153,3 +153,29 @@ resource "snowflake_grant_privileges_to_database_role" "example" {
     }
   }
 }
+
+##################################
+### inherited privileges
+##################################
+
+# inherited privilege on all schemas in a database
+resource "snowflake_grant_privileges_to_database_role" "example" {
+  privileges         = ["USAGE"]
+  database_role_name = snowflake_database_role.db_role.fully_qualified_name
+  on_schema {
+    inherited = snowflake_database_role.db_role.database
+  }
+}
+
+# inherited privilege on all tables in a database
+resource "snowflake_grant_privileges_to_database_role" "example" {
+  privileges         = ["SELECT"]
+  database_role_name = snowflake_database_role.db_role.fully_qualified_name
+  on_schema_object {
+    inherited {
+      object_type_plural = "TABLES"
+      in_database        = snowflake_database_role.db_role.database
+      # in_schema = snowflake_schema.my_schema.fully_qualified_name # ON ALL TABLES IN SCHEMA
+    }
+  }
+}

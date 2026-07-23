@@ -9,8 +9,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -671,6 +676,375 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnFunctionWithoutArgum
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// databaseRoleHasInheritedGrant checks that the database role has at least one inherited grant
+// (a grant produced by GRANT INHERITED ... ON ALL ...) with the given privilege.
+func databaseRoleHasInheritedGrant(t *testing.T, roleId sdk.DatabaseObjectIdentifier, privilege string) func(*terraform.State) error {
+	t.Helper()
+	return func(_ *terraform.State) error {
+		grants, err := testClient().Grant.ShowGrantsToDatabaseRole(t, roleId)
+		if err != nil {
+			return err
+		}
+		for _, grant := range grants {
+			if grant.IsInherited != nil && *grant.IsInherited && grant.Privilege == privilege {
+				return nil
+			}
+		}
+		return fmt.Errorf("expected an inherited grant with privilege %q for database role %s, got grants: %v", privilege, roleId.FullyQualifiedName(), grants)
+	}
+}
+
+func TestAcc_GrantPrivilegesToDatabaseRole_OnSchema_Inherited_InDatabase(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	roleId := databaseRole.ID()
+	databaseId := testClient().Ids.DatabaseId()
+	privilege := string(sdk.SchemaPrivilegeUsage)
+	resourceModel := model.GrantPrivilegesToDatabaseRole("test", roleId.FullyQualifiedName()).
+		WithPrivileges([]string{privilege}).
+		WithOnInheritedSchemasInDatabase(databaseId)
+	ref := resourceModel.ResourceReference()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.GrantPrivilegesToDatabaseRoleResource(t, ref).
+						HasDatabaseRoleName(roleId.FullyQualifiedName()).
+						HasPrivileges(privilege).
+						HasAllPrivileges(false).
+						HasWithGrantOption(false).
+						HasAlwaysApply(false),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema.0.inherited", databaseId.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("%s|false|false|%s|OnSchemaInherited|InDatabase|%s", roleId.FullyQualifiedName(), privilege, databaseId.FullyQualifiedName()))),
+					assert.Check(databaseRoleHasInheritedGrant(t, roleId, privilege)),
+				),
+			},
+			// Import
+			{
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_InDatabase(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	roleId := databaseRole.ID()
+	databaseId := testClient().Ids.DatabaseId()
+	privilege := string(sdk.SchemaObjectPrivilegeSelect)
+	resourceModel := model.GrantPrivilegesToDatabaseRole("test", roleId.FullyQualifiedName()).
+		WithPrivileges([]string{privilege}).
+		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
+	ref := resourceModel.ResourceReference()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
+	assertions := resourceassert.GrantPrivilegesToDatabaseRoleResource(t, ref).
+		HasDatabaseRoleName(roleId.FullyQualifiedName()).
+		HasPrivileges(privilege).
+		HasAllPrivileges(false).
+		HasWithGrantOption(false).
+		HasAlwaysApply(false)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					assertions,
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.object_type_plural", string(sdk.PluralObjectTypeTables))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_database", databaseId.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_schema", "")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("%s|false|false|%s|OnSchemaObjectInherited|TABLES|InDatabase|%s", roleId.FullyQualifiedName(), privilege, databaseId.FullyQualifiedName()))),
+					assert.Check(databaseRoleHasInheritedGrant(t, roleId, privilege)),
+				),
+			},
+			// Import
+			{
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Externally revoke the configured privilege; the provider should detect the drift and re-grant it.
+			{
+				PreConfig: func() {
+					testClient().Grant.RevokeInheritedPrivilegesFromDatabaseRole(
+						t,
+						roleId,
+						sdk.InheritedDatabaseRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
+						sdk.PluralObjectTypeTables,
+						sdk.InheritedDatabaseRoleGrantIn{Database: new(databaseId)},
+					)
+				},
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					assertions,
+					assert.Check(databaseRoleHasInheritedGrant(t, roleId, privilege)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_InSchema(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	roleId := databaseRole.ID()
+	schemaId := schema.ID()
+	privilege := string(sdk.SchemaObjectPrivilegeInsert)
+	resourceModel := model.GrantPrivilegesToDatabaseRole("test", roleId.FullyQualifiedName()).
+		WithPrivileges([]string{privilege}).
+		WithOnInheritedSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schemaId)
+	ref := resourceModel.ResourceReference()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.GrantPrivilegesToDatabaseRoleResource(t, ref).
+						HasDatabaseRoleName(roleId.FullyQualifiedName()).
+						HasPrivileges(privilege).
+						HasAllPrivileges(false).
+						HasWithGrantOption(false).
+						HasAlwaysApply(false),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.object_type_plural", string(sdk.PluralObjectTypeTables))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_database", "")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_schema", schemaId.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("%s|false|false|%s|OnSchemaObjectInherited|TABLES|InSchema|%s", roleId.FullyQualifiedName(), privilege, schemaId.FullyQualifiedName()))),
+					assert.Check(databaseRoleHasInheritedGrant(t, roleId, privilege)),
+				),
+			},
+			// Import
+			{
+				Config:            accconfig.FromModels(t, providerModel, resourceModel),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_ContainerChange(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	roleId := databaseRole.ID()
+	databaseId := testClient().Ids.DatabaseId()
+	schemaId := schema.ID()
+	privilege := string(sdk.SchemaObjectPrivilegeSelect)
+
+	resourceModelInDatabase := model.GrantPrivilegesToDatabaseRole("test", roleId.FullyQualifiedName()).
+		WithPrivileges([]string{privilege}).
+		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
+	resourceModelInSchema := model.GrantPrivilegesToDatabaseRole("test", roleId.FullyQualifiedName()).
+		WithPrivileges([]string{privilege}).
+		WithOnInheritedSchemaObjectsInSchema(sdk.PluralObjectTypeTables, schemaId)
+	ref := resourceModelInDatabase.ResourceReference()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModelInDatabase),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.GrantPrivilegesToDatabaseRoleResource(t, ref).
+						HasDatabaseRoleName(roleId.FullyQualifiedName()).
+						HasPrivileges(privilege).
+						HasAllPrivileges(false).
+						HasWithGrantOption(false).
+						HasAlwaysApply(false),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_database", databaseId.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_schema", "")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("%s|false|false|%s|OnSchemaObjectInherited|TABLES|InDatabase|%s", roleId.FullyQualifiedName(), privilege, databaseId.FullyQualifiedName()))),
+					assert.Check(databaseRoleHasInheritedGrant(t, roleId, privilege)),
+				),
+			},
+			// Change the container to all tables in a schema
+			{
+				Config: accconfig.FromModels(t, providerModel, resourceModelInSchema),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.GrantPrivilegesToDatabaseRoleResource(t, ref).
+						HasDatabaseRoleName(roleId.FullyQualifiedName()).
+						HasPrivileges(privilege).
+						HasAllPrivileges(false).
+						HasWithGrantOption(false).
+						HasAlwaysApply(false),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_database", "")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_schema_object.0.inherited.0.in_schema", schemaId.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("%s|false|false|%s|OnSchemaObjectInherited|TABLES|InSchema|%s", roleId.FullyQualifiedName(), privilege, schemaId.FullyQualifiedName()))),
+					assert.Check(databaseRoleHasInheritedGrant(t, roleId, privilege)),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation(t *testing.T) {
+	databaseId := testClient().Ids.DatabaseId()
+
+	withGrantOptionModel := model.GrantPrivilegesToDatabaseRole("test", "\"test_db\".\"test_role\"").
+		WithPrivileges([]string{string(sdk.SchemaObjectPrivilegeSelect)}).
+		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId).
+		WithWithGrantOption(true)
+
+	alwaysApplyModel := model.GrantPrivilegesToDatabaseRole("test", "\"test_db\".\"test_role\"").
+		WithPrivileges([]string{string(sdk.SchemaObjectPrivilegeSelect)}).
+		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId).
+		WithAlwaysApply(true)
+
+	invalidSchemaObjectTypeModel := model.GrantPrivilegesToDatabaseRole("test", "\"test_db\".\"test_role\"").
+		WithPrivileges([]string{string(sdk.SchemaObjectPrivilegeSelect)}).
+		WithOnInheritedSchemaObjectsInDatabase("INVALID_PLURAL_OBJECT_TYPE", databaseId)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.InheritedGrants)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: inheritedGrantsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, providerModel, withGrantOptionModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`with_grant_option` cannot be used together with an `inherited` block"),
+			},
+			{
+				Config:      accconfig.FromModels(t, providerModel, alwaysApplyModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("`always_apply` cannot be used together with an `inherited` block"),
+			},
+			{
+				Config:      accconfig.FromModels(t, providerModel, invalidSchemaObjectTypeModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("expected .* to be one of .* got INVALID_PLURAL_OBJECT_TYPE"),
+			},
+		},
+	})
+}
+
+func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation_MissingExperimentFlag(t *testing.T) {
+	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
+	t.Cleanup(databaseRoleCleanup)
+
+	databaseId := testClient().Ids.DatabaseId()
+	onSchemaObjectModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
+		WithPrivileges([]string{string(sdk.SchemaObjectPrivilegeSelect)}).
+		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
+	onSchemaModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
+		WithPrivileges([]string{string(sdk.SchemaPrivilegeUsage)}).
+		WithOnInheritedSchemasInDatabase(databaseId)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, onSchemaObjectModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled"),
+			},
+			{
+				Config:      accconfig.FromModels(t, onSchemaModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled"),
 			},
 		},
 	})

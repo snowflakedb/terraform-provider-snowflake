@@ -174,6 +174,32 @@ resource "snowflake_grant_privileges_to_database_role" "example" {
     }
   }
 }
+
+##################################
+### inherited privileges
+##################################
+
+# inherited privilege on all schemas in a database
+resource "snowflake_grant_privileges_to_database_role" "example" {
+  privileges         = ["USAGE"]
+  database_role_name = snowflake_database_role.db_role.fully_qualified_name
+  on_schema {
+    inherited = snowflake_database_role.db_role.database
+  }
+}
+
+# inherited privilege on all tables in a database
+resource "snowflake_grant_privileges_to_database_role" "example" {
+  privileges         = ["SELECT"]
+  database_role_name = snowflake_database_role.db_role.fully_qualified_name
+  on_schema_object {
+    inherited {
+      object_type_plural = "TABLES"
+      in_database        = snowflake_database_role.db_role.database
+      # in_schema = snowflake_schema.my_schema.fully_qualified_name # ON ALL TABLES IN SCHEMA
+    }
+  }
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
@@ -210,6 +236,7 @@ Optional:
 
 - `all_schemas_in_database` (String) The fully qualified name of the database.
 - `future_schemas_in_database` (String) The fully qualified name of the database.
+- `inherited` (String) Configures an inherited privilege to be granted on all current and future schemas in a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.
 - `schema_name` (String) The fully qualified name of the schema.
 
 
@@ -220,6 +247,7 @@ Optional:
 
 - `all` (Block List, Max: 1) Configures the privilege to be granted on all objects in either a database or schema. (see [below for nested schema](#nestedblock--on_schema_object--all))
 - `future` (Block List, Max: 1) Configures the privilege to be granted on future objects in either a database or schema. (see [below for nested schema](#nestedblock--on_schema_object--future))
+- `inherited` (Block List, Max: 1) Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details. (see [below for nested schema](#nestedblock--on_schema_object--inherited))
 - `object_name` (String) The fully qualified name of the object on which privileges will be granted.
 - `object_type` (String) The object type of the schema object on which privileges will be granted. Valid values are: AGENT | AGGREGATION POLICY | ALERT | AUTHENTICATION POLICY | CORTEX SEARCH SERVICE | DATA METRIC FUNCTION | DATASET | DBT PROJECT | DYNAMIC TABLE | EVENT TABLE | EXPERIMENT | EXTERNAL TABLE | FILE FORMAT | FUNCTION | GATEWAY | GIT REPOSITORY | HYBRID TABLE | IMAGE REPOSITORY | ICEBERG TABLE | JOIN POLICY | MASKING POLICY | MATERIALIZED VIEW | MCP SERVER | MODEL | MODEL MONITOR | NETWORK RULE | NOTEBOOK | NOTEBOOK PROJECT | ONLINE FEATURE TABLE | PACKAGES POLICY | PASSWORD POLICY | PIPE | PRIVACY POLICY | PROCEDURE | PROJECTION POLICY | ROW ACCESS POLICY | SECRET | SEMANTIC VIEW | SERVICE | SESSION POLICY | SEQUENCE | SNAPSHOT | SNAPSHOT POLICY | SNAPSHOT SET | STAGE | STORAGE LIFECYCLE POLICY | STREAM | STREAMLIT | TABLE | TAG | TASK | VIEW | WORKSPACE
 
@@ -242,6 +270,19 @@ Optional:
 Required:
 
 - `object_type_plural` (String) The plural object type of the schema object on which privileges will be granted. Valid values are: AGENTS | ALERTS | AUTHENTICATION POLICIES | CORTEX SEARCH SERVICES | DATA METRIC FUNCTIONS | DATASETS | DBT PROJECTS | DYNAMIC TABLES | EVENT TABLES | EXTERNAL TABLES | FILE FORMATS | FUNCTIONS | GIT REPOSITORIES | HYBRID TABLES | IMAGE REPOSITORIES | ICEBERG TABLES | MATERIALIZED VIEWS | MCP SERVERS | MODELS | MODEL MONITORS | NETWORK RULES | NOTEBOOKS | ONLINE FEATURE TABLES | PASSWORD POLICIES | PIPES | PRIVACY POLICIES | PROCEDURES | SECRETS | SEMANTIC VIEWS | SERVICES | SEQUENCES | SNAPSHOT POLICIES | SNAPSHOT SETS | STAGES | STREAMS | STREAMLITS | TABLES | TASKS | VIEWS | WORKSPACES.
+
+Optional:
+
+- `in_database` (String) The fully qualified name of the database.
+- `in_schema` (String) The fully qualified name of the schema.
+
+
+<a id="nestedblock--on_schema_object--inherited"></a>
+### Nested Schema for `on_schema_object.inherited`
+
+Required:
+
+- `object_type_plural` (String) The plural object type of the schema object on which privileges will be granted. Valid values are: AGENTS | AGGREGATION POLICIES | ALERTS | AUTHENTICATION POLICIES | CORTEX SEARCH SERVICES | DATA METRIC FUNCTIONS | DATASETS | DBT PROJECTS | DYNAMIC TABLES | EVENT TABLES | EXTERNAL TABLES | FILE FORMATS | FUNCTIONS | GIT REPOSITORIES | HYBRID TABLES | IMAGE REPOSITORIES | ICEBERG TABLES | MASKING POLICIES | MATERIALIZED VIEWS | MCP SERVERS | MODELS | MODEL MONITORS | NETWORK RULES | NOTEBOOKS | ONLINE FEATURE TABLES | PACKAGES POLICIES | PASSWORD POLICIES | PIPES | PRIVACY POLICIES | PROCEDURES | PROJECTION POLICIES | ROW ACCESS POLICIES | SECRETS | SEMANTIC VIEWS | SERVICES | SESSION POLICIES | SEQUENCES | SNAPSHOTS | SNAPSHOT POLICIES | SNAPSHOT SETS | STAGES | STREAMS | STREAMLITS | TABLES | TAGS | TASKS | VIEWS.
 
 Optional:
 

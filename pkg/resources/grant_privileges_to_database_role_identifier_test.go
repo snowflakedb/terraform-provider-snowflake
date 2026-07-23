@@ -253,6 +253,70 @@ func TestParseGrantPrivilegesToDatabaseRoleId(t *testing.T) {
 			},
 		},
 		{
+			Name:       "grant database role on schema inherited in database",
+			Identifier: `"database-name"."database-role"|false|false|USAGE|OnSchemaInherited|InDatabase|"on-database-name"`,
+			Expected: GrantPrivilegesToDatabaseRoleId{
+				DatabaseRoleName: sdk.NewDatabaseObjectIdentifier("database-name", "database-role"),
+				WithGrantOption:  false,
+				Privileges:       []string{"USAGE"},
+				Kind:             OnSchemaInheritedDatabaseRoleGrantKind,
+				Data: &OnSchemaInheritedGrantData{
+					Kind:         InDatabaseInheritedContainerKind,
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("on-database-name")),
+				},
+			},
+		},
+		{
+			Name:       "grant database role on schema object inherited in database",
+			Identifier: `"database-name"."database-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InDatabase|"on-database-name"`,
+			Expected: GrantPrivilegesToDatabaseRoleId{
+				DatabaseRoleName: sdk.NewDatabaseObjectIdentifier("database-name", "database-role"),
+				WithGrantOption:  false,
+				Privileges:       []string{"SELECT"},
+				Kind:             OnSchemaObjectInheritedDatabaseRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InDatabaseInheritedContainerKind,
+					DatabaseName:     new(sdk.NewAccountObjectIdentifier("on-database-name")),
+				},
+			},
+		},
+		{
+			Name:       "grant database role on schema object inherited in schema",
+			Identifier: `"database-name"."database-role"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InSchema|"on-database-name"."schema-name"`,
+			Expected: GrantPrivilegesToDatabaseRoleId{
+				DatabaseRoleName: sdk.NewDatabaseObjectIdentifier("database-name", "database-role"),
+				WithGrantOption:  false,
+				Privileges:       []string{"SELECT"},
+				Kind:             OnSchemaObjectInheritedDatabaseRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InSchemaInheritedContainerKind,
+					SchemaName:       new(sdk.NewDatabaseObjectIdentifier("on-database-name", "schema-name")),
+				},
+			},
+		},
+		{
+			Name:       "validation: grant database role wrong number of parts for OnSchemaInherited kind",
+			Identifier: `"database-name"."role-name"|false|false|USAGE|OnSchemaInherited|InDatabase`,
+			Error:      "database role identifier should hold 7 parts",
+		},
+		{
+			Name:       "validation: grant database role invalid container for OnSchemaInherited kind",
+			Identifier: `"database-name"."role-name"|false|false|USAGE|OnSchemaInherited|InAccount|"on-database-name"`,
+			Error:      "database roles only support InDatabase container for on_schema inherited grants; got: InAccount",
+		},
+		{
+			Name:       "validation: grant database role wrong number of parts for OnSchemaObjectInherited kind",
+			Identifier: `"database-name"."role-name"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InDatabase`,
+			Error:      "database role identifier should hold 8 parts",
+		},
+		{
+			Name:       "validation: grant database role invalid container for OnSchemaObjectInherited kind",
+			Identifier: `"database-name"."role-name"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InAccount|"on-database-name"`,
+			Error:      "database roles only support InDatabase or InSchema containers for on_schema_object inherited grants; got: InAccount",
+		},
+		{
 			Name:       "validation: grant database role not enough parts",
 			Identifier: `"database-name"."role-name"|false|false`,
 			Error:      "database role identifier should hold at least 6 parts",
@@ -462,6 +526,47 @@ func TestGrantPrivilegesToDatabaseRoleIdString(t *testing.T) {
 				},
 			},
 			Expected: `"database-name"."role-name"|false|false|CREATE SCHEMA,USAGE,MONITOR|OnSchemaObject|OnAll|TABLES|InSchema|"database-name"."schema-name"`,
+		},
+		{
+			Name: "grant database role on schema inherited in database",
+			Identifier: GrantPrivilegesToDatabaseRoleId{
+				DatabaseRoleName: sdk.NewDatabaseObjectIdentifier("database-name", "role-name"),
+				Privileges:       []string{"USAGE"},
+				Kind:             OnSchemaInheritedDatabaseRoleGrantKind,
+				Data: &OnSchemaInheritedGrantData{
+					Kind:         InDatabaseInheritedContainerKind,
+					DatabaseName: new(sdk.NewAccountObjectIdentifier("database-name")),
+				},
+			},
+			Expected: `"database-name"."role-name"|false|false|USAGE|OnSchemaInherited|InDatabase|"database-name"`,
+		},
+		{
+			Name: "grant database role on schema object inherited in database",
+			Identifier: GrantPrivilegesToDatabaseRoleId{
+				DatabaseRoleName: sdk.NewDatabaseObjectIdentifier("database-name", "role-name"),
+				Privileges:       []string{"SELECT"},
+				Kind:             OnSchemaObjectInheritedDatabaseRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InDatabaseInheritedContainerKind,
+					DatabaseName:     new(sdk.NewAccountObjectIdentifier("database-name")),
+				},
+			},
+			Expected: `"database-name"."role-name"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InDatabase|"database-name"`,
+		},
+		{
+			Name: "grant database role on schema object inherited in schema",
+			Identifier: GrantPrivilegesToDatabaseRoleId{
+				DatabaseRoleName: sdk.NewDatabaseObjectIdentifier("database-name", "role-name"),
+				Privileges:       []string{"SELECT"},
+				Kind:             OnSchemaObjectInheritedDatabaseRoleGrantKind,
+				Data: &OnSchemaObjectInheritedGrantData{
+					ObjectNamePlural: sdk.PluralObjectTypeTables,
+					Kind:             InSchemaInheritedContainerKind,
+					SchemaName:       new(sdk.NewDatabaseObjectIdentifier("database-name", "schema-name")),
+				},
+			},
+			Expected: `"database-name"."role-name"|false|false|SELECT|OnSchemaObjectInherited|TABLES|InSchema|"database-name"."schema-name"`,
 		},
 	}
 

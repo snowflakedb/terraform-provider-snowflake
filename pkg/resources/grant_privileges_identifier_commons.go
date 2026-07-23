@@ -106,6 +106,11 @@ func (kind InheritedContainerKind) toInheritedAccountRoleGrantIn(database *sdk.A
 	}
 }
 
+func (kind InheritedContainerKind) toInheritedDatabaseRoleGrantIn(database *sdk.AccountObjectIdentifier, schema *sdk.DatabaseObjectIdentifier) sdk.InheritedDatabaseRoleGrantIn {
+	grantIn := kind.toInheritedAccountRoleGrantIn(database, schema)
+	return sdk.InheritedDatabaseRoleGrantIn{Database: grantIn.Database, Schema: grantIn.Schema}
+}
+
 // OnAccountObjectInheritedGrantData holds identifier data for an inherited grant on all
 // account objects of a given type.
 type OnAccountObjectInheritedGrantData struct {
