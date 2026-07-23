@@ -54,6 +54,13 @@ func boolAttributeCreate(d *schema.ResourceData, key string, createField **bool)
 	return nil
 }
 
+func boolAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(bool) T) error {
+	if v, ok := d.GetOk(key); ok {
+		setValue(v.(bool))
+	}
+	return nil
+}
+
 func booleanStringAttributeCreate(d *schema.ResourceData, key string, createField **bool) error {
 	if v := d.Get(key).(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
@@ -111,6 +118,13 @@ func schemaObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, c
 func accountObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, createField **sdk.AccountObjectIdentifier) error {
 	if v, ok := d.GetOk(key); ok {
 		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))
+	}
+	return nil
+}
+
+func accountObjectIdentifierAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(sdk.AccountObjectIdentifier) T) error {
+	if v, ok := d.GetOk(key); ok {
+		setValue(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
 	return nil
 }

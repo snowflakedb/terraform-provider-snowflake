@@ -202,8 +202,8 @@ func CreateContextSCIMIntegration(ctx context.Context, d *schema.ResourceData, m
 	runAsRole, _ := scimIntegrationRunAsRoleToAccountObjectIdentifier(runAsRoleRaw)
 	req := sdk.NewCreateScimSecurityIntegrationRequest(id, scimClient, runAsRole).WithEnabled(d.Get("enabled").(bool))
 
-	if v, ok := d.GetOk("network_policy"); ok {
-		req.WithNetworkPolicy(sdk.NewAccountObjectIdentifier(v.(string)))
+	if err := accountObjectIdentifierAttributeCreateBuilder(d, "network_policy", req.WithNetworkPolicy); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if v := d.Get("sync_password").(string); v != BooleanDefault {

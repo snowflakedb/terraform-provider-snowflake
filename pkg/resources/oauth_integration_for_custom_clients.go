@@ -373,8 +373,8 @@ func CreateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 		req.WithOauthRefreshTokenValidity(v)
 	}
 
-	if v, ok := d.GetOk("network_policy"); ok {
-		req.WithNetworkPolicy(sdk.NewAccountObjectIdentifier(v.(string)))
+	if err := accountObjectIdentifierAttributeCreateBuilder(d, "network_policy", req.WithNetworkPolicy); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if v, ok := d.GetOk("oauth_client_rsa_public_key"); ok {
