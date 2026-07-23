@@ -113,6 +113,16 @@ The `default_workload_identity.aws` nested block on the [`snowflake_service_user
 
 This is a non-breaking, additive change; no action is required unless you want to adopt JWT-based AWS workload identity federation.
 
+### *(new feature)* Support for future and bulk grants on `WORKSPACES`
+
+Both `snowflake_grant_privileges_to_account_role` and `snowflake_grant_privileges_to_database_role` resources now support `WORKSPACES` in `on_schema_object.all.object_type_plural` and `on_schema_object.future.object_type_plural` fields. The `snowflake_grant_ownership` resource also supports `WORKSPACES` for bulk ownership transfers.
+
+Previously, `WORKSPACES` was only supported for individual object grants (`on_schema_object.object_type`).
+
+No changes to existing configurations are required.
+
+References: [#5004](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5004).
+
 ### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 
 The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) and [`snowflake_oauth_integration_for_partner_applications`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_partner_applications) resources now support the `allowed_roles_list` attribute, which maps to the `ALLOWED_ROLES_LIST` Snowflake property. This attribute specifies Snowflake roles that a user can explicitly consent to using after authenticating. It can only be set when `oauth_use_secondary_roles` is `NONE` (the Snowflake default).

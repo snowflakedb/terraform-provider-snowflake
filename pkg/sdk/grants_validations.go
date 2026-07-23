@@ -125,6 +125,7 @@ var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeUser,
 	ObjectTypeView,
 	ObjectTypeWarehouse,
+	ObjectTypeWorkspace,
 }
 
 var validGrantToAccountObjectTypes = []ObjectType{
@@ -201,8 +202,8 @@ var validGrantToSchemaObjectTypes = []ObjectType{
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
 var invalidGrantToAllObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
-	ObjectTypeExternalFunction,
 	ObjectTypeExperiment,
+	ObjectTypeExternalFunction,
 	ObjectTypeGateway,
 	ObjectTypeJoinPolicy,
 	ObjectTypeNotebookProject,
@@ -215,14 +216,13 @@ var invalidGrantToAllObjectTypes = []ObjectType{
 	ObjectTypeStorageLifecyclePolicy,
 	// ObjectTypeTag,
 	ObjectTypeWarehouse,
-	ObjectTypeWorkspace,
 }
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
 var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
-	ObjectTypeExternalFunction,
 	ObjectTypeExperiment,
+	ObjectTypeExternalFunction,
 	ObjectTypeGateway,
 	ObjectTypeAggregationPolicy,
 	ObjectTypeJoinPolicy,
@@ -236,7 +236,6 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeTag,
 	ObjectTypeWarehouse,
-	ObjectTypeWorkspace,
 }
 
 var (
