@@ -9,11 +9,19 @@ import (
 
 // ShowFileFormatSchema represents output of SHOW query for the single FileFormat.
 var ShowFileFormatSchema = map[string]*schema.Schema{
+	"created_on": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"created_on": {
+	"database_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"schema_name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
@@ -33,23 +41,25 @@ var ShowFileFormatSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"options": {
-		Type:     schema.TypeInvalid,
+	"format_options": {
+		Type:     schema.TypeString,
 		Computed: true,
 	},
 }
 
 var _ = ShowFileFormatSchema
 
-func FileFormatToSchema(fileFormat *sdk.FileFormatLegacy) map[string]any {
+func FileFormatToSchema(fileFormat *sdk.FileFormat) map[string]any {
 	fileFormatSchema := make(map[string]any)
-	fileFormatSchema["name"] = fileFormat.Name.FullyQualifiedName()
 	fileFormatSchema["created_on"] = fileFormat.CreatedOn.String()
+	fileFormatSchema["name"] = fileFormat.Name
+	fileFormatSchema["database_name"] = fileFormat.DatabaseName
+	fileFormatSchema["schema_name"] = fileFormat.SchemaName
 	fileFormatSchema["type"] = string(fileFormat.Type)
 	fileFormatSchema["owner"] = fileFormat.Owner
 	fileFormatSchema["comment"] = fileFormat.Comment
 	fileFormatSchema["owner_role_type"] = fileFormat.OwnerRoleType
-	fileFormatSchema["options"] = fileFormat.Options
+	fileFormatSchema["format_options"] = fileFormat.FormatOptions
 	return fileFormatSchema
 }
 
