@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -184,7 +183,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 		})
 
 		t.Run("database role - all "+tc.objectTypePlural.String(), func(t *testing.T) {
-			_, objectCleanup := tc.createObject(t)
+			objectId, objectCleanup := tc.createObject(t)
 			t.Cleanup(objectCleanup)
 
 			databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
@@ -206,10 +205,27 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 				databaseRole.ID(), nil,
 			)
 			require.NoError(t, err)
+
+			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+				On: &sdk.ShowGrantsOn{Object: &sdk.Object{
+					ObjectType: tc.expectedGrantOn,
+					Name:       objectId,
+				}},
+			})
+			require.NoError(t, err)
+			found := false
+			for _, g := range grants {
+				if g.Privilege == tc.privilege.String() && g.GranteeName.Name() == databaseRole.ID().Name() {
+					found = true
+					assert.Equal(t, tc.expectedGrantOn, g.GrantedOn)
+					break
+				}
+			}
+			assert.True(t, found, "expected privilege %s granted to %s on %s", tc.privilege, databaseRole.ID().Name(), objectId.FullyQualifiedName())
 		})
 
 		t.Run("ownership - all "+tc.objectTypePlural.String(), func(t *testing.T) {
-			_, objectCleanup := tc.createObject(t)
+			objectId, objectCleanup := tc.createObject(t)
 			t.Cleanup(objectCleanup)
 
 			role, roleCleanup := testClientHelper().Role.CreateRole(t)
@@ -228,6 +244,23 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 				nil,
 			)
 			require.NoError(t, err)
+
+			grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+				On: &sdk.ShowGrantsOn{Object: &sdk.Object{
+					ObjectType: tc.expectedGrantOn,
+					Name:       objectId,
+				}},
+			})
+			require.NoError(t, err)
+			found := false
+			for _, g := range grants {
+				if g.Privilege == sdk.SchemaObjectOwnership.String() && g.GranteeName.Name() == roleId.Name() {
+					found = true
+					assert.Equal(t, tc.expectedGrantOn, g.GrantedOn)
+					break
+				}
+			}
+			assert.True(t, found, "expected privilege OWNERSHIP granted to %s on %s", roleId.Name(), objectId.FullyQualifiedName())
 		})
 	}
 }
@@ -243,8 +276,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 		objectTypePlural    sdk.PluralObjectType
 		privilege           sdk.SchemaObjectPrivilege
 		createObject        func(t *testing.T) (sdk.SchemaObjectIdentifier, func())
-		expectedFutureError *regexp.Regexp
-		expectedAllError    *regexp.Regexp
+		expectedFutureError string
+		expectedAllError    string
 	}
 
 	testCases := []testCase{
@@ -255,8 +288,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				t.Helper()
 				return testClientHelper().Experiment.Create(t)
 			},
-			expectedFutureError: regexp.MustCompile(`Unsupported feature 'EXPERIMENT'`),
-			expectedAllError:    regexp.MustCompile(`Unsupported feature 'GRANT on all objects of type EXPERIMENT'`),
+			expectedFutureError: "Unsupported feature 'EXPERIMENT'",
+			expectedAllError:    "Unsupported feature 'GRANT on all objects of type EXPERIMENT'",
 		},
 		{
 			objectTypePlural: sdk.PluralObjectTypeGateways,
@@ -286,8 +319,8 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				// return testClientHelper().Gateway.Create(t, serviceId, endpointName)
 				return sdk.SchemaObjectIdentifier{}, func() {}
 			},
-			expectedFutureError: regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
-			expectedAllError:    regexp.MustCompile(`syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'`),
+			expectedFutureError: "syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'",
+			expectedAllError:    "syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'",
 		},
 	}
 
@@ -314,8 +347,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				},
 				role.ID(), nil,
 			)
-			require.Error(t, err)
-			assert.Regexp(t, tc.expectedFutureError, err.Error())
+			require.ErrorContains(t, err, tc.expectedFutureError)
 		})
 
 		t.Run("account role - all "+tc.objectTypePlural.String(), func(t *testing.T) {
@@ -340,8 +372,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				},
 				role.ID(), nil,
 			)
-			require.Error(t, err)
-			assert.Regexp(t, tc.expectedAllError, err.Error())
+			require.ErrorContains(t, err, tc.expectedAllError)
 		})
 
 		t.Run("ownership - future "+tc.objectTypePlural.String(), func(t *testing.T) {
@@ -363,8 +394,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
 				nil,
 			)
-			require.Error(t, err)
-			assert.Regexp(t, tc.expectedFutureError, err.Error())
+			require.ErrorContains(t, err, tc.expectedFutureError)
 		})
 
 		t.Run("ownership - all "+tc.objectTypePlural.String(), func(t *testing.T) {
@@ -386,8 +416,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 				sdk.OwnershipGrantTo{AccountRoleName: &roleId},
 				nil,
 			)
-			require.Error(t, err)
-			assert.Regexp(t, tc.expectedAllError, err.Error())
+			require.ErrorContains(t, err, tc.expectedAllError)
 		})
 	}
 }
