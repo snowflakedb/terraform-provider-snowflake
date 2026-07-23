@@ -39,6 +39,12 @@ The [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snow
 
 In most cases no action is required; this is a non-breaking addition. Note that external change detection for this field is not yet supported and will be addressed in a future update.
 
+### *(new feature)* Support for `SNOWFLAKE INTELLIGENCE` object type in grant resources
+
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) and [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resources now support `SNOWFLAKE INTELLIGENCE` object type. This allows privileges (e.g. `MODIFY`, `USAGE`) on a Snowflake Intelligence object to be granted to an account role via Terraform.
+
+No changes in configuration are required for existing resources; this is a non-breaking addition.
+
 ### *(new preview resource)* New interactive warehouse resource
 
 We have added a new preview resource for managing interactive warehouses: [snowflake_warehouse_interactive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) ([Snowflake docs](https://docs.snowflake.com/en/user-guide/warehouses-interactive)).

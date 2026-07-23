@@ -66,6 +66,7 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeSecret,
 	ObjectTypeSemanticView,
 	ObjectTypeSequence,
+	ObjectTypeSnowflakeIntelligence,
 	ObjectTypeStage,
 	ObjectTypeStream,
 	ObjectTypeTable,
@@ -139,6 +140,7 @@ var validGrantToAccountObjectTypes = []ObjectType{
 	ObjectTypeFailoverGroup,
 	ObjectTypeReplicationGroup,
 	ObjectTypeExternalVolume,
+	ObjectTypeSnowflakeIntelligence,
 }
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#required-parameters
@@ -238,11 +240,16 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeWarehouse,
 }
 
+// A list of object types that are not supported for grant to all or future.
+var invalidGrantToPluralObjectTypes = []ObjectType{
+	ObjectTypeSnowflakeIntelligence,
+}
+
 var (
 	ValidGrantOwnershipObjectTypesString       = make([]string, len(validGrantOwnershipObjectTypes))
 	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipBulkObjectTypes))
 	ValidGrantToAccountObjectTypesString       = make([]string, len(validGrantToAccountObjectTypes))
-	ValidGrantToAccountObjectPluralTypesString = make([]string, len(validGrantToAccountObjectTypes))
+	ValidGrantToAccountObjectPluralTypesString = make([]string, 0)
 	ValidGrantToSchemaObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
 	ValidGrantToAllPluralObjectTypesString     = make([]string, 0)
 	ValidGrantToFuturePluralObjectTypesString  = make([]string, 0)
@@ -257,7 +264,9 @@ func init() {
 	}
 	for i, objectType := range validGrantToAccountObjectTypes {
 		ValidGrantToAccountObjectTypesString[i] = objectType.String()
-		ValidGrantToAccountObjectPluralTypesString[i] = objectType.Plural().String()
+		if !slices.Contains(invalidGrantToPluralObjectTypes, objectType) {
+			ValidGrantToAccountObjectPluralTypesString = append(ValidGrantToAccountObjectPluralTypesString, objectType.Plural().String())
+		}
 	}
 	for i, objectType := range validGrantToSchemaObjectTypes {
 		ValidGrantToSchemaObjectTypesString[i] = objectType.String()
@@ -362,8 +371,8 @@ func (v *AccountRoleGrantOn) validate() error {
 }
 
 func (v *GrantOnAccountObject) validate() error {
-	if !exactlyOneValueSet(v.User, v.ResourceMonitor, v.Warehouse, v.ComputePool, v.Database, v.Integration, v.Connection, v.FailoverGroup, v.ReplicationGroup, v.ExternalVolume) {
-		return errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume")
+	if !exactlyOneValueSet(v.User, v.ResourceMonitor, v.Warehouse, v.ComputePool, v.Database, v.Integration, v.Connection, v.FailoverGroup, v.ReplicationGroup, v.ExternalVolume, v.SnowflakeIntelligence) {
+		return errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume", "SnowflakeIntelligence")
 	}
 	return nil
 }

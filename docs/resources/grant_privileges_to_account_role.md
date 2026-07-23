@@ -373,7 +373,7 @@ Optional:
 
 - `inherited` (Block List, Max: 1) Configures an inherited privilege to be granted on all current and future account objects of a given type in the account. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details. (see [below for nested schema](#nestedblock--on_account_object--inherited))
 - `object_name` (String) The fully qualified name of the object on which privileges will be granted.
-- `object_type` (String) The object type of the account object on which privileges will be granted. Valid values are: `USER` | `RESOURCE MONITOR` | `WAREHOUSE` | `COMPUTE POOL` | `DATABASE` | `INTEGRATION` | `CONNECTION` | `FAILOVER GROUP` | `REPLICATION GROUP` | `EXTERNAL VOLUME`
+- `object_type` (String) The object type of the account object on which privileges will be granted. Valid values are: `USER` | `RESOURCE MONITOR` | `WAREHOUSE` | `COMPUTE POOL` | `DATABASE` | `INTEGRATION` | `CONNECTION` | `FAILOVER GROUP` | `REPLICATION GROUP` | `EXTERNAL VOLUME` | `SNOWFLAKE INTELLIGENCE`
 
 <a id="nestedblock--on_account_object--inherited"></a>
 ### Nested Schema for `on_account_object.inherited`

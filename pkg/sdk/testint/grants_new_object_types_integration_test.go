@@ -275,7 +275,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 	type testCase struct {
 		objectTypePlural    sdk.PluralObjectType
 		privilege           sdk.SchemaObjectPrivilege
-		createObject        func(t *testing.T) (sdk.SchemaObjectIdentifier, func())
+		createObject        func(t *testing.T) (sdk.ObjectIdentifier, func())
 		expectedFutureError string
 		expectedAllError    string
 	}
@@ -284,7 +284,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 		{
 			objectTypePlural: sdk.PluralObjectTypeExperiments,
 			privilege:        sdk.SchemaObjectPrivilegeUsage,
-			createObject: func(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+			createObject: func(t *testing.T) (sdk.ObjectIdentifier, func()) {
 				t.Helper()
 				return testClientHelper().Experiment.Create(t)
 			},
@@ -294,7 +294,7 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 		{
 			objectTypePlural: sdk.PluralObjectTypeGateways,
 			privilege:        sdk.SchemaObjectPrivilegeUsage,
-			createObject: func(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+			createObject: func(t *testing.T) (sdk.ObjectIdentifier, func()) {
 				t.Helper()
 
 				computePool, computePoolCleanup := testClientHelper().ComputePool.Create(t)
@@ -321,6 +321,16 @@ func TestInt_GrantPrivileges_OnFutureAndAll_UnsupportedObjectTypes(t *testing.T)
 			},
 			expectedFutureError: "syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'",
 			expectedAllError:    "syntax error line 0 at position 0 unexpected 'TOK_GATEWAY'",
+		},
+		{
+			objectTypePlural: sdk.PluralObjectTypeSnowflakeIntelligences,
+			privilege:        sdk.SchemaObjectPrivilegeUsage,
+			createObject: func(t *testing.T) (sdk.ObjectIdentifier, func()) {
+				t.Helper()
+				return testClientHelper().SnowflakeIntelligence.Create(t)
+			},
+			expectedFutureError: "unexpected 'SNOWFLAKE'.",
+			expectedAllError:    "unexpected 'INTELLIGENCES'.",
 		},
 	}
 

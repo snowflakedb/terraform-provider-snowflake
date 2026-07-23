@@ -527,6 +527,55 @@ func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_gh2717(t *testing.T) {
 	})
 }
 
+func TestAcc_GrantPrivilegesToAccountRole_OnAccountObject_SnowflakeIntelligence(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	snowflakeIntelligenceId, snowflakeIntelligenceCleanup := testClient().SnowflakeIntelligence.Create(t)
+	t.Cleanup(snowflakeIntelligenceCleanup)
+
+	roleId := role.ID()
+	privilege := string(sdk.AccountObjectPrivilegeModify)
+	resourceModel := model.GrantPrivilegesToAccountRole("test", roleId.FullyQualifiedName()).
+		WithPrivileges(privilege).
+		WithOnAccountObject(sdk.ObjectTypeSnowflakeIntelligence, snowflakeIntelligenceId)
+	ref := resourceModel.ResourceReference()
+
+	assertions := resourceassert.GrantPrivilegesToAccountRoleResource(t, ref).
+		HasAccountRoleName(roleId.FullyQualifiedName()).
+		HasPrivileges(privilege).
+		HasAllPrivileges(false).
+		HasWithGrantOption(false).
+		HasAlwaysApply(false).
+		HasStrictPrivilegeManagement(false)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, resourceModel),
+				Check: assertThat(
+					t,
+					assertions,
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_account_object.0.object_type", string(sdk.ObjectTypeSnowflakeIntelligence))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "on_account_object.0.object_name", snowflakeIntelligenceId.Name())),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", fmt.Sprintf("%s|false|false|%s|OnAccountObject|%s|%s", roleId.FullyQualifiedName(), privilege, sdk.ObjectTypeSnowflakeIntelligence, snowflakeIntelligenceId.FullyQualifiedName()))),
+				),
+			},
+			{
+				Config:                  accconfig.FromModels(t, resourceModel),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"on_account_object.0.object_name"},
+			},
+		},
+	})
+}
+
 // This proves that infinite plan is not produced as in snowflake_grant_privileges_to_role.
 // More details can be found in the fix pr https://github.com/Snowflake-Labs/terraform-provider-snowflake/pull/2364.
 func TestAcc_GrantPrivilegesToApplicationRole_OnAccountObject_InfinitePlan(t *testing.T) {

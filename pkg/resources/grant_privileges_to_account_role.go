@@ -1458,6 +1458,8 @@ func getAccountRoleGrantOn(d *schema.ResourceData) (*sdk.AccountRoleGrantOn, err
 			grantOnAccountObject.ComputePool = &objectIdentifier
 		case sdk.ObjectTypeExternalVolume:
 			grantOnAccountObject.ExternalVolume = &objectIdentifier
+		case sdk.ObjectTypeSnowflakeIntelligence:
+			grantOnAccountObject.SnowflakeIntelligence = &objectIdentifier
 		}
 
 		on.AccountObject = grantOnAccountObject
@@ -1748,6 +1750,9 @@ func createGrantPrivilegesToAccountRoleIdFromSchema(d *schema.ResourceData) (id 
 		case on.AccountObject.ExternalVolume != nil:
 			onAccountObjectGrantData.ObjectType = sdk.ObjectTypeExternalVolume
 			onAccountObjectGrantData.ObjectName = *on.AccountObject.ExternalVolume
+		case on.AccountObject.SnowflakeIntelligence != nil:
+			onAccountObjectGrantData.ObjectType = sdk.ObjectTypeSnowflakeIntelligence
+			onAccountObjectGrantData.ObjectName = *on.AccountObject.SnowflakeIntelligence
 		}
 
 		id.Kind = OnAccountObjectAccountRoleGrantKind
