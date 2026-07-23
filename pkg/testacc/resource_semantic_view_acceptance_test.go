@@ -369,7 +369,7 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 						HasCommentString(comment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					objectassert.SemanticViewDetails(t, id).
-						HasDetailsCount(34).
+						HasDescribeRowCount(34).
 						HasComment(comment).
 						ContainsTable(expectedTable1).
 						ContainsTable(expectedTable2).

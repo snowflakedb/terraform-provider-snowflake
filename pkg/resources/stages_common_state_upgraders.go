@@ -26,12 +26,7 @@ func v2_14_0_StageStateUpgrader(describeToSchema func(sdk.StageDetails) (map[str
 		}
 
 		client := meta.(*provider.Context).Client
-		properties, err := client.Stages.Describe(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-
-		details, err := sdk.ParseStageDetails(properties)
+		details, err := client.Stages.DescribeDetails(ctx, id)
 		if err != nil {
 			return nil, err
 		}

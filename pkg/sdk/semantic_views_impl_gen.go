@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	_ SemanticViews                       = (*semanticViews)(nil)
-	_ convertibleRow[SemanticViewDetails] = new(semanticViewDetailsRow)
-	_ convertibleRow[SemanticView]        = new(semanticViewDBRow)
+	_ SemanticViews                      = (*semanticViews)(nil)
+	_ convertibleRow[SemanticViewDetail] = new(semanticViewDetailsRow)
+	_ convertibleRow[SemanticView]       = new(semanticViewDBRow)
 )
 
 type semanticViews struct {
@@ -37,7 +37,7 @@ func (v *semanticViews) DropSafely(ctx context.Context, id SchemaObjectIdentifie
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropSemanticViewRequest(id).WithIfExists(true)) }, ctx, id)
 }
 
-func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetails, error) {
+func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetail, error) {
 	opts := &DescribeSemanticViewOptions{
 		name: id,
 	}
@@ -45,7 +45,7 @@ func (v *semanticViews) Describe(ctx context.Context, id SchemaObjectIdentifier)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[semanticViewDetailsRow, SemanticViewDetails](rows)
+	return convertRows[semanticViewDetailsRow, SemanticViewDetail](rows)
 }
 
 func (v *semanticViews) Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error) {
@@ -290,8 +290,8 @@ func (r *DescribeSemanticViewRequest) toOpts() *DescribeSemanticViewOptions {
 	return opts
 }
 
-func (r semanticViewDetailsRow) convert() (*SemanticViewDetails, error) {
-	result := &SemanticViewDetails{
+func (r semanticViewDetailsRow) convert() (*SemanticViewDetail, error) {
+	result := &SemanticViewDetail{
 		Property:      r.Property,
 		PropertyValue: r.PropertyValue,
 	}
