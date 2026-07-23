@@ -627,6 +627,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_failover_group":                                               resources.FailoverGroup(),
 		"snowflake_file_format":                                                  resources.FileFormat(),
 		"snowflake_file_format_json":                                             resources.FileFormatJson(),
+		"snowflake_file_format_xml":                                              resources.FileFormatXml(),
 		"snowflake_function_java":                                                resources.FunctionJava(),
 		"snowflake_function_javascript":                                          resources.FunctionJavascript(),
 		"snowflake_function_python":                                              resources.FunctionPython(),

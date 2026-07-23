@@ -617,6 +617,7 @@ func StageFileFormatXmlToSchema(xml *sdk.FileFormatXml) map[string]any {
 		"ignore_utf8_errors":         xml.IgnoreUtf8Errors,
 		"preserve_space":             xml.PreserveSpace,
 		"strip_outer_element":        xml.StripOuterElement,
+		"disable_snowflake_data":     xml.DisableSnowflakeData,
 		"disable_auto_convert":       xml.DisableAutoConvert,
 		"replace_invalid_characters": xml.ReplaceInvalidCharacters,
 		"skip_byte_order_mark":       xml.SkipByteOrderMark,

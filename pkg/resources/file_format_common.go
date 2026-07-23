@@ -197,3 +197,66 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 		},
 	}
 }
+
+func xmlFileFormatFieldsSchema(prefix string) map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"compression": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllXmlCompressions)),
+			ValidateDiagFunc: sdkValidation(sdk.ToXmlCompression),
+			DiffSuppressFunc: NormalizeAndCompare(sdk.ToXmlCompression),
+		},
+		"ignore_utf8_errors": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether UTF-8 encoding errors produce error conditions."),
+			ConflictsWith:    []string{prefix + "replace_invalid_characters"},
+		},
+		"preserve_space": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser preserves leading and trailing spaces in element content."),
+		},
+		"strip_outer_element": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser strips out the outer XML element, exposing 2nd level elements as separate documents."),
+		},
+		"disable_snowflake_data": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser disables recognition of Snowflake semi-structured data tags."),
+		},
+		"disable_auto_convert": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser disables automatic conversion of numeric and Boolean values from text to native representation."),
+		},
+		"replace_invalid_characters": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+			ConflictsWith:    []string{prefix + "ignore_utf8_errors"},
+		},
+		"skip_byte_order_mark": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file."),
+		},
+	}
+}
