@@ -67,7 +67,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "ORC file format options.",
 					Elem: &schema.Resource{
-						Schema: orcFileFormatSchema,
+						Schema: orcFileFormatSchema("file_format.0.orc.0."),
 					},
 				},
 				"parquet": {
@@ -243,29 +243,6 @@ var avroFileFormatSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: sdkValidation(sdk.ToAvroCompression),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToAvroCompression),
 	},
-	"trim_space": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
-	},
-	"replace_invalid_characters": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
-	},
-	"null_if": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "String used to convert to and from SQL NULL.",
-		Elem:        &schema.Schema{Type: schema.TypeString},
-	},
-}
-
-var orcFileFormatSchema = map[string]*schema.Schema{
 	"trim_space": {
 		Type:             schema.TypeString,
 		Optional:         true,
@@ -583,7 +560,7 @@ func parseOrcFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatOrcOption
 		booleanStringAttributeCreate(d, prefix+"trim_space", &orcOptions.TrimSpace),
 		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &orcOptions.ReplaceInvalidCharacters),
 		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatOrcOptions {
-			orcOptions.NullIf = nullIf
+			orcOptions.NullIf = &sdk.NullIfList{NullIf: nullIf}
 			return orcOptions
 		}, parseNullIf),
 	)

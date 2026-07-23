@@ -162,6 +162,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FileFormatJson().Schema,
 	},
 	{
+		name:   "FileFormatOrc",
+		schema: resources.FileFormatOrc().Schema,
+	},
+	{
 		name:   "FunctionJava",
 		schema: resources.FunctionJava().Schema,
 	},

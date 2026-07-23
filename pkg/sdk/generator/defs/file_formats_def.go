@@ -222,7 +222,7 @@ func orcFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 	return qs.
 		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses())
+		OptionalQueryStructField("NullIf", nullIfList, g.ParameterOptions().SQL("NULL_IF").Parentheses())
 }
 
 func parquetFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {

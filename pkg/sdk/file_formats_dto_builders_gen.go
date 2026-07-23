@@ -349,8 +349,8 @@ func (s *CreateOrcFileFormatRequest) WithReplaceInvalidCharacters(replaceInvalid
 	return s
 }
 
-func (s *CreateOrcFileFormatRequest) WithNullIf(nullIf []NullString) *CreateOrcFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateOrcFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateOrcFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -832,8 +832,8 @@ func (s *AlterOrcFileFormatSetRequest) WithReplaceInvalidCharacters(replaceInval
 	return s
 }
 
-func (s *AlterOrcFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterOrcFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterOrcFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterOrcFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 

@@ -141,7 +141,7 @@ type CreateOrcFileFormatOptions struct {
 	formatType               bool                   `ddl:"static" sql:"TYPE = ORC"`
 	TrimSpace                *bool                  `ddl:"parameter" sql:"TRIM_SPACE"`
 	ReplaceInvalidCharacters *bool                  `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString           `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList            `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	Comment                  *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -278,10 +278,10 @@ type AlterOrcFileFormatOptions struct {
 }
 
 type AlterOrcFileFormatSet struct {
-	TrimSpace                *bool        `ddl:"parameter" sql:"TRIM_SPACE"`
-	ReplaceInvalidCharacters *bool        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString `ddl:"parameter,parentheses" sql:"NULL_IF"`
-	Comment                  *string      `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	TrimSpace                *bool       `ddl:"parameter" sql:"TRIM_SPACE"`
+	ReplaceInvalidCharacters *bool       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	NullIf                   *NullIfList `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	Comment                  *string     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterParquetFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-file-format.
@@ -461,10 +461,10 @@ type FileFormatAvroOptions struct {
 }
 
 type FileFormatOrcOptions struct {
-	formatType               bool         `ddl:"static" sql:"TYPE = ORC"`
-	TrimSpace                *bool        `ddl:"parameter" sql:"TRIM_SPACE"`
-	ReplaceInvalidCharacters *bool        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	formatType               bool        `ddl:"static" sql:"TYPE = ORC"`
+	TrimSpace                *bool       `ddl:"parameter" sql:"TRIM_SPACE"`
+	ReplaceInvalidCharacters *bool       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	NullIf                   *NullIfList `ddl:"parameter,parentheses" sql:"NULL_IF"`
 }
 
 type FileFormatParquetOptions struct {
