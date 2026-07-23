@@ -162,6 +162,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FileFormatJson().Schema,
 	},
 	{
+		name:   "FileFormatParquet",
+		schema: resources.FileFormatParquet().Schema,
+	},
+	{
 		name:   "FunctionJava",
 		schema: resources.FunctionJava().Schema,
 	},

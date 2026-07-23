@@ -643,7 +643,7 @@ func TestFileFormats_CreateParquet(t *testing.T) {
 		opts.TrimSpace = new(true)
 		opts.UseVectorizedScanner = new(true)
 		opts.ReplaceInvalidCharacters = new(true)
-		opts.NullIf = []NullString{{S: "NULL"}}
+		opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}}}
 		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = PARQUET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -700,10 +700,18 @@ func TestFileFormats_AlterParquet(t *testing.T) {
 			TrimSpace:                new(true),
 			UseVectorizedScanner:     new(true),
 			ReplaceInvalidCharacters: new(true),
-			NullIf:                   []NullString{{S: "NULL"}},
+			NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 			Comment:                  new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("set NullIf to an empty list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterParquetFileFormatSet{
+			NullIf: &NullIfList{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s SET NULL_IF = ()`, id.FullyQualifiedName())
 	})
 }
 

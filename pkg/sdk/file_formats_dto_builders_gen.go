@@ -412,8 +412,8 @@ func (s *CreateParquetFileFormatRequest) WithReplaceInvalidCharacters(replaceInv
 	return s
 }
 
-func (s *CreateParquetFileFormatRequest) WithNullIf(nullIf []NullString) *CreateParquetFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateParquetFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateParquetFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -905,8 +905,8 @@ func (s *AlterParquetFileFormatSetRequest) WithReplaceInvalidCharacters(replaceI
 	return s
 }
 
-func (s *AlterParquetFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterParquetFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterParquetFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterParquetFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 

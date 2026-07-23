@@ -722,7 +722,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithTrimSpace(true).
 			WithUseVectorizedScanner(true).
 			WithReplaceInvalidCharacters(true).
-			WithNullIf([]sdk.NullString{{S: "NULL"}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 			WithComment("parquet complete with compression")
 
 		err := client.FileFormats.CreateParquet(ctx, request)
@@ -760,7 +760,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithTrimSpace(true).
 			WithUseVectorizedScanner(true).
 			WithReplaceInvalidCharacters(true).
-			WithNullIf([]sdk.NullString{{S: "NULL"}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 			WithComment("parquet complete with snappy compression")
 
 		err := client.FileFormats.CreateParquet(ctx, request)
@@ -816,7 +816,7 @@ func TestInt_FileFormats(t *testing.T) {
 				WithTrimSpace(true).
 				WithUseVectorizedScanner(true).
 				WithReplaceInvalidCharacters(true).
-				WithNullIf([]sdk.NullString{{S: "NULL"}}).
+				WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 				WithComment("updated comment")))
 		require.NoError(t, err)
 

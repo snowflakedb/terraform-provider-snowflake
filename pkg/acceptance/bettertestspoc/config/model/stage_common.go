@@ -300,9 +300,9 @@ func stageFileFormatParquet(opts sdk.FileFormatParquetOptions) tfconfig.Variable
 	if opts.ReplaceInvalidCharacters != nil {
 		parquetMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
+	if opts.NullIf != nil && len(opts.NullIf.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
+		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		parquetMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
