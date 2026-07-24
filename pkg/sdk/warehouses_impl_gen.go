@@ -263,6 +263,13 @@ func (r warehouseDBRow) convert() (*Warehouse, error) {
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringWithMapping(&result.MaxQueryPerformanceLevel, r.MaxQueryPerformanceLevel, ToMaxQueryPerformanceLevel)
 	mapNullInt(&result.QueryThroughputMultiplier, r.QueryThroughputMultiplier)
+	if r.Tables.Valid {
+		if v, err := ParseCommaSeparatedSchemaObjectIdentifierArray(r.Tables.String); err != nil {
+			return nil, fmt.Errorf("parsing schema object identifier: %w", err)
+		} else {
+			result.Tables = v
+		}
+	}
 	if err := r.additionalConvert(result); err != nil {
 		return nil, err
 	}

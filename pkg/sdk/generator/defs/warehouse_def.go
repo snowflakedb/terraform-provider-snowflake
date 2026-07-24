@@ -82,7 +82,7 @@ var warehousePairs = g.StructPair("warehouseDBRow", "Warehouse").
 	Field("generation", "sql.NullString", "*WarehouseGeneration", g.WithManualConvert()).
 	OptionalEnum("max_query_performance_level", maxQueryPerformanceLevelEnum).
 	OptionalNumber("query_throughput_multiplier").
-	Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", g.WithManualConvert())
+	Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", g.WithCustomParser("ParseCommaSeparatedSchemaObjectIdentifierArray"))
 
 var warehouseDetailsPairs = g.StructPair("warehouseDetailsRow", "WarehouseDetails").
 	Time("created_on").

@@ -96,6 +96,25 @@ var commaSeparatedStringArrayTestCases = []struct {
 		TrimQuotes: true,
 		Result:     []string{"one", "two", "three"},
 	},
+	{
+		Name:       "comma inside double-quoted identifier",
+		Value:      `TESTDB.TESTSCHEMA.IT1,TESTDB.TESTSCHEMA."I,T2"`,
+		TrimQuotes: false,
+		Result:     []string{`TESTDB.TESTSCHEMA.IT1`, `TESTDB.TESTSCHEMA."I,T2"`},
+	},
+	{
+		Name:       "comma inside double-quoted identifier - multiple",
+		Value:      `A."x,y",B."z,w"`,
+		TrimQuotes: false,
+		Result:     []string{`A."x,y"`, `B."z,w"`},
+	},
+	{
+		// doubled quotes ("") escape a quote inside a quoted identifier; the comma inside stays protected
+		Name:       "comma inside doubled-quoted identifier with escaped quote",
+		Value:      `A.B."a""b,c",D.E.F`,
+		TrimQuotes: false,
+		Result:     []string{`A.B."a""b,c"`, `D.E.F`},
+	},
 }
 
 func TestParseCommaSeparatedStringArray(t *testing.T) {
@@ -143,6 +162,30 @@ func TestParseOuterCommaSeparatedStringArray(t *testing.T) {
 			Value:      "['one', 'tw]]]o', 'three']",
 			TrimQuotes: true,
 			Result:     []string{"one", "tw]]]o", "three"},
+		},
+		{
+			Name:       "comma inside double-quoted value alongside a nested list",
+			Value:      `["a,b", [1, 2]]`,
+			TrimQuotes: true,
+			Result:     []string{"a,b", "[1, 2]"},
+		},
+		{
+			Name:       "opening bracket inside a double-quoted value does not increase depth",
+			Value:      `["a[b", "c"]`,
+			TrimQuotes: true,
+			Result:     []string{"a[b", "c"},
+		},
+		{
+			Name:       "closing bracket inside a double-quoted value does not decrease depth",
+			Value:      `["a]b", "c,d"]`,
+			TrimQuotes: true,
+			Result:     []string{"a]b", "c,d"},
+		},
+		{
+			Name:       "comma and brackets both inside a double-quoted value",
+			Value:      `["a,[b]", "c"]`,
+			TrimQuotes: true,
+			Result:     []string{"a,[b]", "c"},
 		},
 	}...)
 
@@ -345,27 +388,6 @@ func TestParseCommaSeparatedAccountIdentifierArray_Invalid(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			_, err := ParseCommaSeparatedAccountIdentifierArray(tc.Value)
 			require.ErrorContains(t, err, tc.Error)
-		})
-	}
-}
-
-func TestSplitCommaSeparatedIdentifiers(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected []string
-	}{
-		{"", []string{""}},
-		{"A.B.C", []string{"A.B.C"}},
-		{"A.B.C,D.E.F", []string{"A.B.C", "D.E.F"}},
-		{`TESTDB.TESTSCHEMA.IT1,TESTDB.TESTSCHEMA."I,T2"`, []string{"TESTDB.TESTSCHEMA.IT1", `TESTDB.TESTSCHEMA."I,T2"`}},
-		{`A."x,y",B."z,w"`, []string{`A."x,y"`, `B."z,w"`}},
-		// doubled quotes ("") escape a quote inside a quoted identifier; the comma inside stays protected
-		{`A.B."a""b,c",D.E.F`, []string{`A.B."a""b,c"`, "D.E.F"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.input, func(t *testing.T) {
-			result := splitCommaSeparatedIdentifiers(tt.input)
-			require.Equal(t, tt.expected, result)
 		})
 	}
 }
