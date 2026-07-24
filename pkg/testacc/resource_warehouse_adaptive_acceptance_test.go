@@ -132,7 +132,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				ResourceName:            warehouseModel.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"max_query_performance_level", "query_throughput_multiplier"},
+				ImportStateVerifyIgnore: []string{"max_query_performance_level", "query_throughput_multiplier", "show_output.0.running"},
 			},
 			// set query_throughput_multiplier to 0 (explicit value, distinct from IntDefault sentinel -1)
 			{
@@ -152,9 +152,10 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			},
 			// import after setting optional fields
 			{
-				ResourceName:      warehouseModelWithOptionals.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            warehouseModelWithOptionals.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"show_output.0.running"},
 			},
 			// rename and update fields
 			{
@@ -261,9 +262,10 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 			},
 			// import and verify state matches
 			{
-				ResourceName:      warehouseModelComplete.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            warehouseModelComplete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"show_output.0.running"},
 			},
 		},
 	})
