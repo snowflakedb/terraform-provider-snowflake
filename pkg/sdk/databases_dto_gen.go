@@ -3,17 +3,19 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateDatabaseOptions]            = new(CreateDatabaseRequest)
-	_ optionsProvider[CloneDatabaseOptions]             = new(CloneDatabaseRequest)
-	_ optionsProvider[CreateSharedDatabaseOptions]      = new(CreateSharedDatabaseRequest)
-	_ optionsProvider[CreateSecondaryDatabaseOptions]   = new(CreateSecondaryDatabaseRequest)
-	_ optionsProvider[CreateFromListingDatabaseOptions] = new(CreateFromListingDatabaseRequest)
-	_ optionsProvider[AlterDatabaseOptions]             = new(AlterDatabaseRequest)
-	_ optionsProvider[AlterReplicationDatabaseOptions]  = new(AlterReplicationDatabaseRequest)
-	_ optionsProvider[AlterFailoverDatabaseOptions]     = new(AlterFailoverDatabaseRequest)
-	_ optionsProvider[DropDatabaseOptions]              = new(DropDatabaseRequest)
-	_ optionsProvider[UndropDatabaseOptions]            = new(UndropDatabaseRequest)
-	_ optionsProvider[ShowDatabaseOptions]              = new(ShowDatabaseRequest)
+	_ optionsProvider[CreateDatabaseOptions]              = new(CreateDatabaseRequest)
+	_ optionsProvider[CloneDatabaseOptions]               = new(CloneDatabaseRequest)
+	_ optionsProvider[CreateSharedDatabaseOptions]        = new(CreateSharedDatabaseRequest)
+	_ optionsProvider[CreateSecondaryDatabaseOptions]     = new(CreateSecondaryDatabaseRequest)
+	_ optionsProvider[CreateFromListingDatabaseOptions]   = new(CreateFromListingDatabaseRequest)
+	_ optionsProvider[CreateCatalogLinkedDatabaseOptions] = new(CreateCatalogLinkedDatabaseRequest)
+	_ optionsProvider[AlterDatabaseOptions]               = new(AlterDatabaseRequest)
+	_ optionsProvider[AlterReplicationDatabaseOptions]    = new(AlterReplicationDatabaseRequest)
+	_ optionsProvider[AlterFailoverDatabaseOptions]       = new(AlterFailoverDatabaseRequest)
+	_ optionsProvider[AlterCatalogLinkedDatabaseOptions]  = new(AlterCatalogLinkedDatabaseRequest)
+	_ optionsProvider[DropDatabaseOptions]                = new(DropDatabaseRequest)
+	_ optionsProvider[UndropDatabaseOptions]              = new(UndropDatabaseRequest)
+	_ optionsProvider[ShowDatabaseOptions]                = new(ShowDatabaseRequest)
 )
 
 type CreateDatabaseRequest struct {
@@ -106,6 +108,25 @@ type CreateFromListingDatabaseRequest struct {
 	FromListing string                  // required
 }
 
+type CreateCatalogLinkedDatabaseRequest struct {
+	name                   AccountObjectIdentifier // required
+	LinkedCatalog          LinkedCatalogRequest
+	ExternalVolume         *AccountObjectIdentifier
+	Comment                *string
+	Tag                    []TagAssociation
+	CatalogCaseSensitivity *DatabaseCatalogCaseSensitivity
+}
+
+type LinkedCatalogRequest struct {
+	Catalog                   AccountObjectIdentifier
+	AllowedNamespaces         []StringListItemWrapper
+	BlockedNamespaces         []StringListItemWrapper
+	AllowedWriteOperations    *CatalogLinkedDatabaseAllowedWriteOperations
+	NamespaceMode             *CatalogLinkedDatabaseNamespaceMode
+	NamespaceFlattenDelimiter *string
+	SyncIntervalSeconds       *int
+}
+
 type AlterDatabaseRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required
@@ -188,6 +209,39 @@ type EnableFailoverRequest struct {
 
 type DisableFailoverRequest struct {
 	ToAccounts []AccountIdentifier
+}
+
+type AlterCatalogLinkedDatabaseRequest struct {
+	IfExists                    *bool
+	name                        AccountObjectIdentifier // required
+	AddToAllowedNamespaces      *AddToAllowedNamespacesRequest
+	RemoveFromAllowedNamespaces *RemoveFromAllowedNamespacesRequest
+	UnsetAllowedNamespaces      *bool
+	AddToBlockedNamespaces      *AddToBlockedNamespacesRequest
+	RemoveFromBlockedNamespaces *RemoveFromBlockedNamespacesRequest
+	UnsetBlockedNamespaces      *bool
+	Set                         *CatalogLinkedDatabaseSetRequest
+}
+
+type AddToAllowedNamespacesRequest struct {
+	Namespaces []StringListItemWrapper // required
+}
+
+type RemoveFromAllowedNamespacesRequest struct {
+	Namespaces []StringListItemWrapper // required
+}
+
+type AddToBlockedNamespacesRequest struct {
+	Namespaces []StringListItemWrapper // required
+}
+
+type RemoveFromBlockedNamespacesRequest struct {
+	Namespaces []StringListItemWrapper // required
+}
+
+type CatalogLinkedDatabaseSetRequest struct {
+	SyncIntervalSeconds    *int
+	AllowedWriteOperations *CatalogLinkedDatabaseAllowedWriteOperations
 }
 
 type DropDatabaseRequest struct {
