@@ -160,7 +160,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: "Configures an inherited privilege to be granted on all current and future account objects of a given type in the account. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.",
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future account objects of a given type in the account. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
 					MaxItems:    1,
 					ConflictsWith: []string{
 						"on_account_object.0.object_type",
@@ -244,7 +244,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: "Configures an inherited privilege to be granted on all current and future schemas in either the account or a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.",
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in either the account or a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
 					MaxItems:    1,
 					ExactlyOneOf: []string{
 						"on_schema.0.schema_name",
@@ -369,7 +369,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: "Configures an inherited privilege to be granted on all current and future objects of a given type in the account, a database, or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.",
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in the account, a database, or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
 					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: getGrantPrivilegesOnAccountRoleInheritedSchemaObjectSchema(),
