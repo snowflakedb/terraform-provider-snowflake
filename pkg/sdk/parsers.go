@@ -2,34 +2,21 @@ package sdk
 
 import (
 	"strings"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
-// fix timestamp merge
-func ParseTimestampWithOffset(s string, dateTimeFormat string) (string, error) {
-	t, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		return err.Error(), err
-	}
-	_, offset := t.Zone()
-	adjustedTime := t.Add(-time.Duration(offset) * time.Second)
-	adjustedTimeFormat := adjustedTime.Format(dateTimeFormat)
-	return adjustedTimeFormat, nil
-}
-
 // ParseCommaSeparatedStringArray can be used to parse Snowflake output containing a list in the format of "[item1, item2, ...]",
 // the assumptions are that:
 // 1. The list may be enclosed by outer [] brackets which are stripped. Brackets shouldn't be a part of any item's value
-// 2. Items are separated by commas, and they shouldn't be a part of any item's value
+// 2. Items are separated by commas. Commas enclosed in double quotes are treated as part of the item's value rather than separators (e.g. `"a,b"` is a single item)
 // 3. Items can have as many spaces in between, but after separation they will be trimmed and shouldn't be a part of any item's value
 func ParseCommaSeparatedStringArray(value string, trimQuotes bool) []string {
 	value = stripOuterBrackets(value)
 	if value == "" {
 		return make([]string, 0)
 	}
-	listItems := strings.Split(value, ",")
+	listItems := splitCommaSeparated(value)
 	return applyFormatting(listItems, trimQuotes)
 }
 
@@ -38,7 +25,7 @@ func ParseCommaSeparatedStringArray(value string, trimQuotes bool) []string {
 // The assumptions are that:
 // 1. The list may be enclosed by outer [] brackets which are stripped
 // 2. Brackets have special meaning (they denote list boundaries) and shouldn't be a part of any item's value
-// 3. Items are separated by top-level commas (commas inside nested brackets are preserved)
+// 3. Items are separated by top-level commas (commas inside nested brackets or double quotes are preserved)
 // 4. Items can have as many spaces in between, but after separation they will be trimmed and shouldn't be a part of any item's value
 // 5. Quote trimming only applies to top-level items. Nested items are returned as a raw string
 func ParseOuterCommaSeparatedStringArray(value string, trimQuotes bool) []string {
@@ -87,15 +74,22 @@ func applyFormatting(listItems []string, trimQuotes bool) []string {
 func splitOuter(value string) []string {
 	depth := 0
 	idx := 0
+	inQuotes := false
 	var parts []string
 	for i, ch := range value {
 		switch ch {
+		case '"':
+			inQuotes = !inQuotes
 		case '[':
-			depth++
+			if !inQuotes {
+				depth++
+			}
 		case ']':
-			depth--
+			if !inQuotes {
+				depth--
+			}
 		case ',':
-			if depth <= 0 {
+			if !inQuotes && depth <= 0 {
 				parts = append(parts, value[idx:i])
 				idx = i + 1
 			}
@@ -111,11 +105,11 @@ func emptyIfNull(s string) string {
 	return s
 }
 
-// splitCommaSeparatedIdentifiers splits a comma-separated list of identifiers, treating commas
-// enclosed in double quotes as part of an identifier rather than separators. Snowflake identifiers
-// may contain commas when quoted (e.g. `DB.SCHEMA."a,b"`), so a naive strings.Split(",") would break
-// such identifiers apart. The returned parts are raw (not trimmed or parsed).
-func splitCommaSeparatedIdentifiers(s string) []string {
+// splitCommaSeparated splits a comma-separated string, treating commas enclosed in double
+// quotes as part of a value rather than separators. Snowflake identifiers may contain commas
+// when quoted (e.g. `DB.SCHEMA."a,b"`), so a naive strings.Split(",") would break such values
+// apart. The returned parts are raw (not trimmed or parsed).
+func splitCommaSeparated(s string) []string {
 	var parts []string
 	var current strings.Builder
 	inQuotes := false
@@ -131,6 +125,5 @@ func splitCommaSeparatedIdentifiers(s string) []string {
 			current.WriteRune(r)
 		}
 	}
-	parts = append(parts, current.String())
-	return parts
+	return append(parts, current.String())
 }
