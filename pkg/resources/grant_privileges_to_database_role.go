@@ -151,7 +151,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:             schema.TypeString,
 					Optional:         true,
 					ForceNew:         true,
-					Description:      "Configures an inherited privilege to be granted on all current and future schemas in a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.",
+					Description:      joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
 					ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
 					ExactlyOneOf: []string{
@@ -250,7 +250,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: "Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.",
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
 					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema(sdk.ValidGrantToAllPluralObjectTypesString, "inherited"),
