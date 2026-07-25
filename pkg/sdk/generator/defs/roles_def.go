@@ -115,4 +115,4 @@ var rolesDef = g.NewInterface(
 	"UseSecondary", "",
 	[]*g.MethodParameter{g.NewMethodParameter("req", "*UseSecondaryRolesRequest")},
 	"error",
-)
+).WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateFullID)
