@@ -706,6 +706,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 				DefaultNotebookComputePoolCpu:                    sdk.String("CPU_X64_S"),
 				DefaultNotebookComputePoolGpu:                    sdk.String("GPU_NV_S"),
 				DefaultNullOrdering:                              sdk.Pointer(sdk.DefaultNullOrderingFirst),
+				DefaultStreamlitComputePool:                      sdk.String("SYSTEM_COMPUTE_POOL_GPU"),
 				DefaultStreamlitNotebookWarehouse:                sdk.Pointer(warehouseId),
 				DisableUiDownloadButton:                          sdk.Bool(true),
 				DisableUserPrivilegeGrants:                       sdk.Bool(true),
