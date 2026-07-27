@@ -86,6 +86,12 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 		WithEncoding(string(sdk.CsvEncodingUtf8)).
 		WithComment(externalComment)
 
+	// parse_header and skip_header conflict with each other, so switching between them is verified with minimal configs
+	parseHeaderModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithParseHeader("true")
+	skipHeaderModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithSkipHeader(2)
+
 	basicAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.FileFormatCsvResource(t, ref).
 			HasNameString(id.Name()).
@@ -114,6 +120,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasCompression(string(sdk.CsvCompressionAuto)).
 			HasRecordDelimiter(`\n`).
 			HasFieldDelimiter(",").
+			HasFileExtension("").
 			HasSkipHeader(0).
 			HasParseHeader(false).
 			HasSkipBlankLines(false).
@@ -257,6 +264,28 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasMultiLine(true),
 	}
 
+	parseHeaderAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.FileFormatCsvResource(t, ref).
+			HasNameString(id.Name()).
+			HasParseHeader(r.BooleanTrue).
+			HasSkipHeader(r.IntDefault),
+		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
+			HasId(id).
+			HasParseHeader(true).
+			HasSkipHeader(0),
+	}
+
+	skipHeaderAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.FileFormatCsvResource(t, ref).
+			HasNameString(id.Name()).
+			HasParseHeader(r.BooleanDefault).
+			HasSkipHeader(2),
+		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
+			HasId(id).
+			HasParseHeader(false).
+			HasSkipHeader(2),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -331,6 +360,26 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, alteredModel),
 				Check:  assertThat(t, alteredAssertions...),
 			},
+			// switch from skip_header to parse_header (non-recreating change)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, parseHeaderModel),
+				Check:  assertThat(t, parseHeaderAssertions...),
+			},
+			// switch back from parse_header to skip_header (non-recreating change)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, skipHeaderModel),
+				Check:  assertThat(t, skipHeaderAssertions...),
+			},
 			// unset optional fields
 			{
 				Config: config.FromModels(t, basicModel),
@@ -385,6 +434,66 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 		WithComment(comment)
 	ref := completeModel.ResourceReference()
 
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.FileFormatCsvResource(t, ref).
+			HasNameString(id.Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasCompressionString(string(sdk.CsvCompressionGzip)).
+			HasRecordDelimiterString("NONE").
+			HasFieldDelimiterString("NONE").
+			HasMultiLine(r.BooleanFalse).
+			HasFileExtensionString(".csv").
+			HasParseHeader(r.BooleanTrue).
+			HasSkipHeader(r.IntDefault).
+			HasSkipBlankLines(r.BooleanTrue).
+			HasDateFormatString("AUTO").
+			HasTimeFormatString("AUTO").
+			HasTimestampFormatString("AUTO").
+			HasBinaryFormatString(string(sdk.BinaryFormatBase64)).
+			HasEscapeString("NONE").
+			HasEscapeUnenclosedFieldString("NONE").
+			HasTrimSpace(r.BooleanTrue).
+			HasFieldOptionallyEnclosedByString("NONE").
+			HasNullIf("NULL").
+			HasErrorOnColumnCountMismatch(r.BooleanFalse).
+			HasReplaceInvalidCharacters(r.BooleanTrue).
+			HasEmptyFieldAsNull(r.BooleanFalse).
+			HasSkipByteOrderMark(r.BooleanFalse).
+			HasEncodingString(string(sdk.CsvEncodingUtf8)).
+			HasCommentString(comment),
+		resourceshowoutputassert.FileFormatShowOutput(t, ref).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasType(sdk.FileFormatTypeCsv).
+			HasComment(comment),
+		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
+			HasId(id).
+			HasCompression(string(sdk.CsvCompressionGzip)).
+			HasRecordDelimiter("NONE").
+			HasFieldDelimiter("NONE").
+			HasFileExtension(".csv").
+			HasParseHeader(true).
+			HasSkipHeader(0).
+			HasSkipBlankLines(true).
+			HasDateFormat("AUTO").
+			HasTimeFormat("AUTO").
+			HasTimestampFormat("AUTO").
+			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasEscape("NONE").
+			HasEscapeUnenclosedField("NONE").
+			HasTrimSpace(true).
+			HasFieldOptionallyEnclosedBy("NONE").
+			HasNullIf("NULL").
+			HasErrorOnColumnCountMismatch(false).
+			HasReplaceInvalidCharacters(true).
+			HasEmptyFieldAsNull(false).
+			HasSkipByteOrderMark(false).
+			HasEncoding(string(sdk.CsvEncodingUtf8)).
+			HasMultiLine(false),
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -395,65 +504,7 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			// create with all fields set
 			{
 				Config: config.FromModels(t, completeModel),
-				Check: assertThat(
-					t,
-					resourceassert.FileFormatCsvResource(t, ref).
-						HasNameString(id.Name()).
-						HasDatabaseString(id.DatabaseName()).
-						HasSchemaString(id.SchemaName()).
-						HasCompressionString(string(sdk.CsvCompressionGzip)).
-						HasRecordDelimiterString("NONE").
-						HasFieldDelimiterString("NONE").
-						HasMultiLine(r.BooleanFalse).
-						HasFileExtensionString(".csv").
-						HasParseHeader(r.BooleanTrue).
-						HasSkipHeader(r.IntDefault).
-						HasSkipBlankLines(r.BooleanTrue).
-						HasDateFormatString("AUTO").
-						HasTimeFormatString("AUTO").
-						HasTimestampFormatString("AUTO").
-						HasBinaryFormatString(string(sdk.BinaryFormatBase64)).
-						HasEscapeString("NONE").
-						HasEscapeUnenclosedFieldString("NONE").
-						HasTrimSpace(r.BooleanTrue).
-						HasFieldOptionallyEnclosedByString("NONE").
-						HasNullIf("NULL").
-						HasErrorOnColumnCountMismatch(r.BooleanFalse).
-						HasReplaceInvalidCharacters(r.BooleanTrue).
-						HasEmptyFieldAsNull(r.BooleanFalse).
-						HasSkipByteOrderMark(r.BooleanFalse).
-						HasEncodingString(string(sdk.CsvEncodingUtf8)).
-						HasCommentString(comment),
-					resourceshowoutputassert.FileFormatShowOutput(t, ref).
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasType(sdk.FileFormatTypeCsv).
-						HasComment(comment),
-					resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
-						HasId(id).
-						HasCompression(string(sdk.CsvCompressionGzip)).
-						HasRecordDelimiter("NONE").
-						HasFieldDelimiter("NONE").
-						HasFileExtension(".csv").
-						HasParseHeader(true).
-						HasSkipBlankLines(true).
-						HasDateFormat("AUTO").
-						HasTimeFormat("AUTO").
-						HasTimestampFormat("AUTO").
-						HasBinaryFormat(string(sdk.BinaryFormatBase64)).
-						HasEscape("NONE").
-						HasEscapeUnenclosedField("NONE").
-						HasTrimSpace(true).
-						HasFieldOptionallyEnclosedBy("NONE").
-						HasNullIf("NULL").
-						HasErrorOnColumnCountMismatch(false).
-						HasReplaceInvalidCharacters(true).
-						HasEmptyFieldAsNull(false).
-						HasSkipByteOrderMark(false).
-						HasEncoding(string(sdk.CsvEncodingUtf8)).
-						HasMultiLine(false),
-				),
+				Check:  assertThat(t, completeAssertions...),
 			},
 			// import
 			{
@@ -476,6 +527,8 @@ func TestAcc_FileFormatCsv_Validations(t *testing.T) {
 		WithBinaryFormat("INVALID")
 	invalidEncoding := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithEncoding("INVALID")
+	invalidSkipHeader := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithSkipHeader(-2)
 	conflictingHeaderFields := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithParseHeader("true").
 		WithSkipHeader(1)
@@ -501,6 +554,11 @@ func TestAcc_FileFormatCsv_Validations(t *testing.T) {
 				Config:      config.FromModels(t, invalidEncoding),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid csv encoding: INVALID`),
+			},
+			{
+				Config:      config.FromModels(t, invalidSkipHeader),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected skip_header to be at least \(0\)`),
 			},
 			{
 				Config:      config.FromModels(t, conflictingHeaderFields),

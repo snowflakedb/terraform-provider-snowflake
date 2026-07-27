@@ -139,7 +139,8 @@ func CreateFileFormatCsv(ctx context.Context, d *schema.ResourceData, meta any) 
 		attributeMappedValueCreateBuilder(d, "escape_unenclosed_field", request.WithEscapeUnenclosedField, fileFormatStringOrNoneMapper),
 		booleanStringAttributeCreateBuilder(d, "trim_space", request.WithTrimSpace),
 		attributeMappedValueCreateBuilder(d, "field_optionally_enclosed_by", request.WithFieldOptionallyEnclosedBy, fileFormatStringOrNoneMapper),
-		attributeMappedValueCreateBuilder(d, "null_if", request.WithNullIf, parseNullIfRequest),
+		// Here we must use RawConfig because the default value for null_if is not an empty list.
+		attributeMappedValueCreateBuilderRawConfig(d, "null_if", request.WithNullIf, parseNullIfRequest),
 		booleanStringAttributeCreateBuilder(d, "error_on_column_count_mismatch", request.WithErrorOnColumnCountMismatch),
 		booleanStringAttributeCreateBuilder(d, "replace_invalid_characters", request.WithReplaceInvalidCharacters),
 		booleanStringAttributeCreateBuilder(d, "empty_field_as_null", request.WithEmptyFieldAsNull),
@@ -241,7 +242,6 @@ func UpdateFileFormatCsv(ctx context.Context, d *schema.ResourceData, meta any) 
 		attributeMappedValueUpdateSetOnlyFallback(d, "field_delimiter", &set.FieldDelimiter, fileFormatStringOrNoneMapper, *sdk.NewStageFileFormatStringOrNoneRequest().WithValue(",")),
 		booleanStringAttributeUnsetFallbackUpdate(d, "multi_line", &set.MultiLine, true),
 		stringAttributeUpdateSetOnlyNotEmpty(d, "file_extension", &set.FileExtension),
-		booleanStringAttributeUnsetFallbackUpdate(d, "parse_header", &set.ParseHeader, false),
 		intAttributeWithSpecialDefaultUnsetFallbackUpdate(d, "skip_header", &set.SkipHeader, 0),
 		booleanStringAttributeUnsetFallbackUpdate(d, "skip_blank_lines", &set.SkipBlankLines, false),
 		attributeMappedValueUpdateSetOnlyFallback(d, "date_format", &set.DateFormat, fileFormatStringOrAutoMapper, fileFormatStringOrAutoFallback),
@@ -252,7 +252,7 @@ func UpdateFileFormatCsv(ctx context.Context, d *schema.ResourceData, meta any) 
 		attributeMappedValueUpdateSetOnlyFallback(d, "escape_unenclosed_field", &set.EscapeUnenclosedField, fileFormatStringOrNoneMapper, *sdk.NewStageFileFormatStringOrNoneRequest().WithValue(`\\`)),
 		booleanStringAttributeUnsetFallbackUpdate(d, "trim_space", &set.TrimSpace, false),
 		attributeMappedValueUpdateSetOnlyFallback(d, "field_optionally_enclosed_by", &set.FieldOptionallyEnclosedBy, fileFormatStringOrNoneMapper, fileFormatStringOrNoneFallback),
-		attributeMappedValueUpdateSetOnlyFallback(d, "null_if", &set.NullIf, parseNullIfRequest, *sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: `\N`}})),
+		attributeMappedValueUpdateSetOnlyRawConfigFallback(d, "null_if", &set.NullIf, parseNullIfRequest, *sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: `\N`}})),
 		booleanStringAttributeUnsetFallbackUpdate(d, "error_on_column_count_mismatch", &set.ErrorOnColumnCountMismatch, true),
 		booleanStringAttributeUnsetFallbackUpdate(d, "replace_invalid_characters", &set.ReplaceInvalidCharacters, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "empty_field_as_null", &set.EmptyFieldAsNull, true),
@@ -262,6 +262,17 @@ func UpdateFileFormatCsv(ctx context.Context, d *schema.ResourceData, meta any) 
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
+	}
+
+	if !reflect.DeepEqual(set, sdk.NewAlterCsvFileFormatSetRequest()) {
+		if err := client.FileFormats.AlterCsv(ctx, sdk.NewAlterCsvFileFormatRequest(id).WithSet(*set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	set = sdk.NewAlterCsvFileFormatSetRequest()
+	if err := booleanStringAttributeUnsetFallbackUpdate(d, "parse_header", &set.ParseHeader, false); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if !reflect.DeepEqual(set, sdk.NewAlterCsvFileFormatSetRequest()) {
