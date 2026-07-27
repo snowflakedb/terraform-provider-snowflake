@@ -485,6 +485,7 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeHybridTable,
 		sdk.ObjectTypeIcebergTable,
 		sdk.ObjectTypeImageRepository,
+		sdk.ObjectTypeInteractiveTable,
 		sdk.ObjectTypeJoinPolicy,
 		sdk.ObjectTypeMaskingPolicy,
 		sdk.ObjectTypeMaterializedView,

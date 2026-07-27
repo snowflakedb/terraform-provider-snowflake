@@ -54,6 +54,13 @@ The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io
 
 No changes in configuration are required for existing resources; this is a non-breaking addition.
 
+### *(new feature)* Support for `INTERACTIVE TABLE` object type in grant resources
+
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role), [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role), and [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resources now support `INTERACTIVE TABLE` object type.
+This allows privileges (e.g. `SELECT`, `REFERENCES`) on an interactive table to be granted via Terraform, including bulk grants on ALL/FUTURE interactive tables.
+
+No changes in configuration are required for existing resources; this is a non-breaking addition.
+
 ### *(new preview resource)* New interactive warehouse resource
 
 We have added a new preview resource for managing interactive warehouses: [snowflake_warehouse_interactive](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) ([Snowflake docs](https://docs.snowflake.com/en/user-guide/warehouses-interactive)).
