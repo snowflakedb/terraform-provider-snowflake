@@ -144,6 +144,8 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.DatabaseParameterCatalog), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.DatabaseParameterReplaceInvalidCharacters), ParameterType: "bool", DefaultValue: "false", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.DatabaseParameterDefaultDdlCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.DatabaseParameterDefaultNotebookComputePoolCpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_CPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.DatabaseParameterDefaultNotebookComputePoolGpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_GPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.DatabaseParameterStorageSerializationPolicy), ParameterType: "sdk.StorageSerializationPolicy", DefaultValue: "sdk.StorageSerializationPolicyOptimized", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.DatabaseParameterLogLevel), ParameterType: "sdk.LogLevel", DefaultValue: "sdk.LogLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.DatabaseParameterLogEventLevel), ParameterType: "sdk.LogLevel", DefaultValue: "sdk.LogLevelOff", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
@@ -443,6 +445,8 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 		ParameterConstantPrefix: "Object",
 		Parameters: []SnowflakeParameter{
 			{ParameterName: string(sdk.ObjectParameterDefaultDdlCollation), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterDefaultNotebookComputePoolCpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_CPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.ObjectParameterDefaultNotebookComputePoolGpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_GPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
 	},
 }

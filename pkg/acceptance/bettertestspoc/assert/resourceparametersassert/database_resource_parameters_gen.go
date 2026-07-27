@@ -80,6 +80,16 @@ func (d *DatabaseResourceParametersAssert) HasDefaultDdlCollation(expected strin
 	return d
 }
 
+func (d *DatabaseResourceParametersAssert) HasDefaultNotebookComputePoolCpu(expected string) *DatabaseResourceParametersAssert {
+	d.ParameterValueSet(string(sdk.DatabaseParameterDefaultNotebookComputePoolCpu), expected)
+	return d
+}
+
+func (d *DatabaseResourceParametersAssert) HasDefaultNotebookComputePoolGpu(expected string) *DatabaseResourceParametersAssert {
+	d.ParameterValueSet(string(sdk.DatabaseParameterDefaultNotebookComputePoolGpu), expected)
+	return d
+}
+
 func (d *DatabaseResourceParametersAssert) HasStorageSerializationPolicy(expected sdk.StorageSerializationPolicy) *DatabaseResourceParametersAssert {
 	d.ParameterValueSet(string(sdk.DatabaseParameterStorageSerializationPolicy), string(expected))
 	return d
@@ -166,6 +176,16 @@ func (d *DatabaseResourceParametersAssert) HasReplaceInvalidCharactersLevel(expe
 
 func (d *DatabaseResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
 	d.ParameterLevelSet(string(sdk.DatabaseParameterDefaultDdlCollation), expected)
+	return d
+}
+
+func (d *DatabaseResourceParametersAssert) HasDefaultNotebookComputePoolCpuLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
+	d.ParameterLevelSet(string(sdk.DatabaseParameterDefaultNotebookComputePoolCpu), expected)
+	return d
+}
+
+func (d *DatabaseResourceParametersAssert) HasDefaultNotebookComputePoolGpuLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
+	d.ParameterLevelSet(string(sdk.DatabaseParameterDefaultNotebookComputePoolGpu), expected)
 	return d
 }
 
