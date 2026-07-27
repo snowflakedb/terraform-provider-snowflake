@@ -161,7 +161,14 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 			ValidateDiagFunc: validateBooleanString,
 			Description:      booleanStringFieldDescription("Boolean that instructs the JSON parser to remove object fields or array elements containing null values."),
 		},
-		"replace_invalid_characters": replaceInvalidCharactersSchema(),
+		"replace_invalid_characters": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+			ConflictsWith:    []string{prefix + "ignore_utf8_errors"},
+		},
 		"ignore_utf8_errors": {
 			Type:             schema.TypeString,
 			Optional:         true,

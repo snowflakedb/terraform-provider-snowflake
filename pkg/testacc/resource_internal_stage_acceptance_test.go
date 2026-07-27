@@ -1897,7 +1897,7 @@ func TestAcc_InternalStage_FileFormat_Validations(t *testing.T) {
 			{
 				Config:      accconfig.FromModels(t, modelJsonConflictingOptions),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`file_format.0.json.0.replace_invalid_characters.*conflicts with\nfile_format.0.json.0.ignore_utf8_errors`),
+				ExpectError: regexp.MustCompile(`Conflicting configuration arguments`),
 			},
 			{
 				Config:      accconfig.FromModels(t, modelParquetInvalidCompression),

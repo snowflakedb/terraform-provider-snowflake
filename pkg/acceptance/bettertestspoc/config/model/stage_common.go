@@ -171,7 +171,7 @@ func stageFileFormatJson(opts sdk.FileFormatJsonOptions) tfconfig.Variable {
 	if opts.MultiLine != nil {
 		jsonMap["multi_line"] = tfconfig.BoolVariable(*opts.MultiLine)
 	}
-	if opts.NullIf != nil && len(opts.NullIf.NullIf) > 0 {
+	if opts.NullIf != nil {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
 		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
@@ -258,7 +258,7 @@ func stageFileFormatOrc(opts sdk.FileFormatOrcOptions) tfconfig.Variable {
 	if opts.ReplaceInvalidCharacters != nil {
 		orcMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if opts.NullIf != nil && len(opts.NullIf.NullIf) > 0 {
+	if opts.NullIf != nil {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
 		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
