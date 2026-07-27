@@ -369,6 +369,8 @@ func (legacyAccountParameters *LegacyAccountParameters) setParam(parameter Accou
 		legacyAccountParameters.CortexModelsAllowlist = &value
 	case AccountParameterDefaultDbtVersion:
 		legacyAccountParameters.DefaultDbtVersion = &value
+	case AccountParameterDefaultStreamlitComputePool:
+		legacyAccountParameters.DefaultStreamlitComputePool = &value
 	case AccountParameterDisableUserPrivilegeGrants:
 		var b *bool
 		b, err = parseBooleanParameter(string(parameter), value)

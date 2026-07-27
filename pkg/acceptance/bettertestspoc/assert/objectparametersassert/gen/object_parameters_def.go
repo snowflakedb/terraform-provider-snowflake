@@ -364,6 +364,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.AccountParameterDefaultNotebookComputePoolCpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_CPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterDefaultNotebookComputePoolGpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_GPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterDefaultNullOrdering), ParameterType: "sdk.DefaultNullOrdering", DefaultValue: "sdk.DefaultNullOrderingLast", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.AccountParameterDefaultStreamlitComputePool), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_CPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse), ParameterType: "string", DefaultValue: "REGRESS", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterEventTable), ParameterType: "string", DefaultValue: "snowflake.telemetry.events", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterExternalVolume), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
