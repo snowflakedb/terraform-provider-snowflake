@@ -67,7 +67,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "ORC file format options.",
 					Elem: &schema.Resource{
-						Schema: orcFileFormatSchema("file_format.0.orc.0."),
+						Schema: orcFileFormatSchema(),
 					},
 				},
 				"parquet": {

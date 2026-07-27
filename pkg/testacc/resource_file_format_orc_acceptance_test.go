@@ -138,6 +138,11 @@ func TestAcc_FileFormatOrc_BasicUseCase(t *testing.T) {
 			},
 			// set all optional fields
 			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 				Config: config.FromModels(t, completeModel),
 				Check:  assertThat(t, completeAssertions...),
 			},

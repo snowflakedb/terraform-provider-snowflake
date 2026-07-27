@@ -21,7 +21,7 @@ import (
 )
 
 func fileFormatOrcSchema() map[string]*schema.Schema {
-	return collections.MergeMaps(fileFormatCommonSchema, orcFileFormatSchema(""), orcDescOutputSchema())
+	return collections.MergeMaps(fileFormatCommonSchema, orcFileFormatSchema(), orcDescOutputSchema())
 }
 
 func orcDescOutputSchema() map[string]*schema.Schema {
@@ -38,20 +38,13 @@ func orcDescOutputSchema() map[string]*schema.Schema {
 }
 
 func FileFormatOrc() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseSchemaObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-			return client.FileFormats.DropSafely
-		},
-	)
-
 	resourceSchema := fileFormatOrcSchema()
 
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingCreateWrapper(resources.FileFormatOrc, CreateFileFormatOrc)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingReadWrapper(resources.FileFormatOrc, GetReadFileFormatOrcFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingUpdateWrapper(resources.FileFormatOrc, UpdateFileFormatOrc)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingDeleteWrapper(resources.FileFormatOrc, deleteFunc)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingDeleteWrapper(resources.FileFormatOrc, fileFormatDeleteFunc)),
 		Description:   "Resource used to manage ORC file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatOrc, customdiff.All(

@@ -119,13 +119,7 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 			ValidateDiagFunc: sdkValidation(sdk.ToBinaryFormat),
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToBinaryFormat),
 		},
-		"trim_space": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
-		},
+		"trim_space": trimSpaceSchema(),
 		"multi_line": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -133,12 +127,7 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 			ValidateDiagFunc: validateBooleanString,
 			Description:      booleanStringFieldDescription("Boolean that specifies whether to allow multiple records on a single line."),
 		},
-		"null_if": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "String used to convert to and from SQL NULL.",
-			Elem:        &schema.Schema{Type: schema.TypeString},
-		},
+		"null_if": nullIfSchema(),
 		"file_extension": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -172,14 +161,7 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 			ValidateDiagFunc: validateBooleanString,
 			Description:      booleanStringFieldDescription("Boolean that instructs the JSON parser to remove object fields or array elements containing null values."),
 		},
-		"replace_invalid_characters": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
-			ConflictsWith:    []string{prefix + "ignore_utf8_errors"},
-		},
+		"replace_invalid_characters": replaceInvalidCharactersSchema(),
 		"ignore_utf8_errors": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -201,27 +183,46 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 // orcFileFormatSchema returns the ORC-specific file format fields. prefix is accepted for
 // consistency with the other file-format schema constructors (e.g. jsonFileFormatSchema),
 // though ORC currently has no fields that need it (e.g. ConflictsWith references).
-func orcFileFormatSchema(prefix string) map[string]*schema.Schema {
+func orcFileFormatSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
-		"trim_space": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
-		},
-		"replace_invalid_characters": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
-		},
-		"null_if": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "String used to convert to and from SQL NULL.",
-			Elem:        &schema.Schema{Type: schema.TypeString},
-		},
+		"trim_space":                 trimSpaceSchema(),
+		"replace_invalid_characters": replaceInvalidCharactersSchema(),
+		"null_if":                    nullIfSchema(),
 	}
 }
+
+func trimSpaceSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
+	}
+}
+
+func replaceInvalidCharactersSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+	}
+}
+
+func nullIfSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "String used to convert to and from SQL NULL.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	}
+}
+
+var fileFormatDeleteFunc = ResourceDeleteContextFunc(
+	sdk.ParseSchemaObjectIdentifier,
+	func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+		return client.FileFormats.DropSafely
+	},
+)
