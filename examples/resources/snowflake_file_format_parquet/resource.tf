@@ -20,12 +20,3 @@ resource "snowflake_file_format_parquet" "complete" {
   null_if                    = ["NULL", ""]
   comment                    = "My Parquet file format"
 }
-
-## Snappy compression (mutually exclusive with `compression`)
-resource "snowflake_file_format_parquet" "snappy" {
-  database = "database_name"
-  schema   = "schema_name"
-  name     = "file_format_name"
-
-  snappy_compression = "true"
-}

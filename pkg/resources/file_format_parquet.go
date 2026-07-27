@@ -21,7 +21,7 @@ import (
 )
 
 func fileFormatParquetSchema() map[string]*schema.Schema {
-	return collections.MergeMaps(fileFormatCommonSchema, parquetFileFormatSchema(""), parquetDescOutputSchema())
+	return collections.MergeMaps(fileFormatCommonSchema, parquetFileFormatSchema(), parquetDescOutputSchema())
 }
 
 func parquetDescOutputSchema() map[string]*schema.Schema {
@@ -58,7 +58,7 @@ func FileFormatParquet() *schema.Resource {
 			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
-				"name", "type", "compression", "snappy_compression", "binary_as_text", "use_logical_type",
+				"name", "type", "compression", "binary_as_text", "use_logical_type",
 				"trim_space", "use_vectorized_scanner", "replace_invalid_characters", "null_if",
 			),
 			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
@@ -116,7 +116,6 @@ func CreateFileFormatParquet(ctx context.Context, d *schema.ResourceData, meta a
 
 	errs := errors.Join(
 		attributeMappedValueCreateBuilder(d, "compression", request.WithCompression, sdk.ToParquetCompression),
-		booleanStringAttributeCreateBuilder(d, "snappy_compression", request.WithSnappyCompression),
 		booleanStringAttributeCreateBuilder(d, "binary_as_text", request.WithBinaryAsText),
 		booleanStringAttributeCreateBuilder(d, "use_logical_type", request.WithUseLogicalType),
 		booleanStringAttributeCreateBuilder(d, "trim_space", request.WithTrimSpace),
@@ -213,8 +212,7 @@ func UpdateFileFormatParquet(ctx context.Context, d *schema.ResourceData, meta a
 
 	errs := errors.Join(
 		attributeMappedValueUpdateSetOnlyFallback(d, "compression", &set.Compression, sdk.ToParquetCompression, sdk.ParquetCompressionAuto),
-		booleanStringAttributeUnsetFallbackUpdate(d, "snappy_compression", &set.SnappyCompression, false),
-		booleanStringAttributeUnsetFallbackUpdate(d, "binary_as_text", &set.BinaryAsText, false),
+		booleanStringAttributeUnsetFallbackUpdate(d, "binary_as_text", &set.BinaryAsText, true),
 		booleanStringAttributeUnsetFallbackUpdate(d, "use_logical_type", &set.UseLogicalType, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "trim_space", &set.TrimSpace, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "use_vectorized_scanner", &set.UseVectorizedScanner, false),
@@ -241,9 +239,6 @@ func parquetFileFormatToSchema(parquet *sdk.FileFormatParquet, setDefaults bool)
 		"compression": parquet.Compression,
 		"null_if":     collections.Map(parquet.NullIf, func(v string) any { return v }),
 	}
-	// SNAPPY_COMPRESSION is not reported back by DESCRIBE FILE FORMAT (it is folded into COMPRESSION = SNAPPY),
-	// so it cannot be reliably read back and is always reset to its default.
-	state["snappy_compression"] = BooleanDefault
 	if setDefaults {
 		state["binary_as_text"] = BooleanDefault
 		state["use_logical_type"] = BooleanDefault

@@ -56,7 +56,6 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasSnappyCompressionString(r.BooleanDefault).
 			HasBinaryAsText(r.BooleanDefault).
 			HasUseLogicalType(r.BooleanDefault).
 			HasTrimSpace(r.BooleanDefault).
@@ -87,7 +86,6 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
 			HasCompressionString("LZO").
-			HasSnappyCompressionString(r.BooleanDefault).
 			HasBinaryAsText(r.BooleanFalse).
 			HasUseLogicalType(r.BooleanFalse).
 			HasTrimSpace(r.BooleanTrue).
@@ -119,7 +117,6 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 			HasDatabaseString(id.DatabaseName()).
 			HasSchemaString(id.SchemaName()).
 			HasCompressionString("NONE").
-			HasSnappyCompressionString(r.BooleanDefault).
 			HasBinaryAsText(r.BooleanTrue).
 			HasUseLogicalType(r.BooleanTrue).
 			HasTrimSpace(r.BooleanFalse).
@@ -253,10 +250,6 @@ func TestAcc_FileFormatParquet_CompleteUseCase(t *testing.T) {
 		WithUseVectorizedScanner("true").
 		WithNullIf("NULL_A", "NULL_B").
 		WithComment(comment)
-	// Compression and SnappyCompression are mutually exclusive; SnappyCompression is exercised separately here
-	// because it cannot be read back from Snowflake (DESCRIBE FILE FORMAT folds it into COMPRESSION = SNAPPY).
-	modelWithSnappyCompression := model.FileFormatParquetWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithSnappyCompression("true")
 	modelWithReplaceInvalidCharacters := model.FileFormatParquetWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithReplaceInvalidCharacters("true")
 	ref := completeModel.ResourceReference()
@@ -313,20 +306,6 @@ func TestAcc_FileFormatParquet_CompleteUseCase(t *testing.T) {
 				Destroy: true,
 			},
 			{
-				Config: config.FromModels(t, modelWithSnappyCompression),
-				Check: assertThat(
-					t,
-					resourceassert.FileFormatParquetResource(t, ref).
-						HasSnappyCompressionString("true"),
-					resourceshowoutputassert.FileFormatParquetDescribeOutput(t, ref).
-						HasCompression("SNAPPY"),
-				),
-			},
-			{
-				Config:  config.FromModels(t, modelWithSnappyCompression),
-				Destroy: true,
-			},
-			{
 				Config: config.FromModels(t, modelWithReplaceInvalidCharacters),
 				Check: assertThat(
 					t,
@@ -345,9 +324,6 @@ func TestAcc_FileFormatParquet_Validations(t *testing.T) {
 
 	invalidCompression := model.FileFormatParquet("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithCompression("INVALID")
-	compressionConflict := model.FileFormatParquet("test", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithCompression("LZO").
-		WithSnappyCompression("true")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -360,11 +336,6 @@ func TestAcc_FileFormatParquet_Validations(t *testing.T) {
 				Config:      config.FromModels(t, invalidCompression),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid parquet compression: INVALID`),
-			},
-			{
-				Config:      config.FromModels(t, compressionConflict),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`"compression": conflicts with snappy_compression|"snappy_compression": conflicts with compression`),
 			},
 		},
 	})

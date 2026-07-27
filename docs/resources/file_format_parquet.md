@@ -41,15 +41,6 @@ resource "snowflake_file_format_parquet" "complete" {
   null_if                    = ["NULL", ""]
   comment                    = "My Parquet file format"
 }
-
-## Snappy compression (mutually exclusive with `compression`)
-resource "snowflake_file_format_parquet" "snappy" {
-  database = "database_name"
-  schema   = "schema_name"
-  name     = "file_format_name"
-
-  snappy_compression = "true"
-}
 ```
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
@@ -70,7 +61,6 @@ resource "snowflake_file_format_parquet" "snappy" {
 - `compression` (String) Specifies the compression format. Valid values: `AUTO` | `LZO` | `SNAPPY` | `NONE`.
 - `null_if` (List of String) String used to convert to and from SQL NULL.
 - `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `snappy_compression` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether unloaded file(s) are compressed using the SNAPPY algorithm. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `trim_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to remove white space from fields. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `use_logical_type` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to use Parquet logical types when loading data. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.

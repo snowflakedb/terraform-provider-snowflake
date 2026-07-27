@@ -77,11 +77,6 @@ func (f *FileFormatParquetResourceAssert) HasReplaceInvalidCharacters(expected s
 	return f
 }
 
-func (f *FileFormatParquetResourceAssert) HasSnappyCompression(expected string) *FileFormatParquetResourceAssert {
-	f.StringValueSet("snappy_compression", expected)
-	return f
-}
-
 func (f *FileFormatParquetResourceAssert) HasTrimSpace(expected string) *FileFormatParquetResourceAssert {
 	f.StringValueSet("trim_space", expected)
 	return f
@@ -143,11 +138,6 @@ func (f *FileFormatParquetResourceAssert) HasFullyQualifiedNameString(expected s
 
 func (f *FileFormatParquetResourceAssert) HasReplaceInvalidCharactersString(expected string) *FileFormatParquetResourceAssert {
 	f.ValueSet("replace_invalid_characters", expected)
-	return f
-}
-
-func (f *FileFormatParquetResourceAssert) HasSnappyCompressionString(expected string) *FileFormatParquetResourceAssert {
-	f.ValueSet("snappy_compression", expected)
 	return f
 }
 
@@ -215,11 +205,6 @@ func (f *FileFormatParquetResourceAssert) HasNoReplaceInvalidCharacters() *FileF
 	return f
 }
 
-func (f *FileFormatParquetResourceAssert) HasNoSnappyCompression() *FileFormatParquetResourceAssert {
-	f.ValueNotSet("snappy_compression")
-	return f
-}
-
 func (f *FileFormatParquetResourceAssert) HasNoTrimSpace() *FileFormatParquetResourceAssert {
 	f.ValueNotSet("trim_space")
 	return f
@@ -271,11 +256,6 @@ func (f *FileFormatParquetResourceAssert) HasNullIfEmpty() *FileFormatParquetRes
 
 func (f *FileFormatParquetResourceAssert) HasReplaceInvalidCharactersEmpty() *FileFormatParquetResourceAssert {
 	f.ValueSet("replace_invalid_characters", "")
-	return f
-}
-
-func (f *FileFormatParquetResourceAssert) HasSnappyCompressionEmpty() *FileFormatParquetResourceAssert {
-	f.ValueSet("snappy_compression", "")
 	return f
 }
 
@@ -340,11 +320,6 @@ func (f *FileFormatParquetResourceAssert) HasFullyQualifiedNameNotEmpty() *FileF
 
 func (f *FileFormatParquetResourceAssert) HasReplaceInvalidCharactersNotEmpty() *FileFormatParquetResourceAssert {
 	f.ValuePresent("replace_invalid_characters")
-	return f
-}
-
-func (f *FileFormatParquetResourceAssert) HasSnappyCompressionNotEmpty() *FileFormatParquetResourceAssert {
-	f.ValuePresent("snappy_compression")
 	return f
 }
 

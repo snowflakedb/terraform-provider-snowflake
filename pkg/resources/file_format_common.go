@@ -198,7 +198,7 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 	}
 }
 
-func parquetFileFormatSchema(prefix string) map[string]*schema.Schema {
+func parquetFileFormatSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"compression": {
 			Type:             schema.TypeString,
@@ -206,15 +206,6 @@ func parquetFileFormatSchema(prefix string) map[string]*schema.Schema {
 			Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllParquetCompressions)),
 			ValidateDiagFunc: sdkValidation(sdk.ToParquetCompression),
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToParquetCompression),
-			ConflictsWith:    []string{prefix + "snappy_compression"},
-		},
-		"snappy_compression": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			Description:      booleanStringFieldDescription("Boolean that specifies whether unloaded file(s) are compressed using the SNAPPY algorithm."),
-			ConflictsWith:    []string{prefix + "compression"},
 		},
 		"binary_as_text": {
 			Type:             schema.TypeString,

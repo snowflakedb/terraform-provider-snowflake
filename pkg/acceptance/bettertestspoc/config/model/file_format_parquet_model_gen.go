@@ -20,7 +20,6 @@ type FileFormatParquetModel struct {
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	NullIf                   tfconfig.Variable `json:"null_if,omitempty"`
 	ReplaceInvalidCharacters tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
-	SnappyCompression        tfconfig.Variable `json:"snappy_compression,omitempty"`
 	TrimSpace                tfconfig.Variable `json:"trim_space,omitempty"`
 	Type_                    tfconfig.Variable `json:"type,omitempty"`
 	UseLogicalType           tfconfig.Variable `json:"use_logical_type,omitempty"`
@@ -138,11 +137,6 @@ func (f *FileFormatParquetModel) WithReplaceInvalidCharacters(replaceInvalidChar
 	return f
 }
 
-func (f *FileFormatParquetModel) WithSnappyCompression(snappyCompression string) *FileFormatParquetModel {
-	f.SnappyCompression = tfconfig.StringVariable(snappyCompression)
-	return f
-}
-
 func (f *FileFormatParquetModel) WithTrimSpace(trimSpace string) *FileFormatParquetModel {
 	f.TrimSpace = tfconfig.StringVariable(trimSpace)
 	return f
@@ -209,11 +203,6 @@ func (f *FileFormatParquetModel) WithNullIfValue(value tfconfig.Variable) *FileF
 
 func (f *FileFormatParquetModel) WithReplaceInvalidCharactersValue(value tfconfig.Variable) *FileFormatParquetModel {
 	f.ReplaceInvalidCharacters = value
-	return f
-}
-
-func (f *FileFormatParquetModel) WithSnappyCompressionValue(value tfconfig.Variable) *FileFormatParquetModel {
-	f.SnappyCompression = value
 	return f
 }
 
