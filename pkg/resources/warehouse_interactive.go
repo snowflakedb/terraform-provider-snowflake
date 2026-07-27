@@ -285,17 +285,10 @@ func CreateWarehouseInteractive(ctx context.Context, d *schema.ResourceData, met
 		}
 		req.WithTables(tables)
 	}
-	if v, ok := d.GetOk("initially_suspended"); ok {
-		req.WithInitiallySuspended(v.(bool))
-	}
-	if v, ok := d.GetOk("resource_monitor"); ok {
-		req.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
-	}
-	if v, ok := d.GetOk("fallback_warehouse"); ok {
-		req.WithFallbackWarehouse(sdk.NewAccountObjectIdentifier(v.(string)))
-	}
-
 	errs := errors.Join(
+		boolAttributeCreateBuilder(d, "initially_suspended", req.WithInitiallySuspended),
+		accountObjectIdentifierAttributeCreateBuilder(d, "resource_monitor", req.WithResourceMonitor),
+		accountObjectIdentifierAttributeCreateBuilder(d, "fallback_warehouse", req.WithFallbackWarehouse),
 		attributeMappedValueCreateBuilder(d, "warehouse_size", req.WithWarehouseSize, sdk.ToWarehouseSize),
 		intAttributeCreateBuilder(d, "max_cluster_count", req.WithMaxClusterCount),
 		intAttributeCreateBuilder(d, "min_cluster_count", req.WithMinClusterCount),
