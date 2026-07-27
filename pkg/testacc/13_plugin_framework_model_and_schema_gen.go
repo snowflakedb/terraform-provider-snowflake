@@ -379,9 +379,10 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		Sensitive:   false,
 	},
 	"skip_toml_file_permission_verification": schema.BoolAttribute{
-		Description: existingSchema["skip_toml_file_permission_verification"].Description,
-		Optional:    true,
-		Sensitive:   false,
+		Description:        existingSchema["skip_toml_file_permission_verification"].Description,
+		DeprecationMessage: "This field is deprecated. It will be removed in the next major release. Skipping TOML configuration file permission verification will be disallowed in the next major release. Make sure the TOML configuration file permissions are set correctly before removing this flag.", // edited manually
+		Optional:           true,
+		Sensitive:          false,
 	},
 	"tmp_directory_path": schema.StringAttribute{
 		Description: existingSchema["tmp_directory_path"].Description,
