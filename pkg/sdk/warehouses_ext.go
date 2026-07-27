@@ -261,28 +261,18 @@ func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 	// ResourceConstraint - conditional on warehouse type.
 	// We use EqualFold instead of the generated ToWarehouseResourceConstraint because
 	// the values contain lowercase "x86" and the generated function uses ToUpper which breaks matching.
-	if r.ResourceConstraint.Valid {
-		switch wh.Type {
-		case WarehouseTypeStandard:
-			// After BCR 2026_02, resource_constraint is NULL for Standard warehouses; generation column is used instead.
-		case WarehouseTypeSnowparkOptimized:
-			var found bool
-			for _, rc := range AllWarehouseResourceConstraints {
-				if strings.EqualFold(string(rc), r.ResourceConstraint.String) {
-					v := rc
-					wh.ResourceConstraint = &v
-					found = true
-					break
-				}
+	if r.ResourceConstraint.Valid && wh.Type == WarehouseTypeSnowparkOptimized {
+		var found bool
+		for _, rc := range AllWarehouseResourceConstraints {
+			if strings.EqualFold(string(rc), r.ResourceConstraint.String) {
+				v := rc
+				wh.ResourceConstraint = &v
+				found = true
+				break
 			}
-			if !found {
-				return fmt.Errorf("invalid resource constraint: %s", r.ResourceConstraint.String)
-			}
-		case WarehouseTypeAdaptive:
-		case WarehouseTypeInteractive:
-			// Adaptive and interactive warehouses don't use resource constraints; ignore.
-		default:
-			return fmt.Errorf("invalid warehouse type: %s", wh.Type)
+		}
+		if !found {
+			return fmt.Errorf("invalid resource constraint: %s", r.ResourceConstraint.String)
 		}
 	}
 

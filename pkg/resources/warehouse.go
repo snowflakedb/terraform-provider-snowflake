@@ -218,8 +218,13 @@ func Warehouse() *schema.Resource {
 	)
 
 	forceNewIfChangedToInteractive := func() schema.CustomizeDiffFunc {
-		return customdiff.ForceNewIfChange("warehouse_type", func(ctx context.Context, oldValue, newValue, meta any) bool {
-			return newValue.(string) != string(sdk.WarehouseTypeInteractive)
+		return customdiff.ForceNewIfChange("warehouse_type", func(_ context.Context, oldValue, _, _ any) bool {
+			oldRaw, ok := oldValue.(string)
+			if !ok || oldRaw == "" {
+				return false
+			}
+			oldType, err := sdk.ToWarehouseType(oldRaw)
+			return err == nil && oldType == sdk.WarehouseTypeInteractive
 		})
 	}
 

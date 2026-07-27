@@ -12,9 +12,11 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -119,6 +121,22 @@ func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, basicAssertions...),
+			},
+			// change "warehouse_type" externally
+			{
+				PreConfig: func() {
+					testClient().Warehouse.CreateWarehouseWithRequest(t,
+						sdk.NewCreateWarehouseRequest(warehouseId).WithOrReplace(true))
+				},
+				Config: accconfig.FromModels(t, basic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(ref, "warehouse_type", new(string(sdk.WarehouseTypeInteractive)), new(string(sdk.WarehouseTypeStandard))),
+						planchecks.ExpectChange(ref, "warehouse_type", tfjson.ActionDelete, new(string(sdk.WarehouseTypeStandard)), nil),
 					},
 				},
 				Check: assertThat(t, basicAssertions...),

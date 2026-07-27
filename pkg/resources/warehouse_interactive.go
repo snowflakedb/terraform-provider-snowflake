@@ -193,10 +193,7 @@ func WarehouseInteractive() *schema.Resource {
 				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterStatementTimeoutInSeconds, valueTypeInt, sdk.ParameterTypeWarehouse},
 				parameter[sdk.WarehouseParameter]{sdk.WarehouseParameterFallbackWarehouse, valueTypeString, sdk.ParameterTypeWarehouse},
 			),
-			// Snowflake does not allow changing WAREHOUSE_TYPE via ALTER (to or from INTERACTIVE),
-			// so if the underlying object is no longer interactive the only way to reconcile is to
-			// recreate it.
-			RecreateWhenWarehouseTypeChangedExternally(sdk.WarehouseTypeInteractive),
+			HandleWarehouseExternalTypeChange(sdk.WarehouseTypeInteractive),
 		)),
 		Timeouts: defaultTimeouts,
 	}
