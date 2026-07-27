@@ -32,10 +32,12 @@ type ExternalAccessIntegrationAllowedAuthenticationSecretsRequest struct {
 }
 
 type AlterExternalAccessIntegrationRequest struct {
-	IfExists *bool
-	name     AccountObjectIdentifier // required
-	Set      *ExternalAccessIntegrationSetRequest
-	Unset    *ExternalAccessIntegrationUnsetRequest
+	IfExists  *bool
+	name      AccountObjectIdentifier // required
+	Set       *ExternalAccessIntegrationSetRequest
+	Unset     *ExternalAccessIntegrationUnsetRequest
+	SetTags   []TagAssociation
+	UnsetTags []ObjectIdentifier
 }
 
 type ExternalAccessIntegrationSetRequest struct {
@@ -44,7 +46,6 @@ type ExternalAccessIntegrationSetRequest struct {
 	AllowedAuthenticationSecrets         *ExternalAccessIntegrationAllowedAuthenticationSecretsRequest
 	Enabled                              *bool
 	Comment                              *string
-	SetTags                              []TagAssociation
 }
 
 type ExternalAccessIntegrationUnsetRequest struct {
@@ -52,7 +53,6 @@ type ExternalAccessIntegrationUnsetRequest struct {
 	AllowedApiAuthenticationIntegrations *bool
 	AllowedAuthenticationSecrets         *bool
 	Comment                              *bool
-	UnsetTags                            []ObjectIdentifier
 }
 
 type DropExternalAccessIntegrationRequest struct {

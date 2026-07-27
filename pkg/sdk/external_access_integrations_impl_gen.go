@@ -97,15 +97,16 @@ func (r *CreateExternalAccessIntegrationRequest) toOpts() *CreateExternalAccessI
 
 func (r *AlterExternalAccessIntegrationRequest) toOpts() *AlterExternalAccessIntegrationOptions {
 	opts := &AlterExternalAccessIntegrationOptions{
-		IfExists: r.IfExists,
-		name:     r.name,
+		IfExists:  r.IfExists,
+		name:      r.name,
+		SetTags:   r.SetTags,
+		UnsetTags: r.UnsetTags,
 	}
 	if r.Set != nil {
 		opts.Set = &ExternalAccessIntegrationSet{
 			AllowedNetworkRules: r.Set.AllowedNetworkRules,
 			Enabled:             r.Set.Enabled,
 			Comment:             r.Set.Comment,
-			SetTags:             r.Set.SetTags,
 		}
 		if r.Set.AllowedApiAuthenticationIntegrations != nil {
 			opts.Set.AllowedApiAuthenticationIntegrations = &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{
@@ -127,7 +128,6 @@ func (r *AlterExternalAccessIntegrationRequest) toOpts() *AlterExternalAccessInt
 			AllowedApiAuthenticationIntegrations: r.Unset.AllowedApiAuthenticationIntegrations,
 			AllowedAuthenticationSecrets:         r.Unset.AllowedAuthenticationSecrets,
 			Comment:                              r.Unset.Comment,
-			UnsetTags:                            r.Unset.UnsetTags,
 		}
 	}
 	return opts

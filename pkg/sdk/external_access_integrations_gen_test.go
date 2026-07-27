@@ -30,9 +30,25 @@ func TestExternalAccessIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
+	t.Run("validation: at least one of the fields [opts.AllowedNetworkRules] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AllowedNetworkRules = nil
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateExternalAccessIntegrationOptions", "AllowedNetworkRules"))
+	})
+
 	t.Run("validation: exactly one field from [opts.AllowedApiAuthenticationIntegrations.None opts.AllowedApiAuthenticationIntegrations.Integrations] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.AllowedApiAuthenticationIntegrations = &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedApiAuthenticationIntegrations", "None", "Integrations"))
+	})
+
+	t.Run("validation: exactly one field from [opts.AllowedApiAuthenticationIntegrations.None opts.AllowedApiAuthenticationIntegrations.Integrations] should be present - more present", func(t *testing.T) {
+		apiAuthId := randomAccountObjectIdentifier()
+		opts := defaultOpts()
+		opts.AllowedApiAuthenticationIntegrations = &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{
+			None:         Bool(true),
+			Integrations: []AccountObjectIdentifier{apiAuthId},
+		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedApiAuthenticationIntegrations", "None", "Integrations"))
 	})
 
@@ -42,24 +58,37 @@ func TestExternalAccessIntegrations_Create(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedAuthenticationSecrets", "All", "None", "Secrets"))
 	})
 
+	t.Run("validation: exactly one field from [opts.AllowedAuthenticationSecrets.All opts.AllowedAuthenticationSecrets.None opts.AllowedAuthenticationSecrets.Secrets] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.AllowedAuthenticationSecrets = &ExternalAccessIntegrationAllowedAuthenticationSecrets{
+			All:  Bool(true),
+			None: Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateExternalAccessIntegrationOptions.AllowedAuthenticationSecrets", "All", "None", "Secrets"))
+	})
+
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL ACCESS INTEGRATION %s ALLOWED_NETWORK_RULES = (%s) ENABLED = true`, id.FullyQualifiedName(), networkRuleId.FullyQualifiedName())
 	})
 
 	t.Run("all options", func(t *testing.T) {
+		networkRuleId2 := randomSchemaObjectIdentifier()
 		apiAuthId := randomAccountObjectIdentifier()
+		apiAuthId2 := randomAccountObjectIdentifier()
 		secretId := randomSchemaObjectIdentifier()
+		secretId2 := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.OrReplace = Bool(true)
+		opts.AllowedNetworkRules = []SchemaObjectIdentifier{networkRuleId, networkRuleId2}
 		opts.AllowedApiAuthenticationIntegrations = &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{
-			Integrations: []AccountObjectIdentifier{apiAuthId},
+			Integrations: []AccountObjectIdentifier{apiAuthId, apiAuthId2},
 		}
 		opts.AllowedAuthenticationSecrets = &ExternalAccessIntegrationAllowedAuthenticationSecrets{
-			Secrets: []SchemaObjectIdentifier{secretId},
+			Secrets: []SchemaObjectIdentifier{secretId, secretId2},
 		}
 		opts.Comment = String("test")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION %s ALLOWED_NETWORK_RULES = (%s) ALLOWED_API_AUTHENTICATION_INTEGRATIONS = (%s) ALLOWED_AUTHENTICATION_SECRETS = (%s) ENABLED = true COMMENT = 'test'`, id.FullyQualifiedName(), networkRuleId.FullyQualifiedName(), apiAuthId.FullyQualifiedName(), secretId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION %s ALLOWED_NETWORK_RULES = (%s, %s) ALLOWED_API_AUTHENTICATION_INTEGRATIONS = (%s, %s) ALLOWED_AUTHENTICATION_SECRETS = (%s, %s) ENABLED = true COMMENT = 'test'`, id.FullyQualifiedName(), networkRuleId.FullyQualifiedName(), networkRuleId2.FullyQualifiedName(), apiAuthId.FullyQualifiedName(), apiAuthId2.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
 	})
 
 	t.Run("allowed api authentication integrations: none", func(t *testing.T) {
@@ -107,21 +136,56 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.Set opts.Unset] should be present", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.IfExists opts.SetTags]", func(t *testing.T) {
+		tagId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions", "Set", "Unset"))
+		opts.IfExists = Bool(true)
+		opts.SetTags = []TagAssociation{{Name: tagId, Value: "v"}}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAccessIntegrationOptions", "IfExists", "SetTags"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.AllowedNetworkRules opts.Set.AllowedApiAuthenticationIntegrations opts.Set.AllowedAuthenticationSecrets opts.Set.Enabled opts.Set.Comment opts.Set.SetTags] should be set", func(t *testing.T) {
+	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetTags]", func(t *testing.T) {
+		tagId := randomSchemaObjectIdentifier()
+		opts := defaultOpts()
+		opts.IfExists = Bool(true)
+		opts.UnsetTags = []ObjectIdentifier{tagId}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAccessIntegrationOptions", "IfExists", "UnsetTags"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
+		opts := defaultOpts()
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ExternalAccessIntegrationSet{Enabled: Bool(true)}
+		opts.Unset = &ExternalAccessIntegrationUnset{Comment: Bool(true)}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Set.AllowedNetworkRules opts.Set.AllowedApiAuthenticationIntegrations opts.Set.AllowedAuthenticationSecrets opts.Set.Enabled opts.Set.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ExternalAccessIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Set", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment", "SetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Set", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"))
 	})
 
 	t.Run("validation: exactly one field from [opts.Set.AllowedApiAuthenticationIntegrations.None opts.Set.AllowedApiAuthenticationIntegrations.Integrations] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ExternalAccessIntegrationSet{
 			AllowedApiAuthenticationIntegrations: &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations", "None", "Integrations"))
+	})
+
+	t.Run("validation: exactly one field from [opts.Set.AllowedApiAuthenticationIntegrations.None opts.Set.AllowedApiAuthenticationIntegrations.Integrations] should be present - more present", func(t *testing.T) {
+		apiAuthId := randomAccountObjectIdentifier()
+		opts := defaultOpts()
+		opts.Set = &ExternalAccessIntegrationSet{
+			AllowedApiAuthenticationIntegrations: &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{
+				None:         Bool(true),
+				Integrations: []AccountObjectIdentifier{apiAuthId},
+			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations", "None", "Integrations"))
 	})
@@ -134,10 +198,21 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedAuthenticationSecrets", "All", "None", "Secrets"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.AllowedNetworkRules opts.Unset.AllowedApiAuthenticationIntegrations opts.Unset.AllowedAuthenticationSecrets opts.Unset.Comment opts.Unset.UnsetTags] should be set", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set.AllowedAuthenticationSecrets.All opts.Set.AllowedAuthenticationSecrets.None opts.Set.AllowedAuthenticationSecrets.Secrets] should be present - more present", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ExternalAccessIntegrationSet{
+			AllowedAuthenticationSecrets: &ExternalAccessIntegrationAllowedAuthenticationSecrets{
+				All:  Bool(true),
+				None: Bool(true),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedAuthenticationSecrets", "All", "None", "Secrets"))
+	})
+
+	t.Run("validation: at least one of the fields [opts.Unset.AllowedNetworkRules opts.Unset.AllowedApiAuthenticationIntegrations opts.Unset.AllowedAuthenticationSecrets opts.Unset.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &ExternalAccessIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Unset", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Comment", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Unset", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Comment"))
 	})
 
 	t.Run("set: basic", func(t *testing.T) {
@@ -151,31 +226,60 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 
 	t.Run("set: all options", func(t *testing.T) {
 		networkRuleId := randomSchemaObjectIdentifier()
+		networkRuleId2 := randomSchemaObjectIdentifier()
 		apiAuthId := randomAccountObjectIdentifier()
+		apiAuthId2 := randomAccountObjectIdentifier()
 		secretId := randomSchemaObjectIdentifier()
-		tagId := randomSchemaObjectIdentifier()
+		secretId2 := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Set = &ExternalAccessIntegrationSet{
-			AllowedNetworkRules: []SchemaObjectIdentifier{networkRuleId},
+			AllowedNetworkRules: []SchemaObjectIdentifier{networkRuleId, networkRuleId2},
 			AllowedApiAuthenticationIntegrations: &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{
-				Integrations: []AccountObjectIdentifier{apiAuthId},
+				Integrations: []AccountObjectIdentifier{apiAuthId, apiAuthId2},
 			},
 			AllowedAuthenticationSecrets: &ExternalAccessIntegrationAllowedAuthenticationSecrets{
-				Secrets: []SchemaObjectIdentifier{secretId},
+				Secrets: []SchemaObjectIdentifier{secretId, secretId2},
 			},
 			Enabled: Bool(true),
 			Comment: String("test"),
-			SetTags: []TagAssociation{{Name: tagId, Value: "v"}},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s SET ALLOWED_NETWORK_RULES = (%s) ALLOWED_API_AUTHENTICATION_INTEGRATIONS = (%s) ALLOWED_AUTHENTICATION_SECRETS = (%s) ENABLED = true COMMENT = 'test' TAG %s = 'v'`, id.FullyQualifiedName(), networkRuleId.FullyQualifiedName(), apiAuthId.FullyQualifiedName(), secretId.FullyQualifiedName(), tagId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s SET ALLOWED_NETWORK_RULES = (%s, %s) ALLOWED_API_AUTHENTICATION_INTEGRATIONS = (%s, %s) ALLOWED_AUTHENTICATION_SECRETS = (%s, %s) ENABLED = true COMMENT = 'test'`, id.FullyQualifiedName(), networkRuleId.FullyQualifiedName(), networkRuleId2.FullyQualifiedName(), apiAuthId.FullyQualifiedName(), apiAuthId2.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
+	})
+
+	t.Run("set: allowed api authentication integrations: none", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ExternalAccessIntegrationSet{
+			AllowedApiAuthenticationIntegrations: &ExternalAccessIntegrationAllowedApiAuthenticationIntegrations{
+				None: Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s SET ALLOWED_API_AUTHENTICATION_INTEGRATIONS = none`, id.FullyQualifiedName())
+	})
+
+	t.Run("set: allowed authentication secrets: all", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ExternalAccessIntegrationSet{
+			AllowedAuthenticationSecrets: &ExternalAccessIntegrationAllowedAuthenticationSecrets{
+				All: Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s SET ALLOWED_AUTHENTICATION_SECRETS = all`, id.FullyQualifiedName())
+	})
+
+	t.Run("set: allowed authentication secrets: none", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ExternalAccessIntegrationSet{
+			AllowedAuthenticationSecrets: &ExternalAccessIntegrationAllowedAuthenticationSecrets{
+				None: Bool(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s SET ALLOWED_AUTHENTICATION_SECRETS = none`, id.FullyQualifiedName())
 	})
 
 	t.Run("set tags", func(t *testing.T) {
 		tagId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		opts.Set = &ExternalAccessIntegrationSet{
-			SetTags: []TagAssociation{{Name: tagId, Value: "v"}},
-		}
+		opts.SetTags = []TagAssociation{{Name: tagId, Value: "v"}}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s SET TAG %s = 'v'`, id.FullyQualifiedName(), tagId.FullyQualifiedName())
 	})
 
@@ -188,26 +292,23 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 	})
 
 	t.Run("unset: all options", func(t *testing.T) {
-		tagId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
 		opts.Unset = &ExternalAccessIntegrationUnset{
 			AllowedNetworkRules:                  Bool(true),
 			AllowedApiAuthenticationIntegrations: Bool(true),
 			AllowedAuthenticationSecrets:         Bool(true),
 			Comment:                              Bool(true),
-			UnsetTags:                            []ObjectIdentifier{tagId},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s UNSET ALLOWED_NETWORK_RULES, ALLOWED_API_AUTHENTICATION_INTEGRATIONS, ALLOWED_AUTHENTICATION_SECRETS, COMMENT, TAG %s`, id.FullyQualifiedName(), tagId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s UNSET ALLOWED_NETWORK_RULES, ALLOWED_API_AUTHENTICATION_INTEGRATIONS, ALLOWED_AUTHENTICATION_SECRETS, COMMENT`, id.FullyQualifiedName())
 	})
 
 	t.Run("unset tags", func(t *testing.T) {
 		tagId := randomSchemaObjectIdentifier()
 		opts := defaultOpts()
-		opts.Unset = &ExternalAccessIntegrationUnset{
-			UnsetTags: []ObjectIdentifier{tagId},
-		}
+		opts.UnsetTags = []ObjectIdentifier{tagId}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s UNSET TAG %s`, id.FullyQualifiedName(), tagId.FullyQualifiedName())
 	})
+
 }
 
 func TestExternalAccessIntegrations_Drop(t *testing.T) {

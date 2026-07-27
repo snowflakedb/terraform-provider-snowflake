@@ -45,7 +45,8 @@ var externalAccessIntegrationsDef = g.NewInterface(
 		).
 		BooleanAssignment("ENABLED", g.ParameterOptions().Required()).
 		OptionalComment().
-		WithValidation(g.ValidIdentifier, "name"),
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-external-access-integration",
 	g.NewQueryStruct("AlterExternalAccessIntegration").
@@ -69,8 +70,7 @@ var externalAccessIntegrationsDef = g.NewInterface(
 				).
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				OptionalComment().
-				PredefinedQueryStructField("SetTags", "[]TagAssociation", g.KeywordOptions().SQL("TAG")).
-				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment", "SetTags"),
+				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -80,12 +80,15 @@ var externalAccessIntegrationsDef = g.NewInterface(
 				OptionalSQL("ALLOWED_API_AUTHENTICATION_INTEGRATIONS").
 				OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
 				OptionalSQL("COMMENT").
-				PredefinedQueryStructField("UnsetTags", "[]ObjectIdentifier", g.KeywordOptions().SQL("TAG")).
-				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Comment", "UnsetTags"),
+				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Comment"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
+		OptionalSetTags().
+		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "Set", "Unset"),
+		WithValidation(g.ConflictingFields, "IfExists", "SetTags").
+		WithValidation(g.ConflictingFields, "IfExists", "UnsetTags").
+		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-integration",
 	g.NewQueryStruct("DropExternalAccessIntegration").

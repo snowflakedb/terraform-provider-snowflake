@@ -51,6 +51,8 @@ type AlterExternalAccessIntegrationOptions struct {
 	name                      AccountObjectIdentifier         `ddl:"identifier"`
 	Set                       *ExternalAccessIntegrationSet   `ddl:"keyword" sql:"SET"`
 	Unset                     *ExternalAccessIntegrationUnset `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags                   []TagAssociation                `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags                 []ObjectIdentifier              `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type ExternalAccessIntegrationSet struct {
@@ -59,15 +61,13 @@ type ExternalAccessIntegrationSet struct {
 	AllowedAuthenticationSecrets         *ExternalAccessIntegrationAllowedAuthenticationSecrets         `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS ="`
 	Enabled                              *bool                                                          `ddl:"parameter" sql:"ENABLED"`
 	Comment                              *string                                                        `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	SetTags                              []TagAssociation                                               `ddl:"keyword" sql:"TAG"`
 }
 
 type ExternalAccessIntegrationUnset struct {
-	AllowedNetworkRules                  *bool              `ddl:"keyword" sql:"ALLOWED_NETWORK_RULES"`
-	AllowedApiAuthenticationIntegrations *bool              `ddl:"keyword" sql:"ALLOWED_API_AUTHENTICATION_INTEGRATIONS"`
-	AllowedAuthenticationSecrets         *bool              `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
-	Comment                              *bool              `ddl:"keyword" sql:"COMMENT"`
-	UnsetTags                            []ObjectIdentifier `ddl:"keyword" sql:"TAG"`
+	AllowedNetworkRules                  *bool `ddl:"keyword" sql:"ALLOWED_NETWORK_RULES"`
+	AllowedApiAuthenticationIntegrations *bool `ddl:"keyword" sql:"ALLOWED_API_AUTHENTICATION_INTEGRATIONS"`
+	AllowedAuthenticationSecrets         *bool `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
+	Comment                              *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropExternalAccessIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-integration.

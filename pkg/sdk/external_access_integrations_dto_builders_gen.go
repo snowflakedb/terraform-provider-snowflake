@@ -92,6 +92,16 @@ func (s *AlterExternalAccessIntegrationRequest) WithUnset(unset ExternalAccessIn
 	return s
 }
 
+func (s *AlterExternalAccessIntegrationRequest) WithSetTags(setTags []TagAssociation) *AlterExternalAccessIntegrationRequest {
+	s.SetTags = setTags
+	return s
+}
+
+func (s *AlterExternalAccessIntegrationRequest) WithUnsetTags(unsetTags []ObjectIdentifier) *AlterExternalAccessIntegrationRequest {
+	s.UnsetTags = unsetTags
+	return s
+}
+
 func NewExternalAccessIntegrationSetRequest() *ExternalAccessIntegrationSetRequest {
 	s := ExternalAccessIntegrationSetRequest{}
 	return &s
@@ -122,11 +132,6 @@ func (s *ExternalAccessIntegrationSetRequest) WithComment(comment string) *Exter
 	return s
 }
 
-func (s *ExternalAccessIntegrationSetRequest) WithSetTags(setTags []TagAssociation) *ExternalAccessIntegrationSetRequest {
-	s.SetTags = setTags
-	return s
-}
-
 func NewExternalAccessIntegrationUnsetRequest() *ExternalAccessIntegrationUnsetRequest {
 	s := ExternalAccessIntegrationUnsetRequest{}
 	return &s
@@ -149,11 +154,6 @@ func (s *ExternalAccessIntegrationUnsetRequest) WithAllowedAuthenticationSecrets
 
 func (s *ExternalAccessIntegrationUnsetRequest) WithComment(comment bool) *ExternalAccessIntegrationUnsetRequest {
 	s.Comment = &comment
-	return s
-}
-
-func (s *ExternalAccessIntegrationUnsetRequest) WithUnsetTags(unsetTags []ObjectIdentifier) *ExternalAccessIntegrationUnsetRequest {
-	s.UnsetTags = unsetTags
 	return s
 }
 
