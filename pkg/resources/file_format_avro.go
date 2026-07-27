@@ -21,7 +21,7 @@ import (
 )
 
 func fileFormatAvroSchema() map[string]*schema.Schema {
-	return collections.MergeMaps(fileFormatCommonSchema, avroFileFormatSchema(""), avroDescOutputSchema())
+	return collections.MergeMaps(fileFormatCommonSchema, avroFileFormatSchema(), avroDescOutputSchema())
 }
 
 func avroDescOutputSchema() map[string]*schema.Schema {

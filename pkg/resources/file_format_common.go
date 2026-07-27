@@ -198,7 +198,7 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 	}
 }
 
-func avroFileFormatSchema(_ string) map[string]*schema.Schema {
+func avroFileFormatSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"compression": {
 			Type:             schema.TypeString,

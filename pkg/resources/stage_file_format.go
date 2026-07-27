@@ -57,7 +57,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "AVRO file format options.",
 					Elem: &schema.Resource{
-						Schema: avroFileFormatSchema("file_format.0.avro.0."),
+						Schema: avroFileFormatSchema(),
 					},
 				},
 				"orc": {

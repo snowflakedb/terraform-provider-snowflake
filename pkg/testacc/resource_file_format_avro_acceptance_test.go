@@ -263,16 +263,11 @@ func TestAcc_FileFormatAvro_CompleteUseCase(t *testing.T) {
 						HasNullIf("NULL_A", "NULL_B"),
 				),
 			},
-			// import
 			{
 				Config:            config.FromModels(t, completeModel),
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
-			},
-			{
-				Config:  config.FromModels(t, completeModel),
-				Destroy: true,
 			},
 		},
 	})
