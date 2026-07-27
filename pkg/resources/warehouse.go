@@ -217,6 +217,12 @@ func Warehouse() *schema.Resource {
 		},
 	)
 
+	forceNewIfChangedToInteractive := func() schema.CustomizeDiffFunc {
+		return customdiff.ForceNewIfChange("warehouse_type", func(ctx context.Context, oldValue, newValue, meta any) bool {
+			return newValue.(string) != string(sdk.WarehouseTypeInteractive)
+		})
+	}
+
 	return &schema.Resource{
 		SchemaVersion: 2,
 
@@ -240,6 +246,7 @@ func Warehouse() *schema.Resource {
 				customdiff.ForceNewIfChange("warehouse_size", func(ctx context.Context, old, new, meta any) bool {
 					return old.(string) != "" && new.(string) == ""
 				}),
+				forceNewIfChangedToInteractive(),
 				ParametersCustomDiff(
 					warehouseParametersProvider,
 					parameter[sdk.AccountParameter]{sdk.AccountParameterMaxConcurrencyLevel, valueTypeInt, sdk.ParameterTypeWarehouse},

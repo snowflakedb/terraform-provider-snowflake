@@ -279,7 +279,8 @@ func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 				return fmt.Errorf("invalid resource constraint: %s", r.ResourceConstraint.String)
 			}
 		case WarehouseTypeAdaptive:
-			// Adaptive warehouses don't use resource constraints; ignore.
+		case WarehouseTypeInteractive:
+			// Adaptive and interactive warehouses don't use resource constraints; ignore.
 		default:
 			return fmt.Errorf("invalid warehouse type: %s", wh.Type)
 		}

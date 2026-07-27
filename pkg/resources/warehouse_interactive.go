@@ -196,7 +196,7 @@ func WarehouseInteractive() *schema.Resource {
 			// Snowflake does not allow changing WAREHOUSE_TYPE via ALTER (to or from INTERACTIVE),
 			// so if the underlying object is no longer interactive the only way to reconcile is to
 			// recreate it.
-			RecreateWhenResourceTypeChangedExternally("warehouse_type", sdk.WarehouseTypeInteractive, sdk.ToWarehouseType),
+			RecreateWhenWarehouseTypeChangedExternally(sdk.WarehouseTypeInteractive),
 		)),
 		Timeouts: defaultTimeouts,
 	}
