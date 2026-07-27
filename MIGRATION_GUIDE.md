@@ -95,6 +95,22 @@ Notes (both resources):
 
 All changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
 
+### *(new feature)* PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK experiment
+
+A new `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` experiment has been added. When enabled, the `account` field is available as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.
+
+Previously, the provider required both `organization_name` and `account_name` to be set. With this experiment, you can set `account` as a single-field alternative. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence.
+
+Without this experiment, using the `account` field (in provider config or TOML) results in an error directing you to enable the experiment.
+
+To enable, add `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK"]
+  account = "myorg-myaccount"
+}
+```
+
 ### *(new feature)* AUTHENTICATOR_EXPLICIT_ONLY experiment
 
 A new `AUTHENTICATOR_EXPLICIT_ONLY` experiment has been added. When enabled, the provider no longer implicitly derives the `authenticator` value from other configuration fields.

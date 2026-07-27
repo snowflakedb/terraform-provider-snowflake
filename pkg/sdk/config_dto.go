@@ -17,6 +17,7 @@ func (c *ConfigFile) MarshalToml() ([]byte, error) {
 type ConfigDTO struct {
 	AccountName                       *string             `toml:"account_name"`
 	OrganizationName                  *string             `toml:"organization_name"`
+	Account                           *string             `toml:"account"`
 	User                              *string             `toml:"user"`
 	Username                          *string             `toml:"username"`
 	Password                          *string             `toml:"password"`
@@ -78,3 +79,5 @@ type ConfigDTO struct {
 	CrlHTTPClientTimeout              *int                `toml:"crl_http_client_timeout"`
 	DisableSamlURLCheck               *bool               `toml:"disable_saml_url_check"`
 }
+
+func (c *ConfigDTO) HasAccountField() bool { return c.Account != nil }
