@@ -14,10 +14,8 @@ resource "snowflake_file_format_xml" "complete" {
   compression                = "GZIP"
   preserve_space             = "true"
   strip_outer_element        = "true"
-  disable_snowflake_data     = "false"
   disable_auto_convert       = "false"
-  replace_invalid_characters = "false"
-  ignore_utf8_errors         = "false"
+  replace_invalid_characters = "false" # or ignore_utf8_errors = ...
   skip_byte_order_mark       = "true"
   comment                    = "My XML file format"
 }

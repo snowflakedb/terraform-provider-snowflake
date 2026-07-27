@@ -35,10 +35,8 @@ resource "snowflake_file_format_xml" "complete" {
   compression                = "GZIP"
   preserve_space             = "true"
   strip_outer_element        = "true"
-  disable_snowflake_data     = "false"
   disable_auto_convert       = "false"
-  replace_invalid_characters = "false"
-  ignore_utf8_errors         = "false"
+  replace_invalid_characters = "false" # or ignore_utf8_errors = ...
   skip_byte_order_mark       = "true"
   comment                    = "My XML file format"
 }
@@ -60,7 +58,6 @@ resource "snowflake_file_format_xml" "complete" {
 - `comment` (String) Specifies a comment for the file format.
 - `compression` (String) Specifies the compression format. Valid values: `AUTO` | `GZIP` | `BZ2` | `BROTLI` | `ZSTD` | `DEFLATE` | `RAW_DEFLATE` | `NONE`.
 - `disable_auto_convert` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser disables automatic conversion of numeric and Boolean values from text to native representation. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
-- `disable_snowflake_data` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser disables recognition of Snowflake semi-structured data tags. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `ignore_utf8_errors` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether UTF-8 encoding errors produce error conditions. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `preserve_space` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether the XML parser preserves leading and trailing spaces in element content. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `replace_invalid_characters` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
@@ -94,7 +91,6 @@ Read-Only:
 
 - `compression` (String)
 - `disable_auto_convert` (Boolean)
-- `disable_snowflake_data` (Boolean)
 - `id` (String)
 - `ignore_utf8_errors` (Boolean)
 - `preserve_space` (Boolean)

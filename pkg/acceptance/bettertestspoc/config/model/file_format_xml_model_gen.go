@@ -17,7 +17,6 @@ type FileFormatXmlModel struct {
 	Comment                  tfconfig.Variable `json:"comment,omitempty"`
 	Compression              tfconfig.Variable `json:"compression,omitempty"`
 	DisableAutoConvert       tfconfig.Variable `json:"disable_auto_convert,omitempty"`
-	DisableSnowflakeData     tfconfig.Variable `json:"disable_snowflake_data,omitempty"`
 	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	IgnoreUtf8Errors         tfconfig.Variable `json:"ignore_utf8_errors,omitempty"`
 	PreserveSpace            tfconfig.Variable `json:"preserve_space,omitempty"`
@@ -126,11 +125,6 @@ func (f *FileFormatXmlModel) WithDisableAutoConvert(disableAutoConvert string) *
 	return f
 }
 
-func (f *FileFormatXmlModel) WithDisableSnowflakeData(disableSnowflakeData string) *FileFormatXmlModel {
-	f.DisableSnowflakeData = tfconfig.StringVariable(disableSnowflakeData)
-	return f
-}
-
 func (f *FileFormatXmlModel) WithFullyQualifiedName(fullyQualifiedName string) *FileFormatXmlModel {
 	f.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return f
@@ -197,11 +191,6 @@ func (f *FileFormatXmlModel) WithCompressionValue(value tfconfig.Variable) *File
 
 func (f *FileFormatXmlModel) WithDisableAutoConvertValue(value tfconfig.Variable) *FileFormatXmlModel {
 	f.DisableAutoConvert = value
-	return f
-}
-
-func (f *FileFormatXmlModel) WithDisableSnowflakeDataValue(value tfconfig.Variable) *FileFormatXmlModel {
-	f.DisableSnowflakeData = value
 	return f
 }
 

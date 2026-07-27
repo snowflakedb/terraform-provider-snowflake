@@ -59,7 +59,7 @@ func FileFormatXml() *schema.Resource {
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
 				"name", "type", "compression", "ignore_utf8_errors", "preserve_space", "strip_outer_element",
-				"disable_snowflake_data", "disable_auto_convert", "replace_invalid_characters", "skip_byte_order_mark",
+				"disable_auto_convert", "replace_invalid_characters", "skip_byte_order_mark",
 			),
 			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
 			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeXml, sdk.ToFileFormatType),
@@ -119,7 +119,6 @@ func CreateFileFormatXml(ctx context.Context, d *schema.ResourceData, meta any) 
 		booleanStringAttributeCreateBuilder(d, "ignore_utf8_errors", request.WithIgnoreUtf8Errors),
 		booleanStringAttributeCreateBuilder(d, "preserve_space", request.WithPreserveSpace),
 		booleanStringAttributeCreateBuilder(d, "strip_outer_element", request.WithStripOuterElement),
-		booleanStringAttributeCreateBuilder(d, "disable_snowflake_data", request.WithDisableSnowflakeData),
 		booleanStringAttributeCreateBuilder(d, "disable_auto_convert", request.WithDisableAutoConvert),
 		booleanStringAttributeCreateBuilder(d, "replace_invalid_characters", request.WithReplaceInvalidCharacters),
 		booleanStringAttributeCreateBuilder(d, "skip_byte_order_mark", request.WithSkipByteOrderMark),
@@ -213,10 +212,8 @@ func UpdateFileFormatXml(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	errs := errors.Join(
 		attributeMappedValueUpdateSetOnlyFallback(d, "compression", &set.Compression, sdk.ToXmlCompression, sdk.XmlCompressionAuto),
-		booleanStringAttributeUnsetFallbackUpdate(d, "ignore_utf8_errors", &set.IgnoreUtf8Errors, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "preserve_space", &set.PreserveSpace, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "strip_outer_element", &set.StripOuterElement, false),
-		booleanStringAttributeUnsetFallbackUpdate(d, "disable_snowflake_data", &set.DisableSnowflakeData, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "disable_auto_convert", &set.DisableAutoConvert, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "replace_invalid_characters", &set.ReplaceInvalidCharacters, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "skip_byte_order_mark", &set.SkipByteOrderMark, true),
@@ -224,6 +221,18 @@ func UpdateFileFormatXml(ctx context.Context, d *schema.ResourceData, meta any) 
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
+	}
+
+	if !reflect.DeepEqual(set, sdk.NewAlterXmlFileFormatSetRequest()) {
+		if err := client.FileFormats.AlterXml(ctx, sdk.NewAlterXmlFileFormatRequest(id).WithSet(*set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	// ignore_utf8_errors conflicts with replace_invalid_characters, so it is set in a separate statement.
+	set = sdk.NewAlterXmlFileFormatSetRequest()
+	if err := booleanStringAttributeUnsetFallbackUpdate(d, "ignore_utf8_errors", &set.IgnoreUtf8Errors, false); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if !reflect.DeepEqual(set, sdk.NewAlterXmlFileFormatSetRequest()) {
@@ -244,7 +253,6 @@ func xmlFileFormatToSchema(xml *sdk.FileFormatXml, setDefaults bool) map[string]
 		state["ignore_utf8_errors"] = BooleanDefault
 		state["preserve_space"] = BooleanDefault
 		state["strip_outer_element"] = BooleanDefault
-		state["disable_snowflake_data"] = BooleanDefault
 		state["disable_auto_convert"] = BooleanDefault
 		state["replace_invalid_characters"] = BooleanDefault
 		state["skip_byte_order_mark"] = BooleanDefault
@@ -252,7 +260,6 @@ func xmlFileFormatToSchema(xml *sdk.FileFormatXml, setDefaults bool) map[string]
 		state["ignore_utf8_errors"] = booleanStringFromBool(xml.IgnoreUtf8Errors)
 		state["preserve_space"] = booleanStringFromBool(xml.PreserveSpace)
 		state["strip_outer_element"] = booleanStringFromBool(xml.StripOuterElement)
-		state["disable_snowflake_data"] = booleanStringFromBool(xml.DisableSnowflakeData)
 		state["disable_auto_convert"] = booleanStringFromBool(xml.DisableAutoConvert)
 		state["replace_invalid_characters"] = booleanStringFromBool(xml.ReplaceInvalidCharacters)
 		state["skip_byte_order_mark"] = booleanStringFromBool(xml.SkipByteOrderMark)

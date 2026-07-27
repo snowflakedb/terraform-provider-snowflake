@@ -36,7 +36,6 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 		WithCompression("GZIP").
 		WithPreserveSpace("true").
 		WithStripOuterElement("true").
-		WithDisableSnowflakeData("true").
 		WithDisableAutoConvert("true").
 		// ReplaceInvalidCharacters is incompatible with IgnoreUtf8Errors
 		WithIgnoreUtf8Errors("true").
@@ -47,12 +46,17 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 		WithCompression("BZ2").
 		WithPreserveSpace("false").
 		WithStripOuterElement("false").
-		WithDisableSnowflakeData("false").
 		WithDisableAutoConvert("false").
 		// ReplaceInvalidCharacters is incompatible with IgnoreUtf8Errors, so only the latter is altered here
 		WithIgnoreUtf8Errors("false").
 		WithSkipByteOrderMark("true").
 		WithComment(externalComment)
+
+	// ignore_utf8_errors and replace_invalid_characters conflict with each other, so switching between them is verified with minimal configs
+	ignoreUtf8ErrorsModel := model.FileFormatXml("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithIgnoreUtf8Errors("true")
+	replaceInvalidCharactersModel := model.FileFormatXml("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithReplaceInvalidCharacters("true")
 
 	basicAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.FileFormatXmlResource(t, ref).
@@ -62,7 +66,6 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasPreserveSpace(r.BooleanDefault).
 			HasStripOuterElement(r.BooleanDefault).
-			HasDisableSnowflakeData(r.BooleanDefault).
 			HasDisableAutoConvert(r.BooleanDefault).
 			HasReplaceInvalidCharacters(r.BooleanDefault).
 			HasIgnoreUtf8Errors(r.BooleanDefault).
@@ -79,7 +82,6 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasCompression("AUTO").
 			HasPreserveSpace(false).
 			HasStripOuterElement(false).
-			HasDisableSnowflakeData(false).
 			HasDisableAutoConvert(false).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(false).
@@ -94,7 +96,6 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasCompressionString("GZIP").
 			HasPreserveSpace(r.BooleanTrue).
 			HasStripOuterElement(r.BooleanTrue).
-			HasDisableSnowflakeData(r.BooleanTrue).
 			HasDisableAutoConvert(r.BooleanTrue).
 			HasReplaceInvalidCharacters(r.BooleanDefault).
 			HasIgnoreUtf8Errors(r.BooleanTrue).
@@ -112,7 +113,6 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasCompression("GZIP").
 			HasPreserveSpace(true).
 			HasStripOuterElement(true).
-			HasDisableSnowflakeData(true).
 			HasDisableAutoConvert(true).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(true).
@@ -127,7 +127,6 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasCompressionString("BZ2").
 			HasPreserveSpace(r.BooleanFalse).
 			HasStripOuterElement(r.BooleanFalse).
-			HasDisableSnowflakeData(r.BooleanFalse).
 			HasDisableAutoConvert(r.BooleanFalse).
 			HasReplaceInvalidCharacters(r.BooleanDefault).
 			HasIgnoreUtf8Errors(r.BooleanFalse).
@@ -145,11 +144,32 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			HasCompression("BZ2").
 			HasPreserveSpace(false).
 			HasStripOuterElement(false).
-			HasDisableSnowflakeData(false).
 			HasDisableAutoConvert(false).
 			HasReplaceInvalidCharacters(false).
 			HasIgnoreUtf8Errors(false).
 			HasSkipByteOrderMark(true),
+	}
+
+	replaceInvalidCharactersAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.FileFormatXmlResource(t, ref).
+			HasNameString(id.Name()).
+			HasIgnoreUtf8Errors(r.BooleanDefault).
+			HasReplaceInvalidCharacters(r.BooleanTrue),
+		resourceshowoutputassert.FileFormatXmlDescribeOutput(t, ref).
+			HasId(id).
+			HasIgnoreUtf8Errors(false).
+			HasReplaceInvalidCharacters(true),
+	}
+
+	ignoreUtf8ErrorsAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.FileFormatXmlResource(t, ref).
+			HasNameString(id.Name()).
+			HasIgnoreUtf8Errors(r.BooleanTrue).
+			HasReplaceInvalidCharacters(r.BooleanDefault),
+		resourceshowoutputassert.FileFormatXmlDescribeOutput(t, ref).
+			HasId(id).
+			HasIgnoreUtf8Errors(true).
+			HasReplaceInvalidCharacters(false),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -224,6 +244,26 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, alteredModel),
 				Check:  assertThat(t, alteredAssertions...),
 			},
+			// switch from ignore_utf8_errors to replace_invalid_characters (non-recreating change)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, replaceInvalidCharactersModel),
+				Check:  assertThat(t, replaceInvalidCharactersAssertions...),
+			},
+			// switch back from replace_invalid_characters to ignore_utf8_errors (non-recreating change)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, ignoreUtf8ErrorsModel),
+				Check:  assertThat(t, ignoreUtf8ErrorsAssertions...),
+			},
 			// unset optional fields
 			{
 				Config: config.FromModels(t, basicModel),
@@ -256,14 +296,11 @@ func TestAcc_FileFormatXml_CompleteUseCase(t *testing.T) {
 		WithCompression(string(sdk.XmlCompressionGzip)).
 		WithPreserveSpace("true").
 		WithStripOuterElement("true").
-		WithDisableSnowflakeData("true").
 		WithDisableAutoConvert("true").
 		// ReplaceInvalidCharacters is incompatible with IgnoreUtf8Errors
 		WithIgnoreUtf8Errors("true").
 		WithSkipByteOrderMark("false").
 		WithComment(comment)
-	modelWithReplaceInvalidCharacters := model.FileFormatXmlWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithReplaceInvalidCharacters("true")
 	ref := completeModel.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
@@ -285,7 +322,6 @@ func TestAcc_FileFormatXml_CompleteUseCase(t *testing.T) {
 						HasCompressionString("GZIP").
 						HasPreserveSpace("true").
 						HasStripOuterElement("true").
-						HasDisableSnowflakeData("true").
 						HasDisableAutoConvert("true").
 						HasReplaceInvalidCharacters("default").
 						HasIgnoreUtf8Errors("true").
@@ -302,7 +338,6 @@ func TestAcc_FileFormatXml_CompleteUseCase(t *testing.T) {
 						HasCompression("GZIP").
 						HasPreserveSpace(true).
 						HasStripOuterElement(true).
-						HasDisableSnowflakeData(true).
 						HasDisableAutoConvert(true).
 						HasReplaceInvalidCharacters(false).
 						HasIgnoreUtf8Errors(true).
@@ -316,20 +351,6 @@ func TestAcc_FileFormatXml_CompleteUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			{
-				Config:  config.FromModels(t, completeModel),
-				Destroy: true,
-			},
-			{
-				Config: config.FromModels(t, modelWithReplaceInvalidCharacters),
-				Check: assertThat(
-					t,
-					resourceassert.FileFormatXmlResource(t, ref).
-						HasReplaceInvalidCharacters("true"),
-					resourceshowoutputassert.FileFormatXmlDescribeOutput(t, ref).
-						HasReplaceInvalidCharacters(true),
-				),
-			},
 		},
 	})
 }
@@ -339,6 +360,9 @@ func TestAcc_FileFormatXml_Validations(t *testing.T) {
 
 	invalidCompression := model.FileFormatXml("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithCompression("INVALID")
+	conflictingUtf8Fields := model.FileFormatXml("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithIgnoreUtf8Errors("true").
+		WithReplaceInvalidCharacters("true")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -351,6 +375,11 @@ func TestAcc_FileFormatXml_Validations(t *testing.T) {
 				Config:      config.FromModels(t, invalidCompression),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid xml compression: INVALID`),
+			},
+			{
+				Config:      config.FromModels(t, conflictingUtf8Fields),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`ignore_utf8_errors.*conflicts with\s+replace_invalid_characters`),
 			},
 		},
 	})

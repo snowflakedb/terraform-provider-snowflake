@@ -62,11 +62,6 @@ func (f *FileFormatXmlResourceAssert) HasDisableAutoConvert(expected string) *Fi
 	return f
 }
 
-func (f *FileFormatXmlResourceAssert) HasDisableSnowflakeData(expected string) *FileFormatXmlResourceAssert {
-	f.StringValueSet("disable_snowflake_data", expected)
-	return f
-}
-
 func (f *FileFormatXmlResourceAssert) HasFullyQualifiedName(expected string) *FileFormatXmlResourceAssert {
 	f.StringValueSet("fully_qualified_name", expected)
 	return f
@@ -133,11 +128,6 @@ func (f *FileFormatXmlResourceAssert) HasCompressionString(expected string) *Fil
 
 func (f *FileFormatXmlResourceAssert) HasDisableAutoConvertString(expected string) *FileFormatXmlResourceAssert {
 	f.ValueSet("disable_auto_convert", expected)
-	return f
-}
-
-func (f *FileFormatXmlResourceAssert) HasDisableSnowflakeDataString(expected string) *FileFormatXmlResourceAssert {
-	f.ValueSet("disable_snowflake_data", expected)
 	return f
 }
 
@@ -210,11 +200,6 @@ func (f *FileFormatXmlResourceAssert) HasNoDisableAutoConvert() *FileFormatXmlRe
 	return f
 }
 
-func (f *FileFormatXmlResourceAssert) HasNoDisableSnowflakeData() *FileFormatXmlResourceAssert {
-	f.ValueNotSet("disable_snowflake_data")
-	return f
-}
-
 func (f *FileFormatXmlResourceAssert) HasNoFullyQualifiedName() *FileFormatXmlResourceAssert {
 	f.ValueNotSet("fully_qualified_name")
 	return f
@@ -266,11 +251,6 @@ func (f *FileFormatXmlResourceAssert) HasCompressionEmpty() *FileFormatXmlResour
 
 func (f *FileFormatXmlResourceAssert) HasDisableAutoConvertEmpty() *FileFormatXmlResourceAssert {
 	f.ValueSet("disable_auto_convert", "")
-	return f
-}
-
-func (f *FileFormatXmlResourceAssert) HasDisableSnowflakeDataEmpty() *FileFormatXmlResourceAssert {
-	f.ValueSet("disable_snowflake_data", "")
 	return f
 }
 
@@ -340,11 +320,6 @@ func (f *FileFormatXmlResourceAssert) HasCompressionNotEmpty() *FileFormatXmlRes
 
 func (f *FileFormatXmlResourceAssert) HasDisableAutoConvertNotEmpty() *FileFormatXmlResourceAssert {
 	f.ValuePresent("disable_auto_convert")
-	return f
-}
-
-func (f *FileFormatXmlResourceAssert) HasDisableSnowflakeDataNotEmpty() *FileFormatXmlResourceAssert {
-	f.ValuePresent("disable_snowflake_data")
 	return f
 }
 

@@ -31,10 +31,6 @@ var DescribeFileFormatXmlSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	"disable_snowflake_data": {
-		Type:     schema.TypeBool,
-		Computed: true,
-	},
 	"disable_auto_convert": {
 		Type:     schema.TypeBool,
 		Computed: true,

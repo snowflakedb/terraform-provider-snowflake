@@ -229,13 +229,6 @@ func xmlFileFormatFieldsSchema(prefix string) map[string]*schema.Schema {
 			ValidateDiagFunc: validateBooleanString,
 			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser strips out the outer XML element, exposing 2nd level elements as separate documents."),
 		},
-		"disable_snowflake_data": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser disables recognition of Snowflake semi-structured data tags."),
-		},
 		"disable_auto_convert": {
 			Type:             schema.TypeString,
 			Optional:         true,
