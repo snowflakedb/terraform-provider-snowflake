@@ -957,7 +957,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{
 						Value: String("\""),
 					},
-					NullIf:                     []NullString{{S: "NULL"}, {S: ""}},
+					NullIf:                     &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
 					ErrorOnColumnCountMismatch: Bool(true),
 					ReplaceInvalidCharacters:   Bool(true),
 					EmptyFieldAsNull:           Bool(true),

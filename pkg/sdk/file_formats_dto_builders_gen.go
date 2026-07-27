@@ -100,8 +100,8 @@ func (s *CreateCsvFileFormatRequest) WithFieldOptionallyEnclosedBy(fieldOptional
 	return s
 }
 
-func (s *CreateCsvFileFormatRequest) WithNullIf(nullIf []NullString) *CreateCsvFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateCsvFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateCsvFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -162,6 +162,16 @@ func (s *StageFileFormatStringOrAutoRequest) WithValue(value string) *StageFileF
 
 func (s *StageFileFormatStringOrAutoRequest) WithAuto(auto bool) *StageFileFormatStringOrAutoRequest {
 	s.Auto = &auto
+	return s
+}
+
+func NewNullIfListRequest() *NullIfListRequest {
+	s := NullIfListRequest{}
+	return &s
+}
+
+func (s *NullIfListRequest) WithNullIf(nullIf []NullString) *NullIfListRequest {
+	s.NullIf = nullIf
 	return s
 }
 
@@ -265,16 +275,6 @@ func (s *CreateJsonFileFormatRequest) WithSkipByteOrderMark(skipByteOrderMark bo
 
 func (s *CreateJsonFileFormatRequest) WithComment(comment string) *CreateJsonFileFormatRequest {
 	s.Comment = &comment
-	return s
-}
-
-func NewNullIfListRequest() *NullIfListRequest {
-	s := NullIfListRequest{}
-	return &s
-}
-
-func (s *NullIfListRequest) WithNullIf(nullIf []NullString) *NullIfListRequest {
-	s.NullIf = nullIf
 	return s
 }
 
@@ -593,8 +593,8 @@ func (s *AlterCsvFileFormatSetRequest) WithFieldOptionallyEnclosedBy(fieldOption
 	return s
 }
 
-func (s *AlterCsvFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterCsvFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterCsvFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterCsvFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 

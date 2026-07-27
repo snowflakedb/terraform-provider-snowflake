@@ -116,7 +116,7 @@ func TestFileFormats_CreateCsv(t *testing.T) {
 		opts.EscapeUnenclosedField = &StageFileFormatStringOrNone{Value: new("\\")}
 		opts.TrimSpace = new(true)
 		opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: new("\"")}
-		opts.NullIf = []NullString{{S: "NULL"}, {S: ""}}
+		opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}}
 		opts.ErrorOnColumnCountMismatch = new(true)
 		opts.ReplaceInvalidCharacters = new(true)
 		opts.EmptyFieldAsNull = new(true)
@@ -251,7 +251,7 @@ func TestFileFormats_AlterCsv(t *testing.T) {
 			EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: new("\\")},
 			TrimSpace:                  new(true),
 			FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: new("\"")},
-			NullIf:                     []NullString{{S: "NULL"}, {S: ""}},
+			NullIf:                     &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
 			ErrorOnColumnCountMismatch: new(true),
 			ReplaceInvalidCharacters:   new(true),
 			EmptyFieldAsNull:           new(true),
@@ -260,6 +260,14 @@ func TestFileFormats_AlterCsv(t *testing.T) {
 			Comment:                    new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8 COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("set NullIf to an empty list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterCsvFileFormatSet{
+			NullIf: &NullIfList{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s SET NULL_IF = ()`, id.FullyQualifiedName())
 	})
 }
 
