@@ -99,7 +99,7 @@ func stageFileFormatCsv(opts sdk.FileFormatCsvOptions) tfconfig.Variable {
 			csvMap["field_optionally_enclosed_by"] = tfconfig.StringVariable(*opts.FieldOptionallyEnclosedBy.Value)
 		}
 	}
-	if opts.NullIf != nil && len(opts.NullIf.NullIf) > 0 {
+	if opts.NullIf != nil {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
 		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
