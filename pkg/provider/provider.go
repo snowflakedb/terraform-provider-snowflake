@@ -72,6 +72,12 @@ func Provider() *schema.Provider {
 
 func GetProviderSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"account": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Specifies the Snowflake account identifier. Can be provided in the `org-name` format (e.g. `\"myorg-myaccount\"`) or as an account locator (e.g. `\"xy12345\"`). Use as a fallback when `account_name` and `organization_name` are not set. If both `account_name` and `organization_name` are set, they take precedence. Requires the [`PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`](../#provider_configuration_account_fallback) experiment to be enabled.", snowflakeenvs.Account),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Account, nil),
+		},
 		"account_name": {
 			Type:         schema.TypeString,
 			Description:  envNameFieldDescription("Specifies your Snowflake account name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#account-name). Required unless using `profile`.", snowflakeenvs.AccountName),
@@ -814,7 +820,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 	}
 
 	if v, ok := s.GetOk("profile"); ok && v.(string) != "" {
-		tomlConfig, err := GetDriverConfigFromTOML(v.(string), verifyPermissions, useLegacyTomlFile)
+		profile := v.(string)
+		rejectAccountField := !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments)
+		tomlConfig, err := GetDriverConfigFromTOML(profile, verifyPermissions, useLegacyTomlFile, rejectAccountField)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
@@ -894,11 +902,12 @@ func expandStringList(configured []any) []string {
 	return vs
 }
 
-func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile bool) (*gosnowflake.Config, error) {
+func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile, rejectAccountField bool) (*gosnowflake.Config, error) {
 	if profile == "default" {
 		return sdk.DefaultConfig(
 			sdk.WithVerifyPermissions(verifyPermissions),
 			sdk.WithUseLegacyTomlFormat(useLegacyTomlFile),
+			sdk.WithRejectAccountField(rejectAccountField),
 		), nil
 	}
 	path, err := sdk.GetConfigFileName()
@@ -910,6 +919,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 		profile,
 		sdk.WithVerifyPermissions(verifyPermissions),
 		sdk.WithUseLegacyTomlFormat(useLegacyTomlFile),
+		sdk.WithRejectAccountField(rejectAccountField),
 	)
 	if err != nil {
 		return nil, fmt.Errorf(`could not retrieve "%s" profile config from file %s: %w`, profile, path, err)
@@ -1025,10 +1035,23 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 	}
 
 	// account_name and organization_name override legacy account field
+	account := s.Get("account").(string)
 	accountName := s.Get("account_name").(string)
 	organizationName := s.Get("organization_name").(string)
-	if accountName != "" && organizationName != "" {
-		config.Account = strings.Join([]string{organizationName, accountName}, "-")
+
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments) {
+		if accountName != "" && organizationName != "" {
+			config.Account = fmt.Sprintf("%s-%s", organizationName, accountName)
+		} else if account != "" {
+			config.Account = account
+		}
+	} else {
+		if account != "" {
+			return nil, fmt.Errorf("the account field requires the %q experiment to be enabled; add it to experimental_features_enabled in provider configuration", experimentalfeatures.ProviderConfigurationAccountFallback)
+		}
+		if accountName != "" && organizationName != "" {
+			config.Account = strings.Join([]string{organizationName, accountName}, "-")
+		}
 	}
 
 	m := make(map[string]any)
