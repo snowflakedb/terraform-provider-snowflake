@@ -20,52 +20,52 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func fileFormatAvroSchema() map[string]*schema.Schema {
-	return collections.MergeMaps(fileFormatCommonSchema, avroFileFormatSchema(), avroDescOutputSchema())
+func fileFormatOrcSchema() map[string]*schema.Schema {
+	return collections.MergeMaps(fileFormatCommonSchema, orcFileFormatSchema(), orcDescOutputSchema())
 }
 
-func avroDescOutputSchema() map[string]*schema.Schema {
+func orcDescOutputSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		DescribeOutputAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,
 			Description: "Outputs the result of `DESCRIBE FILE FORMAT` for this file format.",
 			Elem: &schema.Resource{
-				Schema: schemas.DescribeFileFormatAvroSchema,
+				Schema: schemas.DescribeFileFormatOrcSchema,
 			},
 		},
 	}
 }
 
-func FileFormatAvro() *schema.Resource {
-	resourceSchema := fileFormatAvroSchema()
+func FileFormatOrc() *schema.Resource {
+	resourceSchema := fileFormatOrcSchema()
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingCreateWrapper(resources.FileFormatAvro, CreateFileFormatAvro)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingReadWrapper(resources.FileFormatAvro, GetReadFileFormatAvroFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingUpdateWrapper(resources.FileFormatAvro, UpdateFileFormatAvro)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingDeleteWrapper(resources.FileFormatAvro, fileFormatDeleteFunc)),
-		Description:   "Resource used to manage AVRO file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingCreateWrapper(resources.FileFormatOrc, CreateFileFormatOrc)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingReadWrapper(resources.FileFormatOrc, GetReadFileFormatOrcFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingUpdateWrapper(resources.FileFormatOrc, UpdateFileFormatOrc)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingDeleteWrapper(resources.FileFormatOrc, fileFormatDeleteFunc)),
+		Description:   "Resource used to manage ORC file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatAvro, customdiff.All(
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatOrc, customdiff.All(
 			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
-				"name", "type", "compression", "trim_space", "replace_invalid_characters", "null_if",
+				"name", "type", "trim_space", "replace_invalid_characters", "null_if",
 			),
 			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
-			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeAvro, sdk.ToFileFormatType),
+			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeOrc, sdk.ToFileFormatType),
 		)),
 
 		Schema: resourceSchema,
 		Importer: &schema.ResourceImporter{
-			StateContext: TrackingImportWrapper(resources.FileFormatAvro, ImportFileFormatAvro),
+			StateContext: TrackingImportWrapper(resources.FileFormatOrc, ImportFileFormatOrc),
 		},
 		Timeouts: defaultTimeouts,
 	}
 }
 
-func ImportFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+func ImportFileFormatOrc(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
@@ -73,12 +73,12 @@ func ImportFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 		return nil, err
 	}
 
-	details, err := client.FileFormats.DescribeAvroDetails(ctx, id)
+	details, err := client.FileFormats.DescribeOrcDetails(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if details.Type != string(sdk.FileFormatTypeAvro) {
-		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeAvro, details.Type)
+	if details.Type != string(sdk.FileFormatTypeOrc) {
+		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeOrc, details.Type)
 	}
 
 	var errs []error
@@ -86,7 +86,7 @@ func ImportFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 		errs = append(errs, err)
 	}
 
-	for key, value := range avroFileFormatToSchema(details, true) {
+	for key, value := range orcFileFormatToSchema(details, true) {
 		errs = append(errs, d.Set(key, value))
 	}
 	if len(errs) > 0 {
@@ -96,7 +96,7 @@ func ImportFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func CreateFileFormatOrc(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	databaseName := d.Get("database").(string)
@@ -104,34 +104,27 @@ func CreateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 	name := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
 
-	request := sdk.NewCreateAvroFileFormatRequest(id)
+	request := sdk.NewCreateOrcFileFormatRequest(id)
 
 	errs := errors.Join(
-		attributeMappedValueCreateBuilder(d, "compression", request.WithCompression, sdk.ToAvroCompression),
 		booleanStringAttributeCreateBuilder(d, "trim_space", request.WithTrimSpace),
 		booleanStringAttributeCreateBuilder(d, "replace_invalid_characters", request.WithReplaceInvalidCharacters),
-		attributeMappedValueCreateBuilder(d, "null_if", request.WithNullIf, func(v any) (sdk.NullIfListRequest, error) {
-			nullIf, err := parseNullIf(v)
-			if err != nil {
-				return sdk.NullIfListRequest{}, err
-			}
-			return *sdk.NewNullIfListRequest().WithNullIf(nullIf), nil
-		}),
+		attributeMappedValueCreateBuilder(d, "null_if", request.WithNullIf, parseNullIfRequest),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
 
-	if err := client.FileFormats.CreateAvro(ctx, request); err != nil {
+	if err := client.FileFormats.CreateOrc(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-	return GetReadFileFormatAvroFunc(false)(ctx, d, meta)
+	return GetReadFileFormatOrcFunc(false)(ctx, d, meta)
 }
 
-func GetReadFileFormatAvroFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
+func GetReadFileFormatOrcFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
@@ -154,15 +147,15 @@ func GetReadFileFormatAvroFunc(withExternalChangesMarking bool) schema.ReadConte
 			return diag.FromErr(err)
 		}
 
-		details, err := client.FileFormats.DescribeAvroDetails(ctx, id)
+		details, err := client.FileFormats.DescribeOrcDetails(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		describeOutputValues := schemas.FileFormatAvroToSchema(details)
+		describeOutputValues := schemas.FileFormatOrcToSchema(details)
 
 		if withExternalChangesMarking {
-			valuesToSet := avroFileFormatToSchema(details, false)
+			valuesToSet := orcFileFormatToSchema(details, false)
 			mappings := collections.Map(slices.Collect(maps.Keys(valuesToSet)), func(key string) outputMapping {
 				return outputMapping{key, key, describeOutputValues[key], valuesToSet[key], nil}
 			})
@@ -185,7 +178,7 @@ func GetReadFileFormatAvroFunc(withExternalChangesMarking bool) schema.ReadConte
 	}
 }
 
-func UpdateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func UpdateFileFormatOrc(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
@@ -195,7 +188,7 @@ func UpdateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		if err := client.FileFormats.AlterAvro(ctx, sdk.NewAlterAvroFileFormatRequest(id).WithRenameTo(newId)); err != nil {
+		if err := client.FileFormats.AlterOrc(ctx, sdk.NewAlterOrcFileFormatRequest(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming file format: %w", err))
 		}
 
@@ -203,10 +196,9 @@ func UpdateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 		id = newId
 	}
 
-	set := sdk.NewAlterAvroFileFormatSetRequest()
+	set := sdk.NewAlterOrcFileFormatSetRequest()
 
 	errs := errors.Join(
-		attributeMappedValueUpdateSetOnlyFallback(d, "compression", &set.Compression, sdk.ToAvroCompression, sdk.AvroCompressionAuto),
 		booleanStringAttributeUnsetFallbackUpdate(d, "trim_space", &set.TrimSpace, false),
 		booleanStringAttributeUnsetFallbackUpdate(d, "replace_invalid_characters", &set.ReplaceInvalidCharacters, false),
 		attributeMappedValueUpdateSetOnlyFallback(d, "null_if", &set.NullIf, parseNullIfRequest, *sdk.NewNullIfListRequest()),
@@ -216,27 +208,26 @@ func UpdateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(errs)
 	}
 
-	if !reflect.DeepEqual(set, sdk.NewAlterAvroFileFormatSetRequest()) {
-		if err := client.FileFormats.AlterAvro(ctx, sdk.NewAlterAvroFileFormatRequest(id).WithSet(*set)); err != nil {
+	if !reflect.DeepEqual(set, sdk.NewAlterOrcFileFormatSetRequest()) {
+		if err := client.FileFormats.AlterOrc(ctx, sdk.NewAlterOrcFileFormatRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	return GetReadFileFormatAvroFunc(false)(ctx, d, meta)
+	return GetReadFileFormatOrcFunc(false)(ctx, d, meta)
 }
 
-// avroFileFormatToSchema converts the SDK details for an AVRO file format to a Terraform schema.
-func avroFileFormatToSchema(avro *sdk.FileFormatAvro, setDefaults bool) map[string]any {
+// orcFileFormatToSchema converts the SDK details for an ORC file format to a Terraform schema.
+func orcFileFormatToSchema(orc *sdk.FileFormatOrc, setDefaults bool) map[string]any {
 	state := map[string]any{
-		"compression": avro.Compression,
-		"null_if":     collections.Map(avro.NullIf, func(v string) any { return v }),
+		"null_if": collections.Map(orc.NullIf, func(v string) any { return v }),
 	}
 	if setDefaults {
 		state["trim_space"] = BooleanDefault
 		state["replace_invalid_characters"] = BooleanDefault
 	} else {
-		state["trim_space"] = booleanStringFromBool(avro.TrimSpace)
-		state["replace_invalid_characters"] = booleanStringFromBool(avro.ReplaceInvalidCharacters)
+		state["trim_space"] = booleanStringFromBool(orc.TrimSpace)
+		state["replace_invalid_characters"] = booleanStringFromBool(orc.ReplaceInvalidCharacters)
 	}
 	return state
 }

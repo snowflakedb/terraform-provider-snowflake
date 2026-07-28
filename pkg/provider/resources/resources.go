@@ -50,6 +50,7 @@ const (
 	FileFormat                                             resource = "snowflake_file_format"
 	FileFormatAvro                                         resource = "snowflake_file_format_avro"
 	FileFormatJson                                         resource = "snowflake_file_format_json"
+	FileFormatOrc                                          resource = "snowflake_file_format_orc"
 	FunctionJava                                           resource = "snowflake_function_java"
 	FunctionJavascript                                     resource = "snowflake_function_javascript"
 	FunctionPython                                         resource = "snowflake_function_python"

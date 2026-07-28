@@ -65,6 +65,7 @@ var RepositoryLabels = []string{
 	"resource:file_format",
 	"resource:file_format_avro",
 	"resource:file_format_json",
+	"resource:file_format_orc",
 	"resource:function",
 	"resource:function_java",
 	"resource:function_javascript",
