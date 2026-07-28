@@ -966,6 +966,23 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "InteractiveTable",
+			objectType: sdk.ObjectTypeInteractiveTable,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				return testClientHelper().Table.CreateInteractiveTable(t)
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				setTags := make([]sdk.TagAssociationRequest, len(tags))
+				for i, tag := range tags {
+					setTags[i] = *sdk.NewTagAssociationRequest(tag.Name, tag.Value)
+				}
+				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(setTags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "Task",
 			objectType: sdk.ObjectTypeTask,
 			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {

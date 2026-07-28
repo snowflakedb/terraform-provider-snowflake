@@ -32,15 +32,24 @@ func (c *TableClient) Create(t *testing.T) (*sdk.Table, func()) {
 	return c.CreateInSchema(t, c.ids.SchemaId())
 }
 
+// TODO: Replace with a proper SDK type during interactive table resource implementation.
+type InteractiveTable struct {
+	id sdk.SchemaObjectIdentifier
+}
+
+func (it *InteractiveTable) ID() sdk.SchemaObjectIdentifier {
+	return it.id
+}
+
 // CreateInteractiveTable creates an interactive table (required for associating with interactive warehouses)
-// via raw SQL, since the SDK does not model interactive tables. It returns the table id and a cleanup.
-func (c *TableClient) CreateInteractiveTable(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+// via raw SQL, since the SDK does not model interactive tables.
+func (c *TableClient) CreateInteractiveTable(t *testing.T) (*InteractiveTable, func()) {
 	t.Helper()
 	ctx := context.Background()
 	id := c.ids.RandomSchemaObjectIdentifier()
 	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`CREATE INTERACTIVE TABLE %s (id INT) CLUSTER BY (id)`, id.FullyQualifiedName()))
 	require.NoError(t, err)
-	return id, func() {
+	return &InteractiveTable{id: id}, func() {
 		_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`DROP TABLE IF EXISTS %s`, id.FullyQualifiedName()))
 		require.NoError(t, err)
 	}

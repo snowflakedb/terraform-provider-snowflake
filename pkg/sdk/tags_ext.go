@@ -100,7 +100,13 @@ func (r *UnsetTagRequest) adjust() {
 
 // normalizeTagObjectType maps object types to the types Snowflake expects in ALTER ... SET/UNSET TAG.
 func normalizeTagObjectType(objectType *ObjectType) {
-	if slices.Contains([]ObjectType{ObjectTypeView, ObjectTypeMaterializedView, ObjectTypeExternalTable, ObjectTypeEventTable}, *objectType) {
+	if slices.Contains([]ObjectType{
+		ObjectTypeView,
+		ObjectTypeMaterializedView,
+		ObjectTypeExternalTable,
+		ObjectTypeEventTable,
+		ObjectTypeInteractiveTable,
+	}, *objectType) {
 		*objectType = ObjectTypeTable
 	}
 	if slices.Contains([]ObjectType{ObjectTypeExternalFunction}, *objectType) {

@@ -281,7 +281,7 @@ func TestAcc_Warehouses_CompleteUseCase_InteractiveWarehouse(t *testing.T) {
 		WithMaxConcurrencyLevel(4).
 		WithStatementQueuedTimeoutInSeconds(30).
 		WithStatementTimeoutInSeconds(45).
-		WithTables(interactiveTable.FullyQualifiedName())
+		WithTables(interactiveTable.ID().FullyQualifiedName())
 
 	warehousesModelWithoutOptionals := datasourcemodel.Warehouses("test").
 		WithLike(id.Name()).
@@ -319,7 +319,7 @@ func TestAcc_Warehouses_CompleteUseCase_InteractiveWarehouse(t *testing.T) {
 			HasGenerationEmpty().
 			HasMaxQueryPerformanceLevelEmpty().
 			HasQueryThroughputMultiplier(0).
-			HasTables(interactiveTable.FullyQualifiedName())
+			HasTables(interactiveTable.ID().FullyQualifiedName())
 	}
 
 	resource.Test(t, resource.TestCase{
