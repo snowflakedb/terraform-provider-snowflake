@@ -697,16 +697,34 @@ func CheckUserPasswordPolicyAttachmentDestroy(t *testing.T) func(*terraform.Stat
 	return checkUserPolicyAttachmentDestroy(t, resources.UserPasswordPolicyAttachment, sdk.PolicyKindPasswordPolicy)
 }
 
+// CheckAccountPasswordPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
+func CheckAccountPasswordPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkAccountPolicyAttachmentDestroy(t, resources.AccountPasswordPolicyAttachment, sdk.PolicyKindPasswordPolicy)
+}
+
 // CheckUserAuthenticationPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
 func CheckUserAuthenticationPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
 	return checkUserPolicyAttachmentDestroy(t, resources.UserAuthenticationPolicyAttachment, sdk.PolicyKindAuthenticationPolicy)
 }
 
+// CheckAccountAuthenticationPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
+func CheckAccountAuthenticationPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkAccountPolicyAttachmentDestroy(t, resources.AccountAuthenticationPolicyAttachment, sdk.PolicyKindAuthenticationPolicy)
+}
+
 // CheckUserSessionPolicyAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy
 func CheckUserSessionPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
 	return checkUserPolicyAttachmentDestroy(t, resources.UserSessionPolicyAttachment, sdk.PolicyKindSessionPolicy)
+}
+
+// CheckAccountSessionPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
+func CheckAccountSessionPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkAccountPolicyAttachmentDestroy(t, resources.AccountSessionPolicyAttachment, sdk.PolicyKindSessionPolicy)
 }
 
 // CheckTableStorageLifecyclePolicyAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy
@@ -876,6 +894,13 @@ func checkUserPolicyAttachmentDestroy(t *testing.T, resource resources.Resource,
 	return checkPolicyAttachmentDestroy(t, resource, func(rs *terraform.ResourceState) (sdk.ObjectIdentifier, error) {
 		return sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), nil
 	}, sdk.PolicyEntityDomainUser, policyKind)
+}
+
+func checkAccountPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, policyKind sdk.PolicyKind) func(*terraform.State) error {
+	t.Helper()
+	return checkPolicyAttachmentDestroy(t, resource, func(_ *terraform.ResourceState) (sdk.ObjectIdentifier, error) {
+		return sdk.NewAccountIdentifierFromAccountLocator(testClient().GetAccountLocator()), nil
+	}, sdk.PolicyEntityDomainAccount, policyKind)
 }
 
 func checkPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, getEntityId func(rs *terraform.ResourceState) (sdk.ObjectIdentifier, error), entityDomain sdk.PolicyEntityDomain, policyKind sdk.PolicyKind) func(*terraform.State) error {
