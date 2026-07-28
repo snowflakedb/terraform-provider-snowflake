@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"regexp"
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -564,6 +565,175 @@ func TestAcc_FileFormatCsv_Validations(t *testing.T) {
 				Config:      config.FromModels(t, conflictingHeaderFields),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`skip_header.*conflicts with\s+parse_header`),
+			},
+		},
+	})
+}
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/discussions/1950:
+// an explicitly empty null_if list results in NULL_IF = () instead of Snowflake's default of (\\N).
+func TestAcc_FileFormatCsv_EmptyNullIf(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	emptyModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithNullIf()
+	nonEmptyModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithNullIf("NULL_A")
+	ref := emptyModel.ResourceReference()
+
+	emptyAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.FileFormatCsvResource(t, ref).
+			HasNameString(id.Name()).
+			HasNullIfEmpty(),
+		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
+			HasId(id).
+			// an empty describe output means NULL_IF = () was set; without null_if in the config,
+			// Snowflake's default is used instead and the describe output contains a single \\N entry
+			HasNullIf(),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FileFormatCsv),
+		Steps: []resource.TestStep{
+			// create with an explicitly empty null_if
+			{
+				Config: config.FromModels(t, emptyModel),
+				Check:  assertThat(t, emptyAssertions...),
+			},
+			// no drift
+			{
+				Config: config.FromModels(t, emptyModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			// import
+			{
+				Config:                  config.FromModels(t, emptyModel),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: fileFormatCsvImportStateVerifyIgnore,
+			},
+			// change to a non-empty null_if
+			{
+				Config: config.FromModels(t, nonEmptyModel),
+				Check: assertThat(
+					t,
+					resourceassert.FileFormatCsvResource(t, ref).
+						HasNullIf("NULL_A"),
+					resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
+						HasNullIf("NULL_A"),
+				),
+			},
+			// change back to an empty null_if
+			{
+				Config: config.FromModels(t, emptyModel),
+				Check:  assertThat(t, emptyAssertions...),
+			},
+			// no drift after going back to an empty null_if
+			{
+				Config: config.FromModels(t, emptyModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+		},
+	})
+}
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/3325:
+// a null_if list containing an empty string results in NULL_IF with an empty string entry
+// and does not cause a permanent plan.
+// Note that DESCRIBE FILE FORMAT returns an empty list both for a null_if list with a single empty string
+// and for an empty null_if list, so a lone empty string can not be read back from the describe output.
+func TestAcc_FileFormatCsv_NullIfWithEmptyString(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	emptyStringModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithNullIf("")
+	withEmptyStringModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithNullIf("NULL_A", "")
+	ref := emptyStringModel.ResourceReference()
+
+	emptyStringAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.FileFormatCsvResource(t, ref).
+			HasNameString(id.Name()).
+			HasNullIf(""),
+		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
+			HasId(id).
+			// surprising, but correct: Snowflake reduces a single empty string to an empty list in the describe
+			// output, so this is exactly what TestAcc_FileFormatCsv_EmptyNullIf asserts for an empty null_if
+			HasNullIf(),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FileFormatCsv),
+		Steps: []resource.TestStep{
+			// create with null_if containing only an empty string
+			{
+				Config: config.FromModels(t, emptyStringModel),
+				Check:  assertThat(t, emptyStringAssertions...),
+			},
+			// no drift
+			{
+				Config: config.FromModels(t, emptyStringModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			// import; null_if is ignored because it is read from the describe output, which does not contain
+			// the empty string, so the imported value is an empty list
+			{
+				Config:                  config.FromModels(t, emptyStringModel),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: slices.Concat(fileFormatCsvImportStateVerifyIgnore, []string{"null_if.#", "null_if.0"}),
+			},
+			// an empty string mixed with a regular value is visible in the describe output
+			{
+				Config: config.FromModels(t, withEmptyStringModel),
+				Check: assertThat(
+					t,
+					resourceassert.FileFormatCsvResource(t, ref).
+						HasNullIf("NULL_A", ""),
+					resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
+						HasNullIf("NULL_A", ""),
+				),
+			},
+			// no drift
+			{
+				Config: config.FromModels(t, withEmptyStringModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			// external change is detected and reverted; note that changing null_if to an empty list externally
+			// would not be detected, because both values have the same describe output
+			{
+				PreConfig: func() {
+					testClient().FileFormat.AlterCsv(t, sdk.NewAlterCsvFileFormatRequest(id).WithSet(
+						*sdk.NewAlterCsvFileFormatSetRequest().WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL_B"}})),
+					))
+				},
+				Config: config.FromModels(t, emptyStringModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectNonEmptyPlan()},
+				},
+				Check: assertThat(t, emptyStringAssertions...),
 			},
 		},
 	})
