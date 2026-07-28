@@ -122,4 +122,11 @@ Without this experiment, the provider automatically sets the authenticator to `O
 
 When enabled, the `authenticator` field must be set explicitly in the provider configuration or TOML profile. The `SNOWFLAKE` default (when no authenticator is configured anywhere) is preserved.
 
+#### PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK
+Re-introduces the `account` field as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.
+
+When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence over `account`.
+
+Without this experiment, using the `account` field results in an error directing you to enable this experiment.
+
 

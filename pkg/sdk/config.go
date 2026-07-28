@@ -25,12 +25,14 @@ import (
 type ConfigProvider interface {
 	*ConfigDTO | *LegacyConfigDTO
 	DriverConfig() (gosnowflake.Config, error)
+	HasAccountField() bool
 }
 
 // FileReaderConfig is a struct that holds the configuration for the file reader.
 type FileReaderConfig struct {
 	verifyPermissions   bool
 	useLegacyTomlFormat bool
+	rejectAccountField  bool
 }
 
 func WithVerifyPermissions(verifyPermissions bool) func(*FileReaderConfig) {
@@ -42,6 +44,12 @@ func WithVerifyPermissions(verifyPermissions bool) func(*FileReaderConfig) {
 func WithUseLegacyTomlFormat(useLegacyTomlFormat bool) func(*FileReaderConfig) {
 	return func(c *FileReaderConfig) {
 		c.useLegacyTomlFormat = useLegacyTomlFormat
+	}
+}
+
+func WithRejectAccountField(reject bool) func(*FileReaderConfig) {
+	return func(c *FileReaderConfig) {
+		c.rejectAccountField = reject
 	}
 }
 
@@ -73,9 +81,9 @@ func ProfileConfig(profile string, opts ...func(*FileReaderConfig)) (*gosnowflak
 	log.Printf("[DEBUG] Retrieving %s profile from a TOML file", profile)
 	var config *gosnowflake.Config
 	if cfg.useLegacyTomlFormat {
-		config, err = LoadProfileFromFile[*LegacyConfigDTO](profile, path, cfg.verifyPermissions)
+		config, err = LoadProfileFromFile[*LegacyConfigDTO](profile, path, cfg.verifyPermissions, cfg.rejectAccountField)
 	} else {
-		config, err = LoadProfileFromFile[*ConfigDTO](profile, path, cfg.verifyPermissions)
+		config, err = LoadProfileFromFile[*ConfigDTO](profile, path, cfg.verifyPermissions, cfg.rejectAccountField)
 	}
 	if err != nil {
 		return nil, err
@@ -97,8 +105,11 @@ func ProfileConfig(profile string, opts ...func(*FileReaderConfig)) (*gosnowflak
 
 func (c *ConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	driverCfg := EmptyDriverConfig()
-	if c.AccountName != nil && c.OrganizationName != nil {
+	switch {
+	case c.AccountName != nil && c.OrganizationName != nil:
 		driverCfg.Account = fmt.Sprintf("%s-%s", *c.OrganizationName, *c.AccountName)
+	case c.Account != nil:
+		driverCfg.Account = *c.Account
 	}
 	pointerAttributeSet(c.User, &driverCfg.User)
 	pointerAttributeSet(c.Username, &driverCfg.User)
@@ -469,13 +480,16 @@ func pointerIpAttributeSet(src *string, dst *net.IP) {
 }
 
 // LoadProfileFromFile loads a config file from the path and returns a ready configuration.
-func LoadProfileFromFile[T ConfigProvider](profile string, path string, verifyPermissions bool) (*gosnowflake.Config, error) {
+func LoadProfileFromFile[T ConfigProvider](profile string, path string, verifyPermissions bool, rejectAccountField bool) (*gosnowflake.Config, error) {
 	configs, err := LoadConfigFile[T](path, verifyPermissions)
 	if err != nil {
 		return nil, fmt.Errorf("could not load config file: %w", err)
 	}
 	if cfg, ok := configs[profile]; ok {
 		log.Printf("[DEBUG] Loading config for profile: \"%s\"", profile)
+		if rejectAccountField && cfg.HasAccountField() {
+			return nil, fmt.Errorf("the account field in TOML profile %q requires the \"PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK\" experiment to be enabled; add it to experimental_features_enabled in provider configuration", profile)
+		}
 		driverCfg, err := cfg.DriverConfig()
 		if err != nil {
 			return nil, fmt.Errorf("converting profile \"%s\" in file %s failed: %w", profile, path, err)

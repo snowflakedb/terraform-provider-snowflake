@@ -39,6 +39,7 @@ References: [#5020](https://github.com/snowflakedb/terraform-provider-snowflake/
 
 We have added new preview resources for file formats:
 - [snowflake_file_format_json](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json) for managing JSON file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_json_resource` feature name.
+- [snowflake_file_format_avro](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro) for managing AVRO file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_avro_resource` feature name.
 
 These features will be marked as stable in future releases. To use them, add the relevant feature name to the `preview_features_enabled` field in the provider configuration.
 
@@ -101,6 +102,22 @@ Notes (both resources):
 - `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
 
 All changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
+
+### *(new feature)* PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK experiment
+
+A new `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` experiment has been added. When enabled, the `account` field is available as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.
+
+Previously, the provider required both `organization_name` and `account_name` to be set. With this experiment, you can set `account` as a single-field alternative. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence.
+
+Without this experiment, using the `account` field (in provider config or TOML) results in an error directing you to enable the experiment.
+
+To enable, add `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK"]
+  account = "myorg-myaccount"
+}
+```
 
 ### *(new feature)* AUTHENTICATOR_EXPLICIT_ONLY experiment
 
