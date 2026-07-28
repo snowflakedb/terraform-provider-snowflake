@@ -332,6 +332,8 @@ func FileFormat() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		DeprecationMessage: deprecatedResourceDescription(string(resources.FileFormatCsv), string(resources.FileFormatJson), string(resources.FileFormatAvro), string(resources.FileFormatOrc), string(resources.FileFormatParquet), string(resources.FileFormatXml)),
+
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatResource), TrackingCreateWrapper(resources.FileFormat, CreateFileFormat)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatResource), TrackingReadWrapper(resources.FileFormat, ReadFileFormat)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatResource), TrackingUpdateWrapper(resources.FileFormat, UpdateFileFormat)),

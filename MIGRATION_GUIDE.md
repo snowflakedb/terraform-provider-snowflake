@@ -47,6 +47,22 @@ We have added new preview resources for file formats:
 
 These features will be marked as stable in future releases. To use them, add the relevant feature name to the `preview_features_enabled` field in the provider configuration.
 
+#### *(deprecation)* `snowflake_file_format` resource deprecated
+
+Following the introduction of the new file format resources described above, the existing [`snowflake_file_format`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format) resource has been deprecated. It will be removed in a future major version release.
+
+The old resource handled every file format type with one schema containing the fields of all types, which made the configuration error-prone. Each new resource manages a single type, so its schema contains only the fields valid for that type, and it adheres to our [new conventions](#general-changes).
+
+Please migrate to the resource matching the `type` of your file format.
+
+Notes when migrating:
+- the `type` field is only used to detect external changes in the new resources, as each of them manages a single type;
+- each new resource's schema contains only the fields valid for the given type;
+- non-settable attributes were moved to `show_output` and `describe_output`;
+- to achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
+
+No immediate action is required - the deprecated resource still works, but you will see a deprecation warning in the plan output until you migrate.
+
 ### *(new feature)* `aws_sns_topic` added to `snowflake_stage_external_s3` directory table options
 
 The [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3) resource now supports the `aws_sns_topic` attribute inside the `directory` block. It specifies the AWS SNS topic ARN used to trigger automatic directory table refreshes. This attribute is S3-specific (not available on S3-compatible stages) and causes resource recreation when changed (`ForceNew`).
