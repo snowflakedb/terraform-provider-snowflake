@@ -70,6 +70,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_file_format_resource", want: FileFormatResource},
 		{input: "snowflake_file_format_avro_resource", want: FileFormatAvroResource},
 		{input: "snowflake_file_format_json_resource", want: FileFormatJsonResource},
+		{input: "snowflake_file_format_xml_resource", want: FileFormatXmlResource},
 		{input: "snowflake_file_formats_datasource", want: FileFormatsDatasource},
 		{input: "snowflake_function_java_resource", want: FunctionJavaResource},
 		{input: "snowflake_function_javascript_resource", want: FunctionJavascriptResource},

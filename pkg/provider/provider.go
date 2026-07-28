@@ -636,6 +636,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_file_format_avro":                                             resources.FileFormatAvro(),
 		"snowflake_file_format_json":                                             resources.FileFormatJson(),
 		"snowflake_file_format_orc":                                              resources.FileFormatOrc(),
+		"snowflake_file_format_xml":                                              resources.FileFormatXml(),
 		"snowflake_function_java":                                                resources.FunctionJava(),
 		"snowflake_function_javascript":                                          resources.FunctionJavascript(),
 		"snowflake_function_python":                                              resources.FunctionPython(),
