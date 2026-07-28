@@ -19,7 +19,6 @@
 - [snowflake_listings](./docs/data-sources/listings)
 - [snowflake_materialized_views](./docs/data-sources/materialized_views)
 - [snowflake_mcp_servers](./docs/data-sources/mcp_servers)
-- [snowflake_network_rules](./docs/data-sources/network_rules)
 - [snowflake_notebooks](./docs/data-sources/notebooks)
 - [snowflake_parameters](./docs/data-sources/parameters)
 - [snowflake_pipes](./docs/data-sources/pipes)
