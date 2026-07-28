@@ -13,6 +13,8 @@ description: |-
 
 ~> **Note** A file format cannot be dropped successfully if it has dependent external tables. Before dropping the resource, first drop the dependent external tables manually.
 
+~> **Note** Snowflake returns the same `DESCRIBE FILE FORMAT` output for `null_if` set to an empty list and for `null_if` set to a list with a single empty string. Because of that, the provider cannot detect an external change between these two values, and `describe_output.null_if` is empty in both cases.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
