@@ -332,7 +332,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 	t.Run("on schema object: interactive table", func(t *testing.T) {
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
-		interactiveTableId, interactiveTableCleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		interactiveTable, interactiveTableCleanup := testClientHelper().Table.CreateInteractiveTable(t)
 		t.Cleanup(interactiveTableCleanup)
 
 		privileges := &sdk.AccountRoleGrantPrivileges{
@@ -342,7 +342,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 			SchemaObject: &sdk.GrantOnSchemaObject{
 				SchemaObject: &sdk.Object{
 					ObjectType: sdk.ObjectTypeInteractiveTable,
-					Name:       interactiveTableId,
+					Name:       interactiveTable.ID(),
 				},
 			},
 		}
@@ -359,7 +359,7 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		assert.Equal(t, sdk.ObjectTypeInteractiveTable, grants[0].GrantedOn)
 		assert.Equal(t, sdk.ObjectTypeRole, grants[0].GrantedTo)
 		assert.Equal(t, roleTest.ID().Name(), grants[0].GranteeName.Name())
-		assert.Equal(t, interactiveTableId.FullyQualifiedName(), grants[0].Name.FullyQualifiedName())
+		assert.Equal(t, interactiveTable.ID().FullyQualifiedName(), grants[0].Name.FullyQualifiedName())
 		assert.False(t, grants[0].GrantOption)
 
 		// now revoke and verify that the grant(s) are gone
@@ -1672,10 +1672,10 @@ func TestInt_GrantOwnership(t *testing.T) {
 		role, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
 
-		interactiveTableId, interactiveTableCleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		interactiveTable, interactiveTableCleanup := testClientHelper().Table.CreateInteractiveTable(t)
 		t.Cleanup(interactiveTableCleanup)
 
-		on := ownershipGrantOnObject(sdk.ObjectTypeInteractiveTable, interactiveTableId)
+		on := ownershipGrantOnObject(sdk.ObjectTypeInteractiveTable, interactiveTable.ID())
 
 		err := client.Grants.GrantOwnership(
 			ctx,
