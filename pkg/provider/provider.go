@@ -415,8 +415,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations).", snowflakeenvs.SkipTomlFilePermissionVerification),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations).", snowflakeenvs.SkipTomlFilePermissionVerification),
 			Optional:    true,
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Skipping TOML configuration file permission verification will be disallowed in the next major release. Make sure the TOML configuration file permissions are set correctly before removing this flag.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.SkipTomlFilePermissionVerification, false),
 		},
 		"use_legacy_toml_file": {
