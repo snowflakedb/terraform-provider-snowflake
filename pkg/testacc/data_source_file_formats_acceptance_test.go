@@ -155,21 +155,19 @@ func TestAcc_FileFormats_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.id", id.FullyQualifiedName())),
 					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.type", string(sdk.FileFormatTypeCsv))),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.csv.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.csv.0.compression", string(sdk.CsvCompressionGzip))),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.csv.0.field_delimiter", ";")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.json.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.avro.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.orc.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.parquet.#", "0")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.xml.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.compression", string(sdk.CsvCompressionGzip))),
+					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.field_delimiter", ";")),
+					// the fields that are not applicable to the CSV file format type are not filled
+					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.strip_outer_array", "false")),
+					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.use_vectorized_scanner", "false")),
+					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.preserve_space", "false")),
 				),
 			},
 		},
 	})
 }
 
-// TestAcc_FileFormats_AllTypes checks that the type-specific describe output is filled for every supported file format type.
+// TestAcc_FileFormats_AllTypes checks that the describe output is filled for every supported file format type.
 func TestAcc_FileFormats_AllTypes(t *testing.T) {
 	prefix := random.AlphaN(4)
 	schemaId := testClient().Ids.SchemaId()
@@ -216,12 +214,16 @@ func TestAcc_FileFormats_AllTypes(t *testing.T) {
 				Config: accconfig.FromModels(t, csvModel, jsonModel, avroModel, orcModel, parquetModel, xmlModel, fileFormats),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), "file_formats.#", "6"),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.csv.#", indexOf(csvId)), "1"),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.json.#", indexOf(jsonId)), "1"),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.avro.#", indexOf(avroId)), "1"),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.orc.#", indexOf(orcId)), "1"),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.parquet.#", indexOf(parquetId)), "1"),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.xml.#", indexOf(xmlId)), "1"),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(csvId)), string(sdk.FileFormatTypeCsv)),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(jsonId)), string(sdk.FileFormatTypeJson)),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(avroId)), string(sdk.FileFormatTypeAvro)),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(orcId)), string(sdk.FileFormatTypeOrc)),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(parquetId)), string(sdk.FileFormatTypeParquet)),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(xmlId)), string(sdk.FileFormatTypeXml)),
+					// only the fields applicable to the given file format type are filled
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.field_delimiter", indexOf(csvId)), ","),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.field_delimiter", indexOf(jsonId)), ""),
+					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.field_delimiter", indexOf(xmlId)), ""),
 				),
 			},
 		},

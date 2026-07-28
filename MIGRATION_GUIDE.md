@@ -100,7 +100,7 @@ data "snowflake_file_formats" "current" {
 
 The output format is also changed. Now, all data is nested in `file_formats.show_output`, and in `file_formats.describe_output` if `with_describe` is set to `true` (default). The previously returned `name`, `database`, `schema`, `comment`, and `format_type` fields are gone; use `show_output.0.name`, `show_output.0.database_name`, `show_output.0.schema_name`, `show_output.0.comment`, and `show_output.0.type` instead.
 
-Because `DESCRIBE FILE FORMAT` returns a different set of properties for every file format type, the type-specific properties in `describe_output` are nested in a block named after the file format type (`csv`, `json`, `avro`, `orc`, `parquet`, or `xml`); only the block matching the file format's type is filled.
+Because `DESCRIBE FILE FORMAT` returns a different set of properties for every file format type, `describe_output` contains a union of the properties of all the file format types; only the fields applicable to the given file format's type are filled (the remaining ones have zero values).
 
 Before:
 
@@ -117,7 +117,7 @@ output "simple_output" {
 }
 
 output "describe_output" {
-  value = data.snowflake_file_formats.test.file_formats[0].describe_output[0].csv[0].field_delimiter # Only for CSV file formats.
+  value = data.snowflake_file_formats.test.file_formats[0].describe_output[0].field_delimiter # Filled only for CSV file formats.
 }
 ```
 

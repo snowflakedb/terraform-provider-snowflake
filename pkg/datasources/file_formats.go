@@ -39,9 +39,9 @@ var fileFormatsSchema = map[string]*schema.Schema{
 				resources.DescribeOutputAttributeName: {
 					Type:        schema.TypeList,
 					Computed:    true,
-					Description: "Holds the output of DESCRIBE FILE FORMAT. Because every file format type returns a different set of properties, the type-specific properties are nested under the field named after the file format type (only one of them is filled at a time).",
+					Description: "Holds the output of DESCRIBE FILE FORMAT. Because every file format type returns a different set of properties, this is a union of the properties of all the file format types; only the fields applicable to the given file format type are filled.",
 					Elem: &schema.Resource{
-						Schema: schemas.FileFormatsDatasourceDescribeSchema(),
+						Schema: schemas.DescribeFileFormatAllDetailsSchema,
 					},
 				},
 			},
