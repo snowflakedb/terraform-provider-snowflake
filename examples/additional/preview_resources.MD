@@ -26,6 +26,7 @@
 - [snowflake_file_format_csv](./docs/resources/file_format_csv)
 - [snowflake_file_format_json](./docs/resources/file_format_json)
 - [snowflake_file_format_orc](./docs/resources/file_format_orc)
+- [snowflake_file_format_parquet](./docs/resources/file_format_parquet)
 - [snowflake_file_format_xml](./docs/resources/file_format_xml)
 - [snowflake_function_java](./docs/resources/function_java)
 - [snowflake_function_javascript](./docs/resources/function_javascript)

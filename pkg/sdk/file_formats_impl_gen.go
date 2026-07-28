@@ -290,8 +290,12 @@ func (r *CreateParquetFileFormatRequest) toOpts() *CreateParquetFileFormatOption
 		TrimSpace:                r.TrimSpace,
 		UseVectorizedScanner:     r.UseVectorizedScanner,
 		ReplaceInvalidCharacters: r.ReplaceInvalidCharacters,
-		NullIf:                   r.NullIf,
 		Comment:                  r.Comment,
+	}
+	if r.NullIf != nil {
+		opts.NullIf = &NullIfList{
+			NullIf: r.NullIf.NullIf,
+		}
 	}
 	return opts
 }
@@ -501,8 +505,12 @@ func (r *AlterParquetFileFormatRequest) toOpts() *AlterParquetFileFormatOptions 
 			TrimSpace:                r.Set.TrimSpace,
 			UseVectorizedScanner:     r.Set.UseVectorizedScanner,
 			ReplaceInvalidCharacters: r.Set.ReplaceInvalidCharacters,
-			NullIf:                   r.Set.NullIf,
 			Comment:                  r.Set.Comment,
+		}
+		if r.Set.NullIf != nil {
+			opts.Set.NullIf = &NullIfList{
+				NullIf: r.Set.NullIf.NullIf,
+			}
 		}
 	}
 	return opts

@@ -167,6 +167,7 @@ body:
         - resource:file_format_csv
         - resource:file_format_json
         - resource:file_format_orc
+        - resource:file_format_parquet
         - resource:file_format_xml
         - resource:function
         - resource:function_java

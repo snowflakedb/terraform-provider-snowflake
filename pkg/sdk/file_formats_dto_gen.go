@@ -118,7 +118,7 @@ type CreateParquetFileFormatRequest struct {
 	TrimSpace                *bool
 	UseVectorizedScanner     *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -241,7 +241,7 @@ type AlterParquetFileFormatSetRequest struct {
 	TrimSpace                *bool
 	UseVectorizedScanner     *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
