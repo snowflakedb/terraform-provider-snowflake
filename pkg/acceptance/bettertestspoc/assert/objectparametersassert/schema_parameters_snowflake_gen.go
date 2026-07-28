@@ -68,12 +68,16 @@ func (s *SchemaParametersAssert) HasDefaultParameterValueOnLevel(parameterName s
 // - have an expected level
 func (s *SchemaParametersAssert) HasAllDefaults() *SchemaParametersAssert {
 	return s.
-		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault)
 }
 
 func (s *SchemaParametersAssert) HasAllDefaultsExplicit() *SchemaParametersAssert {
 	return s.
-		HasDefaultDefaultDdlCollationValueExplicit()
+		HasDefaultDefaultDdlCollationValueExplicit().
+		HasDefaultDefaultNotebookComputePoolCpuValueExplicit().
+		HasDefaultDefaultNotebookComputePoolGpuValueExplicit()
 }
 
 ////////////////////////////
@@ -82,6 +86,16 @@ func (s *SchemaParametersAssert) HasAllDefaultsExplicit() *SchemaParametersAsser
 
 func (s *SchemaParametersAssert) HasDefaultDdlCollation(expected string) *SchemaParametersAssert {
 	s.AddAssertion(assert.SnowflakeParameterValueSet(sdk.ObjectParameterDefaultDdlCollation, expected))
+	return s
+}
+
+func (s *SchemaParametersAssert) HasDefaultNotebookComputePoolCpu(expected string) *SchemaParametersAssert {
+	s.AddAssertion(assert.SnowflakeParameterValueSet(sdk.ObjectParameterDefaultNotebookComputePoolCpu, expected))
+	return s
+}
+
+func (s *SchemaParametersAssert) HasDefaultNotebookComputePoolGpu(expected string) *SchemaParametersAssert {
+	s.AddAssertion(assert.SnowflakeParameterValueSet(sdk.ObjectParameterDefaultNotebookComputePoolGpu, expected))
 	return s
 }
 
@@ -94,6 +108,16 @@ func (s *SchemaParametersAssert) HasDefaultDdlCollationLevel(expected sdk.Parame
 	return s
 }
 
+func (s *SchemaParametersAssert) HasDefaultNotebookComputePoolCpuLevel(expected sdk.ParameterType) *SchemaParametersAssert {
+	s.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDefaultNotebookComputePoolCpu, expected))
+	return s
+}
+
+func (s *SchemaParametersAssert) HasDefaultNotebookComputePoolGpuLevel(expected sdk.ParameterType) *SchemaParametersAssert {
+	s.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDefaultNotebookComputePoolGpu, expected))
+	return s
+}
+
 ////////////////////////////////////
 // Parameter default value checks //
 ////////////////////////////////////
@@ -102,10 +126,26 @@ func (s *SchemaParametersAssert) HasDefaultDefaultDdlCollationValue() *SchemaPar
 	return s.HasDefaultParameterValue(sdk.ObjectParameterDefaultDdlCollation)
 }
 
+func (s *SchemaParametersAssert) HasDefaultDefaultNotebookComputePoolCpuValue() *SchemaParametersAssert {
+	return s.HasDefaultParameterValue(sdk.ObjectParameterDefaultNotebookComputePoolCpu)
+}
+
+func (s *SchemaParametersAssert) HasDefaultDefaultNotebookComputePoolGpuValue() *SchemaParametersAssert {
+	return s.HasDefaultParameterValue(sdk.ObjectParameterDefaultNotebookComputePoolGpu)
+}
+
 /////////////////////////////////////////////
 // Parameter explicit default value checks //
 /////////////////////////////////////////////
 
 func (s *SchemaParametersAssert) HasDefaultDefaultDdlCollationValueExplicit() *SchemaParametersAssert {
 	return s.HasDefaultDdlCollation("")
+}
+
+func (s *SchemaParametersAssert) HasDefaultDefaultNotebookComputePoolCpuValueExplicit() *SchemaParametersAssert {
+	return s.HasDefaultNotebookComputePoolCpu("SYSTEM_COMPUTE_POOL_CPU")
+}
+
+func (s *SchemaParametersAssert) HasDefaultDefaultNotebookComputePoolGpuValueExplicit() *SchemaParametersAssert {
+	return s.HasDefaultNotebookComputePoolGpu("SYSTEM_COMPUTE_POOL_GPU")
 }

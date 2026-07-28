@@ -161,6 +161,26 @@ No changes to existing configurations are required.
 
 References: [#5004](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5004).
 
+### *(new feature)* Adding missing compute pool parameters
+
+The following changes add support for managing default compute pool parameters for Notebooks and Streamlit apps:
+
+**`snowflake_account_parameter`** now supports:
+- `DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU`
+- `DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU`
+- `DEFAULT_STREAMLIT_COMPUTE_POOL`
+
+**`snowflake_current_account`** now supports:
+- `default_streamlit_compute_pool` — specifies the default compute pool for container-runtime Streamlit apps
+
+**`snowflake_database`**, **`snowflake_secondary_database`**, **`snowflake_shared_database`**, and **`snowflake_schema`** now support:
+- `default_notebook_compute_pool_cpu` — sets the preferred CPU compute pool for Notebooks
+- `default_notebook_compute_pool_gpu` — sets the preferred GPU compute pool for Notebooks
+
+No changes to existing configurations are required.
+
+References: [#5048](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5048).
+
 ### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 
 The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) and [`snowflake_oauth_integration_for_partner_applications`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_partner_applications) resources now support the `allowed_roles_list` attribute, which maps to the `ALLOWED_ROLES_LIST` Snowflake property. This attribute specifies Snowflake roles that a user can explicitly consent to using after authenticating. It can only be set when `oauth_use_secondary_roles` is `NONE` (the Snowflake default).
