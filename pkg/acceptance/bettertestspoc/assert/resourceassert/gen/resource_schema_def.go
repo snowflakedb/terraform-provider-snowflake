@@ -158,6 +158,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ExternalOauthIntegration().Schema,
 	},
 	{
+		name:   "FileFormatAvro",
+		schema: resources.FileFormatAvro().Schema,
+	},
+	{
 		name:   "FileFormatJson",
 		schema: resources.FileFormatJson().Schema,
 	},

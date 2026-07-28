@@ -26,9 +26,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(bug fix)* `snowflake_storage_integration_aws` and `snowflake_storage_integration_azure` import fix
+
+Previously, after importing `snowflake_storage_integration_aws` or `snowflake_storage_integration_azure` (for example, when migrating from the older `snowflake_storage_integration` resource), the next `terraform plan` showed an unavoidable diff trying to unset `storage_aws_external_id` (AWS only) and modify `use_privatelink_endpoint` (AWS and Azure) when you did not set these fields in your configuration.
+
+- `storage_aws_external_id` (AWS only): the diff is now gone. No action is required beyond reimporting the affected resources with the new provider version.
+- `use_privatelink_endpoint` (AWS and Azure): the diff is fixed behind the `IMPORT_BOOLEAN_DEFAULT` experiment. To get the fix, add it to the provider configuration and reimport the affected resources. Without the flag, the behavior stays the same as in previous versions.
+
+References: [#5020](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5020)
+
 ### *(new feature)* New file format resources
 
 We have added new preview resources for file formats:
+- [snowflake_file_format_avro](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro) for managing AVRO file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_avro_resource` feature name.
 - [snowflake_file_format_json](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json) for managing JSON file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_json_resource` feature name.
 - [snowflake_file_format_orc](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc) for managing ORC file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_orc_resource` feature name.
 
@@ -71,15 +81,37 @@ The [`snowflake_grants`](https://registry.terraform.io/providers/snowflakedb/sno
 - A new `inherited_grants_in` query block was added. It maps to the `SHOW INHERITED GRANTS IN { ACCOUNT | DATABASE <name> | SCHEMA <name> }` command and enumerates the inherited grants defined in a container.
 - Each element of the computed `grants` list now additionally exposes the `is_inherited`, `inherited_from`, `inherited_from_database`, and `inherited_from_schema` attributes.
 
-#### Resource
+#### Resources
 
-The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports creating inherited grants. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks. Notes:
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) resource now supports creating inherited grants. A new `inherited` block was added to the `on_account_object`, `on_schema`, and `on_schema_object` blocks.
+
+The [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) resource now supports creating inherited grants as well:
+- `on_schema` gains an `inherited` attribute. It takes the fully qualified name of a database and works just like the existing `all_schemas_in_database` and `future_schemas_in_database` attributes.
+- `on_schema_object` gains an `inherited` block that targets a plural object type in a chosen database (`in_database`) or schema (`in_schema`).
+
+Notes (both resources):
 - Using an `inherited` block requires enabling the `INHERITED_GRANTS` experiment (add it to the `experimental_features_enabled` list in the provider configuration). Without the experiment, using an `inherited` block results in an error.
 - External drift is detected for inherited grants (e.g. an externally revoked privilege reappears in the plan).
 - `with_grant_option` is not supported together with an `inherited` block, because inherited grants do not support the `WITH GRANT OPTION` clause.
 - `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
 
-Both changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
+All changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
+
+### *(new feature)* PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK experiment
+
+A new `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` experiment has been added. When enabled, the `account` field is available as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.
+
+Previously, the provider required both `organization_name` and `account_name` to be set. With this experiment, you can set `account` as a single-field alternative. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence.
+
+Without this experiment, using the `account` field (in provider config or TOML) results in an error directing you to enable the experiment.
+
+To enable, add `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK"]
+  account = "myorg-myaccount"
+}
+```
 
 ### *(new feature)* AUTHENTICATOR_EXPLICIT_ONLY experiment
 

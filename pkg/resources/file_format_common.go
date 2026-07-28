@@ -187,6 +187,22 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 	}
 }
 
+// avroFileFormatSchema returns the AVRO-specific file format fields.
+func avroFileFormatSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"compression": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllAvroCompressions)),
+			ValidateDiagFunc: sdkValidation(sdk.ToAvroCompression),
+			DiffSuppressFunc: NormalizeAndCompare(sdk.ToAvroCompression),
+		},
+		"trim_space":                 trimSpaceSchema(),
+		"replace_invalid_characters": replaceInvalidCharactersSchema(),
+		"null_if":                    nullIfSchema(),
+	}
+}
+
 // orcFileFormatSchema returns the ORC-specific file format fields. prefix is accepted for
 // consistency with the other file-format schema constructors (e.g. jsonFileFormatSchema),
 // though ORC currently has no fields that need it (e.g. ConflictsWith references).

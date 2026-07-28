@@ -581,6 +581,47 @@ func TestAcc_Warehouse_WarehouseType(t *testing.T) {
 	})
 }
 
+func TestAcc_Warehouse_ExternalTypeChangeToInteractive(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	warehouseModel := model.Warehouse("test", id.Name())
+	ref := warehouseModel.ResourceReference()
+
+	assertions := []assert.TestCheckFuncProvider{
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+			HasType(sdk.WarehouseTypeStandard),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Warehouse),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, warehouseModel),
+				Check:  assertThat(t, assertions...),
+			},
+			{
+				PreConfig: func() {
+					testClient().Warehouse.CreateInteractiveWithRequest(t,
+						sdk.NewCreateInteractiveWarehouseRequest(id).WithOrReplace(true))
+				},
+				Config: config.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(ref, "warehouse_type", nil, new(string(sdk.WarehouseTypeInteractive))),
+						planchecks.ExpectChange(ref, "warehouse_type", tfjson.ActionDelete, new(string(sdk.WarehouseTypeInteractive)), nil),
+					},
+				},
+				Check: assertThat(t, assertions...),
+			},
+		},
+	})
+}
+
 func TestAcc_Warehouse_WarehouseSizes(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 

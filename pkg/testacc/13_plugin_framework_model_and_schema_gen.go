@@ -9,6 +9,7 @@ import (
 )
 
 type pluginFrameworkPocProviderModelV0 struct {
+	Account                            types.String `tfsdk:"account"`
 	AccountName                        types.String `tfsdk:"account_name"`
 	Authenticator                      types.String `tfsdk:"authenticator"`
 	CertRevocationCheckMode            types.String `tfsdk:"cert_revocation_check_mode"`
@@ -81,6 +82,11 @@ type pluginFrameworkPocProviderModelV0 struct {
 var existingSchema = provider.GetProviderSchema()
 
 var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
+	"account": schema.StringAttribute{
+		Description: existingSchema["account"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"account_name": schema.StringAttribute{
 		Description: existingSchema["account_name"].Description,
 		Optional:    true,

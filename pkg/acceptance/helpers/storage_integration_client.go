@@ -25,9 +25,21 @@ func (c *StorageIntegrationClient) client() sdk.StorageIntegrations {
 	return c.context.client.StorageIntegrations
 }
 
-func (c *StorageIntegrationClient) CreateS3(t *testing.T, awsBucketUrl, awsRoleArn string) (*sdk.StorageIntegration, func()) {
+func (c *StorageIntegrationClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIdentifier, req *sdk.CreateStorageIntegrationRequest) (*sdk.StorageIntegration, func()) {
 	t.Helper()
 	ctx := context.Background()
+
+	err := c.client().Create(ctx, req)
+	require.NoError(t, err)
+
+	storageIntegration, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return storageIntegration, c.DropFunc(t, id)
+}
+
+func (c *StorageIntegrationClient) CreateS3(t *testing.T, awsBucketUrl, awsRoleArn string) (*sdk.StorageIntegration, func()) {
+	t.Helper()
 
 	allowedLocations := func(prefix string) []sdk.StorageLocation {
 		return []sdk.StorageLocation{
@@ -60,18 +72,11 @@ func (c *StorageIntegrationClient) CreateS3(t *testing.T, awsBucketUrl, awsRoleA
 		WithStorageBlockedLocations(s3BlockedLocations).
 		WithComment("some comment")
 
-	err := c.client().Create(ctx, req)
-	require.NoError(t, err)
-
-	integration, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return integration, c.DropFunc(t, id)
+	return c.CreateWithRequest(t, id, req)
 }
 
 func (c *StorageIntegrationClient) CreateAzure(t *testing.T, azureBucketUrl string, azureTenantId string) (*sdk.StorageIntegration, func()) {
 	t.Helper()
-	ctx := context.Background()
 
 	allowedLocations := func(prefix string) []sdk.StorageLocation {
 		return []sdk.StorageLocation{
@@ -89,13 +94,7 @@ func (c *StorageIntegrationClient) CreateAzure(t *testing.T, azureBucketUrl stri
 	req := sdk.NewCreateStorageIntegrationRequest(id, true, azureAllowedLocations).
 		WithAzureStorageProviderParams(*sdk.NewAzureStorageParamsRequest(azureTenantId))
 
-	err := c.client().Create(ctx, req)
-	require.NoError(t, err)
-
-	integration, err := c.client().ShowByID(ctx, id)
-	require.NoError(t, err)
-
-	return integration, c.DropFunc(t, id)
+	return c.CreateWithRequest(t, id, req)
 }
 
 func (c *StorageIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {

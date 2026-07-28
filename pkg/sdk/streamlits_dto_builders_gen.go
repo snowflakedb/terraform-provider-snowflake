@@ -29,8 +29,8 @@ func (s *CreateStreamlitRequest) WithQueryWarehouse(queryWarehouse AccountObject
 	return s
 }
 
-func (s *CreateStreamlitRequest) WithExternalAccessIntegrations(externalAccessIntegrations ExternalAccessIntegrationsRequest) *CreateStreamlitRequest {
-	s.ExternalAccessIntegrations = &externalAccessIntegrations
+func (s *CreateStreamlitRequest) WithExternalAccessIntegrations(externalAccessIntegrations []AccountObjectIdentifier) *CreateStreamlitRequest {
+	s.ExternalAccessIntegrations = externalAccessIntegrations
 	return s
 }
 
@@ -42,14 +42,6 @@ func (s *CreateStreamlitRequest) WithTitle(title string) *CreateStreamlitRequest
 func (s *CreateStreamlitRequest) WithComment(comment string) *CreateStreamlitRequest {
 	s.Comment = &comment
 	return s
-}
-
-func NewExternalAccessIntegrationsRequest(
-	externalAccessIntegrations []AccountObjectIdentifier,
-) *ExternalAccessIntegrationsRequest {
-	s := ExternalAccessIntegrationsRequest{}
-	s.ExternalAccessIntegrations = externalAccessIntegrations
-	return &s
 }
 
 func NewAlterStreamlitRequest(
@@ -100,8 +92,8 @@ func (s *StreamlitSetRequest) WithQueryWarehouse(queryWarehouse AccountObjectIde
 	return s
 }
 
-func (s *StreamlitSetRequest) WithExternalAccessIntegrations(externalAccessIntegrations ExternalAccessIntegrationsRequest) *StreamlitSetRequest {
-	s.ExternalAccessIntegrations = &externalAccessIntegrations
+func (s *StreamlitSetRequest) WithExternalAccessIntegrations(externalAccessIntegrations []AccountObjectIdentifier) *StreamlitSetRequest {
+	s.ExternalAccessIntegrations = externalAccessIntegrations
 	return s
 }
 
@@ -132,6 +124,11 @@ func (s *StreamlitUnsetRequest) WithComment(comment bool) *StreamlitUnsetRequest
 
 func (s *StreamlitUnsetRequest) WithTitle(title bool) *StreamlitUnsetRequest {
 	s.Title = &title
+	return s
+}
+
+func (s *StreamlitUnsetRequest) WithExternalAccessIntegrations(externalAccessIntegrations bool) *StreamlitUnsetRequest {
+	s.ExternalAccessIntegrations = &externalAccessIntegrations
 	return s
 }
 

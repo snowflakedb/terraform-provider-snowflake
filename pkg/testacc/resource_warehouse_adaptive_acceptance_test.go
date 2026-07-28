@@ -132,7 +132,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 				ResourceName:            warehouseModel.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"max_query_performance_level", "query_throughput_multiplier"},
+				ImportStateVerifyIgnore: []string{"max_query_performance_level", "query_throughput_multiplier", "show_output.0.running"},
 			},
 			// set query_throughput_multiplier to 0 (explicit value, distinct from IntDefault sentinel -1)
 			{
@@ -152,9 +152,10 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			},
 			// import after setting optional fields
 			{
-				ResourceName:      warehouseModelWithOptionals.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            warehouseModelWithOptionals.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"show_output.0.running"},
 			},
 			// rename and update fields
 			{
@@ -261,9 +262,10 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 			},
 			// import and verify state matches
 			{
-				ResourceName:      warehouseModelComplete.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            warehouseModelComplete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"show_output.0.running"},
 			},
 		},
 	})
@@ -369,6 +371,49 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasType(sdk.WarehouseTypeAdaptive),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_WarehouseAdaptive_ExternalTypeChangeToInteractive(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	warehouseModel := model.WarehouseAdaptiveWithId(id)
+	ref := warehouseModel.ResourceReference()
+
+	assertions := []assert.TestCheckFuncProvider{
+		resourceassert.WarehouseAdaptiveResource(t, ref).
+			HasWarehouseType(string(sdk.WarehouseTypeAdaptive)),
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+			HasType(sdk.WarehouseTypeAdaptive),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseAdaptive),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModel),
+				Check:  assertThat(t, assertions...),
+			},
+			{
+				PreConfig: func() {
+					testClient().Warehouse.CreateInteractiveWithRequest(t,
+						sdk.NewCreateInteractiveWarehouseRequest(id).WithOrReplace(true))
+				},
+				Config: accconfig.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(ref, "warehouse_type", new(string(sdk.WarehouseTypeAdaptive)), new(string(sdk.WarehouseTypeInteractive))),
+						planchecks.ExpectChange(ref, "warehouse_type", tfjson.ActionDelete, new(string(sdk.WarehouseTypeInteractive)), nil),
+					},
+				},
+				Check: assertThat(t, assertions...),
 			},
 		},
 	})
