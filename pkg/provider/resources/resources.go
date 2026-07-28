@@ -49,6 +49,7 @@ const (
 	FailoverGroup                                          resource = "snowflake_failover_group"
 	FileFormat                                             resource = "snowflake_file_format"
 	FileFormatAvro                                         resource = "snowflake_file_format_avro"
+	FileFormatCsv                                          resource = "snowflake_file_format_csv"
 	FileFormatJson                                         resource = "snowflake_file_format_json"
 	FileFormatOrc                                          resource = "snowflake_file_format_orc"
 	FileFormatXml                                          resource = "snowflake_file_format_xml"

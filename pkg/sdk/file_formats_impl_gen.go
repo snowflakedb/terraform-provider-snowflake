@@ -135,7 +135,6 @@ func (r *CreateCsvFileFormatRequest) toOpts() *CreateCsvFileFormatOptions {
 		SkipBlankLines:             r.SkipBlankLines,
 		BinaryFormat:               r.BinaryFormat,
 		TrimSpace:                  r.TrimSpace,
-		NullIf:                     r.NullIf,
 		ErrorOnColumnCountMismatch: r.ErrorOnColumnCountMismatch,
 		ReplaceInvalidCharacters:   r.ReplaceInvalidCharacters,
 		EmptyFieldAsNull:           r.EmptyFieldAsNull,
@@ -189,6 +188,11 @@ func (r *CreateCsvFileFormatRequest) toOpts() *CreateCsvFileFormatOptions {
 		opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
 			Value: r.FieldOptionallyEnclosedBy.Value,
 			None:  r.FieldOptionallyEnclosedBy.None,
+		}
+	}
+	if r.NullIf != nil {
+		opts.NullIf = &NullIfList{
+			NullIf: r.NullIf.NullIf,
 		}
 	}
 	return opts
@@ -326,7 +330,6 @@ func (r *AlterCsvFileFormatRequest) toOpts() *AlterCsvFileFormatOptions {
 			SkipBlankLines:             r.Set.SkipBlankLines,
 			BinaryFormat:               r.Set.BinaryFormat,
 			TrimSpace:                  r.Set.TrimSpace,
-			NullIf:                     r.Set.NullIf,
 			ErrorOnColumnCountMismatch: r.Set.ErrorOnColumnCountMismatch,
 			ReplaceInvalidCharacters:   r.Set.ReplaceInvalidCharacters,
 			EmptyFieldAsNull:           r.Set.EmptyFieldAsNull,
@@ -380,6 +383,11 @@ func (r *AlterCsvFileFormatRequest) toOpts() *AlterCsvFileFormatOptions {
 			opts.Set.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{
 				Value: r.Set.FieldOptionallyEnclosedBy.Value,
 				None:  r.Set.FieldOptionallyEnclosedBy.None,
+			}
+		}
+		if r.Set.NullIf != nil {
+			opts.Set.NullIf = &NullIfList{
+				NullIf: r.Set.NullIf.NullIf,
 			}
 		}
 	}

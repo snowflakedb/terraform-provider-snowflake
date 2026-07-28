@@ -40,7 +40,7 @@ type CreateCsvFileFormatRequest struct {
 	EscapeUnenclosedField      *StageFileFormatStringOrNoneRequest
 	TrimSpace                  *bool
 	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNoneRequest
-	NullIf                     []NullString
+	NullIf                     *NullIfListRequest
 	ErrorOnColumnCountMismatch *bool
 	ReplaceInvalidCharacters   *bool
 	EmptyFieldAsNull           *bool
@@ -57,6 +57,10 @@ type StageFileFormatStringOrNoneRequest struct {
 type StageFileFormatStringOrAutoRequest struct {
 	Value *string
 	Auto  *bool
+}
+
+type NullIfListRequest struct {
+	NullIf []NullString
 }
 
 type CreateJsonFileFormatRequest struct {
@@ -80,10 +84,6 @@ type CreateJsonFileFormatRequest struct {
 	IgnoreUtf8Errors         *bool
 	SkipByteOrderMark        *bool
 	Comment                  *string
-}
-
-type NullIfListRequest struct {
-	NullIf []NullString
 }
 
 type CreateAvroFileFormatRequest struct {
@@ -161,7 +161,7 @@ type AlterCsvFileFormatSetRequest struct {
 	EscapeUnenclosedField      *StageFileFormatStringOrNoneRequest
 	TrimSpace                  *bool
 	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNoneRequest
-	NullIf                     []NullString
+	NullIf                     *NullIfListRequest
 	ErrorOnColumnCountMismatch *bool
 	ReplaceInvalidCharacters   *bool
 	EmptyFieldAsNull           *bool

@@ -174,7 +174,7 @@ func csvFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalQueryStructField("EscapeUnenclosedField", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("ESCAPE_UNENCLOSED_FIELD =")).
 		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 		OptionalQueryStructField("FieldOptionallyEnclosedBy", stageFileFormatStringOrNone(), g.ListOptions().NoParentheses().SQL("FIELD_OPTIONALLY_ENCLOSED_BY =")).
-		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+		OptionalQueryStructField("NullIf", nullIfList, g.ParameterOptions().SQL("NULL_IF").Parentheses()).
 		OptionalBooleanAssignment("ERROR_ON_COLUMN_COUNT_MISMATCH", g.ParameterOptions()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
 		OptionalBooleanAssignment("EMPTY_FIELD_AS_NULL", g.ParameterOptions()).

@@ -69,6 +69,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_failover_groups_datasource", want: FailoverGroupsDatasource},
 		{input: "snowflake_file_format_resource", want: FileFormatResource},
 		{input: "snowflake_file_format_avro_resource", want: FileFormatAvroResource},
+		{input: "snowflake_file_format_csv_resource", want: FileFormatCsvResource},
 		{input: "snowflake_file_format_json_resource", want: FileFormatJsonResource},
 		{input: "snowflake_file_format_xml_resource", want: FileFormatXmlResource},
 		{input: "snowflake_file_formats_datasource", want: FileFormatsDatasource},
