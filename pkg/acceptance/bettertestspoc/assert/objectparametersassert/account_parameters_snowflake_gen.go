@@ -171,6 +171,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultNullOrdering, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultStreamlitComputePool, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterDefaultStreamlitNotebookWarehouse, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterEventTable, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.AccountParameterExternalVolume, sdk.ParameterTypeSnowflakeDefault).
@@ -312,6 +313,7 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultDefaultNotebookComputePoolCpuValueExplicit().
 		HasDefaultDefaultNotebookComputePoolGpuValueExplicit().
 		HasDefaultDefaultNullOrderingValueExplicit().
+		HasDefaultDefaultStreamlitComputePoolValueExplicit().
 		HasDefaultDefaultStreamlitNotebookWarehouseValueExplicit().
 		HasDefaultEventTableValueExplicit().
 		HasDefaultExternalVolumeValueExplicit().
@@ -856,6 +858,11 @@ func (a *AccountParametersAssert) HasDefaultNotebookComputePoolGpu(expected stri
 
 func (a *AccountParametersAssert) HasDefaultNullOrdering(expected sdk.DefaultNullOrdering) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterDefaultNullOrdering, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasDefaultStreamlitComputePool(expected string) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterValueSet(sdk.AccountParameterDefaultStreamlitComputePool, expected))
 	return a
 }
 
@@ -1548,6 +1555,11 @@ func (a *AccountParametersAssert) HasDefaultNullOrderingLevel(expected sdk.Param
 	return a
 }
 
+func (a *AccountParametersAssert) HasDefaultStreamlitComputePoolLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultStreamlitComputePool, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasDefaultStreamlitNotebookWarehouseLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterDefaultStreamlitNotebookWarehouse, expected))
 	return a
@@ -2136,6 +2148,10 @@ func (a *AccountParametersAssert) HasDefaultDefaultNullOrderingValue() *AccountP
 	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultNullOrdering)
 }
 
+func (a *AccountParametersAssert) HasDefaultDefaultStreamlitComputePoolValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultStreamlitComputePool)
+}
+
 func (a *AccountParametersAssert) HasDefaultDefaultStreamlitNotebookWarehouseValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterDefaultStreamlitNotebookWarehouse)
 }
@@ -2686,6 +2702,10 @@ func (a *AccountParametersAssert) HasDefaultDefaultNotebookComputePoolGpuValueEx
 
 func (a *AccountParametersAssert) HasDefaultDefaultNullOrderingValueExplicit() *AccountParametersAssert {
 	return a.HasDefaultNullOrdering(sdk.DefaultNullOrderingLast)
+}
+
+func (a *AccountParametersAssert) HasDefaultDefaultStreamlitComputePoolValueExplicit() *AccountParametersAssert {
+	return a.HasDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_CPU")
 }
 
 func (a *AccountParametersAssert) HasDefaultDefaultStreamlitNotebookWarehouseValueExplicit() *AccountParametersAssert {

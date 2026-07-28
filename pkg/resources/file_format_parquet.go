@@ -38,20 +38,13 @@ func parquetDescOutputSchema() map[string]*schema.Schema {
 }
 
 func FileFormatParquet() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseSchemaObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-			return client.FileFormats.DropSafely
-		},
-	)
-
 	resourceSchema := fileFormatParquetSchema()
 
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingCreateWrapper(resources.FileFormatParquet, CreateFileFormatParquet)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingReadWrapper(resources.FileFormatParquet, GetReadFileFormatParquetFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingUpdateWrapper(resources.FileFormatParquet, UpdateFileFormatParquet)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingDeleteWrapper(resources.FileFormatParquet, deleteFunc)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingDeleteWrapper(resources.FileFormatParquet, fileFormatDeleteFunc)),
 		Description:   "Resource used to manage Parquet file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatParquet, customdiff.All(

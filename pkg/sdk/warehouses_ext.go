@@ -261,49 +261,20 @@ func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 	// ResourceConstraint - conditional on warehouse type.
 	// We use EqualFold instead of the generated ToWarehouseResourceConstraint because
 	// the values contain lowercase "x86" and the generated function uses ToUpper which breaks matching.
-	if r.ResourceConstraint.Valid {
-		switch wh.Type {
-		case WarehouseTypeStandard:
-			// After BCR 2026_02, resource_constraint is NULL for Standard warehouses; generation column is used instead.
-		case WarehouseTypeSnowparkOptimized:
-			var found bool
-			for _, rc := range AllWarehouseResourceConstraints {
-				if strings.EqualFold(string(rc), r.ResourceConstraint.String) {
-					v := rc
-					wh.ResourceConstraint = &v
-					found = true
-					break
-				}
-			}
-			if !found {
-				return fmt.Errorf("invalid resource constraint: %s", r.ResourceConstraint.String)
-			}
-		case WarehouseTypeAdaptive:
-			// Adaptive warehouses don't use resource constraints; ignore.
-		default:
-			return fmt.Errorf("invalid warehouse type: %s", wh.Type)
-		}
-	}
-
-	// Tables - only present for interactive warehouses; may be NULL. SHOW WAREHOUSES returns the
-	// associated tables as a comma-separated list of fully-qualified names. Identifiers can contain
-	// commas when quoted, so we split in a quote-aware manner rather than using strings.Split.
-	if r.Tables.Valid {
-		if tables := strings.TrimSpace(r.Tables.String); tables != "" {
-			for _, raw := range splitCommaSeparatedIdentifiers(tables) {
-				raw = strings.TrimSpace(raw)
-				if raw == "" {
-					continue
-				}
-				id, err := ParseSchemaObjectIdentifier(raw)
-				if err != nil {
-					return fmt.Errorf("parsing table identifier %q: %w", raw, err)
-				}
-				wh.Tables = append(wh.Tables, id)
+	if r.ResourceConstraint.Valid && wh.Type == WarehouseTypeSnowparkOptimized {
+		var found bool
+		for _, rc := range AllWarehouseResourceConstraints {
+			if strings.EqualFold(string(rc), r.ResourceConstraint.String) {
+				v := rc
+				wh.ResourceConstraint = &v
+				found = true
+				break
 			}
 		}
+		if !found {
+			return fmt.Errorf("invalid resource constraint: %s", r.ResourceConstraint.String)
+		}
 	}
-
 	return nil
 }
 

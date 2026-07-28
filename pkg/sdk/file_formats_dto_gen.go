@@ -40,7 +40,7 @@ type CreateCsvFileFormatRequest struct {
 	EscapeUnenclosedField      *StageFileFormatStringOrNoneRequest
 	TrimSpace                  *bool
 	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNoneRequest
-	NullIf                     []NullString
+	NullIf                     *NullIfListRequest
 	ErrorOnColumnCountMismatch *bool
 	ReplaceInvalidCharacters   *bool
 	EmptyFieldAsNull           *bool
@@ -57,6 +57,10 @@ type StageFileFormatStringOrNoneRequest struct {
 type StageFileFormatStringOrAutoRequest struct {
 	Value *string
 	Auto  *bool
+}
+
+type NullIfListRequest struct {
+	NullIf []NullString
 }
 
 type CreateJsonFileFormatRequest struct {
@@ -82,10 +86,6 @@ type CreateJsonFileFormatRequest struct {
 	Comment                  *string
 }
 
-type NullIfListRequest struct {
-	NullIf []NullString
-}
-
 type CreateAvroFileFormatRequest struct {
 	OrReplace                *bool
 	IfNotExists              *bool
@@ -93,7 +93,7 @@ type CreateAvroFileFormatRequest struct {
 	Compression              *AvroCompression
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -103,7 +103,7 @@ type CreateOrcFileFormatRequest struct {
 	name                     SchemaObjectIdentifier // required
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -161,7 +161,7 @@ type AlterCsvFileFormatSetRequest struct {
 	EscapeUnenclosedField      *StageFileFormatStringOrNoneRequest
 	TrimSpace                  *bool
 	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNoneRequest
-	NullIf                     []NullString
+	NullIf                     *NullIfListRequest
 	ErrorOnColumnCountMismatch *bool
 	ReplaceInvalidCharacters   *bool
 	EmptyFieldAsNull           *bool
@@ -208,7 +208,7 @@ type AlterAvroFileFormatSetRequest struct {
 	Compression              *AvroCompression
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -222,7 +222,7 @@ type AlterOrcFileFormatRequest struct {
 type AlterOrcFileFormatSetRequest struct {
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 

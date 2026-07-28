@@ -100,8 +100,8 @@ func (s *CreateCsvFileFormatRequest) WithFieldOptionallyEnclosedBy(fieldOptional
 	return s
 }
 
-func (s *CreateCsvFileFormatRequest) WithNullIf(nullIf []NullString) *CreateCsvFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateCsvFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateCsvFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -162,6 +162,16 @@ func (s *StageFileFormatStringOrAutoRequest) WithValue(value string) *StageFileF
 
 func (s *StageFileFormatStringOrAutoRequest) WithAuto(auto bool) *StageFileFormatStringOrAutoRequest {
 	s.Auto = &auto
+	return s
+}
+
+func NewNullIfListRequest() *NullIfListRequest {
+	s := NullIfListRequest{}
+	return &s
+}
+
+func (s *NullIfListRequest) WithNullIf(nullIf []NullString) *NullIfListRequest {
+	s.NullIf = nullIf
 	return s
 }
 
@@ -268,16 +278,6 @@ func (s *CreateJsonFileFormatRequest) WithComment(comment string) *CreateJsonFil
 	return s
 }
 
-func NewNullIfListRequest() *NullIfListRequest {
-	s := NullIfListRequest{}
-	return &s
-}
-
-func (s *NullIfListRequest) WithNullIf(nullIf []NullString) *NullIfListRequest {
-	s.NullIf = nullIf
-	return s
-}
-
 func NewCreateAvroFileFormatRequest(
 	name SchemaObjectIdentifier,
 ) *CreateAvroFileFormatRequest {
@@ -311,8 +311,8 @@ func (s *CreateAvroFileFormatRequest) WithReplaceInvalidCharacters(replaceInvali
 	return s
 }
 
-func (s *CreateAvroFileFormatRequest) WithNullIf(nullIf []NullString) *CreateAvroFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateAvroFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateAvroFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -349,8 +349,8 @@ func (s *CreateOrcFileFormatRequest) WithReplaceInvalidCharacters(replaceInvalid
 	return s
 }
 
-func (s *CreateOrcFileFormatRequest) WithNullIf(nullIf []NullString) *CreateOrcFileFormatRequest {
-	s.NullIf = nullIf
+func (s *CreateOrcFileFormatRequest) WithNullIf(nullIf NullIfListRequest) *CreateOrcFileFormatRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -593,8 +593,8 @@ func (s *AlterCsvFileFormatSetRequest) WithFieldOptionallyEnclosedBy(fieldOption
 	return s
 }
 
-func (s *AlterCsvFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterCsvFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterCsvFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterCsvFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -784,8 +784,8 @@ func (s *AlterAvroFileFormatSetRequest) WithReplaceInvalidCharacters(replaceInva
 	return s
 }
 
-func (s *AlterAvroFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterAvroFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterAvroFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterAvroFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 
@@ -832,8 +832,8 @@ func (s *AlterOrcFileFormatSetRequest) WithReplaceInvalidCharacters(replaceInval
 	return s
 }
 
-func (s *AlterOrcFileFormatSetRequest) WithNullIf(nullIf []NullString) *AlterOrcFileFormatSetRequest {
-	s.NullIf = nullIf
+func (s *AlterOrcFileFormatSetRequest) WithNullIf(nullIf NullIfListRequest) *AlterOrcFileFormatSetRequest {
+	s.NullIf = &nullIf
 	return s
 }
 

@@ -81,6 +81,7 @@ func setAndUnsetAccountParametersTest(
 			DefaultNotebookComputePoolCpu:                            sdk.String("CPU_X64_S"),
 			DefaultNotebookComputePoolGpu:                            sdk.String("GPU_NV_S"),
 			DefaultNullOrdering:                                      sdk.Pointer(sdk.DefaultNullOrderingFirst),
+			DefaultStreamlitComputePool:                              sdk.String("SYSTEM_COMPUTE_POOL_GPU"),
 			DefaultStreamlitNotebookWarehouse:                        sdk.Pointer(warehouseId),
 			DisallowedSpcsWorkloadTypes:                              sdk.String(""),
 			DisableUiDownloadButton:                                  sdk.Bool(true),
@@ -215,6 +216,7 @@ func setAndUnsetAccountParametersTest(
 			HasDefaultNotebookComputePoolCpu("CPU_X64_S").
 			HasDefaultNotebookComputePoolGpu("GPU_NV_S").
 			HasDefaultNullOrdering(sdk.DefaultNullOrderingFirst).
+			HasDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_GPU").
 			HasDefaultStreamlitNotebookWarehouse(warehouseId.Name()).
 			HasDisableUiDownloadButton(true).
 			HasDisableUserPrivilegeGrants(true).

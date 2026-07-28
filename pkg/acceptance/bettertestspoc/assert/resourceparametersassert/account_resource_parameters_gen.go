@@ -540,6 +540,11 @@ func (a *AccountResourceParametersAssert) HasDefaultNullOrdering(expected sdk.De
 	return a
 }
 
+func (a *AccountResourceParametersAssert) HasDefaultStreamlitComputePool(expected string) *AccountResourceParametersAssert {
+	a.ParameterValueSet(string(sdk.AccountParameterDefaultStreamlitComputePool), expected)
+	return a
+}
+
 func (a *AccountResourceParametersAssert) HasDefaultStreamlitNotebookWarehouse(expected string) *AccountResourceParametersAssert {
 	a.ParameterValueSet(string(sdk.AccountParameterDefaultStreamlitNotebookWarehouse), expected)
 	return a
@@ -1226,6 +1231,11 @@ func (a *AccountResourceParametersAssert) HasDefaultNotebookComputePoolGpuLevel(
 
 func (a *AccountResourceParametersAssert) HasDefaultNullOrderingLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
 	a.ParameterLevelSet(string(sdk.AccountParameterDefaultNullOrdering), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasDefaultStreamlitComputePoolLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterDefaultStreamlitComputePool), expected)
 	return a
 }
 

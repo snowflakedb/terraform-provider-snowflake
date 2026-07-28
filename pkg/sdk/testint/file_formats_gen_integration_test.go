@@ -80,7 +80,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithEscapeUnenclosedField(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("!")).
 			WithTrimSpace(true).
 			WithFieldOptionallyEnclosedBy(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("\"")).
-			WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}})).
 			WithErrorOnColumnCountMismatch(false).
 			WithReplaceInvalidCharacters(true).
 			WithEmptyFieldAsNull(false).
@@ -198,7 +198,7 @@ func TestInt_FileFormats(t *testing.T) {
 				WithEscapeUnenclosedField(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("!")).
 				WithTrimSpace(true).
 				WithFieldOptionallyEnclosedBy(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("\"")).
-				WithNullIf([]sdk.NullString{{S: "NULL"}}).
+				WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 				WithErrorOnColumnCountMismatch(false).
 				WithReplaceInvalidCharacters(true).
 				WithEmptyFieldAsNull(false).
@@ -515,7 +515,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithCompression(sdk.AvroCompressionGzip).
 			WithTrimSpace(true).
 			WithReplaceInvalidCharacters(true).
-			WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}})).
 			WithComment("avro complete")
 
 		err := client.FileFormats.CreateAvro(ctx, request)
@@ -565,7 +565,7 @@ func TestInt_FileFormats(t *testing.T) {
 				WithCompression(sdk.AvroCompressionGzip).
 				WithTrimSpace(true).
 				WithReplaceInvalidCharacters(true).
-				WithNullIf([]sdk.NullString{{S: "NULL"}}).
+				WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 				WithComment("updated comment")))
 		require.NoError(t, err)
 
@@ -616,7 +616,7 @@ func TestInt_FileFormats(t *testing.T) {
 		request := sdk.NewCreateOrcFileFormatRequest(id).
 			WithTrimSpace(true).
 			WithReplaceInvalidCharacters(true).
-			WithNullIf([]sdk.NullString{{S: "NULL"}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 			WithComment("orc complete")
 
 		err := client.FileFormats.CreateOrc(ctx, request)
@@ -664,7 +664,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithSet(*sdk.NewAlterOrcFileFormatSetRequest().
 				WithTrimSpace(true).
 				WithReplaceInvalidCharacters(true).
-				WithNullIf([]sdk.NullString{{S: "NULL"}}).
+				WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 				WithComment("updated comment")))
 		require.NoError(t, err)
 

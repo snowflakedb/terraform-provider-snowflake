@@ -79,6 +79,8 @@ func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter Accoun
 		accountParamsUnset.CortexModelsAllowlist = Pointer(true)
 	case AccountParameterDefaultDbtVersion:
 		accountParamsUnset.DefaultDbtVersion = Pointer(true)
+	case AccountParameterDefaultStreamlitComputePool:
+		accountParamsUnset.DefaultStreamlitComputePool = Pointer(true)
 	case AccountParameterDisableUserPrivilegeGrants:
 		accountParamsUnset.DisableUserPrivilegeGrants = Pointer(true)
 	case AccountParameterDisallowedSpcsWorkloadTypes:
@@ -211,6 +213,10 @@ func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter 
 		objParams.DataRetentionTimeInDays = Pointer(v)
 	case ObjectParameterDefaultDdlCollation:
 		objParams.DefaultDDLCollation = &value
+	case ObjectParameterDefaultNotebookComputePoolCpu:
+		objParams.DefaultNotebookComputePoolCpu = &value
+	case ObjectParameterDefaultNotebookComputePoolGpu:
+		objParams.DefaultNotebookComputePoolGpu = &value
 	case ObjectParameterEnableDataCompaction:
 		b, err := parseBooleanParameter(string(parameter), value)
 		if err != nil {
@@ -340,6 +346,10 @@ func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, paramete
 		objParamsUnset.DataRetentionTimeInDays = Pointer(true)
 	case ObjectParameterDefaultDdlCollation:
 		objParamsUnset.DefaultDDLCollation = Pointer(true)
+	case ObjectParameterDefaultNotebookComputePoolCpu:
+		objParamsUnset.DefaultNotebookComputePoolCpu = Pointer(true)
+	case ObjectParameterDefaultNotebookComputePoolGpu:
+		objParamsUnset.DefaultNotebookComputePoolGpu = Pointer(true)
 	case ObjectParameterEnableDataCompaction:
 		objParamsUnset.EnableDataCompaction = Pointer(true)
 	case ObjectParameterEnableIcebergMergeOnRead:
@@ -495,6 +505,7 @@ const (
 	AccountParameterDefaultNotebookComputePoolCpu                            AccountParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"
 	AccountParameterDefaultNotebookComputePoolGpu                            AccountParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"
 	AccountParameterDefaultNullOrdering                                      AccountParameter = "DEFAULT_NULL_ORDERING"
+	AccountParameterDefaultStreamlitComputePool                              AccountParameter = "DEFAULT_STREAMLIT_COMPUTE_POOL"
 	AccountParameterDefaultStreamlitNotebookWarehouse                        AccountParameter = "DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE"
 	AccountParameterDisableUiDownloadButton                                  AccountParameter = "DISABLE_UI_DOWNLOAD_BUTTON"
 	AccountParameterDisallowedSpcsWorkloadTypes                              AccountParameter = "DISALLOWED_SPCS_WORKLOAD_TYPES"
@@ -639,6 +650,7 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterDefaultNotebookComputePoolCpu,
 	AccountParameterDefaultNotebookComputePoolGpu,
 	AccountParameterDefaultNullOrdering,
+	AccountParameterDefaultStreamlitComputePool,
 	AccountParameterDefaultStreamlitNotebookWarehouse,
 	AccountParameterDisableUiDownloadButton,
 	AccountParameterDisableUserPrivilegeGrants,
@@ -840,6 +852,8 @@ const (
 	ObjectParameterUserTaskMinimumTriggerIntervalInSeconds ObjectParameter = "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"
 	ObjectParameterQuotedIdentifiersIgnoreCase             ObjectParameter = "QUOTED_IDENTIFIERS_IGNORE_CASE"
 	ObjectParameterMetricLevel                             ObjectParameter = "METRIC_LEVEL"
+	ObjectParameterDefaultNotebookComputePoolCpu           ObjectParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"
+	ObjectParameterDefaultNotebookComputePoolGpu           ObjectParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"
 	ObjectParameterEnableConsoleOutput                     ObjectParameter = "ENABLE_CONSOLE_OUTPUT"
 
 	// User Parameters
@@ -1123,6 +1137,8 @@ const (
 
 var AllSchemaParameters = []ObjectParameter{
 	ObjectParameterDataRetentionTimeInDays,
+	ObjectParameterDefaultNotebookComputePoolCpu,
+	ObjectParameterDefaultNotebookComputePoolGpu,
 	ObjectParameterMaxDataExtensionTimeInDays,
 	ObjectParameterExternalVolume,
 	ObjectParameterCatalog,
@@ -1151,6 +1167,8 @@ const (
 	DatabaseParameterCatalog                                 DatabaseParameter = "CATALOG"
 	DatabaseParameterReplaceInvalidCharacters                DatabaseParameter = "REPLACE_INVALID_CHARACTERS"
 	DatabaseParameterDefaultDdlCollation                     DatabaseParameter = "DEFAULT_DDL_COLLATION"
+	DatabaseParameterDefaultNotebookComputePoolCpu           DatabaseParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"
+	DatabaseParameterDefaultNotebookComputePoolGpu           DatabaseParameter = "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"
 	DatabaseParameterStorageSerializationPolicy              DatabaseParameter = "STORAGE_SERIALIZATION_POLICY"
 	DatabaseParameterLogLevel                                DatabaseParameter = "LOG_LEVEL"
 	DatabaseParameterLogEventLevel                           DatabaseParameter = "LOG_EVENT_LEVEL"
@@ -1257,6 +1275,7 @@ type LegacyAccountParameters struct {
 	CortexEnabledCrossRegion                                 *string `ddl:"parameter,single_quotes" sql:"CORTEX_ENABLED_CROSS_REGION"`
 	CortexModelsAllowlist                                    *string `ddl:"parameter,single_quotes" sql:"CORTEX_MODELS_ALLOWLIST"`
 	DefaultDbtVersion                                        *string `ddl:"parameter,single_quotes" sql:"DEFAULT_DBT_VERSION"`
+	DefaultStreamlitComputePool                              *string `ddl:"parameter,single_quotes" sql:"DEFAULT_STREAMLIT_COMPUTE_POOL"`
 	DisableUserPrivilegeGrants                               *bool   `ddl:"parameter" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	DisallowedSpcsWorkloadTypes                              *string `ddl:"parameter,single_quotes" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
 	EnableBudgetEventLogging                                 *bool   `ddl:"parameter" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
@@ -1353,6 +1372,7 @@ type AccountParameters struct {
 	DefaultNotebookComputePoolCpu                            *string                     `ddl:"parameter,double_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
 	DefaultNotebookComputePoolGpu                            *string                     `ddl:"parameter,double_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	DefaultNullOrdering                                      *DefaultNullOrdering        `ddl:"parameter,double_quotes" sql:"DEFAULT_NULL_ORDERING"`
+	DefaultStreamlitComputePool                              *string                     `ddl:"parameter,double_quotes" sql:"DEFAULT_STREAMLIT_COMPUTE_POOL"`
 	DefaultStreamlitNotebookWarehouse                        *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE"`
 	DisableUiDownloadButton                                  *bool                       `ddl:"parameter" sql:"DISABLE_UI_DOWNLOAD_BUTTON"`
 	DisallowedSpcsWorkloadTypes                              *string                     `ddl:"parameter,double_quotes" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
@@ -1470,6 +1490,7 @@ type LegacyAccountParametersUnset struct {
 	CortexEnabledCrossRegion                                 *bool `ddl:"keyword" sql:"CORTEX_ENABLED_CROSS_REGION"`
 	CortexModelsAllowlist                                    *bool `ddl:"keyword" sql:"CORTEX_MODELS_ALLOWLIST"`
 	DefaultDbtVersion                                        *bool `ddl:"keyword" sql:"DEFAULT_DBT_VERSION"`
+	DefaultStreamlitComputePool                              *bool `ddl:"keyword" sql:"DEFAULT_STREAMLIT_COMPUTE_POOL"`
 	DisableUserPrivilegeGrants                               *bool `ddl:"keyword" sql:"DISABLE_USER_PRIVILEGE_GRANTS"`
 	DisallowedSpcsWorkloadTypes                              *bool `ddl:"keyword" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
 	EnableBudgetEventLogging                                 *bool `ddl:"keyword" sql:"ENABLE_BUDGET_EVENT_LOGGING"`
@@ -1543,6 +1564,7 @@ type AccountParametersUnset struct {
 	DefaultNotebookComputePoolCpu                            *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
 	DefaultNotebookComputePoolGpu                            *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	DefaultNullOrdering                                      *bool `ddl:"keyword" sql:"DEFAULT_NULL_ORDERING"`
+	DefaultStreamlitComputePool                              *bool `ddl:"keyword" sql:"DEFAULT_STREAMLIT_COMPUTE_POOL"`
 	DefaultStreamlitNotebookWarehouse                        *bool `ddl:"keyword" sql:"DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE"`
 	DisableUiDownloadButton                                  *bool `ddl:"keyword" sql:"DISABLE_UI_DOWNLOAD_BUTTON"`
 	DisallowedSpcsWorkloadTypes                              *bool `ddl:"keyword" sql:"DISALLOWED_SPCS_WORKLOAD_TYPES"`
@@ -2123,6 +2145,8 @@ type ObjectParameters struct {
 	DataMetricSchedule                      *string        `ddl:"parameter,single_quotes" sql:"DATA_METRIC_SCHEDULE"`
 	DataRetentionTimeInDays                 *int           `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	DefaultDDLCollation                     *string        `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu           *string        `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu           *string        `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	EnableDataCompaction                    *bool          `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
 	EnableIcebergMergeOnRead                *bool          `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
 	EnableNotebookCreationInPersonalDb      *bool          `ddl:"parameter" sql:"ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB"`
@@ -2203,6 +2227,8 @@ type ObjectParametersUnset struct {
 	DataMetricSchedule                  *bool `ddl:"keyword" sql:"DATA_METRIC_SCHEDULE"`
 	DataRetentionTimeInDays             *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	DefaultDDLCollation                 *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu       *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu       *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	EnableDataCompaction                *bool `ddl:"keyword" sql:"ENABLE_DATA_COMPACTION"`
 	EnableIcebergMergeOnRead            *bool `ddl:"keyword" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
 	EnableNotebookCreationInPersonalDb  *bool `ddl:"keyword" sql:"ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB"`

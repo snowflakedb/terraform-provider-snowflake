@@ -27,6 +27,8 @@ type CreateDatabaseRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
+	DefaultNotebookComputePoolCpu           *string
+	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -60,6 +62,8 @@ type CreateSharedDatabaseRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
+	DefaultNotebookComputePoolCpu           *string
+	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -87,6 +91,8 @@ type CreateSecondaryDatabaseRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
+	DefaultNotebookComputePoolCpu           *string
+	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -124,6 +130,8 @@ type DatabaseSetRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
+	DefaultNotebookComputePoolCpu           *string
+	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -145,6 +153,8 @@ type DatabaseUnsetRequest struct {
 	Catalog                                 *bool
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *bool
+	DefaultNotebookComputePoolCpu           *bool
+	DefaultNotebookComputePoolGpu           *bool
 	StorageSerializationPolicy              *bool
 	LogLevel                                *bool
 	LogEventLevel                           *bool

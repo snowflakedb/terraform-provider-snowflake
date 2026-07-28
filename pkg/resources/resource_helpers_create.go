@@ -54,6 +54,13 @@ func boolAttributeCreate(d *schema.ResourceData, key string, createField **bool)
 	return nil
 }
 
+func boolAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(bool) T) error {
+	if v, ok := d.GetOk(key); ok {
+		setValue(v.(bool))
+	}
+	return nil
+}
+
 func booleanStringAttributeCreate(d *schema.ResourceData, key string, createField **bool) error {
 	if v := d.Get(key).(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
@@ -115,6 +122,13 @@ func accountObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, 
 	return nil
 }
 
+func accountObjectIdentifierAttributeCreateBuilder[T any](d *schema.ResourceData, key string, setValue func(sdk.AccountObjectIdentifier) T) error {
+	if v, ok := d.GetOk(key); ok {
+		setValue(sdk.NewAccountObjectIdentifier(v.(string)))
+	}
+	return nil
+}
+
 func objectIdentifierAttributeCreate(d *schema.ResourceData, key string, createField **sdk.ObjectIdentifier) error {
 	if v, ok := d.GetOk(key); ok {
 		objectIdentifier, err := sdk.ParseObjectIdentifierString(v.(string))
@@ -147,6 +161,20 @@ func attributeMappedValueCreate[T any](d *schema.ResourceData, key string, creat
 func attributeMappedValueCreateBuilder[InputType any, MappedType any, RequestBuilder any](d *schema.ResourceData, key string, setValue func(MappedType) RequestBuilder, mapper func(value InputType) (MappedType, error)) error {
 	if v, ok := d.GetOk(key); ok {
 		value, err := mapper(v.(InputType))
+		if err != nil {
+			return err
+		}
+		setValue(value)
+	}
+	return nil
+}
+
+// attributeMappedValueCreateBuilderRawConfig is attributeMappedValueCreateBuilder that checks the raw config
+// instead of GetOk, because GetOk cannot distinguish an absent list attribute from one explicitly set to an
+// empty list (e.g. `null_if = []`).
+func attributeMappedValueCreateBuilderRawConfig[InputType any, MappedType any, RequestBuilder any](d *schema.ResourceData, key string, setValue func(MappedType) RequestBuilder, mapper func(value InputType) (MappedType, error)) error {
+	if !d.GetRawConfig().AsValueMap()[key].IsNull() {
+		value, err := mapper(d.Get(key).(InputType))
 		if err != nil {
 			return err
 		}

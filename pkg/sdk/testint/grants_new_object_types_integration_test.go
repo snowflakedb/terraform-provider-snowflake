@@ -32,6 +32,15 @@ func TestInt_GrantPrivileges_OnFutureAndAll_NewObjectTypes(t *testing.T) {
 				return testClientHelper().Workspace.Create(t)
 			},
 		},
+		{
+			objectTypePlural: sdk.PluralObjectTypeInteractiveTables,
+			expectedGrantOn:  sdk.ObjectTypeInteractiveTable,
+			privilege:        sdk.SchemaObjectPrivilegeSelect,
+			createObject: func(t *testing.T) (sdk.SchemaObjectIdentifier, func()) {
+				t.Helper()
+				return testClientHelper().Table.CreateInteractiveTable(t)
+			},
+		},
 	}
 
 	for _, tc := range testCases {

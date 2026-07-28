@@ -65,6 +65,16 @@ func (s *CreateSchemaRequest) WithDefaultDdlCollation(defaultDdlCollation String
 	return s
 }
 
+func (s *CreateSchemaRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateSchemaRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *CreateSchemaRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateSchemaRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
+	return s
+}
+
 func (s *CreateSchemaRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSchemaRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -251,6 +261,16 @@ func (s *SchemaSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAll
 	return s
 }
 
+func (s *SchemaSetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *SchemaSetRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *SchemaSetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *SchemaSetRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
+	return s
+}
+
 func (s *SchemaSetRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *SchemaSetRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -348,6 +368,16 @@ func (s *SchemaUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacte
 
 func (s *SchemaUnsetRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *SchemaUnsetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
+	return s
+}
+
+func (s *SchemaUnsetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu bool) *SchemaUnsetRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *SchemaUnsetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu bool) *SchemaUnsetRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
 	return s
 }
 
