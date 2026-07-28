@@ -162,6 +162,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FileFormatAvro().Schema,
 	},
 	{
+		name:   "FileFormatCsv",
+		schema: resources.FileFormatCsv().Schema,
+	},
+	{
 		name:   "FileFormatJson",
 		schema: resources.FileFormatJson().Schema,
 	},

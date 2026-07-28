@@ -66,7 +66,7 @@ type CreateCsvFileFormatOptions struct {
 	EscapeUnenclosedField      *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"ESCAPE_UNENCLOSED_FIELD ="`
 	TrimSpace                  *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
 	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"FIELD_OPTIONALLY_ENCLOSED_BY ="`
-	NullIf                     []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                     *NullIfList                  `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	ErrorOnColumnCountMismatch *bool                        `ddl:"parameter" sql:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
 	ReplaceInvalidCharacters   *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	EmptyFieldAsNull           *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
@@ -83,6 +83,10 @@ type StageFileFormatStringOrNone struct {
 type StageFileFormatStringOrAuto struct {
 	Value *string `ddl:"keyword,single_quotes"`
 	Auto  *bool   `ddl:"keyword" sql:"AUTO"`
+}
+
+type NullIfList struct {
+	NullIf []NullString `ddl:"list,must_parentheses"`
 }
 
 // CreateJsonFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-file-format.
@@ -110,10 +114,6 @@ type CreateJsonFileFormatOptions struct {
 	IgnoreUtf8Errors         *bool                        `ddl:"parameter" sql:"IGNORE_UTF8_ERRORS"`
 	SkipByteOrderMark        *bool                        `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 	Comment                  *string                      `ddl:"parameter,single_quotes" sql:"COMMENT"`
-}
-
-type NullIfList struct {
-	NullIf []NullString `ddl:"list,must_parentheses"`
 }
 
 // CreateAvroFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-file-format.
@@ -210,7 +210,7 @@ type AlterCsvFileFormatSet struct {
 	EscapeUnenclosedField      *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"ESCAPE_UNENCLOSED_FIELD ="`
 	TrimSpace                  *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
 	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"FIELD_OPTIONALLY_ENCLOSED_BY ="`
-	NullIf                     []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                     *NullIfList                  `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	ErrorOnColumnCountMismatch *bool                        `ddl:"parameter" sql:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
 	ReplaceInvalidCharacters   *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	EmptyFieldAsNull           *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`
@@ -424,7 +424,7 @@ type FileFormatCsvOptions struct {
 	EscapeUnenclosedField      *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"ESCAPE_UNENCLOSED_FIELD ="`
 	TrimSpace                  *bool                        `ddl:"parameter" sql:"TRIM_SPACE"`
 	FieldOptionallyEnclosedBy  *StageFileFormatStringOrNone `ddl:"list,no_parentheses" sql:"FIELD_OPTIONALLY_ENCLOSED_BY ="`
-	NullIf                     []NullString                 `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                     *NullIfList                  `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	ErrorOnColumnCountMismatch *bool                        `ddl:"parameter" sql:"ERROR_ON_COLUMN_COUNT_MISMATCH"`
 	ReplaceInvalidCharacters   *bool                        `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	EmptyFieldAsNull           *bool                        `ddl:"parameter" sql:"EMPTY_FIELD_AS_NULL"`

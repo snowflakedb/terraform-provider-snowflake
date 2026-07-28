@@ -62,6 +62,7 @@ const (
 	FailoverGroupsDatasource                       feature = "snowflake_failover_groups_datasource"
 	FileFormatResource                             feature = "snowflake_file_format_resource"
 	FileFormatAvroResource                         feature = "snowflake_file_format_avro_resource"
+	FileFormatCsvResource                          feature = "snowflake_file_format_csv_resource"
 	FileFormatJsonResource                         feature = "snowflake_file_format_json_resource"
 	FileFormatOrcResource                          feature = "snowflake_file_format_orc_resource"
 	FileFormatXmlResource                          feature = "snowflake_file_format_xml_resource"
@@ -185,6 +186,7 @@ var allPreviewFeatures = []feature{
 	FailoverGroupsDatasource,
 	FileFormatResource,
 	FileFormatAvroResource,
+	FileFormatCsvResource,
 	FileFormatJsonResource,
 	FileFormatOrcResource,
 	FileFormatXmlResource,

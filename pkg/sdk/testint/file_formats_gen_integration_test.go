@@ -80,7 +80,7 @@ func TestInt_FileFormats(t *testing.T) {
 			WithEscapeUnenclosedField(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("!")).
 			WithTrimSpace(true).
 			WithFieldOptionallyEnclosedBy(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("\"")).
-			WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}}).
+			WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}, {S: ""}})).
 			WithErrorOnColumnCountMismatch(false).
 			WithReplaceInvalidCharacters(true).
 			WithEmptyFieldAsNull(false).
@@ -198,7 +198,7 @@ func TestInt_FileFormats(t *testing.T) {
 				WithEscapeUnenclosedField(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("!")).
 				WithTrimSpace(true).
 				WithFieldOptionallyEnclosedBy(*sdk.NewStageFileFormatStringOrNoneRequest().WithValue("\"")).
-				WithNullIf([]sdk.NullString{{S: "NULL"}}).
+				WithNullIf(*sdk.NewNullIfListRequest().WithNullIf([]sdk.NullString{{S: "NULL"}})).
 				WithErrorOnColumnCountMismatch(false).
 				WithReplaceInvalidCharacters(true).
 				WithEmptyFieldAsNull(false).

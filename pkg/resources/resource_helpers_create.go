@@ -169,6 +169,20 @@ func attributeMappedValueCreateBuilder[InputType any, MappedType any, RequestBui
 	return nil
 }
 
+// attributeMappedValueCreateBuilderRawConfig is attributeMappedValueCreateBuilder that checks the raw config
+// instead of GetOk, because GetOk cannot distinguish an absent list attribute from one explicitly set to an
+// empty list (e.g. `null_if = []`).
+func attributeMappedValueCreateBuilderRawConfig[InputType any, MappedType any, RequestBuilder any](d *schema.ResourceData, key string, setValue func(MappedType) RequestBuilder, mapper func(value InputType) (MappedType, error)) error {
+	if !d.GetRawConfig().AsValueMap()[key].IsNull() {
+		value, err := mapper(d.Get(key).(InputType))
+		if err != nil {
+			return err
+		}
+		setValue(value)
+	}
+	return nil
+}
+
 func attributeMappedValueCreateBuilderNested[MappedType any, RequestBuilder any](d *schema.ResourceData, key string, setValue func(MappedType) RequestBuilder, mapper func(*schema.ResourceData) (MappedType, error)) error {
 	if _, ok := d.GetOk(key); ok {
 		value, err := mapper(d)

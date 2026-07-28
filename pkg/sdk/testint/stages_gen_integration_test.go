@@ -212,7 +212,7 @@ func TestInt_Stages(t *testing.T) {
 					EscapeUnenclosedField:      &sdk.StageFileFormatStringOrNone{Value: &escapeVal},
 					TrimSpace:                  &trimSpace,
 					FieldOptionallyEnclosedBy:  &sdk.StageFileFormatStringOrNone{Value: &enclosedBy},
-					NullIf:                     []sdk.NullString{{S: "NULL"}, {S: ""}},
+					NullIf:                     &sdk.NullIfList{NullIf: []sdk.NullString{{S: "NULL"}, {S: ""}}},
 					ErrorOnColumnCountMismatch: &errorOnMismatch,
 					ReplaceInvalidCharacters:   &replaceInvalid,
 					EmptyFieldAsNull:           &emptyAsNull,

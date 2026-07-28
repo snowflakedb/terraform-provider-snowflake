@@ -64,6 +64,7 @@ var RepositoryLabels = []string{
 	"resource:failover_group",
 	"resource:file_format",
 	"resource:file_format_avro",
+	"resource:file_format_csv",
 	"resource:file_format_json",
 	"resource:file_format_orc",
 	"resource:file_format_xml",
