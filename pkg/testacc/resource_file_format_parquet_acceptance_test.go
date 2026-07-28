@@ -38,6 +38,7 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 		WithUseLogicalType("false").
 		WithTrimSpace("true").
 		WithUseVectorizedScanner("true").
+		WithReplaceInvalidCharacters("true").
 		WithNullIf("NULL_A", "NULL_B").
 		WithComment(comment)
 
@@ -47,6 +48,7 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 		WithUseLogicalType("true").
 		WithTrimSpace("false").
 		WithUseVectorizedScanner("false").
+		WithReplaceInvalidCharacters("false").
 		WithNullIf("NULL_C").
 		WithComment(externalComment)
 
@@ -90,7 +92,7 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 			HasUseLogicalType(r.BooleanFalse).
 			HasTrimSpace(r.BooleanTrue).
 			HasUseVectorizedScanner(r.BooleanTrue).
-			HasReplaceInvalidCharacters(r.BooleanDefault).
+			HasReplaceInvalidCharacters(r.BooleanTrue).
 			HasNullIf("NULL_A", "NULL_B").
 			HasCommentString(comment),
 		resourceshowoutputassert.FileFormatShowOutput(t, ref).
@@ -107,7 +109,7 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 			HasUseLogicalType(false).
 			HasTrimSpace(true).
 			HasUseVectorizedScanner(true).
-			HasReplaceInvalidCharacters(false).
+			HasReplaceInvalidCharacters(true).
 			HasNullIf("NULL_A", "NULL_B"),
 	}
 
@@ -121,7 +123,7 @@ func TestAcc_FileFormatParquet_BasicUseCase(t *testing.T) {
 			HasUseLogicalType(r.BooleanTrue).
 			HasTrimSpace(r.BooleanFalse).
 			HasUseVectorizedScanner(r.BooleanFalse).
-			HasReplaceInvalidCharacters(r.BooleanDefault).
+			HasReplaceInvalidCharacters(r.BooleanFalse).
 			HasNullIf("NULL_C").
 			HasCommentString(externalComment),
 		resourceshowoutputassert.FileFormatShowOutput(t, ref).
@@ -249,8 +251,7 @@ func TestAcc_FileFormatParquet_CompleteUseCase(t *testing.T) {
 		WithTrimSpace("true").
 		WithUseVectorizedScanner("true").
 		WithNullIf("NULL_A", "NULL_B").
-		WithComment(comment)
-	modelWithReplaceInvalidCharacters := model.FileFormatParquetWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithComment(comment).
 		WithReplaceInvalidCharacters("true")
 	ref := completeModel.ResourceReference()
 
@@ -275,7 +276,7 @@ func TestAcc_FileFormatParquet_CompleteUseCase(t *testing.T) {
 						HasUseLogicalType("true").
 						HasTrimSpace("true").
 						HasUseVectorizedScanner("true").
-						HasReplaceInvalidCharacters("default").
+						HasReplaceInvalidCharacters("true").
 						HasCommentString(comment),
 					resourceshowoutputassert.FileFormatShowOutput(t, ref).
 						HasName(id.Name()).
@@ -290,7 +291,7 @@ func TestAcc_FileFormatParquet_CompleteUseCase(t *testing.T) {
 						HasUseLogicalType(true).
 						HasTrimSpace(true).
 						HasUseVectorizedScanner(true).
-						HasReplaceInvalidCharacters(false).
+						HasReplaceInvalidCharacters(true).
 						HasNullIf("NULL_A", "NULL_B"),
 				),
 			},
@@ -300,20 +301,6 @@ func TestAcc_FileFormatParquet_CompleteUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
-			},
-			{
-				Config:  config.FromModels(t, completeModel),
-				Destroy: true,
-			},
-			{
-				Config: config.FromModels(t, modelWithReplaceInvalidCharacters),
-				Check: assertThat(
-					t,
-					resourceassert.FileFormatParquetResource(t, ref).
-						HasReplaceInvalidCharacters("true"),
-					resourceshowoutputassert.FileFormatParquetDescribeOutput(t, ref).
-						HasReplaceInvalidCharacters(true),
-				),
 			},
 		},
 	})
