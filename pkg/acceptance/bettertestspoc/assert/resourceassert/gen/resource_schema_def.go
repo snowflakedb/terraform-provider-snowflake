@@ -174,6 +174,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.FileFormatOrc().Schema,
 	},
 	{
+		name:   "FileFormatParquet",
+		schema: resources.FileFormatParquet().Schema,
+	},
+	{
 		name:   "FileFormatXml",
 		schema: resources.FileFormatXml().Schema,
 	},

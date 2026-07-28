@@ -370,6 +370,43 @@ func orcFileFormatSchema() map[string]*schema.Schema {
 	}
 }
 
+// parquetFileFormatSchema returns the PARQUET-specific file format fields.
+func parquetFileFormatSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"compression": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllParquetCompressions)),
+			ValidateDiagFunc: sdkValidation(sdk.ToParquetCompression),
+			DiffSuppressFunc: NormalizeAndCompare(sdk.ToParquetCompression),
+		},
+		"binary_as_text": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to interpret columns with no defined logical data type as UTF-8 text."),
+		},
+		"use_logical_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to use Parquet logical types when loading data."),
+		},
+		"use_vectorized_scanner": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to use a vectorized scanner for loading Parquet files."),
+		},
+		"trim_space":                 trimSpaceSchema(),
+		"replace_invalid_characters": replaceInvalidCharactersSchema(),
+		"null_if":                    nullIfSchema(),
+	}
+}
+
 func xmlFileFormatFieldsSchema(prefix string) map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"compression": {

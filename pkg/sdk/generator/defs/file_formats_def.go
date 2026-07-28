@@ -234,7 +234,7 @@ func parquetFileFormatOptionFields(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalBooleanAssignment("TRIM_SPACE", g.ParameterOptions()).
 		OptionalBooleanAssignment("USE_VECTORIZED_SCANNER", g.ParameterOptions()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", g.ParameterOptions()).
-		ListAssignment("NULL_IF", "NullString", g.ParameterOptions().Parentheses()).
+		OptionalQueryStructField("NullIf", nullIfList, g.ParameterOptions().SQL("NULL_IF").Parentheses()).
 		WithValidation(g.ConflictingFields, "Compression", "SnappyCompression")
 }
 

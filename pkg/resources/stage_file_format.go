@@ -75,7 +75,7 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 					ExactlyOneOf: stageFileFormatExactlyOneOf,
 					Description:  "Parquet file format options.",
 					Elem: &schema.Resource{
-						Schema: parquetFileFormatSchema,
+						Schema: parquetFileFormatSchema(),
 					},
 				},
 				"xml": {
@@ -90,57 +90,6 @@ var stageFileFormatSchema = map[string]*schema.Schema{
 				},
 			},
 		},
-	},
-}
-
-var parquetFileFormatSchema = map[string]*schema.Schema{
-	"compression": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllParquetCompressions)),
-		ValidateDiagFunc: sdkValidation(sdk.ToParquetCompression),
-		DiffSuppressFunc: NormalizeAndCompare(sdk.ToParquetCompression),
-	},
-	"binary_as_text": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to interpret columns with no defined logical data type as UTF-8 text."),
-	},
-	"use_logical_type": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to use Parquet logical types when loading data."),
-	},
-	"trim_space": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
-	},
-	"use_vectorized_scanner": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to use a vectorized scanner for loading Parquet files."),
-	},
-	"replace_invalid_characters": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		Default:          BooleanDefault,
-		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
-	},
-	"null_if": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "String used to convert to and from SQL NULL.",
-		Elem:        &schema.Schema{Type: schema.TypeString},
 	},
 }
 
@@ -415,7 +364,7 @@ func parseParquetFileFormatOptions(d *schema.ResourceData) (*sdk.FileFormatParqu
 		booleanStringAttributeCreate(d, prefix+"use_vectorized_scanner", &parquetOptions.UseVectorizedScanner),
 		booleanStringAttributeCreate(d, prefix+"replace_invalid_characters", &parquetOptions.ReplaceInvalidCharacters),
 		attributeMappedValueCreateBuilder(d, prefix+"null_if", func(nullIf []sdk.NullString) *sdk.FileFormatParquetOptions {
-			parquetOptions.NullIf = nullIf
+			parquetOptions.NullIf = &sdk.NullIfList{NullIf: nullIf}
 			return parquetOptions
 		}, parseNullIf),
 	)

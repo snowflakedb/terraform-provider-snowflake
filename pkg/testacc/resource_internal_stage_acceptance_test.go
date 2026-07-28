@@ -1449,7 +1449,7 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 			TrimSpace:                &trimSpace,
 			UseVectorizedScanner:     &useVectorizedScanner,
 			ReplaceInvalidCharacters: &replaceInvalidCharacters,
-			NullIf:                   []sdk.NullString{{S: "NULL"}, {S: ""}},
+			NullIf:                   &sdk.NullIfList{NullIf: []sdk.NullString{{S: "NULL"}, {S: ""}}},
 		})
 
 	altBinaryAsText := false
@@ -1466,7 +1466,7 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 			TrimSpace:                &altTrimSpace,
 			UseVectorizedScanner:     &altUseVectorizedScanner,
 			ReplaceInvalidCharacters: &altReplaceInvalidCharacters,
-			NullIf:                   []sdk.NullString{{S: "NA"}},
+			NullIf:                   &sdk.NullIfList{NullIf: []sdk.NullString{{S: "NA"}}},
 		})
 
 	defaultAssertions := []assert.TestCheckFuncProvider{
@@ -1584,7 +1584,7 @@ func TestAcc_InternalStage_FileFormat_AllParquetOptions(t *testing.T) {
 								TrimSpace:                sdk.Bool(true),
 								UseVectorizedScanner:     sdk.Bool(true),
 								ReplaceInvalidCharacters: sdk.Bool(true),
-								NullIf:                   []sdk.NullString{{S: "EXT"}},
+								NullIf:                   &sdk.NullIfList{NullIf: []sdk.NullString{{S: "EXT"}}},
 							},
 						},
 					}))

@@ -160,7 +160,7 @@ type CreateParquetFileFormatOptions struct {
 	TrimSpace                *bool                  `ddl:"parameter" sql:"TRIM_SPACE"`
 	UseVectorizedScanner     *bool                  `ddl:"parameter" sql:"USE_VECTORIZED_SCANNER"`
 	ReplaceInvalidCharacters *bool                  `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString           `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList            `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	Comment                  *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -302,7 +302,7 @@ type AlterParquetFileFormatSet struct {
 	TrimSpace                *bool               `ddl:"parameter" sql:"TRIM_SPACE"`
 	UseVectorizedScanner     *bool               `ddl:"parameter" sql:"USE_VECTORIZED_SCANNER"`
 	ReplaceInvalidCharacters *bool               `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString        `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList         `ddl:"parameter,parentheses" sql:"NULL_IF"`
 	Comment                  *string             `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -476,7 +476,7 @@ type FileFormatParquetOptions struct {
 	TrimSpace                *bool               `ddl:"parameter" sql:"TRIM_SPACE"`
 	UseVectorizedScanner     *bool               `ddl:"parameter" sql:"USE_VECTORIZED_SCANNER"`
 	ReplaceInvalidCharacters *bool               `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
-	NullIf                   []NullString        `ddl:"parameter,parentheses" sql:"NULL_IF"`
+	NullIf                   *NullIfList         `ddl:"parameter,parentheses" sql:"NULL_IF"`
 }
 
 type FileFormatXmlOptions struct {
