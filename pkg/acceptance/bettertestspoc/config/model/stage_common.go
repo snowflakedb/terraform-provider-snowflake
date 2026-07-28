@@ -171,7 +171,7 @@ func stageFileFormatJson(opts sdk.FileFormatJsonOptions) tfconfig.Variable {
 	if opts.MultiLine != nil {
 		jsonMap["multi_line"] = tfconfig.BoolVariable(*opts.MultiLine)
 	}
-	if opts.NullIf != nil && len(opts.NullIf.NullIf) > 0 {
+	if opts.NullIf != nil {
 		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
 		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
@@ -228,9 +228,9 @@ func stageFileFormatAvro(opts sdk.FileFormatAvroOptions) tfconfig.Variable {
 	if opts.ReplaceInvalidCharacters != nil {
 		avroMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
+	if opts.NullIf != nil {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
+		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		avroMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
@@ -258,9 +258,9 @@ func stageFileFormatOrc(opts sdk.FileFormatOrcOptions) tfconfig.Variable {
 	if opts.ReplaceInvalidCharacters != nil {
 		orcMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if len(opts.NullIf) > 0 {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
-		for idx, v := range opts.NullIf {
+	if opts.NullIf != nil {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
+		for idx, v := range opts.NullIf.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		orcMap["null_if"] = tfconfig.ListVariable(nullIfVars...)

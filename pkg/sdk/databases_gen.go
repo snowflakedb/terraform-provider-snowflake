@@ -44,6 +44,8 @@ type CreateDatabaseOptions struct {
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -83,6 +85,8 @@ type CreateSharedDatabaseOptions struct {
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -113,6 +117,8 @@ type CreateSecondaryDatabaseOptions struct {
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -156,6 +162,8 @@ type DatabaseSet struct {
 	Catalog                                 *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"CATALOG"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -177,6 +185,8 @@ type DatabaseUnset struct {
 	Catalog                                 *bool `ddl:"keyword" sql:"CATALOG"`
 	ReplaceInvalidCharacters                *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	DefaultNotebookComputePoolCpu           *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
+	DefaultNotebookComputePoolGpu           *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	LogEventLevel                           *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`

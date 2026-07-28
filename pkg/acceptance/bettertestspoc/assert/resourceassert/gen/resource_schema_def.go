@@ -158,12 +158,24 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ExternalOauthIntegration().Schema,
 	},
 	{
+		name:   "FileFormatAvro",
+		schema: resources.FileFormatAvro().Schema,
+	},
+	{
 		name:   "FileFormatCsv",
 		schema: resources.FileFormatCsv().Schema,
 	},
 	{
 		name:   "FileFormatJson",
 		schema: resources.FileFormatJson().Schema,
+	},
+	{
+		name:   "FileFormatOrc",
+		schema: resources.FileFormatOrc().Schema,
+	},
+	{
+		name:   "FileFormatXml",
+		schema: resources.FileFormatXml().Schema,
 	},
 	{
 		name:   "FunctionJava",

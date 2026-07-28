@@ -72,6 +72,12 @@ func Provider() *schema.Provider {
 
 func GetProviderSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"account": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Specifies the Snowflake account identifier. Can be provided in the `org-name` format (e.g. `\"myorg-myaccount\"`) or as an account locator (e.g. `\"xy12345\"`). Use as a fallback when `account_name` and `organization_name` are not set. If both `account_name` and `organization_name` are set, they take precedence. Requires the [`PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`](../#provider_configuration_account_fallback) experiment to be enabled.", snowflakeenvs.Account),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Account, nil),
+		},
 		"account_name": {
 			Type:         schema.TypeString,
 			Description:  envNameFieldDescription("Specifies your Snowflake account name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#account-name). Required unless using `profile`.", snowflakeenvs.AccountName),
@@ -409,8 +415,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations).", snowflakeenvs.SkipTomlFilePermissionVerification),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations).", snowflakeenvs.SkipTomlFilePermissionVerification),
 			Optional:    true,
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Skipping TOML configuration file permission verification will be disallowed in the next major release. Make sure the TOML configuration file permissions are set correctly before removing this flag.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.SkipTomlFilePermissionVerification, false),
 		},
 		"use_legacy_toml_file": {
@@ -626,8 +633,11 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_external_volume":                                              resources.ExternalVolume(),
 		"snowflake_failover_group":                                               resources.FailoverGroup(),
 		"snowflake_file_format":                                                  resources.FileFormat(),
+		"snowflake_file_format_avro":                                             resources.FileFormatAvro(),
 		"snowflake_file_format_csv":                                              resources.FileFormatCsv(),
 		"snowflake_file_format_json":                                             resources.FileFormatJson(),
+		"snowflake_file_format_orc":                                              resources.FileFormatOrc(),
+		"snowflake_file_format_xml":                                              resources.FileFormatXml(),
 		"snowflake_function_java":                                                resources.FunctionJava(),
 		"snowflake_function_javascript":                                          resources.FunctionJavascript(),
 		"snowflake_function_python":                                              resources.FunctionPython(),
@@ -815,7 +825,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 	}
 
 	if v, ok := s.GetOk("profile"); ok && v.(string) != "" {
-		tomlConfig, err := GetDriverConfigFromTOML(v.(string), verifyPermissions, useLegacyTomlFile)
+		profile := v.(string)
+		rejectAccountField := !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments)
+		tomlConfig, err := GetDriverConfigFromTOML(profile, verifyPermissions, useLegacyTomlFile, rejectAccountField)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
@@ -895,11 +907,12 @@ func expandStringList(configured []any) []string {
 	return vs
 }
 
-func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile bool) (*gosnowflake.Config, error) {
+func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile, rejectAccountField bool) (*gosnowflake.Config, error) {
 	if profile == "default" {
 		return sdk.DefaultConfig(
 			sdk.WithVerifyPermissions(verifyPermissions),
 			sdk.WithUseLegacyTomlFormat(useLegacyTomlFile),
+			sdk.WithRejectAccountField(rejectAccountField),
 		), nil
 	}
 	path, err := sdk.GetConfigFileName()
@@ -911,6 +924,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 		profile,
 		sdk.WithVerifyPermissions(verifyPermissions),
 		sdk.WithUseLegacyTomlFormat(useLegacyTomlFile),
+		sdk.WithRejectAccountField(rejectAccountField),
 	)
 	if err != nil {
 		return nil, fmt.Errorf(`could not retrieve "%s" profile config from file %s: %w`, profile, path, err)
@@ -1026,10 +1040,23 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 	}
 
 	// account_name and organization_name override legacy account field
+	account := s.Get("account").(string)
 	accountName := s.Get("account_name").(string)
 	organizationName := s.Get("organization_name").(string)
-	if accountName != "" && organizationName != "" {
-		config.Account = strings.Join([]string{organizationName, accountName}, "-")
+
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments) {
+		if accountName != "" && organizationName != "" {
+			config.Account = fmt.Sprintf("%s-%s", organizationName, accountName)
+		} else if account != "" {
+			config.Account = account
+		}
+	} else {
+		if account != "" {
+			return nil, fmt.Errorf("the account field requires the %q experiment to be enabled; add it to experimental_features_enabled in provider configuration", experimentalfeatures.ProviderConfigurationAccountFallback)
+		}
+		if accountName != "" && organizationName != "" {
+			config.Account = strings.Join([]string{organizationName, accountName}, "-")
+		}
 	}
 
 	m := make(map[string]any)

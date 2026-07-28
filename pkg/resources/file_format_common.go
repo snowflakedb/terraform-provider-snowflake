@@ -275,13 +275,7 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 			ValidateDiagFunc: sdkValidation(sdk.ToBinaryFormat),
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToBinaryFormat),
 		},
-		"trim_space": {
-			Type:             schema.TypeString,
-			Optional:         true,
-			Default:          BooleanDefault,
-			ValidateDiagFunc: validateBooleanString,
-			Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
-		},
+		"trim_space": trimSpaceSchema(),
 		"multi_line": {
 			Type:             schema.TypeString,
 			Optional:         true,
@@ -289,12 +283,7 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 			ValidateDiagFunc: validateBooleanString,
 			Description:      booleanStringFieldDescription("Boolean that specifies whether to allow multiple records on a single line."),
 		},
-		"null_if": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "String used to convert to and from SQL NULL.",
-			Elem:        &schema.Schema{Type: schema.TypeString},
-		},
+		"null_if": nullIfSchema(),
 		"file_extension": {
 			Type:        schema.TypeString,
 			Optional:    true,
@@ -353,3 +342,122 @@ func jsonFileFormatSchema(prefix string) map[string]*schema.Schema {
 		},
 	}
 }
+
+// avroFileFormatSchema returns the AVRO-specific file format fields.
+func avroFileFormatSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"compression": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllAvroCompressions)),
+			ValidateDiagFunc: sdkValidation(sdk.ToAvroCompression),
+			DiffSuppressFunc: NormalizeAndCompare(sdk.ToAvroCompression),
+		},
+		"trim_space":                 trimSpaceSchema(),
+		"replace_invalid_characters": replaceInvalidCharactersSchema(),
+		"null_if":                    nullIfSchema(),
+	}
+}
+
+// orcFileFormatSchema returns the ORC-specific file format fields. prefix is accepted for
+// consistency with the other file-format schema constructors (e.g. jsonFileFormatSchema),
+// though ORC currently has no fields that need it (e.g. ConflictsWith references).
+func orcFileFormatSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"trim_space":                 trimSpaceSchema(),
+		"replace_invalid_characters": replaceInvalidCharactersSchema(),
+		"null_if":                    nullIfSchema(),
+	}
+}
+
+func xmlFileFormatFieldsSchema(prefix string) map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"compression": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      fmt.Sprintf("Specifies the compression format. Valid values: %s.", possibleValuesListed(sdk.AllXmlCompressions)),
+			ValidateDiagFunc: sdkValidation(sdk.ToXmlCompression),
+			DiffSuppressFunc: NormalizeAndCompare(sdk.ToXmlCompression),
+		},
+		"ignore_utf8_errors": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether UTF-8 encoding errors produce error conditions."),
+			ConflictsWith:    []string{prefix + "replace_invalid_characters"},
+		},
+		"preserve_space": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser preserves leading and trailing spaces in element content."),
+		},
+		"strip_outer_element": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser strips out the outer XML element, exposing 2nd level elements as separate documents."),
+		},
+		"disable_auto_convert": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether the XML parser disables automatic conversion of numeric and Boolean values from text to native representation."),
+		},
+		"replace_invalid_characters": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+			ConflictsWith:    []string{prefix + "ignore_utf8_errors"},
+		},
+		"skip_byte_order_mark": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          BooleanDefault,
+			ValidateDiagFunc: validateBooleanString,
+			Description:      booleanStringFieldDescription("Boolean that specifies whether to skip the BOM (byte order mark) if present in a data file."),
+		},
+	}
+}
+
+func trimSpaceSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to remove white space from fields."),
+	}
+}
+
+func replaceInvalidCharactersSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Boolean that specifies whether to replace invalid UTF-8 characters with the Unicode replacement character."),
+	}
+}
+
+func nullIfSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "String used to convert to and from SQL NULL.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	}
+}
+
+var fileFormatDeleteFunc = ResourceDeleteContextFunc(
+	sdk.ParseSchemaObjectIdentifier,
+	func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
+		return client.FileFormats.DropSafely
+	},
+)

@@ -38,8 +38,11 @@ References: [#5020](https://github.com/snowflakedb/terraform-provider-snowflake/
 ### *(new feature)* New file format resources
 
 We have added new preview resources for file formats:
+- [snowflake_file_format_avro](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro) for managing AVRO file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_avro_resource` feature name.
 - [snowflake_file_format_csv](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_csv) for managing CSV file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_csv_resource` feature name.
 - [snowflake_file_format_json](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json) for managing JSON file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_json_resource` feature name.
+- [snowflake_file_format_orc](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc) for managing ORC file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_orc_resource` feature name.
+- [snowflake_file_format_xml](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml) for managing XML file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_xml_resource` feature name.
 
 These features will be marked as stable in future releases. To use them, add the relevant feature name to the `preview_features_enabled` field in the provider configuration.
 
@@ -49,9 +52,12 @@ The [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snow
 
 In most cases no action is required; this is a non-breaking addition. Note that external change detection for this field is not yet supported and will be addressed in a future update.
 
-### *(new feature)* Support for `SNOWFLAKE INTELLIGENCE` object type in grant resources
+### *(new feature)* Support for `SNOWFLAKE INTELLIGENCE` and `INTERACTIVE TABLE` object types in grant resources
 
-The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) and [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resources now support `SNOWFLAKE INTELLIGENCE` object type. This allows privileges (e.g. `MODIFY`, `USAGE`) on a Snowflake Intelligence object to be granted to an account role via Terraform.
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role), [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role), and [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resources now support additional object types:
+
+- `SNOWFLAKE INTELLIGENCE` — an account-level object supporting `MODIFY` and `USAGE` privileges.
+- `INTERACTIVE TABLE` — a schema-level object supporting `SELECT` and `REFERENCES` privileges, including bulk grants on ALL/FUTURE interactive tables.
 
 No changes in configuration are required for existing resources; this is a non-breaking addition.
 
@@ -95,6 +101,22 @@ Notes (both resources):
 - `always_apply` is not supported together with an `inherited` block. Inherited grants already cover all current and future objects in the container, so re-granting on every apply is unnecessary.
 
 All changes are non-breaking and additive; no action is required unless you want to adopt inherited grants.
+
+### *(new feature)* PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK experiment
+
+A new `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` experiment has been added. When enabled, the `account` field is available as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.
+
+Previously, the provider required both `organization_name` and `account_name` to be set. With this experiment, you can set `account` as a single-field alternative. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence.
+
+Without this experiment, using the `account` field (in provider config or TOML) results in an error directing you to enable the experiment.
+
+To enable, add `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` to your provider's `experimental_features_enabled` list:
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK"]
+  account = "myorg-myaccount"
+}
+```
 
 ### *(new feature)* AUTHENTICATOR_EXPLICIT_ONLY experiment
 
@@ -145,6 +167,26 @@ No changes to existing configurations are required.
 
 References: [#5004](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5004).
 
+### *(new feature)* Adding missing compute pool parameters
+
+The following changes add support for managing default compute pool parameters for Notebooks and Streamlit apps:
+
+**`snowflake_account_parameter`** now supports:
+- `DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU`
+- `DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU`
+- `DEFAULT_STREAMLIT_COMPUTE_POOL`
+
+**`snowflake_current_account`** now supports:
+- `default_streamlit_compute_pool` — specifies the default compute pool for container-runtime Streamlit apps
+
+**`snowflake_database`**, **`snowflake_secondary_database`**, **`snowflake_shared_database`**, and **`snowflake_schema`** now support:
+- `default_notebook_compute_pool_cpu` — sets the preferred CPU compute pool for Notebooks
+- `default_notebook_compute_pool_gpu` — sets the preferred GPU compute pool for Notebooks
+
+No changes to existing configurations are required.
+
+References: [#5048](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5048).
+
 ### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 
 The [`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) and [`snowflake_oauth_integration_for_partner_applications`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_partner_applications) resources now support the `allowed_roles_list` attribute, which maps to the `ALLOWED_ROLES_LIST` Snowflake property. This attribute specifies Snowflake roles that a user can explicitly consent to using after authenticating. It can only be set when `oauth_use_secondary_roles` is `NONE` (the Snowflake default).
@@ -190,6 +232,14 @@ Previously, adding a new `storage_location` block to an existing [`snowflake_ext
 No changes in configuration are required.
 
 Note that this error can still legitimately occur if your configuration change actually removes the currently active storage location (e.g. removing the block from your configuration, or renaming/replacing it). This is expected Snowflake behavior, not a bug: an active storage location cannot be removed while it is in use (e.g. by an Iceberg table). Reassign the dependent objects to another storage location before removing it from your configuration.
+
+### *(deprecation)* `SkipTomlFilePermissionVerification` configuration attribute deprecated
+
+`skip_toml_file_permission_verification` was used to bypass TOML configuration file permission verification. Skipping TOML configuration file permission verification will be disallowed in the next major release. It's still allowed to set this attribute on the provider configuration side and it still has effect, but:
+- it will be removed with the next major release;
+- skipping the permission verification will be disallowed.
+
+No changes are required, but because `skip_toml_file_permission_verification` attribute will be removed in the next major version, you can safely remove it, to reduce the number of required changes in the next major provider release. Before removing the flag, make sure the TOML configuration file permissions are set correctly (see the [TOML file limitations](#toml-file-limitations) section in the provider documentation).
 
 ## v2.17.x ➞ v2.18.0
 

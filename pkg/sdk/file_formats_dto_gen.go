@@ -93,7 +93,7 @@ type CreateAvroFileFormatRequest struct {
 	Compression              *AvroCompression
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -103,7 +103,7 @@ type CreateOrcFileFormatRequest struct {
 	name                     SchemaObjectIdentifier // required
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -208,7 +208,7 @@ type AlterAvroFileFormatSetRequest struct {
 	Compression              *AvroCompression
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
@@ -222,7 +222,7 @@ type AlterOrcFileFormatRequest struct {
 type AlterOrcFileFormatSetRequest struct {
 	TrimSpace                *bool
 	ReplaceInvalidCharacters *bool
-	NullIf                   []NullString
+	NullIf                   *NullIfListRequest
 	Comment                  *string
 }
 
