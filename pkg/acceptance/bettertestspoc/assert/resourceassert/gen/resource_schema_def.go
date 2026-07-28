@@ -34,6 +34,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AccountRole().Schema,
 	},
 	{
+		name:   "AccountAuthenticationPolicyAttachment",
+		schema: resources.AccountAuthenticationPolicyAttachment().Schema,
+	},
+	{
 		name:   "AccountSessionPolicyAttachment",
 		schema: resources.AccountSessionPolicyAttachment().Schema,
 	},
@@ -448,6 +452,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "User",
 		schema: resources.User().Schema,
+	},
+	{
+		name:   "UserAuthenticationPolicyAttachment",
+		schema: resources.UserAuthenticationPolicyAttachment().Schema,
 	},
 	{
 		name:   "UserProgrammaticAccessToken",

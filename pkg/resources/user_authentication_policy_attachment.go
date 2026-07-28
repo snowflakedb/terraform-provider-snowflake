@@ -22,24 +22,25 @@ var userAuthenticationPolicyAttachmentSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      "User name of the user you want to attach the authentication policy to",
+		Description:      "User name of the user you want to attach the authentication policy to.",
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"authentication_policy_name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
-		Description:      "Fully qualified name of the authentication policy",
+		Description:      "Fully qualified name of the authentication policy.",
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 }
 
-// UserAuthenticationPolicyAttachment returns a pointer to the resource representing a user authentication policy attachment.
 func UserAuthenticationPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Specifies the authentication policy to use for a certain user.",
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingCreateWrapper(resources.UserAuthenticationPolicyAttachment, CreateUserAuthenticationPolicyAttachment)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingReadWrapper(resources.UserAuthenticationPolicyAttachment, ReadUserAuthenticationPolicyAttachment)),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingUpdateWrapper(resources.UserAuthenticationPolicyAttachment, UpdateUserAuthenticationPolicyAttachment)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingDeleteWrapper(resources.UserAuthenticationPolicyAttachment, DeleteUserAuthenticationPolicyAttachment)),
 
 		Schema: userAuthenticationPolicyAttachmentSchema,
@@ -53,10 +54,17 @@ func UserAuthenticationPolicyAttachment() *schema.Resource {
 func CreateUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
-	authenticationPolicy := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(d.Get("authentication_policy_name").(string))
+	userName, err := sdk.ParseAccountObjectIdentifier(d.Get("user_name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	authenticationPolicy, err := sdk.ParseSchemaObjectIdentifier(d.Get("authentication_policy_name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithSet(*sdk.NewUserSetRequest().WithAuthenticationPolicy(authenticationPolicy)))
+	err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).
+		WithSet(*sdk.NewUserSetRequest().WithAuthenticationPolicy(authenticationPolicy)))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error while creating authentication policy attachment, err = %w", err))
 	}
@@ -74,8 +82,12 @@ func ReadUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Resou
 		return diag.FromErr(fmt.Errorf("required id format 'user_name|authentication_policy_name', but got: '%s'", d.Id()))
 	}
 
+	userName, err := sdk.ParseAccountObjectIdentifier(parts[0])
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	// Note: there is no alphanumeric id for an attachment, so we retrieve the authentication policies attached to a certain user.
-	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parts[0])
 	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(userName, sdk.PolicyEntityDomainUser))
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
@@ -129,15 +141,52 @@ func ReadUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	return diag.FromErr(err)
+	return nil
+}
+
+func UpdateUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	if d.HasChange("authentication_policy_name") {
+		userName, err := sdk.ParseAccountObjectIdentifier(d.Get("user_name").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		newAuthenticationPolicyName, err := sdk.ParseSchemaObjectIdentifier(d.Get("authentication_policy_name").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).
+			WithIfExists(true).
+			WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true))); err != nil {
+			d.Partial(true)
+			return diag.FromErr(fmt.Errorf("error while unsetting old authentication policy from user %v, err = %w", userName.FullyQualifiedName(), err))
+		}
+		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).
+			WithIfExists(true).
+			WithSet(*sdk.NewUserSetRequest().WithAuthenticationPolicy(newAuthenticationPolicyName))); err != nil {
+			d.Partial(true)
+			return diag.FromErr(fmt.Errorf("error while setting new authentication policy to user %v, err = %w", userName.FullyQualifiedName(), err))
+		}
+
+		d.SetId(helpers.EncodeResourceIdentifier(userName.FullyQualifiedName(), newAuthenticationPolicyName.FullyQualifiedName()))
+	}
+
+	return ReadUserAuthenticationPolicyAttachment(ctx, d, meta)
 }
 
 func DeleteUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	userName := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("user_name").(string))
+	userName, err := sdk.ParseAccountObjectIdentifier(d.Get("user_name").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true)))
+	err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).
+		WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true)))
 	if err != nil {
 		return diag.FromErr(err)
 	}

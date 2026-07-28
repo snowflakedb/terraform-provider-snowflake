@@ -26,6 +26,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(improvement)* Rework of `snowflake_account_authentication_policy_attachment` and `snowflake_user_authentication_policy_attachment`
+
+Both resources have been reworked to follow the modern resource patterns used in this provider.
+
+#### `snowflake_account_authentication_policy_attachment`
+
+- **`authentication_policy` no longer forces recreation.** Previously, changing this field destroyed and recreated the resource. It is now changed in-place — the old policy is unset and the new one is set without destroying the resource. Existing configurations do not need to change; future policy changes will produce an `update` plan instead of a `destroy`+`create` plan.
+- **Active drift detection.** Previously, changes to the policy made outside Terraform were not detected. Now, the provider queries Snowflake to verify the actual attached policy on every plan. If the policy was changed or removed outside Terraform, the next `terraform plan` will detect it as drift.
+- **ID format change.** The internal resource ID has changed from the legacy pipe-separated format (`database|schema|policy_name`) to the fully qualified name format (`"database"."schema"."policy_name"`). The state is migrated automatically on the next `terraform plan` or `terraform apply` — no manual action is required.
+
+
+#### `snowflake_user_authentication_policy_attachment`
+
+- **`authentication_policy_name` no longer forces recreation.** Previously, changing either `user_name` or `authentication_policy_name` destroyed and recreated the resource. Now `authentication_policy_name` can be changed in-place — the old policy is unset and the new one is set without recreating the resource. Changing `user_name` still forces recreation, since a different user is a fundamentally different attachment.
+
 ### *(fix)* `snowflake_network_rules` data source promoted to stable
 
 The `snowflake_network_rules` data source was accidentally left out of the stable promotion in v2.17.0 when `snowflake_network_rule` resource was promoted. It is now correctly promoted to stable.
