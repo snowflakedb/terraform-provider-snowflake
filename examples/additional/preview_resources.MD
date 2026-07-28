@@ -22,6 +22,7 @@
 - [snowflake_external_table](./docs/resources/external_table)
 - [snowflake_failover_group](./docs/resources/failover_group)
 - [snowflake_file_format](./docs/resources/file_format)
+- [snowflake_file_format_avro](./docs/resources/file_format_avro)
 - [snowflake_file_format_json](./docs/resources/file_format_json)
 - [snowflake_function_java](./docs/resources/function_java)
 - [snowflake_function_javascript](./docs/resources/function_javascript)
