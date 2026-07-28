@@ -49,6 +49,7 @@ func (opts *AlterExternalAccessIntegrationOptions) validate() error {
 		if !anyValueSet(opts.Set.AllowedNetworkRules, opts.Set.AllowedApiAuthenticationIntegrations, opts.Set.AllowedAuthenticationSecrets, opts.Set.Enabled, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Set", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"))
 		}
+		errs = append(errs, opts.Set.additionalValidations())
 		if valueSet(opts.Set.AllowedApiAuthenticationIntegrations) {
 			if !exactlyOneValueSet(opts.Set.AllowedApiAuthenticationIntegrations.None, opts.Set.AllowedApiAuthenticationIntegrations.Integrations) {
 				errs = append(errs, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedApiAuthenticationIntegrations", "None", "Integrations"))

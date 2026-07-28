@@ -70,7 +70,8 @@ var externalAccessIntegrationsDef = g.NewInterface(
 				).
 				OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
 				OptionalComment().
-				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment").
+				WithAdditionalValidations(),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(

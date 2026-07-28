@@ -154,6 +154,15 @@ t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts
 		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Set", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"))
 	})
 
+	t.Run("validation: AllowedNetworkRules in SET must not be empty when provided", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &ExternalAccessIntegrationSet{
+			AllowedNetworkRules: []SchemaObjectIdentifier{},
+			Enabled:             Bool(true),
+		}
+		assertOptsInvalidJoinedErrors(t, opts, NewError("AllowedNetworkRules must not be empty when provided"))
+	})
+
 	t.Run("validation: exactly one field from [opts.Set.AllowedApiAuthenticationIntegrations.None opts.Set.AllowedApiAuthenticationIntegrations.Integrations] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &ExternalAccessIntegrationSet{
