@@ -27,6 +27,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Database{}):                {"Databases"},
 	normalized(sdk.DatabaseRole{}):            {"DatabaseRoles"},
 	normalized(sdk.ExternalVolume{}):          {"ExternalVolumes"},
+	normalized(sdk.FileFormat{}):              {"FileFormats"},
 	normalized(sdk.GitRepository{}):           {"GitRepositories"},
 	normalized(sdk.IcebergTable{}):            {"IcebergTables"},
 	normalized(sdk.ImageRepository{}):         {"ImageRepositories"},
