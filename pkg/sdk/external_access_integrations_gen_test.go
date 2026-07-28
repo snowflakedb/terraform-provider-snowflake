@@ -136,7 +136,7 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
@@ -301,7 +301,6 @@ t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts
 		opts.UnsetTags = []ObjectIdentifier{tagId}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s UNSET TAG %s`, id.FullyQualifiedName(), tagId.FullyQualifiedName())
 	})
-
 }
 
 func TestExternalAccessIntegrations_Drop(t *testing.T) {
