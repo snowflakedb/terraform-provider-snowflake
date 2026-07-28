@@ -335,6 +335,8 @@ func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.C
 
 // HandleWarehouseExternalTypeChange detects when the warehouse type has been changed externally
 // and plans an update to restore it to warehouseType (without forcing recreation).
+// One exception is when the type was changed externally to INTERACTIVE - because Snowflake does not
+// allow changing WAREHOUSE_TYPE via ALTER to or from INTERACTIVE, the resource has to be recreated instead.
 func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.CustomizeDiffFunc {
 	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 		if n := diff.Get("warehouse_type"); n != nil {
@@ -347,6 +349,12 @@ func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.C
 				return fmt.Errorf("unknown warehouse type: %w", err)
 			}
 			if gotType != warehouseType {
+				if gotType == sdk.WarehouseTypeInteractive || warehouseType == sdk.WarehouseTypeInteractive {
+					// we have to set here a value instead of just SetNewComputed
+					// because with empty value ForceNew fails
+					// because there are no changes (at least from the SDKv2 point of view) for warehouse_type
+					return errors.Join(diff.SetNew("warehouse_type", "<changed externally>"), diff.ForceNew("warehouse_type"))
+				}
 				return diff.SetNew("warehouse_type", string(warehouseType))
 			}
 		}
