@@ -230,6 +230,14 @@ No changes in configuration are required.
 
 Note that this error can still legitimately occur if your configuration change actually removes the currently active storage location (e.g. removing the block from your configuration, or renaming/replacing it). This is expected Snowflake behavior, not a bug: an active storage location cannot be removed while it is in use (e.g. by an Iceberg table). Reassign the dependent objects to another storage location before removing it from your configuration.
 
+### *(deprecation)* `SkipTomlFilePermissionVerification` configuration attribute deprecated
+
+`skip_toml_file_permission_verification` was used to bypass TOML configuration file permission verification. Skipping TOML configuration file permission verification will be disallowed in the next major release. It's still allowed to set this attribute on the provider configuration side and it still has effect, but:
+- it will be removed with the next major release;
+- skipping the permission verification will be disallowed.
+
+No changes are required, but because `skip_toml_file_permission_verification` attribute will be removed in the next major version, you can safely remove it, to reduce the number of required changes in the next major provider release. Before removing the flag, make sure the TOML configuration file permissions are set correctly (see the [TOML file limitations](#toml-file-limitations) section in the provider documentation).
+
 ## v2.17.x ➞ v2.18.0
 
 ### Multiple resources and data sources promoted to stable
