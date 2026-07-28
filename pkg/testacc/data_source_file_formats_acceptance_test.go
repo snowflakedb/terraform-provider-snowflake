@@ -3,8 +3,6 @@
 package testacc
 
 import (
-	"fmt"
-	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -13,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -151,16 +148,23 @@ func TestAcc_FileFormats_CompleteUseCase(t *testing.T) {
 						HasName(id.Name()).
 						HasType(sdk.FileFormatTypeCsv).
 						HasComment(comment),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.id", id.FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.type", string(sdk.FileFormatTypeCsv))),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.compression", string(sdk.CsvCompressionGzip))),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.field_delimiter", ";")),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutput(t, fileFormatsWithDescribe.DatasourceReference()).
+						HasId(id).
+						HasType(sdk.FileFormatTypeCsv).
+						Csv().
+						HasCompression(string(sdk.CsvCompressionGzip)).
+						HasFieldDelimiter(";"),
 					// the fields that are not applicable to the CSV file format type are not filled
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.strip_outer_array", "false")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.use_vectorized_scanner", "false")),
-					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.0.describe_output.0.preserve_space", "false")),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutput(t, fileFormatsWithDescribe.DatasourceReference()).
+						Json().
+						HasStripOuterArray(false),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutput(t, fileFormatsWithDescribe.DatasourceReference()).
+						Parquet().
+						HasUseVectorizedScanner(false),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutput(t, fileFormatsWithDescribe.DatasourceReference()).
+						Xml().
+						HasPreserveSpace(false),
+					assert.Check(resource.TestCheckResourceAttr(fileFormatsWithDescribe.DatasourceReference(), "file_formats.#", "1")),
 				),
 			},
 		},
@@ -171,12 +175,14 @@ func TestAcc_FileFormats_CompleteUseCase(t *testing.T) {
 func TestAcc_FileFormats_AllTypes(t *testing.T) {
 	prefix := random.AlphaN(4)
 	schemaId := testClient().Ids.SchemaId()
-	csvId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	jsonId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	avroId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	orcId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	parquetId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
-	xmlId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
+	// SHOW FILE FORMATS returns the file formats ordered by name, so the names are prefixed with a fixed, ordered index
+	// to make the position of every file format in the data source output known upfront.
+	csvId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "0")
+	jsonId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "1")
+	avroId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "2")
+	orcId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "3")
+	parquetId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "4")
+	xmlId := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix + "5")
 
 	csvModel := model.FileFormatCsv("csv", csvId.DatabaseName(), csvId.SchemaName(), csvId.Name())
 	jsonModel := model.FileFormatJson("json", jsonId.DatabaseName(), jsonId.SchemaName(), jsonId.Name())
@@ -197,13 +203,6 @@ func TestAcc_FileFormats_AllTypes(t *testing.T) {
 			xmlModel.ResourceReference(),
 		)
 
-	// SHOW FILE FORMATS returns the file formats ordered by name, so the indexes are resolved from the sorted names.
-	sortedNames := collections.Map([]sdk.SchemaObjectIdentifier{csvId, jsonId, avroId, orcId, parquetId, xmlId}, func(id sdk.SchemaObjectIdentifier) string { return id.Name() })
-	slices.Sort(sortedNames)
-	indexOf := func(id sdk.SchemaObjectIdentifier) int {
-		return slices.Index(sortedNames, id.Name())
-	}
-
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -212,18 +211,34 @@ func TestAcc_FileFormats_AllTypes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, csvModel, jsonModel, avroModel, orcModel, parquetModel, xmlModel, fileFormats),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), "file_formats.#", "6"),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(csvId)), string(sdk.FileFormatTypeCsv)),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(jsonId)), string(sdk.FileFormatTypeJson)),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(avroId)), string(sdk.FileFormatTypeAvro)),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(orcId)), string(sdk.FileFormatTypeOrc)),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(parquetId)), string(sdk.FileFormatTypeParquet)),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.type", indexOf(xmlId)), string(sdk.FileFormatTypeXml)),
-					// only the fields applicable to the given file format type are filled
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.field_delimiter", indexOf(csvId)), ","),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.field_delimiter", indexOf(jsonId)), ""),
-					resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), fmt.Sprintf("file_formats.%d.describe_output.0.field_delimiter", indexOf(xmlId)), ""),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(fileFormats.DatasourceReference(), "file_formats.#", "6")),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 0).
+						HasId(csvId).
+						HasType(sdk.FileFormatTypeCsv).
+						// only the fields applicable to the given file format type are filled
+						Csv().
+						HasFieldDelimiter(","),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 1).
+						HasId(jsonId).
+						HasType(sdk.FileFormatTypeJson).
+						Csv().
+						HasFieldDelimiter(""),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 2).
+						HasId(avroId).
+						HasType(sdk.FileFormatTypeAvro),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 3).
+						HasId(orcId).
+						HasType(sdk.FileFormatTypeOrc),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 4).
+						HasId(parquetId).
+						HasType(sdk.FileFormatTypeParquet),
+					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 5).
+						HasId(xmlId).
+						HasType(sdk.FileFormatTypeXml).
+						Csv().
+						HasFieldDelimiter(""),
 				),
 			},
 		},

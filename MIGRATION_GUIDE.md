@@ -46,7 +46,8 @@ Previously, after importing `snowflake_storage_integration_aws` or `snowflake_st
 
 References: [#5020](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5020)
 
-### *(new feature)* New file format resources
+### Enhanced file format support
+#### *(new feature)* New file format resources
 
 We have added new preview resources for file formats:
 - [snowflake_file_format_avro](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro) for managing AVRO file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_avro_resource` feature name.
@@ -74,7 +75,7 @@ Notes when migrating:
 
 No immediate action is required - the deprecated resource still works, but you will see a deprecation warning in the plan output until you migrate.
 
-### *(breaking change, new feature)* Changes in `snowflake_file_formats` data source
+#### *(breaking change, new feature)* Changes in `snowflake_file_formats` data source
 
 As a part of the file format redesign (see [New file format resources](#new-feature-new-file-format-resources)), we reworked the `snowflake_file_formats` data source with the following:
 - Moved the required `database` and `schema` fields to the optional `in` block (breaking change). See the before/after examples below.
