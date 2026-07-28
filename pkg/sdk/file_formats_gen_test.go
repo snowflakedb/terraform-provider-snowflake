@@ -467,7 +467,7 @@ func TestFileFormats_CreateAvro(t *testing.T) {
 		opts.Compression = new(AvroCompressionGzip)
 		opts.TrimSpace = new(true)
 		opts.ReplaceInvalidCharacters = new(true)
-		opts.NullIf = []NullString{{S: "NULL"}, {S: ""}}
+		opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}}
 		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = AVRO COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -512,10 +512,18 @@ func TestFileFormats_AlterAvro(t *testing.T) {
 			Compression:              new(AvroCompressionGzip),
 			TrimSpace:                new(true),
 			ReplaceInvalidCharacters: new(true),
-			NullIf:                   []NullString{{S: "NULL"}, {S: ""}},
+			NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
 			Comment:                  new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("set NullIf to an empty list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterAvroFileFormatSet{
+			NullIf: &NullIfList{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s SET NULL_IF = ()`, id.FullyQualifiedName())
 	})
 }
 
@@ -550,7 +558,7 @@ func TestFileFormats_CreateOrc(t *testing.T) {
 		opts.IfNotExists = new(true)
 		opts.TrimSpace = new(true)
 		opts.ReplaceInvalidCharacters = new(true)
-		opts.NullIf = []NullString{{S: "NULL"}}
+		opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}}}
 		opts.Comment = new("some comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
 	})
@@ -594,10 +602,18 @@ func TestFileFormats_AlterOrc(t *testing.T) {
 		opts.Set = &AlterOrcFileFormatSet{
 			TrimSpace:                new(true),
 			ReplaceInvalidCharacters: new(true),
-			NullIf:                   []NullString{{S: "NULL"}},
+			NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 			Comment:                  new("some comment"),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`, id.FullyQualifiedName())
+	})
+
+	t.Run("set NullIf to an empty list", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Set = &AlterOrcFileFormatSet{
+			NullIf: &NullIfList{},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT %s SET NULL_IF = ()`, id.FullyQualifiedName())
 	})
 }
 

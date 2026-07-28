@@ -147,9 +147,9 @@ func (p *pluginFrameworkPocProvider) configure(ctx context.Context, request prov
 		return nil, diags
 	}
 
-	// TODO [SNOW-2234579]: handle skip_toml_file_permission_verification and use_legacy_toml_file
+	// TODO [SNOW-2234579]: handle skip_toml_file_permission_verification, use_legacy_toml_file, and rejectAccountField
 	if profile := getProfile(configModel); profile != "" {
-		tomlConfig, err := sdkV2Provider.GetDriverConfigFromTOML(profile, false, false)
+		tomlConfig, err := sdkV2Provider.GetDriverConfigFromTOML(profile, false, false, false)
 		if err != nil {
 			diags.AddError("Could not read the Toml config", err.Error())
 			return nil, diags

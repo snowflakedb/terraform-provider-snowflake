@@ -1099,7 +1099,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					Compression:              Pointer(AvroCompressionGzip),
 					TrimSpace:                Bool(true),
 					ReplaceInvalidCharacters: Bool(true),
-					NullIf:                   []NullString{{S: "NULL"}, {S: ""}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
 				},
 			},
 		}
@@ -1123,7 +1123,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 				OrcOptions: &FileFormatOrcOptions{
 					TrimSpace:                Bool(true),
 					ReplaceInvalidCharacters: Bool(true),
-					NullIf:                   []NullString{{S: "NULL"}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 				},
 			},
 		}

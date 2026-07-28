@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
@@ -125,15 +127,16 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:            storageIntegrationAwsModelNoAttributes.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint", "storage_aws_external_id"},
+				ResourceName:      storageIntegrationAwsModelNoAttributes.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
+				// in this test
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanFalse).
-						HasStorageAwsExternalIdNotEmpty(),
+						HasUsePrivatelinkEndpointString(r.BooleanFalse),
 				),
 			},
 			{
@@ -237,12 +240,11 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 				ResourceName:            storageIntegrationAwsAllAttributesChanged.ResourceReference(),
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
+				ImportStateVerifyIgnore: []string{"storage_aws_external_id"},
 				ImportStateCheck: assertThatImport(
 					t,
 					resourceassert.ImportedStorageIntegrationAwsResource(t, id.Name()).
-						HasUsePrivatelinkEndpointString(r.BooleanTrue).
-						HasStorageAwsExternalIdString(externalId2),
+						HasUsePrivatelinkEndpointString(r.BooleanTrue),
 				),
 			},
 			// CHANGE PROP EXTERNALLY
@@ -319,6 +321,87 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 						HasExternalIdSet().
 						HasObjectAcl(""),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
+	basicId := testClient().Ids.RandomAccountObjectIdentifier()
+	completeId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	allowedLocations := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "allowed-location/"},
+	}
+	blockedLocations := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "blocked-location/"},
+	}
+	comment := random.Comment()
+	externalId := "some_external_id"
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
+
+	basicStorageIntegrationAwsModel := model.StorageIntegrationAws("w1", basicId.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol))
+
+	completeStorageIntegrationAwsModel := model.StorageIntegrationAws("w2", completeId.Name(), false, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol)).
+		WithStorageBlockedLocations(blockedLocations).
+		WithComment(comment).
+		WithStorageAwsExternalId(externalId).
+		WithUsePrivatelinkEndpoint("true").
+		WithStorageAwsObjectAcl("bucket-owner-full-control")
+
+	basicRef := basicStorageIntegrationAwsModel.ResourceReference()
+	completeRef := completeStorageIntegrationAwsModel.ResourceReference()
+
+	_, storageIntegrationCleanup := testClient().StorageIntegration.CreateWithRequest(t, basicId,
+		sdk.NewCreateStorageIntegrationRequest(basicId, false, allowedLocations).
+			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(sdk.RegularS3Protocol, awsRoleArn)))
+	t.Cleanup(storageIntegrationCleanup)
+
+	_, storageIntegrationCleanup = testClient().StorageIntegration.CreateWithRequest(t, completeId,
+		sdk.NewCreateStorageIntegrationRequest(completeId, false, allowedLocations).
+			WithS3StorageProviderParams(*sdk.NewS3StorageParamsRequest(sdk.RegularS3Protocol, awsRoleArn).
+				WithStorageAwsExternalId(externalId).
+				WithUsePrivatelinkEndpoint(true).
+				WithStorageAwsObjectAcl("bucket-owner-full-control")).
+			WithStorageBlockedLocations(blockedLocations).
+			WithComment(comment))
+	t.Cleanup(storageIntegrationCleanup)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationAws),
+		Steps: []resource.TestStep{
+			// Import basic object
+			{
+				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAwsModel),
+				ResourceName:       basicRef,
+				ImportState:        true,
+				ImportStateId:      basicId.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			// Import complete object
+			{
+				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAwsModel, completeStorageIntegrationAwsModel),
+				ResourceName:       completeRef,
+				ImportState:        true,
+				ImportStateId:      completeId.FullyQualifiedName(),
+				ImportStatePersist: true,
+			},
+			// Expect empty plan
+			{
+				Config: config.FromModels(t, providerModel, basicStorageIntegrationAwsModel, completeStorageIntegrationAwsModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})

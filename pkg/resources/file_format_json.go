@@ -38,20 +38,13 @@ func jsonDescOutputSchema() map[string]*schema.Schema {
 }
 
 func FileFormatJson() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseSchemaObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-			return client.FileFormats.DropSafely
-		},
-	)
-
 	resourceSchema := fileFormatJsonSchema()
 
 	return &schema.Resource{
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingCreateWrapper(resources.FileFormatJson, CreateFileFormatJson)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingReadWrapper(resources.FileFormatJson, GetReadFileFormatJsonFunc(true))),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingUpdateWrapper(resources.FileFormatJson, UpdateFileFormatJson)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingDeleteWrapper(resources.FileFormatJson, deleteFunc)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingDeleteWrapper(resources.FileFormatJson, fileFormatDeleteFunc)),
 		Description:   "Resource used to manage JSON file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatJson, customdiff.All(

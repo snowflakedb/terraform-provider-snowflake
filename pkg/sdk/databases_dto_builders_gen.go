@@ -55,6 +55,16 @@ func (s *CreateDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation stri
 	return s
 }
 
+func (s *CreateDatabaseRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateDatabaseRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *CreateDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateDatabaseRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
+	return s
+}
+
 func (s *CreateDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateDatabaseRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -193,6 +203,16 @@ func (s *CreateSharedDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollatio
 	return s
 }
 
+func (s *CreateSharedDatabaseRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateSharedDatabaseRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *CreateSharedDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateSharedDatabaseRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
+	return s
+}
+
 func (s *CreateSharedDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSharedDatabaseRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -310,6 +330,16 @@ func (s *CreateSecondaryDatabaseRequest) WithReplaceInvalidCharacters(replaceInv
 
 func (s *CreateSecondaryDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation string) *CreateSecondaryDatabaseRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
+	return s
+}
+
+func (s *CreateSecondaryDatabaseRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateSecondaryDatabaseRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *CreateSecondaryDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateSecondaryDatabaseRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
 	return s
 }
 
@@ -461,6 +491,16 @@ func (s *DatabaseSetRequest) WithDefaultDdlCollation(defaultDdlCollation string)
 	return s
 }
 
+func (s *DatabaseSetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *DatabaseSetRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *DatabaseSetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *DatabaseSetRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
+	return s
+}
+
 func (s *DatabaseSetRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *DatabaseSetRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -553,6 +593,16 @@ func (s *DatabaseUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharac
 
 func (s *DatabaseUnsetRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *DatabaseUnsetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
+	return s
+}
+
+func (s *DatabaseUnsetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu bool) *DatabaseUnsetRequest {
+	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
+	return s
+}
+
+func (s *DatabaseUnsetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu bool) *DatabaseUnsetRequest {
+	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
 	return s
 }
 
