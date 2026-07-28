@@ -329,6 +329,51 @@ func TestInt_GrantAndRevokePrivilegesToAccountRole(t *testing.T) {
 		assert.Empty(t, grants)
 	})
 
+	t.Run("on schema object: interactive table", func(t *testing.T) {
+		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+		interactiveTableId, interactiveTableCleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(interactiveTableCleanup)
+
+		privileges := &sdk.AccountRoleGrantPrivileges{
+			SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect},
+		}
+		on := &sdk.AccountRoleGrantOn{
+			SchemaObject: &sdk.GrantOnSchemaObject{
+				SchemaObject: &sdk.Object{
+					ObjectType: sdk.ObjectTypeInteractiveTable,
+					Name:       interactiveTableId,
+				},
+			},
+		}
+		err := client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		require.NoError(t, err)
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			To: &sdk.ShowGrantsTo{
+				Role: roleTest.ID(),
+			},
+		})
+		require.NoError(t, err)
+		require.Len(t, grants, 1)
+		assert.Equal(t, sdk.SchemaObjectPrivilegeSelect.String(), grants[0].Privilege)
+		assert.Equal(t, sdk.ObjectTypeInteractiveTable, grants[0].GrantedOn)
+		assert.Equal(t, sdk.ObjectTypeRole, grants[0].GrantedTo)
+		assert.Equal(t, roleTest.ID().Name(), grants[0].GranteeName.Name())
+		assert.Equal(t, interactiveTableId.FullyQualifiedName(), grants[0].Name.FullyQualifiedName())
+		assert.False(t, grants[0].GrantOption)
+
+		// now revoke and verify that the grant(s) are gone
+		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, on, roleTest.ID(), nil)
+		require.NoError(t, err)
+		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			To: &sdk.ShowGrantsTo{
+				Role: roleTest.ID(),
+			},
+		})
+		require.NoError(t, err)
+		assert.Empty(t, grants)
+	})
+
 	t.Run("on future schema object", func(t *testing.T) {
 		roleTest, roleCleanup := testClientHelper().Role.CreateRole(t)
 		t.Cleanup(roleCleanup)
@@ -1615,6 +1660,43 @@ func TestInt_GrantOwnership(t *testing.T) {
 		ownership, err := collections.FindFirst(returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.SchemaObjectOwnership.String() })
 		require.NoError(t, err)
 		assert.Equal(t, sdk.ObjectTypeAgent, ownership.GrantedOn)
+		assert.Equal(t, sdk.ObjectTypeRole, ownership.GrantedTo)
+		assert.Equal(t, role.ID().Name(), ownership.GranteeName.Name())
+
+		currentRole := testClientHelper().Context.CurrentRole(t)
+		grantOwnershipToRole(t, currentRole, on, nil)
+		checkOwnershipOnObjectToRole(t, on, currentRole)
+	})
+
+	t.Run("on interactive table - with ownership", func(t *testing.T) {
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		interactiveTableId, interactiveTableCleanup := testClientHelper().Table.CreateInteractiveTable(t)
+		t.Cleanup(interactiveTableCleanup)
+
+		on := ownershipGrantOnObject(sdk.ObjectTypeInteractiveTable, interactiveTableId)
+
+		err := client.Grants.GrantOwnership(
+			ctx,
+			on,
+			sdk.OwnershipGrantTo{
+				AccountRoleName: new(role.ID()),
+			},
+			new(sdk.GrantOwnershipOptions),
+		)
+		require.NoError(t, err)
+
+		returnedGrants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			On: &sdk.ShowGrantsOn{
+				Object: on.Object,
+			},
+		})
+		require.NoError(t, err)
+
+		ownership, err := collections.FindFirst(returnedGrants, func(g sdk.Grant) bool { return g.Privilege == sdk.SchemaObjectOwnership.String() })
+		require.NoError(t, err)
+		assert.Equal(t, sdk.ObjectTypeInteractiveTable, ownership.GrantedOn)
 		assert.Equal(t, sdk.ObjectTypeRole, ownership.GrantedTo)
 		assert.Equal(t, role.ID().Name(), ownership.GranteeName.Name())
 

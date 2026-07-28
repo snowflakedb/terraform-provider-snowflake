@@ -49,9 +49,12 @@ The [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snow
 
 In most cases no action is required; this is a non-breaking addition. Note that external change detection for this field is not yet supported and will be addressed in a future update.
 
-### *(new feature)* Support for `SNOWFLAKE INTELLIGENCE` object type in grant resources
+### *(new feature)* Support for `SNOWFLAKE INTELLIGENCE` and `INTERACTIVE TABLE` object types in grant resources
 
-The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) and [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resources now support `SNOWFLAKE INTELLIGENCE` object type. This allows privileges (e.g. `MODIFY`, `USAGE`) on a Snowflake Intelligence object to be granted to an account role via Terraform.
+The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role), [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role), and [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) resources now support additional object types:
+
+- `SNOWFLAKE INTELLIGENCE` — an account-level object supporting `MODIFY` and `USAGE` privileges.
+- `INTERACTIVE TABLE` — a schema-level object supporting `SELECT` and `REFERENCES` privileges, including bulk grants on ALL/FUTURE interactive tables.
 
 No changes in configuration are required for existing resources; this is a non-breaking addition.
 
