@@ -285,6 +285,23 @@ Note that this error can still legitimately occur if your configuration change a
 
 No changes are required, but because `skip_toml_file_permission_verification` attribute will be removed in the next major version, you can safely remove it, to reduce the number of required changes in the next major provider release. Before removing the flag, make sure the TOML configuration file permissions are set correctly (see the [TOML file limitations](#toml-file-limitations) section in the provider documentation).
 
+### *(new feature)* `resource_monitor` field in `snowflake_warehouse_adaptive`
+
+Added a new optional `resource_monitor` field to the [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive) resource, mirroring the field already available in [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse). It specifies the name of a resource monitor explicitly assigned to the adaptive warehouse, and it is set on `CREATE WAREHOUSE` and set/unset on `ALTER WAREHOUSE`.
+
+No changes in configuration are required. To start managing the assigned resource monitor, add the field to your configuration:
+
+```terraform
+resource "snowflake_warehouse_adaptive" "example" {
+  name             = "example"
+  resource_monitor = "my_resource_monitor"
+}
+```
+
+Note that `snowflake_warehouse_adaptive` is still a preview resource, so it requires `snowflake_warehouse_adaptive_resource` in the provider's `preview_features_enabled` list.
+
+References: [#4897](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4897)
+
 ## v2.17.x ➞ v2.18.0
 
 ### Multiple resources and data sources promoted to stable

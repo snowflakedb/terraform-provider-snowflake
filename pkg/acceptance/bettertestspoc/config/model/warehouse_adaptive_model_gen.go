@@ -16,6 +16,7 @@ type WarehouseAdaptiveModel struct {
 	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaxQueryPerformanceLevel        tfconfig.Variable `json:"max_query_performance_level,omitempty"`
 	QueryThroughputMultiplier       tfconfig.Variable `json:"query_throughput_multiplier,omitempty"`
+	ResourceMonitor                 tfconfig.Variable `json:"resource_monitor,omitempty"`
 	StatementQueuedTimeoutInSeconds tfconfig.Variable `json:"statement_queued_timeout_in_seconds,omitempty"`
 	StatementTimeoutInSeconds       tfconfig.Variable `json:"statement_timeout_in_seconds,omitempty"`
 	WarehouseType                   tfconfig.Variable `json:"warehouse_type,omitempty"`
@@ -107,6 +108,11 @@ func (w *WarehouseAdaptiveModel) WithQueryThroughputMultiplier(queryThroughputMu
 	return w
 }
 
+func (w *WarehouseAdaptiveModel) WithResourceMonitor(resourceMonitor string) *WarehouseAdaptiveModel {
+	w.ResourceMonitor = tfconfig.StringVariable(resourceMonitor)
+	return w
+}
+
 func (w *WarehouseAdaptiveModel) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *WarehouseAdaptiveModel {
 	w.StatementQueuedTimeoutInSeconds = tfconfig.IntegerVariable(statementQueuedTimeoutInSeconds)
 	return w
@@ -148,6 +154,11 @@ func (w *WarehouseAdaptiveModel) WithMaxQueryPerformanceLevelValue(value tfconfi
 
 func (w *WarehouseAdaptiveModel) WithQueryThroughputMultiplierValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
 	w.QueryThroughputMultiplier = value
+	return w
+}
+
+func (w *WarehouseAdaptiveModel) WithResourceMonitorValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
+	w.ResourceMonitor = value
 	return w
 }
 
