@@ -171,7 +171,7 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 		WithMaxConcurrencyLevel(8).
 		WithStatementQueuedTimeoutInSeconds(30).
 		WithStatementTimeoutInSeconds(45).
-		WithTables(table.FullyQualifiedName())
+		WithTables(table.ID().FullyQualifiedName())
 
 	ref := complete.ResourceReference()
 
@@ -201,7 +201,7 @@ func TestAcc_WarehouseInteractive_CompleteUseCase(t *testing.T) {
 						HasMaxConcurrencyLevel(8).
 						HasStatementQueuedTimeoutInSeconds(30).
 						HasStatementTimeoutInSeconds(45).
-						HasTables(table.FullyQualifiedName()).
+						HasTables(table.ID().FullyQualifiedName()).
 						HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
 					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasName(warehouseId.Name()).
@@ -294,10 +294,10 @@ func TestAcc_WarehouseInteractive_TablesDelta(t *testing.T) {
 	t.Cleanup(table3Cleanup)
 
 	modelWithTwoTables := model.WarehouseInteractiveWithId(warehouseId).
-		WithTables(table1.FullyQualifiedName(), table2.FullyQualifiedName())
+		WithTables(table1.ID().FullyQualifiedName(), table2.ID().FullyQualifiedName())
 	// Drop table2, add table3 — should result in a single ADD + single DROP, no full replace.
 	modelWithSwappedTable := model.WarehouseInteractiveWithId(warehouseId).
-		WithTables(table1.FullyQualifiedName(), table3.FullyQualifiedName())
+		WithTables(table1.ID().FullyQualifiedName(), table3.ID().FullyQualifiedName())
 
 	ref := modelWithTwoTables.ResourceReference()
 
@@ -313,7 +313,7 @@ func TestAcc_WarehouseInteractive_TablesDelta(t *testing.T) {
 				Check: assertThat(
 					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
-						HasTables(table1.FullyQualifiedName(), table2.FullyQualifiedName()),
+						HasTables(table1.ID().FullyQualifiedName(), table2.ID().FullyQualifiedName()),
 				),
 			},
 			{
@@ -326,7 +326,7 @@ func TestAcc_WarehouseInteractive_TablesDelta(t *testing.T) {
 				Check: assertThat(
 					t,
 					resourceassert.WarehouseInteractiveResource(t, ref).
-						HasTables(table1.FullyQualifiedName(), table3.FullyQualifiedName()),
+						HasTables(table1.ID().FullyQualifiedName(), table3.ID().FullyQualifiedName()),
 				),
 			},
 		},

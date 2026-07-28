@@ -70,6 +70,8 @@ The [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io
 - `SNOWFLAKE INTELLIGENCE` — an account-level object supporting `MODIFY` and `USAGE` privileges.
 - `INTERACTIVE TABLE` — a schema-level object supporting `SELECT` and `REFERENCES` privileges, including bulk grants on ALL/FUTURE interactive tables.
 
+The [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) resource now also supports `INTERACTIVE TABLE` as a valid `object_type`.
+
 No changes in configuration are required for existing resources; this is a non-breaking addition.
 
 ### *(new preview resource)* New interactive warehouse resource

@@ -1009,7 +1009,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
-			WithTables([]sdk.SchemaObjectIdentifier{table1, table2}).
+			WithTables([]sdk.SchemaObjectIdentifier{table1.ID(), table2.ID()}).
 			WithWarehouseSize(sdk.WarehouseSizeXSmall).
 			WithComment("interactive warehouse"))
 		require.NoError(t, err)
@@ -1032,7 +1032,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasNoGeneration().
 				HasNoMaxQueryPerformanceLevel().
 				HasNoQueryThroughputMultiplier().
-				HasTables(table1, table2),
+				HasTables(table1.ID(), table2.ID()),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
@@ -1051,17 +1051,17 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
-			WithTables([]sdk.SchemaObjectIdentifier{table1}))
+			WithTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2}))
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2.ID()}))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table1, table2))
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table1.ID(), table2.ID()))
 
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1}))
+		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table2))
+		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table2.ID()))
 	})
 
 	t.Run("alter: set and unset fallback warehouse", func(t *testing.T) {
