@@ -26,6 +26,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.18.x ➞ v2.19.0
 
+### *(fix)* `snowflake_network_rules` data source promoted to stable
+
+The `snowflake_network_rules` data source was accidentally left out of the stable promotion in v2.17.0 when `snowflake_network_rule` resource was promoted. It is now correctly promoted to stable.
+
+The following data source is now stable and no longer requires the `preview_features_enabled` flag: `snowflake_network_rules` (`snowflake_network_rules_datasource`).
+
+Provider will issue a warning if a stable feature is still present in the `preview_features_enabled` list. These values will be removed in the next major version.
+
+Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
 ### *(bug fix)* `snowflake_storage_integration_aws` and `snowflake_storage_integration_azure` import fix
 
 Previously, after importing `snowflake_storage_integration_aws` or `snowflake_storage_integration_azure` (for example, when migrating from the older `snowflake_storage_integration` resource), the next `terraform plan` showed an unavoidable diff trying to unset `storage_aws_external_id` (AWS only) and modify `use_privatelink_endpoint` (AWS and Azure) when you did not set these fields in your configuration.

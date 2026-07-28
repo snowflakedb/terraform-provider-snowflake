@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -53,7 +52,7 @@ var networkRulesSchema = map[string]*schema.Schema{
 
 func NetworkRules() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.NetworkRulesDatasource), TrackingReadWrapper(datasources.NetworkRules, ReadNetworkRules)),
+		ReadContext: TrackingReadWrapper(datasources.NetworkRules, ReadNetworkRules),
 		Schema:      networkRulesSchema,
 		Description: "Data source used to get details of filtered network rules. Filtering is aligned with the current possibilities for [SHOW NETWORK RULES](https://docs.snowflake.com/en/sql-reference/sql/show-network-rules) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `network_rules`.",
 	}
