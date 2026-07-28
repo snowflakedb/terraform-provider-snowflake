@@ -152,6 +152,7 @@ func (c *accounts) UnsetAllParameters(ctx context.Context) error {
 		DefaultNotebookComputePoolCpu:                            Bool(true),
 		DefaultNotebookComputePoolGpu:                            Bool(true),
 		DefaultNullOrdering:                                      Bool(true),
+		DefaultStreamlitComputePool:                              Bool(true),
 		DefaultStreamlitNotebookWarehouse:                        Bool(true),
 		DisableUiDownloadButton:                                  Bool(true),
 		DisallowedSpcsWorkloadTypes:                              Bool(true),

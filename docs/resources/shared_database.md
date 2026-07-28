@@ -88,6 +88,8 @@ resource "snowflake_shared_database" "test" {
 - `catalog` (String) The database parameter that specifies the default catalog to use for Iceberg tables. For more information, see [CATALOG](https://docs.snowflake.com/en/sql-reference/parameters#catalog).
 - `comment` (String) Specifies a comment for the database.
 - `default_ddl_collation` (String) Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification).
+- `default_notebook_compute_pool_cpu` (String) Sets the preferred CPU compute pool used for Notebooks on CPU Container Runtime.
+- `default_notebook_compute_pool_gpu` (String) Sets the preferred GPU compute pool used for Notebooks on GPU Container Runtime.
 - `enable_console_output` (Boolean) If true, enables stdout/stderr fast path logging for anonymous stored procedures.
 - `external_volume` (String) The database parameter that specifies the default external volume to use for Iceberg tables. For more information, see [EXTERNAL_VOLUME](https://docs.snowflake.com/en/sql-reference/parameters#external-volume).
 - `log_event_level` (String) Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. For more information, see [LOG_EVENT_LEVEL](https://docs.snowflake.com/en/sql-reference/parameters#log_event_level). Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`.
