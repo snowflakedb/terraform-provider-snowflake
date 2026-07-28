@@ -57,6 +57,16 @@ func (d *DatabaseResourceAssert) HasDefaultDdlCollation(expected string) *Databa
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolCpu(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("default_notebook_compute_pool_cpu", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolGpu(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("default_notebook_compute_pool_gpu", expected)
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasDropPublicSchemaOnCreation(expected bool) *DatabaseResourceAssert {
 	d.BoolValueSet("drop_public_schema_on_creation", expected)
 	return d
@@ -170,6 +180,16 @@ func (d *DatabaseResourceAssert) HasDataRetentionTimeInDaysString(expected strin
 
 func (d *DatabaseResourceAssert) HasDefaultDdlCollationString(expected string) *DatabaseResourceAssert {
 	d.ValueSet("default_ddl_collation", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolCpuString(expected string) *DatabaseResourceAssert {
+	d.ValueSet("default_notebook_compute_pool_cpu", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolGpuString(expected string) *DatabaseResourceAssert {
+	d.ValueSet("default_notebook_compute_pool_gpu", expected)
 	return d
 }
 
@@ -287,6 +307,16 @@ func (d *DatabaseResourceAssert) HasNoDefaultDdlCollation() *DatabaseResourceAss
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasNoDefaultNotebookComputePoolCpu() *DatabaseResourceAssert {
+	d.ValueNotSet("default_notebook_compute_pool_cpu")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasNoDefaultNotebookComputePoolGpu() *DatabaseResourceAssert {
+	d.ValueNotSet("default_notebook_compute_pool_gpu")
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasNoDropPublicSchemaOnCreation() *DatabaseResourceAssert {
 	d.ValueNotSet("drop_public_schema_on_creation")
 	return d
@@ -393,6 +423,16 @@ func (d *DatabaseResourceAssert) HasDataRetentionTimeInDaysEmpty() *DatabaseReso
 
 func (d *DatabaseResourceAssert) HasDefaultDdlCollationEmpty() *DatabaseResourceAssert {
 	d.ValueSet("default_ddl_collation", "")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolCpuEmpty() *DatabaseResourceAssert {
+	d.ValueSet("default_notebook_compute_pool_cpu", "")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolGpuEmpty() *DatabaseResourceAssert {
+	d.ValueSet("default_notebook_compute_pool_gpu", "")
 	return d
 }
 
@@ -512,6 +552,16 @@ func (d *DatabaseResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *DatabaseR
 
 func (d *DatabaseResourceAssert) HasDefaultDdlCollationNotEmpty() *DatabaseResourceAssert {
 	d.ValuePresent("default_ddl_collation")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolCpuNotEmpty() *DatabaseResourceAssert {
+	d.ValuePresent("default_notebook_compute_pool_cpu")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasDefaultNotebookComputePoolGpuNotEmpty() *DatabaseResourceAssert {
+	d.ValuePresent("default_notebook_compute_pool_gpu")
 	return d
 }
 

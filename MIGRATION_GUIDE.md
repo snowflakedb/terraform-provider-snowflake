@@ -39,6 +39,7 @@ References: [#5020](https://github.com/snowflakedb/terraform-provider-snowflake/
 
 We have added new preview resources for file formats:
 - [snowflake_file_format_json](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json) for managing JSON file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_json_resource` feature name.
+- [snowflake_file_format_avro](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro) for managing AVRO file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_avro_resource` feature name.
 
 These features will be marked as stable in future releases. To use them, add the relevant feature name to the `preview_features_enabled` field in the provider configuration.
 
@@ -159,6 +160,26 @@ Previously, `WORKSPACES` was only supported for individual object grants (`on_sc
 No changes to existing configurations are required.
 
 References: [#5004](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5004).
+
+### *(new feature)* Adding missing compute pool parameters
+
+The following changes add support for managing default compute pool parameters for Notebooks and Streamlit apps:
+
+**`snowflake_account_parameter`** now supports:
+- `DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU`
+- `DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU`
+- `DEFAULT_STREAMLIT_COMPUTE_POOL`
+
+**`snowflake_current_account`** now supports:
+- `default_streamlit_compute_pool` — specifies the default compute pool for container-runtime Streamlit apps
+
+**`snowflake_database`**, **`snowflake_secondary_database`**, **`snowflake_shared_database`**, and **`snowflake_schema`** now support:
+- `default_notebook_compute_pool_cpu` — sets the preferred CPU compute pool for Notebooks
+- `default_notebook_compute_pool_gpu` — sets the preferred GPU compute pool for Notebooks
+
+No changes to existing configurations are required.
+
+References: [#5048](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5048).
 
 ### *(new feature)* `allowed_roles_list` added to OAuth security integrations
 

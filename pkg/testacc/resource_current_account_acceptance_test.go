@@ -73,6 +73,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithDefaultNullOrdering(string(sdk.DefaultNullOrderingFirst)).
+		WithDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_CPU").
 		WithDefaultStreamlitNotebookWarehouse(warehouseId.Name()).
 		WithDisableUiDownloadButton(true).
 		WithDisableUserPrivilegeGrants(true).
@@ -215,6 +216,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
 						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 						HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
+						HasDefaultStreamlitComputePoolString("SYSTEM_COMPUTE_POOL_CPU").
 						HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
 						HasDisableUiDownloadButtonString("true").
 						HasDisableUserPrivilegeGrantsString("true").
@@ -336,6 +338,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
 						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 						HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
+						HasDefaultStreamlitComputePoolString("SYSTEM_COMPUTE_POOL_CPU").
 						HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
 						HasDisableUiDownloadButtonString("true").
 						HasDisableUserPrivilegeGrantsString("true").
@@ -701,6 +704,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
 		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithDefaultNullOrdering(string(sdk.DefaultNullOrderingFirst)).
+		WithDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_CPU").
 		WithDefaultStreamlitNotebookWarehouse(warehouseId.Name()).
 		WithDisableUiDownloadButton(true).
 		WithDisableUserPrivilegeGrants(true).
@@ -830,6 +834,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
 						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 						HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
+						HasDefaultStreamlitComputePoolString("SYSTEM_COMPUTE_POOL_CPU").
 						HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
 						HasDisableUiDownloadButtonString("true").
 						HasDisableUserPrivilegeGrantsString("true").
@@ -956,6 +961,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
 						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 						HasDefaultNullOrderingString(string(sdk.DefaultNullOrderingFirst)).
+						HasDefaultStreamlitComputePoolString("SYSTEM_COMPUTE_POOL_CPU").
 						HasDefaultStreamlitNotebookWarehouseString(warehouseId.Name()).
 						HasDisableUiDownloadButtonString("true").
 						HasDisableUserPrivilegeGrantsString("true").

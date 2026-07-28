@@ -15,6 +15,8 @@ type SharedDatabaseModel struct {
 	Catalog                                 tfconfig.Variable `json:"catalog,omitempty"`
 	Comment                                 tfconfig.Variable `json:"comment,omitempty"`
 	DefaultDdlCollation                     tfconfig.Variable `json:"default_ddl_collation,omitempty"`
+	DefaultNotebookComputePoolCpu           tfconfig.Variable `json:"default_notebook_compute_pool_cpu,omitempty"`
+	DefaultNotebookComputePoolGpu           tfconfig.Variable `json:"default_notebook_compute_pool_gpu,omitempty"`
 	EnableConsoleOutput                     tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
 	FromShare                               tfconfig.Variable `json:"from_share,omitempty"`
@@ -117,6 +119,16 @@ func (s *SharedDatabaseModel) WithDefaultDdlCollation(defaultDdlCollation string
 	return s
 }
 
+func (s *SharedDatabaseModel) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *SharedDatabaseModel {
+	s.DefaultNotebookComputePoolCpu = tfconfig.StringVariable(defaultNotebookComputePoolCpu)
+	return s
+}
+
+func (s *SharedDatabaseModel) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *SharedDatabaseModel {
+	s.DefaultNotebookComputePoolGpu = tfconfig.StringVariable(defaultNotebookComputePoolGpu)
+	return s
+}
+
 func (s *SharedDatabaseModel) WithEnableConsoleOutput(enableConsoleOutput bool) *SharedDatabaseModel {
 	s.EnableConsoleOutput = tfconfig.BoolVariable(enableConsoleOutput)
 	return s
@@ -213,6 +225,16 @@ func (s *SharedDatabaseModel) WithCommentValue(value tfconfig.Variable) *SharedD
 
 func (s *SharedDatabaseModel) WithDefaultDdlCollationValue(value tfconfig.Variable) *SharedDatabaseModel {
 	s.DefaultDdlCollation = value
+	return s
+}
+
+func (s *SharedDatabaseModel) WithDefaultNotebookComputePoolCpuValue(value tfconfig.Variable) *SharedDatabaseModel {
+	s.DefaultNotebookComputePoolCpu = value
+	return s
+}
+
+func (s *SharedDatabaseModel) WithDefaultNotebookComputePoolGpuValue(value tfconfig.Variable) *SharedDatabaseModel {
+	s.DefaultNotebookComputePoolGpu = value
 	return s
 }
 

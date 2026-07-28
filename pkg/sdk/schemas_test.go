@@ -58,6 +58,8 @@ func TestSchemasCreate(t *testing.T) {
 			PipeExecutionPaused:                     Bool(true),
 			ReplaceInvalidCharacters:                Bool(true),
 			DefaultDdlCollation:                     Pointer(StringAllowEmpty{Value: "en_US-trim"}),
+			DefaultNotebookComputePoolCpu:           String("CPU_X64_S"),
+			DefaultNotebookComputePoolGpu:           String("GPU_NV_S"),
 			StorageSerializationPolicy:              Pointer(StorageSerializationPolicyCompatible),
 			LogLevel:                                Pointer(LogLevelInfo),
 			TraceLevel:                              Pointer(TraceLevelPropagate),
@@ -72,7 +74,7 @@ func TestSchemasCreate(t *testing.T) {
 			Tag:                                     []TagAssociation{{Name: tagId, Value: "v1"}},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE TRANSIENT SCHEMA IF NOT EXISTS %s WITH MANAGED ACCESS DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 `+
-			`EXTERNAL_VOLUME = "%s" CATALOG = "%s" PIPE_EXECUTION_PAUSED = true REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US-trim' STORAGE_SERIALIZATION_POLICY = COMPATIBLE `+
+			`EXTERNAL_VOLUME = "%s" CATALOG = "%s" PIPE_EXECUTION_PAUSED = true REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US-trim' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE `+
 			`LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM `+
 			`USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true `+
 			`COMMENT = 'comment' TAG (%s = 'v1')`,
@@ -171,6 +173,8 @@ func TestSchemasAlter(t *testing.T) {
 			"PipeExecutionPaused",
 			"ReplaceInvalidCharacters",
 			"DefaultDdlCollation",
+			"DefaultNotebookComputePoolCpu",
+			"DefaultNotebookComputePoolGpu",
 			"StorageSerializationPolicy",
 			"LogLevel",
 			"LogEventLevel",
@@ -200,6 +204,8 @@ func TestSchemasAlter(t *testing.T) {
 			"PipeExecutionPaused",
 			"ReplaceInvalidCharacters",
 			"DefaultDdlCollation",
+			"DefaultNotebookComputePoolCpu",
+			"DefaultNotebookComputePoolGpu",
 			"StorageSerializationPolicy",
 			"LogLevel",
 			"LogEventLevel",
@@ -281,6 +287,8 @@ func TestSchemasAlter(t *testing.T) {
 				PipeExecutionPaused:                     Bool(true),
 				ReplaceInvalidCharacters:                Bool(true),
 				DefaultDdlCollation:                     Pointer(StringAllowEmpty{Value: "en_US-trim"}),
+				DefaultNotebookComputePoolCpu:           String("CPU_X64_S"),
+				DefaultNotebookComputePoolGpu:           String("GPU_NV_S"),
 				StorageSerializationPolicy:              Pointer(StorageSerializationPolicyCompatible),
 				LogLevel:                                Pointer(LogLevelInfo),
 				TraceLevel:                              Pointer(TraceLevelPropagate),
@@ -296,7 +304,7 @@ func TestSchemasAlter(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(
 			t, opts, `ALTER SCHEMA %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, `+
-				`EXTERNAL_VOLUME = "%s", CATALOG = "%s", PIPE_EXECUTION_PAUSED = true, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US-trim', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, `+
+				`EXTERNAL_VOLUME = "%s", CATALOG = "%s", PIPE_EXECUTION_PAUSED = true, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US-trim', DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S', DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, `+
 				`LOG_LEVEL = 'INFO', TRACE_LEVEL = 'PROPAGATE', SUSPEND_TASK_AFTER_NUM_FAILURES = 10, TASK_AUTO_RETRY_ATTEMPTS = 10, USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM, `+
 				`USER_TASK_TIMEOUT_MS = 12000, USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30, QUOTED_IDENTIFIERS_IGNORE_CASE = true, ENABLE_CONSOLE_OUTPUT = true, `+
 				`COMMENT = 'comment'`,
@@ -315,6 +323,8 @@ func TestSchemasAlter(t *testing.T) {
 				PipeExecutionPaused:                     Bool(true),
 				ReplaceInvalidCharacters:                Bool(true),
 				DefaultDdlCollation:                     Bool(true),
+				DefaultNotebookComputePoolCpu:           Bool(true),
+				DefaultNotebookComputePoolGpu:           Bool(true),
 				StorageSerializationPolicy:              Bool(true),
 				LogLevel:                                Bool(true),
 				TraceLevel:                              Bool(true),
@@ -329,7 +339,7 @@ func TestSchemasAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SCHEMA %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, EXTERNAL_VOLUME, CATALOG, PIPE_EXECUTION_PAUSED, `+
-			`REPLACE_INVALID_CHARACTERS, DEFAULT_DDL_COLLATION, STORAGE_SERIALIZATION_POLICY, LOG_LEVEL, TRACE_LEVEL, SUSPEND_TASK_AFTER_NUM_FAILURES, TASK_AUTO_RETRY_ATTEMPTS, `+
+			`REPLACE_INVALID_CHARACTERS, DEFAULT_DDL_COLLATION, DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU, DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU, STORAGE_SERIALIZATION_POLICY, LOG_LEVEL, TRACE_LEVEL, SUSPEND_TASK_AFTER_NUM_FAILURES, TASK_AUTO_RETRY_ATTEMPTS, `+
 			`USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE, USER_TASK_TIMEOUT_MS, USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS, QUOTED_IDENTIFIERS_IGNORE_CASE, ENABLE_CONSOLE_OUTPUT, COMMENT`, opts.name.FullyQualifiedName())
 	})
 

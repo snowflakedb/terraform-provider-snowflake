@@ -375,3 +375,46 @@ func TestAcc_WarehouseAdaptive_ExternalTypeChange(t *testing.T) {
 		},
 	})
 }
+
+func TestAcc_WarehouseAdaptive_ExternalTypeChangeToInteractive(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	warehouseModel := model.WarehouseAdaptiveWithId(id)
+	ref := warehouseModel.ResourceReference()
+
+	assertions := []assert.TestCheckFuncProvider{
+		resourceassert.WarehouseAdaptiveResource(t, ref).
+			HasWarehouseType(string(sdk.WarehouseTypeAdaptive)),
+		resourceshowoutputassert.WarehouseShowOutput(t, ref).
+			HasType(sdk.WarehouseTypeAdaptive),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.WarehouseAdaptive),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, warehouseModel),
+				Check:  assertThat(t, assertions...),
+			},
+			{
+				PreConfig: func() {
+					testClient().Warehouse.CreateInteractiveWithRequest(t,
+						sdk.NewCreateInteractiveWarehouseRequest(id).WithOrReplace(true))
+				},
+				Config: accconfig.FromModels(t, warehouseModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectDrift(ref, "warehouse_type", new(string(sdk.WarehouseTypeAdaptive)), new(string(sdk.WarehouseTypeInteractive))),
+						planchecks.ExpectChange(ref, "warehouse_type", tfjson.ActionDelete, new(string(sdk.WarehouseTypeInteractive)), nil),
+					},
+				},
+				Check: assertThat(t, assertions...),
+			},
+		},
+	})
+}
