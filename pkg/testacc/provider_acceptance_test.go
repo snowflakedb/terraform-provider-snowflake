@@ -977,6 +977,100 @@ func TestAcc_Experimental_Provider_AuthenticatorExplicitOnly(t *testing.T) {
 	})
 }
 
+func TestAcc_Experimental_Provider_AccountFallback_Validations(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	accountId := testClient().Context.CurrentAccountId(t)
+	accountIdentifier := fmt.Sprintf("%s-%s", accountId.OrganizationName(), accountId.AccountName())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// account field without experiment → error
+			{
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().
+					WithProfile(tmpServiceUserConfig.Profile).
+					WithAccount(accountIdentifier),
+					datasourceModel()),
+				ExpectError: regexp.MustCompile(`the account field requires the "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK" experiment to be enabled`),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_Provider_AccountFallback_ConnectsWithAccountField(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	accountId := testClient().Context.CurrentAccountId(t)
+	accountIdentifier := fmt.Sprintf("%s-%s", accountId.OrganizationName(), accountId.AccountName())
+	accountLocator := testClient().GetAccountLocator()
+
+	providerWithOrgName := providermodel.SnowflakeProvider().
+		WithProfile(tmpServiceUserConfig.Profile).
+		WithAccount(accountIdentifier).
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ProviderConfigurationAccountFallback)
+
+	providerWithLocator := providermodel.SnowflakeProvider().
+		WithProfile(tmpServiceUserConfig.Profile).
+		WithAccount(accountLocator).
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ProviderConfigurationAccountFallback)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// Connect using org-name format
+			{
+				Config: config.FromModels(t, providerWithOrgName, datasourceModel()),
+			},
+			// Connect using account locator
+			{
+				Config: config.FromModels(t, providerWithLocator, datasourceModel()),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_Provider_AccountFallback_OrgAndNameTakePrecedence(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	accountId := testClient().Context.CurrentAccountId(t)
+
+	// Set account to a wrong value; org+name are correct — should connect successfully proving org+name wins
+	providerModel := providermodel.SnowflakeProvider().
+		WithProfile(tmpServiceUserConfig.Profile).
+		WithOrganizationName(accountId.OrganizationName()).
+		WithAccountName(accountId.AccountName()).
+		WithAccount("wrong-account-value").
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ProviderConfigurationAccountFallback)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+		},
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, providerModel, datasourceModel()),
+			},
+		},
+	})
+}
+
 func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
