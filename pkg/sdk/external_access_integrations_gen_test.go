@@ -136,23 +136,7 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: conflicting fields for [opts.IfExists opts.SetTags]", func(t *testing.T) {
-		tagId := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.SetTags = []TagAssociation{{Name: tagId, Value: "v"}}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAccessIntegrationOptions", "IfExists", "SetTags"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetTags]", func(t *testing.T) {
-		tagId := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.UnsetTags = []ObjectIdentifier{tagId}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalAccessIntegrationOptions", "IfExists", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
+t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
 		opts := defaultOpts()
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	})

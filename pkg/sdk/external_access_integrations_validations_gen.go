@@ -42,12 +42,6 @@ func (opts *AlterExternalAccessIntegrationOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if everyValueSet(opts.IfExists, opts.SetTags) {
-		errs = append(errs, errOneOf("AlterExternalAccessIntegrationOptions", "IfExists", "SetTags"))
-	}
-	if everyValueSet(opts.IfExists, opts.UnsetTags) {
-		errs = append(errs, errOneOf("AlterExternalAccessIntegrationOptions", "IfExists", "UnsetTags"))
-	}
 	if !exactlyOneValueSet(opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags) {
 		errs = append(errs, errExactlyOneOf("AlterExternalAccessIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
 	}

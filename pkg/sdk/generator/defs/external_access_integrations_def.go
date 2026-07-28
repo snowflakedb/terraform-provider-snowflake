@@ -86,8 +86,6 @@ var externalAccessIntegrationsDef = g.NewInterface(
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ConflictingFields, "IfExists", "SetTags").
-		WithValidation(g.ConflictingFields, "IfExists", "UnsetTags").
 		WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "SetTags", "UnsetTags"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-integration",
