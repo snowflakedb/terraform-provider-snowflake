@@ -282,10 +282,12 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create adaptive: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+
 		err := client.Warehouses.CreateAdaptive(ctx, sdk.NewCreateAdaptiveWarehouseRequest(id).
 			WithComment("test adaptive warehouse").
 			WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
 			WithQueryThroughputMultiplier(22).
+			WithResourceMonitor(resourceMonitor.ID()).
 			WithStatementQueuedTimeoutInSeconds(30).
 			WithStatementTimeoutInSeconds(60))
 		require.NoError(t, err)
@@ -307,7 +309,8 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoEnableQueryAcceleration().
 				HasNoQueryAccelerationMaxScaleFactor().
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-				HasQueryThroughputMultiplier(22),
+				HasQueryThroughputMultiplier(22).
+				HasResourceMonitor(resourceMonitor.ID()),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, id).
@@ -471,10 +474,13 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateAdaptive(t)
 		t.Cleanup(warehouseCleanup)
 
+		emptyId := sdk.NewAccountObjectIdentifier("")
+
 		assertThatObject(
 			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-				HasQueryThroughputMultiplier(2),
+				HasQueryThroughputMultiplier(2).
+				HasResourceMonitor(emptyId),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
@@ -486,6 +492,7 @@ func TestInt_Warehouses(t *testing.T) {
 			WithSet(*sdk.NewWarehouseSetRequest().
 				WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
 				WithQueryThroughputMultiplier(5).
+				WithResourceMonitor(resourceMonitor.ID()).
 				WithStatementQueuedTimeoutInSeconds(100).
 				WithStatementTimeoutInSeconds(200)))
 		require.NoError(t, err)
@@ -493,7 +500,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assertThatObject(
 			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
-				HasQueryThroughputMultiplier(5),
+				HasQueryThroughputMultiplier(5).
+				HasResourceMonitor(resourceMonitor.ID()),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
@@ -505,6 +513,7 @@ func TestInt_Warehouses(t *testing.T) {
 			WithUnset(*sdk.NewWarehouseUnsetRequest().
 				WithMaxQueryPerformanceLevel(true).
 				WithQueryThroughputMultiplier(true).
+				WithResourceMonitor(true).
 				WithStatementQueuedTimeoutInSeconds(true).
 				WithStatementTimeoutInSeconds(true)))
 		require.NoError(t, err)
@@ -512,7 +521,8 @@ func TestInt_Warehouses(t *testing.T) {
 		assertThatObject(
 			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-				HasQueryThroughputMultiplier(2),
+				HasQueryThroughputMultiplier(2).
+				HasResourceMonitor(emptyId),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).

@@ -29,11 +29,19 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	newComment := random.Comment()
 
+	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(resourceMonitorCleanup)
+	newResourceMonitor, newResourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(newResourceMonitorCleanup)
+	externalResourceMonitor, externalResourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(externalResourceMonitorCleanup)
+
 	warehouseModel := model.WarehouseAdaptiveWithId(warehouseId)
 	warehouseModelWithOptionals := model.WarehouseAdaptiveWithId(warehouseId).
 		WithComment(comment).
 		WithQueryThroughputMultiplier(2).
 		WithMaxQueryPerformanceLevel(string(sdk.MaxQueryPerformanceLevelLarge)).
+		WithResourceMonitor(resourceMonitor.ID().Name()).
 		WithStatementQueuedTimeoutInSeconds(300).
 		WithStatementTimeoutInSeconds(86400)
 	warehouseModelWithZeroMultiplier := model.WarehouseAdaptiveWithId(warehouseId).
@@ -42,6 +50,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 		WithComment(newComment).
 		WithQueryThroughputMultiplier(4).
 		WithMaxQueryPerformanceLevel(string(sdk.MaxQueryPerformanceLevelSmall)).
+		WithResourceMonitor(newResourceMonitor.ID().Name()).
 		WithStatementQueuedTimeoutInSeconds(600).
 		WithStatementTimeoutInSeconds(43200)
 	warehouseModelRenamedMinimal := model.WarehouseAdaptiveWithId(newWarehouseId)
@@ -59,6 +68,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasCommentEmpty().
 			HasNoMaxQueryPerformanceLevel().
 			HasQueryThroughputMultiplierString(r.IntDefaultString).
+			HasNoResourceMonitor().
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800).
 			HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
@@ -67,6 +77,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasStateNotEmpty().
 			HasCommentEmpty().
+			HasResourceMonitorEmpty().
 			HasOwnerNotEmpty().
 			HasOwnerRoleTypeNotEmpty(),
 	}
@@ -77,12 +88,14 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasCommentString(comment).
 			HasMaxQueryPerformanceLevelString(string(sdk.MaxQueryPerformanceLevelLarge)).
 			HasQueryThroughputMultiplier(2).
+			HasResourceMonitorString(resourceMonitor.ID().Name()).
 			HasStatementQueuedTimeoutInSeconds(300).
 			HasStatementTimeoutInSeconds(86400),
 		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(warehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasComment(comment).
+			HasResourceMonitor(resourceMonitor.ID()).
 			HasQueryThroughputMultiplier(2),
 	}
 
@@ -91,6 +104,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasNameString(newWarehouseId.Name()).
 			HasCommentString(newComment).
 			HasQueryThroughputMultiplier(4).
+			HasResourceMonitorString(newResourceMonitor.ID().Name()).
 			HasStatementQueuedTimeoutInSeconds(600).
 			HasStatementTimeoutInSeconds(43200).
 			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
@@ -98,6 +112,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasName(newWarehouseId.Name()).
 			HasType(sdk.WarehouseTypeAdaptive).
 			HasComment(newComment).
+			HasResourceMonitor(newResourceMonitor.ID()).
 			HasQueryThroughputMultiplier(4),
 	}
 
@@ -106,12 +121,14 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			HasNameString(newWarehouseId.Name()).
 			HasCommentEmpty().
 			HasQueryThroughputMultiplierString(r.IntDefaultString).
+			HasResourceMonitorEmpty().
 			HasStatementQueuedTimeoutInSeconds(0).
 			HasStatementTimeoutInSeconds(172800).
 			HasFullyQualifiedNameString(newWarehouseId.FullyQualifiedName()),
 		resourceshowoutputassert.WarehouseShowOutput(t, ref).
 			HasName(newWarehouseId.Name()).
 			HasCommentEmpty().
+			HasResourceMonitorEmpty().
 			HasQueryThroughputMultiplier(2),
 	}
 
@@ -129,10 +146,15 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 			},
 			// import after minimal config
 			{
-				ResourceName:            warehouseModel.ResourceReference(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"max_query_performance_level", "query_throughput_multiplier", "show_output.0.running"},
+				ResourceName:      warehouseModel.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"max_query_performance_level",
+					"query_throughput_multiplier",
+					"resource_monitor", // TODO (next PR): For now, it's skipped because SDK assumes it's always set. To be followed up with.
+					"show_output.0.running",
+				},
 			},
 			// set query_throughput_multiplier to 0 (explicit value, distinct from IntDefault sentinel -1)
 			{
@@ -167,6 +189,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(comment), sdk.String(newComment)),
 						planchecks.ExpectChange(ref, "query_throughput_multiplier", tfjson.ActionUpdate, sdk.String("2"), sdk.String("4")),
 						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, sdk.String(string(sdk.MaxQueryPerformanceLevelLarge)), sdk.String(string(sdk.MaxQueryPerformanceLevelSmall))),
+						planchecks.ExpectChange(ref, "resource_monitor", tfjson.ActionUpdate, sdk.String(resourceMonitor.ID().Name()), sdk.String(newResourceMonitor.ID().Name())),
 						planchecks.ExpectChange(ref, "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("300"), sdk.String("600")),
 						planchecks.ExpectChange(ref, "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("86400"), sdk.String("43200")),
 					},
@@ -184,7 +207,8 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 							WithQueryThroughputMultiplier(externalQueryThroughputMultiplier).
 							WithStatementTimeoutInSeconds(externalStatementTimeout).
 							WithStatementQueuedTimeoutInSeconds(externalStatementQueuedTimeout).
-							WithMaxQueryPerformanceLevel(externalMaxQueryPerformanceLevel),
+							WithMaxQueryPerformanceLevel(externalMaxQueryPerformanceLevel).
+							WithResourceMonitor(externalResourceMonitor.ID()),
 					)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -194,6 +218,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("99999"), sdk.String("43200")),
 						planchecks.ExpectChange(ref, "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("1200"), sdk.String("600")),
 						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, sdk.String(string(sdk.MaxQueryPerformanceLevelMedium)), sdk.String(string(sdk.MaxQueryPerformanceLevelSmall))),
+						planchecks.ExpectChange(ref, "resource_monitor", tfjson.ActionUpdate, sdk.String(externalResourceMonitor.ID().Name()), sdk.String(newResourceMonitor.ID().Name())),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(externalComment), sdk.String(newComment)),
 					},
 				},
@@ -210,6 +235,7 @@ func TestAcc_WarehouseAdaptive_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "statement_queued_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("600"), nil),
 						planchecks.ExpectChange(ref, "statement_timeout_in_seconds", tfjson.ActionUpdate, sdk.String("43200"), nil),
 						planchecks.ExpectChange(ref, "max_query_performance_level", tfjson.ActionUpdate, sdk.String(string(sdk.MaxQueryPerformanceLevelSmall)), nil),
+						planchecks.ExpectChange(ref, "resource_monitor", tfjson.ActionUpdate, sdk.String(newResourceMonitor.ID().Name()), nil),
 					},
 				},
 				Check: assertThat(t, unsetAssertions...),
@@ -222,10 +248,14 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
+	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
+	t.Cleanup(resourceMonitorCleanup)
+
 	warehouseModelComplete := model.WarehouseAdaptiveWithId(warehouseId).
 		WithComment(comment).
 		WithMaxQueryPerformanceLevel(string(sdk.MaxQueryPerformanceLevelLarge)).
 		WithQueryThroughputMultiplier(3).
+		WithResourceMonitor(resourceMonitor.ID().Name()).
 		WithStatementQueuedTimeoutInSeconds(300).
 		WithStatementTimeoutInSeconds(86400)
 
@@ -246,6 +276,7 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 						HasCommentString(comment).
 						HasMaxQueryPerformanceLevelString(string(sdk.MaxQueryPerformanceLevelLarge)).
 						HasQueryThroughputMultiplier(3).
+						HasResourceMonitorString(resourceMonitor.ID().Name()).
 						HasStatementQueuedTimeoutInSeconds(300).
 						HasStatementTimeoutInSeconds(86400).
 						HasFullyQualifiedNameString(warehouseId.FullyQualifiedName()),
@@ -254,7 +285,8 @@ func TestAcc_WarehouseAdaptive_CompleteUseCase(t *testing.T) {
 						HasType(sdk.WarehouseTypeAdaptive).
 						HasComment(comment).
 						HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelLarge).
-						HasQueryThroughputMultiplier(3),
+						HasQueryThroughputMultiplier(3).
+						HasResourceMonitor(resourceMonitor.ID()),
 					resourceparametersassert.WarehouseAdaptiveResourceParameters(t, warehouseModelComplete.ResourceReference()).
 						HasStatementQueuedTimeoutInSeconds(300).
 						HasStatementTimeoutInSeconds(86400),
