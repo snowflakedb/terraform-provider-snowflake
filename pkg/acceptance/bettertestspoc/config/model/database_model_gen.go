@@ -16,8 +16,6 @@ type DatabaseModel struct {
 	Comment                                 tfconfig.Variable `json:"comment,omitempty"`
 	DataRetentionTimeInDays                 tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
 	DefaultDdlCollation                     tfconfig.Variable `json:"default_ddl_collation,omitempty"`
-	DefaultNotebookComputePoolCpu           tfconfig.Variable `json:"default_notebook_compute_pool_cpu,omitempty"`
-	DefaultNotebookComputePoolGpu           tfconfig.Variable `json:"default_notebook_compute_pool_gpu,omitempty"`
 	DropPublicSchemaOnCreation              tfconfig.Variable `json:"drop_public_schema_on_creation,omitempty"`
 	EnableConsoleOutput                     tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
@@ -121,16 +119,6 @@ func (d *DatabaseModel) WithDataRetentionTimeInDays(dataRetentionTimeInDays int)
 
 func (d *DatabaseModel) WithDefaultDdlCollation(defaultDdlCollation string) *DatabaseModel {
 	d.DefaultDdlCollation = tfconfig.StringVariable(defaultDdlCollation)
-	return d
-}
-
-func (d *DatabaseModel) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *DatabaseModel {
-	d.DefaultNotebookComputePoolCpu = tfconfig.StringVariable(defaultNotebookComputePoolCpu)
-	return d
-}
-
-func (d *DatabaseModel) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *DatabaseModel {
-	d.DefaultNotebookComputePoolGpu = tfconfig.StringVariable(defaultNotebookComputePoolGpu)
 	return d
 }
 
@@ -247,16 +235,6 @@ func (d *DatabaseModel) WithDataRetentionTimeInDaysValue(value tfconfig.Variable
 
 func (d *DatabaseModel) WithDefaultDdlCollationValue(value tfconfig.Variable) *DatabaseModel {
 	d.DefaultDdlCollation = value
-	return d
-}
-
-func (d *DatabaseModel) WithDefaultNotebookComputePoolCpuValue(value tfconfig.Variable) *DatabaseModel {
-	d.DefaultNotebookComputePoolCpu = value
-	return d
-}
-
-func (d *DatabaseModel) WithDefaultNotebookComputePoolGpuValue(value tfconfig.Variable) *DatabaseModel {
-	d.DefaultNotebookComputePoolGpu = value
 	return d
 }
 

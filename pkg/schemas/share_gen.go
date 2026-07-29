@@ -45,7 +45,7 @@ func ShareToSchema(share *sdk.Share) map[string]any {
 	shareSchema := make(map[string]any)
 	shareSchema["created_on"] = share.CreatedOn.String()
 	shareSchema["kind"] = string(share.Kind)
-	shareSchema["name"] = share.ID().FullyQualifiedName()
+	shareSchema["name"] = share.Name.FullyQualifiedName()
 	shareSchema["database_name"] = share.DatabaseName.Name()
 	shareSchema["to"] = share.To
 	shareSchema["owner"] = share.Owner

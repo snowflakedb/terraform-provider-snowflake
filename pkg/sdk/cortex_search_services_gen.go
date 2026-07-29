@@ -19,26 +19,20 @@ type CortexSearchServices interface {
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 }
 
-// CreateCortexSearchServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-cortex-search.
+// CreateCortexSearchServiceOptions is based on https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/create-cortex-search.
 type CreateCortexSearchServiceOptions struct {
-	create                     bool                            `ddl:"static" sql:"CREATE"`
-	OrReplace                  *bool                           `ddl:"keyword" sql:"OR REPLACE"`
-	cortexSearchService        bool                            `ddl:"static" sql:"CORTEX SEARCH SERVICE"`
-	IfNotExists                *bool                           `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                       SchemaObjectIdentifier          `ddl:"identifier"`
-	On                         string                          `ddl:"parameter,no_quotes,no_equals" sql:"ON"`
-	PrimaryKey                 []string                        `ddl:"parameter,parentheses,no_equals" sql:"PRIMARY KEY"`
-	Attributes                 *Attributes                     `ddl:"keyword"`
-	Warehouse                  AccountObjectIdentifier         `ddl:"identifier,equals" sql:"WAREHOUSE"`
-	TargetLag                  string                          `ddl:"parameter,single_quotes" sql:"TARGET_LAG"`
-	EmbeddingModel             *string                         `ddl:"parameter,single_quotes" sql:"EMBEDDING_MODEL"`
-	RefreshMode                *CortexSearchServiceRefreshMode `ddl:"parameter,no_quotes" sql:"REFRESH_MODE"`
-	Initialize                 *CortexSearchServiceInitialize  `ddl:"parameter,no_quotes" sql:"INITIALIZE"`
-	FullIndexBuildIntervalDays *int                            `ddl:"parameter" sql:"FULL_INDEX_BUILD_INTERVAL_DAYS"`
-	RequestLogging             *bool                           `ddl:"parameter" sql:"REQUEST_LOGGING"`
-	AutoSuspend                *int                            `ddl:"parameter" sql:"AUTO_SUSPEND"`
-	Comment                    *string                         `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	QueryDefinition            string                          `ddl:"parameter,no_quotes,no_equals" sql:"AS"`
+	create              bool                    `ddl:"static" sql:"CREATE"`
+	OrReplace           *bool                   `ddl:"keyword" sql:"OR REPLACE"`
+	cortexSearchService bool                    `ddl:"static" sql:"CORTEX SEARCH SERVICE"`
+	IfNotExists         *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                SchemaObjectIdentifier  `ddl:"identifier"`
+	On                  string                  `ddl:"parameter,no_quotes,no_equals" sql:"ON"`
+	Attributes          *Attributes             `ddl:"keyword"`
+	Warehouse           AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
+	TargetLag           string                  `ddl:"parameter,single_quotes" sql:"TARGET_LAG"`
+	EmbeddingModel      *string                 `ddl:"parameter,single_quotes" sql:"EMBEDDING_MODEL"`
+	Comment             *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	QueryDefinition     string                  `ddl:"parameter,no_quotes,no_equals" sql:"AS"`
 }
 
 type Attributes struct {
@@ -46,48 +40,22 @@ type Attributes struct {
 	Columns    []string `ddl:"list,no_parentheses,no_equals"`
 }
 
-// AlterCortexSearchServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search.
+// AlterCortexSearchServiceOptions is based on https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/alter-cortex-search.
 type AlterCortexSearchServiceOptions struct {
-	alter               bool                              `ddl:"static" sql:"ALTER"`
-	cortexSearchService bool                              `ddl:"static" sql:"CORTEX SEARCH SERVICE"`
-	IfExists            *bool                             `ddl:"keyword" sql:"IF EXISTS"`
-	name                SchemaObjectIdentifier            `ddl:"identifier"`
-	Suspend             *bool                             `ddl:"keyword" sql:"SUSPEND"`
-	Resume              *bool                             `ddl:"keyword" sql:"RESUME"`
-	Refresh             *bool                             `ddl:"keyword" sql:"REFRESH"`
-	Set                 *CortexSearchServiceSet           `ddl:"keyword" sql:"SET"`
-	SetDefaults         *CortexSearchServiceSetDefaults   `ddl:"keyword" sql:"SET"`
-	SetPrimaryKey       *CortexSearchServiceSetPrimaryKey `ddl:"keyword" sql:"SET"`
-	SetAttributes       *CortexSearchServiceSetAttributes `ddl:"keyword" sql:"SET"`
-	UnsetPrimaryKey     *bool                             `ddl:"keyword" sql:"UNSET PRIMARY KEY"`
-	UnsetAttributes     *bool                             `ddl:"keyword" sql:"UNSET ATTRIBUTES"`
-	SetTags             []TagAssociation                  `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags           []ObjectIdentifier                `ddl:"keyword" sql:"UNSET TAG"`
+	alter               bool                    `ddl:"static" sql:"ALTER"`
+	cortexSearchService bool                    `ddl:"static" sql:"CORTEX SEARCH SERVICE"`
+	IfExists            *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	name                SchemaObjectIdentifier  `ddl:"identifier"`
+	Set                 *CortexSearchServiceSet `ddl:"keyword" sql:"SET"`
 }
 
 type CortexSearchServiceSet struct {
-	TargetLag                  *string                  `ddl:"parameter,single_quotes" sql:"TARGET_LAG"`
-	Warehouse                  *AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
-	FullIndexBuildIntervalDays *int                     `ddl:"parameter" sql:"FULL_INDEX_BUILD_INTERVAL_DAYS"`
-	RequestLogging             *bool                    `ddl:"parameter" sql:"REQUEST_LOGGING"`
-	AutoSuspend                *int                     `ddl:"parameter" sql:"AUTO_SUSPEND"`
-	Comment                    *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	TargetLag *string                  `ddl:"parameter,single_quotes" sql:"TARGET_LAG"`
+	Warehouse *AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
+	Comment   *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-type CortexSearchServiceSetDefaults struct {
-	AutoSuspend *bool `ddl:"keyword" sql:"AUTO_SUSPEND = NULL"`
-}
-
-type CortexSearchServiceSetPrimaryKey struct {
-	PrimaryKey []string `ddl:"parameter,parentheses" sql:"PRIMARY KEY"`
-}
-
-type CortexSearchServiceSetAttributes struct {
-	attributes bool     `ddl:"static" sql:"ATTRIBUTES"`
-	Columns    []string `ddl:"list,parentheses,no_equals"`
-}
-
-// ShowCortexSearchServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-cortex-search.
+// ShowCortexSearchServiceOptions is based on https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/show-cortex-search.
 type ShowCortexSearchServiceOptions struct {
 	show                 bool       `ddl:"static" sql:"SHOW"`
 	cortexSearchServices bool       `ddl:"static" sql:"CORTEX SEARCH SERVICES"`
@@ -98,35 +66,19 @@ type ShowCortexSearchServiceOptions struct {
 }
 
 type cortexSearchServiceRow struct {
-	CreatedOn           time.Time      `db:"created_on"`
-	Name                string         `db:"name"`
-	DatabaseName        string         `db:"database_name"`
-	SchemaName          string         `db:"schema_name"`
-	Warehouse           string         `db:"warehouse"`
-	TargetLag           string         `db:"target_lag"`
-	Definition          sql.NullString `db:"definition"`
-	SearchColumn        sql.NullString `db:"search_column"`
-	AttributeColumns    sql.NullString `db:"attribute_columns"`
-	Columns             sql.NullString `db:"columns"`
-	PrimaryKeyColumns   sql.NullString `db:"primary_key_columns"`
-	ScoringProfileCount int            `db:"scoring_profile_count"`
-	Comment             sql.NullString `db:"comment"`
+	CreatedOn    time.Time      `db:"created_on"`
+	Name         string         `db:"name"`
+	DatabaseName string         `db:"database_name"`
+	SchemaName   string         `db:"schema_name"`
+	Comment      sql.NullString `db:"comment"`
 }
 
 type CortexSearchService struct {
-	CreatedOn           time.Time
-	Name                string
-	DatabaseName        string
-	SchemaName          string
-	Warehouse           string
-	TargetLag           string
-	Definition          *string
-	SearchColumn        *string
-	AttributeColumns    []string
-	Columns             []string
-	PrimaryKeyColumns   []string
-	ScoringProfileCount int
-	Comment             string
+	CreatedOn    time.Time
+	Name         string
+	DatabaseName string
+	SchemaName   string
+	Comment      string
 }
 
 func (v *CortexSearchService) ID() SchemaObjectIdentifier {
@@ -137,7 +89,7 @@ func (v *CortexSearchService) ObjectType() ObjectType {
 	return ObjectTypeCortexSearchService
 }
 
-// DescribeCortexSearchServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-cortex-search.
+// DescribeCortexSearchServiceOptions is based on https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/desc-cortex-search.
 type DescribeCortexSearchServiceOptions struct {
 	describe            bool                   `ddl:"static" sql:"DESCRIBE"`
 	cortexSearchService bool                   `ddl:"static" sql:"CORTEX SEARCH SERVICE"`
@@ -145,54 +97,46 @@ type DescribeCortexSearchServiceOptions struct {
 }
 
 type cortexSearchServiceDetailsRow struct {
-	CreatedOn                  string         `db:"created_on"`
-	Name                       string         `db:"name"`
-	DatabaseName               string         `db:"database_name"`
-	SchemaName                 string         `db:"schema_name"`
-	TargetLag                  string         `db:"target_lag"`
-	Warehouse                  string         `db:"warehouse"`
-	SearchColumn               sql.NullString `db:"search_column"`
-	AttributeColumns           sql.NullString `db:"attribute_columns"`
-	Columns                    sql.NullString `db:"columns"`
-	Definition                 sql.NullString `db:"definition"`
-	Comment                    sql.NullString `db:"comment"`
-	ServiceQueryUrl            string         `db:"service_query_url"`
-	DataTimestamp              string         `db:"data_timestamp"`
-	SourceDataNumRows          int            `db:"source_data_num_rows"`
-	IndexingState              string         `db:"indexing_state"`
-	IndexingError              sql.NullString `db:"indexing_error"`
-	ServingState               string         `db:"serving_state"`
-	EmbeddingModel             sql.NullString `db:"embedding_model"`
-	PrimaryKeyColumns          sql.NullString `db:"primary_key_columns"`
-	ScoringProfileCount        int            `db:"scoring_profile_count"`
-	FullIndexBuildIntervalDays sql.NullInt64  `db:"full_index_build_interval_days"`
+	CreatedOn         string         `db:"created_on"`
+	Name              string         `db:"name"`
+	DatabaseName      string         `db:"database_name"`
+	SchemaName        string         `db:"schema_name"`
+	TargetLag         string         `db:"target_lag"`
+	Warehouse         string         `db:"warehouse"`
+	SearchColumn      sql.NullString `db:"search_column"`
+	AttributeColumns  sql.NullString `db:"attribute_columns"`
+	Columns           sql.NullString `db:"columns"`
+	Definition        sql.NullString `db:"definition"`
+	Comment           sql.NullString `db:"comment"`
+	ServiceQueryUrl   string         `db:"service_query_url"`
+	DataTimestamp     string         `db:"data_timestamp"`
+	SourceDataNumRows int            `db:"source_data_num_rows"`
+	IndexingState     string         `db:"indexing_state"`
+	IndexingError     sql.NullString `db:"indexing_error"`
+	EmbeddingModel    sql.NullString `db:"embedding_model"`
 }
 
 type CortexSearchServiceDetails struct {
-	CreatedOn                  string
-	Name                       string
-	DatabaseName               string
-	SchemaName                 string
-	TargetLag                  string
-	Warehouse                  string
-	SearchColumn               *string
-	AttributeColumns           []string
-	Columns                    []string
-	Definition                 *string
-	Comment                    *string
-	ServiceQueryUrl            string
-	DataTimestamp              string
-	SourceDataNumRows          int
-	IndexingState              string
-	IndexingError              *string
-	ServingState               string
-	EmbeddingModel             *string
-	PrimaryKeyColumns          []string
-	ScoringProfileCount        int
-	FullIndexBuildIntervalDays *int
+	CreatedOn         string
+	Name              string
+	DatabaseName      string
+	SchemaName        string
+	TargetLag         string
+	Warehouse         string
+	SearchColumn      *string
+	AttributeColumns  []string
+	Columns           []string
+	Definition        *string
+	Comment           *string
+	ServiceQueryUrl   string
+	DataTimestamp     string
+	SourceDataNumRows int
+	IndexingState     string
+	IndexingError     *string
+	EmbeddingModel    *string
 }
 
-// DropCortexSearchServiceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-cortex-search.
+// DropCortexSearchServiceOptions is based on https://docs.snowflake.com/LIMITEDACCESS/cortex-search/sql/drop-cortex-search.
 type DropCortexSearchServiceOptions struct {
 	drop                bool                   `ddl:"static" sql:"DROP"`
 	cortexSearchService bool                   `ddl:"static" sql:"CORTEX SEARCH SERVICE"`

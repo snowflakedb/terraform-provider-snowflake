@@ -162,12 +162,11 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
-						[]sdk.CreateMaskingPolicySignatureRequest{
-							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeVarchar),
-							*sdk.NewCreateMaskingPolicySignatureRequest("B", testdatatypes.DataTypeVarchar),
-						},
-						testdatatypes.DataTypeVarchar, body)
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, argument, testdatatypes.DataTypeVarchar, body, &sdk.CreateMaskingPolicyOptions{
+						ExemptOtherPolicies: sdk.Pointer(false),
+						Comment:             sdk.Pointer("Terraform acceptance test - changed comment"),
+						OrReplace:           sdk.Pointer(true),
+					})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -190,8 +189,11 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel),
 				PreConfig: func() {
-					testClient().MaskingPolicy.Alter(t, sdk.NewAlterMaskingPolicyRequest(id).
-						WithSetBody(changedBody))
+					testClient().MaskingPolicy.Alter(t, id, &sdk.AlterMaskingPolicyOptions{
+						Set: &sdk.MaskingPolicySet{
+							Body: sdk.Pointer(changedBody),
+						},
+					})
 				},
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
@@ -215,8 +217,11 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
 				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithComment("")),
 				PreConfig: func() {
-					testClient().MaskingPolicy.Alter(t, sdk.NewAlterMaskingPolicyRequest(id).
-						WithUnsetComment(true))
+					testClient().MaskingPolicy.Alter(t, id, &sdk.AlterMaskingPolicyOptions{
+						Unset: &sdk.MaskingPolicyUnset{
+							Comment: sdk.Pointer(true),
+						},
+					})
 				},
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
@@ -893,6 +898,13 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 		),
 	}
 
+	externalSignature := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeNumber,
+		},
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -921,11 +933,7 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 					// 090207 (42601): Declared return type 'NUMBER(38,0)' is incompatible with actual return type 'VARCHAR(5)'
 					// we could later suppress the body changes to be sure what triggers the changes
 					// TODO [SNOW-2298286]: suppress the body changes
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
-						[]sdk.CreateMaskingPolicySignatureRequest{
-							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeNumber),
-						},
-						testdatatypes.DataTypeNumber, updatedBody)
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeNumber, updatedBody, &sdk.CreateMaskingPolicyOptions{})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -966,6 +974,13 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 		),
 	}
 
+	externalSignature := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeVarchar_100,
+		},
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -990,11 +1005,7 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 			},
 			{
 				PreConfig: func() {
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
-						[]sdk.CreateMaskingPolicySignatureRequest{
-							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeVarchar),
-						},
-						testdatatypes.DataTypeVarchar, body)
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeVarchar, body, &sdk.CreateMaskingPolicyOptions{})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1035,6 +1046,13 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 		),
 	}
 
+	externalSignature := []sdk.TableColumnSignature{
+		{
+			Name: "A",
+			Type: testdatatypes.DataTypeVarchar,
+		},
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1059,11 +1077,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 			},
 			{
 				PreConfig: func() {
-					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithRequest(t, id,
-						[]sdk.CreateMaskingPolicySignatureRequest{
-							*sdk.NewCreateMaskingPolicySignatureRequest("A", testdatatypes.DataTypeVarchar_100),
-						},
-						testdatatypes.DataTypeVarchar_100, body)
+					testClient().MaskingPolicy.CreateOrReplaceMaskingPolicyWithOptions(t, id, externalSignature, testdatatypes.DataTypeVarchar_100, body, &sdk.CreateMaskingPolicyOptions{})
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

@@ -165,16 +165,16 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
-			HasCatalogNamespace("").
-			HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
-				HasCatalogUri(polarisCatalogUri).
-				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-				HasCatalogName("my_catalog_name").
-				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
-			HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
-				HasOauthTokenUri(polarisCatalogUri+"/v1/oauth/tokens").
-				HasOauthClientId(oAuthClientId).
-				HasOauthAllowedScopes(oAuthAllowedScope)))
+			HasCatalogNamespace(""))
+		assertThatObject(t, objectassert.OpenCatalogRestConfigDetailsFromObject(t, &openCatalogDetails.RestConfig).
+			HasCatalogUri(polarisCatalogUri).
+			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasCatalogName("my_catalog_name").
+			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
+		assertThatObject(t, objectassert.OAuthRestAuthenticationDetailsFromObject(t, &openCatalogDetails.RestAuthentication).
+			HasOauthTokenUri(polarisCatalogUri+"/v1/oauth/tokens").
+			HasOauthClientId(oAuthClientId).
+			HasOauthAllowedScopes(oAuthAllowedScope))
 	})
 
 	t.Run("create catalog integration: Iceberg REST basic", func(t *testing.T) {
@@ -194,13 +194,13 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasBearerRestAuthentication().
-			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
-				HasCatalogUri(restCatalogUri).
-				HasPrefix("").
-				HasCatalogName("").
-				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)))
+			HasBearerRestAuthentication())
+		assertThatObject(t, objectassert.IcebergRestRestConfigDetailsFromObject(t, &icebergRestDetails.RestConfig).
+			HasCatalogUri(restCatalogUri).
+			HasPrefix("").
+			HasCatalogName("").
+			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
 	})
 
 	t.Run("create catalog integration: AWS Glue all options", func(t *testing.T) {
@@ -284,16 +284,16 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(120).
 			HasComment("test comment").
-			HasCatalogNamespace(catalogNamespace).
-			HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
-				HasCatalogUri(polarisCatalogUri).
-				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
-				HasCatalogName(catalogName).
-				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials)).
-			HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
-				HasOauthTokenUri(oAuthTokenUri).
-				HasOauthClientId(oAuthClientId).
-				HasOauthAllowedScopes(oAuthAllowedScope, "DUMMY")))
+			HasCatalogNamespace(catalogNamespace))
+		assertThatObject(t, objectassert.OpenCatalogRestConfigDetailsFromObject(t, &openCatalogDetails.RestConfig).
+			HasCatalogUri(polarisCatalogUri).
+			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
+			HasCatalogName(catalogName).
+			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials))
+		assertThatObject(t, objectassert.OAuthRestAuthenticationDetailsFromObject(t, &openCatalogDetails.RestAuthentication).
+			HasOauthTokenUri(oAuthTokenUri).
+			HasOauthClientId(oAuthClientId).
+			HasOauthAllowedScopes(oAuthAllowedScope, "DUMMY"))
 	})
 
 	t.Run("create catalog integration: Iceberg REST all options", func(t *testing.T) {
@@ -335,15 +335,16 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(120).
 			HasComment("test comment").
 			HasCatalogNamespace(catalogNamespace).
-			HasSigV4RestAuthenticationWith(objectassert.NewSigV4RestAuthenticationDetailsAssert().
-				HasSigv4IamRole(sigV4IamRole).
-				HasSigv4SigningRegion(sigV4SigningRole)).
-			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
-				HasCatalogUri(restCatalogUri).
-				HasPrefix(prefix).
-				HasCatalogName(catalogName).
-				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
-				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials)))
+			HasSigV4RestAuthentication())
+		assertThatObject(t, objectassert.IcebergRestRestConfigDetailsFromObject(t, &icebergRestDetails.RestConfig).
+			HasCatalogUri(restCatalogUri).
+			HasPrefix(prefix).
+			HasCatalogName(catalogName).
+			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
+			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials))
+		assertThatObject(t, objectassert.SigV4RestAuthenticationDetailsFromObject(t, icebergRestDetails.SigV4RestAuthentication).
+			HasSigv4IamRole(sigV4IamRole).
+			HasSigv4SigningRegion(sigV4SigningRole))
 	})
 
 	t.Run("alter catalog integration: shared options", func(t *testing.T) {
@@ -529,16 +530,16 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasEnabled(false).
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
-			HasCatalogNamespace("").
-			HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
-				HasCatalogUri(polarisCatalogUri).
-				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-				HasCatalogName("my_catalog_name").
-				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
-			HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
-				HasOauthTokenUri(polarisCatalogUri+"/v1/oauth/tokens").
-				HasOauthClientId(oAuthClientId).
-				HasOauthAllowedScopes(oAuthAllowedScope)))
+			HasCatalogNamespace(""))
+		assertThatObject(t, objectassert.OpenCatalogRestConfigDetailsFromObject(t, &openCatalogDetails.RestConfig).
+			HasCatalogUri(polarisCatalogUri).
+			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasCatalogName("my_catalog_name").
+			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
+		assertThatObject(t, objectassert.OAuthRestAuthenticationDetailsFromObject(t, &openCatalogDetails.RestAuthentication).
+			HasOauthTokenUri(polarisCatalogUri+"/v1/oauth/tokens").
+			HasOauthClientId(oAuthClientId).
+			HasOauthAllowedScopes(oAuthAllowedScope))
 	})
 
 	t.Run("describe catalog integration: Iceberg REST", func(t *testing.T) {
@@ -554,13 +555,13 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasRefreshIntervalSeconds(30).
 			HasComment("").
 			HasCatalogNamespace("").
-			HasBearerRestAuthentication().
-			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
-				HasCatalogUri(restCatalogUri).
-				HasPrefix("").
-				HasCatalogName("").
-				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
-				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)))
+			HasBearerRestAuthentication())
+		assertThatObject(t, objectassert.IcebergRestRestConfigDetailsFromObject(t, &icebergRestDetails.RestConfig).
+			HasCatalogUri(restCatalogUri).
+			HasPrefix("").
+			HasCatalogName("").
+			HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials))
 	})
 
 	t.Run("describe catalog integration: non-existing", func(t *testing.T) {

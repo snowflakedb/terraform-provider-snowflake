@@ -46,14 +46,6 @@ variable "default_ddl_collation" {
   type = string
 }
 
-variable "default_notebook_compute_pool_cpu" {
-  type = string
-}
-
-variable "default_notebook_compute_pool_gpu" {
-  type = string
-}
-
 variable "storage_serialization_policy" {
   type = string
 }

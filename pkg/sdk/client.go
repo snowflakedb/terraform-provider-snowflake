@@ -32,6 +32,7 @@ type Client struct {
 	AuthenticationPolicies       AuthenticationPolicies
 	Budgets                      Budgets
 	CatalogIntegrations          CatalogIntegrations
+	Comments                     Comments
 	ComputePools                 ComputePools
 	Connections                  Connections
 	CortexAgents                 CortexAgents
@@ -45,8 +46,7 @@ type Client struct {
 	ExternalTables               ExternalTables
 	EventTables                  EventTables
 	FailoverGroups               FailoverGroups
-	FileFormats                  FileFormats
-	FileFormatsLegacy            FileFormatsLegacy
+	FileFormats                  LegacyFileFormats
 	Functions                    Functions
 	GitRepositories              GitRepositories
 	Grants                       Grants
@@ -57,7 +57,6 @@ type Client struct {
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
 	MaterializedViews            MaterializedViews
-	McpServers                   McpServers
 	NetworkPolicies              NetworkPolicies
 	NetworkRules                 NetworkRules
 	Notebooks                    Notebooks
@@ -90,7 +89,6 @@ type Client struct {
 	Streamlits                   Streamlits
 	Streams                      Streams
 	Tables                       Tables
-	TablesLegacy                 TablesLegacy
 	TagReferences                TagReferences
 	Tags                         Tags
 	Tasks                        Tasks
@@ -176,6 +174,7 @@ func (c *Client) initialize() {
 	c.AuthenticationPolicies = &authenticationPolicies{client: c}
 	c.Budgets = &budgets{client: c}
 	c.CatalogIntegrations = &catalogIntegrations{client: c}
+	c.Comments = &comments{client: c}
 	c.ComputePools = &computePools{client: c}
 	c.Connections = &connections{client: c}
 	c.ContextFunctions = &contextFunctions{client: c}
@@ -190,8 +189,7 @@ func (c *Client) initialize() {
 	c.ExternalTables = &externalTables{client: c}
 	c.EventTables = &eventTables{client: c}
 	c.FailoverGroups = &failoverGroups{client: c}
-	c.FileFormats = &fileFormats{client: c}
-	c.FileFormatsLegacy = &fileFormatsLegacy{client: c}
+	c.FileFormats = &legacyFileFormats{client: c}
 	c.Functions = &functions{client: c}
 	c.GitRepositories = &gitRepositories{client: c}
 	c.Grants = &grants{client: c}
@@ -202,7 +200,6 @@ func (c *Client) initialize() {
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
 	c.MaterializedViews = &materializedViews{client: c}
-	c.McpServers = &mcpServers{client: c}
 	c.NetworkPolicies = &networkPolicies{client: c}
 	c.NetworkRules = &networkRules{client: c}
 	c.Notebooks = &notebooks{client: c}
@@ -237,7 +234,6 @@ func (c *Client) initialize() {
 	c.Streams = &streams{client: c}
 	c.SystemFunctions = &systemFunctions{client: c}
 	c.Tables = &tables{client: c}
-	c.TablesLegacy = &tablesLegacy{client: c}
 	c.TagReferences = &tagReferences{client: c}
 	c.Tags = &tags{client: c}
 	c.Tasks = &tasks{client: c}
@@ -271,14 +267,14 @@ func (c *Client) exec(ctx context.Context, sql string) (sql.Result, error) {
 }
 
 // query runs a query and returns the rows. dest is expected to be a slice of structs.
-func (c *Client) query(ctx context.Context, dest any, sql string) error {
+func (c *Client) query(ctx context.Context, dest interface{}, sql string) error {
 	ctx = context.WithValue(ctx, snowflakeAccountLocatorContextKey, c.accountLocator)
 	sql = appendQueryMetadata(ctx, sql)
 	return decodeDriverError(c.db.SelectContext(ctx, dest, sql))
 }
 
 // queryOne runs a query and returns one row. dest is expected to be a pointer to a struct.
-func (c *Client) queryOne(ctx context.Context, dest any, sql string) error {
+func (c *Client) queryOne(ctx context.Context, dest interface{}, sql string) error {
 	ctx = context.WithValue(ctx, snowflakeAccountLocatorContextKey, c.accountLocator)
 	sql = appendQueryMetadata(ctx, sql)
 	return decodeDriverError(c.db.GetContext(ctx, dest, sql))

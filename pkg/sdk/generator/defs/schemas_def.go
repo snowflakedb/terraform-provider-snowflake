@@ -27,8 +27,6 @@ var schemaSetStruct = g.NewQueryStruct("SchemaSet").
 	OptionalBooleanAssignment("PIPE_EXECUTION_PAUSED", nil).
 	OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
 	OptionalAssignment("DEFAULT_DDL_COLLATION", "StringAllowEmpty", g.ParameterOptions()).
-	OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
-	OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
 	WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
 	WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
@@ -45,8 +43,7 @@ var schemaSetStruct = g.NewQueryStruct("SchemaSet").
 	WithValidation(g.ValidIdentifierIfSet, "Catalog").
 	WithValidation(g.AtLeastOneValueSet,
 		"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog",
-		"PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation",
-		"DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "StorageSerializationPolicy",
+		"PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy",
 		"LogLevel", "LogEventLevel", "TraceLevel",
 		"SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize",
 		"UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds",
@@ -60,8 +57,6 @@ var schemaUnsetStruct = g.NewQueryStruct("SchemaUnset").
 	OptionalSQL("PIPE_EXECUTION_PAUSED").
 	OptionalSQL("REPLACE_INVALID_CHARACTERS").
 	OptionalSQL("DEFAULT_DDL_COLLATION").
-	OptionalSQL("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU").
-	OptionalSQL("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU").
 	OptionalSQL("STORAGE_SERIALIZATION_POLICY").
 	OptionalSQL("LOG_LEVEL").
 	OptionalSQL("LOG_EVENT_LEVEL").
@@ -76,8 +71,7 @@ var schemaUnsetStruct = g.NewQueryStruct("SchemaUnset").
 	OptionalSQL("COMMENT").
 	WithValidation(g.AtLeastOneValueSet,
 		"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog",
-		"PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation",
-		"DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "StorageSerializationPolicy",
+		"PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy",
 		"LogLevel", "LogEventLevel", "TraceLevel",
 		"SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize",
 		"UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds",
@@ -104,8 +98,6 @@ var schemasDef = g.NewInterface(
 		OptionalBooleanAssignment("PIPE_EXECUTION_PAUSED", nil).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
 		OptionalAssignment("DEFAULT_DDL_COLLATION", "StringAllowEmpty", g.ParameterOptions()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
-		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
@@ -144,7 +136,7 @@ var schemasDef = g.NewInterface(
 		SQL("SCHEMA").
 		IfExists().
 		Name().
-		RenameTo().
+		Identifier("NewName", g.KindOfTPointer[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		Identifier("SwapWith", g.KindOfTPointer[sdkcommons.DatabaseObjectIdentifier](), g.IdentifierOptions().SQL("SWAP WITH")).
 		OptionalQueryStructField("Set", schemaSetStruct, g.ListOptions().NoParentheses().SQL("SET")).
 		OptionalQueryStructField("Unset", schemaUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
@@ -153,8 +145,8 @@ var schemasDef = g.NewInterface(
 		OptionalSQL("ENABLE MANAGED ACCESS").
 		OptionalSQL("DISABLE MANAGED ACCESS").
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess").
-		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
+		WithValidation(g.ExactlyOneValueSet, "NewName", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess").
+		WithValidation(g.ValidIdentifierIfSet, "NewName").
 		WithValidation(g.ValidIdentifierIfSet, "SwapWith"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-schema",

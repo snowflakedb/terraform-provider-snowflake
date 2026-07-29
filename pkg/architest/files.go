@@ -9,6 +9,7 @@ type (
 func (files Files) Filter(filter FileFilter) Files {
 	filteredFiles := make([]File, 0)
 	for _, f := range files {
+		f := f
 		if filter(&f) {
 			filteredFiles = append(filteredFiles, f)
 		}
@@ -18,6 +19,7 @@ func (files Files) Filter(filter FileFilter) Files {
 
 func (files Files) All(receiver FileReceiver) {
 	for _, file := range files {
+		file := file
 		receiver(&file)
 	}
 }

@@ -42,7 +42,7 @@ type AlterTagRequest struct {
 	Drop     *TagDropRequest
 	Set      *TagSetRequest
 	Unset    *TagUnsetRequest
-	RenameTo *SchemaObjectIdentifier
+	Rename   *TagRenameRequest
 }
 
 type TagAddRequest struct {
@@ -79,6 +79,10 @@ type TagUnsetRequest struct {
 
 type TagUnsetMaskingPoliciesRequest struct {
 	MaskingPolicies []TagMaskingPolicyRequest
+}
+
+type TagRenameRequest struct {
+	Name SchemaObjectIdentifier // required
 }
 
 type ShowTagRequest struct {

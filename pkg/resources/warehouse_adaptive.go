@@ -50,13 +50,6 @@ var warehouseAdaptiveSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(0)),
 		Description:      "Specifies the query throughput multiplier for the adaptive warehouse.",
 	},
-	"resource_monitor": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor")),
-		Description:      relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.", resources.ResourceMonitor),
-	},
 	strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)): {
 		Type:             schema.TypeInt,
 		Optional:         true,
@@ -111,7 +104,7 @@ func WarehouseAdaptive() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.WarehouseAdaptive, customdiff.All(
-			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier", "resource_monitor"),
+			ComputedIfAnyAttributeChanged(warehouseAdaptiveSchema, ShowOutputAttributeName, "name", "comment", "max_query_performance_level", "query_throughput_multiplier"),
 			ComputedIfAnyAttributeChanged(
 				warehouseAdaptiveSchema, ParametersAttributeName,
 				strings.ToLower(string(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds)),
@@ -149,7 +142,6 @@ func ImportWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		d.Set("comment", w.Comment),
 		setOptionalFromPtr(d, "max_query_performance_level", w.MaxQueryPerformanceLevel),
 		setOptionalFromPtr(d, "query_throughput_multiplier", w.QueryThroughputMultiplier),
-		d.Set("resource_monitor", w.ResourceMonitor.Name()),
 	)
 	if err = errs; err != nil {
 		return nil, err
@@ -178,7 +170,6 @@ func CreateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 			return &s, nil
 		}),
 		intAttributeWithSpecialDefaultCreate(d, "query_throughput_multiplier", &opts.QueryThroughputMultiplier),
-		accountObjectIdentifierAttributeCreate(d, "resource_monitor", &opts.ResourceMonitor),
 	)
 	if errs != nil {
 		return diag.FromErr(errs)
@@ -233,7 +224,6 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) schema.ReadConte
 				d,
 				outputMapping{"max_query_performance_level", "max_query_performance_level", maxQueryPerformanceLevel, maxQueryPerformanceLevel, nil},
 				outputMapping{"query_throughput_multiplier", "query_throughput_multiplier", queryThroughputMultiplier, queryThroughputMultiplier, nil},
-				outputMapping{"resource_monitor", "resource_monitor", w.ResourceMonitor.Name(), w.ResourceMonitor.Name(), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -298,7 +288,6 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *schema.ResourceData, meta a
 		intAttributeWithSpecialDefaultUpdate(d, "query_throughput_multiplier", &set.QueryThroughputMultiplier, &unset.QueryThroughputMultiplier),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 		attributeMappedValueUpdate(d, "max_query_performance_level", &set.MaxQueryPerformanceLevel, &unset.MaxQueryPerformanceLevel, sdk.ToMaxQueryPerformanceLevel),
-		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
 	); err != nil {
 		return diag.FromErr(err)
 	}

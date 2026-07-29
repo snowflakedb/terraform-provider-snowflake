@@ -50,7 +50,7 @@ type OrganizationAccountUnsetRequest struct {
 }
 
 type OrganizationAccountRenameRequest struct {
-	RenameTo   *AccountObjectIdentifier // required
+	NewName    *AccountObjectIdentifier // required
 	SaveOldUrl *bool
 }
 

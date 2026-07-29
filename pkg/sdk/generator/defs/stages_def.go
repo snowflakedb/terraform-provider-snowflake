@@ -84,16 +84,8 @@ func alterStageOperation(structName string, apply func(qs *g.QueryStruct) *g.Que
 		WithValidation(g.ValidIdentifier, "name")
 }
 
-var stageS3DirectoryTableOptionsDef = func() *g.QueryStruct {
-	return g.NewQueryStruct("StageS3DirectoryTableOptions").
-		BooleanAssignment("ENABLE", nil).
-		OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
-		OptionalBooleanAssignment("AUTO_REFRESH", nil).
-		OptionalTextAssignment("AWS_SNS_TOPIC", g.ParameterOptions().SingleQuotes())
-}
-
-var stageS3CompatibleDirectoryTableOptionsDef = func() *g.QueryStruct {
-	return g.NewQueryStruct("StageS3CompatibleDirectoryTableOptions").
+var stageS3CommonDirectoryTableOptionsDef = func() *g.QueryStruct {
+	return g.NewQueryStruct("StageS3CommonDirectoryTableOptions").
 		BooleanAssignment("ENABLE", nil).
 		OptionalBooleanAssignment("REFRESH_ON_CREATE", nil).
 		OptionalBooleanAssignment("AUTO_REFRESH", nil)
@@ -269,7 +261,7 @@ var stagesDef = g.NewInterface(
 				QueryStructField("ExternalStageParams", externalS3StageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					stageS3DirectoryTableOptionsDef(),
+					stageS3CommonDirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
@@ -316,7 +308,7 @@ var stagesDef = g.NewInterface(
 				QueryStructField("ExternalStageParams", externalS3CompatibleStageParamsDef(), g.KeywordOptions().Required()).
 				OptionalQueryStructField(
 					"DirectoryTableOptions",
-					stageS3CompatibleDirectoryTableOptionsDef(),
+					stageS3CommonDirectoryTableOptionsDef(),
 					g.ListOptions().Parentheses().NoComma().SQL("DIRECTORY ="),
 				)
 		}),
@@ -328,7 +320,7 @@ var stagesDef = g.NewInterface(
 			SQL("STAGE").
 			IfExists().
 			Name().
-			RenameTo().
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalSetTags().
 			OptionalUnsetTags().
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").
@@ -405,32 +397,6 @@ var stagesDef = g.NewInterface(
 			SQL("STAGE").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-		g.PlainStruct("StageDirectoryTable").
-			Bool("Enable").
-			Bool("AutoRefresh").
-			OptionalText("DirectoryNotificationChannel").
-			OptionalText("LastRefreshedOn").
-			OptionalText("AwsSnsTopic"),
-		g.PlainStruct("StagePrivateLink").
-			Bool("UsePrivatelinkEndpoint"),
-		g.PlainStruct("StageLocationDetails").
-			StringList("Url").
-			Text("AwsAccessPointArn"),
-		g.PlainStruct("StageCredentials").
-			Text("AwsKeyId"),
-		g.PlainStruct("StageDetails").
-			SchemaObjectIdentifier().
-			OptionalField("FileFormatName", "SchemaObjectIdentifier").
-			OptionalField("FileFormatCsv", "FileFormatCsv").
-			OptionalField("FileFormatJson", "FileFormatJson").
-			OptionalField("FileFormatAvro", "FileFormatAvro").
-			OptionalField("FileFormatOrc", "FileFormatOrc").
-			OptionalField("FileFormatParquet", "FileFormatParquet").
-			OptionalField("FileFormatXml", "FileFormatXml").
-			OptionalField("DirectoryTable", "StageDirectoryTable").
-			OptionalField("PrivateLink", "StagePrivateLink").
-			OptionalField("Location", "StageLocationDetails").
-			OptionalField("Credentials", "StageCredentials"),
 	).
 	ShowOperationWithPairedStructs(
 		"https://docs.snowflake.com/en/sql-reference/sql/show-stages",
@@ -468,10 +434,4 @@ var stagesDef = g.NewInterface(
 		StageCopyColumnMapOptionEnumDef,
 		StageCloudEnumDef,
 		StageTypeEnumDef,
-	).
-	WithCustomInterfaceMethod(
-		"DescribeDetails",
-		"DescribeDetails returns parsed describe output for stages.",
-		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*StageDetails", "error",
 	)

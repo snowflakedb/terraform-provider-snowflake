@@ -99,9 +99,9 @@ func stageFileFormatCsv(opts sdk.FileFormatCsvOptions) tfconfig.Variable {
 			csvMap["field_optionally_enclosed_by"] = tfconfig.StringVariable(*opts.FieldOptionallyEnclosedBy.Value)
 		}
 	}
-	if opts.NullIf != nil {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
-		for idx, v := range opts.NullIf.NullIf {
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		csvMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
@@ -171,9 +171,9 @@ func stageFileFormatJson(opts sdk.FileFormatJsonOptions) tfconfig.Variable {
 	if opts.MultiLine != nil {
 		jsonMap["multi_line"] = tfconfig.BoolVariable(*opts.MultiLine)
 	}
-	if opts.NullIf != nil {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
-		for idx, v := range opts.NullIf.NullIf {
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		jsonMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
@@ -228,9 +228,9 @@ func stageFileFormatAvro(opts sdk.FileFormatAvroOptions) tfconfig.Variable {
 	if opts.ReplaceInvalidCharacters != nil {
 		avroMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if opts.NullIf != nil {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
-		for idx, v := range opts.NullIf.NullIf {
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		avroMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
@@ -258,9 +258,9 @@ func stageFileFormatOrc(opts sdk.FileFormatOrcOptions) tfconfig.Variable {
 	if opts.ReplaceInvalidCharacters != nil {
 		orcMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if opts.NullIf != nil {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
-		for idx, v := range opts.NullIf.NullIf {
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		orcMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
@@ -300,9 +300,9 @@ func stageFileFormatParquet(opts sdk.FileFormatParquetOptions) tfconfig.Variable
 	if opts.ReplaceInvalidCharacters != nil {
 		parquetMap["replace_invalid_characters"] = tfconfig.BoolVariable(*opts.ReplaceInvalidCharacters)
 	}
-	if opts.NullIf != nil {
-		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf.NullIf))
-		for idx, v := range opts.NullIf.NullIf {
+	if len(opts.NullIf) > 0 {
+		nullIfVars := make([]tfconfig.Variable, len(opts.NullIf))
+		for idx, v := range opts.NullIf {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		parquetMap["null_if"] = tfconfig.ListVariable(nullIfVars...)

@@ -71,7 +71,7 @@ func Functions() *schema.Resource {
 	}
 }
 
-func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	databaseName := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
@@ -92,9 +92,9 @@ func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta any)
 		}
 	}
 
-	entities := []map[string]any{}
+	entities := []map[string]interface{}{}
 	for _, item := range functions {
-		m := map[string]any{}
+		m := map[string]interface{}{}
 		m["name"] = item.Name
 		m["database"] = databaseName
 		m["schema"] = schemaName

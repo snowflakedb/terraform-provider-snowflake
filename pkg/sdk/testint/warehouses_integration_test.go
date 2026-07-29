@@ -282,12 +282,10 @@ func TestInt_Warehouses(t *testing.T) {
 
 	t.Run("create adaptive: complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-
 		err := client.Warehouses.CreateAdaptive(ctx, sdk.NewCreateAdaptiveWarehouseRequest(id).
 			WithComment("test adaptive warehouse").
 			WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
 			WithQueryThroughputMultiplier(22).
-			WithResourceMonitor(resourceMonitor.ID()).
 			WithStatementQueuedTimeoutInSeconds(30).
 			WithStatementTimeoutInSeconds(60))
 		require.NoError(t, err)
@@ -309,8 +307,7 @@ func TestInt_Warehouses(t *testing.T) {
 				HasNoEnableQueryAcceleration().
 				HasNoQueryAccelerationMaxScaleFactor().
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelMedium).
-				HasQueryThroughputMultiplier(22).
-				HasResourceMonitor(resourceMonitor.ID()),
+				HasQueryThroughputMultiplier(22),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, id).
@@ -474,13 +471,10 @@ func TestInt_Warehouses(t *testing.T) {
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateAdaptive(t)
 		t.Cleanup(warehouseCleanup)
 
-		emptyId := sdk.NewAccountObjectIdentifier("")
-
 		assertThatObject(
 			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-				HasQueryThroughputMultiplier(2).
-				HasResourceMonitor(emptyId),
+				HasQueryThroughputMultiplier(2),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
@@ -492,7 +486,6 @@ func TestInt_Warehouses(t *testing.T) {
 			WithSet(*sdk.NewWarehouseSetRequest().
 				WithMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
 				WithQueryThroughputMultiplier(5).
-				WithResourceMonitor(resourceMonitor.ID()).
 				WithStatementQueuedTimeoutInSeconds(100).
 				WithStatementTimeoutInSeconds(200)))
 		require.NoError(t, err)
@@ -500,8 +493,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assertThatObject(
 			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXSmall).
-				HasQueryThroughputMultiplier(5).
-				HasResourceMonitor(resourceMonitor.ID()),
+				HasQueryThroughputMultiplier(5),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
@@ -513,7 +505,6 @@ func TestInt_Warehouses(t *testing.T) {
 			WithUnset(*sdk.NewWarehouseUnsetRequest().
 				WithMaxQueryPerformanceLevel(true).
 				WithQueryThroughputMultiplier(true).
-				WithResourceMonitor(true).
 				WithStatementQueuedTimeoutInSeconds(true).
 				WithStatementTimeoutInSeconds(true)))
 		require.NoError(t, err)
@@ -521,8 +512,7 @@ func TestInt_Warehouses(t *testing.T) {
 		assertThatObject(
 			t, objectassert.Warehouse(t, warehouse.ID()).
 				HasMaxQueryPerformanceLevel(sdk.MaxQueryPerformanceLevelXLarge).
-				HasQueryThroughputMultiplier(2).
-				HasResourceMonitor(emptyId),
+				HasQueryThroughputMultiplier(2),
 		)
 		assertThatObject(
 			t, objectparametersassert.WarehouseParameters(t, warehouse.ID()).
@@ -970,135 +960,5 @@ func TestInt_Warehouses_Experimental(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, warehouses, 1)
 		assert.Equal(t, warehouseId2.Name(), warehouses[0].Name)
-	})
-}
-
-func TestInt_Warehouses_Interactive(t *testing.T) {
-	client := testClient(t)
-	ctx := testContext(t)
-
-	t.Run("create interactive: minimal", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
-
-		assertThatObject(
-			t, objectassert.Warehouse(t, id).
-				HasName(id.Name()).
-				HasType(sdk.WarehouseTypeInteractive).
-				HasComment("").
-				HasSize(sdk.WarehouseSizeXSmall).
-				HasMaxClusterCount(1).
-				HasMinClusterCount(1).
-				HasAutoSuspend(86400).
-				HasAutoResume(true).
-				HasScalingPolicy(sdk.ScalingPolicyStandard).
-				HasEnableQueryAcceleration(false).
-				HasQueryAccelerationMaxScaleFactor(8).
-				HasNoResourceConstraint().
-				HasNoGeneration().
-				HasNoMaxQueryPerformanceLevel().
-				HasNoQueryThroughputMultiplier().
-				HasTables(),
-		)
-		assertThatObject(
-			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
-				HasMaxConcurrencyLevel(8).
-				HasStatementQueuedTimeoutInSeconds(0).
-				HasStatementTimeoutInSeconds(172800).
-				HasFallbackWarehouse(""),
-		)
-	})
-
-	t.Run("create interactive: with tables", func(t *testing.T) {
-		table1, table1Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
-		t.Cleanup(table1Cleanup)
-		table2, table2Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
-		t.Cleanup(table2Cleanup)
-
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
-			WithTables([]sdk.SchemaObjectIdentifier{table1.ID(), table2.ID()}).
-			WithWarehouseSize(sdk.WarehouseSizeXSmall).
-			WithComment("interactive warehouse"))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
-
-		assertThatObject(
-			t, objectassert.Warehouse(t, id).
-				HasName(id.Name()).
-				HasType(sdk.WarehouseTypeInteractive).
-				HasComment("interactive warehouse").
-				HasSize(sdk.WarehouseSizeXSmall).
-				HasMaxClusterCount(1).
-				HasMinClusterCount(1).
-				HasAutoSuspend(86400).
-				HasAutoResume(true).
-				HasScalingPolicy(sdk.ScalingPolicyStandard).
-				HasEnableQueryAcceleration(false).
-				HasQueryAccelerationMaxScaleFactor(8).
-				HasNoResourceConstraint().
-				HasNoGeneration().
-				HasNoMaxQueryPerformanceLevel().
-				HasNoQueryThroughputMultiplier().
-				HasTables(table1.ID(), table2.ID()),
-		)
-		assertThatObject(
-			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
-				HasMaxConcurrencyLevel(8).
-				HasStatementQueuedTimeoutInSeconds(0).
-				HasStatementTimeoutInSeconds(172800).
-				HasFallbackWarehouse(""),
-		)
-	})
-
-	t.Run("alter: add and drop tables", func(t *testing.T) {
-		table1, table1Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
-		t.Cleanup(table1Cleanup)
-		table2, table2Cleanup := testClientHelper().Table.CreateInteractiveTable(t)
-		t.Cleanup(table2Cleanup)
-
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id).
-			WithTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
-
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithAddTables([]sdk.SchemaObjectIdentifier{table2.ID()}))
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table1.ID(), table2.ID()))
-
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithDropTables([]sdk.SchemaObjectIdentifier{table1.ID()}))
-		require.NoError(t, err)
-		assertThatObject(t, objectassert.Warehouse(t, id).HasTables(table2.ID()))
-	})
-
-	t.Run("alter: set and unset fallback warehouse", func(t *testing.T) {
-		fallback, fallbackCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
-		t.Cleanup(fallbackCleanup)
-
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Warehouses.CreateInteractive(ctx, sdk.NewCreateInteractiveWarehouseRequest(id))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().Warehouse.DropWarehouseFunc(t, id))
-
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
-			WithSet(*sdk.NewWarehouseSetRequest().WithFallbackWarehouse(fallback.ID())))
-		require.NoError(t, err)
-
-		assertThatObject(
-			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
-				HasFallbackWarehouse(fallback.ID().Name()),
-		)
-
-		err = client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).
-			WithUnset(*sdk.NewWarehouseUnsetRequest().WithFallbackWarehouse(true)))
-		require.NoError(t, err)
-
-		assertThatObject(
-			t, objectparametersassert.WarehouseInteractiveParameters(t, id).
-				HasFallbackWarehouse(""),
-		)
 	})
 }

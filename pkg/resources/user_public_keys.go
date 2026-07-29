@@ -23,7 +23,7 @@ var userPublicKeyProperties = []string{
 }
 
 // sanitize input to suppress diffs, etc.
-func publicKeyStateFunc(v any) string {
+func publicKeyStateFunc(v interface{}) string {
 	value := v.(string)
 	value = strings.TrimSuffix(value, "\n")
 	return value

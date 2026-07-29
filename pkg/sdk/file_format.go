@@ -13,51 +13,51 @@ import (
 )
 
 var (
-	_ validatable = new(CreateFileFormatOptionsLegacy)
-	_ validatable = new(AlterFileFormatOptionsLegacy)
-	_ validatable = new(DropFileFormatOptionsLegacy)
-	_ validatable = new(ShowFileFormatsOptionsLegacy)
-	_ validatable = new(describeFileFormatOptionsLegacy)
+	_ validatable = new(CreateFileFormatOptions)
+	_ validatable = new(AlterFileFormatOptions)
+	_ validatable = new(DropFileFormatOptions)
+	_ validatable = new(ShowFileFormatsOptions)
+	_ validatable = new(describeFileFormatOptions)
 
-	_ convertibleRow[FileFormatLegacy] = new(FileFormatRowLegacy)
+	_ convertibleRow[FileFormat] = new(FileFormatRow)
 )
 
-type FileFormatsLegacy interface {
-	Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptionsLegacy) error
-	Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptionsLegacy) error
-	Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptionsLegacy) error
+type LegacyFileFormats interface {
+	Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error
+	Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error
+	Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
-	Show(ctx context.Context, opts *ShowFileFormatsOptionsLegacy) ([]FileFormatLegacy, error)
-	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatLegacy, error)
-	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatLegacy, error)
-	Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetailsLegacy, error)
+	Show(ctx context.Context, opts *ShowFileFormatsOptions) ([]FileFormat, error)
+	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error)
+	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error)
 }
 
-var _ FileFormatsLegacy = (*fileFormatsLegacy)(nil)
+var _ LegacyFileFormats = (*legacyFileFormats)(nil)
 
-type fileFormatsLegacy struct {
+type legacyFileFormats struct {
 	client *Client
 }
 
-type FileFormatLegacy struct {
+type FileFormat struct {
 	Name          SchemaObjectIdentifier
 	CreatedOn     time.Time
 	Type          FileFormatType
 	Owner         string
 	Comment       string
 	OwnerRoleType string
-	Options       FileFormatTypeOptionsLegacy
+	Options       LegacyFileFormatTypeOptions
 }
 
-func (v *FileFormatLegacy) ID() SchemaObjectIdentifier {
+func (v *FileFormat) ID() SchemaObjectIdentifier {
 	return v.Name
 }
 
-func (v *FileFormatLegacy) ObjectType() ObjectType {
+func (v *FileFormat) ObjectType() ObjectType {
 	return ObjectTypeFileFormat
 }
 
-type FileFormatRowLegacy struct {
+type FileFormatRow struct {
 	FormatOptions string    `db:"format_options"`
 	CreatedOn     time.Time `db:"created_on"`
 	Name          string    `db:"name"`
@@ -69,7 +69,7 @@ type FileFormatRowLegacy struct {
 	OwnerRoleType string    `db:"owner_role_type"`
 }
 
-type showFileFormatsOptionsResultLegacy struct {
+type showFileFormatsOptionsResult struct {
 	// CSV + shared fields
 	Type                       string   `json:"TYPE"`
 	RecordDelimiter            string   `json:"RECORD_DELIMITER"`
@@ -112,21 +112,21 @@ type showFileFormatsOptionsResultLegacy struct {
 	DisableAutoConvert   bool `json:"DISABLE_AUTO_CONVERT"`
 }
 
-func (row FileFormatRowLegacy) convert() (*FileFormatLegacy, error) {
-	inputOptions := showFileFormatsOptionsResultLegacy{}
+func (row FileFormatRow) convert() (*FileFormat, error) {
+	inputOptions := showFileFormatsOptionsResult{}
 	err := json.Unmarshal([]byte(row.FormatOptions), &inputOptions)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse format options: %w", err)
 	}
 
-	ff := &FileFormatLegacy{
+	ff := &FileFormat{
 		Name:          NewSchemaObjectIdentifier(row.DatabaseName, row.SchemaName, row.Name),
 		CreatedOn:     row.CreatedOn,
 		Type:          FileFormatType(row.FormatType),
 		Owner:         row.Owner,
 		Comment:       row.Comment,
 		OwnerRoleType: row.OwnerRoleType,
-		Options:       FileFormatTypeOptionsLegacy{},
+		Options:       LegacyFileFormatTypeOptions{},
 	}
 
 	newNullIf := make([]NullString, len(inputOptions.NullIf))
@@ -202,13 +202,12 @@ func (row FileFormatRowLegacy) convert() (*FileFormatLegacy, error) {
 	return ff, nil
 }
 
-// TODO (next PRs): Rename it to QuotedItem, move to the def file, and update callers.
 type NullString struct {
 	S string `ddl:"parameter,no_equals,single_quotes"`
 }
 
-// CreateFileFormatOptionsLegacy is based on https://docs.snowflake.com/en/sql-reference/sql/create-file-format.
-type CreateFileFormatOptionsLegacy struct {
+// CreateFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-file-format.
+type CreateFileFormatOptions struct {
 	create      bool                   `ddl:"static" sql:"CREATE"`
 	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
 	Temporary   *bool                  `ddl:"keyword" sql:"TEMPORARY"`
@@ -216,12 +215,12 @@ type CreateFileFormatOptionsLegacy struct {
 	IfNotExists *bool                  `ddl:"keyword" sql:"IF NOT EXISTS"`
 	name        SchemaObjectIdentifier `ddl:"identifier"`
 	Type        FileFormatType         `ddl:"parameter" sql:"TYPE"`
-	FileFormatTypeOptionsLegacy
+	LegacyFileFormatTypeOptions
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-func (opts *CreateFileFormatOptionsLegacy) validate() error {
-	fields := opts.FileFormatTypeOptionsLegacy.fieldsByType()
+func (opts *CreateFileFormatOptions) validate() error {
+	fields := opts.LegacyFileFormatTypeOptions.fieldsByType()
 
 	for formatType := range fields {
 		if opts.Type == formatType {
@@ -232,7 +231,7 @@ func (opts *CreateFileFormatOptionsLegacy) validate() error {
 		}
 	}
 
-	err := opts.FileFormatTypeOptionsLegacy.validate()
+	err := opts.LegacyFileFormatTypeOptions.validate()
 	if err != nil {
 		return err
 	}
@@ -240,9 +239,9 @@ func (opts *CreateFileFormatOptionsLegacy) validate() error {
 	return nil
 }
 
-func (v *fileFormatsLegacy) Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptionsLegacy) error {
+func (v *legacyFileFormats) Create(ctx context.Context, id SchemaObjectIdentifier, opts *CreateFileFormatOptions) error {
 	if opts == nil {
-		opts = &CreateFileFormatOptionsLegacy{}
+		opts = &CreateFileFormatOptions{}
 	}
 	opts.name = id
 	if err := opts.validate(); err != nil {
@@ -256,18 +255,18 @@ func (v *fileFormatsLegacy) Create(ctx context.Context, id SchemaObjectIdentifie
 	return err
 }
 
-// AlterFileFormatOptionsLegacy is based on https://docs.snowflake.com/en/sql-reference/sql/alter-file-format.
-type AlterFileFormatOptionsLegacy struct {
+// AlterFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-file-format.
+type AlterFileFormatOptions struct {
 	alter      bool                   `ddl:"static" sql:"ALTER"`
 	fileFormat bool                   `ddl:"static" sql:"FILE FORMAT"`
 	IfExists   *bool                  `ddl:"keyword" sql:"IF EXISTS"`
 	name       SchemaObjectIdentifier `ddl:"identifier"`
 
 	Rename *AlterFileFormatRenameOptions
-	Set    *FileFormatTypeOptionsLegacy `ddl:"list,no_comma" sql:"SET"`
+	Set    *LegacyFileFormatTypeOptions `ddl:"list,no_comma" sql:"SET"`
 }
 
-func (opts *AlterFileFormatOptionsLegacy) validate() error {
+func (opts *AlterFileFormatOptions) validate() error {
 	if !exactlyOneValueSet(opts.Rename, opts.Set) {
 		return fmt.Errorf("only one of Rename or Set can be set at once.")
 	}
@@ -284,7 +283,7 @@ type AlterFileFormatRenameOptions struct {
 	NewName SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 }
 
-type FileFormatTypeOptionsLegacy struct {
+type LegacyFileFormatTypeOptions struct {
 	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 
 	// CSV type options
@@ -357,7 +356,7 @@ type FileFormatTypeOptionsLegacy struct {
 	XMLSkipByteOrderMark        *bool           `ddl:"parameter" sql:"SKIP_BYTE_ORDER_MARK"`
 }
 
-func (opts *FileFormatTypeOptionsLegacy) fieldsByType() map[FileFormatType][]any {
+func (opts *LegacyFileFormatTypeOptions) fieldsByType() map[FileFormatType][]any {
 	return map[FileFormatType][]any{
 		FileFormatTypeCsv: {
 			opts.CSVCompression,
@@ -431,7 +430,7 @@ func (opts *FileFormatTypeOptionsLegacy) fieldsByType() map[FileFormatType][]any
 	}
 }
 
-func (opts *FileFormatTypeOptionsLegacy) validate() error {
+func (opts *LegacyFileFormatTypeOptions) validate() error {
 	fields := opts.fieldsByType()
 	count := 0
 
@@ -467,9 +466,9 @@ func (opts *FileFormatTypeOptionsLegacy) validate() error {
 	return nil
 }
 
-func (v *fileFormatsLegacy) Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptionsLegacy) error {
+func (v *legacyFileFormats) Alter(ctx context.Context, id SchemaObjectIdentifier, opts *AlterFileFormatOptions) error {
 	if opts == nil {
-		opts = &AlterFileFormatOptionsLegacy{}
+		opts = &AlterFileFormatOptions{}
 	}
 	opts.name = id
 	if err := opts.validate(); err != nil {
@@ -483,21 +482,21 @@ func (v *fileFormatsLegacy) Alter(ctx context.Context, id SchemaObjectIdentifier
 	return err
 }
 
-// DropFileFormatOptionsLegacy is based on https://docs.snowflake.com/en/sql-reference/sql/drop-file-format.
-type DropFileFormatOptionsLegacy struct {
+// DropFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-file-format.
+type DropFileFormatOptions struct {
 	drop       bool                   `ddl:"static" sql:"DROP"`
 	fileFormat string                 `ddl:"static" sql:"FILE FORMAT"`
 	IfExists   *bool                  `ddl:"keyword" sql:"IF EXISTS"`
 	name       SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-func (opts *DropFileFormatOptionsLegacy) validate() error {
+func (opts *DropFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormatsLegacy) Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptionsLegacy) error {
+func (v *legacyFileFormats) Drop(ctx context.Context, id SchemaObjectIdentifier, opts *DropFileFormatOptions) error {
 	if opts == nil {
-		opts = &DropFileFormatOptionsLegacy{}
+		opts = &DropFileFormatOptions{}
 	}
 	opts.name = id
 	if err := opts.validate(); err != nil {
@@ -511,33 +510,33 @@ func (v *fileFormatsLegacy) Drop(ctx context.Context, id SchemaObjectIdentifier,
 	return err
 }
 
-func (v *fileFormatsLegacy) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
-	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptionsLegacy{IfExists: Bool(true)}) }, ctx, id)
+func (v *legacyFileFormats) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
+	return SafeDrop(v.client, func() error { return v.Drop(ctx, id, &DropFileFormatOptions{IfExists: Bool(true)}) }, ctx, id)
 }
 
-// ShowFileFormatsOptionsLegacy is based on https://docs.snowflake.com/en/sql-reference/sql/show-file-formats.
-type ShowFileFormatsOptionsLegacy struct {
+// ShowFileFormatsOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-file-formats.
+type ShowFileFormatsOptions struct {
 	show        bool  `ddl:"static" sql:"SHOW"`
 	fileFormats bool  `ddl:"static" sql:"FILE FORMATS"`
 	Like        *Like `ddl:"keyword" sql:"LIKE"`
 	In          *In   `ddl:"keyword" sql:"IN"`
 }
 
-func (opts *ShowFileFormatsOptionsLegacy) validate() error {
+func (opts *ShowFileFormatsOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormatsLegacy) Show(ctx context.Context, opts *ShowFileFormatsOptionsLegacy) ([]FileFormatLegacy, error) {
+func (v *legacyFileFormats) Show(ctx context.Context, opts *ShowFileFormatsOptions) ([]FileFormat, error) {
 	opts = createIfNil(opts)
-	dbRows, err := validateAndQuery[FileFormatRowLegacy](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[FileFormatRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[FileFormatRowLegacy, FileFormatLegacy](dbRows)
+	return convertRows[FileFormatRow, FileFormat](dbRows)
 }
 
-func (v *fileFormatsLegacy) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatLegacy, error) {
-	fileFormats, err := v.client.FileFormatsLegacy.Show(ctx, &ShowFileFormatsOptionsLegacy{
+func (v *legacyFileFormats) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
+	fileFormats, err := v.client.FileFormats.Show(ctx, &ShowFileFormatsOptions{
 		Like: &Like{
 			Pattern: String(id.Name()),
 		},
@@ -548,40 +547,40 @@ func (v *fileFormatsLegacy) ShowByID(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	return collections.FindFirst(fileFormats, func(format FileFormatLegacy) bool {
+	return collections.FindFirst(fileFormats, func(format FileFormat) bool {
 		return format.ID().FullyQualifiedName() == id.FullyQualifiedName()
 	})
 }
 
-func (v *fileFormatsLegacy) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatLegacy, error) {
+func (v *legacyFileFormats) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*FileFormat, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-type FileFormatDetailsLegacy struct {
+type FileFormatDetails struct {
 	Type    FileFormatType
-	Options FileFormatTypeOptionsLegacy
+	Options LegacyFileFormatTypeOptions
 }
 
-type FileFormatDetailsRowLegacy struct {
+type FileFormatDetailsRow struct {
 	Property         string
 	Property_Type    string
 	Property_Value   string
 	Property_Default string
 }
 
-// describeFileFormatOptionsLegacy is based on https://docs.snowflake.com/en/sql-reference/sql/desc-file-format.
-type describeFileFormatOptionsLegacy struct {
+// describeFileFormatOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-file-format.
+type describeFileFormatOptions struct {
 	describe   bool                   `ddl:"static" sql:"DESCRIBE"`
 	fileFormat string                 `ddl:"static" sql:"FILE FORMAT"`
 	name       SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-func (opts *describeFileFormatOptionsLegacy) validate() error {
+func (opts *describeFileFormatOptions) validate() error {
 	return nil
 }
 
-func (v *fileFormatsLegacy) Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetailsLegacy, error) {
-	opts := &describeFileFormatOptionsLegacy{
+func (v *legacyFileFormats) Describe(ctx context.Context, id SchemaObjectIdentifier) (*FileFormatDetails, error) {
+	opts := &describeFileFormatOptions{
 		name: id,
 	}
 	if err := opts.validate(); err != nil {
@@ -591,12 +590,12 @@ func (v *fileFormatsLegacy) Describe(ctx context.Context, id SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-	var rows []FileFormatDetailsRowLegacy
+	var rows []FileFormatDetailsRow
 	err = v.client.query(ctx, &rows, sql)
 	if err != nil {
 		return nil, err
 	}
-	details := FileFormatDetailsLegacy{}
+	details := FileFormatDetails{}
 	for _, row := range rows {
 		if row.Property == "TYPE" {
 			details.Type = FileFormatType(row.Property_Value)
@@ -654,7 +653,7 @@ func (v *fileFormatsLegacy) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.CSVFieldOptionallyEnclosedBy = &v
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
+				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.CSVNullIf = &newNullIf
@@ -724,7 +723,7 @@ func (v *fileFormatsLegacy) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.JSONTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
+				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.JSONNullIf = newNullIf
@@ -790,7 +789,7 @@ func (v *fileFormatsLegacy) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.AvroTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
+				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.AvroNullIf = &newNullIf
@@ -820,7 +819,7 @@ func (v *fileFormatsLegacy) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.ORCTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
+				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ORCNullIf = &newNullIf
@@ -847,7 +846,7 @@ func (v *fileFormatsLegacy) Describe(ctx context.Context, id SchemaObjectIdentif
 				details.Options.ParquetTrimSpace = &b
 			case "NULL_IF":
 				newNullIf := []NullString{}
-				for s := range strings.SplitSeq(strings.Trim(v, "[]"), ", ") {
+				for _, s := range strings.Split(strings.Trim(v, "[]"), ", ") {
 					newNullIf = append(newNullIf, NullString{s})
 				}
 				details.Options.ParquetNullIf = &newNullIf

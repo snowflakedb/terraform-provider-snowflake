@@ -88,11 +88,11 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 				HasName(name).
 				HasFrequency(frequency).
 				HasCreditQuota(float64(creditQuota)).
-				HasStartTimeNotEmpty().
-				HasEndTimeNotEmpty().
+				HasNonEmptyStartTime().
+				HasNonEmptyEndTime().
 				HasNotifyAt(100).
 				HasSuspendAt(30).
-				HasSuspendImmediatelyAt(50),
+				HasSuspendImmediateAt(50),
 		)
 	})
 
@@ -141,7 +141,7 @@ func TestInt_ResourceMonitorCreate(t *testing.T) {
 			objectassert.ResourceMonitor(t, id).
 				HasName(name).
 				HasFrequency(sdk.FrequencyMonthly).
-				HasStartTimeNotEmpty().
+				HasNonEmptyStartTime().
 				HasCreditQuota(0).
 				HasEndTime("").
 				HasNotifyUsers().

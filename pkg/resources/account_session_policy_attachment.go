@@ -46,8 +46,11 @@ func CreateAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithSet(*sdk.NewAccountSetRequest().WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().WithSessionPolicy(sessionPolicyId))))
+	err = client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+		Set: &sdk.AccountSet{
+			SessionPolicy: &sessionPolicyId,
+		},
+	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error while creating session policy attachment, err = %w", err))
 	}
@@ -116,13 +119,19 @@ func UpdateAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 			return diag.FromErr(err)
 		}
 
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().WithSessionPolicy(true)))); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Unset: &sdk.AccountUnset{
+				SessionPolicy: sdk.Bool(true),
+			},
+		}); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while unsetting old session policy from account, err = %w", err))
 		}
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().WithSessionPolicy(newSessionPolicyName)))); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+			Set: &sdk.AccountSet{
+				SessionPolicy: &newSessionPolicyName,
+			},
+		}); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while setting new session policy on account, err = %w", err))
 		}
@@ -136,8 +145,11 @@ func UpdateAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 func DeleteAccountSessionPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().WithSessionPolicy(true))))
+	err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{
+		Unset: &sdk.AccountUnset{
+			SessionPolicy: sdk.Bool(true),
+		},
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -51,6 +51,7 @@ func TestParseSnowflakeEnvironment(t *testing.T) {
 		}
 
 		for name, tc := range testCases {
+			tc := tc
 			t.Run(name, func(t *testing.T) {
 				actual, err := parseSnowflakeEnvironment(tc.input)
 				require.NoError(t, err)
@@ -68,6 +69,7 @@ func TestParseSnowflakeEnvironment(t *testing.T) {
 		}
 
 		for _, input := range testCases {
+			input := input
 			t.Run(input, func(t *testing.T) {
 				_, err := parseSnowflakeEnvironment(input)
 				require.Error(t, err)

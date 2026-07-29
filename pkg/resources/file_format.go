@@ -6,7 +6,6 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -327,13 +326,11 @@ func FileFormat() *schema.Resource {
 			return sdk.NewSchemaObjectIdentifier(id.DatabaseName, id.SchemaName, id.FileFormatName), nil
 		},
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-			return client.FileFormatsLegacy.DropSafely
+			return client.FileFormats.DropSafely
 		},
 	)
 
 	return &schema.Resource{
-		DeprecationMessage: deprecatedResourceDescription(string(resources.FileFormatCsv), string(resources.FileFormatJson), string(resources.FileFormatAvro), string(resources.FileFormatOrc), string(resources.FileFormatParquet), string(resources.FileFormatXml)),
-
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatResource), TrackingCreateWrapper(resources.FileFormat, CreateFileFormat)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatResource), TrackingReadWrapper(resources.FileFormat, ReadFileFormat)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatResource), TrackingUpdateWrapper(resources.FileFormat, UpdateFileFormat)),
@@ -360,9 +357,9 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	fileFormatName := d.Get("name").(string)
 	id := sdk.NewSchemaObjectIdentifier(dbName, schemaName, fileFormatName)
 
-	opts := sdk.CreateFileFormatOptionsLegacy{
+	opts := sdk.CreateFileFormatOptions{
 		Type:                        sdk.FileFormatType(d.Get("format_type").(string)),
-		FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{},
+		LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{},
 	}
 
 	switch opts.Type {
@@ -537,7 +534,7 @@ func CreateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		opts.Comment = sdk.String(v.(string))
 	}
 
-	err := client.FileFormatsLegacy.Create(ctx, id, &opts)
+	err := client.FileFormats.Create(ctx, id, &opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -566,7 +563,7 @@ func ReadFileFormat(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	id := sdk.NewSchemaObjectIdentifier(fileFormatID.DatabaseName, fileFormatID.SchemaName, fileFormatID.FileFormatName)
 
-	fileFormat, err := client.FileFormatsLegacy.ShowByIDSafely(ctx, id)
+	fileFormat, err := client.FileFormats.ShowByIDSafely(ctx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -809,7 +806,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.FileFormatsLegacy.Alter(ctx, id, &sdk.AlterFileFormatOptionsLegacy{
+		err := client.FileFormats.Alter(ctx, id, &sdk.AlterFileFormatOptions{
 			Rename: &sdk.AlterFileFormatRenameOptions{
 				NewName: newId,
 			},
@@ -823,7 +820,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	runSet := false
-	opts := sdk.AlterFileFormatOptionsLegacy{Set: &sdk.FileFormatTypeOptionsLegacy{}}
+	opts := sdk.AlterFileFormatOptions{Set: &sdk.LegacyFileFormatTypeOptions{}}
 
 	switch sdk.FileFormatType(d.Get("format_type").(string)) {
 	case sdk.FileFormatTypeCsv:
@@ -904,7 +901,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]any) {
+			for _, s := range d.Get("null_if").([]interface{}) {
 				if s == nil {
 					s = ""
 				} else {
@@ -973,7 +970,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]any) {
+			for _, s := range d.Get("null_if").([]interface{}) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1037,7 +1034,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]any) {
+			for _, s := range d.Get("null_if").([]interface{}) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1056,7 +1053,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]any) {
+			for _, s := range d.Get("null_if").([]interface{}) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1085,7 +1082,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 		}
 		if d.HasChange("null_if") {
 			nullIf := []sdk.NullString{}
-			for _, s := range d.Get("null_if").([]any) {
+			for _, s := range d.Get("null_if").([]interface{}) {
 				if s == nil {
 					s = ""
 				} else {
@@ -1141,7 +1138,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	if runSet {
-		err = client.FileFormatsLegacy.Alter(ctx, id, &opts)
+		err = client.FileFormats.Alter(ctx, id, &opts)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1172,7 +1169,7 @@ func fileFormatIDFromString(stringID string) (*fileFormatID, error) {
 	}, nil
 }
 
-func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption string) (any, bool, error) {
+func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption string) (interface{}, bool, error) {
 	validFormatTypeOptions := formatTypeOptions[formatType]
 	if v, ok := d.GetOk(formatTypeOption); ok {
 		if err := validateFormatTypeOptions(formatType, formatTypeOption, validFormatTypeOptions); err != nil {
@@ -1184,8 +1181,10 @@ func getFormatTypeOption(d *schema.ResourceData, formatType, formatTypeOption st
 }
 
 func validateFormatTypeOptions(formatType, formatTypeOption string, validFormatTypeOptions []string) error {
-	if slices.Contains(validFormatTypeOptions, formatTypeOption) {
-		return nil
+	for _, f := range validFormatTypeOptions {
+		if f == formatTypeOption {
+			return nil
+		}
 	}
 	return fmt.Errorf("%v is an invalid format type option for format type %v", formatTypeOption, formatType)
 }

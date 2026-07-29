@@ -105,41 +105,11 @@ type Mapping struct {
 	// SkipConvert is set by preprocessDefinition when another Mapping with the same From.Name has
 	// already been scheduled for emission in the same interface. Guards and convert bodies are suppressed.
 	SkipConvert bool
-	// AdditionalConvert enforces the additional conversion invocation (for cases where we have plain only field without manual conversion for any other field)
-	AdditionalConvert bool
-}
-
-// AddFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
-func (m *Mapping) AddFieldPairs(p *PairedStructs) {
-	pairs := make([]FieldPair, 0, len(p.fields))
-	for _, f := range p.fields {
-		if f.plainOnly {
-			m.AdditionalConvert = true
-			continue
-		}
-		pairs = append(pairs, FieldPair{
-			DbFieldName:    f.resolvedDbFieldName(),
-			PlainFieldName: f.resolvedPlainFieldName(),
-			DbKind:         f.dbKind,
-			PlainKind:      f.plainKind,
-			IsEnum:         f.isEnum,
-			IsJson:         f.isJson,
-			CustomParser:   f.customParser,
-			ValueAdjuster:  f.valueAdjuster,
-			BoolTrueValue:  f.boolTrueValue,
-			BoolParsed:     f.boolParsed,
-			manualConvert:  f.manualConvert,
-		})
-	}
-	m.FieldPairs = pairs
 }
 
 // HasManualConvert reports whether any field in this Mapping is marked as manual convert.
 // When true, the generated convert() will call r.additionalConvert(result) after all generated mappings.
 func (m *Mapping) HasManualConvert() bool {
-	if m.AdditionalConvert {
-		return true
-	}
 	for _, f := range m.FieldPairs {
 		if f.manualConvert {
 			return true
@@ -205,6 +175,9 @@ func newNoSqlOperation(kind string) *Operation {
 
 // TODO [next PRs]: add functional options to modify the operation on creation
 func (i *Interface) newSimpleOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {
+	if queryStruct.identifierField != nil {
+		queryStruct.identifierField.Kind = i.IdentifierKind
+	}
 	f := make([]*Field, len(helperStructs))
 	if len(f) > 0 {
 		for i, hs := range helperStructs {
@@ -219,6 +192,9 @@ func (i *Interface) newSimpleOperation(kind string, doc string, queryStruct *Que
 }
 
 func (i *Interface) newSimpleScalarOperation(kind string, doc string, queryStruct *QueryStruct, scalarReturnType string, helperStructs ...IntoField) *Interface {
+	if queryStruct.identifierField != nil {
+		queryStruct.identifierField.Kind = i.IdentifierKind
+	}
 	f := make([]*Field, len(helperStructs))
 	if len(f) > 0 {
 		for i, hs := range helperStructs {
@@ -244,6 +220,9 @@ func (i *Interface) newOperationWithDBMapping(
 ) *Operation {
 	db := dbRepresentation.IntoField()
 	res := resourceRepresentation.IntoField()
+	if queryStruct.identifierField != nil {
+		queryStruct.identifierField.Kind = i.IdentifierKind
+	}
 	f := make([]*Field, len(helperStructs))
 	if len(f) > 0 {
 		for i, hs := range helperStructs {

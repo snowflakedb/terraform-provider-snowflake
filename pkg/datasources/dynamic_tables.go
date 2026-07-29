@@ -208,38 +208,38 @@ func ReadDynamicTables(ctx context.Context, d *schema.ResourceData, meta any) di
 	client := meta.(*provider.Context).Client
 	request := sdk.NewShowDynamicTableRequest()
 	if v, ok := d.GetOk("like"); ok {
-		like := v.([]any)[0].(map[string]any)
+		like := v.([]interface{})[0].(map[string]interface{})
 		pattern := like["pattern"].(string)
-		request.WithLike(sdk.Like{Pattern: sdk.String(pattern)})
+		request.WithLike(&sdk.Like{Pattern: sdk.String(pattern)})
 	}
 
 	if v, ok := d.GetOk("in"); ok {
-		in := v.([]any)[0].(map[string]any)
+		in := v.([]interface{})[0].(map[string]interface{})
 		if v, ok := in["account"]; ok {
 			account := v.(bool)
 			if account {
-				request.WithIn(sdk.In{Account: sdk.Bool(account)})
+				request.WithIn(&sdk.In{Account: sdk.Bool(account)})
 			}
 		}
 		if v, ok := in["database"]; ok {
 			database := v.(string)
 			if database != "" {
-				request.WithIn(sdk.In{Database: sdk.NewAccountObjectIdentifier(database)})
+				request.WithIn(&sdk.In{Database: sdk.NewAccountObjectIdentifier(database)})
 			}
 		}
 		if v, ok := in["schema"]; ok {
 			schema := v.(string)
 			if schema != "" {
-				request.WithIn(sdk.In{Schema: sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(schema)})
+				request.WithIn(&sdk.In{Schema: sdk.NewDatabaseObjectIdentifierFromFullyQualifiedName(schema)})
 			}
 		}
 	}
 	if v, ok := d.GetOk("starts_with"); ok {
 		startsWith := v.(string)
-		request.WithStartsWith(startsWith)
+		request.WithStartsWith(sdk.String(startsWith))
 	}
 	if v, ok := d.GetOk("limit"); ok {
-		l := v.([]any)[0].(map[string]any)
+		l := v.([]interface{})[0].(map[string]interface{})
 		limit := sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
@@ -249,7 +249,7 @@ func ReadDynamicTables(ctx context.Context, d *schema.ResourceData, meta any) di
 			from := v.(string)
 			limit.From = sdk.String(from)
 		}
-		request.WithLimit(limit)
+		request.WithLimit(&limit)
 	}
 
 	dts, err := client.DynamicTables.Show(ctx, request)
@@ -284,14 +284,10 @@ func ReadDynamicTables(ctx context.Context, d *schema.ResourceData, meta any) di
 		record["text"] = dt.Text
 		record["automatic_clustering"] = dt.AutomaticClustering
 		record["scheduling_state"] = string(dt.SchedulingState)
-		if dt.LastSuspendedOn != nil {
-			record["last_suspended_on"] = dt.LastSuspendedOn.Format("2006-01-02T16:04:05.000 -0700")
-		}
+		record["last_suspended_on"] = dt.LastSuspendedOn.Format("2006-01-02T16:04:05.000 -0700")
 		record["is_clone"] = dt.IsClone
 		record["is_replica"] = dt.IsReplica
-		if dt.DataTimestamp != nil {
-			record["data_timestamp"] = dt.DataTimestamp.Format("2006-01-02T16:04:05.000 -0700")
-		}
+		record["data_timestamp"] = dt.DataTimestamp.Format("2006-01-02T16:04:05.000 -0700")
 		records = append(records, record)
 	}
 	if err := d.Set("records", records); err != nil {

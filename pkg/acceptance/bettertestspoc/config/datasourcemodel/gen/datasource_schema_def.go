@@ -71,10 +71,6 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.ExternalVolumes().Schema,
 	},
 	{
-		name:   "FileFormats",
-		schema: datasources.FileFormats().Schema,
-	},
-	{
 		name:   "Functions",
 		schema: datasources.Functions().Schema,
 	},
@@ -87,10 +83,6 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Grants().Schema,
 	},
 	{
-		name:   "IcebergTables",
-		schema: datasources.IcebergTables().Schema,
-	},
-	{
 		name:   "ImageRepositories",
 		schema: datasources.ImageRepositories().Schema,
 	},
@@ -101,10 +93,6 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "MaskingPolicies",
 		schema: datasources.MaskingPolicies().Schema,
-	},
-	{
-		name:   "McpServers",
-		schema: datasources.McpServers().Schema,
 	},
 	{
 		name:   "NetworkPolicies",

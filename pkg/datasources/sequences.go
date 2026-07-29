@@ -72,9 +72,9 @@ func ReadSequences(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	sequences := []map[string]any{}
+	sequences := []map[string]interface{}{}
 	for _, seq := range seqs {
-		sequenceMap := map[string]any{}
+		sequenceMap := map[string]interface{}{}
 		sequenceMap["name"] = seq.Name
 		sequenceMap["database"] = seq.DatabaseName
 		sequenceMap["schema"] = seq.SchemaName

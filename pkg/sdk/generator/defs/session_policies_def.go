@@ -42,7 +42,7 @@ var sessionPoliciesDef = g.NewInterface(
 			SQL("SESSION POLICY").
 			IfExists().
 			Name().
-			RenameTo().
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("SessionPolicySet").

@@ -65,16 +65,6 @@ func (s *CreateSchemaRequest) WithDefaultDdlCollation(defaultDdlCollation String
 	return s
 }
 
-func (s *CreateSchemaRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateSchemaRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *CreateSchemaRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateSchemaRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
-	return s
-}
-
 func (s *CreateSchemaRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSchemaRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -181,8 +171,8 @@ func (s *AlterSchemaRequest) WithIfExists(ifExists bool) *AlterSchemaRequest {
 	return s
 }
 
-func (s *AlterSchemaRequest) WithRenameTo(renameTo DatabaseObjectIdentifier) *AlterSchemaRequest {
-	s.RenameTo = &renameTo
+func (s *AlterSchemaRequest) WithNewName(newName DatabaseObjectIdentifier) *AlterSchemaRequest {
+	s.NewName = &newName
 	return s
 }
 
@@ -258,16 +248,6 @@ func (s *SchemaSetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters
 
 func (s *SchemaSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *SchemaSetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
-	return s
-}
-
-func (s *SchemaSetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *SchemaSetRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *SchemaSetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *SchemaSetRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
 	return s
 }
 
@@ -368,16 +348,6 @@ func (s *SchemaUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacte
 
 func (s *SchemaUnsetRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *SchemaUnsetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
-	return s
-}
-
-func (s *SchemaUnsetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu bool) *SchemaUnsetRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *SchemaUnsetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu bool) *SchemaUnsetRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
 	return s
 }
 

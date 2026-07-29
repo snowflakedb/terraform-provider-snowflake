@@ -207,11 +207,6 @@ func (c *CurrentAccountResourceAssert) HasDefaultNullOrdering(expected string) *
 	return c
 }
 
-func (c *CurrentAccountResourceAssert) HasDefaultStreamlitComputePool(expected string) *CurrentAccountResourceAssert {
-	c.StringValueSet("default_streamlit_compute_pool", expected)
-	return c
-}
-
 func (c *CurrentAccountResourceAssert) HasDefaultStreamlitNotebookWarehouse(expected string) *CurrentAccountResourceAssert {
 	c.StringValueSet("default_streamlit_notebook_warehouse", expected)
 	return c
@@ -848,11 +843,6 @@ func (c *CurrentAccountResourceAssert) HasDefaultNotebookComputePoolGpuString(ex
 
 func (c *CurrentAccountResourceAssert) HasDefaultNullOrderingString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("default_null_ordering", expected)
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasDefaultStreamlitComputePoolString(expected string) *CurrentAccountResourceAssert {
-	c.ValueSet("default_streamlit_compute_pool", expected)
 	return c
 }
 
@@ -1495,11 +1485,6 @@ func (c *CurrentAccountResourceAssert) HasNoDefaultNullOrdering() *CurrentAccoun
 	return c
 }
 
-func (c *CurrentAccountResourceAssert) HasNoDefaultStreamlitComputePool() *CurrentAccountResourceAssert {
-	c.ValueNotSet("default_streamlit_compute_pool")
-	return c
-}
-
 func (c *CurrentAccountResourceAssert) HasNoDefaultStreamlitNotebookWarehouse() *CurrentAccountResourceAssert {
 	c.ValueNotSet("default_streamlit_notebook_warehouse")
 	return c
@@ -2139,11 +2124,6 @@ func (c *CurrentAccountResourceAssert) HasDefaultNullOrderingEmpty() *CurrentAcc
 	return c
 }
 
-func (c *CurrentAccountResourceAssert) HasDefaultStreamlitComputePoolEmpty() *CurrentAccountResourceAssert {
-	c.ValueSet("default_streamlit_compute_pool", "")
-	return c
-}
-
 func (c *CurrentAccountResourceAssert) HasDefaultStreamlitNotebookWarehouseEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("default_streamlit_notebook_warehouse", "")
 	return c
@@ -2780,11 +2760,6 @@ func (c *CurrentAccountResourceAssert) HasDefaultNotebookComputePoolGpuNotEmpty(
 
 func (c *CurrentAccountResourceAssert) HasDefaultNullOrderingNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("default_null_ordering")
-	return c
-}
-
-func (c *CurrentAccountResourceAssert) HasDefaultStreamlitComputePoolNotEmpty() *CurrentAccountResourceAssert {
-	c.ValuePresent("default_streamlit_compute_pool")
 	return c
 }
 

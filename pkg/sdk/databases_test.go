@@ -50,8 +50,6 @@ func TestDatabasesCreate(t *testing.T) {
 		opts.Catalog = &catalogId
 		opts.ReplaceInvalidCharacters = Bool(true)
 		opts.DefaultDdlCollation = String("en_US")
-		opts.DefaultNotebookComputePoolCpu = String("CPU_X64_S")
-		opts.DefaultNotebookComputePoolGpu = String("GPU_NV_S")
 		opts.StorageSerializationPolicy = Pointer(StorageSerializationPolicyCompatible)
 		opts.LogLevel = Pointer(LogLevelInfo)
 		opts.TraceLevel = Pointer(TraceLevelPropagate)
@@ -71,7 +69,7 @@ func TestDatabasesCreate(t *testing.T) {
 				Value: "v1",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TRANSIENT DATABASE IF NOT EXISTS %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`, opts.name.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TRANSIENT DATABASE IF NOT EXISTS %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`, opts.name.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName())
 	})
 }
 
@@ -183,8 +181,6 @@ func TestDatabasesCreateShared(t *testing.T) {
 		opts.Catalog = &catalogId
 		opts.ReplaceInvalidCharacters = Bool(true)
 		opts.DefaultDdlCollation = String("en_US")
-		opts.DefaultNotebookComputePoolCpu = String("CPU_X64_S")
-		opts.DefaultNotebookComputePoolGpu = String("GPU_NV_S")
 		opts.StorageSerializationPolicy = Pointer(StorageSerializationPolicyCompatible)
 		opts.LogLevel = Pointer(LogLevelInfo)
 		opts.TraceLevel = Pointer(TraceLevelPropagate)
@@ -204,7 +200,7 @@ func TestDatabasesCreateShared(t *testing.T) {
 				Value: "v1",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE DATABASE %s FROM SHARE %s EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`, opts.name.FullyQualifiedName(), opts.FromShare.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE DATABASE %s FROM SHARE %s EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment' TAG (%s = 'v1')`, opts.name.FullyQualifiedName(), opts.FromShare.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName(), tagId.FullyQualifiedName())
 	})
 }
 
@@ -267,8 +263,6 @@ func TestDatabasesCreateSecondary(t *testing.T) {
 		opts.Catalog = &catalogId
 		opts.ReplaceInvalidCharacters = Bool(true)
 		opts.DefaultDdlCollation = String("en_US")
-		opts.DefaultNotebookComputePoolCpu = String("CPU_X64_S")
-		opts.DefaultNotebookComputePoolGpu = String("GPU_NV_S")
 		opts.StorageSerializationPolicy = Pointer(StorageSerializationPolicyCompatible)
 		opts.LogLevel = Pointer(LogLevelInfo)
 		opts.TraceLevel = Pointer(TraceLevelPropagate)
@@ -281,7 +275,7 @@ func TestDatabasesCreateSecondary(t *testing.T) {
 		opts.EnableConsoleOutput = Bool(true)
 
 		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TRANSIENT DATABASE %s AS REPLICA OF %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment'`, opts.name.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TRANSIENT DATABASE %s AS REPLICA OF %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 EXTERNAL_VOLUME = %s CATALOG = %s REPLACE_INVALID_CHARACTERS = true DEFAULT_DDL_COLLATION = 'en_US' STORAGE_SERIALIZATION_POLICY = COMPATIBLE LOG_LEVEL = 'INFO' TRACE_LEVEL = 'PROPAGATE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = MEDIUM USER_TASK_TIMEOUT_MS = 12000 USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 QUOTED_IDENTIFIERS_IGNORE_CASE = true ENABLE_CONSOLE_OUTPUT = true COMMENT = 'comment'`, opts.name.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName())
 	})
 }
 
@@ -342,7 +336,7 @@ func TestDatabasesAlter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &DatabaseSet{}
 		opts.Unset = &DatabaseUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseOptions", "RenameTo", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseOptions", "NewName", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: at least one set option", func(t *testing.T) {
@@ -356,8 +350,6 @@ func TestDatabasesAlter(t *testing.T) {
 			"Catalog",
 			"ReplaceInvalidCharacters",
 			"DefaultDdlCollation",
-			"DefaultNotebookComputePoolCpu",
-			"DefaultNotebookComputePoolGpu",
 			"StorageSerializationPolicy",
 			"LogLevel",
 			"LogEventLevel",
@@ -384,8 +376,6 @@ func TestDatabasesAlter(t *testing.T) {
 			"Catalog",
 			"ReplaceInvalidCharacters",
 			"DefaultDdlCollation",
-			"DefaultNotebookComputePoolCpu",
-			"DefaultNotebookComputePoolGpu",
 			"StorageSerializationPolicy",
 			"LogLevel",
 			"LogEventLevel",
@@ -417,9 +407,9 @@ func TestDatabasesAlter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: invalid RenameTo identifier", func(t *testing.T) {
+	t.Run("validation: invalid NewName identifier", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.RenameTo = Pointer(emptyAccountObjectIdentifier)
+		opts.NewName = Pointer(emptyAccountObjectIdentifier)
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -432,8 +422,8 @@ func TestDatabasesAlter(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
-		opts.RenameTo = Pointer(randomAccountObjectIdentifier())
-		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE IF EXISTS %s RENAME TO %s`, opts.name.FullyQualifiedName(), opts.RenameTo.FullyQualifiedName())
+		opts.NewName = Pointer(randomAccountObjectIdentifier())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE IF EXISTS %s RENAME TO %s`, opts.name.FullyQualifiedName(), opts.NewName.FullyQualifiedName())
 	})
 
 	t.Run("swap with", func(t *testing.T) {
@@ -447,39 +437,35 @@ func TestDatabasesAlter(t *testing.T) {
 		catalogId := randomAccountObjectIdentifier()
 		opts := defaultOpts()
 		opts.Set = &DatabaseSet{
-			DataRetentionTimeInDays:       Int(1),
-			MaxDataExtensionTimeInDays:    Int(1),
-			ExternalVolume:                &externalVolumeId,
-			Catalog:                       &catalogId,
-			ReplaceInvalidCharacters:      Bool(true),
-			DefaultDdlCollation:           String("en_US"),
-			DefaultNotebookComputePoolCpu: String("CPU_X64_S"),
-			DefaultNotebookComputePoolGpu: String("GPU_NV_S"),
-			StorageSerializationPolicy:    Pointer(StorageSerializationPolicyCompatible),
-			LogLevel:                      Pointer(LogLevelError),
-			TraceLevel:                    Pointer(TraceLevelPropagate),
-			Comment:                       String("comment"),
+			DataRetentionTimeInDays:    Int(1),
+			MaxDataExtensionTimeInDays: Int(1),
+			ExternalVolume:             &externalVolumeId,
+			Catalog:                    &catalogId,
+			ReplaceInvalidCharacters:   Bool(true),
+			DefaultDdlCollation:        String("en_US"),
+			StorageSerializationPolicy: Pointer(StorageSerializationPolicyCompatible),
+			LogLevel:                   Pointer(LogLevelError),
+			TraceLevel:                 Pointer(TraceLevelPropagate),
+			Comment:                    String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, EXTERNAL_VOLUME = %s, CATALOG = %s, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US', DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S', DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, LOG_LEVEL = 'ERROR', TRACE_LEVEL = 'PROPAGATE', COMMENT = 'comment'`, opts.name.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s SET DATA_RETENTION_TIME_IN_DAYS = 1, MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, EXTERNAL_VOLUME = %s, CATALOG = %s, REPLACE_INVALID_CHARACTERS = true, DEFAULT_DDL_COLLATION = 'en_US', STORAGE_SERIALIZATION_POLICY = COMPATIBLE, LOG_LEVEL = 'ERROR', TRACE_LEVEL = 'PROPAGATE', COMMENT = 'comment'`, opts.name.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), catalogId.FullyQualifiedName())
 	})
 
 	t.Run("unset", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &DatabaseUnset{
-			DataRetentionTimeInDays:       Bool(true),
-			MaxDataExtensionTimeInDays:    Bool(true),
-			ExternalVolume:                Bool(true),
-			Catalog:                       Bool(true),
-			ReplaceInvalidCharacters:      Bool(true),
-			DefaultDdlCollation:           Bool(true),
-			DefaultNotebookComputePoolCpu: Bool(true),
-			DefaultNotebookComputePoolGpu: Bool(true),
-			StorageSerializationPolicy:    Bool(true),
-			LogLevel:                      Bool(true),
-			TraceLevel:                    Bool(true),
-			Comment:                       Bool(true),
+			DataRetentionTimeInDays:    Bool(true),
+			MaxDataExtensionTimeInDays: Bool(true),
+			ExternalVolume:             Bool(true),
+			Catalog:                    Bool(true),
+			ReplaceInvalidCharacters:   Bool(true),
+			DefaultDdlCollation:        Bool(true),
+			StorageSerializationPolicy: Bool(true),
+			LogLevel:                   Bool(true),
+			TraceLevel:                 Bool(true),
+			Comment:                    Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, EXTERNAL_VOLUME, CATALOG, REPLACE_INVALID_CHARACTERS, DEFAULT_DDL_COLLATION, DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU, DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU, STORAGE_SERIALIZATION_POLICY, LOG_LEVEL, TRACE_LEVEL, COMMENT`, opts.name.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, EXTERNAL_VOLUME, CATALOG, REPLACE_INVALID_CHARACTERS, DEFAULT_DDL_COLLATION, STORAGE_SERIALIZATION_POLICY, LOG_LEVEL, TRACE_LEVEL, COMMENT`, opts.name.FullyQualifiedName())
 	})
 
 	t.Run("with set tag", func(t *testing.T) {

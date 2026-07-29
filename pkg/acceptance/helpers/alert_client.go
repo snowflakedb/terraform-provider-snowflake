@@ -26,23 +26,21 @@ func (c *AlertClient) client() sdk.Alerts {
 
 func (c *AlertClient) CreateAlert(t *testing.T) (*sdk.Alert, func()) {
 	t.Helper()
-	return c.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
-		c.ids.RandomSchemaObjectIdentifier(),
-		c.ids.WarehouseId(),
-		"USING CRON * * * * * UTC",
-		sdk.NewAlertConditionFromString("SELECT 1"),
-		"SELECT 1",
-	))
+	schedule := "USING CRON * * * * * UTC"
+	condition := "SELECT 1"
+	action := "SELECT 1"
+	return c.CreateAlertWithOptions(t, schedule, condition, action, &sdk.CreateAlertOptions{})
 }
 
-func (c *AlertClient) CreateAlertWithRequest(t *testing.T, req *sdk.CreateAlertRequest) (*sdk.Alert, func()) {
+func (c *AlertClient) CreateAlertWithOptions(t *testing.T, schedule string, condition string, action string, opts *sdk.CreateAlertOptions) (*sdk.Alert, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, req)
+	id := c.ids.RandomSchemaObjectIdentifier()
+
+	err := c.client().Create(ctx, id, c.ids.WarehouseId(), schedule, condition, action, opts)
 	require.NoError(t, err)
 
-	id := req.GetName()
 	alert, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 
@@ -54,7 +52,7 @@ func (c *AlertClient) DropAlertFunc(t *testing.T, id sdk.SchemaObjectIdentifier)
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropAlertRequest(id).WithIfExists(true))
+		err := c.client().Drop(ctx, id, &sdk.DropAlertOptions{IfExists: sdk.Bool(true)})
 		require.NoError(t, err)
 	}
 }

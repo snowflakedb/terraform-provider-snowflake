@@ -77,22 +77,16 @@ var viewColumnMaskingPolicy = g.NewQueryStruct("ViewColumnMaskingPolicy").
 var viewColumnProjectionPolicy = g.NewQueryStruct("ViewColumnProjectionPolicy").
 	Identifier("ProjectionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required())
 
-func viewRowAccessPolicy() *g.QueryStruct {
-	return g.NewQueryStruct("ViewRowAccessPolicy").
-		Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
-		ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-		WithValidation(g.ValidIdentifier, "RowAccessPolicy").
-		WithValidation(g.ValidateValueSet, "On").
-		WithSharedToOpts()
-}
+var viewRowAccessPolicy = g.NewQueryStruct("ViewRowAccessPolicy").
+	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
+	WithValidation(g.ValidateValueSet, "On")
 
-func viewAggregationPolicy() *g.QueryStruct {
-	return g.NewQueryStruct("ViewAggregationPolicy").
-		Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
-		ListAssignment("ENTITY KEY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
-		WithValidation(g.ValidIdentifier, "AggregationPolicy").
-		WithSharedToOpts()
-}
+var viewAggregationPolicy = g.NewQueryStruct("ViewAggregationPolicy").
+	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+	ListAssignment("ENTITY KEY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
+	WithValidation(g.ValidIdentifier, "AggregationPolicy")
 
 var viewAddDataMetricFunction = g.NewQueryStruct("ViewAddDataMetricFunction").
 	SQL("ADD").
@@ -118,31 +112,26 @@ var viewAddRowAccessPolicy = g.NewQueryStruct("ViewAddRowAccessPolicy").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
-	WithValidation(g.ValidateValueSet, "On").
-	WithSharedToOpts()
+	WithValidation(g.ValidateValueSet, "On")
 
 var viewDropRowAccessPolicy = g.NewQueryStruct("ViewDropRowAccessPolicy").
 	SQL("DROP").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
-	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
-	WithSharedToOpts()
+	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
 
 var viewDropAndAddRowAccessPolicy = g.NewQueryStruct("ViewDropAndAddRowAccessPolicy").
-	SharedQueryStructField("Drop", viewDropRowAccessPolicy, g.KeywordOptions().Required()).
-	SharedQueryStructField("Add", viewAddRowAccessPolicy, g.KeywordOptions().Required()).
-	WithSharedToOpts()
+	QueryStructField("Drop", viewDropRowAccessPolicy, g.KeywordOptions().Required()).
+	QueryStructField("Add", viewAddRowAccessPolicy, g.KeywordOptions().Required())
 
 var viewSetAggregationPolicy = g.NewQueryStruct("ViewSetAggregationPolicy").
 	SQL("SET").
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
 	ListAssignment("ENTITY KEY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
 	OptionalSQL("FORCE").
-	WithValidation(g.ValidIdentifier, "AggregationPolicy").
-	WithSharedToOpts()
+	WithValidation(g.ValidIdentifier, "AggregationPolicy")
 
 var viewUnsetAggregationPolicy = g.NewQueryStruct("ViewUnsetAggregationPolicy").
-	SQL("UNSET AGGREGATION POLICY").
-	WithSharedToOpts()
+	SQL("UNSET AGGREGATION POLICY")
 
 var viewSetColumnMaskingPolicy = g.NewQueryStruct("ViewSetColumnMaskingPolicy").
 	// In the docs there is a MODIFY alternative, but for simplicity only one is supported here.
@@ -216,8 +205,8 @@ var viewsDef = g.NewInterface(
 			OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 			// In the current docs ROW ACCESS POLICY and TAG are specified twice.
 			// It is a mistake probably so here they are present only once.
-			OptionalQueryStructField("RowAccessPolicy", viewRowAccessPolicy(), g.KeywordOptions()).
-			OptionalQueryStructField("AggregationPolicy", viewAggregationPolicy(), g.KeywordOptions()).
+			OptionalQueryStructField("RowAccessPolicy", viewRowAccessPolicy, g.KeywordOptions()).
+			OptionalQueryStructField("AggregationPolicy", viewAggregationPolicy, g.KeywordOptions()).
 			OptionalTags().
 			SQL("AS").
 			Text("sql", g.KeywordOptions().NoQuotes().Required()).
@@ -233,7 +222,7 @@ var viewsDef = g.NewInterface(
 			SQL("VIEW").
 			IfExists().
 			Name().
-			RenameTo().
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalSQL("UNSET COMMENT").
 			OptionalSQL("SET SECURE").

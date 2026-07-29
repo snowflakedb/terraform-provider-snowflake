@@ -55,16 +55,14 @@ func TestAcc_StorageIntegrations_BasicUseCase_DifferentFiltering(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, awsModel1, awsModel2, awsModel3, storageIntegrationsModelLikeFirst),
-				Check: assertThat(
-					t,
-					assert.Check(resource.TestCheckResourceAttr(storageIntegrationsModelLikeFirst.DatasourceReference(), "storage_integrations.#", "1")),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(storageIntegrationsModelLikeFirst.DatasourceReference(), "storage_integrations.#", "1"),
 				),
 			},
 			{
 				Config: accconfig.FromModels(t, awsModel1, awsModel2, awsModel3, storageIntegrationsModelLikePrefix),
-				Check: assertThat(
-					t,
-					assert.Check(resource.TestCheckResourceAttr(storageIntegrationsModelLikePrefix.DatasourceReference(), "storage_integrations.#", "2")),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(storageIntegrationsModelLikePrefix.DatasourceReference(), "storage_integrations.#", "2"),
 				),
 			},
 		},
@@ -179,19 +177,20 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 						HasComment(comment).
 						HasStorageType("EXTERNAL_STAGE").
 						HasCategory("STORAGE"),
-					assert.Check(resource.TestCheckResourceAttr(awsWithDescribe.DatasourceReference(), "storage_integrations.#", "1")),
-					resourceshowoutputassert.StorageIntegrationsDatasourceDescribeOutput(t, awsWithDescribe.DatasourceReference()).
-						HasId(awsIntegrationId).
-						HasEnabled(false).
-						HasProvider("S3").
-						HasAllowedLocations(awsAllowedLocations...).
-						HasBlockedLocations(awsBlockedLocations...).
-						HasComment(comment).
-						HasUsePrivatelinkEndpoint(false).
-						HasIamUserArnSet().
-						HasRoleArn(awsRoleArn).
-						HasObjectAcl("bucket-owner-full-control").
-						HasExternalId(awsExternalId),
+					// TODO [SNOW-3113157]: replace assert.Check with proper assertions
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.id", awsIntegrationId.Name())),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.enabled", "false")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.provider", "S3")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.allowed_locations.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.blocked_locations.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.comment", comment)),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttrSet(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.iam_user_arn")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.role_arn", awsRoleArn)),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.object_acl", "bucket-owner-full-control")),
+					assert.Check(resource.TestCheckResourceAttr(awsNoDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.external_id", awsExternalId)),
 				),
 			},
 			// Azure with describe
@@ -206,17 +205,17 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 						HasStorageType("EXTERNAL_STAGE").
 						HasCategory("STORAGE"),
 					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.#", "1")),
-					resourceshowoutputassert.StorageIntegrationsDatasourceDescribeOutput(t, azureWithDescribe.DatasourceReference()).
-						HasId(azureIntegrationId).
-						HasEnabled(false).
-						HasProvider("AZURE").
-						HasAllowedLocations(azureAllowedLocations...).
-						HasBlockedLocations(azureBlockedLocations...).
-						HasComment(comment).
-						HasUsePrivatelinkEndpoint(false).
-						HasTenantId(azureTenantId).
-						HasConsentUrlSet().
-						HasMultiTenantAppNameSet(),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.id", azureIntegrationId.Name())),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.enabled", "false")),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.provider", "AZURE")),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.allowed_locations.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.blocked_locations.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.comment", comment)),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttr(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.tenant_id", azureTenantId)),
+					assert.Check(resource.TestCheckResourceAttrSet(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.consent_url")),
+					assert.Check(resource.TestCheckResourceAttrSet(azureWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.multi_tenant_app_name")),
 				),
 			},
 			// GCS with describe
@@ -231,15 +230,15 @@ func TestAcc_StorageIntegrations_CompleteUseCase(t *testing.T) {
 						HasStorageType("EXTERNAL_STAGE").
 						HasCategory("STORAGE"),
 					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.#", "1")),
-					resourceshowoutputassert.StorageIntegrationsDatasourceDescribeOutput(t, gcsWithDescribe.DatasourceReference()).
-						HasId(gcsIntegrationId).
-						HasEnabled(false).
-						HasProvider("GCS").
-						HasAllowedLocations(gcsAllowedLocations...).
-						HasBlockedLocations(gcsBlockedLocations...).
-						HasComment(comment).
-						HasUsePrivatelinkEndpoint(false).
-						HasServiceAccountSet(),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.id", gcsIntegrationId.Name())),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.enabled", "false")),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.provider", "GCS")),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.allowed_locations.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.blocked_locations.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.comment", comment)),
+					assert.Check(resource.TestCheckResourceAttr(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.use_privatelink_endpoint", "false")),
+					assert.Check(resource.TestCheckResourceAttrSet(gcsWithDescribe.DatasourceReference(), "storage_integrations.0.describe_output.0.service_account")),
 				),
 			},
 		},
@@ -278,21 +277,22 @@ func TestAcc_StorageIntegrations_MultipleTypes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, storageIntegrationAws, storageIntegrationAzure, storageIntegrationsModel),
-				Check: assertThat(
-					t,
-					assert.Check(resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.#", "2")),
-					resourceshowoutputassert.StorageIntegrationsDatasourceShowOutputOnIdx(t, storageIntegrationsModel.DatasourceReference(), 0).
-						HasEnabled(false).
-						HasStorageType("EXTERNAL_STAGE").
-						HasCategory("STORAGE"),
-					resourceshowoutputassert.StorageIntegrationsDatasourceDescribeOutputOnIdx(t, storageIntegrationsModel.DatasourceReference(), 0).
-						HasEnabled(false),
-					resourceshowoutputassert.StorageIntegrationsDatasourceShowOutputOnIdx(t, storageIntegrationsModel.DatasourceReference(), 1).
-						HasEnabled(false).
-						HasStorageType("EXTERNAL_STAGE").
-						HasCategory("STORAGE"),
-					resourceshowoutputassert.StorageIntegrationsDatasourceDescribeOutputOnIdx(t, storageIntegrationsModel.DatasourceReference(), 1).
-						HasEnabled(false),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.#", "2"),
+
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.0.show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.0.show_output.0.storage_type", "EXTERNAL_STAGE"),
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.0.show_output.0.category", "STORAGE"),
+
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.0.describe_output.#", "1"),
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.0.describe_output.0.enabled", "false"),
+
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.1.show_output.0.enabled", "false"),
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.1.show_output.0.storage_type", "EXTERNAL_STAGE"),
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.1.show_output.0.category", "STORAGE"),
+
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.1.describe_output.#", "1"),
+					resource.TestCheckResourceAttr(storageIntegrationsModel.DatasourceReference(), "storage_integrations.1.describe_output.0.enabled", "false"),
 				),
 			},
 		},

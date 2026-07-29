@@ -56,17 +56,3 @@ func (c *CortexSearchServiceClient) DropCortexSearchServiceFunc(t *testing.T, id
 		require.NoError(t, err)
 	}
 }
-
-func (c *CortexSearchServiceClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.CortexSearchService, error) {
-	t.Helper()
-	ctx := context.Background()
-
-	return c.client().ShowByID(ctx, id)
-}
-
-func (c *CortexSearchServiceClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.CortexSearchServiceDetails, error) {
-	t.Helper()
-	ctx := context.Background()
-
-	return c.client().Describe(ctx, id)
-}

@@ -40,7 +40,7 @@ var sequencesDef = g.NewInterface(
 		SQL("SEQUENCE").
 		IfExists().
 		Name().
-		RenameTo().
+		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalNumberAssignment("SET INCREMENT", g.ParameterOptions().NoQuotes()).
 		OptionalQueryStructField(
 			"Set",

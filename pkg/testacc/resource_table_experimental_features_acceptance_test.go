@@ -677,7 +677,7 @@ func TestAcc_Experimental_Table_HierarchyRenames_Error_SchemaDroppedExternally(t
 						planchecks.Execute(func() {
 							testClient().Schema.Alter(
 								t, sdk.NewAlterSchemaRequest(schema.ID()).
-									WithRenameTo(sdk.NewDatabaseObjectIdentifier(dbA.ID().Name(), testClient().Ids.Alpha())),
+									WithNewName(sdk.NewDatabaseObjectIdentifier(dbA.ID().Name(), testClient().Ids.Alpha())),
 							)
 						}),
 					},

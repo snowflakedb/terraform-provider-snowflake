@@ -64,11 +64,6 @@ func (v *TagBuilder) NoEquals() *TagBuilder {
 	return v
 }
 
-func (v *TagBuilder) Reverse() *TagBuilder {
-	v.ddl = append(v.ddl, "reverse")
-	return v
-}
-
 func (v *TagBuilder) SingleQuotes() *TagBuilder {
 	v.ddl = append(v.ddl, "single_quotes")
 	return v

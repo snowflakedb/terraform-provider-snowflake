@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -16,16 +15,8 @@ type ProgrammaticAccessTokenAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.ProgrammaticAccessToken, sdk.AccountObjectIdentifier]
 }
 
-func ProgrammaticAccessToken(t *testing.T, parentId sdk.AccountObjectIdentifier, id sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenAssert {
-	t.Helper()
-	return &ProgrammaticAccessTokenAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeProgrammaticAccessToken, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.ProgrammaticAccessToken, sdk.AccountObjectIdentifier] {
-			return func(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ProgrammaticAccessToken, error) {
-				return testClient.User.ShowProgrammaticAccessToken(t, parentId, id), nil
-			}
-		}),
-	}
-}
+// function ProgrammaticAccessToken is not supported because ProgrammaticAccessToken has a pseudo-identifier and requires a user ID for being listed in Snowflake.
+// TODO(SNOW-1501905): add a function to get the ProgrammaticAccessToken by user and token name.
 
 func ProgrammaticAccessTokenFromObject(t *testing.T, programmaticAccessToken *sdk.ProgrammaticAccessToken) *ProgrammaticAccessTokenAssert {
 	t.Helper()
@@ -45,22 +36,11 @@ func (p *ProgrammaticAccessTokenAssert) HasName(expected string) *ProgrammaticAc
 	return p
 }
 
-func (p *ProgrammaticAccessTokenAssert) HasNameNotEmpty() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProgrammaticAccessTokenAssert) HasUserName(expected sdk.AccountObjectIdentifier) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
-		if o.UserName.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected user name: %v; got: %v", expected.FullyQualifiedName(), o.UserName.FullyQualifiedName())
+		if o.UserName.Name() != expected.Name() {
+			return fmt.Errorf("expected user name: %v; got: %v", expected.Name(), o.UserName.Name())
 		}
 		return nil
 	})
@@ -73,19 +53,8 @@ func (p *ProgrammaticAccessTokenAssert) HasRoleRestriction(expected sdk.AccountO
 		if o.RoleRestriction == nil {
 			return fmt.Errorf("expected role restriction to have value; got: nil")
 		}
-		if (*o.RoleRestriction).FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected role restriction: %v; got: %v", expected.FullyQualifiedName(), (*o.RoleRestriction).FullyQualifiedName())
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProgrammaticAccessTokenAssert) HasNoRoleRestriction() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.RoleRestriction != nil {
-			return fmt.Errorf("expected role restriction to be nil; got: %v", *o.RoleRestriction)
+		if (*o.RoleRestriction).Name() != expected.Name() {
+			return fmt.Errorf("expected role restriction: %v; got: %v", expected.Name(), (*o.RoleRestriction).Name())
 		}
 		return nil
 	})
@@ -97,17 +66,6 @@ func (p *ProgrammaticAccessTokenAssert) HasExpiresAt(expected time.Time) *Progra
 		t.Helper()
 		if o.ExpiresAt != expected {
 			return fmt.Errorf("expected expires at: %v; got: %v", expected, o.ExpiresAt)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProgrammaticAccessTokenAssert) HasExpiresAtNotEmpty() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.ExpiresAt.IsZero() {
-			return fmt.Errorf("expected expires at to be set; got zero value")
 		}
 		return nil
 	})
@@ -139,17 +97,6 @@ func (p *ProgrammaticAccessTokenAssert) HasComment(expected string) *Programmati
 	return p
 }
 
-func (p *ProgrammaticAccessTokenAssert) HasNoComment() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProgrammaticAccessTokenAssert) HasCreatedOn(expected time.Time) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
@@ -161,33 +108,11 @@ func (p *ProgrammaticAccessTokenAssert) HasCreatedOn(expected time.Time) *Progra
 	return p
 }
 
-func (p *ProgrammaticAccessTokenAssert) HasCreatedOnNotEmpty() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.CreatedOn.IsZero() {
-			return fmt.Errorf("expected created on to be set; got zero value")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProgrammaticAccessTokenAssert) HasCreatedBy(expected string) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
 		if o.CreatedBy != expected {
 			return fmt.Errorf("expected created by: %v; got: %v", expected, o.CreatedBy)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProgrammaticAccessTokenAssert) HasCreatedByNotEmpty() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.CreatedBy == "" {
-			return fmt.Errorf("expected created by to be non-empty")
 		}
 		return nil
 	})
@@ -208,17 +133,6 @@ func (p *ProgrammaticAccessTokenAssert) HasMinsToBypassNetworkPolicyRequirement(
 	return p
 }
 
-func (p *ProgrammaticAccessTokenAssert) HasNoMinsToBypassNetworkPolicyRequirement() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.MinsToBypassNetworkPolicyRequirement != nil {
-			return fmt.Errorf("expected mins to bypass network policy requirement to be nil; got: %v", *o.MinsToBypassNetworkPolicyRequirement)
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProgrammaticAccessTokenAssert) HasRotatedTo(expected string) *ProgrammaticAccessTokenAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
 		t.Helper()
@@ -227,17 +141,6 @@ func (p *ProgrammaticAccessTokenAssert) HasRotatedTo(expected string) *Programma
 		}
 		if *o.RotatedTo != expected {
 			return fmt.Errorf("expected rotated to: %v; got: %v", expected, *o.RotatedTo)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProgrammaticAccessTokenAssert) HasNoRotatedTo() *ProgrammaticAccessTokenAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.ProgrammaticAccessToken) error {
-		t.Helper()
-		if o.RotatedTo != nil {
-			return fmt.Errorf("expected rotated to to be nil; got: %v", *o.RotatedTo)
 		}
 		return nil
 	})

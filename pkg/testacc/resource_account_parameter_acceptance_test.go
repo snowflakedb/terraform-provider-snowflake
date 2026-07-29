@@ -33,7 +33,6 @@ func TestAcc_AccountParameter(t *testing.T) {
 		{sdk.AccountParameterAllowedSpcsWorkloadTypes, "ALL", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterDataMetricSchedule, "60 MINUTES", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterDefaultDbtVersion, "1.9.4", sdk.ParameterTypeSnowflakeDefault},
-		{sdk.AccountParameterDefaultStreamlitComputePool, "SYSTEM_COMPUTE_POOL_GPU", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterDisallowedSpcsWorkloadTypes, "", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableBudgetEventLogging, "true", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},

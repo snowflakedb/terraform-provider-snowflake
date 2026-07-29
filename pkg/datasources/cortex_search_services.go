@@ -129,7 +129,7 @@ func ReadCortexSearchServices(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if v, ok := d.GetOk("in"); ok {
-		in := v.([]any)[0].(map[string]any)
+		in := v.([]interface{})[0].(map[string]interface{})
 		if v, ok := in["account"]; ok {
 			account := v.(bool)
 			if account {
@@ -154,7 +154,7 @@ func ReadCortexSearchServices(ctx context.Context, d *schema.ResourceData, meta 
 		request.WithStartsWith(startsWith)
 	}
 	if v, ok := d.GetOk("limit"); ok {
-		l := v.([]any)[0].(map[string]any)
+		l := v.([]interface{})[0].(map[string]interface{})
 		limit := sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)

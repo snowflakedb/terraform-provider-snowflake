@@ -12,7 +12,6 @@ import (
 
 type OauthIntegrationForCustomClientsModel struct {
 	Name                        tfconfig.Variable `json:"name,omitempty"`
-	AllowedRolesList            tfconfig.Variable `json:"allowed_roles_list,omitempty"`
 	BlockedRolesList            tfconfig.Variable `json:"blocked_roles_list,omitempty"`
 	Comment                     tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                     tfconfig.Variable `json:"enabled,omitempty"`
@@ -105,8 +104,6 @@ func (o *OauthIntegrationForCustomClientsModel) WithName(name string) *OauthInte
 	return o
 }
 
-// allowed_roles_list attribute type is not yet supported, so WithAllowedRolesList can't be generated
-
 // blocked_roles_list attribute type is not yet supported, so WithBlockedRolesList can't be generated
 
 func (o *OauthIntegrationForCustomClientsModel) WithComment(comment string) *OauthIntegrationForCustomClientsModel {
@@ -184,11 +181,6 @@ func (o *OauthIntegrationForCustomClientsModel) WithOauthUseSecondaryRoles(oauth
 
 func (o *OauthIntegrationForCustomClientsModel) WithNameValue(value tfconfig.Variable) *OauthIntegrationForCustomClientsModel {
 	o.Name = value
-	return o
-}
-
-func (o *OauthIntegrationForCustomClientsModel) WithAllowedRolesListValue(value tfconfig.Variable) *OauthIntegrationForCustomClientsModel {
-	o.AllowedRolesList = value
 	return o
 }
 

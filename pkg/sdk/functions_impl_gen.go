@@ -509,8 +509,7 @@ func (r functionDetailRow) convert() (*FunctionDetail, error) {
 }
 
 func (r *SecretsListRequest) toOpts() *SecretsList {
-	opts := &SecretsList{
+	return &SecretsList{
 		SecretsList: r.SecretsList,
 	}
-	return opts
 }

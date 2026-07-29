@@ -43,7 +43,7 @@ func TestInt_Connections(t *testing.T) {
 				HasName(id.Name()).
 				HasNoComment().
 				HasIsPrimary(true).
-				HasPrimary(externalObjectIdentifier).
+				HasPrimaryIdentifier(externalObjectIdentifier).
 				HasFailoverAllowedToAccounts(accountId).
 				HasOrganizationName(sessionDetails.OrganizationName).
 				HasAccountLocator(client.GetAccountLocator()).
@@ -71,7 +71,7 @@ func TestInt_Connections(t *testing.T) {
 				HasName(id.Name()).
 				HasComment("test comment for connection").
 				HasIsPrimary(true).
-				HasPrimary(externalObjectIdentifier).
+				HasPrimaryIdentifier(externalObjectIdentifier).
 				HasFailoverAllowedToAccounts(accountId).
 				HasOrganizationName(sessionDetails.OrganizationName).
 				HasAccountLocator(client.GetAccountLocator()).
@@ -109,7 +109,7 @@ func TestInt_Connections(t *testing.T) {
 				HasName(id.Name()).
 				HasNoComment().
 				HasIsPrimary(true).
-				HasPrimary(externalObjectIdentifier).
+				HasPrimaryIdentifier(externalObjectIdentifier).
 				HasFailoverAllowedToAccounts(
 					accountId,
 					secondaryAccountId,
@@ -155,7 +155,7 @@ func TestInt_Connections(t *testing.T) {
 				HasName(id.Name()).
 				HasNoComment().
 				HasIsPrimary(false).
-				HasPrimary(externalObjectIdentifier).
+				HasPrimaryIdentifier(externalObjectIdentifier).
 				HasFailoverAllowedToAccounts(
 					accountId,
 					secondaryAccountId,
@@ -198,7 +198,7 @@ func TestInt_Connections(t *testing.T) {
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
 		assertThatObject(
 			t, objectassert.Connection(t, primaryConn.ID()).
-				HasPrimary(externalObjectIdentifier).
+				HasPrimaryIdentifier(externalObjectIdentifier).
 				HasFailoverAllowedToAccounts(accountId),
 		)
 

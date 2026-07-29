@@ -140,24 +140,6 @@ func TestUserCreate(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s')", id.FullyQualifiedName(), wifType, wifArn)
 	})
 
-	t.Run("with setting an AWS WIF - with issuer", func(t *testing.T) {
-		wifType := WIFTypeAws
-		wifArn := "arn:aws:iam::123456789012:role/test-role"
-		wifIssuer := "https://sts.amazonaws.com"
-		opts := &CreateUserOptions{
-			name: id,
-			ObjectProperties: &UserObjectProperties{
-				WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-					AwsType: &UserObjectWorkloadIdentityAws{
-						Arn:    &wifArn,
-						Issuer: &wifIssuer,
-					},
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE USER %s WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s' ISSUER = '%s')", id.FullyQualifiedName(), wifType, wifArn, wifIssuer)
-	})
-
 	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {
 		wifType := WIFTypeOidc
 		wifIssuer := "https://accounts.google.com"
@@ -250,7 +232,7 @@ func TestUserAlter(t *testing.T) {
 		opts := &AlterUserOptions{
 			name: id,
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions", "RenameTo", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterUserOptions", "NewName", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: no set", func(t *testing.T) {
@@ -417,55 +399,6 @@ func TestUserAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET SESSION POLICY %s", id.FullyQualifiedName(), sessionPolicy.FullyQualifiedName())
 	})
 
-	t.Run("with setting a password policy with force", func(t *testing.T) {
-		passwordPolicy := randomSchemaObjectIdentifier()
-		opts := &AlterUserOptions{
-			name: id,
-			Set: &UserSet{
-				PasswordPolicy: &passwordPolicy,
-				Force:          new(true),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET PASSWORD POLICY %s FORCE", id.FullyQualifiedName(), passwordPolicy.FullyQualifiedName())
-	})
-
-	t.Run("with setting a session policy with force", func(t *testing.T) {
-		sessionPolicy := randomSchemaObjectIdentifier()
-		opts := &AlterUserOptions{
-			name: id,
-			Set: &UserSet{
-				SessionPolicy: &sessionPolicy,
-				Force:         new(true),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET SESSION POLICY %s FORCE", id.FullyQualifiedName(), sessionPolicy.FullyQualifiedName())
-	})
-
-	t.Run("with setting an authentication policy with force", func(t *testing.T) {
-		authenticationPolicy := randomSchemaObjectIdentifier()
-		opts := &AlterUserOptions{
-			name: id,
-			Set: &UserSet{
-				AuthenticationPolicy: &authenticationPolicy,
-				Force:                new(true),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET AUTHENTICATION POLICY %s FORCE", id.FullyQualifiedName(), authenticationPolicy.FullyQualifiedName())
-	})
-
-	t.Run("validate: force cannot be set with a non-policy field", func(t *testing.T) {
-		opts := &AlterUserOptions{
-			name: id,
-			Set: &UserSet{
-				ObjectProperties: &UserAlterObjectProperties{
-					LoginName: new("some_login"),
-				},
-				Force: new(true),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, NewError("force can only be set with PasswordPolicy, SessionPolicy, or AuthenticationPolicy"))
-	})
-
 	t.Run("with setting tags", func(t *testing.T) {
 		tagId1 := randomSchemaObjectIdentifier()
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())
@@ -574,8 +507,8 @@ func TestUserAlter(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		newID := randomAccountObjectIdentifier()
 		opts := &AlterUserOptions{
-			name:     id,
-			RenameTo: &newID,
+			name:    id,
+			NewName: &newID,
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s RENAME TO %s", id.FullyQualifiedName(), newID.FullyQualifiedName())
 	})
@@ -690,26 +623,6 @@ func TestUserAlter(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s')", id.FullyQualifiedName(), wifType, wifArn)
-	})
-
-	t.Run("with setting an AWS WIF - with issuer", func(t *testing.T) {
-		wifType := WIFTypeAws
-		wifArn := "arn:aws:iam::123456789012:role/test-role"
-		wifIssuer := "https://sts.amazonaws.com"
-		opts := &AlterUserOptions{
-			name: id,
-			Set: &UserSet{
-				ObjectProperties: &UserAlterObjectProperties{
-					WorkloadIdentity: &UserObjectWorkloadIdentityProperties{
-						AwsType: &UserObjectWorkloadIdentityAws{
-							Arn:    &wifArn,
-							Issuer: &wifIssuer,
-						},
-					},
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET WORKLOAD_IDENTITY = (TYPE = %s ARN = '%s' ISSUER = '%s')", id.FullyQualifiedName(), wifType, wifArn, wifIssuer)
 	})
 
 	t.Run("with setting an OIDC WIF - basic", func(t *testing.T) {
@@ -1256,6 +1169,7 @@ func Test_User_ToSecondaryRolesOption(t *testing.T) {
 	}
 
 	for _, tc := range valid {
+		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToSecondaryRolesOption(tc.input)
 			require.NoError(t, err)
@@ -1264,6 +1178,7 @@ func Test_User_ToSecondaryRolesOption(t *testing.T) {
 	}
 
 	for _, tc := range invalid {
+		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			_, err := ToSecondaryRolesOption(tc.input)
 			require.Error(t, err)
@@ -1287,6 +1202,7 @@ func Test_User_GetSecondaryRolesOptionFrom(t *testing.T) {
 	}
 
 	for _, tc := range valid {
+		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got := GetSecondaryRolesOptionFrom(tc.input)
 			require.Equal(t, tc.want, got)
@@ -1294,6 +1210,7 @@ func Test_User_GetSecondaryRolesOptionFrom(t *testing.T) {
 	}
 
 	for _, tc := range valid {
+		tc := tc
 		t.Run(fmt.Sprintf("invoked from user: %s", tc.input), func(t *testing.T) {
 			user := User{DefaultSecondaryRoles: tc.input}
 			got := user.GetSecondaryRolesOption()

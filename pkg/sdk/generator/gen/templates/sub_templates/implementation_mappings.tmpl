@@ -29,7 +29,6 @@
 
 {{ range .SharedToOptsFields }}
     func (r *{{ .DtoDecl }}) toOpts() *{{ .KindNoPtr }} {
-        opts := &{{ template "toOptsMapping" . }}
-        return opts
+        return &{{ template "toOptsMapping" . }}
     }
 {{ end }}

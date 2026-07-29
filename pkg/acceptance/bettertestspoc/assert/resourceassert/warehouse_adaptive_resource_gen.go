@@ -57,11 +57,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplier(expected 
 	return w
 }
 
-func (w *WarehouseAdaptiveResourceAssert) HasResourceMonitor(expected string) *WarehouseAdaptiveResourceAssert {
-	w.StringValueSet("resource_monitor", expected)
-	return w
-}
-
 func (w *WarehouseAdaptiveResourceAssert) HasStatementQueuedTimeoutInSeconds(expected int) *WarehouseAdaptiveResourceAssert {
 	w.IntValueSet("statement_queued_timeout_in_seconds", expected)
 	return w
@@ -103,11 +98,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevelString(expe
 
 func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplierString(expected string) *WarehouseAdaptiveResourceAssert {
 	w.ValueSet("query_throughput_multiplier", expected)
-	return w
-}
-
-func (w *WarehouseAdaptiveResourceAssert) HasResourceMonitorString(expected string) *WarehouseAdaptiveResourceAssert {
-	w.ValueSet("resource_monitor", expected)
 	return w
 }
 
@@ -155,11 +145,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasNoQueryThroughputMultiplier() *Ware
 	return w
 }
 
-func (w *WarehouseAdaptiveResourceAssert) HasNoResourceMonitor() *WarehouseAdaptiveResourceAssert {
-	w.ValueNotSet("resource_monitor")
-	return w
-}
-
 func (w *WarehouseAdaptiveResourceAssert) HasNoStatementQueuedTimeoutInSeconds() *WarehouseAdaptiveResourceAssert {
 	w.ValueNotSet("statement_queued_timeout_in_seconds")
 	return w
@@ -196,11 +181,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevelEmpty() *Wa
 
 func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplierEmpty() *WarehouseAdaptiveResourceAssert {
 	w.ValueSet("query_throughput_multiplier", "")
-	return w
-}
-
-func (w *WarehouseAdaptiveResourceAssert) HasResourceMonitorEmpty() *WarehouseAdaptiveResourceAssert {
-	w.ValueSet("resource_monitor", "")
 	return w
 }
 
@@ -245,11 +225,6 @@ func (w *WarehouseAdaptiveResourceAssert) HasMaxQueryPerformanceLevelNotEmpty() 
 
 func (w *WarehouseAdaptiveResourceAssert) HasQueryThroughputMultiplierNotEmpty() *WarehouseAdaptiveResourceAssert {
 	w.ValuePresent("query_throughput_multiplier")
-	return w
-}
-
-func (w *WarehouseAdaptiveResourceAssert) HasResourceMonitorNotEmpty() *WarehouseAdaptiveResourceAssert {
-	w.ValuePresent("resource_monitor")
 	return w
 }
 

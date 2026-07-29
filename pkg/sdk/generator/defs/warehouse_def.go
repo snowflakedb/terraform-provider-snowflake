@@ -1,3 +1,5 @@
+//go:build sdk_generation
+
 package defs
 
 import (
@@ -82,7 +84,7 @@ var warehousePairs = g.StructPair("warehouseDBRow", "Warehouse").
 	Field("generation", "sql.NullString", "*WarehouseGeneration", g.WithManualConvert()).
 	OptionalEnum("max_query_performance_level", maxQueryPerformanceLevelEnum).
 	OptionalNumber("query_throughput_multiplier").
-	Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", g.WithCustomParser("ParseCommaSeparatedSchemaObjectIdentifierArray"))
+	Field("tables", "sql.NullString", "[]SchemaObjectIdentifier", g.WithManualConvert())
 
 var warehouseDetailsPairs = g.StructPair("warehouseDetailsRow", "WarehouseDetails").
 	Time("created_on").
@@ -181,7 +183,6 @@ var warehousesDef = g.NewInterface(
 		OptionalComment().
 		OptionalEnumAssignment("MAX_QUERY_PERFORMANCE_LEVEL", maxQueryPerformanceLevelEnum, g.ParameterOptions().SingleQuotes()).
 		OptionalNumberAssignment("QUERY_THROUGHPUT_MULTIPLIER", g.ParameterOptions()).
-		OptionalIdentifier("ResourceMonitor", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RESOURCE_MONITOR").Equals()).
 		OptionalTags().
 		OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
 		OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
@@ -209,7 +210,6 @@ var warehousesDef = g.NewInterface(
 		OptionalNumberAssignment("MAX_CONCURRENCY_LEVEL", g.ParameterOptions()).
 		OptionalNumberAssignment("STATEMENT_QUEUED_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
 		OptionalNumberAssignment("STATEMENT_TIMEOUT_IN_SECONDS", g.ParameterOptions()).
-		OptionalIdentifier("FallbackWarehouse", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("FALLBACK_WAREHOUSE").Equals()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
@@ -225,7 +225,7 @@ var warehousesDef = g.NewInterface(
 		OptionalSQL("RESUME").
 		OptionalSQL("IF SUSPENDED").
 		OptionalSQL("ABORT ALL QUERIES").
-		RenameTo().
+		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField("Set", warehouseSetStruct, g.KeywordOptions().SQL("SET")).
 		OptionalQueryStructField("Unset", warehouseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
 		ListAssignment("ADD TABLES", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.ParameterOptions().Parentheses().NoEquals()).
@@ -272,7 +272,7 @@ var warehousesDef = g.NewInterface(
 	[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},
 	"*Warehouse", "error",
 ).WithCustomInterfaceMethod(
-	"AlterWithSuspend", "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse",
+	"AlterWithSuspend", "AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*AlterWarehouseRequest")},
 	"error",
 ).WithEnums(

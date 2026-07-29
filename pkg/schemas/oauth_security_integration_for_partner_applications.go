@@ -17,7 +17,6 @@ var DescribeOauthIntegrationForPartnerApplications = map[string]*schema.Schema{
 	"oauth_enforce_pkce":                    DescribePropertyListSchema,
 	"oauth_use_secondary_roles":             DescribePropertyListSchema,
 	"pre_authorized_roles_list":             DescribePropertyListSchema,
-	"allowed_roles_list":                    DescribePropertyListSchema,
 	"blocked_roles_list":                    DescribePropertyListSchema,
 	"oauth_issue_refresh_tokens":            DescribePropertyListSchema,
 	"oauth_refresh_token_validity":          DescribePropertyListSchema,
@@ -38,7 +37,6 @@ var OauthIntegrationForPartnerApplicationsPropertiesNames = []string{
 	"OAUTH_ENFORCE_PKCE",
 	"OAUTH_USE_SECONDARY_ROLES",
 	"PRE_AUTHORIZED_ROLES_LIST",
-	"ALLOWED_ROLES_LIST",
 	"BLOCKED_ROLES_LIST",
 	"OAUTH_ISSUE_REFRESH_TOKENS",
 	"OAUTH_REFRESH_TOKEN_VALIDITY",
@@ -55,6 +53,7 @@ var OauthIntegrationForPartnerApplicationsPropertiesNames = []string{
 func DescribeOauthIntegrationForPartnerApplicationsToSchema(integrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
 	securityIntegrationProperties := make(map[string]any)
 	for _, property := range integrationProperties {
+		property := property
 		if slices.Contains(OauthIntegrationForPartnerApplicationsPropertiesNames, property.Name) {
 			securityIntegrationProperties[strings.ToLower(property.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&property)}
 		} else {

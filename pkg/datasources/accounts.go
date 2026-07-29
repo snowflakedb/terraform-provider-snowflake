@@ -51,12 +51,10 @@ func Accounts() *schema.Resource {
 func ReadAccounts(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	req := sdk.NewShowAccountRequest()
-	if likePattern, ok := d.GetOk("like"); ok {
-		req = req.WithLike(sdk.Like{Pattern: sdk.String(likePattern.(string))})
-	}
+	req := new(sdk.ShowAccountOptions)
+	handleLike(d, &req.Like)
 	if history, ok := d.GetOk("with_history"); ok && history.(bool) {
-		req = req.WithHistory(true)
+		req.History = sdk.Bool(true)
 	}
 
 	accounts, err := client.Accounts.Show(ctx, req)
@@ -67,6 +65,7 @@ func ReadAccounts(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	flattenedAccounts := make([]map[string]any, len(accounts))
 	for i, account := range accounts {
+		account := account
 		flattenedAccounts[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.AccountToSchema(&account)},
 		}

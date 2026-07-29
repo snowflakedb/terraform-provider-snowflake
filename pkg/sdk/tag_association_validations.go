@@ -36,7 +36,6 @@ var (
 		ObjectTypeImageRepository,
 		ObjectTypeGitRepository,
 		ObjectTypeIcebergTable,
-		ObjectTypeInteractiveTable,
 		ObjectTypeMaterializedView,
 		ObjectTypePipe,
 		ObjectTypeMaskingPolicy,

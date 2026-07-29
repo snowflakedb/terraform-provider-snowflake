@@ -125,7 +125,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 				HasComputeFamily("STANDARD_M").
 				HasStorageSize(10).
 				HasAuthenticationAuthority("POSTGRES").
-				HasIsHighlyAvailable(false).
+				HasIsHa(false).
 				HasType("PRIMARY").
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasOwnerRoleType("ROLE").
@@ -178,7 +178,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 				HasStorageSize(10).
 				HasAuthenticationAuthority("POSTGRES").
 				HasPostgresVersion("17").
-				HasIsHighlyAvailable(true).
+				HasIsHa(true).
 				HasComment(comment).
 				HasPostgresSettings(`{"postgres:work_mem":"128MB"}`).
 				HasCreatedOnNotEmpty().
@@ -487,7 +487,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 				HasComment(comment).
 				HasStorageSize(20).
 				HasComputeFamily("STANDARD_L").
-				HasIsHighlyAvailable(true).
+				HasIsHa(true).
 				HasAuthenticationAuthority("POSTGRES_OR_SNOWFLAKE"),
 		)
 
@@ -782,7 +782,7 @@ func TestInt_PostgresInstances(t *testing.T) {
 				HasComputeFamily("STANDARD_M").
 				HasStorageSize(10).
 				HasAuthenticationAuthority("POSTGRES").
-				HasIsHighlyAvailable(false).
+				HasIsHa(false).
 				HasRetentionTime(0).
 				HasPostgresVersionNotEmpty().
 				HasStateOneOf(

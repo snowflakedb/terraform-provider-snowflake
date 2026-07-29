@@ -130,7 +130,7 @@ func (s *CreateOnS3StageRequest) WithIfNotExists(ifNotExists bool) *CreateOnS3St
 	return s
 }
 
-func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3DirectoryTableOptionsRequest) *CreateOnS3StageRequest {
+func (s *CreateOnS3StageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3CommonDirectoryTableOptionsRequest) *CreateOnS3StageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
 }
@@ -261,28 +261,23 @@ func NewExternalStageS3EncryptionNoneRequest() *ExternalStageS3EncryptionNoneReq
 	return &s
 }
 
-func NewStageS3DirectoryTableOptionsRequest() *StageS3DirectoryTableOptionsRequest {
-	s := StageS3DirectoryTableOptionsRequest{}
+func NewStageS3CommonDirectoryTableOptionsRequest() *StageS3CommonDirectoryTableOptionsRequest {
+	s := StageS3CommonDirectoryTableOptionsRequest{}
 	return &s
 }
 
-func (s *StageS3DirectoryTableOptionsRequest) WithEnable(enable bool) *StageS3DirectoryTableOptionsRequest {
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithEnable(enable bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.Enable = enable
 	return s
 }
 
-func (s *StageS3DirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *StageS3DirectoryTableOptionsRequest {
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.RefreshOnCreate = &refreshOnCreate
 	return s
 }
 
-func (s *StageS3DirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *StageS3DirectoryTableOptionsRequest {
+func (s *StageS3CommonDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *StageS3CommonDirectoryTableOptionsRequest {
 	s.AutoRefresh = &autoRefresh
-	return s
-}
-
-func (s *StageS3DirectoryTableOptionsRequest) WithAwsSnsTopic(awsSnsTopic string) *StageS3DirectoryTableOptionsRequest {
-	s.AwsSnsTopic = &awsSnsTopic
 	return s
 }
 
@@ -563,7 +558,7 @@ func (s *CreateOnS3CompatibleStageRequest) WithIfNotExists(ifNotExists bool) *Cr
 	return s
 }
 
-func (s *CreateOnS3CompatibleStageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3CompatibleDirectoryTableOptionsRequest) *CreateOnS3CompatibleStageRequest {
+func (s *CreateOnS3CompatibleStageRequest) WithDirectoryTableOptions(directoryTableOptions StageS3CommonDirectoryTableOptionsRequest) *CreateOnS3CompatibleStageRequest {
 	s.DirectoryTableOptions = &directoryTableOptions
 	return s
 }
@@ -606,26 +601,6 @@ func NewExternalStageS3CompatibleCredentialsRequest(
 	s.AwsKeyId = awsKeyId
 	s.AwsSecretKey = awsSecretKey
 	return &s
-}
-
-func NewStageS3CompatibleDirectoryTableOptionsRequest() *StageS3CompatibleDirectoryTableOptionsRequest {
-	s := StageS3CompatibleDirectoryTableOptionsRequest{}
-	return &s
-}
-
-func (s *StageS3CompatibleDirectoryTableOptionsRequest) WithEnable(enable bool) *StageS3CompatibleDirectoryTableOptionsRequest {
-	s.Enable = enable
-	return s
-}
-
-func (s *StageS3CompatibleDirectoryTableOptionsRequest) WithRefreshOnCreate(refreshOnCreate bool) *StageS3CompatibleDirectoryTableOptionsRequest {
-	s.RefreshOnCreate = &refreshOnCreate
-	return s
-}
-
-func (s *StageS3CompatibleDirectoryTableOptionsRequest) WithAutoRefresh(autoRefresh bool) *StageS3CompatibleDirectoryTableOptionsRequest {
-	s.AutoRefresh = &autoRefresh
-	return s
 }
 
 func NewAlterStageRequest(

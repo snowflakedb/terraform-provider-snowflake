@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type ExternalVolumeDescribeOutputAssert struct {
@@ -50,11 +49,6 @@ func ExternalVolumesDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx
 // Attribute value checks //
 ////////////////////////////
 
-func (e *ExternalVolumeDescribeOutputAssert) HasId(expected sdk.AccountObjectIdentifier) *ExternalVolumeDescribeOutputAssert {
-	e.StringValueSet("id", expected.Name())
-	return e
-}
-
 func (e *ExternalVolumeDescribeOutputAssert) HasActive(expected string) *ExternalVolumeDescribeOutputAssert {
 	e.StringValueSet("active", expected)
 	return e
@@ -73,11 +67,6 @@ func (e *ExternalVolumeDescribeOutputAssert) HasAllowWrites(expected string) *Ex
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
-
-func (e *ExternalVolumeDescribeOutputAssert) HasNoId() *ExternalVolumeDescribeOutputAssert {
-	e.ValueNotSet("id")
-	return e
-}
 
 func (e *ExternalVolumeDescribeOutputAssert) HasNoStorageLocations() *ExternalVolumeDescribeOutputAssert {
 	e.ValueSet("storage_locations.#", "0")

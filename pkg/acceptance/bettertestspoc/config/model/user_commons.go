@@ -5,16 +5,14 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
-func UserDefaultWorkloadIdentityAwsVariable(arn string, issuer ...string) tfconfig.Variable {
-	awsFields := map[string]tfconfig.Variable{
-		"arn": tfconfig.StringVariable(arn),
-	}
-	if len(issuer) > 0 {
-		awsFields["issuer"] = tfconfig.StringVariable(issuer[0])
-	}
+func UserDefaultWorkloadIdentityAwsVariable(arn string) tfconfig.Variable {
 	return tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
-			"aws": tfconfig.ListVariable(tfconfig.ObjectVariable(awsFields)),
+			"aws": tfconfig.ListVariable(tfconfig.ObjectVariable(
+				map[string]tfconfig.Variable{
+					"arn": tfconfig.StringVariable(arn),
+				},
+			)),
 		},
 	)
 }

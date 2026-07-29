@@ -499,6 +499,30 @@ func (p *PairedStructs) PlainOnlyField(fieldName, plainKind string, opts ...Pair
 	return p
 }
 
+// toFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
+func (p *PairedStructs) toFieldPairs() []FieldPair {
+	pairs := make([]FieldPair, 0, len(p.fields))
+	for _, f := range p.fields {
+		if f.plainOnly {
+			continue
+		}
+		pairs = append(pairs, FieldPair{
+			DbFieldName:    f.resolvedDbFieldName(),
+			PlainFieldName: f.resolvedPlainFieldName(),
+			DbKind:         f.dbKind,
+			PlainKind:      f.plainKind,
+			IsEnum:         f.isEnum,
+			IsJson:         f.isJson,
+			CustomParser:   f.customParser,
+			ValueAdjuster:  f.valueAdjuster,
+			BoolTrueValue:  f.boolTrueValue,
+			BoolParsed:     f.boolParsed,
+			manualConvert:  f.manualConvert,
+		})
+	}
+	return pairs
+}
+
 // asDbStruct materializes the definition as a *dbStruct following the old implementation.
 func (p *PairedStructs) asDbStruct() *dbStruct {
 	s := DbStruct(p.dbName)
@@ -524,7 +548,7 @@ func (p *PairedStructs) addMappingFunc() func(op *Operation, from, to *Field) {
 	return func(op *Operation, from, to *Field) {
 		addShowMapping(op, from, to)
 		if p.generateConvert {
-			op.ShowMapping.AddFieldPairs(p)
+			op.ShowMapping.FieldPairs = p.toFieldPairs()
 		}
 		op.ShowResultFilterHook = p.showResultFilterHook
 	}
@@ -534,7 +558,7 @@ func (p *PairedStructs) addDescribeMappingFunc() func(op *Operation, from, to *F
 	return func(op *Operation, from, to *Field) {
 		addDescriptionMapping(op, from, to)
 		if p.generateConvert {
-			op.DescribeMapping.AddFieldPairs(p)
+			op.DescribeMapping.FieldPairs = p.toFieldPairs()
 		}
 	}
 }
@@ -544,7 +568,7 @@ func (p *PairedStructs) instanceMethodMappingFunc(kind InstanceMethodKind) func(
 		op.InstanceMethodMapping = newMapping("convert", from, to)
 		op.InstanceMethodKind = &kind
 		if p.generateConvert {
-			op.InstanceMethodMapping.AddFieldPairs(p)
+			op.InstanceMethodMapping.FieldPairs = p.toFieldPairs()
 		}
 	}
 }

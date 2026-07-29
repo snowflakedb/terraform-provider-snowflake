@@ -212,11 +212,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNullOrdering(expect
 	return c
 }
 
-func (c *CurrentOrganizationAccountResourceAssert) HasDefaultStreamlitComputePool(expected string) *CurrentOrganizationAccountResourceAssert {
-	c.StringValueSet("default_streamlit_compute_pool", expected)
-	return c
-}
-
 func (c *CurrentOrganizationAccountResourceAssert) HasDefaultStreamlitNotebookWarehouse(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.StringValueSet("default_streamlit_notebook_warehouse", expected)
 	return c
@@ -848,11 +843,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNotebookComputePool
 
 func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNullOrderingString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("default_null_ordering", expected)
-	return c
-}
-
-func (c *CurrentOrganizationAccountResourceAssert) HasDefaultStreamlitComputePoolString(expected string) *CurrentOrganizationAccountResourceAssert {
-	c.ValueSet("default_streamlit_compute_pool", expected)
 	return c
 }
 
@@ -1490,11 +1480,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoDefaultNullOrdering() *C
 	return c
 }
 
-func (c *CurrentOrganizationAccountResourceAssert) HasNoDefaultStreamlitComputePool() *CurrentOrganizationAccountResourceAssert {
-	c.ValueNotSet("default_streamlit_compute_pool")
-	return c
-}
-
 func (c *CurrentOrganizationAccountResourceAssert) HasNoDefaultStreamlitNotebookWarehouse() *CurrentOrganizationAccountResourceAssert {
 	c.ValueNotSet("default_streamlit_notebook_warehouse")
 	return c
@@ -2121,11 +2106,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNotebookComputePool
 
 func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNullOrderingEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("default_null_ordering", "")
-	return c
-}
-
-func (c *CurrentOrganizationAccountResourceAssert) HasDefaultStreamlitComputePoolEmpty() *CurrentOrganizationAccountResourceAssert {
-	c.ValueSet("default_streamlit_compute_pool", "")
 	return c
 }
 
@@ -2760,11 +2740,6 @@ func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNotebookComputePool
 
 func (c *CurrentOrganizationAccountResourceAssert) HasDefaultNullOrderingNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValuePresent("default_null_ordering")
-	return c
-}
-
-func (c *CurrentOrganizationAccountResourceAssert) HasDefaultStreamlitComputePoolNotEmpty() *CurrentOrganizationAccountResourceAssert {
-	c.ValuePresent("default_streamlit_compute_pool")
 	return c
 }
 

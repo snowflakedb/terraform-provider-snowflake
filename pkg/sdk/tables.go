@@ -14,7 +14,7 @@ import (
 // - describe search optimization (https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization)
 // - truncate table (https://docs.snowflake.com/en/sql-reference/sql/truncate-table)
 // - undrop table (https://docs.snowflake.com/en/sql-reference/sql/undrop-table)
-type TablesLegacy interface {
+type Tables interface {
 	Create(ctx context.Context, req *CreateTableRequest) error
 	CreateAsSelect(ctx context.Context, req *CreateTableAsSelectRequest) error
 	CreateUsingTemplate(ctx context.Context, req *CreateTableUsingTemplateRequest) error
@@ -807,5 +807,5 @@ type LegacyTableCopyOnErrorOptions struct {
 type LegacyFileFormat struct {
 	FormatName     *string                      `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
 	FileFormatType *FileFormatType              `ddl:"parameter" sql:"TYPE"`
-	Options        *FileFormatTypeOptionsLegacy `ddl:"list,no_comma"`
+	Options        *LegacyFileFormatTypeOptions `ddl:"list,no_comma"`
 }

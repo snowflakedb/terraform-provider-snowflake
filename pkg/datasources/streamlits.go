@@ -118,7 +118,7 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		})
 	}
 	if v, ok := d.GetOk("in"); ok {
-		in := v.([]any)[0].(map[string]any)
+		in := v.([]interface{})[0].(map[string]interface{})
 		if v, ok := in["account"]; ok {
 			account := v.(bool)
 			if account {
@@ -139,7 +139,7 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		}
 	}
 	if v, ok := d.GetOk("limit"); ok {
-		l := v.([]any)[0].(map[string]any)
+		l := v.([]interface{})[0].(map[string]interface{})
 		limit := sdk.LimitFrom{}
 		if v, ok := l["rows"]; ok {
 			rows := v.(int)
@@ -160,6 +160,7 @@ func ReadStreamlits(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	flattenedStreamlits := make([]map[string]any, len(streamlits))
 
 	for i, streamlit := range streamlits {
+		streamlit := streamlit
 		var streamlitDescriptions []map[string]any
 		if d.Get("with_describe").(bool) {
 			descriptions, err := client.Streamlits.Describe(ctx, streamlit.ID())

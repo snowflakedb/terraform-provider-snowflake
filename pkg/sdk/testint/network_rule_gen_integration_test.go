@@ -43,7 +43,7 @@ func TestInt_NetworkRules(t *testing.T) {
 			HasComment("").
 			HasType(sdk.NetworkRuleTypeIpv4).
 			HasMode(sdk.NetworkRuleModeIngress).
-			HasValueList())
+			HasValueList([]string{}))
 	})
 
 	t.Run("Create with all options", func(t *testing.T) {
@@ -80,7 +80,7 @@ func TestInt_NetworkRules(t *testing.T) {
 			HasComment(comment).
 			HasType(sdk.NetworkRuleTypeIpv4).
 			HasMode(sdk.NetworkRuleModeIngress).
-			HasValueList("0.0.0.0", "1.1.1.1"))
+			HasValueList([]string{"0.0.0.0", "1.1.1.1"}))
 	})
 
 	t.Run("Alter: set and unset", func(t *testing.T) {
@@ -100,7 +100,7 @@ func TestInt_NetworkRules(t *testing.T) {
 			HasEntriesInValueList(2).
 			HasComment("some comment"))
 		assertThatObject(t, objectassert.NetworkRuleDetails(t, id).
-			HasValueList("0.0.0.0", "1.1.1.1").
+			HasValueList([]string{"0.0.0.0", "1.1.1.1"}).
 			HasComment("some comment"))
 
 		unsetReq := sdk.NewNetworkRuleUnsetRequest().
@@ -113,7 +113,7 @@ func TestInt_NetworkRules(t *testing.T) {
 			HasEntriesInValueList(0).
 			HasComment(""))
 		assertThatObject(t, objectassert.NetworkRuleDetails(t, id).
-			HasValueList().
+			HasValueList([]string{}).
 			HasComment(""))
 	})
 
@@ -171,7 +171,7 @@ func TestInt_NetworkRules(t *testing.T) {
 			HasName(id.Name()).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasComment("some comment").
-			HasValueList().
+			HasValueList([]string{}).
 			HasMode(sdk.NetworkRuleModeIngress).
 			HasType(sdk.NetworkRuleTypeIpv4))
 	})

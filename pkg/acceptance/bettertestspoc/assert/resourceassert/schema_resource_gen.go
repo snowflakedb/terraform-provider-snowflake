@@ -62,16 +62,6 @@ func (s *SchemaResourceAssert) HasDefaultDdlCollation(expected string) *SchemaRe
 	return s
 }
 
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolCpu(expected string) *SchemaResourceAssert {
-	s.StringValueSet("default_notebook_compute_pool_cpu", expected)
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolGpu(expected string) *SchemaResourceAssert {
-	s.StringValueSet("default_notebook_compute_pool_gpu", expected)
-	return s
-}
-
 func (s *SchemaResourceAssert) HasEnableConsoleOutput(expected bool) *SchemaResourceAssert {
 	s.BoolValueSet("enable_console_output", expected)
 	return s
@@ -193,16 +183,6 @@ func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysString(expected string)
 
 func (s *SchemaResourceAssert) HasDefaultDdlCollationString(expected string) *SchemaResourceAssert {
 	s.ValueSet("default_ddl_collation", expected)
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolCpuString(expected string) *SchemaResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_cpu", expected)
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolGpuString(expected string) *SchemaResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_gpu", expected)
 	return s
 }
 
@@ -330,16 +310,6 @@ func (s *SchemaResourceAssert) HasNoDefaultDdlCollation() *SchemaResourceAssert 
 	return s
 }
 
-func (s *SchemaResourceAssert) HasNoDefaultNotebookComputePoolCpu() *SchemaResourceAssert {
-	s.ValueNotSet("default_notebook_compute_pool_cpu")
-	return s
-}
-
-func (s *SchemaResourceAssert) HasNoDefaultNotebookComputePoolGpu() *SchemaResourceAssert {
-	s.ValueNotSet("default_notebook_compute_pool_gpu")
-	return s
-}
-
 func (s *SchemaResourceAssert) HasNoEnableConsoleOutput() *SchemaResourceAssert {
 	s.ValueNotSet("enable_console_output")
 	return s
@@ -451,16 +421,6 @@ func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysEmpty() *SchemaResource
 
 func (s *SchemaResourceAssert) HasDefaultDdlCollationEmpty() *SchemaResourceAssert {
 	s.ValueSet("default_ddl_collation", "")
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolCpuEmpty() *SchemaResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_cpu", "")
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolGpuEmpty() *SchemaResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_gpu", "")
 	return s
 }
 
@@ -585,16 +545,6 @@ func (s *SchemaResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *SchemaResou
 
 func (s *SchemaResourceAssert) HasDefaultDdlCollationNotEmpty() *SchemaResourceAssert {
 	s.ValuePresent("default_ddl_collation")
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolCpuNotEmpty() *SchemaResourceAssert {
-	s.ValuePresent("default_notebook_compute_pool_cpu")
-	return s
-}
-
-func (s *SchemaResourceAssert) HasDefaultNotebookComputePoolGpuNotEmpty() *SchemaResourceAssert {
-	s.ValuePresent("default_notebook_compute_pool_gpu")
 	return s
 }
 

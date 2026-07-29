@@ -89,28 +89,3 @@ func (w *WarehouseShowOutputAssert) HasCommentEmpty() *WarehouseShowOutputAssert
 	w.StringValueSet("comment", "")
 	return w
 }
-
-func (w *WarehouseShowOutputAssert) HasSizeEmpty() *WarehouseShowOutputAssert {
-	w.StringValueSet("size", "")
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasScalingPolicyEmpty() *WarehouseShowOutputAssert {
-	w.StringValueSet("scaling_policy", "")
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasMaxQueryPerformanceLevelEmpty() *WarehouseShowOutputAssert {
-	w.StringValueSet("max_query_performance_level", "")
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasTables(expected ...string) *WarehouseShowOutputAssert {
-	w.SetContainsExactlyStringValues("tables", expected...)
-	return w
-}
-
-func (w *WarehouseShowOutputAssert) HasNoTables() *WarehouseShowOutputAssert {
-	w.ValueSet("tables.#", "0")
-	return w
-}

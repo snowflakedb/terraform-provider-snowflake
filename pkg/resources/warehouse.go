@@ -217,17 +217,6 @@ func Warehouse() *schema.Resource {
 		},
 	)
 
-	forceNewIfChangedToInteractive := func() schema.CustomizeDiffFunc {
-		return customdiff.ForceNewIfChange("warehouse_type", func(_ context.Context, oldValue, _, _ any) bool {
-			oldRaw, ok := oldValue.(string)
-			if !ok || oldRaw == "" {
-				return false
-			}
-			oldType, err := sdk.ToWarehouseType(oldRaw)
-			return err == nil && oldType == sdk.WarehouseTypeInteractive
-		})
-	}
-
 	return &schema.Resource{
 		SchemaVersion: 2,
 
@@ -251,7 +240,6 @@ func Warehouse() *schema.Resource {
 				customdiff.ForceNewIfChange("warehouse_size", func(ctx context.Context, old, new, meta any) bool {
 					return old.(string) != "" && new.(string) == ""
 				}),
-				forceNewIfChangedToInteractive(),
 				ParametersCustomDiff(
 					warehouseParametersProvider,
 					parameter[sdk.AccountParameter]{sdk.AccountParameterMaxConcurrencyLevel, valueTypeInt, sdk.ParameterTypeWarehouse},
@@ -368,11 +356,11 @@ func CreateWarehouse(ctx context.Context, d *schema.ResourceData, meta any) diag
 		}
 		request.WithAutoResume(parsed)
 	}
-	if err := errors.Join(
-		boolAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
-		accountObjectIdentifierAttributeCreateBuilder(d, "resource_monitor", request.WithResourceMonitor),
-	); err != nil {
-		return diag.FromErr(err)
+	if v, ok := d.GetOk("initially_suspended"); ok {
+		request.WithInitiallySuspended(v.(bool))
+	}
+	if v, ok := d.GetOk("resource_monitor"); ok {
+		request.WithResourceMonitor(sdk.NewAccountObjectIdentifier(v.(string)))
 	}
 	if v, ok := d.GetOk("comment"); ok {
 		request.WithComment(v.(string))

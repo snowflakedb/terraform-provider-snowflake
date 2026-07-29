@@ -19,7 +19,6 @@ func (c *LegacyConfigFile) MarshalToml() ([]byte, error) {
 type LegacyConfigDTO struct {
 	AccountName                       *string             `toml:"accountname"`
 	OrganizationName                  *string             `toml:"organizationname"`
-	Account                           *string             `toml:"account"`
 	User                              *string             `toml:"user"`
 	Username                          *string             `toml:"username"`
 	Password                          *string             `toml:"password"`
@@ -87,5 +86,3 @@ func (c *LegacyConfigDTO) DriverConfig() (gosnowflake.Config, error) {
 	configDTO := ConfigDTO(*c)
 	return configDTO.DriverConfig()
 }
-
-func (c *LegacyConfigDTO) HasAccountField() bool { return c.Account != nil }

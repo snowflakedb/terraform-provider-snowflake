@@ -179,7 +179,7 @@ var listingsDef = g.NewInterface(
 					OptionalComment(),
 				g.KeywordOptions().SQL("ADD VERSION"),
 			).
-			RenameTo().
+			OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalQueryStructField(
 				"Set",
 				g.NewQueryStruct("ListingSet").

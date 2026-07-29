@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -100,7 +99,7 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 
 	o := sdk.Object{}
 	if v, ok := d.GetOk("object_identifier"); ok {
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
+		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]interface{}))
 		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
 		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
 		o.Name = sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier)
@@ -195,32 +194,24 @@ func UpdateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 
 // DeleteObjectParameter implements schema.DeleteFunc.
 func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
+	client := meta.(*provider.Context).Client
 
 	key := d.Get("key").(string)
-	onAccount := d.Get("on_account").(bool)
 
+	onAccount := d.Get("on_account").(bool)
 	if onAccount {
-		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete, providerCtx.EnabledExperiments) {
-			err := client.Parameters.UnsetObjectParameterOnAccount(ctx, sdk.ObjectParameter(key))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error unsetting account parameter err = %w", err))
-			}
-		} else {
-			defaultParameter, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(key))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			defaultValue := defaultParameter.Default
-			err = client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), defaultValue)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error resetting account parameter err = %w", err))
-			}
+		defaultParameter, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(key))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		defaultValue := defaultParameter.Default
+		err = client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), defaultValue)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error resetting account parameter err = %w", err))
 		}
 	} else {
 		v := d.Get("object_identifier")
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
+		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]interface{}))
 		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
 		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
 		objectType, err := sdk.ToObjectType(d.Get("object_type").(string))
@@ -231,27 +222,19 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 			ObjectType: objectType,
 			Name:       sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier),
 		}
-
-		if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete, providerCtx.EnabledExperiments) {
-			err = client.Parameters.UnsetObjectParameterOnObject(ctx, o, sdk.ObjectParameter(key))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))
-			}
-		} else {
-			objectParameter := sdk.ObjectParameter(key)
-			defaultParameter, err := client.Parameters.ShowObjectParameter(ctx, objectParameter, o)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			defaultValue := defaultParameter.Default
-			// TODO [SNOW-2395064,SNOW-1348325]: Remove the workaround when default value on REPLICABLE_WITH_FAILOVER_GROUPS parameter in Snowflake is settable or during snowflake_object_parameter rework (using UNSET)
-			if key == ReplicableWithFailoverGroups {
-				defaultValue = "YES"
-			}
-			err = client.Parameters.SetObjectParameterOnObject(ctx, o, objectParameter, defaultValue)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error resetting object parameter err = %w", err))
-			}
+		objectParameter := sdk.ObjectParameter(key)
+		defaultParameter, err := client.Parameters.ShowObjectParameter(ctx, objectParameter, o)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		defaultValue := defaultParameter.Default
+		// TODO [SNOW-2395064,SNOW-1348325]: Remove the workaround when default value on REPLICABLE_WITH_FAILOVER_GROUPS parameter in Snowflake is settable or during snowflake_object_parameter rework (using UNSET)
+		if key == ReplicableWithFailoverGroups {
+			defaultValue = "YES"
+		}
+		err = client.Parameters.SetObjectParameterOnObject(ctx, o, objectParameter, defaultValue)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error resetting object parameter err = %w", err))
 		}
 	}
 	d.SetId("")

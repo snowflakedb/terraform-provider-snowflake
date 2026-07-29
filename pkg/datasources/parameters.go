@@ -142,9 +142,9 @@ func ReadParameters(ctx context.Context, d *schema.ResourceData, meta any) diag.
 	}
 	d.SetId("parameters")
 
-	params := []map[string]any{}
+	params := []map[string]interface{}{}
 	for _, param := range parameters {
-		paramMap := map[string]any{}
+		paramMap := map[string]interface{}{}
 
 		paramMap["key"] = param.Key
 		paramMap["value"] = param.Value

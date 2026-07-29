@@ -25,9 +25,6 @@ func (opts *CreateIcebergTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateIcebergTableOptions", "OrReplace", "IfNotExists"))
 	}
-	if everyValueSet(opts.PartitionBy, opts.ClusterBy) {
-		errs = append(errs, errOneOf("CreateIcebergTableOptions", "PartitionBy", "ClusterBy"))
-	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.PartitionBy) {
 		for _, partitionBy := range opts.PartitionBy {
@@ -137,34 +134,6 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if valueSet(opts.Unset) {
 		if !anyValueSet(opts.Unset.ReplaceInvalidCharacters, opts.Unset.CatalogSync, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.TargetFileSize, opts.Unset.LogEventLevel, opts.Unset.ErrorLogging, opts.Unset.EnableDataCompaction, opts.Unset.EnableIcebergMergeOnRead, opts.Unset.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterIcebergTableOptions.Unset", "ReplaceInvalidCharacters", "CatalogSync", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "TargetFileSize", "LogEventLevel", "ErrorLogging", "EnableDataCompaction", "EnableIcebergMergeOnRead", "Comment"))
-		}
-	}
-	if valueSet(opts.AddRowAccessPolicy) {
-		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
-		}
-		if !valueSet(opts.AddRowAccessPolicy.On) {
-			errs = append(errs, errNotSet("AlterIcebergTableOptions.AddRowAccessPolicy", "On"))
-		}
-	}
-	if valueSet(opts.DropRowAccessPolicy) {
-		if !ValidObjectIdentifier(opts.DropRowAccessPolicy.RowAccessPolicy) {
-			errs = append(errs, ErrInvalidObjectIdentifier)
-		}
-	}
-	if valueSet(opts.DropAndAddRowAccessPolicy) {
-		if valueSet(opts.DropAndAddRowAccessPolicy.Drop) {
-			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
-			}
-		}
-		if valueSet(opts.DropAndAddRowAccessPolicy.Add) {
-			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
-				errs = append(errs, ErrInvalidObjectIdentifier)
-			}
-			if !valueSet(opts.DropAndAddRowAccessPolicy.Add.On) {
-				errs = append(errs, errNotSet("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Add", "On"))
-			}
 		}
 	}
 	if valueSet(opts.SetAggregationPolicy) {

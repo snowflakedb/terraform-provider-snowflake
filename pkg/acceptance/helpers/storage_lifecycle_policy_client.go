@@ -95,5 +95,5 @@ func (c *StorageLifecyclePolicyClient) Describe(t *testing.T, id sdk.SchemaObjec
 	t.Helper()
 	ctx := context.Background()
 
-	return c.client().DescribeDetails(ctx, id)
+	return c.client().Describe(ctx, id)
 }

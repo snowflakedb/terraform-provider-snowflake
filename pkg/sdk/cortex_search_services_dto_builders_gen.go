@@ -28,11 +28,6 @@ func (s *CreateCortexSearchServiceRequest) WithIfNotExists(ifNotExists bool) *Cr
 	return s
 }
 
-func (s *CreateCortexSearchServiceRequest) WithPrimaryKey(primaryKey []string) *CreateCortexSearchServiceRequest {
-	s.PrimaryKey = primaryKey
-	return s
-}
-
 func (s *CreateCortexSearchServiceRequest) WithAttributes(attributes AttributesRequest) *CreateCortexSearchServiceRequest {
 	s.Attributes = &attributes
 	return s
@@ -40,31 +35,6 @@ func (s *CreateCortexSearchServiceRequest) WithAttributes(attributes AttributesR
 
 func (s *CreateCortexSearchServiceRequest) WithEmbeddingModel(embeddingModel string) *CreateCortexSearchServiceRequest {
 	s.EmbeddingModel = &embeddingModel
-	return s
-}
-
-func (s *CreateCortexSearchServiceRequest) WithRefreshMode(refreshMode CortexSearchServiceRefreshMode) *CreateCortexSearchServiceRequest {
-	s.RefreshMode = &refreshMode
-	return s
-}
-
-func (s *CreateCortexSearchServiceRequest) WithInitialize(initialize CortexSearchServiceInitialize) *CreateCortexSearchServiceRequest {
-	s.Initialize = &initialize
-	return s
-}
-
-func (s *CreateCortexSearchServiceRequest) WithFullIndexBuildIntervalDays(fullIndexBuildIntervalDays int) *CreateCortexSearchServiceRequest {
-	s.FullIndexBuildIntervalDays = &fullIndexBuildIntervalDays
-	return s
-}
-
-func (s *CreateCortexSearchServiceRequest) WithRequestLogging(requestLogging bool) *CreateCortexSearchServiceRequest {
-	s.RequestLogging = &requestLogging
-	return s
-}
-
-func (s *CreateCortexSearchServiceRequest) WithAutoSuspend(autoSuspend int) *CreateCortexSearchServiceRequest {
-	s.AutoSuspend = &autoSuspend
 	return s
 }
 
@@ -96,58 +66,8 @@ func (s *AlterCortexSearchServiceRequest) WithIfExists(ifExists bool) *AlterCort
 	return s
 }
 
-func (s *AlterCortexSearchServiceRequest) WithSuspend(suspend bool) *AlterCortexSearchServiceRequest {
-	s.Suspend = &suspend
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithResume(resume bool) *AlterCortexSearchServiceRequest {
-	s.Resume = &resume
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithRefresh(refresh bool) *AlterCortexSearchServiceRequest {
-	s.Refresh = &refresh
-	return s
-}
-
 func (s *AlterCortexSearchServiceRequest) WithSet(set CortexSearchServiceSetRequest) *AlterCortexSearchServiceRequest {
 	s.Set = &set
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithSetDefaults(setDefaults CortexSearchServiceSetDefaultsRequest) *AlterCortexSearchServiceRequest {
-	s.SetDefaults = &setDefaults
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithSetPrimaryKey(setPrimaryKey CortexSearchServiceSetPrimaryKeyRequest) *AlterCortexSearchServiceRequest {
-	s.SetPrimaryKey = &setPrimaryKey
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithSetAttributes(setAttributes CortexSearchServiceSetAttributesRequest) *AlterCortexSearchServiceRequest {
-	s.SetAttributes = &setAttributes
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithUnsetPrimaryKey(unsetPrimaryKey bool) *AlterCortexSearchServiceRequest {
-	s.UnsetPrimaryKey = &unsetPrimaryKey
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithUnsetAttributes(unsetAttributes bool) *AlterCortexSearchServiceRequest {
-	s.UnsetAttributes = &unsetAttributes
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithSetTags(setTags []TagAssociation) *AlterCortexSearchServiceRequest {
-	s.SetTags = setTags
-	return s
-}
-
-func (s *AlterCortexSearchServiceRequest) WithUnsetTags(unsetTags []ObjectIdentifier) *AlterCortexSearchServiceRequest {
-	s.UnsetTags = unsetTags
 	return s
 }
 
@@ -166,53 +86,8 @@ func (s *CortexSearchServiceSetRequest) WithWarehouse(warehouse AccountObjectIde
 	return s
 }
 
-func (s *CortexSearchServiceSetRequest) WithFullIndexBuildIntervalDays(fullIndexBuildIntervalDays int) *CortexSearchServiceSetRequest {
-	s.FullIndexBuildIntervalDays = &fullIndexBuildIntervalDays
-	return s
-}
-
-func (s *CortexSearchServiceSetRequest) WithRequestLogging(requestLogging bool) *CortexSearchServiceSetRequest {
-	s.RequestLogging = &requestLogging
-	return s
-}
-
-func (s *CortexSearchServiceSetRequest) WithAutoSuspend(autoSuspend int) *CortexSearchServiceSetRequest {
-	s.AutoSuspend = &autoSuspend
-	return s
-}
-
 func (s *CortexSearchServiceSetRequest) WithComment(comment string) *CortexSearchServiceSetRequest {
 	s.Comment = &comment
-	return s
-}
-
-func NewCortexSearchServiceSetDefaultsRequest() *CortexSearchServiceSetDefaultsRequest {
-	s := CortexSearchServiceSetDefaultsRequest{}
-	return &s
-}
-
-func (s *CortexSearchServiceSetDefaultsRequest) WithAutoSuspend(autoSuspend bool) *CortexSearchServiceSetDefaultsRequest {
-	s.AutoSuspend = &autoSuspend
-	return s
-}
-
-func NewCortexSearchServiceSetPrimaryKeyRequest() *CortexSearchServiceSetPrimaryKeyRequest {
-	s := CortexSearchServiceSetPrimaryKeyRequest{}
-	return &s
-}
-
-func (s *CortexSearchServiceSetPrimaryKeyRequest) WithPrimaryKey(primaryKey []string) *CortexSearchServiceSetPrimaryKeyRequest {
-	s.PrimaryKey = primaryKey
-	return s
-}
-
-func NewCortexSearchServiceSetAttributesRequest() *CortexSearchServiceSetAttributesRequest {
-	s := CortexSearchServiceSetAttributesRequest{}
-	return &s
-}
-
-func (s *CortexSearchServiceSetAttributesRequest) WithColumns(columns []string) *CortexSearchServiceSetAttributesRequest {
-	s.Columns = columns
 	return s
 }
 

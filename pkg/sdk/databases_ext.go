@@ -36,8 +36,8 @@ type DatabaseDetailsRow struct {
 }
 
 func (v *Database) SetTransient(value string) {
-	parts := strings.SplitSeq(value, ", ")
-	for part := range parts {
+	parts := strings.Split(value, ", ")
+	for _, part := range parts {
 		if part == "TRANSIENT" {
 			v.Transient = true
 		}
@@ -47,7 +47,7 @@ func (v *Database) SetTransient(value string) {
 // Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-database.
 func (v *databases) Use(ctx context.Context, id AccountObjectIdentifier) error {
 	// proxy to sessions
-	return v.client.Sessions.UseDatabase(ctx, NewUseDatabaseSessionRequest(id))
+	return v.client.Sessions.UseDatabase(ctx, id)
 }
 
 func (v *databases) ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error) {

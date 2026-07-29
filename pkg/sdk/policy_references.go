@@ -106,10 +106,6 @@ type PolicyReference struct {
 	PolicyStatus      *string
 }
 
-func (p PolicyReference) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(*p.PolicyDb, *p.PolicySchema, p.PolicyName)
-}
-
 type policyReferenceDBRow struct {
 	PolicyDb          sql.NullString `db:"POLICY_DB"`
 	PolicySchema      sql.NullString `db:"POLICY_SCHEMA"`

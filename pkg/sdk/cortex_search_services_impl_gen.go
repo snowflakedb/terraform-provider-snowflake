@@ -74,21 +74,15 @@ func (v *cortexSearchServices) DropSafely(ctx context.Context, id SchemaObjectId
 
 func (r *CreateCortexSearchServiceRequest) toOpts() *CreateCortexSearchServiceOptions {
 	opts := &CreateCortexSearchServiceOptions{
-		OrReplace:                  r.OrReplace,
-		IfNotExists:                r.IfNotExists,
-		name:                       r.name,
-		On:                         r.On,
-		PrimaryKey:                 r.PrimaryKey,
-		Warehouse:                  r.Warehouse,
-		TargetLag:                  r.TargetLag,
-		EmbeddingModel:             r.EmbeddingModel,
-		RefreshMode:                r.RefreshMode,
-		Initialize:                 r.Initialize,
-		FullIndexBuildIntervalDays: r.FullIndexBuildIntervalDays,
-		RequestLogging:             r.RequestLogging,
-		AutoSuspend:                r.AutoSuspend,
-		Comment:                    r.Comment,
-		QueryDefinition:            r.QueryDefinition,
+		OrReplace:       r.OrReplace,
+		IfNotExists:     r.IfNotExists,
+		name:            r.name,
+		On:              r.On,
+		Warehouse:       r.Warehouse,
+		TargetLag:       r.TargetLag,
+		EmbeddingModel:  r.EmbeddingModel,
+		Comment:         r.Comment,
+		QueryDefinition: r.QueryDefinition,
 	}
 	if r.Attributes != nil {
 		opts.Attributes = &Attributes{
@@ -100,39 +94,14 @@ func (r *CreateCortexSearchServiceRequest) toOpts() *CreateCortexSearchServiceOp
 
 func (r *AlterCortexSearchServiceRequest) toOpts() *AlterCortexSearchServiceOptions {
 	opts := &AlterCortexSearchServiceOptions{
-		IfExists:        r.IfExists,
-		name:            r.name,
-		Suspend:         r.Suspend,
-		Resume:          r.Resume,
-		Refresh:         r.Refresh,
-		UnsetPrimaryKey: r.UnsetPrimaryKey,
-		UnsetAttributes: r.UnsetAttributes,
-		SetTags:         r.SetTags,
-		UnsetTags:       r.UnsetTags,
+		IfExists: r.IfExists,
+		name:     r.name,
 	}
 	if r.Set != nil {
 		opts.Set = &CortexSearchServiceSet{
-			TargetLag:                  r.Set.TargetLag,
-			Warehouse:                  r.Set.Warehouse,
-			FullIndexBuildIntervalDays: r.Set.FullIndexBuildIntervalDays,
-			RequestLogging:             r.Set.RequestLogging,
-			AutoSuspend:                r.Set.AutoSuspend,
-			Comment:                    r.Set.Comment,
-		}
-	}
-	if r.SetDefaults != nil {
-		opts.SetDefaults = &CortexSearchServiceSetDefaults{
-			AutoSuspend: r.SetDefaults.AutoSuspend,
-		}
-	}
-	if r.SetPrimaryKey != nil {
-		opts.SetPrimaryKey = &CortexSearchServiceSetPrimaryKey{
-			PrimaryKey: r.SetPrimaryKey.PrimaryKey,
-		}
-	}
-	if r.SetAttributes != nil {
-		opts.SetAttributes = &CortexSearchServiceSetAttributes{
-			Columns: r.SetAttributes.Columns,
+			TargetLag: r.Set.TargetLag,
+			Warehouse: r.Set.Warehouse,
+			Comment:   r.Set.Comment,
 		}
 	}
 	return opts
@@ -150,24 +119,10 @@ func (r *ShowCortexSearchServiceRequest) toOpts() *ShowCortexSearchServiceOption
 
 func (r cortexSearchServiceRow) convert() (*CortexSearchService, error) {
 	result := &CortexSearchService{
-		CreatedOn:           r.CreatedOn,
-		Name:                r.Name,
-		DatabaseName:        r.DatabaseName,
-		SchemaName:          r.SchemaName,
-		Warehouse:           r.Warehouse,
-		TargetLag:           r.TargetLag,
-		ScoringProfileCount: r.ScoringProfileCount,
-	}
-	mapNullString(&result.Definition, r.Definition)
-	mapNullString(&result.SearchColumn, r.SearchColumn)
-	if r.AttributeColumns.Valid {
-		result.AttributeColumns = ParseCommaSeparatedStringArray(r.AttributeColumns.String, false)
-	}
-	if r.Columns.Valid {
-		result.Columns = ParseCommaSeparatedStringArray(r.Columns.String, false)
-	}
-	if r.PrimaryKeyColumns.Valid {
-		result.PrimaryKeyColumns = ParseCommaSeparatedStringArray(r.PrimaryKeyColumns.String, false)
+		CreatedOn:    r.CreatedOn,
+		Name:         r.Name,
+		DatabaseName: r.DatabaseName,
+		SchemaName:   r.SchemaName,
 	}
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	return result, nil
@@ -182,18 +137,16 @@ func (r *DescribeCortexSearchServiceRequest) toOpts() *DescribeCortexSearchServi
 
 func (r cortexSearchServiceDetailsRow) convert() (*CortexSearchServiceDetails, error) {
 	result := &CortexSearchServiceDetails{
-		CreatedOn:           r.CreatedOn,
-		Name:                r.Name,
-		DatabaseName:        r.DatabaseName,
-		SchemaName:          r.SchemaName,
-		TargetLag:           r.TargetLag,
-		Warehouse:           r.Warehouse,
-		ServiceQueryUrl:     r.ServiceQueryUrl,
-		DataTimestamp:       r.DataTimestamp,
-		SourceDataNumRows:   r.SourceDataNumRows,
-		IndexingState:       r.IndexingState,
-		ServingState:        r.ServingState,
-		ScoringProfileCount: r.ScoringProfileCount,
+		CreatedOn:         r.CreatedOn,
+		Name:              r.Name,
+		DatabaseName:      r.DatabaseName,
+		SchemaName:        r.SchemaName,
+		TargetLag:         r.TargetLag,
+		Warehouse:         r.Warehouse,
+		ServiceQueryUrl:   r.ServiceQueryUrl,
+		DataTimestamp:     r.DataTimestamp,
+		SourceDataNumRows: r.SourceDataNumRows,
+		IndexingState:     r.IndexingState,
 	}
 	mapNullString(&result.SearchColumn, r.SearchColumn)
 	if r.AttributeColumns.Valid {
@@ -206,10 +159,6 @@ func (r cortexSearchServiceDetailsRow) convert() (*CortexSearchServiceDetails, e
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.IndexingError, r.IndexingError)
 	mapNullString(&result.EmbeddingModel, r.EmbeddingModel)
-	if r.PrimaryKeyColumns.Valid {
-		result.PrimaryKeyColumns = ParseCommaSeparatedStringArray(r.PrimaryKeyColumns.String, false)
-	}
-	mapNullInt(&result.FullIndexBuildIntervalDays, r.FullIndexBuildIntervalDays)
 	return result, nil
 }
 

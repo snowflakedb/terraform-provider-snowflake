@@ -72,15 +72,6 @@ var oauthIntegrationForPartnerApplicationsSchema = map[string]*schema.Schema{
 		ValidateDiagFunc: sdkValidation(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToOauthSecurityIntegrationUseSecondaryRolesOption), IgnoreChangeToCurrentSnowflakeListValueInDescribe("oauth_use_secondary_roles")),
 	},
-	"allowed_roles_list": {
-		Type: schema.TypeSet,
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		},
-		Optional:    true,
-		Description: relatedResourceDescription("A set of Snowflake roles that a user can explicitly consent to using after authenticating. Can only be set when oauth_use_secondary_roles is set to NONE.", resources.AccountRole),
-	},
 	"blocked_roles_list": {
 		Type: schema.TypeSet,
 		Elem: &schema.Schema{
@@ -154,7 +145,6 @@ func OauthIntegrationForPartnerApplications() *schema.Resource {
 				"oauth_issue_refresh_tokens",
 				"oauth_refresh_token_validity",
 				"oauth_use_secondary_roles",
-				"allowed_roles_list",
 				"blocked_roles_list",
 				"comment",
 			),
@@ -164,9 +154,6 @@ func OauthIntegrationForPartnerApplications() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.OauthIntegrationForPartnerApplications, ImportOauthForPartnerApplicationIntegration),
 		},
 		Timeouts: defaultTimeouts,
-		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
-			oauthAllowedRolesListRequiresSecondaryRolesNone,
-		},
 	}
 }
 
@@ -247,7 +234,7 @@ func ImportOauthForPartnerApplicationIntegration(ctx context.Context, d *schema.
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func CreateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 	if err != nil {
@@ -292,12 +279,6 @@ func CreateContextOauthIntegrationForPartnerApplications(ctx context.Context, d 
 		req.WithOauthUseSecondaryRoles(useSecondaryRolesOption)
 	}
 
-	if v, ok := d.GetOk("allowed_roles_list"); ok {
-		elems := expandStringList(v.(*schema.Set).List())
-		allowedRoles := collections.Map(elems, sdk.NewAccountObjectIdentifier)
-		req.WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: allowedRoles})
-	}
-
 	if v, ok := d.GetOk("blocked_roles_list"); ok {
 		elems := expandStringList(v.(*schema.Set).List())
 		blockedRoles := make([]sdk.AccountObjectIdentifier, len(elems))
@@ -321,7 +302,7 @@ func CreateContextOauthIntegrationForPartnerApplications(ctx context.Context, d 
 }
 
 func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
@@ -365,20 +346,6 @@ func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarkin
 		}
 
 		if err := d.Set("comment", integration.Comment); err != nil {
-			return diag.FromErr(err)
-		}
-
-		allowedRolesList, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
-			return property.Name == "ALLOWED_ROLES_LIST"
-		})
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("failed to find allowed roles list, err = %w", err))
-		}
-		var allowedRoles []string
-		if len(allowedRolesList.Value) > 0 {
-			allowedRoles = sdk.ParseCommaSeparatedStringArray(allowedRolesList.Value, false)
-		}
-		if err := d.Set("allowed_roles_list", allowedRoles); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -471,7 +438,7 @@ func ReadContextOauthIntegrationForPartnerApplications(withExternalChangesMarkin
 	}
 }
 
-func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
@@ -479,13 +446,6 @@ func UpdateContextOauthIntegrationForPartnerApplications(ctx context.Context, d 
 	}
 
 	set, unset := sdk.NewOauthForPartnerApplicationsIntegrationSetRequest(), sdk.NewOauthForPartnerApplicationsIntegrationUnsetRequest()
-
-	if d.HasChange("allowed_roles_list") {
-		elems := expandStringList(d.Get("allowed_roles_list").(*schema.Set).List())
-		allowedRoles := collections.Map(elems, sdk.NewAccountObjectIdentifier)
-		set.WithAllowedRolesList(sdk.AllowedRolesListRequest{AllowedRolesList: allowedRoles})
-		// can call SET with an empty list
-	}
 
 	if d.HasChange("blocked_roles_list") {
 		elems := expandStringList(d.Get("blocked_roles_list").(*schema.Set).List())

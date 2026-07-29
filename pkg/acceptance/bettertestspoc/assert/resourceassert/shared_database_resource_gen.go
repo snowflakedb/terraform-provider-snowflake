@@ -52,16 +52,6 @@ func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollation(expected string) *
 	return s
 }
 
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolCpu(expected string) *SharedDatabaseResourceAssert {
-	s.StringValueSet("default_notebook_compute_pool_cpu", expected)
-	return s
-}
-
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolGpu(expected string) *SharedDatabaseResourceAssert {
-	s.StringValueSet("default_notebook_compute_pool_gpu", expected)
-	return s
-}
-
 func (s *SharedDatabaseResourceAssert) HasEnableConsoleOutput(expected bool) *SharedDatabaseResourceAssert {
 	s.BoolValueSet("enable_console_output", expected)
 	return s
@@ -158,16 +148,6 @@ func (s *SharedDatabaseResourceAssert) HasCommentString(expected string) *Shared
 
 func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationString(expected string) *SharedDatabaseResourceAssert {
 	s.ValueSet("default_ddl_collation", expected)
-	return s
-}
-
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolCpuString(expected string) *SharedDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_cpu", expected)
-	return s
-}
-
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolGpuString(expected string) *SharedDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_gpu", expected)
 	return s
 }
 
@@ -270,16 +250,6 @@ func (s *SharedDatabaseResourceAssert) HasNoDefaultDdlCollation() *SharedDatabas
 	return s
 }
 
-func (s *SharedDatabaseResourceAssert) HasNoDefaultNotebookComputePoolCpu() *SharedDatabaseResourceAssert {
-	s.ValueNotSet("default_notebook_compute_pool_cpu")
-	return s
-}
-
-func (s *SharedDatabaseResourceAssert) HasNoDefaultNotebookComputePoolGpu() *SharedDatabaseResourceAssert {
-	s.ValueNotSet("default_notebook_compute_pool_gpu")
-	return s
-}
-
 func (s *SharedDatabaseResourceAssert) HasNoEnableConsoleOutput() *SharedDatabaseResourceAssert {
 	s.ValueNotSet("enable_console_output")
 	return s
@@ -374,16 +344,6 @@ func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationEmpty() *SharedData
 	return s
 }
 
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolCpuEmpty() *SharedDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_cpu", "")
-	return s
-}
-
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolGpuEmpty() *SharedDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_gpu", "")
-	return s
-}
-
 func (s *SharedDatabaseResourceAssert) HasEnableConsoleOutputEmpty() *SharedDatabaseResourceAssert {
 	s.ValueSet("enable_console_output", "")
 	return s
@@ -475,16 +435,6 @@ func (s *SharedDatabaseResourceAssert) HasCommentNotEmpty() *SharedDatabaseResou
 
 func (s *SharedDatabaseResourceAssert) HasDefaultDdlCollationNotEmpty() *SharedDatabaseResourceAssert {
 	s.ValuePresent("default_ddl_collation")
-	return s
-}
-
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolCpuNotEmpty() *SharedDatabaseResourceAssert {
-	s.ValuePresent("default_notebook_compute_pool_cpu")
-	return s
-}
-
-func (s *SharedDatabaseResourceAssert) HasDefaultNotebookComputePoolGpuNotEmpty() *SharedDatabaseResourceAssert {
-	s.ValuePresent("default_notebook_compute_pool_gpu")
 	return s
 }
 

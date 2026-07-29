@@ -5,38 +5,14 @@
 Generating full SDK object implementation based on object definition.
 
 ### How it works
+##### Adding new object to the SDK
 
-Generated files (`*_gen.go`) are fully replaced on every run — **never edit them directly**. If something is wrong in a generated file, fix the definition. Manual additions belong in `*_ext.go` extension files (see DropSafely and ShowByID sections below for common use cases).
+To add definition for the new SDK object:
 
-#### Adding a new object
-
-1. Create `defs/<plural_snake_case>_def.go` (e.g., [sequences_def.go](defs/sequences_def.go)) with `package defs`. Declare one package-level variable (e.g., `var pipesDef = g.NewInterface(...)`). Base it on existing definitions or the [example directory](example).
-2. Register the definition in alphabetical order in [0_init.go](defs/0_init.go).
-3. Run generation scoped to your object — the singular name must match the second argument of `g.NewInterface(...)` exactly:
-   ```shell
-   make generate-sdk-no-tests SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
-   ```
-4. Verify compilation and idempotency — re-running generation must produce no diff:
-   ```shell
-   go build ./pkg/sdk/...
-   go vet ./pkg/sdk/...
-   make generate-sdk-no-tests SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
-   git diff --stat   # must be empty
-   ```
-
-#### Using the generated SDK (Request DTO builder pattern)
-
-Always use the generated constructors; never initialise request structs as literals:
-
-```go
-// Correct
-req := sdk.NewCreatePipeRequest(id).WithComment("...")
-
-// Wrong — never do this
-opts := sdk.CreatePipeRequest{Name: id}
-```
-
-For emptiness checks use `reflect.DeepEqual(set, sdk.NewXxxSetRequest())` rather than field-by-field comparisons.
+1. Create file `<object_name_plural>_def.go` in the [defs directory](defs) (e.g., [sequences_def.go](defs/sequences_def.go)).
+2. Create object definition in the created file. Base it on the existing definitions and the [example directory](example).
+3. Add the created definition to the [0_init.go](defs/0_init.go) file.
+4. You are all set to run generation.
 
 ##### Invoking generation
 
@@ -151,8 +127,7 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 
 ##### Remaining TODOs
 
-- Generate `ID()` methods for `Request` structs as already done for `Show` result structs.
-- Generate `ID()` methods for `Describe`/`DescribeDetails` structs as already done for `Show` result structs.
+- Generate `ID()` methods for `Request` structs as already done for the `Opts` structs.
 - PoC of unit tests generation without manual changes in the generated files (details soon)
   - generate each branch of alter in tests (instead of basic and all options)
 - Improve validation handling for nested slices (the path is built incorrectly now)

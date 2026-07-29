@@ -66,10 +66,10 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasCommentString("").
-			HasAllowedIpList().
-			HasBlockedIpList().
-			HasAllowedNetworkRuleList().
-			HasBlockedNetworkRuleList(),
+			HasAllowedIpListLength(0).
+			HasBlockedIpListLength(0).
+			HasAllowedNetworkRuleListLength(0).
+			HasBlockedNetworkRuleListLength(0),
 
 		resourceshowoutputassert.NetworkPolicyShowOutput(t, basic.ResourceReference()).
 			HasCreatedOnNotEmpty().
@@ -102,10 +102,10 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 			HasNameString(newId.Name()).
 			HasFullyQualifiedNameString(newId.FullyQualifiedName()).
 			HasCommentString(comment).
-			HasAllowedIpList("1.1.1.1", "2.2.2.2").
-			HasBlockedIpList("3.3.3.3", "4.4.4.4").
-			HasAllowedNetworkRuleList(allowedNetworkRuleId1.FullyQualifiedName(), allowedNetworkRuleId2.FullyQualifiedName()).
-			HasBlockedNetworkRuleList(blockedNetworkRuleId1.FullyQualifiedName(), blockedNetworkRuleId2.FullyQualifiedName()),
+			HasAllowedIpListLength(2).
+			HasBlockedIpListLength(2).
+			HasAllowedNetworkRuleListLength(2).
+			HasBlockedNetworkRuleListLength(2),
 
 		resourceshowoutputassert.NetworkPolicyShowOutput(t, complete.ResourceReference()).
 			HasCreatedOnNotEmpty().

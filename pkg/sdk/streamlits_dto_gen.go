@@ -17,9 +17,13 @@ type CreateStreamlitRequest struct {
 	RootLocation               string                 // required
 	MainFile                   string                 // required
 	QueryWarehouse             *AccountObjectIdentifier
-	ExternalAccessIntegrations []AccountObjectIdentifier
+	ExternalAccessIntegrations *ExternalAccessIntegrationsRequest
 	Title                      *string
 	Comment                    *string
+}
+
+type ExternalAccessIntegrationsRequest struct {
+	ExternalAccessIntegrations []AccountObjectIdentifier // required
 }
 
 type AlterStreamlitRequest struct {
@@ -34,16 +38,15 @@ type StreamlitSetRequest struct {
 	RootLocation               *string
 	MainFile                   *string
 	QueryWarehouse             *AccountObjectIdentifier
-	ExternalAccessIntegrations []AccountObjectIdentifier
+	ExternalAccessIntegrations *ExternalAccessIntegrationsRequest
 	Comment                    *string
 	Title                      *string
 }
 
 type StreamlitUnsetRequest struct {
-	QueryWarehouse             *bool
-	Comment                    *bool
-	Title                      *bool
-	ExternalAccessIntegrations *bool
+	QueryWarehouse *bool
+	Comment        *bool
+	Title          *bool
 }
 
 type DropStreamlitRequest struct {

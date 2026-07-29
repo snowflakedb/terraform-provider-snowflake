@@ -254,6 +254,7 @@ func TestParseGrantOwnershipId(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
+		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			id, err := ParseGrantOwnershipId(tt.Identifier)
 			if tt.Error == "" {
@@ -374,6 +375,7 @@ func TestGrantOwnershipIdString(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
+		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			assert.Equal(t, tt.Expected, tt.Identifier.String())
 		})
@@ -539,6 +541,7 @@ func TestCreateGrantOwnershipIdFromSchema(t *testing.T) {
 	}
 
 	for _, tt := range testCases {
+		tt := tt
 		t.Run(tt.Name, func(t *testing.T) {
 			d := schema.TestResourceDataRaw(t, grantOwnershipSchema, tt.Config)
 			id, err := createGrantOwnershipIdFromSchema(d)

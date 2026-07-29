@@ -26,8 +26,6 @@ type Stages interface {
 	Show(ctx context.Context, request *ShowStageRequest) ([]Stage, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Stage, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Stage, error)
-	// DescribeDetails returns parsed describe output for stages.
-	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*StageDetails, error)
 }
 
 // CreateInternalStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
@@ -70,17 +68,17 @@ type StageFileFormat struct {
 
 // CreateOnS3StageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3StageOptions struct {
-	create                bool                          `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                         `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                         `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                          `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                         `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier        `ddl:"identifier"`
-	ExternalStageParams   ExternalS3StageParams         `ddl:"keyword"`
-	DirectoryTableOptions *StageS3DirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
-	FileFormat            *StageFileFormat              `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
-	Comment               *string                       `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag                   []TagAssociation              `ddl:"keyword,parentheses" sql:"TAG"`
+	create                bool                                `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                               `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                               `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                                `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier              `ddl:"identifier"`
+	ExternalStageParams   ExternalS3StageParams               `ddl:"keyword"`
+	DirectoryTableOptions *StageS3CommonDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
+	FileFormat            *StageFileFormat                    `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
+	Comment               *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                   []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 type ExternalS3StageParams struct {
@@ -124,11 +122,10 @@ type ExternalStageS3EncryptionNone struct {
 	encryptionType bool `ddl:"static" sql:"TYPE = 'NONE'"`
 }
 
-type StageS3DirectoryTableOptions struct {
-	Enable          bool    `ddl:"parameter" sql:"ENABLE"`
-	RefreshOnCreate *bool   `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
-	AutoRefresh     *bool   `ddl:"parameter" sql:"AUTO_REFRESH"`
-	AwsSnsTopic     *string `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
+type StageS3CommonDirectoryTableOptions struct {
+	Enable          bool  `ddl:"parameter" sql:"ENABLE"`
+	RefreshOnCreate *bool `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
+	AutoRefresh     *bool `ddl:"parameter" sql:"AUTO_REFRESH"`
 }
 
 // CreateOnGCSStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
@@ -223,17 +220,17 @@ type ExternalAzureDirectoryTableOptions struct {
 
 // CreateOnS3CompatibleStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-stage.
 type CreateOnS3CompatibleStageOptions struct {
-	create                bool                                    `ddl:"static" sql:"CREATE"`
-	OrReplace             *bool                                   `ddl:"keyword" sql:"OR REPLACE"`
-	Temporary             *bool                                   `ddl:"keyword" sql:"TEMPORARY"`
-	stage                 bool                                    `ddl:"static" sql:"STAGE"`
-	IfNotExists           *bool                                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                  SchemaObjectIdentifier                  `ddl:"identifier"`
-	ExternalStageParams   ExternalS3CompatibleStageParams         `ddl:"keyword"`
-	DirectoryTableOptions *StageS3CompatibleDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
-	FileFormat            *StageFileFormat                        `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
-	Comment               *string                                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	Tag                   []TagAssociation                        `ddl:"keyword,parentheses" sql:"TAG"`
+	create                bool                                `ddl:"static" sql:"CREATE"`
+	OrReplace             *bool                               `ddl:"keyword" sql:"OR REPLACE"`
+	Temporary             *bool                               `ddl:"keyword" sql:"TEMPORARY"`
+	stage                 bool                                `ddl:"static" sql:"STAGE"`
+	IfNotExists           *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                  SchemaObjectIdentifier              `ddl:"identifier"`
+	ExternalStageParams   ExternalS3CompatibleStageParams     `ddl:"keyword"`
+	DirectoryTableOptions *StageS3CommonDirectoryTableOptions `ddl:"list,parentheses,no_comma" sql:"DIRECTORY ="`
+	FileFormat            *StageFileFormat                    `ddl:"list,parentheses,no_comma" sql:"FILE_FORMAT ="`
+	Comment               *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	Tag                   []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
 type ExternalS3CompatibleStageParams struct {
@@ -245,12 +242,6 @@ type ExternalS3CompatibleStageParams struct {
 type ExternalStageS3CompatibleCredentials struct {
 	AwsKeyId     string `ddl:"parameter,single_quotes" sql:"AWS_KEY_ID"`
 	AwsSecretKey string `ddl:"parameter,single_quotes" sql:"AWS_SECRET_KEY"`
-}
-
-type StageS3CompatibleDirectoryTableOptions struct {
-	Enable          bool  `ddl:"parameter" sql:"ENABLE"`
-	RefreshOnCreate *bool `ddl:"parameter" sql:"REFRESH_ON_CREATE"`
-	AutoRefresh     *bool `ddl:"parameter" sql:"AUTO_REFRESH"`
 }
 
 // AlterStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-stage.
@@ -358,42 +349,6 @@ type StageProperty struct {
 	Type    string
 	Value   string
 	Default string
-}
-
-type StageDirectoryTable struct {
-	Enable                       bool
-	AutoRefresh                  bool
-	DirectoryNotificationChannel *string
-	LastRefreshedOn              *string
-	AwsSnsTopic                  *string
-}
-
-type StagePrivateLink struct {
-	UsePrivatelinkEndpoint bool
-}
-
-type StageLocationDetails struct {
-	Url               []string
-	AwsAccessPointArn string
-}
-
-type StageCredentials struct {
-	AwsKeyId string
-}
-
-type StageDetails struct {
-	Id                SchemaObjectIdentifier
-	FileFormatName    *SchemaObjectIdentifier
-	FileFormatCsv     *FileFormatCsv
-	FileFormatJson    *FileFormatJson
-	FileFormatAvro    *FileFormatAvro
-	FileFormatOrc     *FileFormatOrc
-	FileFormatParquet *FileFormatParquet
-	FileFormatXml     *FileFormatXml
-	DirectoryTable    *StageDirectoryTable
-	PrivateLink       *StagePrivateLink
-	Location          *StageLocationDetails
-	Credentials       *StageCredentials
 }
 
 // ShowStageOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-stages.

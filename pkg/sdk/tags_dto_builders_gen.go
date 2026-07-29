@@ -108,8 +108,8 @@ func (s *AlterTagRequest) WithUnset(unset TagUnsetRequest) *AlterTagRequest {
 	return s
 }
 
-func (s *AlterTagRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterTagRequest {
-	s.RenameTo = &renameTo
+func (s *AlterTagRequest) WithRename(rename TagRenameRequest) *AlterTagRequest {
+	s.Rename = &rename
 	return s
 }
 
@@ -219,6 +219,14 @@ func NewTagUnsetMaskingPoliciesRequest() *TagUnsetMaskingPoliciesRequest {
 func (s *TagUnsetMaskingPoliciesRequest) WithMaskingPolicies(maskingPolicies []TagMaskingPolicyRequest) *TagUnsetMaskingPoliciesRequest {
 	s.MaskingPolicies = maskingPolicies
 	return s
+}
+
+func NewTagRenameRequest(
+	name SchemaObjectIdentifier,
+) *TagRenameRequest {
+	s := TagRenameRequest{}
+	s.Name = name
+	return &s
 }
 
 func NewShowTagRequest() *ShowTagRequest {

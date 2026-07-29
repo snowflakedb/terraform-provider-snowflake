@@ -44,17 +44,6 @@ func (p *ProcedureAssert) HasCreatedOn(expected string) *ProcedureAssert {
 	return p
 }
 
-func (p *ProcedureAssert) HasCreatedOnNotEmpty() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created on to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProcedureAssert) HasName(expected string) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
@@ -66,33 +55,11 @@ func (p *ProcedureAssert) HasName(expected string) *ProcedureAssert {
 	return p
 }
 
-func (p *ProcedureAssert) HasNameNotEmpty() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProcedureAssert) HasSchemaName(expected string) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProcedureAssert) HasSchemaNameNotEmpty() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.SchemaName == "" {
-			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -154,28 +121,6 @@ func (p *ProcedureAssert) HasMaxNumArguments(expected int) *ProcedureAssert {
 	return p
 }
 
-func (p *ProcedureAssert) HasArgumentsRaw(expected string) *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.ArgumentsRaw != expected {
-			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProcedureAssert) HasArgumentsRawNotEmpty() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.ArgumentsRaw == "" {
-			return fmt.Errorf("expected arguments raw to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
@@ -183,17 +128,6 @@ func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAs
 		mappedExpected := collections.Map(expected, func(item sdk.DataType) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected arguments old: %v; got: %v", expected, o.ArgumentsOld)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProcedureAssert) HasNoArgumentsOld() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if len(o.ArgumentsOld) > 0 {
-			return fmt.Errorf("expected arguments old to be empty; got: %v", o.ArgumentsOld)
 		}
 		return nil
 	})
@@ -211,6 +145,17 @@ func (p *ProcedureAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureAsse
 	return p
 }
 
+func (p *ProcedureAssert) HasArgumentsRaw(expected string) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.ArgumentsRaw != expected {
+			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *ProcedureAssert) HasDescription(expected string) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
@@ -222,33 +167,11 @@ func (p *ProcedureAssert) HasDescription(expected string) *ProcedureAssert {
 	return p
 }
 
-func (p *ProcedureAssert) HasDescriptionNotEmpty() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.Description == "" {
-			return fmt.Errorf("expected description to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProcedureAssert) HasCatalogName(expected string) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
 		if o.CatalogName != expected {
 			return fmt.Errorf("expected catalog name: %v; got: %v", expected, o.CatalogName)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProcedureAssert) HasCatalogNameNotEmpty() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.CatalogName == "" {
-			return fmt.Errorf("expected catalog name to be non-empty")
 		}
 		return nil
 	})
@@ -302,17 +225,6 @@ func (p *ProcedureAssert) HasSecrets(expected string) *ProcedureAssert {
 	return p
 }
 
-func (p *ProcedureAssert) HasNoSecrets() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.Secrets != nil {
-			return fmt.Errorf("expected secrets to be nil; got: %v", *o.Secrets)
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *ProcedureAssert) HasExternalAccessIntegrations(expected string) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
@@ -321,17 +233,6 @@ func (p *ProcedureAssert) HasExternalAccessIntegrations(expected string) *Proced
 		}
 		if *o.ExternalAccessIntegrations != expected {
 			return fmt.Errorf("expected external access integrations: %v; got: %v", expected, *o.ExternalAccessIntegrations)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *ProcedureAssert) HasNoExternalAccessIntegrations() *ProcedureAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
-		t.Helper()
-		if o.ExternalAccessIntegrations != nil {
-			return fmt.Errorf("expected external access integrations to be nil; got: %v", *o.ExternalAccessIntegrations)
 		}
 		return nil
 	})

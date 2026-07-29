@@ -9,8 +9,6 @@ resource "snowflake_database" "test" {
   catalog                                       = var.catalog
   replace_invalid_characters                    = var.replace_invalid_characters
   default_ddl_collation                         = var.default_ddl_collation
-  default_notebook_compute_pool_cpu             = var.default_notebook_compute_pool_cpu
-  default_notebook_compute_pool_gpu             = var.default_notebook_compute_pool_gpu
   storage_serialization_policy                  = var.storage_serialization_policy
   log_level                                     = var.log_level
   trace_level                                   = var.trace_level

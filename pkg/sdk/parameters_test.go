@@ -25,38 +25,6 @@ func TestSetObjectParameterOnObject(t *testing.T) {
 	})
 }
 
-func TestUnsetObjectParameterOnObject(t *testing.T) {
-	t.Run("unset on user", func(t *testing.T) {
-		id := randomAccountObjectIdentifier()
-		opts := &unsetParameterOnObject{
-			objectType:       ObjectTypeUser,
-			objectIdentifier: id,
-			parameterKey:     "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR", id.FullyQualifiedName())
-	})
-
-	t.Run("unset on database", func(t *testing.T) {
-		id := randomAccountObjectIdentifier()
-		opts := &unsetParameterOnObject{
-			objectType:       ObjectTypeDatabase,
-			objectIdentifier: id,
-			parameterKey:     "USER_TASK_TIMEOUT_MS",
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER DATABASE %s UNSET USER_TASK_TIMEOUT_MS", id.FullyQualifiedName())
-	})
-
-	t.Run("unset on schema", func(t *testing.T) {
-		id := randomDatabaseObjectIdentifier()
-		opts := &unsetParameterOnObject{
-			objectType:       ObjectTypeSchema,
-			objectIdentifier: id,
-			parameterKey:     "DATA_RETENTION_TIME_IN_DAYS",
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SCHEMA %s UNSET DATA_RETENTION_TIME_IN_DAYS", id.FullyQualifiedName())
-	})
-}
-
 func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
 	opts := &AlterAccountOptions{
 		Unset: &AccountUnset{
@@ -160,7 +128,6 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser},
 		{input: "CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER", want: AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser},
 		{input: "CORTEX_ENABLED_CROSS_REGION", want: AccountParameterCortexEnabledCrossRegion},
-		{input: "DEFAULT_STREAMLIT_COMPUTE_POOL", want: AccountParameterDefaultStreamlitComputePool},
 		{input: "DISABLE_USER_PRIVILEGE_GRANTS", want: AccountParameterDisableUserPrivilegeGrants},
 		{input: "ENABLE_IDENTIFIER_FIRST_LOGIN", want: AccountParameterEnableIdentifierFirstLogin},
 		{input: "ENABLE_INTERNAL_STAGES_PRIVATELINK", want: AccountParameterEnableInternalStagesPrivatelink},
@@ -246,8 +213,6 @@ func TestToAccountParameter(t *testing.T) {
 		{input: "CATALOG", want: AccountParameterCatalog},
 		{input: "DATA_RETENTION_TIME_IN_DAYS", want: AccountParameterDataRetentionTimeInDays},
 		{input: "DEFAULT_DDL_COLLATION", want: AccountParameterDefaultDdlCollation},
-		{input: "DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", want: AccountParameterDefaultNotebookComputePoolCpu},
-		{input: "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", want: AccountParameterDefaultNotebookComputePoolGpu},
 		{input: "EXTERNAL_VOLUME", want: AccountParameterExternalVolume},
 		{input: "LOG_LEVEL", want: AccountParameterLogLevel},
 		{input: "MAX_CONCURRENCY_LEVEL", want: AccountParameterMaxConcurrencyLevel},

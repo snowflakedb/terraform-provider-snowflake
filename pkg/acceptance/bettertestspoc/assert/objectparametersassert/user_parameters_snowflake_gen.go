@@ -70,8 +70,7 @@ func (u *UserParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk
 func (u *UserParametersAssert) HasAllDefaults() *UserParametersAssert {
 	return u.
 		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableUnredactedQuerySyntaxError, sdk.ParameterTypeSnowflakeDefault).
-		HasNetworkPolicy("RESTRICTED_ACCESS").
-		HasNetworkPolicyLevel(sdk.ParameterTypeAccount).
+		// TODO(SNOW-2048330): HasDefaultParameterValueOnLevel(sdk.UserParameterNetworkPolicy, sdk.ParameterTypeAccount).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterPreventUnloadToInternalStages, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).

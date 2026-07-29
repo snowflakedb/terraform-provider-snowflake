@@ -74,8 +74,6 @@ func (d *DatabaseParametersAssert) HasAllDefaults() *DatabaseParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterCatalog, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterReplaceInvalidCharacters, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterStorageSerializationPolicy, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
@@ -97,8 +95,6 @@ func (d *DatabaseParametersAssert) HasAllDefaultsExplicit() *DatabaseParametersA
 		HasDefaultCatalogValueExplicit().
 		HasDefaultReplaceInvalidCharactersValueExplicit().
 		HasDefaultDefaultDdlCollationValueExplicit().
-		HasDefaultDefaultNotebookComputePoolCpuValueExplicit().
-		HasDefaultDefaultNotebookComputePoolGpuValueExplicit().
 		HasDefaultStorageSerializationPolicyValueExplicit().
 		HasDefaultLogLevelValueExplicit().
 		HasDefaultLogEventLevelValueExplicit().
@@ -143,16 +139,6 @@ func (d *DatabaseParametersAssert) HasReplaceInvalidCharacters(expected bool) *D
 
 func (d *DatabaseParametersAssert) HasDefaultDdlCollation(expected string) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterValueSet(sdk.DatabaseParameterDefaultDdlCollation, expected))
-	return d
-}
-
-func (d *DatabaseParametersAssert) HasDefaultNotebookComputePoolCpu(expected string) *DatabaseParametersAssert {
-	d.AddAssertion(assert.SnowflakeParameterValueSet(sdk.DatabaseParameterDefaultNotebookComputePoolCpu, expected))
-	return d
-}
-
-func (d *DatabaseParametersAssert) HasDefaultNotebookComputePoolGpu(expected string) *DatabaseParametersAssert {
-	d.AddAssertion(assert.SnowflakeParameterValueSet(sdk.DatabaseParameterDefaultNotebookComputePoolGpu, expected))
 	return d
 }
 
@@ -245,16 +231,6 @@ func (d *DatabaseParametersAssert) HasDefaultDdlCollationLevel(expected sdk.Para
 	return d
 }
 
-func (d *DatabaseParametersAssert) HasDefaultNotebookComputePoolCpuLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
-	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterDefaultNotebookComputePoolCpu, expected))
-	return d
-}
-
-func (d *DatabaseParametersAssert) HasDefaultNotebookComputePoolGpuLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
-	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterDefaultNotebookComputePoolGpu, expected))
-	return d
-}
-
 func (d *DatabaseParametersAssert) HasStorageSerializationPolicyLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterStorageSerializationPolicy, expected))
 	return d
@@ -338,14 +314,6 @@ func (d *DatabaseParametersAssert) HasDefaultDefaultDdlCollationValue() *Databas
 	return d.HasDefaultParameterValue(sdk.DatabaseParameterDefaultDdlCollation)
 }
 
-func (d *DatabaseParametersAssert) HasDefaultDefaultNotebookComputePoolCpuValue() *DatabaseParametersAssert {
-	return d.HasDefaultParameterValue(sdk.DatabaseParameterDefaultNotebookComputePoolCpu)
-}
-
-func (d *DatabaseParametersAssert) HasDefaultDefaultNotebookComputePoolGpuValue() *DatabaseParametersAssert {
-	return d.HasDefaultParameterValue(sdk.DatabaseParameterDefaultNotebookComputePoolGpu)
-}
-
 func (d *DatabaseParametersAssert) HasDefaultStorageSerializationPolicyValue() *DatabaseParametersAssert {
 	return d.HasDefaultParameterValue(sdk.DatabaseParameterStorageSerializationPolicy)
 }
@@ -416,14 +384,6 @@ func (d *DatabaseParametersAssert) HasDefaultReplaceInvalidCharactersValueExplic
 
 func (d *DatabaseParametersAssert) HasDefaultDefaultDdlCollationValueExplicit() *DatabaseParametersAssert {
 	return d.HasDefaultDdlCollation("")
-}
-
-func (d *DatabaseParametersAssert) HasDefaultDefaultNotebookComputePoolCpuValueExplicit() *DatabaseParametersAssert {
-	return d.HasDefaultNotebookComputePoolCpu("SYSTEM_COMPUTE_POOL_CPU")
-}
-
-func (d *DatabaseParametersAssert) HasDefaultDefaultNotebookComputePoolGpuValueExplicit() *DatabaseParametersAssert {
-	return d.HasDefaultNotebookComputePoolGpu("SYSTEM_COMPUTE_POOL_GPU")
 }
 
 func (d *DatabaseParametersAssert) HasDefaultStorageSerializationPolicyValueExplicit() *DatabaseParametersAssert {

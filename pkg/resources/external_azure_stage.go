@@ -201,7 +201,11 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return nil, err
 	}
 
-	details, err := client.Stages.DescribeDetails(ctx, id)
+	stageProperties, err := client.Stages.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
@@ -295,7 +299,12 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			return diag.FromErr(err)
 		}
 
-		details, err := client.Stages.DescribeDetails(ctx, id)
+		properties, err := client.Stages.Describe(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		details, err := sdk.ParseStageDetails(properties)
 		if err != nil {
 			return diag.FromErr(err)
 		}

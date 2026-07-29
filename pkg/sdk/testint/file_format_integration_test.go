@@ -18,9 +18,9 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 
 	t.Run("CSV", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCsv,
-			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				CSVCompression:                sdk.Pointer(sdk.CsvCompressionBz2),
 				CSVRecordDelimiter:            sdk.String("\\123"),
 				CSVFieldDelimiter:             sdk.String("0x42"),
@@ -46,11 +46,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			require.NoError(t, err)
 		})
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
 		assert.Equal(t, id, result.Name)
@@ -80,7 +80,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *result.Options.CSVSkipByteOrderMark)
 		assert.Equal(t, sdk.Pointer(sdk.CsvEncodingGb18030), result.Options.CSVEncoding)
 
-		describeResult, err := client.FileFormatsLegacy.Describe(ctx, id)
+		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.FileFormatTypeCsv, describeResult.Type)
 		assert.Equal(t, sdk.Pointer(sdk.CsvCompressionBz2), describeResult.Options.CSVCompression)
@@ -108,28 +108,28 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 	// Check that field_optionally_enclosed_by can take the value NONE
 	t.Run("CSV", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeCsv,
-			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				CSVFieldOptionallyEnclosedBy: sdk.String("NONE"),
 			},
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			require.NoError(t, err)
 		})
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
 		assert.Equal(t, "NONE", *result.Options.CSVFieldOptionallyEnclosedBy)
 	})
 	t.Run("JSON", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeJson,
-			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				JSONCompression:       sdk.Pointer(sdk.JsonCompressionBrotli),
 				JSONDateFormat:        sdk.String("a"),
 				JSONTimeFormat:        sdk.String("b"),
@@ -149,11 +149,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			require.NoError(t, err)
 		})
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
 		assert.Equal(t, id, result.Name)
@@ -178,7 +178,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *result.Options.JSONIgnoreUTF8Errors)
 		assert.True(t, *result.Options.JSONSkipByteOrderMark)
 
-		describeResult, err := client.FileFormatsLegacy.Describe(ctx, id)
+		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.FileFormatTypeJson, describeResult.Type)
 		assert.Equal(t, sdk.JsonCompressionBrotli, *describeResult.Options.JSONCompression)
@@ -198,9 +198,9 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 	})
 	t.Run("AVRO", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeAvro,
-			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				AvroCompression:              sdk.Pointer(sdk.AvroCompressionGzip),
 				AvroTrimSpace:                sdk.Bool(true),
 				AvroReplaceInvalidCharacters: sdk.Bool(true),
@@ -210,11 +210,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			require.NoError(t, err)
 		})
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
 		assert.Equal(t, id, result.Name)
@@ -229,7 +229,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *result.Options.AvroReplaceInvalidCharacters)
 		assert.Equal(t, []sdk.NullString{{S: "a"}, {S: "b"}}, *result.Options.AvroNullIf)
 
-		describeResult, err := client.FileFormatsLegacy.Describe(ctx, id)
+		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.FileFormatTypeAvro, describeResult.Type)
 		assert.Equal(t, sdk.AvroCompressionGzip, *describeResult.Options.AvroCompression)
@@ -239,9 +239,9 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 	})
 	t.Run("ORC", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeOrc,
-			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				ORCTrimSpace:                sdk.Bool(true),
 				ORCReplaceInvalidCharacters: sdk.Bool(true),
 				ORCNullIf:                   &[]sdk.NullString{{S: "a"}, {S: "b"}},
@@ -250,11 +250,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			require.NoError(t, err)
 		})
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
 		assert.Equal(t, id, result.Name)
@@ -268,7 +268,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *result.Options.ORCReplaceInvalidCharacters)
 		assert.Equal(t, []sdk.NullString{{S: "a"}, {S: "b"}}, *result.Options.ORCNullIf)
 
-		describeResult, err := client.FileFormatsLegacy.Describe(ctx, id)
+		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.FileFormatTypeOrc, describeResult.Type)
 		assert.True(t, *describeResult.Options.ORCTrimSpace)
@@ -277,9 +277,9 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 	})
 	t.Run("PARQUET", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeParquet,
-			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				ParquetCompression:              sdk.Pointer(sdk.ParquetCompressionLzo),
 				ParquetBinaryAsText:             sdk.Bool(true),
 				ParquetTrimSpace:                sdk.Bool(true),
@@ -290,11 +290,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			require.NoError(t, err)
 		})
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
 		assert.Equal(t, id, result.Name)
@@ -310,7 +310,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *result.Options.ParquetReplaceInvalidCharacters)
 		assert.Equal(t, []sdk.NullString{{S: "a"}, {S: "b"}}, *result.Options.ParquetNullIf)
 
-		describeResult, err := client.FileFormatsLegacy.Describe(ctx, id)
+		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.FileFormatTypeParquet, describeResult.Type)
 		assert.Equal(t, sdk.ParquetCompressionLzo, *describeResult.Options.ParquetCompression)
@@ -321,9 +321,9 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 	})
 	t.Run("XML", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{
 			Type: sdk.FileFormatTypeXml,
-			FileFormatTypeOptionsLegacy: sdk.FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
 				XMLCompression:          sdk.Pointer(sdk.XmlCompressionDeflate),
 				XMLIgnoreUTF8Errors:     sdk.Bool(true),
 				XMLPreserveSpace:        sdk.Bool(true),
@@ -336,11 +336,11 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		})
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			require.NoError(t, err)
 		})
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, id)
 		require.NoError(t, err)
 
 		assert.Equal(t, id, result.Name)
@@ -358,7 +358,7 @@ func TestInt_FileFormatsCreateAndRead(t *testing.T) {
 		assert.True(t, *result.Options.XMLDisableAutoConvert)
 		assert.True(t, *result.Options.XMLSkipByteOrderMark)
 
-		describeResult, err := client.FileFormatsLegacy.Describe(ctx, id)
+		describeResult, err := client.FileFormats.Describe(ctx, id)
 		require.NoError(t, err)
 		assert.Equal(t, sdk.FileFormatTypeXml, describeResult.Type)
 		assert.Equal(t, sdk.XmlCompressionDeflate, *describeResult.Options.XMLCompression)
@@ -376,27 +376,27 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 	ctx := testContext(t)
 
 	t.Run("rename", func(t *testing.T) {
-		oldId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		_, fileFormatCleanup := testClientHelper().FileFormat.CreateCsvWithRequest(t, oldId, sdk.NewCreateCsvFileFormatRequest(oldId))
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
 		t.Cleanup(fileFormatCleanup)
+		oldId := fileFormat.ID()
 		newId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 
-		err := client.FileFormatsLegacy.Alter(ctx, oldId, &sdk.AlterFileFormatOptionsLegacy{
+		err := client.FileFormats.Alter(ctx, oldId, &sdk.AlterFileFormatOptions{
 			Rename: &sdk.AlterFileFormatRenameOptions{
 				NewName: newId,
 			},
 		})
 		require.NoError(t, err)
 
-		_, err = client.FileFormatsLegacy.ShowByID(ctx, oldId)
+		_, err = client.FileFormats.ShowByID(ctx, oldId)
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, newId)
+		result, err := client.FileFormats.ShowByID(ctx, newId)
 		require.NoError(t, err)
 		assert.Equal(t, newId, result.Name)
 
 		// Undo rename so we can clean up
-		err = client.FileFormatsLegacy.Alter(ctx, newId, &sdk.AlterFileFormatOptionsLegacy{
+		err = client.FileFormats.Alter(ctx, newId, &sdk.AlterFileFormatOptions{
 			Rename: &sdk.AlterFileFormatRenameOptions{
 				NewName: oldId,
 			},
@@ -405,14 +405,17 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 	})
 
 	t.Run("set + set comment", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		_, fileFormatCleanup := testClientHelper().FileFormat.CreateCsvWithRequest(t, id, sdk.NewCreateCsvFileFormatRequest(id).
-			WithCompression(sdk.CsvCompressionAuto).
-			WithParseHeader(false))
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormatWithOptions(t, &sdk.CreateFileFormatOptions{
+			Type: sdk.FileFormatTypeCsv,
+			LegacyFileFormatTypeOptions: sdk.LegacyFileFormatTypeOptions{
+				CSVCompression: sdk.Pointer(sdk.CsvCompressionAuto),
+				CSVParseHeader: sdk.Bool(false),
+			},
+		})
 		t.Cleanup(fileFormatCleanup)
 
-		err := client.FileFormatsLegacy.Alter(ctx, id, &sdk.AlterFileFormatOptionsLegacy{
-			Set: &sdk.FileFormatTypeOptionsLegacy{
+		err := client.FileFormats.Alter(ctx, fileFormat.ID(), &sdk.AlterFileFormatOptions{
+			Set: &sdk.LegacyFileFormatTypeOptions{
 				Comment:        sdk.String("some comment"),
 				CSVCompression: sdk.Pointer(sdk.CsvCompressionBz2),
 				CSVParseHeader: sdk.Bool(true),
@@ -420,7 +423,7 @@ func TestInt_FileFormatsAlter(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		result, err := client.FileFormatsLegacy.ShowByID(ctx, id)
+		result, err := client.FileFormats.ShowByID(ctx, fileFormat.ID())
 		require.NoError(t, err)
 		assert.Equal(t, sdk.CsvCompressionBz2, *result.Options.CSVCompression)
 		assert.True(t, *result.Options.CSVParseHeader)
@@ -433,28 +436,26 @@ func TestInt_FileFormatsDrop(t *testing.T) {
 	ctx := testContext(t)
 
 	t.Run("no options", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		_, fileFormatCleanup := testClientHelper().FileFormat.CreateCsvWithRequest(t, id, sdk.NewCreateCsvFileFormatRequest(id))
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
 		t.Cleanup(fileFormatCleanup)
 
-		err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+		err := client.FileFormats.Drop(ctx, fileFormat.ID(), nil)
 		require.NoError(t, err)
 
-		_, err = client.FileFormatsLegacy.ShowByID(ctx, id)
+		_, err = client.FileFormats.ShowByID(ctx, fileFormat.ID())
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
 	t.Run("with IfExists", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		_, fileFormatCleanup := testClientHelper().FileFormat.CreateCsvWithRequest(t, id, sdk.NewCreateCsvFileFormatRequest(id))
+		fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateFileFormat(t)
 		t.Cleanup(fileFormatCleanup)
 
-		err := client.FileFormatsLegacy.Drop(ctx, id, &sdk.DropFileFormatOptionsLegacy{
+		err := client.FileFormats.Drop(ctx, fileFormat.ID(), &sdk.DropFileFormatOptions{
 			IfExists: sdk.Bool(true),
 		})
 		require.NoError(t, err)
 
-		_, err = client.FileFormatsLegacy.ShowByID(ctx, id)
+		_, err = client.FileFormats.ShowByID(ctx, fileFormat.ID())
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 }
@@ -463,20 +464,13 @@ func TestInt_FileFormatsShow(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	fileFormatId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	_, cleanupFileFormat := testClientHelper().FileFormat.CreateCsvWithRequest(t, fileFormatId, sdk.NewCreateCsvFileFormatRequest(fileFormatId))
+	fileFormatTest, cleanupFileFormat := testClientHelper().FileFormat.CreateFileFormat(t)
 	t.Cleanup(cleanupFileFormat)
-	fileFormatTest, err := client.FileFormatsLegacy.ShowByID(ctx, fileFormatId)
-	require.NoError(t, err)
-
-	fileFormatId2 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-	_, cleanupFileFormat2 := testClientHelper().FileFormat.CreateCsvWithRequest(t, fileFormatId2, sdk.NewCreateCsvFileFormatRequest(fileFormatId2))
+	fileFormatTest2, cleanupFileFormat2 := testClientHelper().FileFormat.CreateFileFormat(t)
 	t.Cleanup(cleanupFileFormat2)
-	fileFormatTest2, err := client.FileFormatsLegacy.ShowByID(ctx, fileFormatId2)
-	require.NoError(t, err)
 
 	t.Run("without options", func(t *testing.T) {
-		fileFormats, err := client.FileFormatsLegacy.Show(ctx, nil)
+		fileFormats, err := client.FileFormats.Show(ctx, nil)
 		require.NoError(t, err)
 		assert.LessOrEqual(t, 2, len(fileFormats))
 		assert.Contains(t, fileFormats, *fileFormatTest)
@@ -484,7 +478,7 @@ func TestInt_FileFormatsShow(t *testing.T) {
 	})
 
 	t.Run("LIKE", func(t *testing.T) {
-		fileFormats, err := client.FileFormatsLegacy.Show(ctx, &sdk.ShowFileFormatsOptionsLegacy{
+		fileFormats, err := client.FileFormats.Show(ctx, &sdk.ShowFileFormatsOptions{
 			Like: &sdk.Like{
 				Pattern: sdk.String(fileFormatTest.Name.Name()),
 			},
@@ -495,7 +489,7 @@ func TestInt_FileFormatsShow(t *testing.T) {
 	})
 
 	t.Run("IN", func(t *testing.T) {
-		fileFormats, err := client.FileFormatsLegacy.Show(ctx, &sdk.ShowFileFormatsOptionsLegacy{
+		fileFormats, err := client.FileFormats.Show(ctx, &sdk.ShowFileFormatsOptions{
 			In: &sdk.In{
 				Schema: testClientHelper().Ids.SchemaId(),
 			},
@@ -511,8 +505,8 @@ func TestInt_FileFormatsShowById(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	fileFormat, fileFormatCleanup := testClientHelper().FileFormat.CreateCsv(t)
-	t.Cleanup(fileFormatCleanup)
+	fileFormatTest, cleanupFileFormat := testClientHelper().FileFormat.CreateFileFormat(t)
+	t.Cleanup(cleanupFileFormat)
 
 	// new database and schema created on purpose
 	databaseTest2, cleanupDatabase2 := testClientHelper().Database.CreateDatabase(t)
@@ -521,16 +515,16 @@ func TestInt_FileFormatsShowById(t *testing.T) {
 	t.Cleanup(cleanupSchema2)
 
 	t.Run("show format in different schema", func(t *testing.T) {
-		err := client.Sessions.UseDatabase(ctx, sdk.NewUseDatabaseSessionRequest(databaseTest2.ID()))
+		err := client.Sessions.UseDatabase(ctx, databaseTest2.ID())
 		require.NoError(t, err)
-		err = client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(schemaTest2.ID()))
+		err = client.Sessions.UseSchema(ctx, schemaTest2.ID())
 		require.NoError(t, err)
 
-		fileFormat, err := client.FileFormatsLegacy.ShowByID(ctx, fileFormat.ID())
+		fileFormat, err := client.FileFormats.ShowByID(ctx, fileFormatTest.ID())
 		require.NoError(t, err)
 		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), fileFormat.Name.DatabaseName())
 		assert.Equal(t, testClientHelper().Ids.SchemaId().Name(), fileFormat.Name.SchemaName())
-		assert.Equal(t, fileFormat.Name.Name(), fileFormat.Name.Name())
+		assert.Equal(t, fileFormatTest.Name.Name(), fileFormat.Name.Name())
 	})
 }
 
@@ -541,7 +535,7 @@ func TestInt_FileFormatsShowByID(t *testing.T) {
 	cleanupFileFormatHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 		t.Helper()
 		return func() {
-			err := client.FileFormatsLegacy.Drop(ctx, id, nil)
+			err := client.FileFormats.Drop(ctx, id, nil)
 			if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 				return
 			}
@@ -552,7 +546,7 @@ func TestInt_FileFormatsShowByID(t *testing.T) {
 	createFileFormatHandle := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
 
-		err := client.FileFormatsLegacy.Create(ctx, id, &sdk.CreateFileFormatOptionsLegacy{Type: sdk.FileFormatTypeCsv})
+		err := client.FileFormats.Create(ctx, id, &sdk.CreateFileFormatOptions{Type: sdk.FileFormatTypeCsv})
 		require.NoError(t, err)
 		t.Cleanup(cleanupFileFormatHandle(t, id))
 	}
@@ -567,11 +561,11 @@ func TestInt_FileFormatsShowByID(t *testing.T) {
 		createFileFormatHandle(t, id1)
 		createFileFormatHandle(t, id2)
 
-		e1, err := client.FileFormatsLegacy.ShowByID(ctx, id1)
+		e1, err := client.FileFormats.ShowByID(ctx, id1)
 		require.NoError(t, err)
 		require.Equal(t, id1, e1.ID())
 
-		e2, err := client.FileFormatsLegacy.ShowByID(ctx, id2)
+		e2, err := client.FileFormats.ShowByID(ctx, id2)
 		require.NoError(t, err)
 		require.Equal(t, id2, e2.ID())
 	})

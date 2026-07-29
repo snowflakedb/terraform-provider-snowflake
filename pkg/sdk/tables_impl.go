@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	_ TablesLegacy                       = (*tablesLegacy)(nil)
+	_ Tables                             = (*tables)(nil)
 	_ convertibleRow[TableColumnDetails] = new(tableColumnDetailsRow)
 	_ convertibleRow[TableStageDetails]  = new(tableStageDetailsRow)
 	_ convertibleRow[Table]              = new(tableDBRow)
@@ -31,50 +31,50 @@ var (
 	_ optionsProvider[TableSet]                            = new(TableSetRequest)
 )
 
-type tablesLegacy struct {
+type tables struct {
 	client *Client
 }
 
-func (v *tablesLegacy) Create(ctx context.Context, request *CreateTableRequest) error {
+func (v *tables) Create(ctx context.Context, request *CreateTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tablesLegacy) CreateAsSelect(ctx context.Context, request *CreateTableAsSelectRequest) error {
+func (v *tables) CreateAsSelect(ctx context.Context, request *CreateTableAsSelectRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tablesLegacy) CreateUsingTemplate(ctx context.Context, request *CreateTableUsingTemplateRequest) error {
+func (v *tables) CreateUsingTemplate(ctx context.Context, request *CreateTableUsingTemplateRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tablesLegacy) CreateLike(ctx context.Context, request *CreateTableLikeRequest) error {
+func (v *tables) CreateLike(ctx context.Context, request *CreateTableLikeRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tablesLegacy) CreateClone(ctx context.Context, request *CreateTableCloneRequest) error {
+func (v *tables) CreateClone(ctx context.Context, request *CreateTableCloneRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tablesLegacy) Alter(ctx context.Context, request *AlterTableRequest) error {
+func (v *tables) Alter(ctx context.Context, request *AlterTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tablesLegacy) Drop(ctx context.Context, request *DropTableRequest) error {
+func (v *tables) Drop(ctx context.Context, request *DropTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tablesLegacy) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
+func (v *tables) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error {
 	return SafeDrop(v.client, func() error { return v.Drop(ctx, NewDropTableRequest(id).WithIfExists(Bool(true))) }, ctx, id)
 }
 
-func (v *tablesLegacy) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
+func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
 	opts := request.toOpts()
 	dbRows, err := validateAndQuery[tableDBRow](v.client, ctx, opts)
 	if err != nil {
@@ -84,7 +84,7 @@ func (v *tablesLegacy) Show(ctx context.Context, request *ShowTableRequest) ([]T
 	return convertRows[tableDBRow, Table](dbRows)
 }
 
-func (v *tablesLegacy) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
+func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	request := NewShowTableRequest().WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
 		WithLike(Like{Pattern: String(id.Name())})
 	returnedTables, err := v.Show(ctx, request)
@@ -94,11 +94,11 @@ func (v *tablesLegacy) ShowByID(ctx context.Context, id SchemaObjectIdentifier) 
 	return collections.FindFirst(returnedTables, func(r Table) bool { return r.Name == id.Name() })
 }
 
-func (v *tablesLegacy) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
+func (v *tables) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
-func (v *tablesLegacy) DescribeColumns(ctx context.Context, req *DescribeTableColumnsRequest) ([]TableColumnDetails, error) {
+func (v *tables) DescribeColumns(ctx context.Context, req *DescribeTableColumnsRequest) ([]TableColumnDetails, error) {
 	rows, err := validateAndQuery[tableColumnDetailsRow](v.client, ctx, req.toOpts())
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (v *tablesLegacy) DescribeColumns(ctx context.Context, req *DescribeTableCo
 	return convertRows[tableColumnDetailsRow, TableColumnDetails](rows)
 }
 
-func (v *tablesLegacy) DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error) {
+func (v *tables) DescribeStage(ctx context.Context, req *DescribeTableStageRequest) ([]TableStageDetails, error) {
 	rows, err := validateAndQuery[tableStageDetailsRow](v.client, ctx, req.toOpts())
 	if err != nil {
 		return nil, err
@@ -677,7 +677,7 @@ func (s *LegacyTableCopyOnErrorOptionsRequest) toOpts() *LegacyTableCopyOnErrorO
 func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRequest) []LegacyFileFormat {
 	fileFormats := make([]LegacyFileFormat, 0, len(stageFileFormatRequests))
 	for _, request := range stageFileFormatRequests {
-		var options *FileFormatTypeOptionsLegacy
+		var options *LegacyFileFormatTypeOptions
 		if request.Options != nil {
 			options = request.Options.toOpts()
 		}
@@ -691,11 +691,11 @@ func convertLegacyFileFormatOptions(stageFileFormatRequests []LegacyFileFormatRe
 	return fileFormats
 }
 
-func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptionsLegacy {
+func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *LegacyFileFormatTypeOptions {
 	if v == nil {
 		return nil
 	}
-	return &FileFormatTypeOptionsLegacy{
+	return &LegacyFileFormatTypeOptions{
 		CSVCompression:                  v.CSVCompression,
 		CSVRecordDelimiter:              v.CSVRecordDelimiter,
 		CSVFieldDelimiter:               v.CSVFieldDelimiter,
@@ -759,6 +759,7 @@ func (v *LegacyFileFormatTypeOptionsRequest) toOpts() *FileFormatTypeOptionsLega
 func convertColumns(columnRequests []TableColumnRequest) []TableColumn {
 	columns := make([]TableColumn, 0, len(columnRequests))
 	for _, columnRequest := range columnRequests {
+		columnRequest := columnRequest
 		var defaultValue *ColumnDefaultValue
 		if columnRequest.defaultValue != nil {
 			var columnIdentity *ColumnIdentity

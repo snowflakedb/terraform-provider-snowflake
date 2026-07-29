@@ -23,7 +23,7 @@ type Warehouses interface {
 	// ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)
 	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
-	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type, or resizing an interactive warehouse
+	// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type
 	AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error
 }
 
@@ -65,7 +65,6 @@ type CreateAdaptiveWarehouseOptions struct {
 	Comment                         *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel `ddl:"parameter,single_quotes" sql:"MAX_QUERY_PERFORMANCE_LEVEL"`
 	QueryThroughputMultiplier       *int                      `ddl:"parameter" sql:"QUERY_THROUGHPUT_MULTIPLIER"`
-	ResourceMonitor                 *AccountObjectIdentifier  `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
 	Tag                             []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
 	StatementQueuedTimeoutInSeconds *int                      `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                      `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
@@ -90,7 +89,6 @@ type CreateInteractiveWarehouseOptions struct {
 	MaxConcurrencyLevel             *int                     `ddl:"parameter" sql:"MAX_CONCURRENCY_LEVEL"`
 	StatementQueuedTimeoutInSeconds *int                     `ddl:"parameter" sql:"STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"`
 	StatementTimeoutInSeconds       *int                     `ddl:"parameter" sql:"STATEMENT_TIMEOUT_IN_SECONDS"`
-	FallbackWarehouse               *AccountObjectIdentifier `ddl:"identifier,equals" sql:"FALLBACK_WAREHOUSE"`
 	Tag                             []TagAssociation         `ddl:"keyword,parentheses" sql:"TAG"`
 }
 

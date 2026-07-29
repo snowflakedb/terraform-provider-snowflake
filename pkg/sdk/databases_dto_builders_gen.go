@@ -55,16 +55,6 @@ func (s *CreateDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollation stri
 	return s
 }
 
-func (s *CreateDatabaseRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateDatabaseRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *CreateDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateDatabaseRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
-	return s
-}
-
 func (s *CreateDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateDatabaseRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -203,16 +193,6 @@ func (s *CreateSharedDatabaseRequest) WithDefaultDdlCollation(defaultDdlCollatio
 	return s
 }
 
-func (s *CreateSharedDatabaseRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateSharedDatabaseRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *CreateSharedDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateSharedDatabaseRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
-	return s
-}
-
 func (s *CreateSharedDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSharedDatabaseRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -333,16 +313,6 @@ func (s *CreateSecondaryDatabaseRequest) WithDefaultDdlCollation(defaultDdlColla
 	return s
 }
 
-func (s *CreateSecondaryDatabaseRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *CreateSecondaryDatabaseRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *CreateSecondaryDatabaseRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *CreateSecondaryDatabaseRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
-	return s
-}
-
 func (s *CreateSecondaryDatabaseRequest) WithStorageSerializationPolicy(storageSerializationPolicy StorageSerializationPolicy) *CreateSecondaryDatabaseRequest {
 	s.StorageSerializationPolicy = &storageSerializationPolicy
 	return s
@@ -426,8 +396,8 @@ func (s *AlterDatabaseRequest) WithIfExists(ifExists bool) *AlterDatabaseRequest
 	return s
 }
 
-func (s *AlterDatabaseRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterDatabaseRequest {
-	s.RenameTo = &renameTo
+func (s *AlterDatabaseRequest) WithNewName(newName AccountObjectIdentifier) *AlterDatabaseRequest {
+	s.NewName = &newName
 	return s
 }
 
@@ -488,16 +458,6 @@ func (s *DatabaseSetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacte
 
 func (s *DatabaseSetRequest) WithDefaultDdlCollation(defaultDdlCollation string) *DatabaseSetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
-	return s
-}
-
-func (s *DatabaseSetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *DatabaseSetRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *DatabaseSetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *DatabaseSetRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
 	return s
 }
 
@@ -593,16 +553,6 @@ func (s *DatabaseUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharac
 
 func (s *DatabaseUnsetRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *DatabaseUnsetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
-	return s
-}
-
-func (s *DatabaseUnsetRequest) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu bool) *DatabaseUnsetRequest {
-	s.DefaultNotebookComputePoolCpu = &defaultNotebookComputePoolCpu
-	return s
-}
-
-func (s *DatabaseUnsetRequest) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu bool) *DatabaseUnsetRequest {
-	s.DefaultNotebookComputePoolGpu = &defaultNotebookComputePoolGpu
 	return s
 }
 

@@ -19,7 +19,7 @@ type CatalogIntegrationAssert struct {
 func CatalogIntegration(t *testing.T, id sdk.AccountObjectIdentifier) *CatalogIntegrationAssert {
 	t.Helper()
 	return &CatalogIntegrationAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeCatalogIntegration, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CatalogIntegration, sdk.AccountObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("CatalogIntegration"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CatalogIntegration, sdk.AccountObjectIdentifier] {
 			return testClient.CatalogIntegration.Show
 		}),
 	}
@@ -37,17 +37,6 @@ func (c *CatalogIntegrationAssert) HasName(expected string) *CatalogIntegrationA
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *CatalogIntegrationAssert) HasNameNotEmpty() *CatalogIntegrationAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegration) error {
-		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -76,33 +65,11 @@ func (c *CatalogIntegrationAssert) HasType(expected string) *CatalogIntegrationA
 	return c
 }
 
-func (c *CatalogIntegrationAssert) HasTypeNotEmpty() *CatalogIntegrationAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegration) error {
-		t.Helper()
-		if o.Type == "" {
-			return fmt.Errorf("expected type to be non-empty")
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *CatalogIntegrationAssert) HasCategory(expected string) *CatalogIntegrationAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegration) error {
 		t.Helper()
 		if o.Category != expected {
 			return fmt.Errorf("expected category: %v; got: %v", expected, o.Category)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *CatalogIntegrationAssert) HasCategoryNotEmpty() *CatalogIntegrationAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegration) error {
-		t.Helper()
-		if o.Category == "" {
-			return fmt.Errorf("expected category to be non-empty")
 		}
 		return nil
 	})
@@ -120,33 +87,11 @@ func (c *CatalogIntegrationAssert) HasComment(expected string) *CatalogIntegrati
 	return c
 }
 
-func (c *CatalogIntegrationAssert) HasCommentNotEmpty() *CatalogIntegrationAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegration) error {
-		t.Helper()
-		if o.Comment == "" {
-			return fmt.Errorf("expected comment to be non-empty")
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *CatalogIntegrationAssert) HasCreatedOn(expected time.Time) *CatalogIntegrationAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegration) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *CatalogIntegrationAssert) HasCreatedOnNotEmpty() *CatalogIntegrationAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegration) error {
-		t.Helper()
-		if o.CreatedOn.IsZero() {
-			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

@@ -11,11 +11,16 @@ import (
 )
 
 type IcebergRestRestConfigDetailsAssert struct {
-	*assert.SubStructAssert[sdk.IcebergRestRestConfigDetails]
+	*assert.SnowflakeObjectAssert[sdk.IcebergRestRestConfigDetails, sdk.AccountObjectIdentifier]
 }
 
-func NewIcebergRestRestConfigDetailsAssert() *IcebergRestRestConfigDetailsAssert {
-	return &IcebergRestRestConfigDetailsAssert{assert.NewSubStructAssert[sdk.IcebergRestRestConfigDetails]()}
+// IcebergRestRestConfigDetails removed manually
+
+func IcebergRestRestConfigDetailsFromObject(t *testing.T, icebergRestRestConfigDetails *sdk.IcebergRestRestConfigDetails) *IcebergRestRestConfigDetailsAssert {
+	t.Helper()
+	return &IcebergRestRestConfigDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject("IcebergRestRestConfigDetails", sdk.NewAccountObjectIdentifier(""), icebergRestRestConfigDetails),
+	}
 }
 
 func (i *IcebergRestRestConfigDetailsAssert) HasCatalogUri(expected string) *IcebergRestRestConfigDetailsAssert {
@@ -23,17 +28,6 @@ func (i *IcebergRestRestConfigDetailsAssert) HasCatalogUri(expected string) *Ice
 		t.Helper()
 		if o.CatalogUri != expected {
 			return fmt.Errorf("expected catalog uri: %v; got: %v", expected, o.CatalogUri)
-		}
-		return nil
-	})
-	return i
-}
-
-func (i *IcebergRestRestConfigDetailsAssert) HasCatalogUriNotEmpty() *IcebergRestRestConfigDetailsAssert {
-	i.AddAssertion(func(t *testing.T, o *sdk.IcebergRestRestConfigDetails) error {
-		t.Helper()
-		if o.CatalogUri == "" {
-			return fmt.Errorf("expected catalog uri to be non-empty")
 		}
 		return nil
 	})
@@ -51,33 +45,11 @@ func (i *IcebergRestRestConfigDetailsAssert) HasPrefix(expected string) *Iceberg
 	return i
 }
 
-func (i *IcebergRestRestConfigDetailsAssert) HasPrefixNotEmpty() *IcebergRestRestConfigDetailsAssert {
-	i.AddAssertion(func(t *testing.T, o *sdk.IcebergRestRestConfigDetails) error {
-		t.Helper()
-		if o.Prefix == "" {
-			return fmt.Errorf("expected prefix to be non-empty")
-		}
-		return nil
-	})
-	return i
-}
-
 func (i *IcebergRestRestConfigDetailsAssert) HasCatalogName(expected string) *IcebergRestRestConfigDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergRestRestConfigDetails) error {
 		t.Helper()
 		if o.CatalogName != expected {
 			return fmt.Errorf("expected catalog name: %v; got: %v", expected, o.CatalogName)
-		}
-		return nil
-	})
-	return i
-}
-
-func (i *IcebergRestRestConfigDetailsAssert) HasCatalogNameNotEmpty() *IcebergRestRestConfigDetailsAssert {
-	i.AddAssertion(func(t *testing.T, o *sdk.IcebergRestRestConfigDetails) error {
-		t.Helper()
-		if o.CatalogName == "" {
-			return fmt.Errorf("expected catalog name to be non-empty")
 		}
 		return nil
 	})

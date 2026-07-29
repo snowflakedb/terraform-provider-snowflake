@@ -46,12 +46,12 @@ func ConvertCsvInput[T ConvertibleCsvRow[R], R any](csvInputFormat [][]string, o
 	convertibleRowFields := make([]ConvertibleRowStructField, 0)
 	structType := reflect.TypeFor[T]()
 
-	for field := range structType.Fields() {
+	for i := 0; i < structType.NumField(); i++ {
 		convertibleRowFields = append(convertibleRowFields, ConvertibleRowStructField{
-			Index: field.Index,
-			Name:  field.Name,
-			Kind:  field.Type.Kind(),
-			Tag:   field.Tag.Get("csv"),
+			Index: structType.Field(i).Index,
+			Name:  structType.Field(i).Name,
+			Kind:  structType.Field(i).Type.Kind(),
+			Tag:   structType.Field(i).Tag.Get("csv"),
 		})
 	}
 

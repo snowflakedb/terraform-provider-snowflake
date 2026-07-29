@@ -43,17 +43,6 @@ func (a *AccountAssert) HasOrganizationName(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasOrganizationNameNotEmpty() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.OrganizationName == "" {
-			return fmt.Errorf("expected organization name to be non-empty")
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasAccountName(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -65,11 +54,11 @@ func (a *AccountAssert) HasAccountName(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasAccountNameNotEmpty() *AccountAssert {
+func (a *AccountAssert) HasSnowflakeRegion(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
-		if o.AccountName == "" {
-			return fmt.Errorf("expected account name to be non-empty")
+		if o.SnowflakeRegion != expected {
+			return fmt.Errorf("expected snowflake region: %v; got: %v", expected, o.SnowflakeRegion)
 		}
 		return nil
 	})
@@ -90,39 +79,6 @@ func (a *AccountAssert) HasRegionGroup(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoRegionGroup() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.RegionGroup != nil {
-			return fmt.Errorf("expected region group to be nil; got: %v", *o.RegionGroup)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasSnowflakeRegion(expected string) *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.SnowflakeRegion != expected {
-			return fmt.Errorf("expected snowflake region: %v; got: %v", expected, o.SnowflakeRegion)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasSnowflakeRegionNotEmpty() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.SnowflakeRegion == "" {
-			return fmt.Errorf("expected snowflake region to be non-empty")
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasEdition(expected sdk.AccountEdition) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -131,17 +87,6 @@ func (a *AccountAssert) HasEdition(expected sdk.AccountEdition) *AccountAssert {
 		}
 		if *o.Edition != expected {
 			return fmt.Errorf("expected edition: %v; got: %v", expected, *o.Edition)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoEdition() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.Edition != nil {
-			return fmt.Errorf("expected edition to be nil; got: %v", *o.Edition)
 		}
 		return nil
 	})
@@ -162,17 +107,6 @@ func (a *AccountAssert) HasAccountURL(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoAccountURL() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.AccountURL != nil {
-			return fmt.Errorf("expected account url to be nil; got: %v", *o.AccountURL)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasCreatedOn(expected time.Time) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -181,17 +115,6 @@ func (a *AccountAssert) HasCreatedOn(expected time.Time) *AccountAssert {
 		}
 		if *o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, *o.CreatedOn)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoCreatedOn() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.CreatedOn != nil {
-			return fmt.Errorf("expected created on to be nil; got: %v", *o.CreatedOn)
 		}
 		return nil
 	})
@@ -212,33 +135,11 @@ func (a *AccountAssert) HasComment(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoComment() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasAccountLocator(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
 		if o.AccountLocator != expected {
 			return fmt.Errorf("expected account locator: %v; got: %v", expected, o.AccountLocator)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasAccountLocatorNotEmpty() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.AccountLocator == "" {
-			return fmt.Errorf("expected account locator to be non-empty")
 		}
 		return nil
 	})
@@ -259,17 +160,6 @@ func (a *AccountAssert) HasAccountLocatorUrl(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoAccountLocatorUrl() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.AccountLocatorUrl != nil {
-			return fmt.Errorf("expected account locator url to be nil; got: %v", *o.AccountLocatorUrl)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasManagedAccounts(expected int) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -278,17 +168,6 @@ func (a *AccountAssert) HasManagedAccounts(expected int) *AccountAssert {
 		}
 		if *o.ManagedAccounts != expected {
 			return fmt.Errorf("expected managed accounts: %v; got: %v", expected, *o.ManagedAccounts)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoManagedAccounts() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.ManagedAccounts != nil {
-			return fmt.Errorf("expected managed accounts to be nil; got: %v", *o.ManagedAccounts)
 		}
 		return nil
 	})
@@ -309,17 +188,6 @@ func (a *AccountAssert) HasConsumptionBillingEntityName(expected string) *Accoun
 	return a
 }
 
-func (a *AccountAssert) HasNoConsumptionBillingEntityName() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.ConsumptionBillingEntityName != nil {
-			return fmt.Errorf("expected consumption billing entity name to be nil; got: %v", *o.ConsumptionBillingEntityName)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasMarketplaceConsumerBillingEntityName(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -328,17 +196,6 @@ func (a *AccountAssert) HasMarketplaceConsumerBillingEntityName(expected string)
 		}
 		if *o.MarketplaceConsumerBillingEntityName != expected {
 			return fmt.Errorf("expected marketplace consumer billing entity name: %v; got: %v", expected, *o.MarketplaceConsumerBillingEntityName)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoMarketplaceConsumerBillingEntityName() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.MarketplaceConsumerBillingEntityName != nil {
-			return fmt.Errorf("expected marketplace consumer billing entity name to be nil; got: %v", *o.MarketplaceConsumerBillingEntityName)
 		}
 		return nil
 	})
@@ -359,17 +216,6 @@ func (a *AccountAssert) HasMarketplaceProviderBillingEntityName(expected string)
 	return a
 }
 
-func (a *AccountAssert) HasNoMarketplaceProviderBillingEntityName() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.MarketplaceProviderBillingEntityName != nil {
-			return fmt.Errorf("expected marketplace provider billing entity name to be nil; got: %v", *o.MarketplaceProviderBillingEntityName)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasOldAccountURL(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -378,17 +224,6 @@ func (a *AccountAssert) HasOldAccountURL(expected string) *AccountAssert {
 		}
 		if *o.OldAccountURL != expected {
 			return fmt.Errorf("expected old account url: %v; got: %v", expected, *o.OldAccountURL)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoOldAccountURL() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.OldAccountURL != nil {
-			return fmt.Errorf("expected old account url to be nil; got: %v", *o.OldAccountURL)
 		}
 		return nil
 	})
@@ -409,17 +244,6 @@ func (a *AccountAssert) HasIsOrgAdmin(expected bool) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoIsOrgAdmin() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.IsOrgAdmin != nil {
-			return fmt.Errorf("expected is org admin to be nil; got: %v", *o.IsOrgAdmin)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasAccountOldUrlSavedOn(expected time.Time) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -428,17 +252,6 @@ func (a *AccountAssert) HasAccountOldUrlSavedOn(expected time.Time) *AccountAsse
 		}
 		if *o.AccountOldUrlSavedOn != expected {
 			return fmt.Errorf("expected account old url saved on: %v; got: %v", expected, *o.AccountOldUrlSavedOn)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoAccountOldUrlSavedOn() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.AccountOldUrlSavedOn != nil {
-			return fmt.Errorf("expected account old url saved on to be nil; got: %v", *o.AccountOldUrlSavedOn)
 		}
 		return nil
 	})
@@ -459,17 +272,6 @@ func (a *AccountAssert) HasAccountOldUrlLastUsed(expected time.Time) *AccountAss
 	return a
 }
 
-func (a *AccountAssert) HasNoAccountOldUrlLastUsed() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.AccountOldUrlLastUsed != nil {
-			return fmt.Errorf("expected account old url last used to be nil; got: %v", *o.AccountOldUrlLastUsed)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasOrganizationOldUrl(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -478,17 +280,6 @@ func (a *AccountAssert) HasOrganizationOldUrl(expected string) *AccountAssert {
 		}
 		if *o.OrganizationOldUrl != expected {
 			return fmt.Errorf("expected organization old url: %v; got: %v", expected, *o.OrganizationOldUrl)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoOrganizationOldUrl() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.OrganizationOldUrl != nil {
-			return fmt.Errorf("expected organization old url to be nil; got: %v", *o.OrganizationOldUrl)
 		}
 		return nil
 	})
@@ -509,17 +300,6 @@ func (a *AccountAssert) HasOrganizationOldUrlSavedOn(expected time.Time) *Accoun
 	return a
 }
 
-func (a *AccountAssert) HasNoOrganizationOldUrlSavedOn() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.OrganizationOldUrlSavedOn != nil {
-			return fmt.Errorf("expected organization old url saved on to be nil; got: %v", *o.OrganizationOldUrlSavedOn)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasOrganizationOldUrlLastUsed(expected time.Time) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -534,17 +314,6 @@ func (a *AccountAssert) HasOrganizationOldUrlLastUsed(expected time.Time) *Accou
 	return a
 }
 
-func (a *AccountAssert) HasNoOrganizationOldUrlLastUsed() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.OrganizationOldUrlLastUsed != nil {
-			return fmt.Errorf("expected organization old url last used to be nil; got: %v", *o.OrganizationOldUrlLastUsed)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasIsEventsAccount(expected bool) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -553,17 +322,6 @@ func (a *AccountAssert) HasIsEventsAccount(expected bool) *AccountAssert {
 		}
 		if *o.IsEventsAccount != expected {
 			return fmt.Errorf("expected is events account: %v; got: %v", expected, *o.IsEventsAccount)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoIsEventsAccount() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.IsEventsAccount != nil {
-			return fmt.Errorf("expected is events account to be nil; got: %v", *o.IsEventsAccount)
 		}
 		return nil
 	})
@@ -595,17 +353,6 @@ func (a *AccountAssert) HasDroppedOn(expected time.Time) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoDroppedOn() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.DroppedOn != nil {
-			return fmt.Errorf("expected dropped on to be nil; got: %v", *o.DroppedOn)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasScheduledDeletionTime(expected time.Time) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -614,17 +361,6 @@ func (a *AccountAssert) HasScheduledDeletionTime(expected time.Time) *AccountAss
 		}
 		if *o.ScheduledDeletionTime != expected {
 			return fmt.Errorf("expected scheduled deletion time: %v; got: %v", expected, *o.ScheduledDeletionTime)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoScheduledDeletionTime() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.ScheduledDeletionTime != nil {
-			return fmt.Errorf("expected scheduled deletion time to be nil; got: %v", *o.ScheduledDeletionTime)
 		}
 		return nil
 	})
@@ -645,17 +381,6 @@ func (a *AccountAssert) HasRestoredOn(expected time.Time) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoRestoredOn() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.RestoredOn != nil {
-			return fmt.Errorf("expected restored on to be nil; got: %v", *o.RestoredOn)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasMovedToOrganization(expected string) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -664,17 +389,6 @@ func (a *AccountAssert) HasMovedToOrganization(expected string) *AccountAssert {
 		}
 		if *o.MovedToOrganization != expected {
 			return fmt.Errorf("expected moved to organization: %v; got: %v", expected, *o.MovedToOrganization)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoMovedToOrganization() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.MovedToOrganization != nil {
-			return fmt.Errorf("expected moved to organization to be nil; got: %v", *o.MovedToOrganization)
 		}
 		return nil
 	})
@@ -695,17 +409,6 @@ func (a *AccountAssert) HasMovedOn(expected string) *AccountAssert {
 	return a
 }
 
-func (a *AccountAssert) HasNoMovedOn() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.MovedOn != nil {
-			return fmt.Errorf("expected moved on to be nil; got: %v", *o.MovedOn)
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AccountAssert) HasOrganizationUrlExpirationOn(expected time.Time) *AccountAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
 		t.Helper()
@@ -714,17 +417,6 @@ func (a *AccountAssert) HasOrganizationUrlExpirationOn(expected time.Time) *Acco
 		}
 		if *o.OrganizationUrlExpirationOn != expected {
 			return fmt.Errorf("expected organization url expiration on: %v; got: %v", expected, *o.OrganizationUrlExpirationOn)
-		}
-		return nil
-	})
-	return a
-}
-
-func (a *AccountAssert) HasNoOrganizationUrlExpirationOn() *AccountAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.Account) error {
-		t.Helper()
-		if o.OrganizationUrlExpirationOn != nil {
-			return fmt.Errorf("expected organization url expiration on to be nil; got: %v", *o.OrganizationUrlExpirationOn)
 		}
 		return nil
 	})

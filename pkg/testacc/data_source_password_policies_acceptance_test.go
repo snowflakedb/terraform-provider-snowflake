@@ -71,9 +71,6 @@ func TestAcc_PasswordPolicies_BasicUseCase(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasOptions(""),
 					resourceshowoutputassert.PasswordPoliciesDatasourceDescribeOutput(t, passwordPoliciesModel.DatasourceReference()).
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasPasswordMinLength(10).

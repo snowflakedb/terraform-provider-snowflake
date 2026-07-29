@@ -229,16 +229,16 @@ func ExternalFunction() *schema.Resource {
 	}
 }
 
-func CreateContextExternalFunction(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func CreateContextExternalFunction(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	database := d.Get("database").(string)
 	schemaName := d.Get("schema").(string)
 	name := d.Get("name").(string)
 	args := make([]sdk.ExternalFunctionArgumentRequest, 0)
 	if v, ok := d.GetOk("arg"); ok {
-		for _, arg := range v.([]any) {
-			argName := arg.(map[string]any)["name"].(string)
-			argType := arg.(map[string]any)["type"].(string)
+		for _, arg := range v.([]interface{}) {
+			argName := arg.(map[string]interface{})["name"].(string)
+			argType := arg.(map[string]interface{})["type"].(string)
 			argDataType, err := datatypes.ParseDataType(argType)
 			if err != nil {
 				return diag.FromErr(err)
@@ -300,7 +300,7 @@ func CreateContextExternalFunction(ctx context.Context, d *schema.ResourceData, 
 	if _, ok := d.GetOk("header"); ok {
 		headers := make([]sdk.ExternalFunctionHeaderRequest, 0)
 		for _, header := range d.Get("header").(*schema.Set).List() {
-			m := header.(map[string]any)
+			m := header.(map[string]interface{})
 			headerName := m["name"].(string)
 			headerValue := m["value"].(string)
 			headers = append(headers, sdk.ExternalFunctionHeaderRequest{
@@ -312,7 +312,7 @@ func CreateContextExternalFunction(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if v, ok := d.GetOk("context_headers"); ok {
-		contextHeadersList := expandStringList(v.([]any))
+		contextHeadersList := expandStringList(v.([]interface{}))
 		contextHeaders := make([]sdk.ExternalFunctionContextHeaderRequest, 0)
 		for _, header := range contextHeadersList {
 			contextHeaders = append(contextHeaders, sdk.ExternalFunctionContextHeaderRequest{
@@ -347,7 +347,7 @@ func CreateContextExternalFunction(ctx context.Context, d *schema.ResourceData, 
 	return ReadContextExternalFunction(ctx, d, meta)
 }
 
-func ReadContextExternalFunction(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func ReadContextExternalFunction(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
@@ -409,12 +409,12 @@ func ReadContextExternalFunction(ctx context.Context, d *schema.ResourceData, me
 
 			if args != "" { // Do nothing for functions without arguments
 				argPairs := strings.Split(args, ", ")
-				args := []any{}
+				args := []interface{}{}
 
 				for _, argPair := range argPairs {
 					argItem := strings.Split(argPair, " ")
 
-					arg := map[string]any{}
+					arg := map[string]interface{}{}
 					arg["name"] = argItem[0]
 					arg["type"] = argItem[1]
 					args = append(args, arg)
@@ -512,7 +512,7 @@ func ReadContextExternalFunction(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func UpdateContextExternalFunction(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func UpdateContextExternalFunction(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
 	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(d.Id())
