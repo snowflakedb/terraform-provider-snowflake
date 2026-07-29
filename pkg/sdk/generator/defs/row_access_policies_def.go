@@ -41,7 +41,7 @@ var rowAccessPoliciesDef = g.NewInterface(
 			Alter().
 			SQL("ROW ACCESS POLICY").
 			Name().
-			RenameTo().
+			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 			OptionalSetBodyWithPrecedingArrow().
 			OptionalSetTags().
 			OptionalUnsetTags().

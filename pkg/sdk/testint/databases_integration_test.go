@@ -82,8 +82,6 @@ func TestInt_DatabasesCreate(t *testing.T) {
 				WithCatalog(catalog).
 				WithReplaceInvalidCharacters(true).
 				WithDefaultDdlCollation("en_US").
-				WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-				WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 				WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 				WithLogLevel(sdk.LogLevelInfo).
 				WithLogEventLevel(sdk.LogLevelInfo).
@@ -125,8 +123,6 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterDataRetentionTimeInDays, "0")
 		assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
 		assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
-		assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolCpu, "CPU_X64_S")
-		assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolGpu, "GPU_NV_S")
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
@@ -186,11 +182,14 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	err = secondaryClient.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareTest.ID()).WithIfExists(true).WithSet(sdk.ShareSetRequest{
-		Accounts: []sdk.AccountIdentifier{
-			testClientHelper().Account.GetAccountIdentifier(t),
+	err = secondaryClient.Shares.Alter(ctx, shareTest.ID(), &sdk.AlterShareOptions{
+		IfExists: sdk.Bool(true),
+		Set: &sdk.ShareSet{
+			Accounts: []sdk.AccountIdentifier{
+				testClientHelper().Account.GetAccountIdentifier(t),
+			},
 		},
-	}))
+	})
 	require.NoError(t, err)
 
 	comment := random.Comment()
@@ -205,8 +204,6 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 			WithTraceLevel(sdk.TraceLevelAlways).
 			WithReplaceInvalidCharacters(true).
 			WithDefaultDdlCollation("en_US").
-			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
 			WithSuspendTaskAfterNumFailures(10).
 			WithTaskAutoRetryAttempts(10).
@@ -240,8 +237,6 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 	}
 
 	assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
-	assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolCpu, "CPU_X64_S")
-	assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolGpu, "GPU_NV_S")
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
@@ -285,8 +280,6 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 			WithCatalog(catalog).
 			WithReplaceInvalidCharacters(true).
 			WithDefaultDdlCollation("en_US").
-			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
 			WithLogLevel(sdk.LogLevelDebug).
 			WithLogEventLevel(sdk.LogLevelDebug).
@@ -319,8 +312,6 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterDataRetentionTimeInDays, "10")
 	assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
 	assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
-	assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolCpu, "CPU_X64_S")
-	assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolGpu, "GPU_NV_S")
 	assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 	assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 	assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelDebug))
@@ -430,7 +421,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			t.Cleanup(databaseTestCleanup)
 			newName := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithRenameTo(newName))
+			err := client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithNewName(newName))
 			require.NoError(t, err)
 			t.Cleanup(testClientHelper().Database.DropDatabaseFunc(t, newName))
 
@@ -461,8 +452,6 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					WithCatalog(catalogIntegrationTest).
 					WithReplaceInvalidCharacters(true).
 					WithDefaultDdlCollation("en_US").
-					WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-					WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 					WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 					WithLogLevel(sdk.LogLevelInfo).
 					WithLogEventLevel(sdk.LogLevelInfo).
@@ -485,8 +474,6 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.Name())
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterReplaceInvalidCharacters, "true")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultDdlCollation, "en_US")
-			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultNotebookComputePoolCpu, "CPU_X64_S")
-			assertDatabaseParameterEquals(t, params, sdk.AccountParameterDefaultNotebookComputePoolGpu, "GPU_NV_S")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelInfo))
@@ -507,8 +494,6 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					WithCatalog(true).
 					WithReplaceInvalidCharacters(true).
 					WithDefaultDdlCollation(true).
-					WithDefaultNotebookComputePoolCpu(true).
-					WithDefaultNotebookComputePoolGpu(true).
 					WithStorageSerializationPolicy(true).
 					WithLogLevel(true).
 					WithLogEventLevel(true).
@@ -531,8 +516,6 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterCatalog)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
-			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolCpu)
-			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolGpu)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
@@ -632,8 +615,6 @@ func TestInt_DatabasesAlterReplication(t *testing.T) {
 				WithExternalVolume(externalVolume).
 				WithCatalog(catalog).
 				WithDefaultDdlCollation("en_US").
-				WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-				WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 				WithLogLevel(sdk.LogLevelDebug).
 				WithTraceLevel(sdk.TraceLevelAlways).
 				WithComment(comment),

@@ -2,10 +2,6 @@ package sdk
 
 import "context"
 
-func (d *ComputePoolDetails) ID() AccountObjectIdentifier {
-	return NewAccountObjectIdentifier(d.Name)
-}
-
 func (v *computePools) dropSafelyHook(ctx context.Context, id AccountObjectIdentifier) error {
 	return v.client.ComputePools.Alter(ctx, NewAlterComputePoolRequest(id).WithIfExists(true).WithStopAll(true))
 }

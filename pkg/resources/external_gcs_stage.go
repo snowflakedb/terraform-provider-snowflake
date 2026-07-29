@@ -170,7 +170,11 @@ func ImportExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 		return nil, err
 	}
 
-	details, err := client.Stages.DescribeDetails(ctx, id)
+	stageProperties, err := client.Stages.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details, err := sdk.ParseStageDetails(stageProperties)
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +258,12 @@ func ReadExternalGcsStageFunc(withExternalChangesMarking bool) schema.ReadContex
 			return diag.FromErr(err)
 		}
 
-		details, err := client.Stages.DescribeDetails(ctx, id)
+		properties, err := client.Stages.Describe(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		details, err := sdk.ParseStageDetails(properties)
 		if err != nil {
 			return diag.FromErr(err)
 		}

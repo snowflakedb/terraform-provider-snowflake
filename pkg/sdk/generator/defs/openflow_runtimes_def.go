@@ -60,7 +60,7 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalSQL("TERMINATE").
 		OptionalSQL("TERMINATE CASCADE").
 		OptionalSQL("UPGRADE").
-		RenameTo().
+		OptionalIdentifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("OpenflowRuntimeSet").

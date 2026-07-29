@@ -152,7 +152,7 @@ var eventTablesDef = g.NewInterface(
 		).
 		OptionalSetTags().
 		OptionalUnsetTags().
-		RenameTo().
+		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"),
 )

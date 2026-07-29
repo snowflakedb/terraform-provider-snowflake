@@ -20,10 +20,6 @@ func (s *SessionPolicySecondaryRoles) validate() error {
 	return nil
 }
 
-func (d *SessionPolicyDetails) ID() SchemaObjectIdentifier {
-	return d.Id
-}
-
 func (s *sessionPolicies) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicyDetails, error) {
 	properties, err := s.Describe(ctx, id)
 	if err != nil {

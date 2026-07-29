@@ -10,13 +10,9 @@ import (
 
 var (
 	_ validatable = new(GrantPrivilegesToAccountRoleOptions)
-	_ validatable = new(grantInheritedPrivilegesToAccountRoleOptions)
 	_ validatable = new(RevokePrivilegesFromAccountRoleOptions)
-	_ validatable = new(revokeInheritedPrivilegesFromAccountRoleOptions)
 	_ validatable = new(GrantPrivilegesToDatabaseRoleOptions)
-	_ validatable = new(grantInheritedPrivilegesToDatabaseRoleOptions)
 	_ validatable = new(RevokePrivilegesFromDatabaseRoleOptions)
-	_ validatable = new(revokeInheritedPrivilegesFromDatabaseRoleOptions)
 	_ validatable = new(grantPrivilegeToShareOptions)
 	_ validatable = new(revokePrivilegeFromShareOptions)
 	_ validatable = new(GrantOwnershipOptions)
@@ -48,7 +44,6 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeIcebergTable,
 	ObjectTypeImageRepository,
 	ObjectTypeIntegration,
-	ObjectTypeInteractiveTable,
 	ObjectTypeMaterializedView,
 	ObjectTypeNetworkPolicy,
 	ObjectTypeNetworkRule,
@@ -67,7 +62,6 @@ var validGrantOwnershipObjectTypes = []ObjectType{
 	ObjectTypeSecret,
 	ObjectTypeSemanticView,
 	ObjectTypeSequence,
-	ObjectTypeSnowflakeIntelligence,
 	ObjectTypeStage,
 	ObjectTypeStream,
 	ObjectTypeTable,
@@ -101,7 +95,6 @@ var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeIcebergTable,
 	ObjectTypeImageRepository,
 	ObjectTypeIntegration,
-	ObjectTypeInteractiveTable,
 	ObjectTypeMaterializedView,
 	ObjectTypeNetworkPolicy,
 	ObjectTypeNetworkRule,
@@ -128,7 +121,6 @@ var validGrantOwnershipBulkObjectTypes = []ObjectType{
 	ObjectTypeUser,
 	ObjectTypeView,
 	ObjectTypeWarehouse,
-	ObjectTypeWorkspace,
 }
 
 var validGrantToAccountObjectTypes = []ObjectType{
@@ -142,7 +134,6 @@ var validGrantToAccountObjectTypes = []ObjectType{
 	ObjectTypeFailoverGroup,
 	ObjectTypeReplicationGroup,
 	ObjectTypeExternalVolume,
-	ObjectTypeSnowflakeIntelligence,
 }
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#required-parameters
@@ -166,7 +157,6 @@ var validGrantToSchemaObjectTypes = []ObjectType{
 	ObjectTypeHybridTable,
 	ObjectTypeImageRepository,
 	ObjectTypeIcebergTable,
-	ObjectTypeInteractiveTable,
 	ObjectTypeJoinPolicy,
 	ObjectTypeMaskingPolicy,
 	ObjectTypeMaterializedView,
@@ -207,8 +197,8 @@ var validGrantToSchemaObjectTypes = []ObjectType{
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
 var invalidGrantToAllObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
-	ObjectTypeExperiment,
 	ObjectTypeExternalFunction,
+	ObjectTypeExperiment,
 	ObjectTypeGateway,
 	ObjectTypeJoinPolicy,
 	ObjectTypeNotebookProject,
@@ -221,13 +211,14 @@ var invalidGrantToAllObjectTypes = []ObjectType{
 	ObjectTypeStorageLifecyclePolicy,
 	// ObjectTypeTag,
 	ObjectTypeWarehouse,
+	ObjectTypeWorkspace,
 }
 
 // based on https://docs.snowflake.com/en/sql-reference/sql/grant-privilege#restrictions-and-limitations
 var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
-	ObjectTypeExperiment,
 	ObjectTypeExternalFunction,
+	ObjectTypeExperiment,
 	ObjectTypeGateway,
 	ObjectTypeAggregationPolicy,
 	ObjectTypeJoinPolicy,
@@ -241,18 +232,13 @@ var invalidGrantToFutureObjectTypes = []ObjectType{
 	ObjectTypeStorageLifecyclePolicy,
 	ObjectTypeTag,
 	ObjectTypeWarehouse,
-}
-
-// A list of object types that are not supported for grant to all or future.
-var invalidGrantToPluralObjectTypes = []ObjectType{
-	ObjectTypeSnowflakeIntelligence,
+	ObjectTypeWorkspace,
 }
 
 var (
 	ValidGrantOwnershipObjectTypesString       = make([]string, len(validGrantOwnershipObjectTypes))
 	ValidGrantOwnershipPluralObjectTypesString = make([]string, len(validGrantOwnershipBulkObjectTypes))
 	ValidGrantToAccountObjectTypesString       = make([]string, len(validGrantToAccountObjectTypes))
-	ValidGrantToAccountObjectPluralTypesString = make([]string, 0)
 	ValidGrantToSchemaObjectTypesString        = make([]string, len(validGrantToSchemaObjectTypes))
 	ValidGrantToAllPluralObjectTypesString     = make([]string, 0)
 	ValidGrantToFuturePluralObjectTypesString  = make([]string, 0)
@@ -267,9 +253,6 @@ func init() {
 	}
 	for i, objectType := range validGrantToAccountObjectTypes {
 		ValidGrantToAccountObjectTypesString[i] = objectType.String()
-		if !slices.Contains(invalidGrantToPluralObjectTypes, objectType) {
-			ValidGrantToAccountObjectPluralTypesString = append(ValidGrantToAccountObjectPluralTypesString, objectType.Plural().String())
-		}
 	}
 	for i, objectType := range validGrantToSchemaObjectTypes {
 		ValidGrantToSchemaObjectTypesString[i] = objectType.String()
@@ -374,8 +357,8 @@ func (v *AccountRoleGrantOn) validate() error {
 }
 
 func (v *GrantOnAccountObject) validate() error {
-	if !exactlyOneValueSet(v.User, v.ResourceMonitor, v.Warehouse, v.ComputePool, v.Database, v.Integration, v.Connection, v.FailoverGroup, v.ReplicationGroup, v.ExternalVolume, v.SnowflakeIntelligence) {
-		return errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume", "SnowflakeIntelligence")
+	if !exactlyOneValueSet(v.User, v.ResourceMonitor, v.Warehouse, v.ComputePool, v.Database, v.Integration, v.Connection, v.FailoverGroup, v.ReplicationGroup, v.ExternalVolume) {
+		return errExactlyOneOf("GrantOnAccountObject", "User", "ResourceMonitor", "Warehouse", "ComputePool", "Database", "Integration", "Connection", "FailoverGroup", "ReplicationGroup", "ExternalVolume")
 	}
 	return nil
 }
@@ -412,51 +395,6 @@ func (v *GrantOnSchemaObjectIn) validate() error {
 	return nil
 }
 
-func (opts *grantInheritedPrivilegesToAccountRoleOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if err := opts.privileges.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if opts.onAll == "" {
-		errs = append(errs, errNotSet("grantInheritedPrivilegesToAccountRoleOptions", "onAll"))
-	}
-	if err := opts.in.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if !ValidObjectIdentifier(opts.accountRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	return errors.Join(errs...)
-}
-
-func (v InheritedAccountRoleGrantPrivileges) validate() error {
-	if !exactlyOneValueSet(v.AllPrivileges, v.AccountObjectPrivileges, v.SchemaPrivileges, v.SchemaObjectPrivileges) {
-		return errExactlyOneOf("InheritedAccountRoleGrantPrivileges", "AllPrivileges", "AccountObjectPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges")
-	}
-	return errors.Join(
-		validatePrivileges(v.AccountObjectPrivileges),
-		validatePrivileges(v.SchemaPrivileges),
-		validatePrivileges(v.SchemaObjectPrivileges),
-	)
-}
-
-func (v InheritedAccountRoleGrantIn) validate() error {
-	var errs []error
-	if !exactlyOneValueSet(v.Account, v.Database, v.Schema) {
-		errs = append(errs, errExactlyOneOf("InheritedAccountRoleGrantIn", "Account", "Database", "Schema"))
-	}
-	if v.Database != nil && !ValidObjectIdentifier(*v.Database) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if v.Schema != nil && !ValidObjectIdentifier(*v.Schema) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	return errors.Join(errs...)
-}
-
 func (opts *RevokePrivilegesFromAccountRoleOptions) validate() error {
 	if opts == nil {
 		return errors.Join(ErrNilOptions)
@@ -481,26 +419,6 @@ func (opts *RevokePrivilegesFromAccountRoleOptions) validate() error {
 	}
 	if everyValueSet(opts.Restrict, opts.Cascade) {
 		errs = append(errs, errOneOf("RevokePrivilegesFromAccountRoleOptions", "Restrict", "Cascade"))
-	}
-	return errors.Join(errs...)
-}
-
-func (opts *revokeInheritedPrivilegesFromAccountRoleOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if err := opts.privileges.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if opts.onAll == "" {
-		errs = append(errs, errNotSet("revokeInheritedPrivilegesFromAccountRoleOptions", "onAll"))
-	}
-	if err := opts.in.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if !ValidObjectIdentifier(opts.accountRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	return errors.Join(errs...)
 }
@@ -556,50 +474,6 @@ func (v *DatabaseRoleGrantOn) validate() error {
 	return errors.Join(errs...)
 }
 
-func (opts *grantInheritedPrivilegesToDatabaseRoleOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if err := opts.privileges.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if opts.onAll == "" {
-		errs = append(errs, errNotSet("grantInheritedPrivilegesToDatabaseRoleOptions", "onAll"))
-	}
-	if err := opts.in.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if !ValidObjectIdentifier(opts.databaseRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	return errors.Join(errs...)
-}
-
-func (v InheritedDatabaseRoleGrantPrivileges) validate() error {
-	if !exactlyOneValueSet(v.AllPrivileges, v.SchemaPrivileges, v.SchemaObjectPrivileges) {
-		return errExactlyOneOf("InheritedDatabaseRoleGrantPrivileges", "AllPrivileges", "SchemaPrivileges", "SchemaObjectPrivileges")
-	}
-	return errors.Join(
-		validatePrivileges(v.SchemaPrivileges),
-		validatePrivileges(v.SchemaObjectPrivileges),
-	)
-}
-
-func (v InheritedDatabaseRoleGrantIn) validate() error {
-	var errs []error
-	if !exactlyOneValueSet(v.Database, v.Schema) {
-		errs = append(errs, errExactlyOneOf("InheritedDatabaseRoleGrantIn", "Database", "Schema"))
-	}
-	if v.Database != nil && !ValidObjectIdentifier(*v.Database) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if v.Schema != nil && !ValidObjectIdentifier(*v.Schema) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	return errors.Join(errs...)
-}
-
 func (opts *RevokePrivilegesFromDatabaseRoleOptions) validate() error {
 	if opts == nil {
 		return errors.Join(ErrNilOptions)
@@ -624,26 +498,6 @@ func (opts *RevokePrivilegesFromDatabaseRoleOptions) validate() error {
 	}
 	if everyValueSet(opts.Restrict, opts.Cascade) {
 		errs = append(errs, errOneOf("RevokePrivilegesFromDatabaseRoleOptions", "Restrict", "Cascade"))
-	}
-	return errors.Join(errs...)
-}
-
-func (opts *revokeInheritedPrivilegesFromDatabaseRoleOptions) validate() error {
-	if opts == nil {
-		return errors.Join(ErrNilOptions)
-	}
-	var errs []error
-	if err := opts.privileges.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if opts.onAll == "" {
-		errs = append(errs, errNotSet("revokeInheritedPrivilegesFromDatabaseRoleOptions", "onAll"))
-	}
-	if err := opts.in.validate(); err != nil {
-		errs = append(errs, err)
-	}
-	if !ValidObjectIdentifier(opts.databaseRole) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	return errors.Join(errs...)
 }
@@ -789,12 +643,8 @@ func (v *RevokeOwnershipGrantOn) validate() error {
 
 // TODO: add validations for ShowGrantsOn, ShowGrantsTo, ShowGrantsOf and ShowGrantsIn
 func (opts *ShowGrantOptions) validate() error {
-	var errs []error
 	if moreThanOneValueSet(opts.On, opts.To, opts.Of, opts.In) {
-		errs = append(errs, errOneOf("ShowGrantOptions", "On", "To", "Of", "In"))
+		return errOneOf("ShowGrantOptions", "On", "To", "Of", "In")
 	}
-	if everyValueSet(opts.Inherited, opts.Future) {
-		errs = append(errs, errOneOf("ShowGrantOptions", "Inherited", "Future"))
-	}
-	return errors.Join(errs...)
+	return nil
 }

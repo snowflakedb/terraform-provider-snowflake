@@ -74,15 +74,19 @@ func (v *streamlits) Describe(ctx context.Context, id SchemaObjectIdentifier) (*
 
 func (r *CreateStreamlitRequest) toOpts() *CreateStreamlitOptions {
 	opts := &CreateStreamlitOptions{
-		OrReplace:                  r.OrReplace,
-		IfNotExists:                r.IfNotExists,
-		name:                       r.name,
-		RootLocation:               r.RootLocation,
-		MainFile:                   r.MainFile,
-		QueryWarehouse:             r.QueryWarehouse,
-		ExternalAccessIntegrations: r.ExternalAccessIntegrations,
-		Title:                      r.Title,
-		Comment:                    r.Comment,
+		OrReplace:      r.OrReplace,
+		IfNotExists:    r.IfNotExists,
+		name:           r.name,
+		RootLocation:   r.RootLocation,
+		MainFile:       r.MainFile,
+		QueryWarehouse: r.QueryWarehouse,
+		Title:          r.Title,
+		Comment:        r.Comment,
+	}
+	if r.ExternalAccessIntegrations != nil {
+		opts.ExternalAccessIntegrations = &ExternalAccessIntegrations{
+			ExternalAccessIntegrations: r.ExternalAccessIntegrations.ExternalAccessIntegrations,
+		}
 	}
 	return opts
 }
@@ -95,20 +99,23 @@ func (r *AlterStreamlitRequest) toOpts() *AlterStreamlitOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &StreamlitSet{
-			RootLocation:               r.Set.RootLocation,
-			MainFile:                   r.Set.MainFile,
-			QueryWarehouse:             r.Set.QueryWarehouse,
-			ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations,
-			Comment:                    r.Set.Comment,
-			Title:                      r.Set.Title,
+			RootLocation:   r.Set.RootLocation,
+			MainFile:       r.Set.MainFile,
+			QueryWarehouse: r.Set.QueryWarehouse,
+			Comment:        r.Set.Comment,
+			Title:          r.Set.Title,
+		}
+		if r.Set.ExternalAccessIntegrations != nil {
+			opts.Set.ExternalAccessIntegrations = &ExternalAccessIntegrations{
+				ExternalAccessIntegrations: r.Set.ExternalAccessIntegrations.ExternalAccessIntegrations,
+			}
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &StreamlitUnset{
-			QueryWarehouse:             r.Unset.QueryWarehouse,
-			Comment:                    r.Unset.Comment,
-			Title:                      r.Unset.Title,
-			ExternalAccessIntegrations: r.Unset.ExternalAccessIntegrations,
+			QueryWarehouse: r.Unset.QueryWarehouse,
+			Comment:        r.Unset.Comment,
+			Title:          r.Unset.Title,
 		}
 	}
 	return opts

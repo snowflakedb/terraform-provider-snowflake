@@ -29,29 +29,39 @@ func (c *MaskingPolicyClient) client() sdk.MaskingPolicies {
 
 func (c *MaskingPolicyClient) CreateMaskingPolicy(t *testing.T) (*sdk.MaskingPolicy, func()) {
 	t.Helper()
-	signature := []sdk.CreateMaskingPolicySignatureRequest{
-		*sdk.NewCreateMaskingPolicySignatureRequest(c.ids.Alpha(), testdatatypes.DataTypeVarchar),
-		*sdk.NewCreateMaskingPolicySignatureRequest(c.ids.Alpha(), testdatatypes.DataTypeVarchar),
+	signature := []sdk.TableColumnSignature{
+		{
+			Name: c.ids.Alpha(),
+			Type: testdatatypes.DataTypeVarchar,
+		},
+		{
+			Name: c.ids.Alpha(),
+			Type: testdatatypes.DataTypeVarchar,
+		},
 	}
 	expression := "REPLACE('X', 1, 2)"
-	return c.CreateMaskingPolicyWithRequest(t, signature, testdatatypes.DataTypeVarchar, expression)
+	return c.CreateMaskingPolicyWithOptions(t, signature, testdatatypes.DataTypeVarchar, expression, &sdk.CreateMaskingPolicyOptions{})
 }
 
 func (c *MaskingPolicyClient) CreateMaskingPolicyIdentity(t *testing.T, columnType datatypes.DataType) (*sdk.MaskingPolicy, func()) {
 	t.Helper()
-	signature := []sdk.CreateMaskingPolicySignatureRequest{
-		*sdk.NewCreateMaskingPolicySignatureRequest("a", columnType),
+	name := "a"
+	signature := []sdk.TableColumnSignature{
+		{
+			Name: name,
+			Type: columnType,
+		},
 	}
 	expression := "a"
-	return c.CreateMaskingPolicyWithRequest(t, signature, columnType, expression)
+	return c.CreateMaskingPolicyWithOptions(t, signature, columnType, expression, &sdk.CreateMaskingPolicyOptions{})
 }
 
-func (c *MaskingPolicyClient) CreateMaskingPolicyWithRequest(t *testing.T, signature []sdk.CreateMaskingPolicySignatureRequest, returns datatypes.DataType, expression string) (*sdk.MaskingPolicy, func()) {
+func (c *MaskingPolicyClient) CreateMaskingPolicyWithOptions(t *testing.T, signature []sdk.TableColumnSignature, returns datatypes.DataType, expression string, options *sdk.CreateMaskingPolicyOptions) (*sdk.MaskingPolicy, func()) {
 	t.Helper()
 	ctx := context.Background()
 	id := c.ids.RandomSchemaObjectIdentifier()
 
-	err := c.client().Create(ctx, sdk.NewCreateMaskingPolicyRequest(id, signature, returns, expression))
+	err := c.client().Create(ctx, id, signature, returns, expression, options)
 	require.NoError(t, err)
 
 	maskingPolicy, err := c.client().ShowByID(ctx, id)
@@ -60,11 +70,13 @@ func (c *MaskingPolicyClient) CreateMaskingPolicyWithRequest(t *testing.T, signa
 	return maskingPolicy, c.DropMaskingPolicyFunc(t, id)
 }
 
-func (c *MaskingPolicyClient) CreateOrReplaceMaskingPolicyWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, signature []sdk.CreateMaskingPolicySignatureRequest, returns datatypes.DataType, expression string) (*sdk.MaskingPolicy, func()) {
+func (c *MaskingPolicyClient) CreateOrReplaceMaskingPolicyWithOptions(t *testing.T, id sdk.SchemaObjectIdentifier, signature []sdk.TableColumnSignature, returns datatypes.DataType, expression string, options *sdk.CreateMaskingPolicyOptions) (*sdk.MaskingPolicy, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, sdk.NewCreateMaskingPolicyRequest(id, signature, returns, expression).WithOrReplace(true))
+	options.OrReplace = sdk.Pointer(true)
+
+	err := c.client().Create(ctx, id, signature, returns, expression, options)
 	require.NoError(t, err)
 
 	maskingPolicy, err := c.client().ShowByID(ctx, id)
@@ -73,11 +85,11 @@ func (c *MaskingPolicyClient) CreateOrReplaceMaskingPolicyWithRequest(t *testing
 	return maskingPolicy, c.DropMaskingPolicyFunc(t, id)
 }
 
-func (c *MaskingPolicyClient) Alter(t *testing.T, req *sdk.AlterMaskingPolicyRequest) {
+func (c *MaskingPolicyClient) Alter(t *testing.T, id sdk.SchemaObjectIdentifier, req *sdk.AlterMaskingPolicyOptions) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, req)
+	err := c.client().Alter(ctx, id, req)
 	require.NoError(t, err)
 }
 
@@ -86,7 +98,7 @@ func (c *MaskingPolicyClient) DropMaskingPolicyFunc(t *testing.T, id sdk.SchemaO
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropMaskingPolicyRequest(id).WithIfExists(true))
+		err := c.client().Drop(ctx, id, &sdk.DropMaskingPolicyOptions{IfExists: sdk.Bool(true)})
 		assert.NoError(t, err)
 	}
 }

@@ -27,8 +27,6 @@ type CreateDatabaseRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
-	DefaultNotebookComputePoolCpu           *string
-	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -62,8 +60,6 @@ type CreateSharedDatabaseRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
-	DefaultNotebookComputePoolCpu           *string
-	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -91,8 +87,6 @@ type CreateSecondaryDatabaseRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
-	DefaultNotebookComputePoolCpu           *string
-	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -115,7 +109,7 @@ type CreateFromListingDatabaseRequest struct {
 type AlterDatabaseRequest struct {
 	IfExists  *bool
 	name      AccountObjectIdentifier // required
-	RenameTo  *AccountObjectIdentifier
+	NewName   *AccountObjectIdentifier
 	SwapWith  *AccountObjectIdentifier
 	Set       *DatabaseSetRequest
 	Unset     *DatabaseUnsetRequest
@@ -130,8 +124,6 @@ type DatabaseSetRequest struct {
 	Catalog                                 *AccountObjectIdentifier
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *string
-	DefaultNotebookComputePoolCpu           *string
-	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -153,8 +145,6 @@ type DatabaseUnsetRequest struct {
 	Catalog                                 *bool
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *bool
-	DefaultNotebookComputePoolCpu           *bool
-	DefaultNotebookComputePoolGpu           *bool
 	StorageSerializationPolicy              *bool
 	LogLevel                                *bool
 	LogEventLevel                           *bool

@@ -139,7 +139,6 @@ type UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo struct {
 	Type         string `json:"type"`
 	AwsAccount   string `json:"awsAccount"`
 	AwsPartition string `json:"awsPartition"`
-	Issuer       string `json:"issuer"`
 }
 
 type UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo struct {

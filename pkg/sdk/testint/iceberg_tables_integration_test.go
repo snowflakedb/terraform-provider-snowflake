@@ -111,9 +111,11 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasOwnerRoleType("ROLE").
 				HasCatalogSyncName("").
 				HasNoAutoRefreshStatus().
-				HasPartitionSpecsFixed(sdk.IcebergTablePartitionSpec{
-					SpecId: 0,
-					Fields: []sdk.IcebergTablePartitionSpecField{},
+				HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
+					{
+						SpecId: 0,
+						Fields: []sdk.IcebergTablePartitionSpecField{},
+					},
 				}).
 				HasCurrentPartitionSpecId(0).
 				HasIcebergTableFormatVersion(2),
@@ -146,18 +148,6 @@ func TestInt_IcebergTables(t *testing.T) {
 			t, objectparametersassert.IcebergTableParameters(t, id).
 				HasAllDefaultsExplicit(),
 		)
-
-		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
-		require.NoError(t, err)
-		require.Len(t, checkConstraints, 0)
-
-		tableConstraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
-		require.NoError(t, err)
-		require.Len(t, tableConstraints, 0)
-
-		searchOptimization, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
-		require.NoError(t, err)
-		require.Len(t, searchOptimization, 0)
 	}
 
 	completeAssertions := func(t *testing.T, id sdk.SchemaObjectIdentifier, policyId sdk.SchemaObjectIdentifier) {
@@ -182,16 +172,18 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasCatalogSyncName("").
 				HasNoAutoRefreshStatus().
 				HasCurrentPartitionSpecId(0).
-				HasPartitionSpecsFixed(sdk.IcebergTablePartitionSpec{
-					SpecId: 0,
-					Fields: []sdk.IcebergTablePartitionSpecField{
-						{FieldId: 1000, Name: "REGION", SourceId: 4, Transform: "identity"},
-						{FieldId: 1001, Name: "BUCKET_COL_bucket_4", SourceId: 5, Transform: "bucket[4]"},
-						{FieldId: 1002, Name: "TRUNC_COL_trunc_10", SourceId: 6, Transform: "truncate[10]"},
-						{FieldId: 1003, Name: "YEAR_COL_year", SourceId: 7, Transform: "year"},
-						{FieldId: 1004, Name: "MONTH_COL_month", SourceId: 8, Transform: "month"},
-						{FieldId: 1005, Name: "DAY_COL_day", SourceId: 9, Transform: "day"},
-						{FieldId: 1006, Name: "HOUR_COL_hour", SourceId: 10, Transform: "hour"},
+				HasPartitionSpecsJson([]sdk.IcebergTablePartitionSpec{
+					{
+						SpecId: 0,
+						Fields: []sdk.IcebergTablePartitionSpecField{
+							{FieldId: 1000, Name: "REGION", SourceId: 4, Transform: "identity"},
+							{FieldId: 1001, Name: "BUCKET_COL_bucket_4", SourceId: 5, Transform: "bucket[4]"},
+							{FieldId: 1002, Name: "TRUNC_COL_trunc_10", SourceId: 6, Transform: "truncate[10]"},
+							{FieldId: 1003, Name: "YEAR_COL_year", SourceId: 7, Transform: "year"},
+							{FieldId: 1004, Name: "MONTH_COL_month", SourceId: 8, Transform: "month"},
+							{FieldId: 1005, Name: "DAY_COL_day", SourceId: 9, Transform: "day"},
+							{FieldId: 1006, Name: "HOUR_COL_hour", SourceId: 10, Transform: "hour"},
+						},
 					},
 				}).
 				HasIcebergTableFormatVersion(2),
@@ -327,6 +319,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasNoNameMapping().
 				HasNoWriteDefault(),
 		)
+		// TODO (next PRs): add assertions for the out-of-line constraints.
 	}
 
 	t.Run("create Snowflake managed: basic", func(t *testing.T) {
@@ -494,97 +487,6 @@ func TestInt_IcebergTables(t *testing.T) {
 		assertPolicyReference(t, references[2], projectionPolicyId, sdk.PolicyKindProjectionPolicy, id, new("FK_ID"))
 		assertPolicyReference(t, references[3], rowAccessPolicy.ID(), sdk.PolicyKindRowAccessPolicy, id, nil)
 
-		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
-		require.NoError(t, err)
-		require.Len(t, constraints, 4)
-		// Sort the constraints because the order is not guaranteed.
-		slices.SortFunc(constraints, func(x, y sdk.TableConstraintDetails) int {
-			return strings.Compare(x.ConstraintName, y.ConstraintName)
-		})
-		assertThatObject(
-			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[0]).
-				HasConstraintName("fk_out_ref").
-				HasConstraintType(sdk.TableConstraintTypeForeignKey).
-				HasEnforced(false).
-				HasRely(false).
-				HasIsDeferrable(false).
-				HasInitiallyDeferred(true).
-				HasNoComment().
-				HasConstraintCatalog(id.DatabaseName()).
-				HasConstraintSchema(id.SchemaName()).
-				HasTableCatalog(id.DatabaseName()).
-				HasTableSchema(id.SchemaName()).
-				HasTableName(id.Name()),
-		)
-		assertThatObject(
-			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[1]).
-				HasConstraintName("fk_ref").
-				HasConstraintType(sdk.TableConstraintTypeForeignKey).
-				HasEnforced(false).
-				HasRely(false).
-				HasIsDeferrable(false).
-				HasInitiallyDeferred(true).
-				HasNoComment().
-				HasConstraintCatalog(id.DatabaseName()).
-				HasConstraintSchema(id.SchemaName()).
-				HasTableCatalog(id.DatabaseName()).
-				HasTableSchema(id.SchemaName()).
-				HasTableName(id.Name()),
-		)
-		assertThatObject(
-			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[2]).
-				HasConstraintName("pk_id").
-				HasConstraintType(sdk.TableConstraintTypePrimaryKey).
-				HasEnforced(false).
-				HasRely(false).
-				HasIsDeferrable(false).
-				HasInitiallyDeferred(true).
-				HasNoComment().
-				HasConstraintCatalog(id.DatabaseName()).
-				HasConstraintSchema(id.SchemaName()).
-				HasTableCatalog(id.DatabaseName()).
-				HasTableSchema(id.SchemaName()).
-				HasTableName(id.Name()),
-		)
-		assertThatObject(
-			t, objectassert.TableConstraintDetailsFromObject(t, &constraints[3]).
-				HasConstraintName("uq_region").
-				HasConstraintType(sdk.TableConstraintTypeUnique).
-				HasEnforced(false).
-				HasRely(false).
-				HasIsDeferrable(false).
-				HasInitiallyDeferred(true).
-				HasNoComment().
-				HasConstraintCatalog(id.DatabaseName()).
-				HasConstraintSchema(id.SchemaName()).
-				HasTableCatalog(id.DatabaseName()).
-				HasTableSchema(id.SchemaName()).
-				HasTableName(id.Name()),
-		)
-
-		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
-		require.NoError(t, err)
-		require.Len(t, checkConstraints, 2)
-		slices.SortFunc(checkConstraints, func(x, y sdk.TableCheckConstraintDetails) int {
-			return strings.Compare(x.ConstraintName, y.ConstraintName)
-		})
-		assertThatObject(
-			t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[0]).
-				HasConstraintName("chk_id_positive").
-				HasCheckClause("ID > 0").
-				HasConstraintCatalog(id.DatabaseName()).
-				HasConstraintSchema(id.SchemaName()).
-				HasConstraintTable(id.Name()),
-		)
-		assertThatObject(
-			t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[1]).
-				HasConstraintName("chk_status").
-				HasCheckClause("STATUS IN ('active', 'inactive')").
-				HasConstraintCatalog(id.DatabaseName()).
-				HasConstraintSchema(id.SchemaName()).
-				HasConstraintTable(id.Name()),
-		)
-
 		assertThatObject(
 			t, objectparametersassert.IcebergTableParameters(t, id).
 				HasAllowRowTimestamp(false).
@@ -605,77 +507,6 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
 				HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb),
 		)
-	})
-
-	t.Run("create Snowflake managed: inline constraint enforcement options", func(t *testing.T) {
-		fkRefTable, fkRefCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForIcebergTable(t)
-		t.Cleanup(fkRefCleanup)
-
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
-			Columns: []sdk.IcebergTableColumnRequest{
-				{
-					Name:       "ID",
-					ColumnType: testdatatypes.DataTypeNumber,
-					InlineConstraint: &sdk.TableColumnInlineConstraintRequest{
-						UniquePK: &sdk.TableColumnInlineUniquePKRequest{
-							Name:              new("pk_id_enforced"),
-							PrimaryKey:        new(true),
-							Enforced:          new(true),
-							Deferrable:        new(true),
-							InitiallyDeferred: new(true),
-							Enable:            new(true),
-							Validate:          new(true),
-							Rely:              new(true),
-						},
-					},
-				},
-				{
-					Name:       "FK_ID",
-					ColumnType: testdatatypes.DataTypeNumber,
-					InlineConstraint: &sdk.TableColumnInlineConstraintRequest{
-						FK: &sdk.TableColumnInlineFKRequest{
-							Name:               new("fk_ref_not_enforced"),
-							References:         fkRefTable.ID(),
-							RefColumn:          []sdk.Column{{Value: "ID"}},
-							NotEnforced:        new(true),
-							NotDeferrable:      new(true),
-							InitiallyImmediate: new(true),
-							Disable:            new(true),
-							Novalidate:         new(true),
-							Norely:             new(true),
-						},
-					},
-				},
-			},
-		}))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
-		require.NoError(t, err)
-		// TODO (next PRs): report this to Snowflake
-		require.Len(t, constraints, 0)
-	})
-
-	t.Run("create Snowflake managed: cluster by", func(t *testing.T) {
-		// PARTITION BY and CLUSTER BY are mutually exclusive for Iceberg tables (err 099207), so clustering is
-		// tested in a separate table from the partitioned "all options" one above.
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
-			Columns: []sdk.IcebergTableColumnRequest{
-				{Name: "ID", ColumnType: testdatatypes.DataTypeNumber},
-				{Name: "REGION", ColumnType: testdatatypes.DataTypeVarcharIceberg},
-			},
-		}).WithClusterBy([]string{"ID", "REGION"}))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
-		clusteringInfo, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, "LINEAR(ID, REGION)", clusteringInfo.ClusterByKeys)
 	})
 
 	t.Run("create Snowflake managed: copy grants", func(t *testing.T) {
@@ -1075,9 +906,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		details, err := client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
-		col, err := collections.FindFirst(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
-		require.NoError(t, err)
-		assert.False(t, col.IsNullable)
+		statusIdx := slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NotEqual(t, -1, statusIdx)
+		assert.False(t, details[statusIdx].IsNullable)
 
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithAlterColumnAction([]sdk.IcebergTableAlterColumnActionRequest{
@@ -1087,9 +918,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		details, err = client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
-		col, err = collections.FindFirst(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
-		require.NoError(t, err)
-		assert.True(t, col.IsNullable)
+		statusIdx = slices.IndexFunc(details, func(d sdk.IcebergTableDetails) bool { return d.Name == "STATUS" })
+		require.NotEqual(t, -1, statusIdx)
+		assert.True(t, details[statusIdx].IsNullable)
 	})
 
 	t.Run("alter: alter column set/unset comment", func(t *testing.T) {
@@ -1276,18 +1107,11 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithClusterBy([]string{"REGION"})))
 		require.NoError(t, err)
 
-		// The clustering key is not returned from SHOW/DESCRIBE, so verify it with SYSTEM$CLUSTERING_INFORMATION.
-		info, err := client.SystemFunctions.GetClusteringInformation(ctx, id)
-		require.NoError(t, err)
-		assert.Equal(t, "LINEAR(REGION)", info.ClusterByKeys)
-
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithClusteringAction(*sdk.NewIcebergTableClusteringActionRequest().WithDropClusteringKey(true)))
 		require.NoError(t, err)
 
-		// After dropping the clustering key, the table is no longer clustered.
-		_, err = client.SystemFunctions.GetClusteringInformation(ctx, id)
-		require.ErrorIs(t, err, sdk.ErrTableNotClustered)
+		// TODO (next PR): verify the clustering key with SYSTEM$CLUSTERING_INFORMATION, as it is not returned from SHOW/DESCRIBE.
 	})
 
 	t.Run("alter: set and unset properties", func(t *testing.T) {
@@ -1359,7 +1183,10 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// add
 		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithAddRowAccessPolicy(*sdk.NewViewAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []sdk.Column{{Value: "ID"}})))
+			WithAddRowAccessPolicy(sdk.ViewAddRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy.ID(),
+				On:              []sdk.Column{{Value: "ID"}},
+			}))
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1369,7 +1196,9 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// drop
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
+			WithDropRowAccessPolicy(sdk.ViewDropRowAccessPolicy{
+				RowAccessPolicy: rowAccessPolicy.ID(),
+			}))
 		require.NoError(t, err)
 
 		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1394,10 +1223,10 @@ func TestInt_IcebergTables(t *testing.T) {
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithDropAndAddRowAccessPolicy(*sdk.NewIcebergTableDropAndAddRowAccessPolicyRequest(
-				*sdk.NewIcebergTableDropRowAccessPolicyRequest(rowAccessPolicy1.ID()),
-				*sdk.NewIcebergTableAddRowAccessPolicyRequest(rowAccessPolicy2.ID(), []sdk.Column{{Value: "ID"}}),
-			)))
+			WithDropAndAddRowAccessPolicy(sdk.ViewDropAndAddRowAccessPolicy{
+				Drop: sdk.ViewDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicy1.ID()},
+				Add:  sdk.ViewAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicy2.ID(), On: []sdk.Column{{Value: "ID"}}},
+			}))
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1440,7 +1269,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// set with an explicit entity key
 		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithSetAggregationPolicy(*sdk.NewViewSetAggregationPolicyRequest(aggregationPolicy).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy).
 				WithEntityKey([]sdk.Column{{Value: "ID"}})))
 		require.NoError(t, err)
 
@@ -1451,7 +1280,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// set with FORCE atomically replaces the existing aggregation policy
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithSetAggregationPolicy(*sdk.NewViewSetAggregationPolicyRequest(aggregationPolicy2).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy2).
 				WithEntityKey([]sdk.Column{{Value: "ID"}}).
 				WithForce(true)))
 		require.NoError(t, err)
@@ -1463,7 +1292,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// unset
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest()))
+			WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
 		require.NoError(t, err)
 
 		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1546,27 +1375,7 @@ func TestInt_IcebergTables(t *testing.T) {
 					}))))
 		require.NoError(t, err)
 
-		details, err := client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
-		require.NoError(t, err)
-		require.Len(t, details, 2)
-		assertThatObject(
-			t,
-			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[0]).
-				HasExpressionId(1).
-				HasActive(true).
-				HasMethod(string(sdk.TableSearchMethodEquality)).
-				HasTarget("REGION").
-				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
-		)
-		assertThatObject(
-			t,
-			objectassert.TableSearchOptimizationDetailsFromObject(t, &details[1]).
-				HasExpressionId(2).
-				HasActive(true).
-				HasMethod(string(sdk.TableSearchMethodFullText)+" DEFAULT_ANALYZER").
-				HasTarget("REGION").
-				HasTargetDataTypeSql(testdatatypes.DataTypeVarcharIceberg),
-		)
+		// TODO (next PRs): Add support for DESCRIBE SEARCH OPTIMIZATION and assert the results.
 
 		// Drop by method/target: removes only the EQUALITY entry. The analyzer is not part of the matcher.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
@@ -1578,10 +1387,6 @@ func TestInt_IcebergTables(t *testing.T) {
 					}))))
 		require.NoError(t, err)
 
-		details, err = client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
-		require.NoError(t, err)
-		require.Len(t, details, 1)
-
 		// Drop by column name: removes the remaining (FULL_TEXT) search optimization on the column.
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
 			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
@@ -1590,10 +1395,6 @@ func TestInt_IcebergTables(t *testing.T) {
 						*sdk.NewTableDropSearchOptimizationOnRequest().WithColumnName("REGION"),
 					}))))
 		require.NoError(t, err)
-
-		details, err = client.Tables.DescribeSearchOptimization(ctx, sdk.NewDescribeSearchOptimizationTableRequest(id))
-		require.NoError(t, err)
-		require.Empty(t, details)
 	})
 
 	t.Run("alter: set and unset join policy", func(t *testing.T) {
@@ -1902,261 +1703,6 @@ func TestInt_IcebergTables(t *testing.T) {
 	t.Run("describe iceberg table: non-existing", func(t *testing.T) {
 		_, err := client.IcebergTables.Describe(ctx, NonExistingSchemaObjectIdentifier)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
-	})
-}
-
-// TestInt_IcebergTables_WithAdditionalDependencies covers creating Iceberg tables from an external
-// catalog (AWS Glue and Iceberg REST). Unlike TestInt_IcebergTables, these require additional
-// preconfigured dependencies we can't provide dynamically for now.
-// TODO(SNOW-3725859): Provide the external volume and catalog integrations dynamically. Unskip and move these tests to the main test suite.
-func TestInt_IcebergTables_WithAdditionalDependencies(t *testing.T) {
-	t.Skip("Iceberg REST and AWS Glue tests require preconfigured external catalog integrations and are not run by default")
-
-	client := testClient(t)
-	ctx := testContext(t)
-
-	// These tests reuse preexisting, manually configured dependencies instead of creating their own
-	// external volume and catalog integrations.
-	externalVolumeId := sdk.NewAccountObjectIdentifier("GLUE_EXTERNAL_VOLUME")
-	awsGlueCatalogId := sdk.NewAccountObjectIdentifier("GLUE_CATALOG_INTEGRATION")
-	restCatalogId := sdk.NewAccountObjectIdentifier("REST_CATALOG_INTEGRATION")
-
-	catalogTableName := "TEST"
-	catalogNamespace := "glue_iceberg_schema"
-
-	dbForAwsGlueId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-	dbForAwsGlue, dbForAwsGlueCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForAwsGlueId).WithCatalog(awsGlueCatalogId).WithExternalVolume(externalVolumeId))
-	t.Cleanup(dbForAwsGlueCleanup)
-	schemaIdForAwsGlue := sdk.NewDatabaseObjectIdentifier(dbForAwsGlue.ID().Name(), "PUBLIC")
-
-	// Separate database wired to the Iceberg REST catalog integration and the external volume.
-	dbForRestId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-	dbForRest, dbForRestCleanup := testClientHelper().Database.CreateDatabaseWithRequest(t, sdk.NewCreateDatabaseRequest(dbForRestId).WithCatalog(restCatalogId).WithExternalVolume(externalVolumeId))
-	t.Cleanup(dbForRestCleanup)
-	schemaIdForRest := sdk.NewDatabaseObjectIdentifier(dbForRest.ID().Name(), "PUBLIC")
-
-	contactId, contactCleanup := testClientHelper().Contact.Create(t)
-	t.Cleanup(contactCleanup)
-
-	assertUnmanagedColumns := func(t *testing.T, id sdk.SchemaObjectIdentifier) {
-		t.Helper()
-		details, err := client.IcebergTables.Describe(ctx, id)
-		require.NoError(t, err)
-		require.NotEmpty(t, details)
-		// With an external catalog, we cannot manage table columns; assert only the generic properties.
-		for _, col := range details {
-			assertThatObject(
-				t, objectassert.IcebergTableDetailsFromObject(t, &col).
-					HasKind("COLUMN").
-					HasNoPolicyName().
-					HasNoPrivacyDomain().
-					HasNoWriteDefault(),
-			)
-		}
-	}
-
-	t.Run("create from aws glue: basic", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForAwsGlue)
-
-		err := client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		assertThatObject(
-			t, objectassert.IcebergTable(t, id).
-				HasName(id.Name()).
-				HasDatabaseName(id.DatabaseName()).
-				HasSchemaName(id.SchemaName()).
-				HasOwner("ACCOUNTADMIN").
-				HasExternalVolumeName(externalVolumeId).
-				HasCatalogName(awsGlueCatalogId).
-				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
-				HasCatalogTableName(catalogTableName).
-				HasCatalogNamespace(catalogNamespace).
-				HasCanWriteMetadata(true).
-				HasComment("").
-				HasNoNameMapping().
-				HasOwnerRoleType("ROLE").
-				HasCatalogSyncName("").
-				HasNoAutoRefreshStatus(),
-		)
-
-		assertThatObject(
-			t, objectparametersassert.IcebergTableParameters(t, id).
-				HasCatalog(awsGlueCatalogId.Name()).
-				HasExternalVolume(externalVolumeId.Name()).
-				HasReplaceInvalidCharacters(false),
-		)
-
-		assertUnmanagedColumns(t, id)
-	})
-
-	t.Run("create from aws glue: all options", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		err := client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName).
-			WithOrReplace(true).
-			WithExternalVolume(externalVolumeId).
-			WithCatalog(awsGlueCatalogId).
-			WithCatalogNamespace(catalogNamespace).
-			WithReplaceInvalidCharacters(true).
-			WithAutoRefresh(true).
-			WithComment("integration test").
-			WithContact([]sdk.TableContact{
-				{Purpose: "SUPPORT", Contact: contactId},
-			}))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		assertThatObject(
-			t, objectassert.IcebergTable(t, id).
-				HasName(id.Name()).
-				HasDatabaseName(id.DatabaseName()).
-				HasSchemaName(id.SchemaName()).
-				HasOwner("ACCOUNTADMIN").
-				HasExternalVolumeName(externalVolumeId).
-				HasCatalogName(awsGlueCatalogId).
-				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
-				HasCatalogTableName(catalogTableName).
-				HasCatalogNamespace(catalogNamespace).
-				HasCanWriteMetadata(true).
-				HasComment("integration test").
-				HasNoNameMapping().
-				HasOwnerRoleType("ROLE").
-				HasCatalogSyncName("").
-				HasAutoRefreshStatusNotEmpty(),
-		)
-
-		assertThatObject(
-			t, objectparametersassert.IcebergTableParameters(t, id).
-				HasCatalog(awsGlueCatalogId.FullyQualifiedName()).
-				HasExternalVolume(externalVolumeId.FullyQualifiedName()).
-				HasReplaceInvalidCharacters(true),
-		)
-
-		assertUnmanagedColumns(t, id)
-	})
-
-	t.Run("create from aws glue: if not exists", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForAwsGlue)
-
-		err := client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		// IF NOT EXISTS should not error when the table already exists.
-		err = client.IcebergTables.CreateFromAwsGlue(ctx, sdk.NewCreateFromAwsGlueIcebergTableRequest(id, catalogTableName).
-			WithIfNotExists(true))
-		require.NoError(t, err)
-	})
-
-	t.Run("create from iceberg rest: basic", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForRest)
-
-		err := client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		assertThatObject(
-			t, objectassert.IcebergTable(t, id).
-				HasName(id.Name()).
-				HasDatabaseName(id.DatabaseName()).
-				HasSchemaName(id.SchemaName()).
-				HasOwner("ACCOUNTADMIN").
-				HasExternalVolumeName(externalVolumeId).
-				HasCatalogName(restCatalogId).
-				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
-				HasCatalogTableName(catalogTableName).
-				HasCatalogNamespace(catalogNamespace).
-				HasCanWriteMetadata(true).
-				HasComment("").
-				HasNoNameMapping().
-				HasOwnerRoleType("ROLE").
-				HasCatalogSyncName("").
-				HasNoAutoRefreshStatus(),
-		)
-
-		assertThatObject(
-			t, objectparametersassert.IcebergTableParameters(t, id).
-				HasCatalog(restCatalogId.Name()).
-				HasExternalVolume(externalVolumeId.Name()).
-				HasReplaceInvalidCharacters(false).
-				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
-				HasTargetFileSize(sdk.IcebergTableTargetFileSizeAuto).
-				HasEnableIcebergMergeOnRead(true).
-				HasIcebergMergeOnReadBehavior("auto"),
-		)
-
-		assertUnmanagedColumns(t, id)
-	})
-
-	t.Run("create from iceberg rest: all options", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-
-		err := client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName).
-			WithOrReplace(true).
-			WithExternalVolume(externalVolumeId).
-			WithCatalog(restCatalogId).
-			WithCatalogNamespace(catalogNamespace).
-			WithPathLayout(sdk.IcebergTablePathLayoutHierarchical).
-			WithTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
-			WithReplaceInvalidCharacters(true).
-			WithAutoRefresh(true).
-			WithComment("integration test").
-			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
-			WithIcebergMergeOnReadBehavior(sdk.IcebergTableIcebergMergeOnReadBehaviorEnabled).
-			WithEnableIcebergMergeOnRead(true).
-			WithContact([]sdk.TableContact{
-				{Purpose: "SUPPORT", Contact: contactId},
-			}))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		assertThatObject(
-			t, objectassert.IcebergTable(t, id).
-				HasName(id.Name()).
-				HasDatabaseName(id.DatabaseName()).
-				HasSchemaName(id.SchemaName()).
-				HasOwner("ACCOUNTADMIN").
-				HasExternalVolumeName(externalVolumeId).
-				HasCatalogName(restCatalogId).
-				HasIcebergTableType(sdk.IcebergTableTypeUnmanaged).
-				HasCatalogTableName(catalogTableName).
-				HasCatalogNamespace(catalogNamespace).
-				HasCanWriteMetadata(true).
-				HasComment("integration test").
-				HasNoNameMapping().
-				HasOwnerRoleType("ROLE").
-				HasCatalogSyncName("").
-				HasAutoRefreshStatusNotEmpty(),
-			// Path layout is not returned from Snowflake.
-		)
-
-		assertThatObject(
-			t, objectparametersassert.IcebergTableParameters(t, id).
-				HasCatalog(restCatalogId.FullyQualifiedName()).
-				HasExternalVolume(externalVolumeId.FullyQualifiedName()).
-				HasReplaceInvalidCharacters(true).
-				HasStorageSerializationPolicy(sdk.StorageSerializationPolicyOptimized).
-				HasTargetFileSize(sdk.IcebergTableTargetFileSize128mb).
-				HasEnableIcebergMergeOnRead(true).
-				HasIcebergMergeOnReadBehavior(string(sdk.IcebergTableIcebergMergeOnReadBehaviorEnabled)),
-		)
-
-		assertUnmanagedColumns(t, id)
-	})
-
-	t.Run("create from iceberg rest: if not exists", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schemaIdForRest)
-
-		err := client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName))
-		require.NoError(t, err)
-		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
-
-		// IF NOT EXISTS should not error when the table already exists.
-		err = client.IcebergTables.CreateFromIcebergRest(ctx, sdk.NewCreateFromIcebergRestIcebergTableRequest(id, catalogTableName).
-			WithIfNotExists(true))
-		require.NoError(t, err)
 	})
 }
 

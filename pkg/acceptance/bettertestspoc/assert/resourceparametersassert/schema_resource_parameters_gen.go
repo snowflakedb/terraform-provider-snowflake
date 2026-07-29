@@ -40,31 +40,11 @@ func (s *SchemaResourceParametersAssert) HasDefaultDdlCollation(expected string)
 	return s
 }
 
-func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolCpu(expected string) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterDefaultNotebookComputePoolCpu), expected)
-	return s
-}
-
-func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolGpu(expected string) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterDefaultNotebookComputePoolGpu), expected)
-	return s
-}
-
 ////////////////////////////
 // Parameter level checks //
 ////////////////////////////
 
 func (s *SchemaResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
 	s.ParameterLevelSet(string(sdk.ObjectParameterDefaultDdlCollation), expected)
-	return s
-}
-
-func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolCpuLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterDefaultNotebookComputePoolCpu), expected)
-	return s
-}
-
-func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolGpuLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterDefaultNotebookComputePoolGpu), expected)
 	return s
 }

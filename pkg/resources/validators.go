@@ -3,7 +3,6 @@ package resources
 import (
 	"fmt"
 	"regexp"
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -64,14 +63,16 @@ func StringInSlice(valid []string, ignoreCase bool) schema.SchemaValidateDiagFun
 
 // IntInSlice has the same implementation as validation.StringInSlice, but adapted to schema.SchemaValidateDiagFunc
 func IntInSlice(valid []int) schema.SchemaValidateDiagFunc {
-	return func(i any, path cty.Path) diag.Diagnostics {
+	return func(i interface{}, path cty.Path) diag.Diagnostics {
 		v, ok := i.(int)
 		if !ok {
 			return diag.Errorf("expected type of %v to be integer", path)
 		}
 
-		if slices.Contains(valid, v) {
-			return nil
+		for _, validInt := range valid {
+			if v == validInt {
+				return nil
+			}
 		}
 
 		return diag.Errorf("expected %v to be one of %v, got %d", path, valid, v)

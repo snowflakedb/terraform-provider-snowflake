@@ -40,6 +40,7 @@ type functionSchemaDef struct {
 func setUpFunctionSchema(definition functionSchemaDef) map[string]*schema.Schema {
 	currentSchema := make(map[string]*schema.Schema)
 	for k, v := range functionBaseSchema() {
+		v := v
 		if slices.Contains(definition.additionalArguments, k) || slices.Contains(commonFunctionArguments, k) {
 			currentSchema[k] = &v
 		}

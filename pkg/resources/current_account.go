@@ -81,25 +81,25 @@ func CurrentAccount() *schema.Resource {
 func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	setResourceMonitor := new(sdk.AccountSetRequest)
+	setResourceMonitor := new(sdk.AccountSet)
 	if err := accountObjectIdentifierAttributeCreate(d, "resource_monitor", &setResourceMonitor.ResourceMonitor); err != nil {
 		return diag.FromErr(err)
 	}
 	if setResourceMonitor.ResourceMonitor != nil {
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*setResourceMonitor)); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: setResourceMonitor}); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithResourceMonitor(true))); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{ResourceMonitor: sdk.Bool(true)}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	handlePolicyCreate := func(kind sdk.PolicyKind, policyIdFieldPointerGetter func(*sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier, hasForce bool) error {
+	handlePolicyCreate := func(kind sdk.PolicyKind, policyIdFieldPointerGetter func(*sdk.AccountSet) **sdk.SchemaObjectIdentifier, hasForce bool) error {
 		key := strings.ToLower(string(kind))
-		set := new(sdk.AccountSetRequest)
+		set := new(sdk.AccountSet)
 		if kind == sdk.PolicyKindFeaturePolicy {
-			set.FeaturePolicySet = new(sdk.AccountFeaturePolicySetRequest)
+			set.FeaturePolicySet = new(sdk.AccountFeaturePolicySet)
 		}
 
 		if hasForce {
@@ -119,7 +119,7 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 
 		if *policySetFieldPointer != nil {
 			log.Printf("[DEBUG] Setting %s to the new value", key)
-			if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*set)); err != nil {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: set}); err != nil {
 				return err
 			}
 		}
@@ -128,13 +128,11 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	if errs := errors.Join(
-		handlePolicyCreate(sdk.PolicyKindAuthenticationPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.AuthenticationPolicy }, false),
-		handlePolicyCreate(sdk.PolicyKindFeaturePolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
-			return &set.FeaturePolicySet.FeaturePolicy
-		}, true),
-		handlePolicyCreate(sdk.PolicyKindPackagesPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PackagesPolicy }, true),
-		handlePolicyCreate(sdk.PolicyKindPasswordPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PasswordPolicy }, false),
-		handlePolicyCreate(sdk.PolicyKindSessionPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.SessionPolicy }, false),
+		handlePolicyCreate(sdk.PolicyKindAuthenticationPolicy, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.AuthenticationPolicy }, false),
+		handlePolicyCreate(sdk.PolicyKindFeaturePolicy, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.FeaturePolicySet.FeaturePolicy }, true),
+		handlePolicyCreate(sdk.PolicyKindPackagesPolicy, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.PackagesPolicy }, true),
+		handlePolicyCreate(sdk.PolicyKindPasswordPolicy, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.PasswordPolicy }, false),
+		handlePolicyCreate(sdk.PolicyKindSessionPolicy, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.SessionPolicy }, false),
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -144,7 +142,7 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		return diags
 	}
 	if *setParameters != (sdk.AccountParameters{}) {
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*setParameters))); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: setParameters}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -196,29 +194,29 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	client := meta.(*provider.Context).Client
 
 	if d.HasChange("resource_monitor") {
-		set, unset := new(sdk.AccountSetRequest), new(sdk.AccountUnsetRequest)
+		set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
 		if err := accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor); err != nil {
 			return diag.FromErr(err)
 		}
 		if set.ResourceMonitor != nil {
-			if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*set)); err != nil {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: set}); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 		if unset.ResourceMonitor != nil && *unset.ResourceMonitor {
-			if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*unset)); err != nil {
+			if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: unset}); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
-	handlePolicyUpdate := func(kind sdk.PolicyKind, hasForce bool, setFieldGetter func(*sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier) error {
+	handlePolicyUpdate := func(kind sdk.PolicyKind, hasForce bool, setFieldGetter func(*sdk.AccountSet) **sdk.SchemaObjectIdentifier) error {
 		key := strings.ToLower(string(kind))
 		if d.HasChange(key) {
-			set, unset := new(sdk.AccountSetRequest), new(sdk.AccountUnsetRequest)
+			set, unset := new(sdk.AccountSet), new(sdk.AccountUnset)
 			if kind == sdk.PolicyKindFeaturePolicy {
-				set.FeaturePolicySet = new(sdk.AccountFeaturePolicySetRequest)
-				unset.FeaturePolicyUnset = new(sdk.AccountFeaturePolicyUnsetRequest)
+				set.FeaturePolicySet = new(sdk.AccountFeaturePolicySet)
+				unset.FeaturePolicyUnset = new(sdk.AccountFeaturePolicyUnset)
 			}
 
 			setFieldPointer, unsetBoolFlag := setFieldGetter(set), sdk.Bool(false)
@@ -238,7 +236,7 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 				}
 
 				log.Printf("[DEBUG] Setting %s to the new value", kind)
-				if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*set)); err != nil {
+				if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: set}); err != nil {
 					return err
 				}
 			} else if *unsetBoolFlag {
@@ -252,13 +250,11 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	if errs := errors.Join(
-		handlePolicyUpdate(sdk.PolicyKindAuthenticationPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.AuthenticationPolicy }),
-		handlePolicyUpdate(sdk.PolicyKindFeaturePolicy, true, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
-			return &set.FeaturePolicySet.FeaturePolicy
-		}),
-		handlePolicyUpdate(sdk.PolicyKindPackagesPolicy, true, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PackagesPolicy }),
-		handlePolicyUpdate(sdk.PolicyKindPasswordPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PasswordPolicy }),
-		handlePolicyUpdate(sdk.PolicyKindSessionPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.SessionPolicy }),
+		handlePolicyUpdate(sdk.PolicyKindAuthenticationPolicy, false, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.AuthenticationPolicy }),
+		handlePolicyUpdate(sdk.PolicyKindFeaturePolicy, true, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.FeaturePolicySet.FeaturePolicy }),
+		handlePolicyUpdate(sdk.PolicyKindPackagesPolicy, true, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.PackagesPolicy }),
+		handlePolicyUpdate(sdk.PolicyKindPasswordPolicy, false, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.PasswordPolicy }),
+		handlePolicyUpdate(sdk.PolicyKindSessionPolicy, false, func(set *sdk.AccountSet) **sdk.SchemaObjectIdentifier { return &set.SessionPolicy }),
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -269,12 +265,12 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		return diags
 	}
 	if *setParameters != (sdk.AccountParameters{}) {
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*setParameters))); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Set: &sdk.AccountSet{Parameters: setParameters}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 	if *unsetParameters != (sdk.AccountParametersUnset{}) {
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithParameters(*unsetParameters))); err != nil {
+		if err := client.Accounts.Alter(ctx, &sdk.AlterAccountOptions{Unset: &sdk.AccountUnset{Parameters: unsetParameters}}); err != nil {
 			return diag.FromErr(err)
 		}
 	}

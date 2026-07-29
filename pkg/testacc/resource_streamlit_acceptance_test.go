@@ -212,7 +212,7 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 							WithRootLocation(rootLocationWithCatalog).
 							WithTitle(title).
 							WithQueryWarehouse(warehouse.ID()).
-							WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegrationId}).
+							WithExternalAccessIntegrations(*sdk.NewExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegrationId})).
 							WithComment(comment),
 					))
 				},

@@ -124,8 +124,7 @@ func (r *CreateUserRequest) toOpts() *CreateUserOptions {
 			opts.ObjectProperties.WorkloadIdentity = &UserObjectWorkloadIdentityProperties{}
 			if r.ObjectProperties.WorkloadIdentity.AwsType != nil {
 				opts.ObjectProperties.WorkloadIdentity.AwsType = &UserObjectWorkloadIdentityAws{
-					Arn:    r.ObjectProperties.WorkloadIdentity.AwsType.Arn,
-					Issuer: r.ObjectProperties.WorkloadIdentity.AwsType.Issuer,
+					Arn: r.ObjectProperties.WorkloadIdentity.AwsType.Arn,
 				}
 			}
 			if r.ObjectProperties.WorkloadIdentity.AzureType != nil {
@@ -162,7 +161,7 @@ func (r *AlterUserRequest) toOpts() *AlterUserOptions {
 	opts := &AlterUserOptions{
 		IfExists:        r.IfExists,
 		name:            r.name,
-		RenameTo:        r.RenameTo,
+		NewName:         r.NewName,
 		ResetPassword:   r.ResetPassword,
 		AbortAllQueries: r.AbortAllQueries,
 		SetTags:         r.SetTags,
@@ -223,8 +222,7 @@ func (r *AlterUserRequest) toOpts() *AlterUserOptions {
 				opts.Set.ObjectProperties.WorkloadIdentity = &UserObjectWorkloadIdentityProperties{}
 				if r.Set.ObjectProperties.WorkloadIdentity.AwsType != nil {
 					opts.Set.ObjectProperties.WorkloadIdentity.AwsType = &UserObjectWorkloadIdentityAws{
-						Arn:    r.Set.ObjectProperties.WorkloadIdentity.AwsType.Arn,
-						Issuer: r.Set.ObjectProperties.WorkloadIdentity.AwsType.Issuer,
+						Arn: r.Set.ObjectProperties.WorkloadIdentity.AwsType.Arn,
 					}
 				}
 				if r.Set.ObjectProperties.WorkloadIdentity.AzureType != nil {

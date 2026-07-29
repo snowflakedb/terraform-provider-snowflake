@@ -25,11 +25,6 @@ func (s *LegacyConfigDTO) WithOrganizationName(OrganizationName string) *LegacyC
 	return s
 }
 
-func (s *LegacyConfigDTO) WithAccount(Account string) *LegacyConfigDTO {
-	s.Account = &Account
-	return s
-}
-
 func (s *LegacyConfigDTO) WithUser(User string) *LegacyConfigDTO {
 	s.User = &User
 	return s

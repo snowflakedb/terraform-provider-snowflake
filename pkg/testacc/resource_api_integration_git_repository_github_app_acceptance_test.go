@@ -53,8 +53,8 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasNoBlockedPrefixes().
 			HasComment(""),
@@ -77,8 +77,8 @@ func TestAcc_ApiIntegrationGitRepositoryGithubApp_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
+			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
 			HasComment(comment),

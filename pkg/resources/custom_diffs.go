@@ -132,7 +132,7 @@ func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.
 // If the field is a nested field, it may cause diffs eagerly. This happens because diff.HasChange returns true, even if a nested field diff is suppressed.
 func ComputedIfAnyAttributeChanged(resourceSchema map[string]*schema.Schema, key string, changedAttributeKeys ...string) schema.CustomizeDiffFunc {
-	return customdiff.ComputedIf(key, func(ctx context.Context, diff *schema.ResourceDiff, meta any) bool {
+	return customdiff.ComputedIf(key, func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) bool {
 		var result bool
 		for _, changedKey := range changedAttributeKeys {
 			if diff.HasChange(changedKey) || !diff.NewValueKnown(changedKey) {
@@ -252,7 +252,7 @@ func TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled
 }
 
 func RecreateWhenUserTypeChangedExternally(userType sdk.UserType) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get("user_type"); n != nil {
 			log.Printf("[DEBUG] new external value for user type: %s", n.(string))
 			if acceptableUserTypes, ok := sdk.AcceptableUserTypes[userType]; ok && !slices.Contains(acceptableUserTypes, strings.ToUpper(n.(string))) {
@@ -267,7 +267,7 @@ func RecreateWhenUserTypeChangedExternally(userType sdk.UserType) schema.Customi
 }
 
 func RecreateWhenStageTypeChangedExternally(stageType sdk.StageType) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get("stage_type"); n != nil {
 			log.Printf("[DEBUG] new external value for stage type: %s", n.(string))
 
@@ -281,7 +281,7 @@ func RecreateWhenStageTypeChangedExternally(stageType sdk.StageType) schema.Cust
 }
 
 func RecreateWhenSecretTypeChangedExternally(secretType sdk.SecretType) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get("secret_type"); n != nil {
 			log.Printf("[DEBUG] new external value for secret type: %s", n.(string))
 
@@ -335,10 +335,8 @@ func RecreateWhenStageCloudChangedExternally(stageCloud sdk.StageCloud) schema.C
 
 // HandleWarehouseExternalTypeChange detects when the warehouse type has been changed externally
 // and plans an update to restore it to warehouseType (without forcing recreation).
-// One exception is when the type was changed externally to INTERACTIVE - because Snowflake does not
-// allow changing WAREHOUSE_TYPE via ALTER to or from INTERACTIVE, the resource has to be recreated instead.
 func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get("warehouse_type"); n != nil {
 			gotTypeRaw := n.(string)
 			if gotTypeRaw == "" {
@@ -349,12 +347,6 @@ func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.C
 				return fmt.Errorf("unknown warehouse type: %w", err)
 			}
 			if gotType != warehouseType {
-				if gotType == sdk.WarehouseTypeInteractive || warehouseType == sdk.WarehouseTypeInteractive {
-					// we have to set here a value instead of just SetNewComputed
-					// because with empty value ForceNew fails
-					// because there are no changes (at least from the SDKv2 point of view) for warehouse_type
-					return errors.Join(diff.SetNew("warehouse_type", "<changed externally>"), diff.ForceNew("warehouse_type"))
-				}
 				return diff.SetNew("warehouse_type", string(warehouseType))
 			}
 		}
@@ -364,7 +356,7 @@ func HandleWarehouseExternalTypeChange(warehouseType sdk.WarehouseType) schema.C
 
 // RecreateWhenResourceTypeChangedExternally recreates a resource when argument wantType is different than the value in typeField.
 func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, wantType T, toType func(string) (T, error)) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get(typeField); n != nil {
 			log.Printf("[DEBUG] new external value for %s", typeField)
 
@@ -392,7 +384,7 @@ func RecreateWhenResourceTypeChangedExternally[T ~string](typeField string, want
 // RecreateWhenStreamIsStale detects when the stream is stale, and sets a `false` value for `stale` field.
 // This means that the provider can detect that change in `stale` from `true` to `false`, where `false` is our desired state.
 func RecreateWhenStreamIsStale() schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if old, _ := diff.GetChange("stale"); old.(bool) {
 			return diff.SetNew("stale", false)
 		}
@@ -407,7 +399,7 @@ func RecreateWhenStreamIsStale() schema.CustomizeDiffFunc {
 // - From storage_integration to credentials: ForceNew on credentials
 // - From credentials to storage_integration: ForceNew on storage_integration
 func RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage() schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		credentialsOld, credentialsNew := diff.GetChange("credentials")
 		storageIntegrationOld, storageIntegrationNew := diff.GetChange("storage_integration")
 		// Change from storage_integration to credentials requires recreation
@@ -425,7 +417,7 @@ func RecreateWhenCredentialsAndStorageIntegrationChangedOnExternalStage() schema
 
 // RecreateWhenResourceBoolFieldChangedExternally recreates a resource when wantValue is different than value in boolField.
 func RecreateWhenResourceBoolFieldChangedExternally(boolField string, wantValue bool) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
 		if n := diff.Get(boolField); n != nil {
 			log.Printf("[DEBUG] new external value for %v", boolField)
 			if n.(bool) != wantValue {

@@ -8,7 +8,6 @@ import (
 )
 
 type SnowflakeModel struct {
-	Account                            tfconfig.Variable `json:"account,omitempty"`
 	AccountName                        tfconfig.Variable `json:"account_name,omitempty"`
 	Authenticator                      tfconfig.Variable `json:"authenticator,omitempty"`
 	CertRevocationCheckMode            tfconfig.Variable `json:"cert_revocation_check_mode,omitempty"`
@@ -99,11 +98,6 @@ func SnowflakeProviderAlias(
 /////////////////////////////////
 // below all the proper values //
 /////////////////////////////////
-
-func (s *SnowflakeModel) WithAccount(account string) *SnowflakeModel {
-	s.Account = tfconfig.StringVariable(account)
-	return s
-}
 
 func (s *SnowflakeModel) WithAccountName(accountName string) *SnowflakeModel {
 	s.AccountName = tfconfig.StringVariable(accountName)
@@ -431,11 +425,6 @@ func (s *SnowflakeModel) WithWorkloadIdentityProvider(workloadIdentityProvider s
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
-
-func (s *SnowflakeModel) WithAccountValue(value tfconfig.Variable) *SnowflakeModel {
-	s.Account = value
-	return s
-}
 
 func (s *SnowflakeModel) WithAccountNameValue(value tfconfig.Variable) *SnowflakeModel {
 	s.AccountName = value

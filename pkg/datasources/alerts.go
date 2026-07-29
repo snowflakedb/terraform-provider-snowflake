@@ -91,10 +91,11 @@ func ReadAlerts(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 
 	d.SetId("alerts_read")
 
-	req := sdk.NewShowAlertRequest()
+	opts := sdk.ShowAlertOptions{}
 
 	if v, ok := d.GetOk("pattern"); ok {
-		req.WithLike(sdk.Like{Pattern: new(v.(string))})
+		alertPattern := v.(string)
+		opts.Like = &sdk.Like{Pattern: &alertPattern}
 	}
 
 	if v, ok := d.GetOk("database"); ok {
@@ -102,13 +103,17 @@ func ReadAlerts(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 
 		if v, ok := d.GetOk("schema"); ok {
 			schemaName := v.(string)
-			req.WithIn(sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)})
+			opts.In = &sdk.In{
+				Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName),
+			}
 		} else {
-			req.WithIn(sdk.In{Database: sdk.NewAccountObjectIdentifier(databaseName)})
+			opts.In = &sdk.In{
+				Database: sdk.NewAccountObjectIdentifier(databaseName),
+			}
 		}
 	}
 
-	listAlerts, err := client.Alerts.Show(ctx, req)
+	listAlerts, err := client.Alerts.Show(ctx, &opts)
 	if err != nil {
 		log.Printf("[DEBUG] failed to list alerts in schema (%s)", d.Id())
 		d.SetId("")

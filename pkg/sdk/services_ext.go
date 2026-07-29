@@ -6,10 +6,6 @@ import (
 	"strings"
 )
 
-func (s *ServiceDetails) ID() SchemaObjectIdentifier {
-	return NewSchemaObjectIdentifier(s.DatabaseName, s.SchemaName, s.Name)
-}
-
 func (opts *CreateServiceOptions) additionalValidations() error {
 	var errs []error
 	if valueSet(opts.MinReadyInstances) {

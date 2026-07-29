@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -41,14 +40,8 @@ var icebergTableFromDeltaFilesSchema = collections.MergeMaps(
 				}),
 			),
 		},
-		ParametersAttributeName: {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW PARAMETERS IN ICEBERG TABLE` for the given Iceberg table.",
-			Elem:        &schema.Resource{Schema: schemas.ShowIcebergTableExternallyManagedParametersSchema},
-		},
 	},
-	icebergTableExternalManagedParametersSchema(),
+	icebergTableParametersSchema(),
 )
 
 func IcebergTableFromDeltaFiles() *schema.Resource {
@@ -68,7 +61,7 @@ func IcebergTableFromDeltaFiles() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			ComputedIfAnyAttributeChanged(icebergTableFromDeltaFilesSchema, ShowOutputAttributeName, "comment", "auto_refresh"),
 			ComputedIfAnyAttributeChanged(icebergTableFromDeltaFilesSchema, ParametersAttributeName, "external_volume", "catalog", "replace_invalid_characters"),
-			icebergTableExternalManagedParametersCustomDiff,
+			icebergTableParametersCustomDiff,
 		),
 	}
 }
@@ -103,7 +96,7 @@ func CreateIcebergTableFromDeltaFiles(ctx context.Context, d *schema.ResourceDat
 
 func ReadIcebergTableFromDeltaFilesFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		return readIcebergTable(ctx, d, meta, func(d *schema.ResourceData, table *sdk.IcebergTable, _ []sdk.IcebergTableDetails) error {
+		return readIcebergTable(ctx, d, meta, func(d *schema.ResourceData, table *sdk.IcebergTable) error {
 			var baseLocation string
 			if table.BaseLocation != nil {
 				baseLocation = *table.BaseLocation

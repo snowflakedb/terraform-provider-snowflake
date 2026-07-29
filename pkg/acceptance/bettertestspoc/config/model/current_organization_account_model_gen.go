@@ -47,7 +47,6 @@ type CurrentOrganizationAccountModel struct {
 	DefaultNotebookComputePoolCpu                    tfconfig.Variable `json:"default_notebook_compute_pool_cpu,omitempty"`
 	DefaultNotebookComputePoolGpu                    tfconfig.Variable `json:"default_notebook_compute_pool_gpu,omitempty"`
 	DefaultNullOrdering                              tfconfig.Variable `json:"default_null_ordering,omitempty"`
-	DefaultStreamlitComputePool                      tfconfig.Variable `json:"default_streamlit_compute_pool,omitempty"`
 	DefaultStreamlitNotebookWarehouse                tfconfig.Variable `json:"default_streamlit_notebook_warehouse,omitempty"`
 	DisableUiDownloadButton                          tfconfig.Variable `json:"disable_ui_download_button,omitempty"`
 	DisableUserPrivilegeGrants                       tfconfig.Variable `json:"disable_user_privilege_grants,omitempty"`
@@ -378,11 +377,6 @@ func (c *CurrentOrganizationAccountModel) WithDefaultNotebookComputePoolGpu(defa
 
 func (c *CurrentOrganizationAccountModel) WithDefaultNullOrdering(defaultNullOrdering string) *CurrentOrganizationAccountModel {
 	c.DefaultNullOrdering = tfconfig.StringVariable(defaultNullOrdering)
-	return c
-}
-
-func (c *CurrentOrganizationAccountModel) WithDefaultStreamlitComputePool(defaultStreamlitComputePool string) *CurrentOrganizationAccountModel {
-	c.DefaultStreamlitComputePool = tfconfig.StringVariable(defaultStreamlitComputePool)
 	return c
 }
 
@@ -1017,11 +1011,6 @@ func (c *CurrentOrganizationAccountModel) WithDefaultNotebookComputePoolGpuValue
 
 func (c *CurrentOrganizationAccountModel) WithDefaultNullOrderingValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.DefaultNullOrdering = value
-	return c
-}
-
-func (c *CurrentOrganizationAccountModel) WithDefaultStreamlitComputePoolValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
-	c.DefaultStreamlitComputePool = value
 	return c
 }
 

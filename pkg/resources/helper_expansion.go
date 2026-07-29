@@ -9,7 +9,7 @@ import (
 
 // borrowed from https://github.com/terraform-providers/terraform-provider-aws/blob/master/aws/structure.go#L924:6
 
-func expandIntList(configured []any) []int {
+func expandIntList(configured []interface{}) []int {
 	vs := make([]int, 0, len(configured))
 	for _, v := range configured {
 		if val, ok := v.(int); ok {
@@ -19,7 +19,7 @@ func expandIntList(configured []any) []int {
 	return vs
 }
 
-func expandStringList(configured []any) []string {
+func expandStringList(configured []interface{}) []string {
 	vs := make([]string, 0, len(configured))
 	for _, v := range configured {
 		val, ok := v.(string)
@@ -53,7 +53,7 @@ func ExpandObjectIdentifierSet(configured []any, objectType sdk.ObjectType) ([]s
 	return ids, nil
 }
 
-func expandStringListAllowEmpty(configured []any) []string {
+func expandStringListAllowEmpty(configured []interface{}) []string {
 	// Allow empty values during expansion
 	vs := make([]string, 0, len(configured))
 	for _, v := range configured {
@@ -67,8 +67,8 @@ func expandStringListAllowEmpty(configured []any) []string {
 	return vs
 }
 
-func expandObjectIdentifier(objectIdentifier any) (string, string, string) {
-	objectIdentifierMap := objectIdentifier.([]any)[0].(map[string]any)
+func expandObjectIdentifier(objectIdentifier interface{}) (string, string, string) {
+	objectIdentifierMap := objectIdentifier.([]interface{})[0].(map[string]interface{})
 	objectName := objectIdentifierMap["name"].(string)
 	var objectSchema string
 	if v := objectIdentifierMap["schema"]; v != nil {
@@ -82,7 +82,7 @@ func expandObjectIdentifier(objectIdentifier any) (string, string, string) {
 }
 
 // ADiffB takes all the elements of A that are not also present in B, A-B in set notation
-func ADiffB(setA []any, setB []any) []string {
+func ADiffB(setA []interface{}, setB []interface{}) []string {
 	res := make([]string, 0)
 	sliceA := expandStringList(setA)
 	sliceB := expandStringList(setB)

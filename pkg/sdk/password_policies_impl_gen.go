@@ -99,7 +99,7 @@ func (r *AlterPasswordPolicyRequest) toOpts() *AlterPasswordPolicyOptions {
 	opts := &AlterPasswordPolicyOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
-		RenameTo: r.RenameTo,
+		NewName:  r.NewName,
 	}
 	if r.Set != nil {
 		opts.Set = &PasswordPolicySet{

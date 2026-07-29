@@ -100,13 +100,7 @@ func (r *UnsetTagRequest) adjust() {
 
 // normalizeTagObjectType maps object types to the types Snowflake expects in ALTER ... SET/UNSET TAG.
 func normalizeTagObjectType(objectType *ObjectType) {
-	if slices.Contains([]ObjectType{
-		ObjectTypeView,
-		ObjectTypeMaterializedView,
-		ObjectTypeExternalTable,
-		ObjectTypeEventTable,
-		ObjectTypeInteractiveTable,
-	}, *objectType) {
+	if slices.Contains([]ObjectType{ObjectTypeView, ObjectTypeMaterializedView, ObjectTypeExternalTable, ObjectTypeEventTable}, *objectType) {
 		*objectType = ObjectTypeTable
 	}
 	if slices.Contains([]ObjectType{ObjectTypeExternalFunction}, *objectType) {
@@ -149,12 +143,16 @@ func (v *tags) UnsetSafely(ctx context.Context, request *UnsetTagRequest) error 
 
 // SetOnCurrentAccount applies tags to the current account.
 func (v *tags) SetOnCurrentAccount(ctx context.Context, setTags []TagAssociation) error {
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSetTag(setTags))
+	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
+		SetTag: setTags,
+	})
 }
 
 // UnsetOnCurrentAccount removes tags from the current account.
 func (v *tags) UnsetOnCurrentAccount(ctx context.Context, unsetTags []ObjectIdentifier) error {
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnsetTag(unsetTags))
+	return v.client.Accounts.Alter(ctx, &AlterAccountOptions{
+		UnsetTag: unsetTags,
+	})
 }
 
 func NewAllowedValuesRequestFromStrings(values []string) *AllowedValuesRequest {

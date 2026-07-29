@@ -100,7 +100,6 @@ type ParameterTransformer struct {
 	quotes      string
 	parentheses string
 	equals      string
-	reverse     string
 }
 
 func ParameterOptions() *ParameterTransformer {
@@ -170,11 +169,6 @@ func (v *ParameterTransformer) MustParentheses() *ParameterTransformer {
 	return v
 }
 
-func (v *ParameterTransformer) Reverse() *ParameterTransformer {
-	v.reverse = "reverse"
-	return v
-}
-
 func (v *ParameterTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "ddl", "parameter")
 	if v.required {
@@ -184,7 +178,6 @@ func (v *ParameterTransformer) Transform(f *Field) *Field {
 	addTagIfMissing(f.Tags, "ddl", v.quotes)
 	addTagIfMissing(f.Tags, "ddl", v.parentheses)
 	addTagIfMissing(f.Tags, "ddl", v.equals)
-	addTagIfMissing(f.Tags, "ddl", v.reverse)
 	return f
 }
 
@@ -307,21 +300,6 @@ func (v *IdentifierTransformer) Transform(f *Field) *Field {
 	}
 	addTagIfMissing(f.Tags, "ddl", v.quotes)
 	addTagIfMissing(f.Tags, "ddl", v.equals)
-	return f
-}
-
-// InlineTransformer produces ddl:"-" on a struct field, causing the SQL builder
-// to render the sub-struct's fields inline without any wrapper keyword.
-// This is equivalent to the ddl:"-" tag used directly on Options struct fields.
-// Use when a sub-struct provides its own SQL keywords internally (e.g. AccountDrop)
-type InlineTransformer struct{}
-
-func InlineOptions() *InlineTransformer {
-	return new(InlineTransformer)
-}
-
-func (v *InlineTransformer) Transform(f *Field) *Field {
-	f.Tags["ddl"] = []string{"-"}
 	return f
 }
 

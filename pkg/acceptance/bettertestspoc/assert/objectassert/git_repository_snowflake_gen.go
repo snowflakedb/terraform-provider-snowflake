@@ -43,33 +43,11 @@ func (g *GitRepositoryAssert) HasCreatedOn(expected time.Time) *GitRepositoryAss
 	return g
 }
 
-func (g *GitRepositoryAssert) HasCreatedOnNotEmpty() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.CreatedOn.IsZero() {
-			return fmt.Errorf("expected created on to be set; got zero value")
-		}
-		return nil
-	})
-	return g
-}
-
 func (g *GitRepositoryAssert) HasName(expected string) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
-		}
-		return nil
-	})
-	return g
-}
-
-func (g *GitRepositoryAssert) HasNameNotEmpty() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -87,33 +65,11 @@ func (g *GitRepositoryAssert) HasDatabaseName(expected string) *GitRepositoryAss
 	return g
 }
 
-func (g *GitRepositoryAssert) HasDatabaseNameNotEmpty() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.DatabaseName == "" {
-			return fmt.Errorf("expected database name to be non-empty")
-		}
-		return nil
-	})
-	return g
-}
-
 func (g *GitRepositoryAssert) HasSchemaName(expected string) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
-		}
-		return nil
-	})
-	return g
-}
-
-func (g *GitRepositoryAssert) HasSchemaNameNotEmpty() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.SchemaName == "" {
-			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -131,22 +87,11 @@ func (g *GitRepositoryAssert) HasOrigin(expected string) *GitRepositoryAssert {
 	return g
 }
 
-func (g *GitRepositoryAssert) HasOriginNotEmpty() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.Origin == "" {
-			return fmt.Errorf("expected origin to be non-empty")
-		}
-		return nil
-	})
-	return g
-}
-
 func (g *GitRepositoryAssert) HasApiIntegration(expected sdk.AccountObjectIdentifier) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
-		if o.ApiIntegration.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected api integration: %v; got: %v", expected.FullyQualifiedName(), o.ApiIntegration.FullyQualifiedName())
+		if o.ApiIntegration.Name() != expected.Name() {
+			return fmt.Errorf("expected api integration: %v; got: %v", expected.Name(), o.ApiIntegration.Name())
 		}
 		return nil
 	})
@@ -167,17 +112,6 @@ func (g *GitRepositoryAssert) HasGitCredentials(expected sdk.SchemaObjectIdentif
 	return g
 }
 
-func (g *GitRepositoryAssert) HasNoGitCredentials() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.GitCredentials != nil {
-			return fmt.Errorf("expected git credentials to be nil; got: %v", *o.GitCredentials)
-		}
-		return nil
-	})
-	return g
-}
-
 func (g *GitRepositoryAssert) HasOwner(expected string) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
@@ -189,33 +123,11 @@ func (g *GitRepositoryAssert) HasOwner(expected string) *GitRepositoryAssert {
 	return g
 }
 
-func (g *GitRepositoryAssert) HasOwnerNotEmpty() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.Owner == "" {
-			return fmt.Errorf("expected owner to be non-empty")
-		}
-		return nil
-	})
-	return g
-}
-
 func (g *GitRepositoryAssert) HasOwnerRoleType(expected string) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
-		}
-		return nil
-	})
-	return g
-}
-
-func (g *GitRepositoryAssert) HasOwnerRoleTypeNotEmpty() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.OwnerRoleType == "" {
-			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})
@@ -236,17 +148,6 @@ func (g *GitRepositoryAssert) HasComment(expected string) *GitRepositoryAssert {
 	return g
 }
 
-func (g *GitRepositoryAssert) HasNoComment() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
-		}
-		return nil
-	})
-	return g
-}
-
 func (g *GitRepositoryAssert) HasLastFetchedAt(expected time.Time) *GitRepositoryAssert {
 	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
 		t.Helper()
@@ -255,17 +156,6 @@ func (g *GitRepositoryAssert) HasLastFetchedAt(expected time.Time) *GitRepositor
 		}
 		if *o.LastFetchedAt != expected {
 			return fmt.Errorf("expected last fetched at: %v; got: %v", expected, *o.LastFetchedAt)
-		}
-		return nil
-	})
-	return g
-}
-
-func (g *GitRepositoryAssert) HasNoLastFetchedAt() *GitRepositoryAssert {
-	g.AddAssertion(func(t *testing.T, o *sdk.GitRepository) error {
-		t.Helper()
-		if o.LastFetchedAt != nil {
-			return fmt.Errorf("expected last fetched at to be nil; got: %v", *o.LastFetchedAt)
 		}
 		return nil
 	})

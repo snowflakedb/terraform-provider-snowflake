@@ -31,11 +31,11 @@ func (c *RoleClient) UseRole(t *testing.T, roleId sdk.AccountObjectIdentifier) f
 	currentRole, err := c.context.client.ContextFunctions.CurrentRole(ctx)
 	require.NoError(t, err)
 
-	err = c.context.client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(roleId))
+	err = c.context.client.Sessions.UseRole(ctx, roleId)
 	require.NoError(t, err)
 
 	return func() {
-		err = c.context.client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(currentRole))
+		err = c.context.client.Sessions.UseRole(ctx, currentRole)
 		require.NoError(t, err)
 	}
 }

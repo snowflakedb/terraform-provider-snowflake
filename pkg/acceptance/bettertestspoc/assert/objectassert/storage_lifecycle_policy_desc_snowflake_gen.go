@@ -25,12 +25,7 @@ func StorageLifecyclePolicyDetails(t *testing.T, id sdk.SchemaObjectIdentifier) 
 	}
 }
 
-func StorageLifecyclePolicyDetailsFromObject(t *testing.T, storageLifecyclePolicyDetails *sdk.StorageLifecyclePolicyDetails) *StorageLifecyclePolicyDetailsAssert {
-	t.Helper()
-	return &StorageLifecyclePolicyDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLifecyclePolicyDetails"), storageLifecyclePolicyDetails.ID(), storageLifecyclePolicyDetails),
-	}
-}
+// Adjusted manually: removed StorageLifecyclePolicyDetailsFromObject — CortexAgentDetails has no Id field or ID() method.
 
 func (s *StorageLifecyclePolicyDetailsAssert) HasName(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
@@ -43,66 +38,31 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasName(expected string) *StorageL
 	return s
 }
 
-func (s *StorageLifecyclePolicyDetailsAssert) HasNameNotEmpty() *StorageLifecyclePolicyDetailsAssert {
+// Adjusted manually: TableColumnSignature.Type is a datatypes.DataType interface, so the generated
+// slices.Equal comparison compared interface pointers instead of values. Compare each element by
+// name and use datatypes.AreTheSame for the data type.
+func (s *StorageLifecyclePolicyDetailsAssert) HasSignature(expected ...sdk.TableColumnSignature) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
+		if len(o.Signature) != len(expected) {
+			return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
+		}
+		for i := range expected {
+			if o.Signature[i].Name != expected[i].Name || !datatypes.AreTheSame(o.Signature[i].Type, expected[i].Type) {
+				return fmt.Errorf("expected signature: %v; got: %v", expected, o.Signature)
+			}
 		}
 		return nil
 	})
 	return s
 }
 
-func (s *StorageLifecyclePolicyDetailsAssert) HasDatabaseName(expected string) *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.DatabaseName != expected {
-			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *StorageLifecyclePolicyDetailsAssert) HasDatabaseNameNotEmpty() *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.DatabaseName == "" {
-			return fmt.Errorf("expected database name to be non-empty")
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaName(expected string) *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.SchemaName != expected {
-			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *StorageLifecyclePolicyDetailsAssert) HasSchemaNameNotEmpty() *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.SchemaName == "" {
-			return fmt.Errorf("expected schema name to be non-empty")
-		}
-		return nil
-	})
-	return s
-}
-
+// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
 func (s *StorageLifecyclePolicyDetailsAssert) HasReturnType(expected datatypes.DataType) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
 		if !datatypes.AreTheSame(o.ReturnType, expected) {
-			return fmt.Errorf("expected return type: %v; got: %v", expected.ToSql(), o.ReturnType.ToSql())
+			return fmt.Errorf("expected return type: %v; got: %v", expected, o.ReturnType)
 		}
 		return nil
 	})
@@ -114,17 +74,6 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasBody(expected string) *StorageL
 		t.Helper()
 		if o.Body != expected {
 			return fmt.Errorf("expected body: %v; got: %v", expected, o.Body)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *StorageLifecyclePolicyDetailsAssert) HasBodyNotEmpty() *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.Body == "" {
-			return fmt.Errorf("expected body to be non-empty")
 		}
 		return nil
 	})
@@ -145,33 +94,11 @@ func (s *StorageLifecyclePolicyDetailsAssert) HasArchiveForDays(expected int) *S
 	return s
 }
 
-func (s *StorageLifecyclePolicyDetailsAssert) HasNoArchiveForDays() *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.ArchiveForDays != nil {
-			return fmt.Errorf("expected archive for days to be nil; got: %v", *o.ArchiveForDays)
-		}
-		return nil
-	})
-	return s
-}
-
 func (s *StorageLifecyclePolicyDetailsAssert) HasArchiveTier(expected string) *StorageLifecyclePolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
 		t.Helper()
 		if o.ArchiveTier != expected {
 			return fmt.Errorf("expected archive tier: %v; got: %v", expected, o.ArchiveTier)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *StorageLifecyclePolicyDetailsAssert) HasArchiveTierNotEmpty() *StorageLifecyclePolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLifecyclePolicyDetails) error {
-		t.Helper()
-		if o.ArchiveTier == "" {
-			return fmt.Errorf("expected archive tier to be non-empty")
 		}
 		return nil
 	})

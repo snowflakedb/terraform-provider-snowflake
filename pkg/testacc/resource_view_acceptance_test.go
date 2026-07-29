@@ -484,11 +484,17 @@ func TestAcc_View_complete(t *testing.T) {
 	projectionPolicy, projectionPolicyCleanup := testClient().ProjectionPolicy.CreateProjectionPolicy(t)
 	t.Cleanup(projectionPolicyCleanup)
 
-	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyWithRequest(
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyWithOptions(
 		t,
-		[]sdk.CreateMaskingPolicySignatureRequest{
-			*sdk.NewCreateMaskingPolicySignatureRequest("One", testdatatypes.DataTypeNumber),
-			*sdk.NewCreateMaskingPolicySignatureRequest("Two", testdatatypes.DataTypeNumber),
+		[]sdk.TableColumnSignature{
+			{
+				Name: "One",
+				Type: testdatatypes.DataTypeNumber,
+			},
+			{
+				Name: "Two",
+				Type: testdatatypes.DataTypeNumber,
+			},
 		},
 		testdatatypes.DataTypeNumber,
 		`
@@ -497,6 +503,7 @@ case
 	else Two
 end;;
 `,
+		new(sdk.CreateMaskingPolicyOptions),
 	)
 	t.Cleanup(maskingPolicyCleanup)
 
@@ -631,10 +638,13 @@ func TestAcc_View_columns(t *testing.T) {
 	})
 	t.Cleanup(tableCleanup)
 
-	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyWithRequest(
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyWithOptions(
 		t,
-		[]sdk.CreateMaskingPolicySignatureRequest{
-			*sdk.NewCreateMaskingPolicySignatureRequest("One", testdatatypes.DataTypeNumber),
+		[]sdk.TableColumnSignature{
+			{
+				Name: "One",
+				Type: testdatatypes.DataTypeNumber,
+			},
 		},
 		testdatatypes.DataTypeNumber,
 		`
@@ -643,6 +653,7 @@ case
 	else 0
 end;;
 `,
+		new(sdk.CreateMaskingPolicyOptions),
 	)
 	t.Cleanup(maskingPolicyCleanup)
 
@@ -775,10 +786,13 @@ func TestAcc_View_columnsWithMaskingPolicyWithoutUsing(t *testing.T) {
 	})
 	t.Cleanup(tableCleanup)
 
-	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyWithRequest(
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyWithOptions(
 		t,
-		[]sdk.CreateMaskingPolicySignatureRequest{
-			*sdk.NewCreateMaskingPolicySignatureRequest("One", testdatatypes.DataTypeNumber),
+		[]sdk.TableColumnSignature{
+			{
+				Name: "One",
+				Type: testdatatypes.DataTypeNumber,
+			},
 		},
 		testdatatypes.DataTypeNumber,
 		`
@@ -787,6 +801,7 @@ case
 	else 0
 end;;
 `,
+		new(sdk.CreateMaskingPolicyOptions),
 	)
 	t.Cleanup(maskingPolicyCleanup)
 

@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"reflect"
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -26,11 +25,16 @@ func ValidObjectIdentifier(objectIdentifier ObjectIdentifier) bool {
 	return ValidObjectName(objectIdentifier.Name())
 }
 
-func anyValueSet(values ...any) bool {
-	return slices.ContainsFunc(values, valueSet)
+func anyValueSet(values ...interface{}) bool {
+	for _, v := range values {
+		if valueSet(v) {
+			return true
+		}
+	}
+	return false
 }
 
-func exactlyOneValueSet(values ...any) bool {
+func exactlyOneValueSet(values ...interface{}) bool {
 	var count int
 	for _, v := range values {
 		if valueSet(v) {
@@ -40,7 +44,7 @@ func exactlyOneValueSet(values ...any) bool {
 	return count == 1
 }
 
-func moreThanOneValueSet(values ...any) bool {
+func moreThanOneValueSet(values ...interface{}) bool {
 	var count int
 	for _, v := range values {
 		if valueSet(v) {
@@ -50,7 +54,7 @@ func moreThanOneValueSet(values ...any) bool {
 	return count > 1
 }
 
-func everyValueSet(values ...any) bool {
+func everyValueSet(values ...interface{}) bool {
 	for _, v := range values {
 		if !valueSet(v) {
 			return false
@@ -59,11 +63,16 @@ func everyValueSet(values ...any) bool {
 	return true
 }
 
-func everyValueNil(values ...any) bool {
-	return !slices.ContainsFunc(values, valueSet)
+func everyValueNil(values ...interface{}) bool {
+	for _, v := range values {
+		if valueSet(v) {
+			return false
+		}
+	}
+	return true
 }
 
-func valueSet(value any) bool {
+func valueSet(value interface{}) bool {
 	if value == nil {
 		return false
 	}

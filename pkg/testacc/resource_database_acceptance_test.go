@@ -63,8 +63,6 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasDefaultCatalogValueExplicit().
 			HasDefaultReplaceInvalidCharactersValueExplicit().
 			HasDefaultDefaultDdlCollationValueExplicit().
-			HasDefaultDefaultNotebookComputePoolCpuValueExplicit().
-			HasDefaultDefaultNotebookComputePoolGpuValueExplicit().
 			HasDefaultStorageSerializationPolicyValueExplicit().
 			HasDefaultLogLevelValueExplicit().
 			HasDefaultLogEventLevelValueExplicit().
@@ -94,8 +92,6 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 		WithCatalog(catalogId.Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
-		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
 		WithLogEventLevel(string(sdk.LogLevelInfo)).
@@ -126,8 +122,6 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasCatalog(catalogId.Name()).
 			HasReplaceInvalidCharacters(true).
 			HasDefaultDdlCollation("en_US").
-			HasDefaultNotebookComputePoolCpu("CPU_X64_S").
-			HasDefaultNotebookComputePoolGpu("GPU_NV_S").
 			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 			HasLogLevel(sdk.LogLevelInfo).
 			HasLogEventLevel(sdk.LogLevelInfo).
@@ -150,8 +144,6 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasCatalogString(catalogId.Name()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
-			HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
-			HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 			HasLogLevelString(string(sdk.LogLevelInfo)).
 			HasLogEventLevelString(string(sdk.LogLevelInfo)).
@@ -231,8 +223,6 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 							WithCatalog(catalogId).
 							WithReplaceInvalidCharacters(true).
 							WithDefaultDdlCollation("en_US").
-							WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-							WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 							WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 							WithLogLevel(sdk.LogLevelInfo).
 							WithTraceLevel(sdk.TraceLevelAlways).
@@ -305,8 +295,6 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 		accountCatalog                                 = new(string)
 		accountReplaceInvalidCharacters                = new(string)
 		accountDefaultDdlCollation                     = new(string)
-		accountDefaultNotebookComputePoolCpu           = new(string)
-		accountDefaultNotebookComputePoolGpu           = new(string)
 		accountStorageSerializationPolicy              = new(string)
 		accountLogLevel                                = new(string)
 		accountTraceLevel                              = new(string)
@@ -320,27 +308,25 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 	)
 
 	completeConfigVariables := config.Variables{
-		"name":                                          config.StringVariable(id.Name()),
-		"comment":                                       config.StringVariable(comment),
-		"transient":                                     config.BoolVariable(false),
-		"account_identifier":                            config.StringVariable(secondaryAccountIdentifier),
-		"with_failover":                                 config.BoolVariable(true),
-		"ignore_edition_check":                          config.BoolVariable(true),
-		"data_retention_time_in_days":                   config.IntegerVariable(20),
-		"max_data_extension_time_in_days":               config.IntegerVariable(30),
-		"external_volume":                               config.StringVariable(externalVolumeId.Name()),
-		"catalog":                                       config.StringVariable(catalogId.Name()),
-		"replace_invalid_characters":                    config.BoolVariable(true),
-		"default_ddl_collation":                         config.StringVariable("en_US"),
-		"default_notebook_compute_pool_cpu":             config.StringVariable("CPU_X64_S"),
-		"default_notebook_compute_pool_gpu":             config.StringVariable("GPU_NV_S"),
-		"storage_serialization_policy":                  config.StringVariable(string(sdk.StorageSerializationPolicyCompatible)),
-		"log_level":                                     config.StringVariable(string(sdk.LogLevelInfo)),
-		"trace_level":                                   config.StringVariable(string(sdk.TraceLevelPropagate)),
-		"suspend_task_after_num_failures":               config.IntegerVariable(20),
-		"task_auto_retry_attempts":                      config.IntegerVariable(20),
-		"user_task_managed_initial_warehouse_size":      config.StringVariable(string(sdk.WarehouseSizeXLarge)),
-		"user_task_timeout_ms":                          config.IntegerVariable(1200000),
+		"name":                                     config.StringVariable(id.Name()),
+		"comment":                                  config.StringVariable(comment),
+		"transient":                                config.BoolVariable(false),
+		"account_identifier":                       config.StringVariable(secondaryAccountIdentifier),
+		"with_failover":                            config.BoolVariable(true),
+		"ignore_edition_check":                     config.BoolVariable(true),
+		"data_retention_time_in_days":              config.IntegerVariable(20),
+		"max_data_extension_time_in_days":          config.IntegerVariable(30),
+		"external_volume":                          config.StringVariable(externalVolumeId.Name()),
+		"catalog":                                  config.StringVariable(catalogId.Name()),
+		"replace_invalid_characters":               config.BoolVariable(true),
+		"default_ddl_collation":                    config.StringVariable("en_US"),
+		"storage_serialization_policy":             config.StringVariable(string(sdk.StorageSerializationPolicyCompatible)),
+		"log_level":                                config.StringVariable(string(sdk.LogLevelInfo)),
+		"trace_level":                              config.StringVariable(string(sdk.TraceLevelPropagate)),
+		"suspend_task_after_num_failures":          config.IntegerVariable(20),
+		"task_auto_retry_attempts":                 config.IntegerVariable(20),
+		"user_task_managed_initial_warehouse_size": config.StringVariable(string(sdk.WarehouseSizeXLarge)),
+		"user_task_timeout_ms":                     config.IntegerVariable(1200000),
 		"user_task_minimum_trigger_interval_in_seconds": config.IntegerVariable(120),
 		"quoted_identifiers_ignore_case":                config.BoolVariable(true),
 		"enable_console_output":                         config.BoolVariable(true),
@@ -362,8 +348,6 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					*accountCatalog = helpers.FindParameter(t, params, sdk.AccountParameterCatalog).Value
 					*accountReplaceInvalidCharacters = helpers.FindParameter(t, params, sdk.AccountParameterReplaceInvalidCharacters).Value
 					*accountDefaultDdlCollation = helpers.FindParameter(t, params, sdk.AccountParameterDefaultDdlCollation).Value
-					*accountDefaultNotebookComputePoolCpu = helpers.FindParameter(t, params, sdk.AccountParameterDefaultNotebookComputePoolCpu).Value
-					*accountDefaultNotebookComputePoolGpu = helpers.FindParameter(t, params, sdk.AccountParameterDefaultNotebookComputePoolGpu).Value
 					*accountStorageSerializationPolicy = helpers.FindParameter(t, params, sdk.AccountParameterStorageSerializationPolicy).Value
 					*accountLogLevel = helpers.FindParameter(t, params, sdk.AccountParameterLogLevel).Value
 					*accountTraceLevel = helpers.FindParameter(t, params, sdk.AccountParameterTraceLevel).Value
@@ -388,8 +372,6 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "catalog", accountCatalog),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "replace_invalid_characters", accountReplaceInvalidCharacters),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr("snowflake_database.test", "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu),
-					resource.TestCheckResourceAttrPtr("snowflake_database.test", "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "storage_serialization_policy", accountStorageSerializationPolicy),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "log_level", accountLogLevel),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "trace_level", accountTraceLevel),
@@ -415,8 +397,6 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_database.test", "external_volume", externalVolumeId.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "replace_invalid_characters", "true"),
-					resource.TestCheckResourceAttr("snowflake_database.test", "default_notebook_compute_pool_cpu", "CPU_X64_S"),
-					resource.TestCheckResourceAttr("snowflake_database.test", "default_notebook_compute_pool_gpu", "GPU_NV_S"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
 					resource.TestCheckResourceAttr("snowflake_database.test", "log_level", string(sdk.LogLevelInfo)),
 					resource.TestCheckResourceAttr("snowflake_database.test", "trace_level", string(sdk.TraceLevelPropagate)),
@@ -443,8 +423,6 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "catalog", accountCatalog),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "replace_invalid_characters", accountReplaceInvalidCharacters),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr("snowflake_database.test", "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu),
-					resource.TestCheckResourceAttrPtr("snowflake_database.test", "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "storage_serialization_policy", accountStorageSerializationPolicy),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "log_level", accountLogLevel),
 					resource.TestCheckResourceAttrPtr("snowflake_database.test", "trace_level", accountTraceLevel),
@@ -480,27 +458,25 @@ func TestAcc_Database_Update(t *testing.T) {
 		WithComment(comment)
 
 	completeConfigVariables := config.Variables{
-		"name":                                          config.StringVariable(newId.Name()),
-		"comment":                                       config.StringVariable(newComment),
-		"transient":                                     config.BoolVariable(false),
-		"account_identifier":                            config.StringVariable(secondaryAccountIdentifier),
-		"with_failover":                                 config.BoolVariable(true),
-		"ignore_edition_check":                          config.BoolVariable(true),
-		"data_retention_time_in_days":                   config.IntegerVariable(20),
-		"max_data_extension_time_in_days":               config.IntegerVariable(30),
-		"external_volume":                               config.StringVariable(externalVolumeId.Name()),
-		"catalog":                                       config.StringVariable(catalogId.Name()),
-		"replace_invalid_characters":                    config.BoolVariable(true),
-		"default_ddl_collation":                         config.StringVariable("en_US"),
-		"default_notebook_compute_pool_cpu":             config.StringVariable("CPU_X64_S"),
-		"default_notebook_compute_pool_gpu":             config.StringVariable("GPU_NV_S"),
-		"storage_serialization_policy":                  config.StringVariable(string(sdk.StorageSerializationPolicyCompatible)),
-		"log_level":                                     config.StringVariable(string(sdk.LogLevelInfo)),
-		"trace_level":                                   config.StringVariable(string(sdk.TraceLevelPropagate)),
-		"suspend_task_after_num_failures":               config.IntegerVariable(20),
-		"task_auto_retry_attempts":                      config.IntegerVariable(20),
-		"user_task_managed_initial_warehouse_size":      config.StringVariable(string(sdk.WarehouseSizeXLarge)),
-		"user_task_timeout_ms":                          config.IntegerVariable(1200000),
+		"name":                                     config.StringVariable(newId.Name()),
+		"comment":                                  config.StringVariable(newComment),
+		"transient":                                config.BoolVariable(false),
+		"account_identifier":                       config.StringVariable(secondaryAccountIdentifier),
+		"with_failover":                            config.BoolVariable(true),
+		"ignore_edition_check":                     config.BoolVariable(true),
+		"data_retention_time_in_days":              config.IntegerVariable(20),
+		"max_data_extension_time_in_days":          config.IntegerVariable(30),
+		"external_volume":                          config.StringVariable(externalVolumeId.Name()),
+		"catalog":                                  config.StringVariable(catalogId.Name()),
+		"replace_invalid_characters":               config.BoolVariable(true),
+		"default_ddl_collation":                    config.StringVariable("en_US"),
+		"storage_serialization_policy":             config.StringVariable(string(sdk.StorageSerializationPolicyCompatible)),
+		"log_level":                                config.StringVariable(string(sdk.LogLevelInfo)),
+		"trace_level":                              config.StringVariable(string(sdk.TraceLevelPropagate)),
+		"suspend_task_after_num_failures":          config.IntegerVariable(20),
+		"task_auto_retry_attempts":                 config.IntegerVariable(20),
+		"user_task_managed_initial_warehouse_size": config.StringVariable(string(sdk.WarehouseSizeXLarge)),
+		"user_task_timeout_ms":                     config.IntegerVariable(1200000),
 		"user_task_minimum_trigger_interval_in_seconds": config.IntegerVariable(120),
 		"quoted_identifiers_ignore_case":                config.BoolVariable(true),
 		"enable_console_output":                         config.BoolVariable(true),
@@ -535,8 +511,6 @@ func TestAcc_Database_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_database.test", "catalog", catalogId.Name()),
 					resource.TestCheckResourceAttr("snowflake_database.test", "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "default_ddl_collation", "en_US"),
-					resource.TestCheckResourceAttr("snowflake_database.test", "default_notebook_compute_pool_cpu", "CPU_X64_S"),
-					resource.TestCheckResourceAttr("snowflake_database.test", "default_notebook_compute_pool_gpu", "GPU_NV_S"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "storage_serialization_policy", string(sdk.StorageSerializationPolicyCompatible)),
 					resource.TestCheckResourceAttr("snowflake_database.test", "log_level", string(sdk.LogLevelInfo)),
 					resource.TestCheckResourceAttr("snowflake_database.test", "trace_level", string(sdk.TraceLevelPropagate)),
@@ -1184,7 +1158,7 @@ func TestAcc_Database_WithoutPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDetails(t, id).DoesNotContainPublicSchema(),
+					objectassert.DatabaseDescribe(t, id).DoesNotContainPublicSchema(),
 				),
 			},
 			// Change in parameter shouldn't change the state Snowflake
@@ -1198,7 +1172,7 @@ func TestAcc_Database_WithoutPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDetails(t, id).DoesNotContainPublicSchema(),
+					objectassert.DatabaseDescribe(t, id).DoesNotContainPublicSchema(),
 				),
 			},
 		},
@@ -1223,7 +1197,7 @@ func TestAcc_Database_WithPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDetails(t, id).ContainsPublicSchema(),
+					objectassert.DatabaseDescribe(t, id).ContainsPublicSchema(),
 				),
 			},
 			// Change in parameter shouldn't change the state Snowflake
@@ -1237,7 +1211,7 @@ func TestAcc_Database_WithPublicSchema(t *testing.T) {
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr("snowflake_database.test", "id", id.Name())),
-					objectassert.DatabaseDetails(t, id).ContainsPublicSchema(),
+					objectassert.DatabaseDescribe(t, id).ContainsPublicSchema(),
 				),
 			},
 		},

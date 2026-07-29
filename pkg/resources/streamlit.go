@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"path"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -239,7 +238,9 @@ func CreateContextStreamlit(ctx context.Context, d *schema.ResourceData, meta an
 		for i, v := range raw {
 			integrations[i] = sdk.NewAccountObjectIdentifier(v)
 		}
-		req.WithExternalAccessIntegrations(integrations)
+		req.WithExternalAccessIntegrations(sdk.ExternalAccessIntegrationsRequest{
+			ExternalAccessIntegrations: integrations,
+		})
 	}
 
 	if err := client.Streamlits.Create(ctx, req); err != nil {
@@ -396,22 +397,20 @@ func UpdateContextStreamlit(ctx context.Context, d *schema.ResourceData, meta an
 
 	if d.HasChange("external_access_integrations") {
 		raw := expandStringList(d.Get("external_access_integrations").(*schema.Set).List())
-		if len(raw) == 0 {
-			unset.WithExternalAccessIntegrations(true)
-		} else {
-			integrations := make([]sdk.AccountObjectIdentifier, len(raw))
-			for i, v := range raw {
-				integrationId, err := sdk.ParseAccountObjectIdentifier(v)
-				if err != nil {
-					return diag.FromErr(err)
-				}
-				integrations[i] = integrationId
+		integrations := make([]sdk.AccountObjectIdentifier, len(raw))
+		for i, v := range raw {
+			integrationId, err := sdk.ParseAccountObjectIdentifier(v)
+			if err != nil {
+				return diag.FromErr(err)
 			}
-			set.WithExternalAccessIntegrations(integrations)
+			integrations[i] = integrationId
 		}
+		set.WithExternalAccessIntegrations(sdk.ExternalAccessIntegrationsRequest{
+			ExternalAccessIntegrations: integrations,
+		})
 	}
 
-	if !reflect.DeepEqual(*set, sdk.StreamlitSetRequest{}) {
+	if (*set != sdk.StreamlitSetRequest{}) {
 		if err := client.Streamlits.Alter(ctx, sdk.NewAlterStreamlitRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(err)
 		}

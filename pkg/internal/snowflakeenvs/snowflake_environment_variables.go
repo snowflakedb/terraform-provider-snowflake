@@ -1,7 +1,6 @@
 package snowflakeenvs
 
 const (
-	Account                   = "SNOWFLAKE_ACCOUNT"
 	AccountName               = "SNOWFLAKE_ACCOUNT_NAME"
 	OrganizationName          = "SNOWFLAKE_ORGANIZATION_NAME"
 	User                      = "SNOWFLAKE_USER"

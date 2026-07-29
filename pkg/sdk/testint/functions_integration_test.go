@@ -125,19 +125,19 @@ func TestInt_Functions(t *testing.T) {
 				HasBody(definition).
 				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
+				HasSecretsNil().
 				HasImports(`[]`).
 				HasExactlyImportsNormalizedInAnyOrder().
 				HasHandler(handler).
-				HasNoRuntimeVersion().
+				HasRuntimeVersionNil().
 				HasPackages(`[]`).
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -242,8 +242,8 @@ func TestInt_Functions(t *testing.T) {
 				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
 				HasTargetPath(targetPath).
 				HasNormalizedTargetPath("~", jarName).
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -308,24 +308,24 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnDataType(dataType).
 				HasReturnNotNull(false).
 				HasLanguage("JAVA").
-				HasNoBody().
+				HasBodyNil().
 				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
+				HasSecretsNil().
 				HasImports(fmt.Sprintf(`[%s]`, importPath)).
 				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
 					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
 				}).
 				HasHandler(handler).
-				HasNoRuntimeVersion().
+				HasRuntimeVersionNil().
 				HasPackages(`[]`).
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -402,7 +402,7 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnDataType(dataType).
 				HasReturnNotNull(true).
 				HasLanguage("JAVA").
-				HasNoBody().
+				HasBodyNil().
 				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
 				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
@@ -417,10 +417,10 @@ func TestInt_Functions(t *testing.T) {
 				HasRuntimeVersion("11").
 				HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
 				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -464,7 +464,7 @@ func TestInt_Functions(t *testing.T) {
 					StageLocation: stage.ID().FullyQualifiedName(), PathOnStage: tmpJavaFunctionDifferentStage.JarName,
 				}).
 				HasHandler(handler).
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil(),
 		)
 	})
@@ -561,19 +561,19 @@ func TestInt_Functions(t *testing.T) {
 				HasBody(definition).
 				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
-				HasNoImports().
+				HasSecretsNil().
+				HasImportsNil().
 				HasExactlyImportsNormalizedInAnyOrder().
-				HasNoHandler().
-				HasNoRuntimeVersion().
-				HasNoPackages().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -644,19 +644,19 @@ func TestInt_Functions(t *testing.T) {
 				HasBody(definition).
 				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
-				HasNoImports().
+				HasSecretsNil().
+				HasImportsNil().
 				HasExactlyImportsNormalizedInAnyOrder().
-				HasNoHandler().
-				HasNoRuntimeVersion().
-				HasNoPackages().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -723,16 +723,16 @@ func TestInt_Functions(t *testing.T) {
 				HasBody(definition).
 				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
+				HasSecretsNil().
 				HasImports(`[]`).
 				HasExactlyImportsNormalizedInAnyOrder().
 				HasHandler(funcName).
 				HasRuntimeVersion(testvars.PythonRuntime).
 				HasPackages(`[]`).
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
 				HasInstalledPackagesNotEmpty().
 				HasIsAggregate(false),
@@ -827,7 +827,7 @@ func TestInt_Functions(t *testing.T) {
 				HasRuntimeVersion(testvars.PythonRuntime).
 				HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
 				HasExactlyPackagesInAnyOrder("absl-py==0.12.0", "about-time==4.2.1").
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
 				HasInstalledPackagesNotEmpty().
 				HasIsAggregate(false),
@@ -892,12 +892,12 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnDataType(dataType).
 				HasReturnNotNull(false).
 				HasLanguage("PYTHON").
-				HasNoBody().
+				HasBodyNil().
 				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
+				HasSecretsNil().
 				HasImports(fmt.Sprintf(`[%s]`, tmpPythonFunction.PythonModuleLocation())).
 				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
 					StageLocation: "~", PathOnStage: tmpPythonFunction.PythonFileName(),
@@ -906,7 +906,7 @@ func TestInt_Functions(t *testing.T) {
 				HasRuntimeVersion(testvars.PythonRuntime).
 				HasPackages(`[]`).
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
 				HasInstalledPackagesNotEmpty().
 				HasIsAggregate(false),
@@ -983,7 +983,7 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnDataType(dataType).
 				HasReturnNotNull(true).
 				HasLanguage("PYTHON").
-				HasNoBody().
+				HasBodyNil().
 				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
 				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
@@ -998,7 +998,7 @@ func TestInt_Functions(t *testing.T) {
 				HasRuntimeVersion(testvars.PythonRuntime).
 				HasPackages(`['absl-py==0.12.0','about-time==4.2.1']`).
 				HasExactlyPackagesInAnyOrder("about-time==4.2.1", "absl-py==0.12.0").
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
 				HasInstalledPackagesNotEmpty().
 				HasIsAggregate(false),
@@ -1069,19 +1069,19 @@ func TestInt_Functions(t *testing.T) {
 				HasBody(definition).
 				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
+				HasSecretsNil().
 				HasImports(`[]`).
 				HasExactlyImportsNormalizedInAnyOrder().
 				HasHandler(handler).
 				HasRuntimeVersion("2.12").
 				HasPackages(`[]`).
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -1184,8 +1184,8 @@ func TestInt_Functions(t *testing.T) {
 				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
 				HasTargetPath(targetPath).
 				HasNormalizedTargetPath("~", jarName).
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -1248,12 +1248,12 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnDataType(dataType).
 				HasReturnNotNull(false).
 				HasLanguage("SCALA").
-				HasNoBody().
+				HasBodyNil().
 				HasNullHandling(string(sdk.NullInputBehaviorCalledOnNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorVolatile)).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
+				HasSecretsNil().
 				HasImports(fmt.Sprintf(`[%s]`, importPath)).
 				HasExactlyImportsNormalizedInAnyOrder(sdk.NormalizedPath{
 					StageLocation: "~", PathOnStage: tmpJavaFunction.JarName,
@@ -1262,10 +1262,10 @@ func TestInt_Functions(t *testing.T) {
 				HasRuntimeVersion("2.12").
 				HasPackages(`[]`).
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -1339,7 +1339,7 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnDataType(dataType).
 				HasReturnNotNull(true).
 				HasLanguage("SCALA").
-				HasNoBody().
+				HasBodyNil().
 				HasNullHandling(string(sdk.NullInputBehaviorReturnsNullInput)).
 				HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
 				HasExactlyExternalAccessIntegrations(externalAccessIntegration).
@@ -1354,10 +1354,10 @@ func TestInt_Functions(t *testing.T) {
 				HasRuntimeVersion("2.12").
 				HasPackages(`[com.snowflake:snowpark:1.14.0,com.snowflake:telemetry:0.1.0]`).
 				HasExactlyPackagesInAnyOrder("com.snowflake:snowpark:1.14.0", "com.snowflake:telemetry:0.1.0").
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -1420,21 +1420,21 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnNotNull(false).
 				HasLanguage("SQL").
 				HasBody(definition).
-				HasNoNullHandling().
-				HasNoVolatility().
-				HasNoExternalAccessIntegrations().
+				HasNullHandlingNil().
+				HasVolatilityNil().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
-				HasNoImports().
+				HasSecretsNil().
+				HasImportsNil().
 				HasExactlyImportsNormalizedInAnyOrder().
-				HasNoHandler().
-				HasNoRuntimeVersion().
-				HasNoPackages().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -1534,23 +1534,23 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnNotNull(true).
 				HasLanguage("SQL").
 				HasBody(definition).
-				HasNoNullHandling().
+				HasNullHandlingNil().
 				// TODO [SNOW-1348103]: volatility is not returned and is present in create syntax
 				// HasVolatility(string(sdk.ReturnResultsBehaviorImmutable)).
-				HasNoVolatility().
-				HasNoExternalAccessIntegrations().
+				HasVolatilityNil().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
-				HasNoImports().
+				HasSecretsNil().
+				HasImportsNil().
 				HasExactlyImportsNormalizedInAnyOrder().
-				HasNoHandler().
-				HasNoRuntimeVersion().
-				HasNoPackages().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -1610,21 +1610,21 @@ func TestInt_Functions(t *testing.T) {
 				HasReturnNotNull(false).
 				HasLanguage("SQL").
 				HasBody(definition).
-				HasNoNullHandling().
-				HasNoVolatility().
-				HasNoExternalAccessIntegrations().
+				HasNullHandlingNil().
+				HasVolatilityNil().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets().
-				HasNoImports().
+				HasSecretsNil().
+				HasImportsNil().
 				HasExactlyImportsNormalizedInAnyOrder().
-				HasNoHandler().
-				HasNoRuntimeVersion().
-				HasNoPackages().
+				HasHandlerNil().
+				HasRuntimeVersionNil().
+				HasPackagesNil().
 				HasExactlyPackagesInAnyOrder().
-				HasNoTargetPath().
+				HasTargetPathNil().
 				HasNormalizedTargetPathNil().
-				HasNoInstalledPackages().
-				HasNoIsAggregate(),
+				HasInstalledPackagesNil().
+				HasIsAggregateNil(),
 		)
 
 		assertThatObject(
@@ -1698,9 +1698,9 @@ func TestInt_Functions(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.FunctionDetails(t, id).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
-				HasNoSecrets(),
+				HasSecretsNil(),
 		)
 
 		assertThatObject(
@@ -1765,10 +1765,10 @@ func TestInt_Functions(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.FunctionDetails(t, id).
-				HasNoExternalAccessIntegrations().
+				HasExternalAccessIntegrationsNil().
 				HasExactlyExternalAccessIntegrationsNormalizedInAnyOrder().
 				// TODO [SNOW-1850370]: apparently UNSET external access integrations cleans out secrets in the describe but leaves it in SHOW
-				HasNoSecrets(),
+				HasSecretsNil(),
 		)
 
 		assertThatObject(
@@ -1787,7 +1787,7 @@ func TestInt_Functions(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.FunctionDetails(t, id).
-				HasNoSecrets(),
+				HasSecretsNil(),
 		)
 	})
 

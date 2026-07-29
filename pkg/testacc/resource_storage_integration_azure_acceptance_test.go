@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -107,11 +105,9 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:      storageIntegrationAzureModelNoAttributes.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
-				// in this test
+				ResourceName:            storageIntegrationAzureModelNoAttributes.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
@@ -211,11 +207,9 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 			},
 			// IMPORT
 			{
-				ResourceName:      storageIntegrationAzureAllAttributesChanged.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
-				// in this test
+				ResourceName:            storageIntegrationAzureAllAttributesChanged.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
 				ImportStateCheck: assertThatImport(
 					t,
@@ -258,81 +252,6 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 						HasConsentUrlSet().
 						HasMultiTenantAppNameSet(),
 				),
-			},
-		},
-	})
-}
-
-func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
-	basicId := testClient().Ids.RandomAccountObjectIdentifier()
-	completeId := testClient().Ids.RandomAccountObjectIdentifier()
-
-	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
-	azureTenantId := testenvs.GetOrSkipTest(t, testenvs.AzureExternalTenantId)
-	allowedLocations := []sdk.StorageLocation{
-		{Path: azureBucketUrl + "allowed-location/"},
-	}
-	blockedLocations := []sdk.StorageLocation{
-		{Path: azureBucketUrl + "blocked-location/"},
-	}
-	comment := random.Comment()
-
-	providerModel := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
-
-	basicStorageIntegrationAzureModel := model.StorageIntegrationAzure("w1", basicId.Name(), azureTenantId, false, allowedLocations)
-
-	completeStorageIntegrationAzureModel := model.StorageIntegrationAzure("w2", completeId.Name(), azureTenantId, false, allowedLocations).
-		WithStorageBlockedLocations(blockedLocations).
-		WithComment(comment).
-		WithUsePrivatelinkEndpoint("false")
-
-	basicRef := basicStorageIntegrationAzureModel.ResourceReference()
-	completeRef := completeStorageIntegrationAzureModel.ResourceReference()
-
-	_, storageIntegrationCleanup := testClient().StorageIntegration.CreateWithRequest(t, basicId,
-		sdk.NewCreateStorageIntegrationRequest(basicId, false, allowedLocations).
-			WithAzureStorageProviderParams(*sdk.NewAzureStorageParamsRequest(azureTenantId)))
-	t.Cleanup(storageIntegrationCleanup)
-
-	_, storageIntegrationCleanup = testClient().StorageIntegration.CreateWithRequest(t, completeId,
-		sdk.NewCreateStorageIntegrationRequest(completeId, false, allowedLocations).
-			WithAzureStorageProviderParams(*sdk.NewAzureStorageParamsRequest(azureTenantId)).
-			WithStorageBlockedLocations(blockedLocations).
-			WithComment(comment))
-	t.Cleanup(storageIntegrationCleanup)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationAzure),
-		Steps: []resource.TestStep{
-			// Import basic object
-			{
-				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAzureModel),
-				ResourceName:       basicRef,
-				ImportState:        true,
-				ImportStateId:      basicId.FullyQualifiedName(),
-				ImportStatePersist: true,
-			},
-			// Import complete object
-			{
-				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
-				ResourceName:       completeRef,
-				ImportState:        true,
-				ImportStateId:      completeId.FullyQualifiedName(),
-				ImportStatePersist: true,
-			},
-			// Expect empty plan
-			{
-				Config: config.FromModels(t, providerModel, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
 			},
 		},
 	})

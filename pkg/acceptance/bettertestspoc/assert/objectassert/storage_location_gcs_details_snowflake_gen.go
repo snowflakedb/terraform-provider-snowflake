@@ -11,11 +11,16 @@ import (
 )
 
 type StorageLocationGcsDetailsAssert struct {
-	*assert.SubStructAssert[sdk.StorageLocationGcsDetails]
+	*assert.SnowflakeObjectAssert[sdk.StorageLocationGcsDetails, sdk.AccountObjectIdentifier]
 }
 
-func NewStorageLocationGcsDetailsAssert() *StorageLocationGcsDetailsAssert {
-	return &StorageLocationGcsDetailsAssert{assert.NewSubStructAssert[sdk.StorageLocationGcsDetails]()}
+// StorageLocationGcsDetails removed manually
+
+func StorageLocationGcsDetailsFromObject(t *testing.T, storageLocationGcsDetails *sdk.StorageLocationGcsDetails) *StorageLocationGcsDetailsAssert {
+	t.Helper()
+	return &StorageLocationGcsDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLocationGcsDetails"), sdk.NewAccountObjectIdentifier(""), storageLocationGcsDetails),
+	}
 }
 
 func (s *StorageLocationGcsDetailsAssert) HasStorageGcpServiceAccount(expected string) *StorageLocationGcsDetailsAssert {
@@ -29,33 +34,11 @@ func (s *StorageLocationGcsDetailsAssert) HasStorageGcpServiceAccount(expected s
 	return s
 }
 
-func (s *StorageLocationGcsDetailsAssert) HasStorageGcpServiceAccountNotEmpty() *StorageLocationGcsDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationGcsDetails) error {
-		t.Helper()
-		if o.StorageGcpServiceAccount == "" {
-			return fmt.Errorf("expected storage gcp service account to be non-empty")
-		}
-		return nil
-	})
-	return s
-}
-
 func (s *StorageLocationGcsDetailsAssert) HasEncryptionKmsKeyId(expected string) *StorageLocationGcsDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationGcsDetails) error {
 		t.Helper()
 		if o.EncryptionKmsKeyId != expected {
 			return fmt.Errorf("expected encryption kms key id: %v; got: %v", expected, o.EncryptionKmsKeyId)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *StorageLocationGcsDetailsAssert) HasEncryptionKmsKeyIdNotEmpty() *StorageLocationGcsDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationGcsDetails) error {
-		t.Helper()
-		if o.EncryptionKmsKeyId == "" {
-			return fmt.Errorf("expected encryption kms key id to be non-empty")
 		}
 		return nil
 	})

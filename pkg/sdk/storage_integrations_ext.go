@@ -42,10 +42,6 @@ func (d *StorageIntegrationGcsDetails) ID() AccountObjectIdentifier {
 	return d.Id
 }
 
-func (d *StorageIntegrationAllDetails) ID() AccountObjectIdentifier {
-	return d.Id
-}
-
 func (v *storageIntegrations) DescribeAwsDetails(ctx context.Context, id AccountObjectIdentifier) (*StorageIntegrationAwsDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {

@@ -43,7 +43,7 @@ func TestAcc_ExternalS3Stage_DirectoryTableTimestampParsing(t *testing.T) {
 
 	stageModel := model.ExternalS3StageWithId(id, awsUrl).
 		WithStorageIntegration(storageIntegrationId.Name()).
-		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
 			Enable:          true,
 			RefreshOnCreate: sdk.Bool(true),
 		})

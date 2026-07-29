@@ -40,8 +40,6 @@ type CreateSchemaOptions struct {
 	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *StringAllowEmpty           `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
-	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
-	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -74,7 +72,7 @@ type AlterSchemaOptions struct {
 	schema               bool                      `ddl:"static" sql:"SCHEMA"`
 	IfExists             *bool                     `ddl:"keyword" sql:"IF EXISTS"`
 	name                 DatabaseObjectIdentifier  `ddl:"identifier"`
-	RenameTo             *DatabaseObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	NewName              *DatabaseObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	SwapWith             *DatabaseObjectIdentifier `ddl:"identifier" sql:"SWAP WITH"`
 	Set                  *SchemaSet                `ddl:"list,no_parentheses" sql:"SET"`
 	Unset                *SchemaUnset              `ddl:"list,no_parentheses" sql:"UNSET"`
@@ -92,8 +90,6 @@ type SchemaSet struct {
 	PipeExecutionPaused                     *bool                       `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *StringAllowEmpty           `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
-	DefaultNotebookComputePoolCpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
-	DefaultNotebookComputePoolGpu           *string                     `ddl:"parameter,single_quotes" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
@@ -116,8 +112,6 @@ type SchemaUnset struct {
 	PipeExecutionPaused                     *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
 	ReplaceInvalidCharacters                *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
 	DefaultDdlCollation                     *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
-	DefaultNotebookComputePoolCpu           *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU"`
-	DefaultNotebookComputePoolGpu           *bool `ddl:"keyword" sql:"DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU"`
 	StorageSerializationPolicy              *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
 	LogLevel                                *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	LogEventLevel                           *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`

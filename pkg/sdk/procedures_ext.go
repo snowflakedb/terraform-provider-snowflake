@@ -23,7 +23,6 @@ func (v *Procedure) ID() SchemaObjectIdentifierWithArguments {
 
 // ProcedureDetails contains aggregated describe results for the given procedure.
 type ProcedureDetails struct {
-	Id                         SchemaObjectIdentifierWithArguments
 	Signature                  string  // present for all procedure types
 	Returns                    string  // present for all procedure types
 	Language                   string  // present for all procedure types
@@ -151,8 +150,8 @@ func procedureDetailsFromRows(rows []ProcedureDetail) (*ProcedureDetails, error)
 				var found bool
 				for _, o := range p {
 					o := strings.TrimSpace(o)
-					if after, ok := strings.CutPrefix(o, JavaSnowparkPackageString); ok {
-						v.SnowparkVersion = after
+					if strings.HasPrefix(o, JavaSnowparkPackageString) {
+						v.SnowparkVersion = strings.TrimPrefix(o, JavaSnowparkPackageString)
 						found = true
 					} else {
 						filtered = append(filtered, o)
@@ -167,8 +166,8 @@ func procedureDetailsFromRows(rows []ProcedureDetail) (*ProcedureDetails, error)
 				var found bool
 				for _, o := range p {
 					o := strings.TrimSpace(o)
-					if after, ok := strings.CutPrefix(o, PythonSnowparkPackageString); ok {
-						v.SnowparkVersion = after
+					if strings.HasPrefix(o, PythonSnowparkPackageString) {
+						v.SnowparkVersion = strings.TrimPrefix(o, PythonSnowparkPackageString)
 						found = true
 					} else {
 						filtered = append(filtered, o)
@@ -213,21 +212,12 @@ func (d *ProcedureDetail) setOptionalBoolValueOrError(property string, field **b
 	return nil
 }
 
-func (d *ProcedureDetails) ID() SchemaObjectIdentifierWithArguments {
-	return d.Id
-}
-
 func (v *procedures) DescribeDetails(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*ProcedureDetails, error) {
 	rows, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	details, err := procedureDetailsFromRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	details.Id = id
-	return details, nil
+	return procedureDetailsFromRows(rows)
 }
 
 func (v *procedures) ShowParameters(ctx context.Context, id SchemaObjectIdentifierWithArguments) ([]*Parameter, error) {

@@ -100,8 +100,6 @@ resource "snowflake_database" "primary" {
 - `comment` (String) Specifies a comment for the database.
 - `data_retention_time_in_days` (Number) Specifies the number of days for which Time Travel actions (CLONE and UNDROP) can be performed on the database, as well as specifying the default Time Travel retention time for all schemas created in the database. For more details, see [Understanding & Using Time Travel](https://docs.snowflake.com/en/user-guide/data-time-travel).
 - `default_ddl_collation` (String) Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification).
-- `default_notebook_compute_pool_cpu` (String) Sets the preferred CPU compute pool used for Notebooks on CPU Container Runtime.
-- `default_notebook_compute_pool_gpu` (String) Sets the preferred GPU compute pool used for Notebooks on GPU Container Runtime.
 - `drop_public_schema_on_creation` (Boolean) Specifies whether to drop public schema on creation or not. Modifying the parameter after database is already created won't have any effect.
 - `enable_console_output` (Boolean) If true, enables stdout/stderr fast path logging for anonymous stored procedures.
 - `external_volume` (String) The database parameter that specifies the default external volume to use for Iceberg tables. For more information, see [EXTERNAL_VOLUME](https://docs.snowflake.com/en/sql-reference/parameters#external-volume).

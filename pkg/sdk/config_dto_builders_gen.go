@@ -25,11 +25,6 @@ func (s *ConfigDTO) WithOrganizationName(OrganizationName string) *ConfigDTO {
 	return s
 }
 
-func (s *ConfigDTO) WithAccount(Account string) *ConfigDTO {
-	s.Account = &Account
-	return s
-}
-
 func (s *ConfigDTO) WithUser(User string) *ConfigDTO {
 	s.User = &User
 	return s

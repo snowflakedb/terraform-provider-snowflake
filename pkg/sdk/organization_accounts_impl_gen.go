@@ -95,7 +95,7 @@ func (r *AlterOrganizationAccountRequest) toOpts() *AlterOrganizationAccountOpti
 	}
 	if r.RenameTo != nil {
 		opts.RenameTo = &OrganizationAccountRename{
-			RenameTo:   r.RenameTo.RenameTo,
+			NewName:    r.RenameTo.NewName,
 			SaveOldUrl: r.RenameTo.SaveOldUrl,
 		}
 	}

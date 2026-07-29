@@ -1126,66 +1126,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 		},
 	}
 
-	accountFallbackTests := []struct {
-		name     string
-		input    *ConfigDTO
-		expected func(t *testing.T, got gosnowflake.Config, err error)
-	}{
-		{
-			name: "account field used as fallback when org and name are not set",
-			input: NewConfigDTO().
-				WithAccount("myorg-myaccount").
-				WithUser("user"),
-			expected: func(t *testing.T, got gosnowflake.Config, err error) {
-				t.Helper()
-				require.NoError(t, err)
-				assert.Equal(t, "myorg-myaccount", got.Account)
-			},
-		},
-		{
-			name: "account field used with locator format",
-			input: NewConfigDTO().
-				WithAccount("xy12345").
-				WithUser("user"),
-			expected: func(t *testing.T, got gosnowflake.Config, err error) {
-				t.Helper()
-				require.NoError(t, err)
-				assert.Equal(t, "xy12345", got.Account)
-			},
-		},
-		{
-			name: "org and name take precedence over account field",
-			input: NewConfigDTO().
-				WithAccountName("acc").
-				WithOrganizationName("org").
-				WithAccount("should-be-ignored").
-				WithUser("user"),
-			expected: func(t *testing.T, got gosnowflake.Config, err error) {
-				t.Helper()
-				require.NoError(t, err)
-				assert.Equal(t, "org-acc", got.Account)
-			},
-		},
-		{
-			name: "no account fields set results in empty account",
-			input: NewConfigDTO().
-				WithUser("user"),
-			expected: func(t *testing.T, got gosnowflake.Config, err error) {
-				t.Helper()
-				require.NoError(t, err)
-				assert.Empty(t, got.Account)
-			},
-		},
-	}
-
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.input.DriverConfig()
-			tt.expected(t, got, err)
-		})
-	}
-
-	for _, tt := range accountFallbackTests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := tt.input.DriverConfig()
 			tt.expected(t, got, err)

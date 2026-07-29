@@ -34,8 +34,6 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 		accountCatalog                                 = new(string)
 		accountReplaceInvalidCharacters                = new(string)
 		accountDefaultDdlCollation                     = new(string)
-		accountDefaultNotebookComputePoolCpu           = new(string)
-		accountDefaultNotebookComputePoolGpu           = new(string)
 		accountStorageSerializationPolicy              = new(string)
 		accountLogLevel                                = new(string)
 		accountTraceLevel                              = new(string)
@@ -67,8 +65,6 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 					*accountCatalog = helpers.FindParameter(t, params, sdk.AccountParameterCatalog).Value
 					*accountReplaceInvalidCharacters = helpers.FindParameter(t, params, sdk.AccountParameterReplaceInvalidCharacters).Value
 					*accountDefaultDdlCollation = helpers.FindParameter(t, params, sdk.AccountParameterDefaultDdlCollation).Value
-					*accountDefaultNotebookComputePoolCpu = helpers.FindParameter(t, params, sdk.AccountParameterDefaultNotebookComputePoolCpu).Value
-					*accountDefaultNotebookComputePoolGpu = helpers.FindParameter(t, params, sdk.AccountParameterDefaultNotebookComputePoolGpu).Value
 					*accountStorageSerializationPolicy = helpers.FindParameter(t, params, sdk.AccountParameterStorageSerializationPolicy).Value
 					*accountLogLevel = helpers.FindParameter(t, params, sdk.AccountParameterLogLevel).Value
 					*accountTraceLevel = helpers.FindParameter(t, params, sdk.AccountParameterTraceLevel).Value
@@ -91,8 +87,6 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "catalog", accountCatalog),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "log_level", accountLogLevel),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "trace_level", accountTraceLevel),
@@ -122,8 +116,6 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "catalog", accountCatalog),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "log_level", accountLogLevel),
 					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "trace_level", accountTraceLevel),
@@ -165,8 +157,6 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 		WithCatalog(catalogId.Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
-		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyOptimized)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
 		WithLogEventLevel(string(sdk.LogLevelInfo)).
@@ -198,8 +188,6 @@ func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "catalog", catalogId.Name()),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "replace_invalid_characters", "true"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "default_ddl_collation", "en_US"),
-					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "default_notebook_compute_pool_cpu", "CPU_X64_S"),
-					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "default_notebook_compute_pool_gpu", "GPU_NV_S"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "storage_serialization_policy", string(sdk.StorageSerializationPolicyOptimized)),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "log_level", string(sdk.LogLevelInfo)),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "trace_level", string(sdk.TraceLevelPropagate)),

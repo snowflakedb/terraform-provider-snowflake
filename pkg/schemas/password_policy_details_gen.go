@@ -14,14 +14,6 @@ var DescribePasswordPolicyDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"database_name": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	"schema_name": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
 	"owner": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -81,8 +73,6 @@ var _ = DescribePasswordPolicyDetailsSchema
 func PasswordPolicyDetailsToSchema(passwordPolicyDetails *sdk.PasswordPolicyDetails) map[string]any {
 	passwordPolicyDetailsSchema := make(map[string]any)
 	passwordPolicyDetailsSchema["name"] = passwordPolicyDetails.Name
-	passwordPolicyDetailsSchema["database_name"] = passwordPolicyDetails.DatabaseName
-	passwordPolicyDetailsSchema["schema_name"] = passwordPolicyDetails.SchemaName
 	passwordPolicyDetailsSchema["owner"] = passwordPolicyDetails.Owner
 	passwordPolicyDetailsSchema["comment"] = passwordPolicyDetails.Comment
 	passwordPolicyDetailsSchema["password_min_length"] = passwordPolicyDetails.PasswordMinLength

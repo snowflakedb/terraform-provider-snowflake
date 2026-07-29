@@ -24,10 +24,12 @@ func PostgresInstanceDetails(t *testing.T, id sdk.AccountObjectIdentifier) *Post
 	}
 }
 
-func PostgresInstanceDetailsFromObject(t *testing.T, postgresInstanceDetails *sdk.PostgresInstanceDetails) *PostgresInstanceDetailsAssert {
+// Adjusted manually: removed PostgresInstanceDetailsFromObject — PostgresInstanceDetails has no ID() method.
+
+func PostgresInstanceDetailsFromObject(t *testing.T, id sdk.AccountObjectIdentifier, postgresInstanceDetails *sdk.PostgresInstanceDetails) *PostgresInstanceDetailsAssert {
 	t.Helper()
 	return &PostgresInstanceDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("PostgresInstanceDetails"), postgresInstanceDetails.ID(), postgresInstanceDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("PostgresInstanceDetails"), id, postgresInstanceDetails),
 	}
 }
 
@@ -36,17 +38,6 @@ func (p *PostgresInstanceDetailsAssert) HasName(expected string) *PostgresInstan
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasNameNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -64,33 +55,11 @@ func (p *PostgresInstanceDetailsAssert) HasOwner(expected string) *PostgresInsta
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasOwnerNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.Owner == "" {
-			return fmt.Errorf("expected owner to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *PostgresInstanceDetailsAssert) HasOwnerRoleType(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, o.OwnerRoleType)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasOwnerRoleTypeNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.OwnerRoleType == "" {
-			return fmt.Errorf("expected owner role type to be non-empty")
 		}
 		return nil
 	})
@@ -108,33 +77,11 @@ func (p *PostgresInstanceDetailsAssert) HasCreatedOn(expected string) *PostgresI
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasCreatedOnNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created on to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *PostgresInstanceDetailsAssert) HasUpdatedOn(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.UpdatedOn != expected {
 			return fmt.Errorf("expected updated on: %v; got: %v", expected, o.UpdatedOn)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasUpdatedOnNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.UpdatedOn == "" {
-			return fmt.Errorf("expected updated on to be non-empty")
 		}
 		return nil
 	})
@@ -152,33 +99,11 @@ func (p *PostgresInstanceDetailsAssert) HasType(expected string) *PostgresInstan
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasTypeNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.Type == "" {
-			return fmt.Errorf("expected type to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *PostgresInstanceDetailsAssert) HasHost(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.Host != expected {
 			return fmt.Errorf("expected host: %v; got: %v", expected, o.Host)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasHostNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.Host == "" {
-			return fmt.Errorf("expected host to be non-empty")
 		}
 		return nil
 	})
@@ -199,17 +124,6 @@ func (p *PostgresInstanceDetailsAssert) HasOrigin(expected string) *PostgresInst
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasNoOrigin() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.Origin != nil {
-			return fmt.Errorf("expected origin to be nil; got: %v", *o.Origin)
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *PostgresInstanceDetailsAssert) HasPrivatelinkServiceIdentifier(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
@@ -224,33 +138,11 @@ func (p *PostgresInstanceDetailsAssert) HasPrivatelinkServiceIdentifier(expected
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasNoPrivatelinkServiceIdentifier() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.PrivatelinkServiceIdentifier != nil {
-			return fmt.Errorf("expected privatelink service identifier to be nil; got: %v", *o.PrivatelinkServiceIdentifier)
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *PostgresInstanceDetailsAssert) HasComputeFamily(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.ComputeFamily != expected {
 			return fmt.Errorf("expected compute family: %v; got: %v", expected, o.ComputeFamily)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasComputeFamilyNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.ComputeFamily == "" {
-			return fmt.Errorf("expected compute family to be non-empty")
 		}
 		return nil
 	})
@@ -301,33 +193,11 @@ func (p *PostgresInstanceDetailsAssert) HasAuthenticationAuthority(expected stri
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasAuthenticationAuthorityNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.AuthenticationAuthority == "" {
-			return fmt.Errorf("expected authentication authority to be non-empty")
-		}
-		return nil
-	})
-	return p
-}
-
 func (p *PostgresInstanceDetailsAssert) HasState(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.State != expected {
 			return fmt.Errorf("expected state: %v; got: %v", expected, o.State)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasStateNotEmpty() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.State == "" {
-			return fmt.Errorf("expected state to be non-empty")
 		}
 		return nil
 	})
@@ -349,21 +219,10 @@ func (p *PostgresInstanceDetailsAssert) HasMaintenanceWindowStart(expected int) 
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.MaintenanceWindowStart == nil {
-			return fmt.Errorf("expected maintenance window start to have value; got: nil")
+			return fmt.Errorf("expected maintenance window start: %v; got: nil", expected)
 		}
 		if *o.MaintenanceWindowStart != expected {
 			return fmt.Errorf("expected maintenance window start: %v; got: %v", expected, *o.MaintenanceWindowStart)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasNoMaintenanceWindowStart() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.MaintenanceWindowStart != nil {
-			return fmt.Errorf("expected maintenance window start to be nil; got: %v", *o.MaintenanceWindowStart)
 		}
 		return nil
 	})
@@ -384,36 +243,14 @@ func (p *PostgresInstanceDetailsAssert) HasComment(expected string) *PostgresIns
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasNoComment() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasNetworkPolicy(expected sdk.AccountObjectIdentifier) *PostgresInstanceDetailsAssert {
+func (p *PostgresInstanceDetailsAssert) HasNetworkPolicy(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.NetworkPolicy == nil {
 			return fmt.Errorf("expected network policy to have value; got: nil")
 		}
-		if (*o.NetworkPolicy).FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected network policy: %v; got: %v", expected.FullyQualifiedName(), (*o.NetworkPolicy).FullyQualifiedName())
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasNoNetworkPolicy() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.NetworkPolicy != nil {
-			return fmt.Errorf("expected network policy to be nil; got: %v", *o.NetworkPolicy)
+		if o.NetworkPolicy.Name() != expected {
+			return fmt.Errorf("expected network policy: %v; got: %v", expected, o.NetworkPolicy.Name())
 		}
 		return nil
 	})
@@ -434,36 +271,14 @@ func (p *PostgresInstanceDetailsAssert) HasPostgresSettings(expected string) *Po
 	return p
 }
 
-func (p *PostgresInstanceDetailsAssert) HasNoPostgresSettings() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.PostgresSettings != nil {
-			return fmt.Errorf("expected postgres settings to be nil; got: %v", *o.PostgresSettings)
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasStorageIntegration(expected sdk.AccountObjectIdentifier) *PostgresInstanceDetailsAssert {
+func (p *PostgresInstanceDetailsAssert) HasStorageIntegration(expected string) *PostgresInstanceDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
 		t.Helper()
 		if o.StorageIntegration == nil {
 			return fmt.Errorf("expected storage integration to have value; got: nil")
 		}
-		if (*o.StorageIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected storage integration: %v; got: %v", expected.FullyQualifiedName(), (*o.StorageIntegration).FullyQualifiedName())
-		}
-		return nil
-	})
-	return p
-}
-
-func (p *PostgresInstanceDetailsAssert) HasNoStorageIntegration() *PostgresInstanceDetailsAssert {
-	p.AddAssertion(func(t *testing.T, o *sdk.PostgresInstanceDetails) error {
-		t.Helper()
-		if o.StorageIntegration != nil {
-			return fmt.Errorf("expected storage integration to be nil; got: %v", *o.StorageIntegration)
+		if o.StorageIntegration.Name() != expected {
+			return fmt.Errorf("expected storage integration: %v; got: %v", expected, o.StorageIntegration.Name())
 		}
 		return nil
 	})

@@ -42,10 +42,9 @@ type snowflakeTestEnvironmentContext struct {
 }
 
 type acceptanceTestContext struct {
-	defaultTestEnv           snowflakeTestEnvironmentContext
-	secondaryTestEnv         snowflakeTestEnvironmentContext
-	azureTestEnv             snowflakeTestEnvironmentContext
-	snowflakeDefaultsTestEnv snowflakeTestEnvironmentContext
+	defaultTestEnv   snowflakeTestEnvironmentContext
+	secondaryTestEnv snowflakeTestEnvironmentContext
+	azureTestEnv     snowflakeTestEnvironmentContext
 
 	cleanups []func()
 }
@@ -132,12 +131,6 @@ func (atc *acceptanceTestContext) initialize() error {
 			); errs != nil {
 				return errs
 			}
-
-			if err := atc.initializeSnowflakeEnvironment(ctx, testprofiles.SnowflakeDefaults, &atc.snowflakeDefaultsTestEnv); err != nil {
-				return err
-			}
-
-			// no setup assertions as the snowflake defaults account is expected to have no predefined objects
 		}
 	}
 
@@ -215,8 +208,4 @@ func secondaryTestClient() *helpers.TestClient {
 
 func azureTestClient() *helpers.TestClient {
 	return atc.azureTestEnv.testClient
-}
-
-func snowflakeDefaultsTestClient() *helpers.TestClient {
-	return atc.snowflakeDefaultsTestEnv.testClient
 }

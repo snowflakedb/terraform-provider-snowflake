@@ -1,10 +1,12 @@
 package sdk
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +19,7 @@ func TestAccountCreate(t *testing.T) {
 			AdminName:     "someadmin",
 			AdminPassword: String(password),
 			Email:         "admin@example.com",
-			Edition:       AccountEditionBusinessCritical,
+			Edition:       EditionBusinessCritical,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `CREATE ACCOUNT %s ADMIN_NAME = 'someadmin' ADMIN_PASSWORD = '%s' EMAIL = 'admin@example.com' EDITION = BUSINESS_CRITICAL`, id.FullyQualifiedName(), password)
 	})
@@ -28,13 +30,13 @@ func TestAccountCreate(t *testing.T) {
 		opts := &CreateAccountOptions{
 			name:                     id,
 			AdminName:                "someadmin",
-			AdminRsaPublicKey:        String(key),
+			AdminRSAPublicKey:        String(key),
 			AdminUserType:            Pointer(UserTypeService),
 			FirstName:                String("Ad"),
 			LastName:                 String("Min"),
 			Email:                    "admin@example.com",
 			MustChangePassword:       Bool(true),
-			Edition:                  AccountEditionBusinessCritical,
+			Edition:                  EditionBusinessCritical,
 			RegionGroup:              String("groupid"),
 			Region:                   String("regionid"),
 			Comment:                  String("Test account"),
@@ -55,7 +57,7 @@ func TestAccountCreate(t *testing.T) {
 			LastName:           String("Min"),
 			Email:              "admin@example.com",
 			MustChangePassword: Bool(false),
-			Edition:            AccountEditionBusinessCritical,
+			Edition:            EditionBusinessCritical,
 			RegionGroup:        String("groupid"),
 			Region:             String("regionid"),
 			Comment:            String("Test account"),
@@ -67,14 +69,14 @@ func TestAccountCreate(t *testing.T) {
 func TestAccountAlter(t *testing.T) {
 	t.Run("validation: exactly one value - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "RenameTo"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions", "Set", "Unset", "SetTag", "UnsetTag", "Drop", "Rename"))
 	})
 
 	t.Run("validation: exactly one value set in AccountSet - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: no name passed when setting consumption billing entity", func(t *testing.T) {
@@ -103,9 +105,10 @@ func TestAccountAlter(t *testing.T) {
 	})
 
 	t.Run("validation: no name passed when renaming account", func(t *testing.T) {
-		newName := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			RenameTo: &newName,
+			Rename: &AccountRename{
+				NewName: randomAccountObjectIdentifier(),
+			},
 		}
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
@@ -118,14 +121,14 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountSet", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
@@ -136,7 +139,7 @@ func TestAccountAlter(t *testing.T) {
 				AuthenticationPolicy: Bool(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AccountUnset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("with legacy set params", func(t *testing.T) {
@@ -644,9 +647,11 @@ func TestAccountAlter(t *testing.T) {
 		oldName := randomAccountObjectIdentifier()
 		newName := randomAccountObjectIdentifier()
 		opts := &AlterAccountOptions{
-			Name:       &oldName,
-			RenameTo:   &newName,
-			SaveOldURL: Bool(false),
+			Name: &oldName,
+			Rename: &AccountRename{
+				NewName:    newName,
+				SaveOldURL: Bool(false),
+			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT %s RENAME TO %s SAVE_OLD_URL = false`, oldName.FullyQualifiedName(), newName.FullyQualifiedName())
 	})
@@ -705,7 +710,7 @@ func TestAccountDrop(t *testing.T) {
 		id := randomAccountObjectIdentifier()
 		opts := &DropAccountOptions{
 			name:              id,
-			GracePeriodInDays: Int(10),
+			gracePeriodInDays: 10,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP ACCOUNT %s GRACE_PERIOD_IN_DAYS = 10`, id.FullyQualifiedName())
 	})
@@ -715,7 +720,7 @@ func TestAccountDrop(t *testing.T) {
 		opts := &DropAccountOptions{
 			name:              id,
 			IfExists:          Bool(true),
-			GracePeriodInDays: Int(10),
+			gracePeriodInDays: 10,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP ACCOUNT IF EXISTS %s GRACE_PERIOD_IN_DAYS = 10`, id.FullyQualifiedName())
 	})
@@ -747,6 +752,220 @@ func TestAccountShow(t *testing.T) {
 	})
 }
 
+func TestToAccountCreateResponse(t *testing.T) {
+	testCases := []struct {
+		Name           string
+		RawInput       string
+		Input          AccountCreateResponse
+		ExpectedOutput *AccountCreateResponse
+		Error          string
+	}{
+		{
+			Name:     "validation: empty input",
+			RawInput: "",
+			Error:    "unexpected end of JSON input",
+		},
+		{
+			Name: "validation: only a few fields filled",
+			Input: AccountCreateResponse{
+				AccountName: "acc_name",
+				Url:         `https://org_name-acc_name.snowflakecomputing.com`,
+				Edition:     EditionStandard,
+				RegionGroup: "region_group",
+				Cloud:       "cloud",
+				Region:      "region",
+			},
+			ExpectedOutput: &AccountCreateResponse{
+				AccountName:      "acc_name",
+				Url:              `https://org_name-acc_name.snowflakecomputing.com`,
+				OrganizationName: "ORG_NAME",
+				Edition:          EditionStandard,
+				RegionGroup:      "region_group",
+				Cloud:            "cloud",
+				Region:           "region",
+			},
+		},
+		{
+			Name: "validation: invalid url",
+			Input: AccountCreateResponse{
+				Url: `https://org_name_acc_name.snowflake.computing.com`,
+			},
+			ExpectedOutput: &AccountCreateResponse{
+				Url: `https://org_name_acc_name.snowflake.computing.com`,
+				// OrganizationName is not filled
+			},
+		},
+		{
+			Name: "validation: valid url",
+			Input: AccountCreateResponse{
+				Url: `https://org_name-acc_name.snowflakecomputing.com`,
+			},
+			ExpectedOutput: &AccountCreateResponse{
+				Url:              `https://org_name-acc_name.snowflakecomputing.com`,
+				OrganizationName: "ORG_NAME",
+			},
+		},
+		{
+			Name: "validation: valid http url",
+			Input: AccountCreateResponse{
+				Url: `http://org_name-acc_name.snowflakecomputing.com`,
+			},
+			ExpectedOutput: &AccountCreateResponse{
+				Url:              `http://org_name-acc_name.snowflakecomputing.com`,
+				OrganizationName: "ORG_NAME",
+			},
+		},
+		{
+			Name: "complete",
+			Input: AccountCreateResponse{
+				AccountLocator:    "locator",
+				AccountLocatorUrl: "locator_url",
+				AccountName:       "acc_name",
+				Url:               `https://org_name-acc_name.snowflakecomputing.com`,
+				Edition:           EditionBusinessCritical,
+				RegionGroup:       "region_group",
+				Cloud:             "cloud",
+				Region:            "region",
+			},
+			ExpectedOutput: &AccountCreateResponse{
+				AccountLocator:    "locator",
+				AccountLocatorUrl: "locator_url",
+				AccountName:       "acc_name",
+				Url:               `https://org_name-acc_name.snowflakecomputing.com`,
+				OrganizationName:  "ORG_NAME",
+				Edition:           EditionBusinessCritical,
+				RegionGroup:       "region_group",
+				Cloud:             "cloud",
+				Region:            "region",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			input := tc.RawInput
+			if tc.Input != (AccountCreateResponse{}) {
+				bytes, err := json.Marshal(tc.Input)
+				if err != nil {
+					assert.Fail(t, err.Error())
+				}
+				input = string(bytes)
+			}
+
+			createResponse, err := ToAccountCreateResponse(input)
+
+			if tc.Error != "" {
+				assert.EqualError(t, err, tc.Error)
+				assert.Nil(t, createResponse)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.ExpectedOutput, createResponse)
+			}
+		})
+	}
+}
+
+func TestGetAccountCreateResponse(t *testing.T) {
+	valid := []struct {
+		name           string
+		rows           []map[string]*any
+		expectedResult *AccountCreateResponse
+	}{
+		{
+			name: "successful case with all fields",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any(`{
+							"accountLocator": "ABC12345",
+							"accountLocatorUrl": "https://abc12345.snowflakecomputing.com",
+							"accountName": "full_account",
+							"url": "https://org-full_account.snowflakecomputing.com",
+							"edition": "BUSINESS_CRITICAL",
+							"regionGroup": "us-west-2",
+							"cloud": "aws",
+							"region": "us-west-2"
+						}`)),
+				},
+			},
+			expectedResult: &AccountCreateResponse{
+				AccountLocator:    "ABC12345",
+				AccountLocatorUrl: "https://abc12345.snowflakecomputing.com",
+				AccountName:       "full_account",
+				Url:               "https://org-full_account.snowflakecomputing.com",
+				Edition:           EditionBusinessCritical,
+				RegionGroup:       "us-west-2",
+				Cloud:             "aws",
+				Region:            "us-west-2",
+				OrganizationName:  "ORG",
+			},
+		},
+	}
+	invalid := []struct {
+		name           string
+		rows           []map[string]*any
+		expectedResult *AccountCreateResponse
+		expectedError  string
+	}{
+		{
+			name:          "error: wrong number of rows (0)",
+			rows:          []map[string]*any{},
+			expectedError: "expected 1 row, got 0",
+		},
+		{
+			name: "error: status is nil",
+			rows: []map[string]*any{
+				{
+					"status": nil,
+				},
+			},
+			expectedError: "status is not set",
+		},
+		{
+			name: "error: status is not a string",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any(123)),
+				},
+			},
+			expectedError: "could not convert status to string",
+		},
+		{
+			name: "error: invalid JSON in status",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any(`invalid json`)),
+				},
+			},
+			expectedError: "invalid character",
+		},
+		{
+			name: "error: empty JSON in status",
+			rows: []map[string]*any{
+				{
+					"status": Pointer(any("")),
+				},
+			},
+			expectedError: "unexpected end of JSON input",
+		},
+	}
+
+	for _, tc := range valid {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := getAccountCreateResponse(tc.rows)
+			require.NoError(t, err)
+			require.Equal(t, tc.expectedResult, result)
+		})
+	}
+
+	for _, tc := range invalid {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := getAccountCreateResponse(tc.rows)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tc.expectedError)
+		})
+	}
+}
+
 func TestToAccountEdition(t *testing.T) {
 	type test struct {
 		input string
@@ -755,12 +974,12 @@ func TestToAccountEdition(t *testing.T) {
 
 	valid := []test{
 		// case insensitive.
-		{input: "standard", want: AccountEditionStandard},
+		{input: "standard", want: EditionStandard},
 
 		// Supported Values
-		{input: "STANDARD", want: AccountEditionStandard},
-		{input: "ENTERPRISE", want: AccountEditionEnterprise},
-		{input: "BUSINESS_CRITICAL", want: AccountEditionBusinessCritical},
+		{input: "STANDARD", want: EditionStandard},
+		{input: "ENTERPRISE", want: EditionEnterprise},
+		{input: "BUSINESS_CRITICAL", want: EditionBusinessCritical},
 	}
 
 	invalid := []test{

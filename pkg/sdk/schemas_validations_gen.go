@@ -55,10 +55,10 @@ func (opts *AlterSchemaOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.EnableManagedAccess, opts.DisableManagedAccess) {
-		errs = append(errs, errExactlyOneOf("AlterSchemaOptions", "RenameTo", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
+	if !exactlyOneValueSet(opts.NewName, opts.SwapWith, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.EnableManagedAccess, opts.DisableManagedAccess) {
+		errs = append(errs, errExactlyOneOf("AlterSchemaOptions", "NewName", "SwapWith", "Set", "Unset", "SetTags", "UnsetTags", "EnableManagedAccess", "DisableManagedAccess"))
 	}
-	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+	if opts.NewName != nil && !ValidObjectIdentifier(opts.NewName) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
@@ -71,13 +71,13 @@ func (opts *AlterSchemaOptions) validate() error {
 		if opts.Set.Catalog != nil && !ValidObjectIdentifier(opts.Set.Catalog) {
 			errs = append(errs, ErrInvalidObjectIdentifier)
 		}
-		if !anyValueSet(opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ExternalVolume, opts.Set.Catalog, opts.Set.PipeExecutionPaused, opts.Set.ReplaceInvalidCharacters, opts.Set.DefaultDdlCollation, opts.Set.DefaultNotebookComputePoolCpu, opts.Set.DefaultNotebookComputePoolGpu, opts.Set.StorageSerializationPolicy, opts.Set.LogLevel, opts.Set.LogEventLevel, opts.Set.TraceLevel, opts.Set.SuspendTaskAfterNumFailures, opts.Set.TaskAutoRetryAttempts, opts.Set.UserTaskManagedInitialWarehouseSize, opts.Set.UserTaskTimeoutMs, opts.Set.UserTaskMinimumTriggerIntervalInSeconds, opts.Set.QuotedIdentifiersIgnoreCase, opts.Set.EnableConsoleOutput, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"))
+		if !anyValueSet(opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ExternalVolume, opts.Set.Catalog, opts.Set.PipeExecutionPaused, opts.Set.ReplaceInvalidCharacters, opts.Set.DefaultDdlCollation, opts.Set.StorageSerializationPolicy, opts.Set.LogLevel, opts.Set.LogEventLevel, opts.Set.TraceLevel, opts.Set.SuspendTaskAfterNumFailures, opts.Set.TaskAutoRetryAttempts, opts.Set.UserTaskManagedInitialWarehouseSize, opts.Set.UserTaskTimeoutMs, opts.Set.UserTaskMinimumTriggerIntervalInSeconds, opts.Set.QuotedIdentifiersIgnoreCase, opts.Set.EnableConsoleOutput, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Set", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ExternalVolume, opts.Unset.Catalog, opts.Unset.PipeExecutionPaused, opts.Unset.ReplaceInvalidCharacters, opts.Unset.DefaultDdlCollation, opts.Unset.DefaultNotebookComputePoolCpu, opts.Unset.DefaultNotebookComputePoolGpu, opts.Unset.StorageSerializationPolicy, opts.Unset.LogLevel, opts.Unset.LogEventLevel, opts.Unset.TraceLevel, opts.Unset.SuspendTaskAfterNumFailures, opts.Unset.TaskAutoRetryAttempts, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.UserTaskTimeoutMs, opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.QuotedIdentifiersIgnoreCase, opts.Unset.EnableConsoleOutput, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"))
+		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ExternalVolume, opts.Unset.Catalog, opts.Unset.PipeExecutionPaused, opts.Unset.ReplaceInvalidCharacters, opts.Unset.DefaultDdlCollation, opts.Unset.StorageSerializationPolicy, opts.Unset.LogLevel, opts.Unset.LogEventLevel, opts.Unset.TraceLevel, opts.Unset.SuspendTaskAfterNumFailures, opts.Unset.TaskAutoRetryAttempts, opts.Unset.UserTaskManagedInitialWarehouseSize, opts.Unset.UserTaskTimeoutMs, opts.Unset.UserTaskMinimumTriggerIntervalInSeconds, opts.Unset.QuotedIdentifiersIgnoreCase, opts.Unset.EnableConsoleOutput, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog", "PipeExecutionPaused", "ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy", "LogLevel", "LogEventLevel", "TraceLevel", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize", "UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds", "QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

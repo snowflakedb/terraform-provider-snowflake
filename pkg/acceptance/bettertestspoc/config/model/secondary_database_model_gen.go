@@ -17,8 +17,6 @@ type SecondaryDatabaseModel struct {
 	Comment                                 tfconfig.Variable `json:"comment,omitempty"`
 	DataRetentionTimeInDays                 tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
 	DefaultDdlCollation                     tfconfig.Variable `json:"default_ddl_collation,omitempty"`
-	DefaultNotebookComputePoolCpu           tfconfig.Variable `json:"default_notebook_compute_pool_cpu,omitempty"`
-	DefaultNotebookComputePoolGpu           tfconfig.Variable `json:"default_notebook_compute_pool_gpu,omitempty"`
 	EnableConsoleOutput                     tfconfig.Variable `json:"enable_console_output,omitempty"`
 	ExternalVolume                          tfconfig.Variable `json:"external_volume,omitempty"`
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
@@ -129,16 +127,6 @@ func (s *SecondaryDatabaseModel) WithDataRetentionTimeInDays(dataRetentionTimeIn
 
 func (s *SecondaryDatabaseModel) WithDefaultDdlCollation(defaultDdlCollation string) *SecondaryDatabaseModel {
 	s.DefaultDdlCollation = tfconfig.StringVariable(defaultDdlCollation)
-	return s
-}
-
-func (s *SecondaryDatabaseModel) WithDefaultNotebookComputePoolCpu(defaultNotebookComputePoolCpu string) *SecondaryDatabaseModel {
-	s.DefaultNotebookComputePoolCpu = tfconfig.StringVariable(defaultNotebookComputePoolCpu)
-	return s
-}
-
-func (s *SecondaryDatabaseModel) WithDefaultNotebookComputePoolGpu(defaultNotebookComputePoolGpu string) *SecondaryDatabaseModel {
-	s.DefaultNotebookComputePoolGpu = tfconfig.StringVariable(defaultNotebookComputePoolGpu)
 	return s
 }
 
@@ -253,16 +241,6 @@ func (s *SecondaryDatabaseModel) WithDataRetentionTimeInDaysValue(value tfconfig
 
 func (s *SecondaryDatabaseModel) WithDefaultDdlCollationValue(value tfconfig.Variable) *SecondaryDatabaseModel {
 	s.DefaultDdlCollation = value
-	return s
-}
-
-func (s *SecondaryDatabaseModel) WithDefaultNotebookComputePoolCpuValue(value tfconfig.Variable) *SecondaryDatabaseModel {
-	s.DefaultNotebookComputePoolCpu = value
-	return s
-}
-
-func (s *SecondaryDatabaseModel) WithDefaultNotebookComputePoolGpuValue(value tfconfig.Variable) *SecondaryDatabaseModel {
-	s.DefaultNotebookComputePoolGpu = value
 	return s
 }
 

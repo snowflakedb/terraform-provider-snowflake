@@ -8,23 +8,19 @@ import (
 )
 
 type SnowflakeObjectParametersAssertionsModel struct {
-	Name                  string
-	IdType                string
-	ParameterConstantName string
-	ObjectTypeName        string
-	IgnoreIdInProvider    bool
-	Parameters            []ParameterAssertionModel
+	Name       string
+	IdType     string
+	Parameters []ParameterAssertionModel
 
 	*genhelpers.PreambleModel
 }
 
 type ParameterAssertionModel struct {
-	Name               string
-	Type               string
-	DefaultValue       string
-	DefaultLevel       string
-	AssertionCreator   string
-	IsSnowflakeDefault bool
+	Name             string
+	Type             string
+	DefaultValue     string
+	DefaultLevel     string
+	AssertionCreator string
 }
 
 func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjectParameters, preamble *genhelpers.PreambleModel) SnowflakeObjectParametersAssertionsModel {
@@ -53,32 +49,18 @@ func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjec
 		}
 
 		parameters[idx] = ParameterAssertionModel{
-			Name:               p.ParameterName,
-			Type:               p.ParameterType,
-			DefaultValue:       defaultValue,
-			DefaultLevel:       p.DefaultLevel,
-			AssertionCreator:   assertionCreator,
-			IsSnowflakeDefault: p.DefaultLevel == "sdk.ParameterTypeSnowflakeDefault",
+			Name:             p.ParameterName,
+			Type:             p.ParameterType,
+			DefaultValue:     defaultValue,
+			DefaultLevel:     p.DefaultLevel,
+			AssertionCreator: assertionCreator,
 		}
 	}
 
-	parameterConstantName := snowflakeObjectParameters.ObjectName()
-	if snowflakeObjectParameters.ParameterConstantPrefix != "" {
-		parameterConstantName = snowflakeObjectParameters.ParameterConstantPrefix
-	}
-
-	objectTypeName := snowflakeObjectParameters.ObjectName()
-	if snowflakeObjectParameters.ObjectTypeName != "" {
-		objectTypeName = snowflakeObjectParameters.ObjectTypeName
-	}
-
 	return SnowflakeObjectParametersAssertionsModel{
-		Name:                  snowflakeObjectParameters.ObjectName(),
-		IdType:                snowflakeObjectParameters.IdType,
-		ParameterConstantName: parameterConstantName,
-		ObjectTypeName:        objectTypeName,
-		IgnoreIdInProvider:    snowflakeObjectParameters.IgnoreIdInProvider,
-		Parameters:            parameters,
-		PreambleModel:         preamble,
+		Name:          snowflakeObjectParameters.ObjectName(),
+		IdType:        snowflakeObjectParameters.IdType,
+		Parameters:    parameters,
+		PreambleModel: preamble,
 	}
 }

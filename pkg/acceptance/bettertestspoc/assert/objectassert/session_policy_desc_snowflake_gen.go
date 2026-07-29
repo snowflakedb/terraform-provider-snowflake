@@ -29,15 +29,15 @@ func SessionPolicyDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *SessionP
 func SessionPolicyDetailsFromObject(t *testing.T, sessionPolicyDetails *sdk.SessionPolicyDetails) *SessionPolicyDetailsAssert {
 	t.Helper()
 	return &SessionPolicyDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("SessionPolicyDetails"), sessionPolicyDetails.ID(), sessionPolicyDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("SessionPolicyDetails"), sessionPolicyDetails.Id, sessionPolicyDetails),
 	}
 }
 
-func (s *SessionPolicyDetailsAssert) HasId(expected sdk.SchemaObjectIdentifier) *SessionPolicyDetailsAssert {
+func (s *SessionPolicyDetailsAssert) HasId(expected sdk.AccountObjectIdentifier) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
-		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
+		if o.Id.Name() != expected.Name() {
+			return fmt.Errorf("expected id: %v; got: %v", expected.Name(), o.Id.Name())
 		}
 		return nil
 	})
@@ -55,17 +55,6 @@ func (s *SessionPolicyDetailsAssert) HasOwner(expected string) *SessionPolicyDet
 	return s
 }
 
-func (s *SessionPolicyDetailsAssert) HasOwnerNotEmpty() *SessionPolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
-		t.Helper()
-		if o.Owner == "" {
-			return fmt.Errorf("expected owner to be non-empty")
-		}
-		return nil
-	})
-	return s
-}
-
 func (s *SessionPolicyDetailsAssert) HasOwnerRoleType(expected string) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
@@ -77,33 +66,11 @@ func (s *SessionPolicyDetailsAssert) HasOwnerRoleType(expected string) *SessionP
 	return s
 }
 
-func (s *SessionPolicyDetailsAssert) HasOwnerRoleTypeNotEmpty() *SessionPolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
-		t.Helper()
-		if o.OwnerRoleType == "" {
-			return fmt.Errorf("expected owner role type to be non-empty")
-		}
-		return nil
-	})
-	return s
-}
-
 func (s *SessionPolicyDetailsAssert) HasComment(expected string) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *SessionPolicyDetailsAssert) HasCommentNotEmpty() *SessionPolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
-		t.Helper()
-		if o.Comment == "" {
-			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -145,17 +112,6 @@ func (s *SessionPolicyDetailsAssert) HasAllowedSecondaryRoles(expected ...string
 	return s
 }
 
-func (s *SessionPolicyDetailsAssert) HasNoAllowedSecondaryRoles() *SessionPolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
-		t.Helper()
-		if len(o.AllowedSecondaryRoles) > 0 {
-			return fmt.Errorf("expected allowed secondary roles to be empty; got: %v", o.AllowedSecondaryRoles)
-		}
-		return nil
-	})
-	return s
-}
-
 func (s *SessionPolicyDetailsAssert) HasBlockedSecondaryRoles(expected ...string) *SessionPolicyDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
 		t.Helper()
@@ -163,17 +119,6 @@ func (s *SessionPolicyDetailsAssert) HasBlockedSecondaryRoles(expected ...string
 		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected blocked secondary roles: %v; got: %v", expected, o.BlockedSecondaryRoles)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *SessionPolicyDetailsAssert) HasNoBlockedSecondaryRoles() *SessionPolicyDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicyDetails) error {
-		t.Helper()
-		if len(o.BlockedSecondaryRoles) > 0 {
-			return fmt.Errorf("expected blocked secondary roles to be empty; got: %v", o.BlockedSecondaryRoles)
 		}
 		return nil
 	})

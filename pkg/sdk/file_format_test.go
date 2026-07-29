@@ -8,7 +8,7 @@ func TestFileFormatsCreate(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
 	t.Run("minimal", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			name: id,
 			Type: FileFormatTypeCsv,
 		}
@@ -16,14 +16,14 @@ func TestFileFormatsCreate(t *testing.T) {
 	})
 
 	t.Run("complete CSV", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
 			Temporary:   Bool(true),
 			name:        id,
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeCsv,
 
-			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: LegacyFileFormatTypeOptions{
 				CSVCompression:               Pointer(CsvCompressionBz2),
 				CSVRecordDelimiter:           String("-"),
 				CSVFieldDelimiter:            String(":"),
@@ -53,14 +53,14 @@ func TestFileFormatsCreate(t *testing.T) {
 	})
 
 	t.Run("complete JSON", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
 			Temporary:   Bool(true),
 			name:        id,
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeJson,
 
-			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: LegacyFileFormatTypeOptions{
 				JSONCompression:     Pointer(JsonCompressionBrotli),
 				JSONDateFormat:      String("YYYY-MM-DD"),
 				JSONTimeFormat:      String("HH:mm:SS"),
@@ -84,14 +84,14 @@ func TestFileFormatsCreate(t *testing.T) {
 	})
 
 	t.Run("complete Avro", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
 			Temporary:   Bool(true),
 			name:        id,
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeAvro,
 
-			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: LegacyFileFormatTypeOptions{
 				AvroCompression:              Pointer(AvroCompressionDeflate),
 				AvroTrimSpace:                Bool(true),
 				AvroReplaceInvalidCharacters: Bool(true),
@@ -102,14 +102,14 @@ func TestFileFormatsCreate(t *testing.T) {
 	})
 
 	t.Run("complete ORC", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
 			Temporary:   Bool(true),
 			name:        id,
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeOrc,
 
-			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: LegacyFileFormatTypeOptions{
 				ORCTrimSpace:                Bool(true),
 				ORCReplaceInvalidCharacters: Bool(true),
 				ORCNullIf:                   &[]NullString{{"nul"}},
@@ -119,14 +119,14 @@ func TestFileFormatsCreate(t *testing.T) {
 	})
 
 	t.Run("complete Parquet", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
 			Temporary:   Bool(true),
 			name:        id,
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeParquet,
 
-			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: LegacyFileFormatTypeOptions{
 				ParquetCompression:              Pointer(ParquetCompressionLzo),
 				ParquetBinaryAsText:             Bool(true),
 				ParquetTrimSpace:                Bool(true),
@@ -138,13 +138,13 @@ func TestFileFormatsCreate(t *testing.T) {
 	})
 
 	t.Run("complete XML", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			OrReplace:   Bool(true),
 			Temporary:   Bool(true),
 			name:        id,
 			IfNotExists: Bool(true),
 			Type:        FileFormatTypeXml,
-			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: LegacyFileFormatTypeOptions{
 				XMLCompression:          Pointer(XmlCompressionZstd),
 				XMLIgnoreUTF8Errors:     Bool(true),
 				XMLPreserveSpace:        Bool(true),
@@ -159,10 +159,10 @@ func TestFileFormatsCreate(t *testing.T) {
 	})
 
 	t.Run("previous test", func(t *testing.T) {
-		opts := &CreateFileFormatOptionsLegacy{
+		opts := &CreateFileFormatOptions{
 			name: id,
 			Type: FileFormatTypeCsv,
-			FileFormatTypeOptionsLegacy: FileFormatTypeOptionsLegacy{
+			LegacyFileFormatTypeOptions: LegacyFileFormatTypeOptions{
 				CSVNullIf:                     &[]NullString{{"NULL"}},
 				CSVSkipBlankLines:             Bool(false),
 				CSVTrimSpace:                  Bool(false),
@@ -182,7 +182,7 @@ func TestFileFormatsAlter(t *testing.T) {
 
 	t.Run("rename", func(t *testing.T) {
 		newId := randomSchemaObjectIdentifier()
-		opts := &AlterFileFormatOptionsLegacy{
+		opts := &AlterFileFormatOptions{
 			IfExists: Bool(true),
 			name:     id,
 			Rename: &AlterFileFormatRenameOptions{
@@ -193,10 +193,10 @@ func TestFileFormatsAlter(t *testing.T) {
 	})
 
 	t.Run("set", func(t *testing.T) {
-		opts := &AlterFileFormatOptionsLegacy{
+		opts := &AlterFileFormatOptions{
 			IfExists: Bool(true),
 			name:     id,
-			Set: &FileFormatTypeOptionsLegacy{
+			Set: &LegacyFileFormatTypeOptions{
 				AvroCompression:              Pointer(AvroCompressionBrotli),
 				AvroTrimSpace:                Bool(true),
 				AvroReplaceInvalidCharacters: Bool(true),
@@ -207,10 +207,10 @@ func TestFileFormatsAlter(t *testing.T) {
 	})
 
 	t.Run("set comment", func(t *testing.T) {
-		opts := &AlterFileFormatOptionsLegacy{
+		opts := &AlterFileFormatOptions{
 			IfExists: Bool(true),
 			name:     id,
-			Set: &FileFormatTypeOptionsLegacy{
+			Set: &LegacyFileFormatTypeOptions{
 				AvroCompression:              Pointer(AvroCompressionBrotli),
 				AvroTrimSpace:                Bool(true),
 				AvroReplaceInvalidCharacters: Bool(true),
@@ -226,14 +226,14 @@ func TestFileFormatsDrop(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
 	t.Run("only name", func(t *testing.T) {
-		opts := &DropFileFormatOptionsLegacy{
+		opts := &DropFileFormatOptions{
 			name: id,
 		}
 		assertOptsValidAndSQLEquals(t, opts, `DROP FILE FORMAT %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("with IfExists", func(t *testing.T) {
-		opts := &DropFileFormatOptionsLegacy{
+		opts := &DropFileFormatOptions{
 			name:     id,
 			IfExists: Bool(true),
 		}
@@ -243,13 +243,13 @@ func TestFileFormatsDrop(t *testing.T) {
 
 func TestFileFormatsShow(t *testing.T) {
 	t.Run("without show options", func(t *testing.T) {
-		opts := &ShowFileFormatsOptionsLegacy{}
+		opts := &ShowFileFormatsOptions{}
 		assertOptsValidAndSQLEquals(t, opts, `SHOW FILE FORMATS`)
 	})
 
 	t.Run("with show options", func(t *testing.T) {
 		id := randomDatabaseObjectIdentifier()
-		opts := &ShowFileFormatsOptionsLegacy{
+		opts := &ShowFileFormatsOptions{
 			Like: &Like{
 				Pattern: String("test"),
 			},
@@ -264,7 +264,7 @@ func TestFileFormatsShow(t *testing.T) {
 func TestFileFormatsShowById(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
-		opts := &ShowFileFormatsOptionsLegacy{
+		opts := &ShowFileFormatsOptions{
 			Like: &Like{
 				Pattern: String(id.Name()),
 			},
@@ -279,7 +279,7 @@ func TestFileFormatsShowById(t *testing.T) {
 func TestFileFormatsDescribe(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 
-	opts := &describeFileFormatOptionsLegacy{
+	opts := &describeFileFormatOptions{
 		name: id,
 	}
 	assertOptsValidAndSQLEquals(t, opts, `DESCRIBE FILE FORMAT %s`, id.FullyQualifiedName())

@@ -73,16 +73,18 @@ func CreateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 	comment := d.Get("comment").(string)
 	id := sdk.NewAccountObjectIdentifier(name)
-	req := sdk.NewCreateShareRequest(id)
+	var opts sdk.CreateShareOptions
 	if comment != "" {
-		req.WithComment(comment)
+		opts = sdk.CreateShareOptions{
+			Comment: sdk.String(comment),
+		}
 	}
-	if err := client.Shares.Create(ctx, req); err != nil {
+	if err := client.Shares.Create(ctx, id, &opts); err != nil {
 		return diag.FromErr(fmt.Errorf("error creating share (%v) err = %w", d.Id(), err))
 	}
 	d.SetId(name)
 
-	accounts := expandStringList(d.Get("accounts").([]any))
+	accounts := expandStringList(d.Get("accounts").([]interface{}))
 	if len(accounts) > 0 {
 		shareID := sdk.NewAccountObjectIdentifier(name)
 		accountIdentifiers := make([]sdk.AccountIdentifier, len(accounts))
@@ -154,7 +156,11 @@ func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.Accou
 		}
 	}()
 	// 3. Add accounts to the share
-	err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(shareID).WithAdd(sdk.ShareAddRequest{Accounts: accounts}))
+	err = client.Shares.Alter(ctx, shareID, &sdk.AlterShareOptions{
+		Add: &sdk.ShareAdd{
+			Accounts: accounts,
+		},
+	})
 	return err
 }
 
@@ -180,7 +186,7 @@ func ReadShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 
 	currentAccount := d.Get("accounts")
 	if currentAccount != nil {
-		currentAccounts := expandStringList(currentAccount.([]any))
+		currentAccounts := expandStringList(currentAccount.([]interface{}))
 		// reorder the accounts so they match the order in the config
 		// this is to avoid unnecessary diffs
 		accounts = reorderStringList(currentAccounts, accounts)
@@ -210,11 +216,15 @@ func UpdateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 
 	if d.HasChange("accounts") {
 		o, n := d.GetChange("accounts")
-		oldAccounts := expandStringList(o.([]any))
-		newAccounts := expandStringList(n.([]any))
+		oldAccounts := expandStringList(o.([]interface{}))
+		newAccounts := expandStringList(n.([]interface{}))
 		if len(newAccounts) == 0 {
 			accountIdentifiers := accountIdentifiersFromSlice(oldAccounts)
-			err := client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithRemove(sdk.ShareRemoveRequest{Accounts: accountIdentifiers}))
+			err := client.Shares.Alter(ctx, id, &sdk.AlterShareOptions{
+				Remove: &sdk.ShareRemove{
+					Accounts: accountIdentifiers,
+				},
+			})
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error removing accounts from share (%v) err = %w", d.Id(), err))
 			}
@@ -231,7 +241,11 @@ func UpdateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			// when no database has been granted yet — Snowflake requires at least one database
 			// on a share before accounts can be added.
 			if share.DatabaseName.Name() != "" {
-				err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithAdd(sdk.ShareAddRequest{Accounts: accountIdentifiers}))
+				err = client.Shares.Alter(ctx, id, &sdk.AlterShareOptions{
+					Add: &sdk.ShareAdd{
+						Accounts: accountIdentifiers,
+					},
+				})
 			} else {
 				err = setShareAccounts(ctx, client, id, accountIdentifiers)
 			}
@@ -242,7 +256,11 @@ func UpdateShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 	if d.HasChange("comment") {
 		comment := d.Get("comment").(string)
-		err := client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithSet(sdk.ShareSetRequest{Comment: sdk.String(comment)}))
+		err := client.Shares.Alter(ctx, id, &sdk.AlterShareOptions{
+			Set: &sdk.ShareSet{
+				Comment: sdk.String(comment),
+			},
+		})
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error updating share (%v) comment err = %w", d.Id(), err))
 		}

@@ -82,8 +82,6 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 		WithCatalog(catalogId.Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
-		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelDebug)).
 		WithLogEventLevel(string(sdk.LogLevelDebug)).
@@ -110,8 +108,6 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasCatalog(catalogId.Name()).
 			HasReplaceInvalidCharacters(true).
 			HasDefaultDdlCollation("en_US").
-			HasDefaultNotebookComputePoolCpu("CPU_X64_S").
-			HasDefaultNotebookComputePoolGpu("GPU_NV_S").
 			HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 			HasLogLevel(sdk.LogLevelDebug).
 			HasLogEventLevel(sdk.LogLevelDebug).
@@ -135,8 +131,6 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasCatalogString(catalogId.Name()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
-			HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
-			HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 			HasLogLevelString(string(sdk.LogLevelDebug)).
 			HasLogEventLevelString(string(sdk.LogLevelDebug)).
@@ -275,8 +269,6 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 		WithCatalog(catalogId.Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
-		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
-		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelDebug)).
 		WithLogEventLevel(string(sdk.LogLevelDebug)).
@@ -311,8 +303,6 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasCatalog(catalogId.Name()).
 						HasReplaceInvalidCharacters(true).
 						HasDefaultDdlCollation("en_US").
-						HasDefaultNotebookComputePoolCpu("CPU_X64_S").
-						HasDefaultNotebookComputePoolGpu("GPU_NV_S").
 						HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 						HasLogLevel(sdk.LogLevelDebug).
 						HasLogEventLevel(sdk.LogLevelDebug).
@@ -336,8 +326,6 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasCatalogString(catalogId.Name()).
 						HasReplaceInvalidCharactersString("true").
 						HasDefaultDdlCollationString("en_US").
-						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
-						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 						HasLogLevelString(string(sdk.LogLevelDebug)).
 						HasLogEventLevelString(string(sdk.LogLevelDebug)).

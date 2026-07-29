@@ -425,7 +425,7 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
-			t, objectassert.UserWorkloadIdentityAuthenticationMethodFromObject(t, &methods[0]).
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
 				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
@@ -535,7 +535,7 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
-			t, objectassert.UserWorkloadIdentityAuthenticationMethodFromObject(t, &methods[0]).
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
 				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
@@ -552,7 +552,6 @@ func TestInt_Users(t *testing.T) {
 	type awsWifData struct {
 		accountNumber string
 		arn           string
-		issuer        string
 	}
 
 	type azureWifData struct {
@@ -564,21 +563,16 @@ func TestInt_Users(t *testing.T) {
 		subject string
 	}
 
-	awsWifConfig := func(arn string, issuer ...string) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
-		awsRequest := sdk.NewUserObjectWorkloadIdentityAwsRequest().WithArn(arn)
-		if len(issuer) > 0 {
-			awsRequest = awsRequest.WithIssuer(issuer[0])
-		}
+	awsWifConfig := func(arn string) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 		return sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
-			WithAwsType(*awsRequest)
+			WithAwsType(*sdk.NewUserObjectWorkloadIdentityAwsRequest().WithArn(arn))
 	}
-	awsWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, account string, issuer string) {
+	awsWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, account string) {
 		assertion.HasAwsAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAwsAdditionalInfo{
 			IamRole:      "test-role",
 			Type:         "IAM_ROLE",
 			AwsAccount:   account,
 			AwsPartition: "aws",
-			Issuer:       issuer,
 		})
 	}
 
@@ -586,7 +580,7 @@ func TestInt_Users(t *testing.T) {
 		return sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
 			WithAzureType(*sdk.NewUserObjectWorkloadIdentityAzureRequest().WithIssuer(issuer).WithSubject(subject))
 	}
-	azureWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, issuer string, subject string) {
+	azureWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, issuer string, subject string) {
 		assertion.HasAzureAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsAzureAdditionalInfo{
 			Issuer:  issuer,
 			Subject: subject,
@@ -597,7 +591,7 @@ func TestInt_Users(t *testing.T) {
 		return sdk.NewUserObjectWorkloadIdentityPropertiesRequest().
 			WithGcpType(*sdk.NewUserObjectWorkloadIdentityGcpRequest().WithSubject(subject))
 	}
-	gcpWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, subject string) {
+	gcpWifAssertion := func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, subject string) {
 		assertion.HasGcpAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsGcpAdditionalInfo{
 			Subject: subject,
 		})
@@ -608,7 +602,7 @@ func TestInt_Users(t *testing.T) {
 		setup        func() any
 		metadata     any
 		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest
-		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any)
+		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
 	}{
 		{
 			provider: sdk.WIFTypeAws,
@@ -623,26 +617,8 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
-				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber, data.(awsWifData).issuer)
-			},
-		},
-		{
-			provider: sdk.WIFTypeAws,
-			userType: sdk.UserTypeService,
-			setup: func() any {
-				accountNumber := random.NumericN(12)
-				return awsWifData{
-					accountNumber: accountNumber,
-					arn:           fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber),
-					issuer:        fmt.Sprintf("https://%s.tokens.sts.global.api.aws", accountNumber),
-				}
-			},
-			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
-				return awsWifConfig(data.(awsWifData).arn, data.(awsWifData).issuer)
-			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
-				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber, data.(awsWifData).issuer)
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
@@ -657,7 +633,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
@@ -672,7 +648,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
@@ -689,8 +665,8 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
-				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber, data.(awsWifData).issuer)
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
@@ -705,7 +681,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
@@ -720,7 +696,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
@@ -754,7 +730,7 @@ func TestInt_Users(t *testing.T) {
 			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(id))
 			require.NoError(t, err)
 			assert.Equal(t, 1, len(methods))
-			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodFromObject(t, &methods[0]).
+			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
 				HasType(tt.provider).
 				HasNoComment().
@@ -1097,7 +1073,7 @@ func TestInt_Users(t *testing.T) {
 		t.Cleanup(userCleanup)
 
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithRenameTo(newID))
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).WithNewName(newID))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().User.DropUserFunc(t, newID))
 
@@ -1289,7 +1265,7 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
-			t, objectassert.UserWorkloadIdentityAuthenticationMethodFromObject(t, &methods[0]).
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
 				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
@@ -1411,7 +1387,7 @@ func TestInt_Users(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, 1, len(methods))
 		assertThatObject(
-			t, objectassert.UserWorkloadIdentityAuthenticationMethodFromObject(t, &methods[0]).
+			t, objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
 				HasType(sdk.WIFTypeOidc).
 				HasNoComment().
@@ -1463,7 +1439,7 @@ func TestInt_Users(t *testing.T) {
 		createUser   func(t *testing.T) (*sdk.User, func())
 		setup        func() any
 		wifConfig    func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest
-		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any)
+		wifAssertion func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any)
 	}{
 		{
 			provider:   sdk.WIFTypeAws,
@@ -1479,8 +1455,8 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
-				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber, data.(awsWifData).issuer)
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
@@ -1496,7 +1472,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
@@ -1512,7 +1488,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
@@ -1530,8 +1506,8 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return awsWifConfig(data.(awsWifData).arn)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
-				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber, data.(awsWifData).issuer)
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
+				awsWifAssertion(t, assertion, data.(awsWifData).accountNumber)
 			},
 		},
 		{
@@ -1547,7 +1523,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return azureWifConfig(data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				azureWifAssertion(t, assertion, data.(azureWifData).issuer, data.(azureWifData).subject)
 			},
 		},
@@ -1563,7 +1539,7 @@ func TestInt_Users(t *testing.T) {
 			wifConfig: func(data any) *sdk.UserObjectWorkloadIdentityPropertiesRequest {
 				return gcpWifConfig(data.(gcpWifData).subject)
 			},
-			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodAssert, data any) {
+			wifAssertion: func(t *testing.T, assertion *objectassert.UserWorkloadIdentityAuthenticationMethodsAssert, data any) {
 				gcpWifAssertion(t, assertion, data.(gcpWifData).subject)
 			},
 		},
@@ -1597,7 +1573,7 @@ func TestInt_Users(t *testing.T) {
 			methods, err := client.Users.ShowUserWorkloadIdentityAuthenticationMethodOptions(ctx, sdk.NewShowUserWorkloadIdentityAuthenticationMethodOptionsUserRequest(user.ID()))
 			require.NoError(t, err)
 			assert.Equal(t, 1, len(methods))
-			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodFromObject(t, &methods[0]).
+			assertion := objectassert.UserWorkloadIdentityAuthenticationMethodsFromObject(t, &methods[0]).
 				HasName("DEFAULT").
 				HasType(tt.provider).
 				HasNoComment().
@@ -2364,7 +2340,7 @@ func TestInt_Users(t *testing.T) {
 
 		// we rename user
 		newId := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithRenameTo(newId))
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(id).WithNewName(newId))
 		require.NoError(t, err)
 		userDetails, err = client.Users.DescribeDetails(ctx, newId)
 		require.NoError(t, err)

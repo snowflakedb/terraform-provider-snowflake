@@ -44,11 +44,8 @@ func (opts *AlterTagOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
-		errs = append(errs, ErrInvalidObjectIdentifier)
-	}
-	if !exactlyOneValueSet(opts.Add, opts.Drop, opts.Set, opts.Unset, opts.RenameTo) {
-		errs = append(errs, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "RenameTo"))
+	if !exactlyOneValueSet(opts.Add, opts.Drop, opts.Set, opts.Unset, opts.Rename) {
+		errs = append(errs, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
 	}
 	if valueSet(opts.Add) {
 		if valueSet(opts.Add.AllowedValues) {
@@ -81,6 +78,11 @@ func (opts *AlterTagOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("AlterTagOptions.Unset", "MaskingPolicies", "AllowedValues", "Propagate", "OnConflict", "Comment"))
 		}
 		errs = append(errs, opts.Unset.additionalValidations())
+	}
+	if valueSet(opts.Rename) {
+		if !ValidObjectIdentifier(opts.Rename.Name) {
+			errs = append(errs, ErrInvalidObjectIdentifier)
+		}
 	}
 	return JoinErrors(errs...)
 }

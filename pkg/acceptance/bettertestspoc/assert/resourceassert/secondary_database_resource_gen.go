@@ -62,16 +62,6 @@ func (s *SecondaryDatabaseResourceAssert) HasDefaultDdlCollation(expected string
 	return s
 }
 
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolCpu(expected string) *SecondaryDatabaseResourceAssert {
-	s.StringValueSet("default_notebook_compute_pool_cpu", expected)
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolGpu(expected string) *SecondaryDatabaseResourceAssert {
-	s.StringValueSet("default_notebook_compute_pool_gpu", expected)
-	return s
-}
-
 func (s *SecondaryDatabaseResourceAssert) HasEnableConsoleOutput(expected bool) *SecondaryDatabaseResourceAssert {
 	s.BoolValueSet("enable_console_output", expected)
 	return s
@@ -183,16 +173,6 @@ func (s *SecondaryDatabaseResourceAssert) HasDataRetentionTimeInDaysString(expec
 
 func (s *SecondaryDatabaseResourceAssert) HasDefaultDdlCollationString(expected string) *SecondaryDatabaseResourceAssert {
 	s.ValueSet("default_ddl_collation", expected)
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolCpuString(expected string) *SecondaryDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_cpu", expected)
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolGpuString(expected string) *SecondaryDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_gpu", expected)
 	return s
 }
 
@@ -310,16 +290,6 @@ func (s *SecondaryDatabaseResourceAssert) HasNoDefaultDdlCollation() *SecondaryD
 	return s
 }
 
-func (s *SecondaryDatabaseResourceAssert) HasNoDefaultNotebookComputePoolCpu() *SecondaryDatabaseResourceAssert {
-	s.ValueNotSet("default_notebook_compute_pool_cpu")
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasNoDefaultNotebookComputePoolGpu() *SecondaryDatabaseResourceAssert {
-	s.ValueNotSet("default_notebook_compute_pool_gpu")
-	return s
-}
-
 func (s *SecondaryDatabaseResourceAssert) HasNoEnableConsoleOutput() *SecondaryDatabaseResourceAssert {
 	s.ValueNotSet("enable_console_output")
 	return s
@@ -421,16 +391,6 @@ func (s *SecondaryDatabaseResourceAssert) HasDataRetentionTimeInDaysEmpty() *Sec
 
 func (s *SecondaryDatabaseResourceAssert) HasDefaultDdlCollationEmpty() *SecondaryDatabaseResourceAssert {
 	s.ValueSet("default_ddl_collation", "")
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolCpuEmpty() *SecondaryDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_cpu", "")
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolGpuEmpty() *SecondaryDatabaseResourceAssert {
-	s.ValueSet("default_notebook_compute_pool_gpu", "")
 	return s
 }
 
@@ -545,16 +505,6 @@ func (s *SecondaryDatabaseResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *
 
 func (s *SecondaryDatabaseResourceAssert) HasDefaultDdlCollationNotEmpty() *SecondaryDatabaseResourceAssert {
 	s.ValuePresent("default_ddl_collation")
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolCpuNotEmpty() *SecondaryDatabaseResourceAssert {
-	s.ValuePresent("default_notebook_compute_pool_cpu")
-	return s
-}
-
-func (s *SecondaryDatabaseResourceAssert) HasDefaultNotebookComputePoolGpuNotEmpty() *SecondaryDatabaseResourceAssert {
-	s.ValuePresent("default_notebook_compute_pool_gpu")
 	return s
 }
 

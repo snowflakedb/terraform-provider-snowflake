@@ -11,11 +11,16 @@ import (
 )
 
 type SigV4RestAuthenticationDetailsAssert struct {
-	*assert.SubStructAssert[sdk.SigV4RestAuthenticationDetails]
+	*assert.SnowflakeObjectAssert[sdk.SigV4RestAuthenticationDetails, sdk.AccountObjectIdentifier]
 }
 
-func NewSigV4RestAuthenticationDetailsAssert() *SigV4RestAuthenticationDetailsAssert {
-	return &SigV4RestAuthenticationDetailsAssert{assert.NewSubStructAssert[sdk.SigV4RestAuthenticationDetails]()}
+// SigV4RestAuthenticationDetails removed manually
+
+func SigV4RestAuthenticationDetailsFromObject(t *testing.T, sigV4RestAuthenticationDetails *sdk.SigV4RestAuthenticationDetails) *SigV4RestAuthenticationDetailsAssert {
+	t.Helper()
+	return &SigV4RestAuthenticationDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject("SigV4RestAuthenticationDetails", sdk.NewAccountObjectIdentifier(""), sigV4RestAuthenticationDetails),
+	}
 }
 
 func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4IamRole(expected string) *SigV4RestAuthenticationDetailsAssert {
@@ -29,55 +34,11 @@ func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4IamRole(expected string) 
 	return s
 }
 
-func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4IamRoleNotEmpty() *SigV4RestAuthenticationDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SigV4RestAuthenticationDetails) error {
-		t.Helper()
-		if o.Sigv4IamRole == "" {
-			return fmt.Errorf("expected sigv4 iam role to be non-empty")
-		}
-		return nil
-	})
-	return s
-}
-
 func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4SigningRegion(expected string) *SigV4RestAuthenticationDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SigV4RestAuthenticationDetails) error {
 		t.Helper()
 		if o.Sigv4SigningRegion != expected {
 			return fmt.Errorf("expected sigv4 signing region: %v; got: %v", expected, o.Sigv4SigningRegion)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4SigningRegionNotEmpty() *SigV4RestAuthenticationDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SigV4RestAuthenticationDetails) error {
-		t.Helper()
-		if o.Sigv4SigningRegion == "" {
-			return fmt.Errorf("expected sigv4 signing region to be non-empty")
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4ExternalId(expected string) *SigV4RestAuthenticationDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SigV4RestAuthenticationDetails) error {
-		t.Helper()
-		if o.Sigv4ExternalId != expected {
-			return fmt.Errorf("expected sigv4 external id: %v; got: %v", expected, o.Sigv4ExternalId)
-		}
-		return nil
-	})
-	return s
-}
-
-func (s *SigV4RestAuthenticationDetailsAssert) HasSigv4ExternalIdNotEmpty() *SigV4RestAuthenticationDetailsAssert {
-	s.AddAssertion(func(t *testing.T, o *sdk.SigV4RestAuthenticationDetails) error {
-		t.Helper()
-		if o.Sigv4ExternalId == "" {
-			return fmt.Errorf("expected sigv4 external id to be non-empty")
 		}
 		return nil
 	})

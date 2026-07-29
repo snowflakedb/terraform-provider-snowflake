@@ -157,10 +157,10 @@ func (s *OrganizationAccountUnsetRequest) WithComment(comment bool) *Organizatio
 }
 
 func NewOrganizationAccountRenameRequest(
-	renameTo *AccountObjectIdentifier,
+	newName *AccountObjectIdentifier,
 ) *OrganizationAccountRenameRequest {
 	s := OrganizationAccountRenameRequest{}
-	s.RenameTo = renameTo
+	s.NewName = newName
 	return &s
 }
 

@@ -71,10 +71,6 @@ func (c *NotebookClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk
 func (c *NotebookClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.NotebookDetails, error) {
 	t.Helper()
 	ctx := context.Background()
-	details, err := c.client().Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	details.Id = id
-	return details, nil
+
+	return c.client().Describe(ctx, id)
 }

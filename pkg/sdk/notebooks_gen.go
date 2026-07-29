@@ -126,7 +126,6 @@ type NotebookDetailsRow struct {
 }
 
 type NotebookDetails struct {
-	Id                              SchemaObjectIdentifier
 	Title                           *string
 	MainFile                        string
 	QueryWarehouse                  *AccountObjectIdentifier

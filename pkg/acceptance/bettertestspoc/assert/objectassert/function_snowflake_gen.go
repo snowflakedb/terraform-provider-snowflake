@@ -44,17 +44,6 @@ func (f *FunctionAssert) HasCreatedOn(expected string) *FunctionAssert {
 	return f
 }
 
-func (f *FunctionAssert) HasCreatedOnNotEmpty() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created on to be non-empty")
-		}
-		return nil
-	})
-	return f
-}
-
 func (f *FunctionAssert) HasName(expected string) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
@@ -66,33 +55,11 @@ func (f *FunctionAssert) HasName(expected string) *FunctionAssert {
 	return f
 }
 
-func (f *FunctionAssert) HasNameNotEmpty() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
-		}
-		return nil
-	})
-	return f
-}
-
 func (f *FunctionAssert) HasSchemaName(expected string) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FunctionAssert) HasSchemaNameNotEmpty() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.SchemaName == "" {
-			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -154,28 +121,6 @@ func (f *FunctionAssert) HasMaxNumArguments(expected int) *FunctionAssert {
 	return f
 }
 
-func (f *FunctionAssert) HasArgumentsRaw(expected string) *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.ArgumentsRaw != expected {
-			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FunctionAssert) HasArgumentsRawNotEmpty() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.ArgumentsRaw == "" {
-			return fmt.Errorf("expected arguments raw to be non-empty")
-		}
-		return nil
-	})
-	return f
-}
-
 func (f *FunctionAssert) HasArgumentsOld(expected ...sdk.DataType) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
@@ -183,17 +128,6 @@ func (f *FunctionAssert) HasArgumentsOld(expected ...sdk.DataType) *FunctionAsse
 		mappedExpected := collections.Map(expected, func(item sdk.DataType) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected arguments old: %v; got: %v", expected, o.ArgumentsOld)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FunctionAssert) HasNoArgumentsOld() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if len(o.ArgumentsOld) > 0 {
-			return fmt.Errorf("expected arguments old to be empty; got: %v", o.ArgumentsOld)
 		}
 		return nil
 	})
@@ -211,6 +145,17 @@ func (f *FunctionAssert) HasReturnTypeOld(expected sdk.DataType) *FunctionAssert
 	return f
 }
 
+func (f *FunctionAssert) HasArgumentsRaw(expected string) *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if o.ArgumentsRaw != expected {
+			return fmt.Errorf("expected arguments raw: %v; got: %v", expected, o.ArgumentsRaw)
+		}
+		return nil
+	})
+	return f
+}
+
 func (f *FunctionAssert) HasDescription(expected string) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
@@ -222,33 +167,11 @@ func (f *FunctionAssert) HasDescription(expected string) *FunctionAssert {
 	return f
 }
 
-func (f *FunctionAssert) HasDescriptionNotEmpty() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.Description == "" {
-			return fmt.Errorf("expected description to be non-empty")
-		}
-		return nil
-	})
-	return f
-}
-
 func (f *FunctionAssert) HasCatalogName(expected string) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
 		if o.CatalogName != expected {
 			return fmt.Errorf("expected catalog name: %v; got: %v", expected, o.CatalogName)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FunctionAssert) HasCatalogNameNotEmpty() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.CatalogName == "" {
-			return fmt.Errorf("expected catalog name to be non-empty")
 		}
 		return nil
 	})
@@ -302,17 +225,6 @@ func (f *FunctionAssert) HasSecrets(expected string) *FunctionAssert {
 	return f
 }
 
-func (f *FunctionAssert) HasNoSecrets() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.Secrets != nil {
-			return fmt.Errorf("expected secrets to be nil; got: %v", *o.Secrets)
-		}
-		return nil
-	})
-	return f
-}
-
 func (f *FunctionAssert) HasExternalAccessIntegrations(expected string) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
@@ -321,17 +233,6 @@ func (f *FunctionAssert) HasExternalAccessIntegrations(expected string) *Functio
 		}
 		if *o.ExternalAccessIntegrations != expected {
 			return fmt.Errorf("expected external access integrations: %v; got: %v", expected, *o.ExternalAccessIntegrations)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FunctionAssert) HasNoExternalAccessIntegrations() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.ExternalAccessIntegrations != nil {
-			return fmt.Errorf("expected external access integrations to be nil; got: %v", *o.ExternalAccessIntegrations)
 		}
 		return nil
 	})
@@ -354,17 +255,6 @@ func (f *FunctionAssert) HasLanguage(expected string) *FunctionAssert {
 		t.Helper()
 		if o.Language != expected {
 			return fmt.Errorf("expected language: %v; got: %v", expected, o.Language)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FunctionAssert) HasLanguageNotEmpty() *FunctionAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
-		t.Helper()
-		if o.Language == "" {
-			return fmt.Errorf("expected language to be non-empty")
 		}
 		return nil
 	})

@@ -20,8 +20,8 @@ func (u *ServiceUserResourceAssert) HasDefaultWorkloadIdentityOidc(issuer, subje
 	return u
 }
 
-func (u *ServiceUserResourceAssert) HasDefaultWorkloadIdentityAws(arn string, issuer ...string) *ServiceUserResourceAssert {
-	userApplyDefaultWorkloadIdentityAwsChecks(u.ResourceAssert, arn, issuer...)
+func (u *ServiceUserResourceAssert) HasDefaultWorkloadIdentityAws(arn string) *ServiceUserResourceAssert {
+	userApplyDefaultWorkloadIdentityAwsChecks(u.ResourceAssert, arn)
 	return u
 }
 

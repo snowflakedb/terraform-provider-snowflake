@@ -85,13 +85,13 @@ func (m *MaskingPolicyShowOutputAssert) HasComment(expected string) *MaskingPoli
 	return m
 }
 
-func (m *MaskingPolicyShowOutputAssert) HasOwnerRoleType(expected string) *MaskingPolicyShowOutputAssert {
-	m.StringValueSet("owner_role_type", expected)
+func (m *MaskingPolicyShowOutputAssert) HasExemptOtherPolicies(expected bool) *MaskingPolicyShowOutputAssert {
+	m.BoolValueSet("exempt_other_policies", expected)
 	return m
 }
 
-func (m *MaskingPolicyShowOutputAssert) HasExemptOtherPolicies(expected bool) *MaskingPolicyShowOutputAssert {
-	m.BoolValueSet("exempt_other_policies", expected)
+func (m *MaskingPolicyShowOutputAssert) HasOwnerRoleType(expected string) *MaskingPolicyShowOutputAssert {
+	m.StringValueSet("owner_role_type", expected)
 	return m
 }
 
@@ -134,17 +134,12 @@ func (m *MaskingPolicyShowOutputAssert) HasNoComment() *MaskingPolicyShowOutputA
 	return m
 }
 
-func (m *MaskingPolicyShowOutputAssert) HasNoOptions() *MaskingPolicyShowOutputAssert {
-	m.ValueNotSet("options")
+func (m *MaskingPolicyShowOutputAssert) HasNoExemptOtherPolicies() *MaskingPolicyShowOutputAssert {
+	m.ValueNotSet("exempt_other_policies")
 	return m
 }
 
 func (m *MaskingPolicyShowOutputAssert) HasNoOwnerRoleType() *MaskingPolicyShowOutputAssert {
 	m.ValueNotSet("owner_role_type")
-	return m
-}
-
-func (m *MaskingPolicyShowOutputAssert) HasNoExemptOtherPolicies() *MaskingPolicyShowOutputAssert {
-	m.ValueNotSet("exempt_other_policies")
 	return m
 }

@@ -4,7 +4,6 @@ package objectassert
 
 import (
 	"fmt"
-	"reflect"
 	"slices"
 	"testing"
 	"time"
@@ -49,33 +48,11 @@ func (c *ConnectionAssert) HasRegionGroup(expected string) *ConnectionAssert {
 	return c
 }
 
-func (c *ConnectionAssert) HasNoRegionGroup() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.RegionGroup != nil {
-			return fmt.Errorf("expected region group to be nil; got: %v", *o.RegionGroup)
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ConnectionAssert) HasSnowflakeRegion(expected string) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
 		if o.SnowflakeRegion != expected {
 			return fmt.Errorf("expected snowflake region: %v; got: %v", expected, o.SnowflakeRegion)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ConnectionAssert) HasSnowflakeRegionNotEmpty() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.SnowflakeRegion == "" {
-			return fmt.Errorf("expected snowflake region to be non-empty")
 		}
 		return nil
 	})
@@ -93,17 +70,6 @@ func (c *ConnectionAssert) HasCreatedOn(expected time.Time) *ConnectionAssert {
 	return c
 }
 
-func (c *ConnectionAssert) HasCreatedOnNotEmpty() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.CreatedOn.IsZero() {
-			return fmt.Errorf("expected created on to be set; got zero value")
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ConnectionAssert) HasAccountName(expected string) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
@@ -115,33 +81,11 @@ func (c *ConnectionAssert) HasAccountName(expected string) *ConnectionAssert {
 	return c
 }
 
-func (c *ConnectionAssert) HasAccountNameNotEmpty() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.AccountName == "" {
-			return fmt.Errorf("expected account name to be non-empty")
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ConnectionAssert) HasName(expected string) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ConnectionAssert) HasNameNotEmpty() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.Name == "" {
-			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -162,17 +106,6 @@ func (c *ConnectionAssert) HasComment(expected string) *ConnectionAssert {
 	return c
 }
 
-func (c *ConnectionAssert) HasNoComment() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.Comment != nil {
-			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ConnectionAssert) HasIsPrimary(expected bool) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
@@ -187,7 +120,7 @@ func (c *ConnectionAssert) HasIsPrimary(expected bool) *ConnectionAssert {
 func (c *ConnectionAssert) HasPrimary(expected sdk.ExternalObjectIdentifier) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
-		if !reflect.DeepEqual(o.Primary, expected) {
+		if o.Primary != expected {
 			return fmt.Errorf("expected primary: %v; got: %v", expected, o.Primary)
 		}
 		return nil
@@ -208,33 +141,11 @@ func (c *ConnectionAssert) HasFailoverAllowedToAccounts(expected ...sdk.AccountI
 	return c
 }
 
-func (c *ConnectionAssert) HasNoFailoverAllowedToAccounts() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if len(o.FailoverAllowedToAccounts) > 0 {
-			return fmt.Errorf("expected failover allowed to accounts to be empty; got: %v", o.FailoverAllowedToAccounts)
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ConnectionAssert) HasConnectionUrl(expected string) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
 		if o.ConnectionUrl != expected {
 			return fmt.Errorf("expected connection url: %v; got: %v", expected, o.ConnectionUrl)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ConnectionAssert) HasConnectionUrlNotEmpty() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.ConnectionUrl == "" {
-			return fmt.Errorf("expected connection url to be non-empty")
 		}
 		return nil
 	})
@@ -252,33 +163,11 @@ func (c *ConnectionAssert) HasOrganizationName(expected string) *ConnectionAsser
 	return c
 }
 
-func (c *ConnectionAssert) HasOrganizationNameNotEmpty() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.OrganizationName == "" {
-			return fmt.Errorf("expected organization name to be non-empty")
-		}
-		return nil
-	})
-	return c
-}
-
 func (c *ConnectionAssert) HasAccountLocator(expected string) *ConnectionAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
 		t.Helper()
 		if o.AccountLocator != expected {
 			return fmt.Errorf("expected account locator: %v; got: %v", expected, o.AccountLocator)
-		}
-		return nil
-	})
-	return c
-}
-
-func (c *ConnectionAssert) HasAccountLocatorNotEmpty() *ConnectionAssert {
-	c.AddAssertion(func(t *testing.T, o *sdk.Connection) error {
-		t.Helper()
-		if o.AccountLocator == "" {
-			return fmt.Errorf("expected account locator to be non-empty")
 		}
 		return nil
 	})

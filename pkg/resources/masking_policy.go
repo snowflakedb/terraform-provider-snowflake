@@ -212,10 +212,13 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	expression := d.Get("body").(string)
 
-	var columnSignatures []sdk.CreateMaskingPolicySignatureRequest
+	var columnSignatures []sdk.TableColumnSignature
 	var err error
-	if columnSignatures, err = HandleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.CreateMaskingPolicySignatureRequest, error) {
-		return *sdk.NewCreateMaskingPolicySignatureRequest(v["name"].(string), dataType), nil
+	if columnSignatures, err = HandleNestedDataTypeCreate(d, "argument", "type", func(v map[string]any, dataType datatypes.DataType) (sdk.TableColumnSignature, error) {
+		return sdk.TableColumnSignature{
+			Name: v["name"].(string),
+			Type: dataType,
+		}, nil
 	}); err != nil {
 		return diag.FromErr(err)
 	}
@@ -228,19 +231,20 @@ func CreateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	req := sdk.NewCreateMaskingPolicyRequest(id, columnSignatures, returns, expression)
+	// set optionals
+	opts := &sdk.CreateMaskingPolicyOptions{}
 	if comment, ok := d.Get("comment").(string); ok {
-		req.WithComment(comment)
+		opts.Comment = sdk.String(comment)
 	}
 	if v := d.Get("exempt_other_policies").(string); v != BooleanDefault {
 		parsed, err := booleanStringToBool(v)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		req.WithExemptOtherPolicies(parsed)
+		opts.ExemptOtherPolicies = sdk.Pointer(parsed)
 	}
 
-	err = client.MaskingPolicies.Create(ctx, req)
+	err = client.MaskingPolicies.Create(ctx, id, columnSignatures, returns, expression, opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -336,7 +340,9 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	if d.HasChange("name") {
 		newID := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
-		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).WithRenameTo(newID))
+		err := client.MaskingPolicies.Alter(ctx, id, &sdk.AlterMaskingPolicyOptions{
+			NewName: &newID,
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -346,26 +352,31 @@ func UpdateMaskingPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if d.HasChange("body") {
-		err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).
-			WithSetBody(d.Get("body").(string)))
+		alterOptions := &sdk.AlterMaskingPolicyOptions{
+			Set: &sdk.MaskingPolicySet{
+				Body: sdk.Pointer(d.Get("body").(string)),
+			},
+		}
+		err := client.MaskingPolicies.Alter(ctx, id, alterOptions)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("comment") {
+		alterOptions := &sdk.AlterMaskingPolicyOptions{}
 		if v, ok := d.GetOk("comment"); ok {
-			err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).
-				WithSetComment(v.(string)))
-			if err != nil {
-				return diag.FromErr(err)
+			alterOptions.Set = &sdk.MaskingPolicySet{
+				Comment: sdk.String(v.(string)),
 			}
 		} else {
-			err := client.MaskingPolicies.Alter(ctx, sdk.NewAlterMaskingPolicyRequest(id).
-				WithUnsetComment(true))
-			if err != nil {
-				return diag.FromErr(err)
+			alterOptions.Unset = &sdk.MaskingPolicyUnset{
+				Comment: sdk.Bool(true),
 			}
+		}
+		err := client.MaskingPolicies.Alter(ctx, id, alterOptions)
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 

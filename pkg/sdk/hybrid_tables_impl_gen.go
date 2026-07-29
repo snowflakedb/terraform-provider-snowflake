@@ -177,7 +177,7 @@ func (r *AlterHybridTableRequest) toOpts() *AlterHybridTableOptions {
 	opts := &AlterHybridTableOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
-		RenameTo: r.RenameTo,
+		NewName:  r.NewName,
 	}
 	if r.AddColumnAction != nil {
 		opts.AddColumnAction = &HybridTableAddColumnAction{

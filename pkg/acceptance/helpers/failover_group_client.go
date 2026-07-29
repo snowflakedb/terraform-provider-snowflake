@@ -24,42 +24,47 @@ func (c *FailoverGroupClient) client() sdk.FailoverGroups {
 	return c.context.client.FailoverGroups
 }
 
-func (c *FailoverGroupClient) Create(t *testing.T) (*sdk.FailoverGroup, func()) {
+func (c *FailoverGroupClient) CreateFailoverGroup(t *testing.T) (*sdk.FailoverGroup, func()) {
 	t.Helper()
-	return c.CreateWithRequest(t, sdk.NewCreateFailoverGroupRequest(
-		c.ids.RandomAccountObjectIdentifier(),
-		[]sdk.PluralObjectType{sdk.PluralObjectTypeRoles},
-		[]sdk.AccountIdentifier{c.ids.AccountIdentifierWithLocator()},
-	))
+	objectTypes := []sdk.PluralObjectType{sdk.PluralObjectTypeRoles}
+	accountID := c.ids.AccountIdentifierWithLocator()
+	allowedAccounts := []sdk.AccountIdentifier{accountID}
+	return c.CreateFailoverGroupWithOptions(t, objectTypes, allowedAccounts, nil)
 }
 
-func (c *FailoverGroupClient) CreateWithRequest(t *testing.T, req *sdk.CreateFailoverGroupRequest) (*sdk.FailoverGroup, func()) {
+func (c *FailoverGroupClient) CreateFailoverGroupWithOptions(t *testing.T, objectTypes []sdk.PluralObjectType, allowedAccounts []sdk.AccountIdentifier, opts *sdk.CreateFailoverGroupOptions) (*sdk.FailoverGroup, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, req)
+	id := c.ids.RandomAccountObjectIdentifier()
+
+	err := c.client().Create(ctx, id, objectTypes, allowedAccounts, opts)
 	require.NoError(t, err)
 
-	failoverGroup, err := c.client().ShowByID(ctx, req.GetName())
+	failoverGroup, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 
-	return failoverGroup, c.DropFunc(t, req.GetName())
+	return failoverGroup, c.DropFailoverGroupFunc(t, id)
 }
 
 func (c *FailoverGroupClient) RemoveAllowedAccounts(t *testing.T, id sdk.AccountObjectIdentifier, accounts ...sdk.AccountIdentifier) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(accounts)))
+	err := c.client().AlterSource(ctx, id, &sdk.AlterSourceFailoverGroupOptions{
+		Remove: &sdk.FailoverGroupRemove{
+			AllowedAccounts: accounts,
+		},
+	})
 	require.NoError(t, err)
 }
 
-func (c *FailoverGroupClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
+func (c *FailoverGroupClient) DropFailoverGroupFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropFailoverGroupRequest(id).WithIfExists(true))
+		err := c.client().Drop(ctx, id, &sdk.DropFailoverGroupOptions{IfExists: sdk.Bool(true)})
 		require.NoError(t, err)
 	}
 }
