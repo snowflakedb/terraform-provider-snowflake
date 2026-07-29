@@ -223,6 +223,7 @@ func TestAcc_FileFormats_AllTypes(t *testing.T) {
 					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 1).
 						HasId(jsonId).
 						HasType(sdk.FileFormatTypeJson).
+						// field_delimiter is CSV-only, so Csv() (not Json()) is used here on purpose - to check that it is not filled for a JSON file format
 						Csv().
 						HasFieldDelimiter(""),
 					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 2).
@@ -237,6 +238,7 @@ func TestAcc_FileFormats_AllTypes(t *testing.T) {
 					resourceshowoutputassert.FileFormatsDatasourceDescribeOutputOnIdx(t, fileFormats.DatasourceReference(), 5).
 						HasId(xmlId).
 						HasType(sdk.FileFormatTypeXml).
+						// field_delimiter is CSV-only, so Csv() (not Xml()) is used here on purpose - to check that it is not filled for an XML file format
 						Csv().
 						HasFieldDelimiter(""),
 				),

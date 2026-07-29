@@ -3,6 +3,9 @@ package resourceshowoutputassert
 // The describe output of any file format is a union of all the per-type describe outputs, so the type-specific fields
 // are asserted with the per-type assertions below. Note that a given field can be checked on a file format of any type
 // (e.g. to verify that a CSV-only field is not filled for a JSON file format).
+//
+// The embedded *assert.ResourceAssert is a pointer that is shared (not copied) with the returned per-type assert, so
+// assertions registered before and after switching the type are all accumulated in the same underlying assert.
 
 func (f *FileFormatAllDescribeOutputAssert) Csv() *FileFormatCsvDescribeOutputAssert {
 	return &FileFormatCsvDescribeOutputAssert{ResourceAssert: f.ResourceAssert}
