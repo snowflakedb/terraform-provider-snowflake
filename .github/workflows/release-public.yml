@@ -1,0 +1,63 @@
+name: Release (Public)
+
+on:
+  push:
+    tags: # Trigger on new tags that follow semantic versioning with `v` prefix (supports any postfix, e.g. `-rc1`)
+      - 'v[0-9]+.[0-9]+.[0-9]+(-.+)?'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.2.3)'
+        required: true
+        type: string
+
+jobs:
+  goreleaser:
+    if: github.repository == 'snowflakedb/terraform-provider-snowflake'
+    environment: release
+    runs-on: macos-latest
+    steps:
+      # See https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
+      # For why we need to generate a token and not use the default
+      - name: Create token
+        id: create-token
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Import GPG key
+        id: import_gpg
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import --no-tty --yes
+          fingerprint=$(gpg --list-secret-keys --with-colons | awk -F: '$1 == "fpr" {print $10}' | head -n 1)
+
+          if [[ -z "$fingerprint" ]]; then
+            echo "Error: Failed to extract GPG fingerprint."
+            exit 1
+          fi
+
+          echo "fingerprint=$fingerprint" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        # we need to fetch all history and tags
+        # so we build the proper version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./go.mod
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5
+        with:
+          # Always pin to a specific GoReleaser binary version.
+          version: 'v2.16.0'
+          args: release --clean --verbose
+        env:
+          GITHUB_TOKEN: ${{ steps.create-token.outputs.token }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

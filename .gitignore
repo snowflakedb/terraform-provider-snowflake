@@ -20,6 +20,7 @@ terraform-provider-snowflake*
 .terraform.lock.hcl
 crash.log
 .envrc
+.env
 bin
 dist
 
