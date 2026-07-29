@@ -51,6 +51,7 @@ Provider will issue a warning if a stable feature is still present in the `previ
 
 Read more about preview and stable features in our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
 
+
 ### *(bug fix)* `snowflake_storage_integration_aws` and `snowflake_storage_integration_azure` import fix
 
 Previously, after importing `snowflake_storage_integration_aws` or `snowflake_storage_integration_azure` (for example, when migrating from the older `snowflake_storage_integration` resource), the next `terraform plan` showed an unavoidable diff trying to unset `storage_aws_external_id` (AWS only) and modify `use_privatelink_endpoint` (AWS and Azure) when you did not set these fields in your configuration.
@@ -60,7 +61,8 @@ Previously, after importing `snowflake_storage_integration_aws` or `snowflake_st
 
 References: [#5020](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5020)
 
-### *(new feature)* New file format resources
+### Enhanced file format support
+#### *(new feature)* New file format resources
 
 We have added new preview resources for file formats:
 - [snowflake_file_format_avro](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro) for managing AVRO file formats ([Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/create-file-format)), must be enabled by `snowflake_file_format_avro_resource` feature name.
@@ -87,6 +89,57 @@ Notes when migrating:
 - to achieve zero-downtime migration, please follow our [Resource migration guide](./docs/guides/resource_migration.md).
 
 No immediate action is required - the deprecated resource still works, but you will see a deprecation warning in the plan output until you migrate.
+
+#### *(breaking change, new feature)* Changes in `snowflake_file_formats` data source
+
+As a part of the file format redesign (see [New file format resources](#new-feature-new-file-format-resources)), we reworked the `snowflake_file_formats` data source with the following:
+- Moved the required `database` and `schema` fields to the optional `in` block (breaking change). See the before/after examples below.
+- Added support for `IN ACCOUNT`, `IN DATABASE`, and `LIKE` filtering.
+- Added support for getting data with `DESCRIBE FILE FORMAT` - see the `with_describe` field.
+- Changed the output format returned by the data source (breaking change). See the before/after examples below.
+
+With added support for the `IN ACCOUNT` and `IN DATABASE` filters, we nested the `database` and `schema` fields in a separate `in` block and made all these fields optional. For example, please adjust the configurations from:
+```terraform
+data "snowflake_file_formats" "current" {
+  database = "MYDB"
+  schema   = "MYSCHEMA"
+}
+```
+to
+```terraform
+data "snowflake_file_formats" "current" {
+  in {
+    schema = "MYDB.MYSCHEMA"
+  }
+}
+```
+
+The output format is also changed. Now, all data is nested in `file_formats.show_output`, and in `file_formats.describe_output` if `with_describe` is set to `true` (default). The previously returned `name`, `database`, `schema`, `comment`, and `format_type` fields are gone; use `show_output.0.name`, `show_output.0.database_name`, `show_output.0.schema_name`, `show_output.0.comment`, and `show_output.0.type` instead.
+
+Because `DESCRIBE FILE FORMAT` returns a different set of properties for every file format type, `describe_output` contains a union of the properties of all the file format types; only the fields applicable to the given file format's type are filled (the remaining ones have zero values).
+
+Before:
+
+```terraform
+output "simple_output" {
+  value = data.snowflake_file_formats.test.file_formats[0].name
+}
+```
+After:
+
+```terraform
+output "simple_output" {
+  value = data.snowflake_file_formats.test.file_formats[0].show_output[0].name
+}
+
+output "describe_output" {
+  value = data.snowflake_file_formats.test.file_formats[0].describe_output[0].field_delimiter # Filled only for CSV file formats.
+}
+```
+
+Please read the [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/file_formats) for more information.
+
+Note that the `snowflake_file_formats` data source is still in preview and requires the `snowflake_file_formats_datasource` feature name in the `preview_features_enabled` field in the provider configuration.
 
 ### *(new feature)* `aws_sns_topic` added to `snowflake_stage_external_s3` directory table options
 

@@ -32,6 +32,21 @@ func ImportedFileFormatShowOutput(t *testing.T, id string) *FileFormatShowOutput
 	return &fileFormatAssert
 }
 
+func FileFormatsDatasourceShowOutput(t *testing.T, name string) *FileFormatShowOutputAssert {
+	t.Helper()
+
+	return FileFormatsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func FileFormatsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *FileFormatShowOutputAssert {
+	t.Helper()
+
+	fileFormatAssert := FileFormatShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "file_formats", idx),
+	}
+	return &fileFormatAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
