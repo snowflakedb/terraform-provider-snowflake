@@ -146,6 +146,12 @@ func (c *StorageIntegrationClient) DescribeGcs(t *testing.T, id sdk.AccountObjec
 	return c.client().DescribeGcsDetails(ctx, id)
 }
 
+func (c *StorageIntegrationClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.StorageIntegrationAllDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().DescribeDetails(ctx, id)
+}
+
 func (c *StorageIntegrationClient) CreateWithoutEnabled(t *testing.T, id sdk.AccountObjectIdentifier, iamRole string, allowedLocation sdk.StorageLocation) error {
 	t.Helper()
 	ctx := context.Background()

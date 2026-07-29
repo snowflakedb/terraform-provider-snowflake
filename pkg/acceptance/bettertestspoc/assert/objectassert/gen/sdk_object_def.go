@@ -216,6 +216,12 @@ var allStructs = []SdkObjectDef{
 		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "StorageIntegration", MethodName: "DescribeGcs"},
 	},
 	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.StorageIntegrationAllDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "StorageIntegration", MethodName: "DescribeDetails"},
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Notebook{},
 	},
