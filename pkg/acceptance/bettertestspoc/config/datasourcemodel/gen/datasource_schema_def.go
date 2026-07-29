@@ -71,6 +71,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.ExternalVolumes().Schema,
 	},
 	{
+		name:   "FileFormats",
+		schema: datasources.FileFormats().Schema,
+	},
+	{
 		name:   "Functions",
 		schema: datasources.Functions().Schema,
 	},

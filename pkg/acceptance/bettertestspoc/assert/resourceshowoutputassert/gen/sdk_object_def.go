@@ -27,6 +27,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Database{}):                {"Databases"},
 	normalized(sdk.DatabaseRole{}):            {"DatabaseRoles"},
 	normalized(sdk.ExternalVolume{}):          {"ExternalVolumes"},
+	normalized(sdk.FileFormat{}):              {"FileFormats"},
 	normalized(sdk.GitRepository{}):           {"GitRepositories"},
 	normalized(sdk.IcebergTable{}):            {"IcebergTables"},
 	normalized(sdk.ImageRepository{}):         {"ImageRepositories"},
@@ -64,6 +65,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
+	normalized(sdk.FileFormatAllDetails{}):          {"FileFormats"},
 	normalized(sdk.IcebergTableDetails{}):           {"IcebergTables"},
 	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
 	normalized(sdk.SessionPolicyDetails{}):          {"SessionPolicies"},
@@ -90,7 +92,6 @@ var (
 	objectsNotBeingResources = []any{
 		sdk.BearerRestAuthenticationDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
-		sdk.FileFormatAllDetails{},
 		sdk.IcebergRestRestConfigDetails{},
 		sdk.OAuthRestAuthenticationDetails{},
 		sdk.OpenCatalogRestConfigDetails{},
