@@ -246,20 +246,29 @@ func TestInt_Streamlits(t *testing.T) {
 		t.Cleanup(cleanupStage)
 		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 		t.Cleanup(warehouseCleanup)
+		networkRule, networkRuleCleanup := testClientHelper().NetworkRule.Create(t)
+		t.Cleanup(networkRuleCleanup)
+		eaiId, eaiCleanup := testClientHelper().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
+		t.Cleanup(eaiCleanup)
 
 		manifest := "manifest.yml"
 		e := createStreamlitHandle(t, stage, manifest, func(r *sdk.CreateStreamlitRequest) {
-			r.WithComment("foo").WithTitle("foo").WithQueryWarehouse(warehouse.ID())
+			r.WithComment("foo").WithTitle("foo").WithQueryWarehouse(warehouse.ID()).WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{eaiId})
 		})
 
 		id := e.ID()
 		unset := sdk.NewStreamlitUnsetRequest().
 			WithTitle(true).
 			WithQueryWarehouse(true).
-			WithComment(true)
+			WithComment(true).
+			WithExternalAccessIntegrations(true)
 		err := client.Streamlits.Alter(ctx, sdk.NewAlterStreamlitRequest(id).WithUnset(*unset))
 		require.NoError(t, err)
 		assertStreamlit(t, id, "", "")
+
+		details, err := client.Streamlits.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Empty(t, details.ExternalAccessIntegrations)
 	})
 
 	t.Run("alter function: rename", func(t *testing.T) {

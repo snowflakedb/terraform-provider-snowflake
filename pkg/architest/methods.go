@@ -7,7 +7,6 @@ type (
 
 func (methods Methods) All(receiver MethodReceiver) {
 	for _, method := range methods {
-		method := method
 		receiver(&method)
 	}
 }

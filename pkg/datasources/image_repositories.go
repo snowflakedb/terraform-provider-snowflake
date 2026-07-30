@@ -60,7 +60,6 @@ func ReadImageRepositories(ctx context.Context, d *schema.ResourceData, meta any
 
 	flattenedImageRepositories := make([]map[string]any, len(imageRepositories))
 	for i, imageRepository := range imageRepositories {
-		imageRepository := imageRepository
 		flattenedImageRepositories[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.ImageRepositoryToSchema(&imageRepository)},
 		}

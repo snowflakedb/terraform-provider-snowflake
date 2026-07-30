@@ -34,31 +34,26 @@ func HybridTableParametersPrefetched(t *testing.T, id sdk.SchemaObjectIdentifier
 // Generic parameter checks //
 //////////////////////////////
 
-// modified manually
 func (h *HybridTableParametersAssert) HasBoolParameterValue(parameterName sdk.ObjectParameter, expected bool) *HybridTableParametersAssert {
 	h.AddAssertion(assert.SnowflakeParameterBoolValueSet(parameterName, expected))
 	return h
 }
 
-// modified manually
 func (h *HybridTableParametersAssert) HasIntParameterValue(parameterName sdk.ObjectParameter, expected int) *HybridTableParametersAssert {
 	h.AddAssertion(assert.SnowflakeParameterIntValueSet(parameterName, expected))
 	return h
 }
 
-// modified manually
 func (h *HybridTableParametersAssert) HasStringParameterValue(parameterName sdk.ObjectParameter, expected string) *HybridTableParametersAssert {
 	h.AddAssertion(assert.SnowflakeParameterValueSet(parameterName, expected))
 	return h
 }
 
-// modified manually
 func (h *HybridTableParametersAssert) HasDefaultParameterValue(parameterName sdk.ObjectParameter) *HybridTableParametersAssert {
 	h.AddAssertion(assert.SnowflakeParameterDefaultValueSet(parameterName))
 	return h
 }
 
-// modified manually
 func (h *HybridTableParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk.ObjectParameter, parameterType sdk.ParameterType) *HybridTableParametersAssert {
 	h.AddAssertion(assert.SnowflakeParameterDefaultValueOnLevelSet(parameterName, parameterType))
 	return h
@@ -88,12 +83,12 @@ func (h *HybridTableParametersAssert) HasAllDefaultsExplicit() *HybridTableParam
 ////////////////////////////
 
 func (h *HybridTableParametersAssert) HasDataRetentionTimeInDays(expected int) *HybridTableParametersAssert {
-	h.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.ObjectParameterDataRetentionTimeInDays, expected)) // modified manually
+	h.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.ObjectParameterDataRetentionTimeInDays, expected))
 	return h
 }
 
 func (h *HybridTableParametersAssert) HasMaxDataExtensionTimeInDays(expected int) *HybridTableParametersAssert {
-	h.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.ObjectParameterMaxDataExtensionTimeInDays, expected)) // modified manually
+	h.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.ObjectParameterMaxDataExtensionTimeInDays, expected))
 	return h
 }
 
@@ -102,12 +97,12 @@ func (h *HybridTableParametersAssert) HasMaxDataExtensionTimeInDays(expected int
 ////////////////////////////
 
 func (h *HybridTableParametersAssert) HasDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *HybridTableParametersAssert {
-	h.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDataRetentionTimeInDays, expected)) // modified manually
+	h.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterDataRetentionTimeInDays, expected))
 	return h
 }
 
 func (h *HybridTableParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expected sdk.ParameterType) *HybridTableParametersAssert {
-	h.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterMaxDataExtensionTimeInDays, expected)) // modified manually
+	h.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.ObjectParameterMaxDataExtensionTimeInDays, expected))
 	return h
 }
 
@@ -116,11 +111,11 @@ func (h *HybridTableParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expecte
 ////////////////////////////////////
 
 func (h *HybridTableParametersAssert) HasDefaultDataRetentionTimeInDaysValue() *HybridTableParametersAssert {
-	return h.HasDefaultParameterValue(sdk.ObjectParameterDataRetentionTimeInDays) // modified manually
+	return h.HasDefaultParameterValue(sdk.ObjectParameterDataRetentionTimeInDays)
 }
 
 func (h *HybridTableParametersAssert) HasDefaultMaxDataExtensionTimeInDaysValue() *HybridTableParametersAssert {
-	return h.HasDefaultParameterValue(sdk.ObjectParameterMaxDataExtensionTimeInDays) // modified manually
+	return h.HasDefaultParameterValue(sdk.ObjectParameterMaxDataExtensionTimeInDays)
 }
 
 /////////////////////////////////////////////

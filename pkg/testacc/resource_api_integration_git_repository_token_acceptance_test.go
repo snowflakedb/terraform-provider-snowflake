@@ -57,7 +57,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+			HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedAuthenticationSecrets("").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
@@ -84,7 +84,7 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
+			HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasAllowedAuthenticationSecrets("").
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).

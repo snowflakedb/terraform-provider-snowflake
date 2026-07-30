@@ -3,7 +3,7 @@ package gen
 import "reflect"
 
 func KindOfT[T any]() string {
-	t := reflect.TypeOf((*T)(nil)).Elem()
+	t := reflect.TypeFor[T]()
 	return t.Name()
 }
 

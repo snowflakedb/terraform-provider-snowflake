@@ -107,6 +107,7 @@ func (r *AlterTagRequest) toOpts() *AlterTagOptions {
 	opts := &AlterTagOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
+		RenameTo: r.RenameTo,
 	}
 	if r.Add != nil {
 		opts.Add = &TagAdd{}
@@ -177,11 +178,6 @@ func (r *AlterTagRequest) toOpts() *AlterTagOptions {
 				}
 				opts.Unset.MaskingPolicies.MaskingPolicies = maskingPolicies
 			}
-		}
-	}
-	if r.Rename != nil {
-		opts.Rename = &TagRename{
-			Name: r.Rename.Name,
 		}
 	}
 	return opts

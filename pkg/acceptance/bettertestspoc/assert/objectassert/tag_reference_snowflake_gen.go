@@ -14,25 +14,10 @@ type TagReferenceAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.TagReference, sdk.SchemaObjectIdentifier]
 }
 
-// Adjusted manually
-// func TagReference(t *testing.T, id sdk.SchemaObjectIdentifier) *TagReferenceAssert {
-// 	t.Helper()
-// 	return &TagReferenceAssert{
-// 		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("TagReference"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.TagReference, sdk.SchemaObjectIdentifier] {
-// 			return testClient.TagReference.Show
-// 		}),
-// 	}
-// }
-
-// Adjusted manually
 func TagReferenceFromObject(t *testing.T, tagReference *sdk.TagReference) *TagReferenceAssert {
 	t.Helper()
 	return &TagReferenceAssert{
-		assert.NewSnowflakeObjectAssertWithObject(
-			sdk.ObjectType("TagReference"),
-			sdk.NewSchemaObjectIdentifier(tagReference.TagDatabase, tagReference.TagSchema, tagReference.TagName),
-			tagReference,
-		),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("TagReference"), tagReference.ID(), tagReference),
 	}
 }
 
@@ -41,6 +26,17 @@ func (t *TagReferenceAssert) HasTagDatabase(expected string) *TagReferenceAssert
 		t.Helper()
 		if o.TagDatabase != expected {
 			return fmt.Errorf("expected tag database: %v; got: %v", expected, o.TagDatabase)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagReferenceAssert) HasTagDatabaseNotEmpty() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.TagDatabase == "" {
+			return fmt.Errorf("expected tag database to be non-empty")
 		}
 		return nil
 	})
@@ -58,6 +54,17 @@ func (t *TagReferenceAssert) HasTagSchema(expected string) *TagReferenceAssert {
 	return t
 }
 
+func (t *TagReferenceAssert) HasTagSchemaNotEmpty() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.TagSchema == "" {
+			return fmt.Errorf("expected tag schema to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TagReferenceAssert) HasTagName(expected string) *TagReferenceAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
 		t.Helper()
@@ -69,11 +76,33 @@ func (t *TagReferenceAssert) HasTagName(expected string) *TagReferenceAssert {
 	return t
 }
 
+func (t *TagReferenceAssert) HasTagNameNotEmpty() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.TagName == "" {
+			return fmt.Errorf("expected tag name to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TagReferenceAssert) HasTagValue(expected string) *TagReferenceAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
 		t.Helper()
 		if o.TagValue != expected {
 			return fmt.Errorf("expected tag value: %v; got: %v", expected, o.TagValue)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagReferenceAssert) HasTagValueNotEmpty() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.TagValue == "" {
+			return fmt.Errorf("expected tag value to be non-empty")
 		}
 		return nil
 	})
@@ -105,6 +134,17 @@ func (t *TagReferenceAssert) HasObjectDatabase(expected string) *TagReferenceAss
 	return t
 }
 
+func (t *TagReferenceAssert) HasNoObjectDatabase() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.ObjectDatabase != nil {
+			return fmt.Errorf("expected object database to be nil; got: %v", *o.ObjectDatabase)
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TagReferenceAssert) HasObjectSchema(expected string) *TagReferenceAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
 		t.Helper()
@@ -119,11 +159,33 @@ func (t *TagReferenceAssert) HasObjectSchema(expected string) *TagReferenceAsser
 	return t
 }
 
+func (t *TagReferenceAssert) HasNoObjectSchema() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.ObjectSchema != nil {
+			return fmt.Errorf("expected object schema to be nil; got: %v", *o.ObjectSchema)
+		}
+		return nil
+	})
+	return t
+}
+
 func (t *TagReferenceAssert) HasObjectName(expected string) *TagReferenceAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
 		t.Helper()
 		if o.ObjectName != expected {
 			return fmt.Errorf("expected object name: %v; got: %v", expected, o.ObjectName)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagReferenceAssert) HasObjectNameNotEmpty() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.ObjectName == "" {
+			return fmt.Errorf("expected object name to be non-empty")
 		}
 		return nil
 	})
@@ -149,6 +211,17 @@ func (t *TagReferenceAssert) HasColumnName(expected string) *TagReferenceAssert 
 		}
 		if *o.ColumnName != expected {
 			return fmt.Errorf("expected column name: %v; got: %v", expected, *o.ColumnName)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TagReferenceAssert) HasNoColumnName() *TagReferenceAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TagReference) error {
+		t.Helper()
+		if o.ColumnName != nil {
+			return fmt.Errorf("expected column name to be nil; got: %v", *o.ColumnName)
 		}
 		return nil
 	})

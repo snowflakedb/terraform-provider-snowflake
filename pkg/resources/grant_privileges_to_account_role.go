@@ -16,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -129,18 +130,56 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			Schema: map[string]*schema.Schema{
 				"object_type": {
 					Type:         schema.TypeString,
-					Required:     true,
+					Optional:     true,
 					ForceNew:     true,
 					Description:  fmt.Sprintf("The object type of the account object on which privileges will be granted. Valid values are: %s", docs.PossibleValuesListed(sdk.ValidGrantToAccountObjectTypesString)),
 					ValidateFunc: validation.StringInSlice(sdk.ValidGrantToAccountObjectTypesString, true),
+					RequiredWith: []string{
+						"on_account_object.0.object_name",
+					},
+					ConflictsWith: []string{
+						"on_account_object.0.inherited",
+					},
 				},
 				"object_name": {
 					Type:             schema.TypeString,
-					Required:         true,
+					Optional:         true,
 					ForceNew:         true,
 					Description:      "The fully qualified name of the object on which privileges will be granted.",
 					ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
+					RequiredWith: []string{
+						"on_account_object.0.object_type",
+					},
+					ExactlyOneOf: []string{
+						"on_account_object.0.object_name",
+						"on_account_object.0.inherited",
+					},
+				},
+				"inherited": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					ForceNew:    true,
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future account objects of a given type in the account. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
+					MaxItems:    1,
+					ConflictsWith: []string{
+						"on_account_object.0.object_type",
+					},
+					ExactlyOneOf: []string{
+						"on_account_object.0.object_name",
+						"on_account_object.0.inherited",
+					},
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"object_type_plural": {
+								Type:             schema.TypeString,
+								Required:         true,
+								ForceNew:         true,
+								Description:      joinWithSpace("The plural object type of the account object on which an inherited privilege will be granted.", enumValuesDescription(sdk.ValidGrantToAccountObjectPluralTypesString)),
+								ValidateDiagFunc: StringInSlice(sdk.ValidGrantToAccountObjectPluralTypesString, true),
+							},
+						},
+					},
 				},
 			},
 		},
@@ -170,6 +209,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema.0.schema_name",
 						"on_schema.0.all_schemas_in_database",
 						"on_schema.0.future_schemas_in_database",
+						"on_schema.0.inherited",
 					},
 				},
 				"all_schemas_in_database": {
@@ -183,6 +223,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema.0.schema_name",
 						"on_schema.0.all_schemas_in_database",
 						"on_schema.0.future_schemas_in_database",
+						"on_schema.0.inherited",
 					},
 				},
 				"future_schemas_in_database": {
@@ -196,6 +237,46 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema.0.schema_name",
 						"on_schema.0.all_schemas_in_database",
 						"on_schema.0.future_schemas_in_database",
+						"on_schema.0.inherited",
+					},
+				},
+				"inherited": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					ForceNew:    true,
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in either the account or a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
+					MaxItems:    1,
+					ExactlyOneOf: []string{
+						"on_schema.0.schema_name",
+						"on_schema.0.all_schemas_in_database",
+						"on_schema.0.future_schemas_in_database",
+						"on_schema.0.inherited",
+					},
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"in_account": {
+								Type:        schema.TypeBool,
+								Optional:    true,
+								ForceNew:    true,
+								Description: "If true, the inherited privilege will be granted on all schemas in the account.",
+								ExactlyOneOf: []string{
+									"on_schema.0.inherited.0.in_account",
+									"on_schema.0.inherited.0.in_database",
+								},
+							},
+							"in_database": {
+								Type:             schema.TypeString,
+								Optional:         true,
+								ForceNew:         true,
+								Description:      "The fully qualified name of the database in which the inherited privilege will be granted on all schemas.",
+								ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+								DiffSuppressFunc: suppressIdentifierQuoting,
+								ExactlyOneOf: []string{
+									"on_schema.0.inherited.0.in_account",
+									"on_schema.0.inherited.0.in_database",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -226,6 +307,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					ConflictsWith: []string{
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
+						"on_schema_object.0.inherited",
 					},
 					ValidateDiagFunc: StringInSlice(sdk.ValidGrantToSchemaObjectTypesString, true),
 				},
@@ -241,6 +323,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.object_name",
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
+						"on_schema_object.0.inherited",
 					},
 					DiffSuppressFunc: suppressIdentifierQuoting,
 				},
@@ -260,6 +343,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.object_name",
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
+						"on_schema_object.0.inherited",
 					},
 				},
 				"future": {
@@ -278,6 +362,26 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 						"on_schema_object.0.object_name",
 						"on_schema_object.0.all",
 						"on_schema_object.0.future",
+						"on_schema_object.0.inherited",
+					},
+				},
+				"inherited": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					ForceNew:    true,
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in the account, a database, or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureDescription(experimentalfeatures.InheritedGrants)),
+					MaxItems:    1,
+					Elem: &schema.Resource{
+						Schema: getGrantPrivilegesOnAccountRoleInheritedSchemaObjectSchema(),
+					},
+					ConflictsWith: []string{
+						"on_schema_object.0.object_type",
+					},
+					ExactlyOneOf: []string{
+						"on_schema_object.0.object_name",
+						"on_schema_object.0.all",
+						"on_schema_object.0.future",
+						"on_schema_object.0.inherited",
 					},
 				},
 			},
@@ -311,6 +415,55 @@ func getGrantPrivilegesOnAccountRoleBulkOperationSchema(validGrantToObjectTypes 
 	}
 }
 
+func getGrantPrivilegesOnAccountRoleInheritedSchemaObjectSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"object_type_plural": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      joinWithSpace("The plural object type of the schema object on which an inherited privilege will be granted.", enumValuesDescription(sdk.ValidGrantToAllPluralObjectTypesString)),
+			ValidateDiagFunc: StringInSlice(sdk.ValidGrantToAllPluralObjectTypesString, true),
+		},
+		"in_account": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "If true, the inherited privilege will be granted on all objects of the given type in the account.",
+			ExactlyOneOf: []string{
+				"on_schema_object.0.inherited.0.in_account",
+				"on_schema_object.0.inherited.0.in_database",
+				"on_schema_object.0.inherited.0.in_schema",
+			},
+		},
+		"in_database": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The fully qualified name of the database in which the inherited privilege will be granted on all objects of the given type.",
+			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+			ExactlyOneOf: []string{
+				"on_schema_object.0.inherited.0.in_account",
+				"on_schema_object.0.inherited.0.in_database",
+				"on_schema_object.0.inherited.0.in_schema",
+			},
+		},
+		"in_schema": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The fully qualified name of the schema in which the inherited privilege will be granted on all objects of the given type.",
+			ValidateDiagFunc: IsValidIdentifier[sdk.DatabaseObjectIdentifier](),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+			ExactlyOneOf: []string{
+				"on_schema_object.0.inherited.0.in_account",
+				"on_schema_object.0.inherited.0.in_database",
+				"on_schema_object.0.inherited.0.in_schema",
+			},
+		},
+	}
+}
+
 func GrantPrivilegesToAccountRole() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: TrackingCreateWrapper(resources.GrantPrivilegesToAccountRole, CreateGrantPrivilegesToAccountRole),
@@ -323,6 +476,9 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole),
 		},
 		Timeouts: defaultTimeouts,
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.GrantPrivilegesToAccountRole, customdiff.All(
+			inheritedGrantsRequireExperiment("on_account_object", "on_schema", "on_schema_object"),
+		)),
 		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
 			func(ctx context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
 				rawPrivileges := req.RawConfig.GetAttr("privileges")
@@ -347,6 +503,7 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 					})
 				}
 			},
+			validateInheritedGrantsConfig("on_account_object", "on_schema", "on_schema_object"),
 		},
 	}
 }
@@ -381,6 +538,51 @@ func ImportGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		onAccountObject["object_name"] = data.ObjectName.FullyQualifiedName()
 
 		if err := d.Set("on_account_object", []any{onAccountObject}); err != nil {
+			return nil, err
+		}
+	case OnAccountObjectInheritedAccountRoleGrantKind:
+		data := id.Data.(*OnAccountObjectInheritedGrantData)
+		onAccountObject := map[string]any{
+			"inherited": []any{
+				map[string]any{
+					"object_type_plural": data.ObjectNamePlural.String(),
+				},
+			},
+		}
+
+		if err := d.Set("on_account_object", []any{onAccountObject}); err != nil {
+			return nil, err
+		}
+	case OnSchemaInheritedAccountRoleGrantKind:
+		data := id.Data.(*OnSchemaInheritedGrantData)
+		inherited := make(map[string]any)
+
+		switch data.Kind {
+		case InAccountInheritedContainerKind:
+			inherited["in_account"] = true
+		case InDatabaseInheritedContainerKind:
+			inherited["in_database"] = data.DatabaseName.FullyQualifiedName()
+		}
+
+		if err := d.Set("on_schema", []any{map[string]any{"inherited": []any{inherited}}}); err != nil {
+			return nil, err
+		}
+	case OnSchemaObjectInheritedAccountRoleGrantKind:
+		data := id.Data.(*OnSchemaObjectInheritedGrantData)
+		inherited := map[string]any{
+			"object_type_plural": data.ObjectNamePlural.String(),
+		}
+
+		switch data.Kind {
+		case InAccountInheritedContainerKind:
+			inherited["in_account"] = true
+		case InDatabaseInheritedContainerKind:
+			inherited["in_database"] = data.DatabaseName.FullyQualifiedName()
+		case InSchemaInheritedContainerKind:
+			inherited["in_schema"] = data.SchemaName.FullyQualifiedName()
+		}
+
+		if err := d.Set("on_schema_object", []any{map[string]any{"inherited": []any{inherited}}}); err != nil {
 			return nil, err
 		}
 	case OnSchemaAccountRoleGrantKind:
@@ -486,19 +688,13 @@ func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	grantOn, err := getAccountRoleGrantOn(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = client.Grants.GrantPrivilegesToAccountRole(
+	err = grantAccountRolePrivileges(
 		ctx,
+		client,
+		d,
+		*id,
 		getAccountRolePrivilegesFromSchema(d),
-		grantOn,
-		sdk.NewAccountObjectIdentifierFromFullyQualifiedName(d.Get("account_role_name").(string)),
-		&sdk.GrantPrivilegesToAccountRoleOptions{
-			WithGrantOption: sdk.Bool(d.Get("with_grant_option").(bool)),
-		},
+		d.Get("with_grant_option").(bool),
 	)
 	if errors.Is(err, sdk.ErrGrantPartiallyExecuted) && d.Get("all_privileges").(bool) {
 		diags = append(diags, diag.Diagnostic{
@@ -545,17 +741,16 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		_, allPrivileges := d.GetChange("all_privileges")
 
 		if !allPrivileges.(bool) {
-			grantOn, err := getAccountRoleGrantOn(d)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			err = client.Grants.RevokePrivilegesFromAccountRole(
-				ctx, &sdk.AccountRoleGrantPrivileges{
-					AllPrivileges: sdk.Bool(true),
+			err = revokeAccountRolePrivileges(
+				ctx,
+				client,
+				d,
+				id,
+				&sdk.AccountRoleGrantPrivileges{
+					AllPrivileges: new(true),
 				},
-				grantOn,
-				id.RoleName,
 				new(sdk.RevokePrivilegesFromAccountRoleOptions),
+				false,
 			)
 			if err != nil {
 				return diag.Diagnostics{
@@ -601,19 +796,20 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 				}
 			}
 
-			grantOn, err := getAccountRoleGrantOn(d)
-			if err != nil {
-				return diag.FromErr(err)
-			}
+			plainKind := id.Kind.Plain()
+			onAccount := plainKind == OnAccountAccountRoleGrantKind
+			onAccountObject := plainKind == OnAccountObjectAccountRoleGrantKind
+			onSchema := plainKind == OnSchemaAccountRoleGrantKind
+			onSchemaObject := plainKind == OnSchemaObjectAccountRoleGrantKind
 
 			if len(privilegesToAdd) > 0 {
 				privilegesToGrant := getAccountRolePrivileges(
 					false,
 					privilegesToAdd,
-					id.Kind == OnAccountAccountRoleGrantKind,
-					id.Kind == OnAccountObjectAccountRoleGrantKind,
-					id.Kind == OnSchemaAccountRoleGrantKind,
-					id.Kind == OnSchemaObjectAccountRoleGrantKind,
+					onAccount,
+					onAccountObject,
+					onSchema,
+					onSchemaObject,
 				)
 
 				// To simplify the logic in Read, when the grant option is not set, we revoke the GRANT OPTION FOR privileges just in case.
@@ -622,9 +818,9 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 					// If IMPORTED PRIVILEGES is set, do not revoke its privilege, because `GRANT OPTION FOR` option is not supported for this privilege.
 					// We can use a simple `contains` check because IMPORTED PRIVILEGES cannot be used with any other privilege.
 					if !slices.Contains(privilegesToGrant.AccountObjectPrivileges, sdk.AccountObjectPrivilegeImportedPrivileges) {
-						if err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privilegesToGrant, grantOn, id.RoleName, &sdk.RevokePrivilegesFromAccountRoleOptions{
+						if err = revokeAccountRolePrivileges(ctx, client, d, id, privilegesToGrant, &sdk.RevokePrivilegesFromAccountRoleOptions{
 							GrantOptionFor: sdk.Bool(true),
-						}); err != nil {
+						}, false); err != nil {
 							return diag.Diagnostics{
 								diag.Diagnostic{
 									Severity: diag.Error,
@@ -638,7 +834,7 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 					}
 				}
 
-				err = client.Grants.GrantPrivilegesToAccountRole(ctx, privilegesToGrant, grantOn, id.RoleName, &sdk.GrantPrivilegesToAccountRoleOptions{WithGrantOption: sdk.Bool(id.WithGrantOption)})
+				err = grantAccountRolePrivileges(ctx, client, d, id, privilegesToGrant, id.WithGrantOption)
 				if err != nil {
 					return diag.Diagnostics{
 						diag.Diagnostic{
@@ -651,19 +847,21 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 			}
 
 			if len(privilegesToRemove) > 0 {
-				err = client.Grants.RevokePrivilegesFromAccountRole(
+				err = revokeAccountRolePrivileges(
 					ctx,
+					client,
+					d,
+					id,
 					getAccountRolePrivileges(
 						false,
 						privilegesToRemove,
-						id.Kind == OnAccountAccountRoleGrantKind,
-						id.Kind == OnAccountObjectAccountRoleGrantKind,
-						id.Kind == OnSchemaAccountRoleGrantKind,
-						id.Kind == OnSchemaObjectAccountRoleGrantKind,
+						onAccount,
+						onAccountObject,
+						onSchema,
+						onSchemaObject,
 					),
-					grantOn,
-					id.RoleName,
 					new(sdk.RevokePrivilegesFromAccountRoleOptions),
+					false,
 				)
 				if err != nil {
 					return diag.Diagnostics{
@@ -685,17 +883,15 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		_, allPrivileges := d.GetChange("all_privileges")
 
 		if allPrivileges.(bool) {
-			grantOn, err := getAccountRoleGrantOn(d)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			err = client.Grants.GrantPrivilegesToAccountRole(
-				ctx, &sdk.AccountRoleGrantPrivileges{
-					AllPrivileges: sdk.Bool(true),
+			err = grantAccountRolePrivileges(
+				ctx,
+				client,
+				d,
+				id,
+				&sdk.AccountRoleGrantPrivileges{
+					AllPrivileges: new(true),
 				},
-				grantOn,
-				id.RoleName,
-				new(sdk.GrantPrivilegesToAccountRoleOptions),
+				false,
 			)
 			if errors.Is(err, sdk.ErrGrantPartiallyExecuted) {
 				diags = append(diags, diag.Diagnostic{
@@ -722,18 +918,13 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 	}
 
 	if id.AlwaysApply {
-		grantOn, err := getAccountRoleGrantOn(d)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		err = client.Grants.GrantPrivilegesToAccountRole(
+		err = grantAccountRolePrivileges(
 			ctx,
+			client,
+			d,
+			id,
 			getAccountRolePrivilegesFromSchema(d),
-			grantOn,
-			id.RoleName,
-			&sdk.GrantPrivilegesToAccountRoleOptions{
-				WithGrantOption: &id.WithGrantOption,
-			},
+			id.WithGrantOption,
 		)
 		if errors.Is(err, sdk.ErrGrantPartiallyExecuted) && d.Get("all_privileges").(bool) {
 			diags = append(diags, diag.Diagnostic{
@@ -772,18 +963,10 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	grantOn, err := getAccountRoleGrantOn(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	privileges := getAccountRolePrivilegesFromSchema(d)
 	opts := &sdk.RevokePrivilegesFromAccountRoleOptions{}
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments) {
-		err = client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, grantOn, id.RoleName, opts)
-	} else {
-		err = client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, grantOn, id.RoleName, opts)
-	}
+	safely := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsSafeDestroy, providerCtx.EnabledExperiments)
+	err = revokeAccountRolePrivileges(ctx, client, d, id, privileges, opts, safely)
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
@@ -909,7 +1092,11 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string) {
+func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, grantedOn *sdk.ObjectType, opts *sdk.ShowGrantOptions, strictPrivilegeManagement bool) (actualPrivileges []string) {
+	if id.Kind.IsInherited() {
+		return computeInheritedPrivileges(id.Data, id.RoleName.Name(), sdk.ObjectTypeRole, id.Privileges, grants, strictPrivilegeManagement)
+	}
+
 	expectedPrivileges := slices.Clone(id.Privileges)
 
 	if slices.ContainsFunc(expectedPrivileges, func(s string) bool {
@@ -952,9 +1139,9 @@ func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, gr
 		// the default application named SNOWFLAKE that could be granted with `object_type = "APPLICATION"`.
 		// To make the logic simpler, we do not allow it and `object_type = "DATABASE"` should be used for all applications.
 		// TODO When implementing SNOW-991421 see if logic added in SNOW-887897 could be moved to the SDK to simplify the resource implementation.
-		if grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
+		if *grantedOn == sdk.ObjectTypeDatabase && (sdk.ObjectTypeApplication == grant.GrantedOn || sdk.ObjectTypeApplication == grant.GrantOn) {
 			actualPrivileges = append(actualPrivileges, grant.Privilege)
-		} else if grantedOn == grant.GrantedOn || grantedOn == grant.GrantOn {
+		} else if *grantedOn == grant.GrantedOn || *grantedOn == grant.GrantOn {
 			actualPrivileges = append(actualPrivileges, grant.Privilege)
 		}
 	}
@@ -970,11 +1157,16 @@ func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, gr
 	return actualPrivileges
 }
 
-func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, sdk.ObjectType) {
+func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, *sdk.ObjectType) {
 	opts := new(sdk.ShowGrantOptions)
 	var grantedOn sdk.ObjectType
 
 	switch id.Kind {
+	case OnAccountObjectInheritedAccountRoleGrantKind, OnSchemaInheritedAccountRoleGrantKind, OnSchemaObjectInheritedAccountRoleGrantKind:
+		opts.To = &sdk.ShowGrantsTo{
+			Role: id.RoleName,
+		}
+		return opts, nil
 	case OnAccountAccountRoleGrantKind:
 		grantedOn = sdk.ObjectTypeAccount
 		opts.On = &sdk.ShowGrantsOn{
@@ -1003,7 +1195,7 @@ func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (
 			}
 		case OnAllSchemasInDatabaseSchemaGrantKind:
 			log.Printf("[INFO] Show with on_schema.all_schemas_in_database option is skipped. No changes in privileges in Snowflake will be detected.")
-			return nil, ""
+			return nil, nil
 		case OnFutureSchemasInDatabaseSchemaGrantKind:
 			opts.Future = sdk.Bool(true)
 			opts.In = &sdk.ShowGrantsIn{
@@ -1021,7 +1213,7 @@ func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (
 			}
 		case OnAllSchemaObjectGrantKind:
 			log.Printf("[INFO] Show with on_schema_object.on_all option is skipped. No changes in privileges in Snowflake will be detected.")
-			return nil, ""
+			return nil, nil
 		case OnFutureSchemaObjectGrantKind:
 			grantedOn = data.OnAllOrFuture.ObjectNamePlural.Singular()
 			opts.Future = sdk.Bool(true)
@@ -1039,7 +1231,7 @@ func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (
 		}
 	}
 
-	return opts, grantedOn
+	return opts, &grantedOn
 }
 
 func getAccountRolePrivilegesFromSchema(d *schema.ResourceData) *sdk.AccountRoleGrantPrivileges {
@@ -1142,6 +1334,8 @@ func getAccountRoleGrantOn(d *schema.ResourceData) (*sdk.AccountRoleGrantOn, err
 			grantOnAccountObject.ComputePool = &objectIdentifier
 		case sdk.ObjectTypeExternalVolume:
 			grantOnAccountObject.ExternalVolume = &objectIdentifier
+		case sdk.ObjectTypeSnowflakeIntelligence:
+			grantOnAccountObject.SnowflakeIntelligence = &objectIdentifier
 		}
 
 		on.AccountObject = grantOnAccountObject
@@ -1241,6 +1435,109 @@ func getAccountRoleGrantOn(d *schema.ResourceData) (*sdk.AccountRoleGrantOn, err
 	return on, nil
 }
 
+// grantAccountRolePrivileges grants the given privileges, dispatching to the inherited-grant SQL
+// (GRANT INHERITED ...) when the grant kind is inherited, and to the regular GRANT otherwise.
+func grantAccountRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToAccountRoleId, privileges *sdk.AccountRoleGrantPrivileges, withGrantOption bool) error {
+	if id.Kind.IsInherited() {
+		onAll, in := inheritedAccountRoleGrantParams(id)
+		return client.Grants.GrantInheritedPrivilegesToAccountRole(ctx, privileges.ToInheritedAccountRoleGrantPrivileges(), onAll, in, id.RoleName)
+	}
+
+	grantOn, err := getAccountRoleGrantOn(d)
+	if err != nil {
+		return err
+	}
+	return client.Grants.GrantPrivilegesToAccountRole(ctx, privileges, grantOn, id.RoleName, &sdk.GrantPrivilegesToAccountRoleOptions{
+		WithGrantOption: new(withGrantOption),
+	})
+}
+
+// revokeAccountRolePrivileges revokes the given privileges, dispatching to the inherited-grant SQL
+// (REVOKE INHERITED ...) when the grant kind is inherited, and to the regular REVOKE otherwise.
+func revokeAccountRolePrivileges(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id GrantPrivilegesToAccountRoleId, privileges *sdk.AccountRoleGrantPrivileges, opts *sdk.RevokePrivilegesFromAccountRoleOptions, safely bool) error {
+	if id.Kind.IsInherited() {
+		if opts != nil && opts.GrantOptionFor != nil && *opts.GrantOptionFor {
+			return nil
+		}
+		onAll, in := inheritedAccountRoleGrantParams(id)
+		if safely {
+			return client.Grants.RevokeInheritedPrivilegesFromAccountRoleSafely(ctx, privileges.ToInheritedAccountRoleGrantPrivileges(), onAll, in, id.RoleName)
+		}
+		return client.Grants.RevokeInheritedPrivilegesFromAccountRole(ctx, privileges.ToInheritedAccountRoleGrantPrivileges(), onAll, in, id.RoleName)
+	}
+
+	grantOn, err := getAccountRoleGrantOn(d)
+	if err != nil {
+		return err
+	}
+	if safely {
+		return client.Grants.RevokePrivilegesFromAccountRoleSafely(ctx, privileges, grantOn, id.RoleName, opts)
+	}
+	return client.Grants.RevokePrivilegesFromAccountRole(ctx, privileges, grantOn, id.RoleName, opts)
+}
+
+// inheritedAccountRoleGrantParams derives the `ON ALL <object_type_plural> IN <container>` parameters
+// for the inherited-grant SDK methods from the identifier data stored on the grant id.
+func inheritedAccountRoleGrantParams(id GrantPrivilegesToAccountRoleId) (sdk.PluralObjectType, sdk.InheritedAccountRoleGrantIn) {
+	switch data := id.Data.(type) {
+	case *OnAccountObjectInheritedGrantData:
+		return data.ObjectNamePlural, sdk.InheritedAccountRoleGrantIn{Account: new(true)}
+	case *OnSchemaInheritedGrantData:
+		return sdk.PluralObjectTypeSchemas, data.Kind.toInheritedAccountRoleGrantIn(data.DatabaseName, nil)
+	case *OnSchemaObjectInheritedGrantData:
+		return data.ObjectNamePlural, data.Kind.toInheritedAccountRoleGrantIn(data.DatabaseName, data.SchemaName)
+	default:
+		return "", sdk.InheritedAccountRoleGrantIn{}
+	}
+}
+
+// getAccountRoleInheritedGrantData inspects the on_account_object / on_schema / on_schema_object blocks
+// for a nested `inherited` block and returns the corresponding grant kind and identifier data. It returns
+// a nil data when no inherited block is configured.
+func getAccountRoleInheritedGrantData(d *schema.ResourceData) (AccountRoleGrantKind, fmt.Stringer, error) {
+	if block, ok := d.GetOk("on_account_object"); ok {
+		if inherited := block.([]any)[0].(map[string]any)["inherited"].([]any); len(inherited) > 0 {
+			objectNamePlural, err := sdk.ToPluralObjectType(inherited[0].(map[string]any)["object_type_plural"].(string))
+			if err != nil {
+				return "", nil, err
+			}
+			return OnAccountObjectInheritedAccountRoleGrantKind, &OnAccountObjectInheritedGrantData{ObjectNamePlural: objectNamePlural}, nil
+		}
+	}
+
+	if block, ok := d.GetOk("on_schema"); ok {
+		if inherited := block.([]any)[0].(map[string]any)["inherited"].([]any); len(inherited) > 0 {
+			container, database, _, err := getInheritedGrantContainer(inherited[0].(map[string]any))
+			if err != nil {
+				return "", nil, err
+			}
+			return OnSchemaInheritedAccountRoleGrantKind, &OnSchemaInheritedGrantData{Kind: container, DatabaseName: database}, nil
+		}
+	}
+
+	if block, ok := d.GetOk("on_schema_object"); ok {
+		if inherited := block.([]any)[0].(map[string]any)["inherited"].([]any); len(inherited) > 0 {
+			data := inherited[0].(map[string]any)
+			objectNamePlural, err := sdk.ToPluralObjectType(data["object_type_plural"].(string))
+			if err != nil {
+				return "", nil, err
+			}
+			container, database, schema, err := getInheritedGrantContainer(data)
+			if err != nil {
+				return "", nil, err
+			}
+			return OnSchemaObjectInheritedAccountRoleGrantKind, &OnSchemaObjectInheritedGrantData{
+				ObjectNamePlural: objectNamePlural,
+				Kind:             container,
+				DatabaseName:     database,
+				SchemaName:       schema,
+			}, nil
+		}
+	}
+
+	return "", nil, nil
+}
+
 func createGrantPrivilegesToAccountRoleIdFromSchema(d *schema.ResourceData) (id *GrantPrivilegesToAccountRoleId, err error) {
 	id = new(GrantPrivilegesToAccountRoleId)
 	id.RoleName, err = sdk.ParseAccountObjectIdentifier(d.Get("account_role_name").(string))
@@ -1253,6 +1550,16 @@ func createGrantPrivilegesToAccountRoleIdFromSchema(d *schema.ResourceData) (id 
 	}
 	id.WithGrantOption = d.Get("with_grant_option").(bool)
 	id.AlwaysApply = d.Get("always_apply").(bool)
+
+	inheritedKind, inheritedData, err := getAccountRoleInheritedGrantData(d)
+	if err != nil {
+		return nil, err
+	}
+	if inheritedData != nil {
+		id.Kind = inheritedKind
+		id.Data = inheritedData
+		return id, nil
+	}
 
 	on, err := getAccountRoleGrantOn(d)
 	if err != nil {
@@ -1296,6 +1603,9 @@ func createGrantPrivilegesToAccountRoleIdFromSchema(d *schema.ResourceData) (id 
 		case on.AccountObject.ExternalVolume != nil:
 			onAccountObjectGrantData.ObjectType = sdk.ObjectTypeExternalVolume
 			onAccountObjectGrantData.ObjectName = *on.AccountObject.ExternalVolume
+		case on.AccountObject.SnowflakeIntelligence != nil:
+			onAccountObjectGrantData.ObjectType = sdk.ObjectTypeSnowflakeIntelligence
+			onAccountObjectGrantData.ObjectName = *on.AccountObject.SnowflakeIntelligence
 		}
 
 		id.Kind = OnAccountObjectAccountRoleGrantKind

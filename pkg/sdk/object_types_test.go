@@ -39,6 +39,7 @@ func Test_ToObjectType(t *testing.T) {
 		{input: "SHARE", want: ObjectTypeShare},
 		{input: "TABLE", want: ObjectTypeTable},
 		{input: "DYNAMIC TABLE", want: ObjectTypeDynamicTable},
+		{input: "INTERACTIVE TABLE", want: ObjectTypeInteractiveTable},
 		{input: "CORTEX SEARCH SERVICE", want: ObjectTypeCortexSearchService},
 		{input: "EXTERNAL TABLE", want: ObjectTypeExternalTable},
 		{input: "EVENT TABLE", want: ObjectTypeEventTable},

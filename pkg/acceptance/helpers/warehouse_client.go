@@ -27,10 +27,10 @@ func (c *WarehouseClient) client() sdk.Warehouses {
 func (c *WarehouseClient) UseWarehouse(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
-	err := c.context.client.Sessions.UseWarehouse(ctx, id)
+	err := c.context.client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(id))
 	require.NoError(t, err)
 	return func() {
-		err = c.context.client.Sessions.UseWarehouse(ctx, c.ids.WarehouseId())
+		err = c.context.client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(c.ids.WarehouseId()))
 		require.NoError(t, err)
 	}
 }
@@ -68,7 +68,7 @@ func (c *WarehouseClient) DropWarehouseFunc(t *testing.T, id sdk.AccountObjectId
 	return func() {
 		err := c.client().Drop(ctx, sdk.NewDropWarehouseRequest(id).WithIfExists(true))
 		require.NoError(t, err)
-		err = c.context.client.Sessions.UseWarehouse(ctx, c.ids.WarehouseId())
+		err = c.context.client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(c.ids.WarehouseId()))
 		require.NoError(t, err)
 	}
 }
@@ -199,6 +199,25 @@ func (c *WarehouseClient) CreateAdaptiveWithRequest(t *testing.T, request *sdk.C
 
 	id := request.ID()
 	err := c.client().CreateAdaptive(ctx, request)
+	require.NoError(t, err)
+
+	warehouse, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return warehouse, c.DropWarehouseFunc(t, id)
+}
+
+func (c *WarehouseClient) CreateInteractive(t *testing.T) (*sdk.Warehouse, func()) {
+	t.Helper()
+	return c.CreateInteractiveWithRequest(t, sdk.NewCreateInteractiveWarehouseRequest(c.ids.RandomAccountObjectIdentifier()))
+}
+
+func (c *WarehouseClient) CreateInteractiveWithRequest(t *testing.T, request *sdk.CreateInteractiveWarehouseRequest) (*sdk.Warehouse, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := request.ID()
+	err := c.client().CreateInteractive(ctx, request)
 	require.NoError(t, err)
 
 	warehouse, err := c.client().ShowByID(ctx, id)

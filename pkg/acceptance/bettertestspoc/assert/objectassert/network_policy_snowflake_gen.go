@@ -42,6 +42,17 @@ func (n *NetworkPolicyAssert) HasCreatedOn(expected string) *NetworkPolicyAssert
 	return n
 }
 
+func (n *NetworkPolicyAssert) HasCreatedOnNotEmpty() *NetworkPolicyAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkPolicy) error {
+		t.Helper()
+		if o.CreatedOn == "" {
+			return fmt.Errorf("expected created on to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NetworkPolicyAssert) HasName(expected string) *NetworkPolicyAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NetworkPolicy) error {
 		t.Helper()
@@ -53,11 +64,33 @@ func (n *NetworkPolicyAssert) HasName(expected string) *NetworkPolicyAssert {
 	return n
 }
 
+func (n *NetworkPolicyAssert) HasNameNotEmpty() *NetworkPolicyAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkPolicy) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return n
+}
+
 func (n *NetworkPolicyAssert) HasComment(expected string) *NetworkPolicyAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NetworkPolicy) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return n
+}
+
+func (n *NetworkPolicyAssert) HasCommentNotEmpty() *NetworkPolicyAssert {
+	n.AddAssertion(func(t *testing.T, o *sdk.NetworkPolicy) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

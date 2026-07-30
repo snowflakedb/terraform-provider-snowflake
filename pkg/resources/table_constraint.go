@@ -252,7 +252,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	}
 	constraintRequest := sdk.NewOutOfLineConstraintRequest(constraintType).WithName(&name)
 
-	cc := d.Get("columns").([]interface{})
+	cc := d.Get("columns").([]any)
 	columns := make([]string, 0, len(cc))
 	for _, c := range cc {
 		columns = append(columns, c.(string))
@@ -289,8 +289,8 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 
 	// set foreign key specific settings
 	if v, ok := d.GetOk("foreign_key_properties"); ok {
-		foreignKeyProperties := v.([]interface{})[0].(map[string]interface{})
-		references := foreignKeyProperties["references"].([]interface{})[0].(map[string]interface{})
+		foreignKeyProperties := v.([]any)[0].(map[string]any)
+		references := foreignKeyProperties["references"].([]any)[0].(map[string]any)
 		fkTableID := references["table_id"].(string)
 		fkId, err := helpers.DecodeSnowflakeParameterID(fkTableID)
 		if err != nil {
@@ -301,7 +301,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 			return diag.FromErr(fmt.Errorf("table id is incorrect: %s", fkId))
 		}
 
-		cols := references["columns"].([]interface{})
+		cols := references["columns"].([]any)
 		var fkColumns []string
 		for _, c := range cols {
 			fkColumns = append(fkColumns, c.(string))
@@ -331,7 +331,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithAdd(constraintRequest))
-	err = client.Tables.Alter(ctx, alterStatement)
+	err = client.TablesLegacy.Alter(ctx, alterStatement)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error creating table constraint %v err = %w", name, err))
 	}
@@ -347,7 +347,7 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 }
 
 // ReadTableConstraint implements schema.ReadFunc.
-func ReadTableConstraint(ctx context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func ReadTableConstraint(ctx context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
 	// TODO(issue-2683): Implement read operation
 	// commenting this out since it requires an active warehouse to be set which may not be intuitive.
 	// also it takes a while for the database to reflect changes. Would likely need to add a validation
@@ -413,7 +413,7 @@ func DeleteTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 
 	dropRequest := sdk.NewTableConstraintDropActionRequest().WithConstraintName(&tc.name)
 	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(sdk.NewTableConstraintActionRequest().WithDrop(dropRequest))
-	err = client.Tables.Alter(ctx, alterStatement)
+	err = client.TablesLegacy.Alter(ctx, alterStatement)
 	if err != nil {
 		// if the table constraint does not exist, then remove from state file
 		if strings.Contains(err.Error(), "does not exist") {

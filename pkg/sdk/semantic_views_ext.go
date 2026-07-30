@@ -56,7 +56,11 @@ type SemanticViewMetricDetails struct {
 	ParentEntity string
 }
 
-type SemanticViewDescribeDetails struct {
+func (d *SemanticViewDetails) ID() SchemaObjectIdentifier {
+	return d.Id
+}
+
+type SemanticViewDetails struct {
 	Id               SchemaObjectIdentifier
 	Tables           []SemanticViewTableDetails
 	Relationships    []SemanticViewRelationshipDetails
@@ -343,7 +347,7 @@ func (r *RelationshipTableAlias) WithRelationshipTableName(tableName SchemaObjec
 	return r
 }
 
-func (v *semanticViews) DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error) {
+func (v *semanticViews) DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDetails, error) {
 	properties, err := v.Describe(ctx, id)
 	if err != nil {
 		return nil, err
@@ -351,8 +355,8 @@ func (v *semanticViews) DescribeSemanticViewDetails(ctx context.Context, id Sche
 	return parseSemanticViewDescribeOutput(properties, id)
 }
 
-func parseSemanticViewDescribeOutput(properties []SemanticViewDetails, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error) {
-	details := &SemanticViewDescribeDetails{
+func parseSemanticViewDescribeOutput(properties []SemanticViewDetail, id SchemaObjectIdentifier) (*SemanticViewDetails, error) {
+	details := &SemanticViewDetails{
 		Id:               id,
 		Tables:           []SemanticViewTableDetails{},
 		Relationships:    []SemanticViewRelationshipDetails{},

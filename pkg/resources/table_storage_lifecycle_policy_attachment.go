@@ -260,11 +260,11 @@ func expandStorageLifecyclePolicyColumns(raw []any) []sdk.Column {
 func addStorageLifecyclePolicyToTable(ctx context.Context, client *sdk.Client, tableType sdk.PolicyEntityDomain, tableName sdk.SchemaObjectIdentifier, storageLifecyclePolicyName sdk.SchemaObjectIdentifier, columns []sdk.Column) error {
 	switch tableType {
 	case sdk.PolicyEntityDomainTable:
-		return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableName).
+		return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(tableName).
 			WithAddStorageLifecyclePolicy(sdk.NewTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyName, columns)))
 	case sdk.PolicyEntityDomainDynamicTable:
 		return client.DynamicTables.Alter(ctx, sdk.NewAlterDynamicTableRequest(tableName).
-			WithAddStorageLifecyclePolicy(sdk.NewDynamicTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyName, columns)))
+			WithAddStorageLifecyclePolicy(*sdk.NewDynamicTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyName, columns)))
 	default:
 		return fmt.Errorf("unsupported table type: %s", tableType)
 	}
@@ -273,9 +273,9 @@ func addStorageLifecyclePolicyToTable(ctx context.Context, client *sdk.Client, t
 func dropStorageLifecyclePolicyFromTable(ctx context.Context, client *sdk.Client, tableType sdk.PolicyEntityDomain, tableName sdk.SchemaObjectIdentifier) error {
 	switch tableType {
 	case sdk.PolicyEntityDomainTable:
-		return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableName).WithDropStorageLifecyclePolicy(new(true)))
+		return client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(tableName).WithDropStorageLifecyclePolicy(new(true)))
 	case sdk.PolicyEntityDomainDynamicTable:
-		return client.DynamicTables.Alter(ctx, sdk.NewAlterDynamicTableRequest(tableName).WithDropStorageLifecyclePolicy(new(true)))
+		return client.DynamicTables.Alter(ctx, sdk.NewAlterDynamicTableRequest(tableName).WithDropStorageLifecyclePolicy(true))
 	default:
 		return fmt.Errorf("unsupported table type: %s", tableType)
 	}

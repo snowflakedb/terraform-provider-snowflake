@@ -10,8 +10,7 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genh
 func (i *Interface) newInstanceMethodCallStruct(structName string, methodName string, argsQueryStruct *QueryStruct) *QueryStruct {
 	qs := NewQueryStruct(structName)
 	qs.Call()
-	identifier := NewField("name", "<will be replaced>", Tags().Identifier().InstanceMethod().SQL(methodName), IdentifierOptions().Required())
-	qs.identifierField = identifier
+	identifier := NewField("name", InterfaceIdentifierKind, Tags().Identifier().InstanceMethod().SQL(methodName), IdentifierOptions().Required())
 	qs.fields = append(qs.fields, identifier)
 	if argsQueryStruct == nil {
 		qs.QueryStructField("args", NewQueryStruct(sqlToFieldName(genhelpers.ToSnakeCase(i.NameSingular)+"_"+methodName, false)+"Args"), ListOptions().MustParentheses())

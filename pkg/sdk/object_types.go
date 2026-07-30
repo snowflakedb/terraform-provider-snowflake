@@ -39,6 +39,7 @@ const (
 	ObjectTypeShare                  ObjectType = "SHARE"
 	ObjectTypeTable                  ObjectType = "TABLE"
 	ObjectTypeDynamicTable           ObjectType = "DYNAMIC TABLE"
+	ObjectTypeInteractiveTable       ObjectType = "INTERACTIVE TABLE"
 	ObjectTypeCortexSearchService    ObjectType = "CORTEX SEARCH SERVICE"
 	ObjectTypeExternalTable          ObjectType = "EXTERNAL TABLE"
 	ObjectTypeEventTable             ObjectType = "EVENT TABLE"
@@ -100,6 +101,7 @@ const (
 	ObjectTypeOpenflowDeployment     ObjectType = "OPENFLOW DEPLOYMENT"
 	ObjectTypeOpenflowRuntime        ObjectType = "OPENFLOW RUNTIME"
 	ObjectTypeOpenflowConnector      ObjectType = "OPENFLOW CONNECTOR"
+	ObjectTypeSnowflakeIntelligence  ObjectType = "SNOWFLAKE INTELLIGENCE"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
@@ -152,6 +154,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeShare,
 	ObjectTypeTable,
 	ObjectTypeDynamicTable,
+	ObjectTypeInteractiveTable,
 	ObjectTypeCortexSearchService,
 	ObjectTypeExternalTable,
 	ObjectTypeEventTable,
@@ -272,6 +275,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeShare:                   PluralObjectTypeShares,
 		ObjectTypeTable:                   PluralObjectTypeTables,
 		ObjectTypeDynamicTable:            PluralObjectTypeDynamicTables,
+		ObjectTypeInteractiveTable:        PluralObjectTypeInteractiveTables,
 		ObjectTypeCortexSearchService:     PluralObjectTypeCortexSearchServices,
 		ObjectTypeExternalTable:           PluralObjectTypeExternalTables,
 		ObjectTypeEventTable:              PluralObjectTypeEventTables,
@@ -404,6 +408,7 @@ const (
 	PluralObjectTypeShares                   PluralObjectType = "SHARES"
 	PluralObjectTypeTables                   PluralObjectType = "TABLES"
 	PluralObjectTypeDynamicTables            PluralObjectType = "DYNAMIC TABLES"
+	PluralObjectTypeInteractiveTables        PluralObjectType = "INTERACTIVE TABLES"
 	PluralObjectTypeCortexSearchServices     PluralObjectType = "CORTEX SEARCH SERVICES"
 	PluralObjectTypeExternalTables           PluralObjectType = "EXTERNAL TABLES"
 	PluralObjectTypeEventTables              PluralObjectType = "EVENT TABLES"
@@ -465,6 +470,7 @@ const (
 	PluralObjectTypeOpenflowDeployments      PluralObjectType = "OPENFLOW DEPLOYMENTS"
 	PluralObjectTypeOpenflowRuntimes         PluralObjectType = "OPENFLOW RUNTIMES"
 	PluralObjectTypeOpenflowConnectors       PluralObjectType = "OPENFLOW CONNECTORS"
+	PluralObjectTypeSnowflakeIntelligences   PluralObjectType = "SNOWFLAKE INTELLIGENCES"
 )
 
 func (p PluralObjectType) String() string {

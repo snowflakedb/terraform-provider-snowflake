@@ -54,6 +54,16 @@ func (s *StorageLifecyclePolicyDescribeOutputAssert) HasName(expected string) *S
 	return s
 }
 
+func (s *StorageLifecyclePolicyDescribeOutputAssert) HasDatabaseName(expected string) *StorageLifecyclePolicyDescribeOutputAssert {
+	s.StringValueSet("database_name", expected)
+	return s
+}
+
+func (s *StorageLifecyclePolicyDescribeOutputAssert) HasSchemaName(expected string) *StorageLifecyclePolicyDescribeOutputAssert {
+	s.StringValueSet("schema_name", expected)
+	return s
+}
+
 func (s *StorageLifecyclePolicyDescribeOutputAssert) HasBody(expected string) *StorageLifecyclePolicyDescribeOutputAssert {
 	s.StringValueSet("body", expected)
 	return s
@@ -78,8 +88,13 @@ func (s *StorageLifecyclePolicyDescribeOutputAssert) HasNoName() *StorageLifecyc
 	return s
 }
 
-func (s *StorageLifecyclePolicyDescribeOutputAssert) HasNoSignature() *StorageLifecyclePolicyDescribeOutputAssert {
-	s.ValueSet("signature.#", "0")
+func (s *StorageLifecyclePolicyDescribeOutputAssert) HasNoDatabaseName() *StorageLifecyclePolicyDescribeOutputAssert {
+	s.ValueNotSet("database_name")
+	return s
+}
+
+func (s *StorageLifecyclePolicyDescribeOutputAssert) HasNoSchemaName() *StorageLifecyclePolicyDescribeOutputAssert {
+	s.ValueNotSet("schema_name")
 	return s
 }
 

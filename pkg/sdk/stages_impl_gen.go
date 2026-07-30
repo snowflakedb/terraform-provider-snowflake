@@ -193,10 +193,11 @@ func (r *CreateOnS3StageRequest) toOpts() *CreateOnS3StageOptions {
 		}
 	}
 	if r.DirectoryTableOptions != nil {
-		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3DirectoryTableOptions{
 			Enable:          r.DirectoryTableOptions.Enable,
 			RefreshOnCreate: r.DirectoryTableOptions.RefreshOnCreate,
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,
+			AwsSnsTopic:     r.DirectoryTableOptions.AwsSnsTopic,
 		}
 	}
 	if r.FileFormat != nil {
@@ -316,7 +317,7 @@ func (r *CreateOnS3CompatibleStageRequest) toOpts() *CreateOnS3CompatibleStageOp
 		}
 	}
 	if r.DirectoryTableOptions != nil {
-		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CompatibleDirectoryTableOptions{
 			Enable:          r.DirectoryTableOptions.Enable,
 			RefreshOnCreate: r.DirectoryTableOptions.RefreshOnCreate,
 			AutoRefresh:     r.DirectoryTableOptions.AutoRefresh,

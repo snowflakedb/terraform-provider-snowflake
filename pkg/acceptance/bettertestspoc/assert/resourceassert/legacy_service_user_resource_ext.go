@@ -25,8 +25,8 @@ func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityOidc(issuer,
 	return u
 }
 
-func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityAws(arn string) *LegacyServiceUserResourceAssert {
-	userApplyDefaultWorkloadIdentityAwsChecks(u.ResourceAssert, arn)
+func (u *LegacyServiceUserResourceAssert) HasDefaultWorkloadIdentityAws(arn string, issuer ...string) *LegacyServiceUserResourceAssert {
+	userApplyDefaultWorkloadIdentityAwsChecks(u.ResourceAssert, arn, issuer...)
 	return u
 }
 

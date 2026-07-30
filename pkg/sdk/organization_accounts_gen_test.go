@@ -504,7 +504,7 @@ func TestOrganizationAccounts_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Name = &id
 		opts.RenameTo = &OrganizationAccountRename{
-			NewName:    &newId,
+			RenameTo:   &newId,
 			SaveOldUrl: Bool(false),
 		}
 		assertOptsValidAndSQLEquals(t, opts, "ALTER ORGANIZATION ACCOUNT %s RENAME TO %s SAVE_OLD_URL = false", id.FullyQualifiedName(), newId.FullyQualifiedName())

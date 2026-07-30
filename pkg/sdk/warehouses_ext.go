@@ -162,41 +162,52 @@ func (v *warehouses) ShowParameters(ctx context.Context, id AccountObjectIdentif
 	})
 }
 
-// AlterWithSuspend wraps Alter with automatic suspend/resume when changing warehouse type.
+// AlterWithSuspend wraps Alter with automatic suspend/resume for changes that Snowflake refuses to
+// apply to a running warehouse. Changing the warehouse type requires a suspended warehouse for any
+// warehouse, and an interactive warehouse additionally cannot be resized while running. In both
+// cases the warehouse is suspended before the alter and resumed afterwards.
 func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehouseRequest) error {
-	if request.Set != nil && request.Set.WarehouseType != nil {
-		warehouse, err := v.ShowByID(ctx, request.name)
+	changesType := request.Set != nil && request.Set.WarehouseType != nil
+	changesSize := request.Set != nil && request.Set.WarehouseSize != nil
+	if !changesType && !changesSize {
+		return v.Alter(ctx, request)
+	}
+
+	warehouse, err := v.ShowByID(ctx, request.name)
+	if err != nil {
+		return err
+	}
+
+	// A type change always needs a suspended warehouse; a size change needs it only for interactive
+	// warehouses (regular warehouses resize live).
+	mustSuspend := changesType || (changesSize && warehouse.IsInteractiveWarehouse())
+	if mustSuspend && warehouse.State == WarehouseStateStarted {
+		err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithSuspend(true))
 		if err != nil {
 			return err
 		}
-		if warehouse.State == WarehouseStateStarted {
-			err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithSuspend(true))
+		defer func() {
+			err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithResume(true).WithIfSuspended(true))
 			if err != nil {
-				return err
+				log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
 			}
-			defer func() {
-				err := v.Alter(ctx, NewAlterWarehouseRequest(request.name).WithResume(true).WithIfSuspended(true))
-				if err != nil {
-					log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
-				}
-			}()
+		}()
 
-			// needed to make sure that warehouse is suspended
-			var warehouseSuspensionErrs []error
-			err = util.Retry(5, 1*time.Second, func() (error, bool) {
-				warehouse, err = v.ShowByID(ctx, request.name)
-				if err != nil {
-					warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
-					return nil, false
-				}
-				if warehouse.State != WarehouseStateSuspended {
-					return nil, false
-				}
-				return nil, true
-			})
+		// needed to make sure that warehouse is suspended
+		var warehouseSuspensionErrs []error
+		err = util.Retry(5, 1*time.Second, func() (error, bool) {
+			warehouse, err = v.ShowByID(ctx, request.name)
 			if err != nil {
-				return fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
+				warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
+				return nil, false
 			}
+			if warehouse.State != WarehouseStateSuspended {
+				return nil, false
+			}
+			return nil, true
+		})
+		if err != nil {
+			return fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
 		}
 	}
 	return v.Alter(ctx, request)
@@ -250,49 +261,20 @@ func (r warehouseDBRow) additionalConvert(wh *Warehouse) error {
 	// ResourceConstraint - conditional on warehouse type.
 	// We use EqualFold instead of the generated ToWarehouseResourceConstraint because
 	// the values contain lowercase "x86" and the generated function uses ToUpper which breaks matching.
-	if r.ResourceConstraint.Valid {
-		switch wh.Type {
-		case WarehouseTypeStandard:
-			// After BCR 2026_02, resource_constraint is NULL for Standard warehouses; generation column is used instead.
-		case WarehouseTypeSnowparkOptimized:
-			var found bool
-			for _, rc := range AllWarehouseResourceConstraints {
-				if strings.EqualFold(string(rc), r.ResourceConstraint.String) {
-					v := rc
-					wh.ResourceConstraint = &v
-					found = true
-					break
-				}
-			}
-			if !found {
-				return fmt.Errorf("invalid resource constraint: %s", r.ResourceConstraint.String)
-			}
-		case WarehouseTypeAdaptive:
-			// Adaptive warehouses don't use resource constraints; ignore.
-		default:
-			return fmt.Errorf("invalid warehouse type: %s", wh.Type)
-		}
-	}
-
-	// Tables - only present for interactive warehouses; may be NULL. SHOW WAREHOUSES returns the
-	// associated tables as a comma-separated list of fully-qualified names. Identifiers can contain
-	// commas when quoted, so we split in a quote-aware manner rather than using strings.Split.
-	if r.Tables.Valid {
-		if tables := strings.TrimSpace(r.Tables.String); tables != "" {
-			for _, raw := range splitCommaSeparatedIdentifiers(tables) {
-				raw = strings.TrimSpace(raw)
-				if raw == "" {
-					continue
-				}
-				id, err := ParseSchemaObjectIdentifier(raw)
-				if err != nil {
-					return fmt.Errorf("parsing table identifier %q: %w", raw, err)
-				}
-				wh.Tables = append(wh.Tables, id)
+	if r.ResourceConstraint.Valid && wh.Type == WarehouseTypeSnowparkOptimized {
+		var found bool
+		for _, rc := range AllWarehouseResourceConstraints {
+			if strings.EqualFold(string(rc), r.ResourceConstraint.String) {
+				v := rc
+				wh.ResourceConstraint = &v
+				found = true
+				break
 			}
 		}
+		if !found {
+			return fmt.Errorf("invalid resource constraint: %s", r.ResourceConstraint.String)
+		}
 	}
-
 	return nil
 }
 
@@ -378,4 +360,10 @@ func (s *CreateAdaptiveWarehouseRequest) ID() AccountObjectIdentifier {
 
 func (s *CreateInteractiveWarehouseRequest) ID() AccountObjectIdentifier {
 	return s.name
+}
+
+// IsInteractiveWarehouse reports whether the warehouse is interactive. Snowflake surfaces this
+// through the type column (type = INTERACTIVE); there is no separate is_interactive column.
+func (w *Warehouse) IsInteractiveWarehouse() bool {
+	return w.Type == WarehouseTypeInteractive
 }

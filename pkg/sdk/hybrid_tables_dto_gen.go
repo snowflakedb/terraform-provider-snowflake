@@ -58,7 +58,7 @@ type HybridTableOutOfLineIndexRequest struct {
 type AlterHybridTableRequest struct {
 	IfExists          *bool
 	name              SchemaObjectIdentifier // required
-	NewName           *SchemaObjectIdentifier
+	RenameTo          *SchemaObjectIdentifier
 	AddColumnAction   *HybridTableAddColumnActionRequest
 	ConstraintAction  *HybridTableConstraintActionRequest
 	AlterColumnAction []HybridTableAlterColumnActionRequest

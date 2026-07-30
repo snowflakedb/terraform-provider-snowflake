@@ -23,8 +23,10 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 
 	t.Cleanup(testClientHelper().Role.UseRole(t, snowflakeroles.GlobalOrgAdmin))
 
-	require.NoError(t, client.Sessions.UseRole(ctx, snowflakeroles.GlobalOrgAdmin))
-	t.Cleanup(func() { require.NoError(t, client.Sessions.UseRole(ctx, snowflakeroles.Accountadmin)) })
+	require.NoError(t, client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(snowflakeroles.GlobalOrgAdmin)))
+	t.Cleanup(func() {
+		require.NoError(t, client.Sessions.UseRole(ctx, sdk.NewUseRoleSessionRequest(snowflakeroles.Accountadmin)))
+	})
 
 	t.Run("set / unset comment", func(t *testing.T) {
 		id := sdk.NewAccountObjectIdentifier(testClientHelper().OrganizationAccount.ShowCurrent(t).AccountName)

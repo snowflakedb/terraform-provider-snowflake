@@ -50,7 +50,7 @@ func Test_GetPropertyAsPointer(t *testing.T) {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
-	}, map[string]interface{}{
+	}, map[string]any{
 		"integer":        123,
 		"second_integer": 0,
 		"string":         "some string",
@@ -117,7 +117,7 @@ func Test_GetConfigPropertyAsPointerAllowingZeroValue(t *testing.T) {
 			Type:     schema.TypeBool,
 			Optional: true,
 		},
-	}, map[string]interface{}{
+	}, map[string]any{
 		"integer":        123,
 		"second_integer": 0,
 		"string":         "some string",
@@ -420,7 +420,6 @@ func Test_DataTypeDiffSuppressFunc(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			result := resources.DiffSuppressDataTypes("", tc.old, tc.new, nil)
 			require.Equal(t, tc.expected, result)

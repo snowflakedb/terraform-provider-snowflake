@@ -218,3 +218,8 @@ func (c *ApiIntegrationClient) DescribeExternalMcp(t *testing.T, id sdk.AccountO
 	t.Helper()
 	return c.context.client.ApiIntegrations.DescribeExternalMcpDetails(context.Background(), id)
 }
+
+func (c *ApiIntegrationClient) DescribeAllDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ApiIntegrationAllDetails, error) {
+	t.Helper()
+	return c.context.client.ApiIntegrations.DescribeAllDetails(context.Background(), id)
+}

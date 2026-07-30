@@ -210,6 +210,14 @@ func (r *ResourceAssert) BoolValueSet(fieldName string, expected bool) {
 	r.AddAssertion(ValueSet(fieldName, strconv.FormatBool(expected)))
 }
 
+func (r *ResourceAssert) OptionalBoolValueSet(fieldName string, expected *bool) {
+	if expected != nil {
+		r.AddAssertion(ValueSet(fieldName, strconv.FormatBool(*expected)))
+	} else {
+		r.AddAssertion(ValueSet(fieldName, ""))
+	}
+}
+
 func (r *ResourceAssert) IntValueSet(fieldName string, expected int) {
 	r.AddAssertion(ValueSet(fieldName, strconv.Itoa(expected)))
 }
@@ -220,6 +228,14 @@ func (r *ResourceAssert) FloatValueSet(fieldName string, expected float64) {
 
 func (r *ResourceAssert) StringValueSet(fieldName string, expected string) {
 	r.AddAssertion(ValueSet(fieldName, expected))
+}
+
+func (r *ResourceAssert) OptionalStringValueSet(fieldName string, expected *string) {
+	if expected != nil {
+		r.AddAssertion(ValueSet(fieldName, *expected))
+	} else {
+		r.AddAssertion(ValueSet(fieldName, ""))
+	}
 }
 
 func (r *ResourceAssert) ValueSet(fieldName string, expected string) {

@@ -1,5 +1,3 @@
-//go:build sdk_generation
-
 package defs
 
 import (
@@ -89,7 +87,8 @@ func secondaryRolesStruct() *g.QueryStruct {
 func userObjectWorkloadIdentityAwsStruct() *g.QueryStruct {
 	return g.NewQueryStruct("UserObjectWorkloadIdentityAws").
 		PredefinedQueryStructField("wifType", "string", g.StaticOptions().SQL("TYPE = AWS")).
-		OptionalTextAssignment("ARN", g.ParameterOptions().SingleQuotes())
+		OptionalTextAssignment("ARN", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("ISSUER", g.ParameterOptions().SingleQuotes())
 }
 
 func userObjectWorkloadIdentityAzureStruct() *g.QueryStruct {
@@ -265,7 +264,7 @@ var usersDef = g.NewInterface(
 		SQL("USER").
 		IfExists().
 		Name().
-		OptionalIdentifier("NewName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalSQL("RESET PASSWORD").
 		OptionalSQL("ABORT ALL QUERIES").
 		OptionalQueryStructField("AddDelegatedAuthorization", addDelegatedAuthorizationStruct(), g.KeywordOptions()).
@@ -275,7 +274,7 @@ var usersDef = g.NewInterface(
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"),
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "ResetPassword", "AbortAllQueries", "AddDelegatedAuthorization", "RemoveDelegatedAuthorization", "Set", "Unset", "SetTags", "UnsetTags"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-user",
 	g.NewQueryStruct("DropUser").

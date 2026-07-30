@@ -12,7 +12,7 @@
 ////////////////////////////
 
 {{ range .Attributes -}}
-    {{ if and (not (IsTypeSlice .ConcreteType)) (not .IsSdkStruct) -}}
+    {{ if and (not (IsTypeSlice .ConcreteType)) (not .IsSdkStruct) (not .SkipGeneration) -}}
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ .ConcreteType }}) *{{ $assertName }} {
             {{ $assertVar }}.{{ .AssertionCreator }}("{{ SnakeCase .Name }}", {{ RunMapper .Mapper "expected" }})
             return {{ $assertVar }}
@@ -25,7 +25,7 @@
 ///////////////////////////////
 
 {{ range .Attributes -}}
-
+    {{ if not .SkipGeneration -}}
     {{ if (IsTypeSlice .ConcreteType) -}}
         func ({{ $assertVar }} *{{ $assertName }}) HasNo{{ .Name }}() *{{ $assertName }} {
         {{ $assertVar }}.ValueSet("{{ SnakeCase .Name }}.#", "0")
@@ -37,5 +37,5 @@
         return {{ $assertVar }}
         }
     {{ end }}
-
+    {{ end -}}
 {{ end -}}

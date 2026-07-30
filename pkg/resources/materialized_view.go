@@ -124,7 +124,7 @@ func CreateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 
 	warehouseName := d.Get("warehouse").(string)
 	// TODO [SNOW-1348355]: this was the old implementation, it's left for now, we will address this with resources rework discussions
-	err := client.Sessions.UseWarehouse(ctx, sdk.NewAccountObjectIdentifier(warehouseName))
+	err := client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(sdk.NewAccountObjectIdentifier(warehouseName)))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error setting warehouse %s while creating materialized view %v err = %w", warehouseName, name, err))
 	}

@@ -11,7 +11,7 @@ description: |-
 
 # snowflake_file_format (Resource)
 
-
+~> **Deprecation** This resource is deprecated and will be removed in a future major version release. Please use one of the new resources instead: `snowflake_file_format_csv` | `snowflake_file_format_json` | `snowflake_file_format_avro` | `snowflake_file_format_orc` | `snowflake_file_format_parquet` | `snowflake_file_format_xml`. <deprecation>
 
 ## Example Usage
 

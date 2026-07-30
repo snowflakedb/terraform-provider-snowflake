@@ -20,13 +20,13 @@ func (c *Client) ExecForTests(ctx context.Context, sql string) (sql.Result, erro
 
 // QueryOneForTests is forwarding function for Client.queryOne (that is unexported), that some integration tests/helpers were using
 // TODO: remove after introducing all resources using this
-func (c *Client) QueryOneForTests(ctx context.Context, dest interface{}, sql string) error {
+func (c *Client) QueryOneForTests(ctx context.Context, dest any, sql string) error {
 	return c.queryOne(ctx, dest, sql)
 }
 
 // QueryForTests is forwarding function for Client.query (that is unexported), that some integration tests/helpers were using
 // TODO: remove after introducing all resources using this
-func (c *Client) QueryForTests(ctx context.Context, dest interface{}, sql string) error {
+func (c *Client) QueryForTests(ctx context.Context, dest any, sql string) error {
 	return c.query(ctx, dest, sql)
 }
 

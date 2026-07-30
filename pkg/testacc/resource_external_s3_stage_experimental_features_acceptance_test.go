@@ -36,7 +36,7 @@ func TestAcc_Experimental_ExternalS3Stage_ImportJsonBooleanDefaults(t *testing.T
 	// so auto_refresh defaults to "default" in config. This lets us detect the permadiff
 	// (import sets "false", config has "default") and verify the experiment fixes it.
 	stageModel := model.ExternalS3StageWithId(id, awsUrl).
-		WithDirectoryEnabledAndOptions(sdk.StageS3CommonDirectoryTableOptionsRequest{
+		WithDirectoryEnabledAndOptions(sdk.StageS3DirectoryTableOptionsRequest{
 			Enable: false,
 		}).
 		WithFileFormatJson(sdk.FileFormatJsonOptions{

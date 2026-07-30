@@ -321,7 +321,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && d.HasChange("database") {
 		schemaRenameFn := func(currentId, targetId sdk.DatabaseObjectIdentifier) func() error {
 			return func() error {
-				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(currentId).WithNewName(targetId))
+				return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(currentId).WithRenameTo(targetId))
 			}
 		}
 
@@ -338,7 +338,7 @@ func UpdateContextSchema(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	if d.HasChange("name") && !d.GetRawState().IsNull() {
 		newId := sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string))
-		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithNewName(newId))
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithRenameTo(newId))
 		if err != nil {
 			d.Partial(true)
 			return diag.FromErr(err)

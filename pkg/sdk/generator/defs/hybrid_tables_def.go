@@ -178,7 +178,7 @@ var hybridTablesDef = g.NewInterface(
 		SQL("TABLE").
 		IfExists().
 		Name().
-		OptionalIdentifier("NewName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField(
 			"AddColumnAction",
 			hybridTableAddColumnAction,
@@ -220,7 +220,7 @@ var hybridTablesDef = g.NewInterface(
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "AddColumnAction", "ConstraintAction", "AlterColumnAction", "DropColumnAction", "DropIndexAction", "ClusteringAction", "Set", "Unset"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
 	g.NewQueryStruct("DropHybridTable").

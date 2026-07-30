@@ -457,6 +457,7 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeResourceMonitor,
 		sdk.ObjectTypeRole,
 		sdk.ObjectTypeShare,
+		sdk.ObjectTypeSnowflakeIntelligence,
 		sdk.ObjectTypeStorageIntegration,
 		sdk.ObjectTypeUser,
 		sdk.ObjectTypeWarehouse:
@@ -484,6 +485,7 @@ func GetOnObjectIdentifier(objectType sdk.ObjectType, objectName string) (sdk.Ob
 		sdk.ObjectTypeHybridTable,
 		sdk.ObjectTypeIcebergTable,
 		sdk.ObjectTypeImageRepository,
+		sdk.ObjectTypeInteractiveTable,
 		sdk.ObjectTypeJoinPolicy,
 		sdk.ObjectTypeMaskingPolicy,
 		sdk.ObjectTypeMaterializedView,

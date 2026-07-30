@@ -13,12 +13,12 @@ type SemanticViews interface {
 	Alter(ctx context.Context, request *AlterSemanticViewRequest) error
 	Drop(ctx context.Context, request *DropSemanticViewRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
-	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetails, error)
+	Describe(ctx context.Context, id SchemaObjectIdentifier) ([]SemanticViewDetail, error)
 	Show(ctx context.Context, request *ShowSemanticViewRequest) ([]SemanticView, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*SemanticView, error)
 	// DescribeSemanticViewDetails returns converted describe output for semantic views.
-	DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDescribeDetails, error)
+	DescribeSemanticViewDetails(ctx context.Context, id SchemaObjectIdentifier) (*SemanticViewDetails, error)
 }
 
 // CreateSemanticViewOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-semantic-view.
@@ -168,7 +168,7 @@ type semanticViewDetailsRow struct {
 	PropertyValue string         `db:"property_value"`
 }
 
-type SemanticViewDetails struct {
+type SemanticViewDetail struct {
 	ObjectKind    *string
 	ObjectName    *string
 	ParentEntity  *string

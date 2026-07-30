@@ -52,7 +52,6 @@ var Saml2PropertiesNames = []string{
 func DescribeSaml2IntegrationToSchema(props []sdk.SecurityIntegrationProperty) map[string]any {
 	propsSchema := make(map[string]any)
 	for _, property := range props {
-		property := property
 		if slices.Contains(Saml2PropertiesNames, property.Name) {
 			propsSchema[strings.ToLower(property.Name)] = []map[string]any{SecurityIntegrationPropertyToSchema(&property)}
 		} else {

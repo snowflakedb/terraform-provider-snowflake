@@ -121,7 +121,7 @@ func UpdateSharedDatabase(ctx context.Context, d *schema.ResourceData, meta any)
 			return diag.FromErr(err)
 		}
 
-		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithNewName(newId))
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}

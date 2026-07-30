@@ -58,8 +58,8 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
+			HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
 			HasOauthResourceUrl(mcpOauthResourceUrl).
 			HasAllowedPrefixes(mcpAllowedPrefix).
 			HasNoBlockedPrefixes().
@@ -85,8 +85,8 @@ func TestAcc_ApiIntegrationExternalMcpDynamicClient_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationExternalMcpDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
-			HasUserAuthType(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
+			HasApiProviderType(sdk.ApiIntegrationMcpApiProviderTypeExternalMcp).
+			HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeOauthDynamicClient).
 			HasOauthResourceUrl(mcpOauthResourceUrl).
 			HasAllowedPrefixes(mcpAllowedPrefix).
 			HasBlockedPrefixes(mcpBlockedPrefix).

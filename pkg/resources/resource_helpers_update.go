@@ -62,6 +62,20 @@ func intAttributeWithSpecialDefaultUpdate(d *schema.ResourceData, key string, se
 	return nil
 }
 
+// intAttributeWithSpecialDefaultUnsetFallbackUpdate handles an int attribute whose "not set" sentinel
+// is IntDefault (rather than the zero value). Removing it from config re-applies fallbackValue via SET
+// instead of unsetting, for attributes where UNSET is unavailable or misbehaves (e.g. auto_suspend).
+func intAttributeWithSpecialDefaultUnsetFallbackUpdate(d *schema.ResourceData, key string, setField **int, fallbackValue int) error {
+	if d.HasChange(key) {
+		if v := d.Get(key).(int); v != IntDefault {
+			*setField = sdk.Int(v)
+		} else {
+			*setField = sdk.Int(fallbackValue)
+		}
+	}
+	return nil
+}
+
 func intAttributeUnsetFallbackUpdateWithZeroDefault(d *schema.ResourceData, key string, setField **int, fallbackValue int) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(int); v != 0 {
@@ -265,6 +279,43 @@ func attributeMappedValueUpdateSetOnlyFallback[T, R any](d *schema.ResourceData,
 			*setField = sdk.Pointer(mappedValue)
 		} else {
 			*setField = sdk.Pointer(fallbackValue)
+		}
+	}
+	return nil
+}
+
+// attributeMappedValueUpdateSetOnlyRawConfigFallback is attributeMappedValueUpdateSetOnlyFallback that checks
+// the raw config instead of GetOk, because GetOk cannot distinguish an absent list attribute from one
+// explicitly set to an empty list (e.g. `null_if = []`).
+func attributeMappedValueUpdateSetOnlyRawConfigFallback[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error), fallbackValue R) error {
+	if d.HasChange(key) {
+		if !d.GetRawConfig().AsValueMap()[key].IsNull() {
+			mappedValue, err := mapper(d.Get(key).(T))
+			if err != nil {
+				return err
+			}
+			*setField = sdk.Pointer(mappedValue)
+		} else {
+			*setField = sdk.Pointer(fallbackValue)
+		}
+	}
+	return nil
+}
+
+// attributeMappedValueUpdateSetOnlySliceFallback is attributeMappedValueUpdateSetOnlyFallback for set
+// fields typed as a plain slice (e.g. []sdk.NullString) rather than a pointer to a value.
+// Unlike attributeMappedValueUpdateSetOnlyFallback, it checks the raw config instead of GetOk,
+// because GetOk cannot distinguish an absent list attribute from one explicitly set to an empty list.
+func attributeMappedValueUpdateSetOnlySliceFallback[T, E any](d *schema.ResourceData, key string, setField *[]E, mapper func(T) ([]E, error), fallbackValue []E) error {
+	if d.HasChange(key) {
+		if !d.GetRawConfig().AsValueMap()[key].IsNull() {
+			mappedValue, err := mapper(d.Get(key).(T))
+			if err != nil {
+				return err
+			}
+			*setField = mappedValue
+		} else {
+			*setField = fallbackValue
 		}
 	}
 	return nil

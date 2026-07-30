@@ -86,6 +86,7 @@ type UserObjectWorkloadIdentityProperties struct {
 type UserObjectWorkloadIdentityAws struct {
 	wifType string  `ddl:"static" sql:"TYPE = AWS"`
 	Arn     *string `ddl:"parameter,single_quotes" sql:"ARN"`
+	Issuer  *string `ddl:"parameter,single_quotes" sql:"ISSUER"`
 }
 
 type UserObjectWorkloadIdentityAzure struct {
@@ -118,7 +119,7 @@ type AlterUserOptions struct {
 	user                         bool                          `ddl:"static" sql:"USER"`
 	IfExists                     *bool                         `ddl:"keyword" sql:"IF EXISTS"`
 	name                         AccountObjectIdentifier       `ddl:"identifier"`
-	NewName                      *AccountObjectIdentifier      `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo                     *AccountObjectIdentifier      `ddl:"identifier" sql:"RENAME TO"`
 	ResetPassword                *bool                         `ddl:"keyword" sql:"RESET PASSWORD"`
 	AbortAllQueries              *bool                         `ddl:"keyword" sql:"ABORT ALL QUERIES"`
 	AddDelegatedAuthorization    *AddDelegatedAuthorization    `ddl:"keyword"`

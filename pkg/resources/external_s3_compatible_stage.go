@@ -153,11 +153,7 @@ func ImportExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 		return nil, err
 	}
 
-	stageProperties, err := client.Stages.Describe(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	details, err := sdk.ParseStageDetails(stageProperties)
+	details, err := client.Stages.DescribeDetails(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +195,7 @@ func CreateExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 
 	err = errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseS3StageDirectory),
+		attributeMappedValueCreateBuilder(d, "directory", request.WithDirectoryTableOptions, parseS3CompatibleStageDirectory),
 		attributeMappedValueCreateBuilderNested(d, "file_format", request.WithFileFormat, parseStageFileFormat),
 	)
 	if err != nil {
@@ -237,12 +233,7 @@ func ReadExternalS3CompatStageFunc(withExternalChangesMarking bool) schema.ReadC
 			return diag.FromErr(err)
 		}
 
-		properties, err := client.Stages.Describe(ctx, id)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		details, err := sdk.ParseStageDetails(properties)
+		details, err := client.Stages.DescribeDetails(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -343,4 +334,31 @@ func parseS3CompatStageCredentials(v any) (sdk.ExternalStageS3CompatibleCredenti
 	awsKeyId := credentialsConfig["aws_key_id"].(string)
 	awsSecretKey := credentialsConfig["aws_secret_key"].(string)
 	return *sdk.NewExternalStageS3CompatibleCredentialsRequest(awsKeyId, awsSecretKey), nil
+}
+
+func parseS3CompatibleStageDirectory(v any) (sdk.StageS3CompatibleDirectoryTableOptionsRequest, error) {
+	directoryList := v.([]any)
+	if len(directoryList) == 0 {
+		return sdk.StageS3CompatibleDirectoryTableOptionsRequest{}, nil
+	}
+	directoryConfig := directoryList[0].(map[string]any)
+	directoryReq := sdk.NewStageS3CompatibleDirectoryTableOptionsRequest().WithEnable(directoryConfig["enable"].(bool))
+
+	if v, ok := directoryConfig["refresh_on_create"]; ok && v.(string) != BooleanDefault {
+		refreshOnCreateBool, err := booleanStringToBool(v.(string))
+		if err != nil {
+			return sdk.StageS3CompatibleDirectoryTableOptionsRequest{}, fmt.Errorf("parsing refresh_on_create: %w", err)
+		}
+		directoryReq.WithRefreshOnCreate(refreshOnCreateBool)
+	}
+
+	if v, ok := directoryConfig["auto_refresh"]; ok && v.(string) != BooleanDefault && v.(string) != "" {
+		autoRefreshBool, err := booleanStringToBool(v.(string))
+		if err != nil {
+			return sdk.StageS3CompatibleDirectoryTableOptionsRequest{}, fmt.Errorf("parsing auto_refresh: %w", err)
+		}
+		directoryReq.WithAutoRefresh(autoRefreshBool)
+	}
+
+	return *directoryReq, nil
 }

@@ -218,12 +218,13 @@ func TestStages_CreateOnS3(t *testing.T) {
 			},
 			UsePrivatelinkEndpoint: Bool(true),
 		}
-		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3DirectoryTableOptions{
 			Enable:          true,
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
+			AwsSnsTopic:     String("arn:aws:sns:us-west-2:123456789012:my-sns-topic"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true)`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true AWS_SNS_TOPIC = 'arn:aws:sns:us-west-2:123456789012:my-sns-topic')`, id.FullyQualifiedName())
 	})
 
 	// added manually
@@ -492,7 +493,7 @@ func TestStages_CreateOnS3Compatible(t *testing.T) {
 			FormatName: Pointer(ffId),
 		}
 		opts.Comment = String("some comment")
-		opts.DirectoryTableOptions = &StageS3CommonDirectoryTableOptions{
+		opts.DirectoryTableOptions = &StageS3CompatibleDirectoryTableOptions{
 			Enable:          true,
 			RefreshOnCreate: Bool(true),
 			AutoRefresh:     Bool(true),
@@ -956,7 +957,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{
 						Value: String("\""),
 					},
-					NullIf:                     []NullString{{S: "NULL"}, {S: ""}},
+					NullIf:                     &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
 					ErrorOnColumnCountMismatch: Bool(true),
 					ReplaceInvalidCharacters:   Bool(true),
 					EmptyFieldAsNull:           Bool(true),
@@ -1035,7 +1036,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					BinaryFormat:      Pointer(BinaryFormatBase64),
 					TrimSpace:         Bool(true),
 					MultiLine:         Bool(true),
-					NullIf:            []NullString{{S: "NULL"}},
+					NullIf:            &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 					FileExtension:     String(".json"),
 					EnableOctal:       Bool(true),
 					AllowDuplicate:    Bool(true),
@@ -1067,7 +1068,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					BinaryFormat:             Pointer(BinaryFormatUtf8),
 					TrimSpace:                Bool(false),
 					MultiLine:                Bool(false),
-					NullIf:                   []NullString{{S: ""}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: ""}}},
 					FileExtension:            String(".jsonl"),
 					EnableOctal:              Bool(false),
 					AllowDuplicate:           Bool(false),
@@ -1098,7 +1099,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					Compression:              Pointer(AvroCompressionGzip),
 					TrimSpace:                Bool(true),
 					ReplaceInvalidCharacters: Bool(true),
-					NullIf:                   []NullString{{S: "NULL"}, {S: ""}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
 				},
 			},
 		}
@@ -1122,7 +1123,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 				OrcOptions: &FileFormatOrcOptions{
 					TrimSpace:                Bool(true),
 					ReplaceInvalidCharacters: Bool(true),
-					NullIf:                   []NullString{{S: "NULL"}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 				},
 			},
 		}
@@ -1140,7 +1141,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					TrimSpace:                Bool(true),
 					UseVectorizedScanner:     Bool(true),
 					ReplaceInvalidCharacters: Bool(true),
-					NullIf:                   []NullString{{S: "NULL"}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 				},
 			},
 		}
@@ -1158,7 +1159,7 @@ func TestStages_CreateInternal_FileFormat(t *testing.T) {
 					TrimSpace:                Bool(false),
 					UseVectorizedScanner:     Bool(false),
 					ReplaceInvalidCharacters: Bool(false),
-					NullIf:                   []NullString{{S: ""}},
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: ""}}},
 				},
 			},
 		}

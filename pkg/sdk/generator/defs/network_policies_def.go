@@ -90,7 +90,7 @@ var (
 					networkPoliciesRemoveNetworkRule,
 					g.KeywordOptions().SQL("REMOVE"),
 				).
-				Identifier("RenameTo", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+				RenameTo().
 				WithValidation(g.ValidIdentifier, "name").
 				WithValidation(g.ExactlyOneValueSet, "Set", "Unset", "RenameTo", "Add", "Remove").
 				WithValidation(g.ValidIdentifierIfSet, "RenameTo"),

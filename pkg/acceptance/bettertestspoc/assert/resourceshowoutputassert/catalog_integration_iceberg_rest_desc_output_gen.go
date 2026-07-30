@@ -119,11 +119,6 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoOAuthRestAuthen
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoBearerRestAuthentication() *CatalogIntegrationIcebergRestDescribeOutputAssert {
-	c.ValueNotSet("bearer_rest_authentication")
-	return c
-}
-
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoSigV4RestAuthentication() *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.ValueNotSet("sig_v4_rest_authentication")
 	return c

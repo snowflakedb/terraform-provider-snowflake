@@ -68,6 +68,11 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_failover_group_resource", want: FailoverGroupResource},
 		{input: "snowflake_failover_groups_datasource", want: FailoverGroupsDatasource},
 		{input: "snowflake_file_format_resource", want: FileFormatResource},
+		{input: "snowflake_file_format_avro_resource", want: FileFormatAvroResource},
+		{input: "snowflake_file_format_csv_resource", want: FileFormatCsvResource},
+		{input: "snowflake_file_format_json_resource", want: FileFormatJsonResource},
+		{input: "snowflake_file_format_parquet_resource", want: FileFormatParquetResource},
+		{input: "snowflake_file_format_xml_resource", want: FileFormatXmlResource},
 		{input: "snowflake_file_formats_datasource", want: FileFormatsDatasource},
 		{input: "snowflake_function_java_resource", want: FunctionJavaResource},
 		{input: "snowflake_function_javascript_resource", want: FunctionJavascriptResource},
@@ -79,6 +84,9 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_git_repositories_datasource", want: GitRepositoriesDatasource},
 		{input: "snowflake_iceberg_table_from_delta_files_resource", want: IcebergTableFromDeltaFilesResource},
 		{input: "snowflake_iceberg_table_from_files_resource", want: IcebergTableFromFilesResource},
+		{input: "snowflake_iceberg_table_from_aws_glue_resource", want: IcebergTableFromAwsGlueResource},
+		{input: "snowflake_iceberg_table_from_rest_resource", want: IcebergTableFromRestResource},
+		{input: "snowflake_iceberg_tables_datasource", want: IcebergTablesDatasource},
 		{input: "snowflake_image_repository_resource", want: ImageRepositoryResource},
 		{input: "snowflake_image_repositories_datasource", want: ImageRepositoriesDatasource},
 		{input: "snowflake_stage_internal_resource", want: InternalStageResource},
@@ -88,6 +96,8 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_managed_account_resource", want: ManagedAccountResource},
 		{input: "snowflake_materialized_view_resource", want: MaterializedViewResource},
 		{input: "snowflake_materialized_views_datasource", want: MaterializedViewsDatasource},
+		{input: "snowflake_mcp_server_resource", want: McpServerResource},
+		{input: "snowflake_mcp_servers_datasource", want: McpServersDatasource},
 		{input: "snowflake_network_policy_attachment_resource", want: NetworkPolicyAttachmentResource},
 		{input: "snowflake_network_rule_resource", want: NetworkRuleResource},
 		{input: "snowflake_network_rules_datasource", want: NetworkRulesDatasource},
@@ -144,6 +154,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_user_programmatic_access_token_resource", want: UserProgrammaticAccessTokenResource},
 		{input: "snowflake_user_programmatic_access_tokens_datasource", want: UserProgrammaticAccessTokensDatasource},
 		{input: "snowflake_warehouse_adaptive_resource", want: WarehouseAdaptiveResource},
+		{input: "snowflake_warehouse_interactive_resource", want: WarehouseInteractiveResource},
 	}
 
 	invalid := []test{

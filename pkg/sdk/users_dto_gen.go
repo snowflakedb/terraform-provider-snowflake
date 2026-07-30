@@ -61,7 +61,8 @@ type UserObjectWorkloadIdentityPropertiesRequest struct {
 }
 
 type UserObjectWorkloadIdentityAwsRequest struct {
-	Arn *string
+	Arn    *string
+	Issuer *string
 }
 
 type UserObjectWorkloadIdentityAzureRequest struct {
@@ -88,7 +89,7 @@ type UserObjectParametersRequest struct {
 type AlterUserRequest struct {
 	IfExists                     *bool
 	name                         AccountObjectIdentifier // required
-	NewName                      *AccountObjectIdentifier
+	RenameTo                     *AccountObjectIdentifier
 	ResetPassword                *bool
 	AbortAllQueries              *bool
 	AddDelegatedAuthorization    *AddDelegatedAuthorizationRequest

@@ -33,7 +33,6 @@ func Test_ToColumnConstraintType(t *testing.T) {
 	}
 
 	for _, tc := range positiveTests {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToColumnConstraintType(tc.input)
 			require.NoError(t, err)
@@ -42,7 +41,6 @@ func Test_ToColumnConstraintType(t *testing.T) {
 	}
 
 	for _, tc := range negativeTests {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToColumnConstraintType(tc.input)
 			require.Error(t, err)
@@ -78,7 +76,6 @@ func Test_ToMatchType(t *testing.T) {
 	}
 
 	for _, tc := range positiveTests {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToMatchType(tc.input)
 			require.NoError(t, err)
@@ -87,7 +84,6 @@ func Test_ToMatchType(t *testing.T) {
 	}
 
 	for _, tc := range negativeTests {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToMatchType(tc.input)
 			require.Error(t, err)
@@ -129,7 +125,6 @@ func Test_ToForeignKeyAction(t *testing.T) {
 	}
 
 	for _, tc := range positiveTests {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToForeignKeyAction(tc.input)
 			require.NoError(t, err)
@@ -138,7 +133,6 @@ func Test_ToForeignKeyAction(t *testing.T) {
 	}
 
 	for _, tc := range negativeTests {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			got, err := ToForeignKeyAction(tc.input)
 			require.Error(t, err)

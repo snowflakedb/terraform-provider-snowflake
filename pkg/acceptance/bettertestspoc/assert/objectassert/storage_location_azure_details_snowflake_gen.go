@@ -11,16 +11,11 @@ import (
 )
 
 type StorageLocationAzureDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.StorageLocationAzureDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.StorageLocationAzureDetails]
 }
 
-// StorageLocationAzureDetails removed manually
-
-func StorageLocationAzureDetailsFromObject(t *testing.T, storageLocationAzureDetails *sdk.StorageLocationAzureDetails) *StorageLocationAzureDetailsAssert {
-	t.Helper()
-	return &StorageLocationAzureDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("StorageLocationAzureDetails"), sdk.NewAccountObjectIdentifier(""), storageLocationAzureDetails),
-	}
+func NewStorageLocationAzureDetailsAssert() *StorageLocationAzureDetailsAssert {
+	return &StorageLocationAzureDetailsAssert{assert.NewSubStructAssert[sdk.StorageLocationAzureDetails]()}
 }
 
 func (s *StorageLocationAzureDetailsAssert) HasAzureTenantId(expected string) *StorageLocationAzureDetailsAssert {
@@ -28,6 +23,17 @@ func (s *StorageLocationAzureDetailsAssert) HasAzureTenantId(expected string) *S
 		t.Helper()
 		if o.AzureTenantId != expected {
 			return fmt.Errorf("expected azure tenant id: %v; got: %v", expected, o.AzureTenantId)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationAzureDetailsAssert) HasAzureTenantIdNotEmpty() *StorageLocationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
+		t.Helper()
+		if o.AzureTenantId == "" {
+			return fmt.Errorf("expected azure tenant id to be non-empty")
 		}
 		return nil
 	})
@@ -45,11 +51,58 @@ func (s *StorageLocationAzureDetailsAssert) HasAzureMultiTenantAppName(expected 
 	return s
 }
 
+func (s *StorageLocationAzureDetailsAssert) HasAzureMultiTenantAppNameNotEmpty() *StorageLocationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
+		t.Helper()
+		if o.AzureMultiTenantAppName == "" {
+			return fmt.Errorf("expected azure multi tenant app name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StorageLocationAzureDetailsAssert) HasAzureConsentUrl(expected string) *StorageLocationAzureDetailsAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
 		t.Helper()
 		if o.AzureConsentUrl != expected {
 			return fmt.Errorf("expected azure consent url: %v; got: %v", expected, o.AzureConsentUrl)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationAzureDetailsAssert) HasAzureConsentUrlNotEmpty() *StorageLocationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
+		t.Helper()
+		if o.AzureConsentUrl == "" {
+			return fmt.Errorf("expected azure consent url to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationAzureDetailsAssert) HasUsePrivatelinkEndpoint(expected bool) *StorageLocationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
+		t.Helper()
+		if o.UsePrivatelinkEndpoint == nil {
+			return fmt.Errorf("expected use privatelink endpoint to have value; got: nil")
+		}
+		if *o.UsePrivatelinkEndpoint != expected {
+			return fmt.Errorf("expected use privatelink endpoint: %v; got: %v", expected, *o.UsePrivatelinkEndpoint)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StorageLocationAzureDetailsAssert) HasNoUsePrivatelinkEndpoint() *StorageLocationAzureDetailsAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.StorageLocationAzureDetails) error {
+		t.Helper()
+		if o.UsePrivatelinkEndpoint != nil {
+			return fmt.Errorf("expected use privatelink endpoint to be nil; got: %v", *o.UsePrivatelinkEndpoint)
 		}
 		return nil
 	})

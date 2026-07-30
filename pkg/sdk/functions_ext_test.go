@@ -41,7 +41,6 @@ func Test_parseFunctionOrProcedureImports(t *testing.T) {
 	}
 
 	for _, tc := range inputs {
-		tc := tc
 		t.Run(fmt.Sprintf("Snowflake raw imports: %s", tc.rawInput), func(t *testing.T) {
 			results, err := parseFunctionOrProcedureImports(&tc.rawInput)
 			require.NoError(t, err)
@@ -50,7 +49,6 @@ func Test_parseFunctionOrProcedureImports(t *testing.T) {
 	}
 
 	for _, tc := range badInputs {
-		tc := tc
 		t.Run(fmt.Sprintf("incorrect Snowflake input: %s, expecting error with: %s", tc.rawInput, tc.expectedErrorPart), func(t *testing.T) {
 			_, err := parseFunctionOrProcedureImports(&tc.rawInput)
 			require.Error(t, err)
@@ -94,7 +92,6 @@ func Test_parseFunctionOrProcedureReturns(t *testing.T) {
 	}
 
 	for _, tc := range inputs {
-		tc := tc
 		t.Run(fmt.Sprintf("return data type raw: %s", tc.rawInput), func(t *testing.T) {
 			dt, returnNotNull, err := parseFunctionOrProcedureReturns(tc.rawInput)
 			require.NoError(t, err)
@@ -104,7 +101,6 @@ func Test_parseFunctionOrProcedureReturns(t *testing.T) {
 	}
 
 	for _, tc := range badInputs {
-		tc := tc
 		t.Run(fmt.Sprintf("incorrect return data type raw: %s, expecting error with: %s", tc.rawInput, tc.expectedErrorPart), func(t *testing.T) {
 			_, _, err := parseFunctionOrProcedureReturns(tc.rawInput)
 			require.Error(t, err)
@@ -148,7 +144,6 @@ func Test_parseFunctionOrProcedureSignature(t *testing.T) {
 	}
 
 	for _, tc := range inputs {
-		tc := tc
 		t.Run(fmt.Sprintf("return data type raw: %s", tc.rawInput), func(t *testing.T) {
 			args, err := parseFunctionOrProcedureSignature(tc.rawInput)
 
@@ -162,7 +157,6 @@ func Test_parseFunctionOrProcedureSignature(t *testing.T) {
 	}
 
 	for _, tc := range badInputs {
-		tc := tc
 		t.Run(fmt.Sprintf("incorrect signature raw: %s, expecting error with: %s", tc.rawInput, tc.expectedErrorPart), func(t *testing.T) {
 			_, err := parseFunctionOrProcedureSignature(tc.rawInput)
 			require.Error(t, err)

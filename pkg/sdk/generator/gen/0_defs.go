@@ -31,6 +31,7 @@ func preprocessDefinition(definition *Interface) {
 			o.OptsField.Name = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			o.OptsField.Kind = fmt.Sprintf("%s%sOptions", o.Name, o.ObjectInterface.NameSingular)
 			setParent(o.OptsField)
+			resolveInterfaceIdentifierKinds(o.OptsField, definition.IdentifierKind)
 
 			// TODO [SNOW-2324252]: this logic is currently the old logic adjusted. Let's clean it after new generation is working.
 			// fill out StructsToGenerate; it replaces the old generateOptionsStruct and generateStruct
@@ -93,6 +94,20 @@ func preprocessDefinition(definition *Interface) {
 				seenMappingReceivers = append(seenMappingReceivers, mapping.From.Name)
 			}
 		}
+	}
+}
+
+// resolveInterfaceIdentifierKinds walks all fields recursively and replaces sentinel kind values
+// with the actual identifier type from the interface definition.
+func resolveInterfaceIdentifierKinds(field *Field, identifierKind string) {
+	switch field.Kind {
+	case InterfaceIdentifierKind:
+		field.Kind = identifierKind
+	case InterfaceIdentifierPointerKind:
+		field.Kind = KindOfPointer(identifierKind)
+	}
+	for idx := range field.Fields {
+		resolveInterfaceIdentifierKinds(&field.Fields[idx], identifierKind)
 	}
 }
 

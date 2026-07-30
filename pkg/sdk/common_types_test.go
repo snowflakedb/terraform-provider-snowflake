@@ -410,7 +410,6 @@ func Test_ToMetricLevel(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		name := tc.Name
 		if name == "" {
 			name = fmt.Sprintf("%v metric level", tc.Input)
@@ -445,7 +444,6 @@ func Test_ToAutoEventLogging(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		name := tc.Name
 		if name == "" {
 			name = fmt.Sprintf("%v auto event logging", tc.Input)

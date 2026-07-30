@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -97,6 +98,19 @@ func (c *ServiceClient) Alter(t *testing.T, req *sdk.AlterServiceRequest) {
 	require.NoError(t, err)
 }
 
+func (c *ServiceClient) WaitForStatus(t *testing.T, id sdk.SchemaObjectIdentifier, status sdk.ServiceStatus, timeout time.Duration) {
+	t.Helper()
+	ctx := context.Background()
+
+	require.Eventually(t, func() bool {
+		service, err := c.client().ShowByID(ctx, id)
+		if err != nil {
+			return false
+		}
+		return service.Status == status
+	}, timeout, 5*time.Second)
+}
+
 func (c *ServiceClient) SampleSpec(t *testing.T) string {
 	t.Helper()
 
@@ -112,6 +126,21 @@ spec:
   - name: %s
     image: /snowflake/images/snowflake_images/exampleimage:latest
 `, containerName)
+}
+
+func (c *ServiceClient) SampleSpecWithEndpoint(t *testing.T, endpointName string) string {
+	t.Helper()
+
+	return fmt.Sprintf(`
+spec:
+  containers:
+  - name: example-container
+    image: /snowflake/images/snowflake_images/exampleimage:latest
+  endpoints:
+  - name: %s
+    port: 4242
+    protocol: TCP
+`, endpointName)
 }
 
 func (c *ServiceClient) SampleSpecWithBlockVolume(t *testing.T) string {

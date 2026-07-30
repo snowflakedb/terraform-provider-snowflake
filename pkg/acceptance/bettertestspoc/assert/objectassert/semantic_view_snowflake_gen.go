@@ -43,11 +43,33 @@ func (s *SemanticViewAssert) HasCreatedOn(expected time.Time) *SemanticViewAsser
 	return s
 }
 
+func (s *SemanticViewAssert) HasCreatedOnNotEmpty() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SemanticViewAssert) HasName(expected string) *SemanticViewAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SemanticViewAssert) HasNameNotEmpty() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +87,33 @@ func (s *SemanticViewAssert) HasDatabaseName(expected string) *SemanticViewAsser
 	return s
 }
 
+func (s *SemanticViewAssert) HasDatabaseNameNotEmpty() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SemanticViewAssert) HasSchemaName(expected string) *SemanticViewAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SemanticViewAssert) HasSchemaNameNotEmpty() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -90,11 +134,33 @@ func (s *SemanticViewAssert) HasComment(expected string) *SemanticViewAssert {
 	return s
 }
 
+func (s *SemanticViewAssert) HasNoComment() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SemanticViewAssert) HasOwner(expected string) *SemanticViewAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SemanticViewAssert) HasOwnerNotEmpty() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -112,6 +178,17 @@ func (s *SemanticViewAssert) HasOwnerRoleType(expected string) *SemanticViewAsse
 	return s
 }
 
+func (s *SemanticViewAssert) HasOwnerRoleTypeNotEmpty() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *SemanticViewAssert) HasExtension(expected string) *SemanticViewAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
 		t.Helper()
@@ -120,6 +197,17 @@ func (s *SemanticViewAssert) HasExtension(expected string) *SemanticViewAssert {
 		}
 		if *o.Extension != expected {
 			return fmt.Errorf("expected extension: %v; got: %v", expected, *o.Extension)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SemanticViewAssert) HasNoExtension() *SemanticViewAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SemanticView) error {
+		t.Helper()
+		if o.Extension != nil {
+			return fmt.Errorf("expected extension to be nil; got: %v", *o.Extension)
 		}
 		return nil
 	})

@@ -24,13 +24,73 @@ func PasswordPolicyDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *Passwor
 	}
 }
 
-// Adjusted manually: removed PasswordPolicyDetailsFromObject — PasswordPolicyDetails has no Id field or ID() method.
+func PasswordPolicyDetailsFromObject(t *testing.T, passwordPolicyDetails *sdk.PasswordPolicyDetails) *PasswordPolicyDetailsAssert {
+	t.Helper()
+	return &PasswordPolicyDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("PasswordPolicyDetails"), passwordPolicyDetails.ID(), passwordPolicyDetails),
+	}
+}
 
 func (p *PasswordPolicyDetailsAssert) HasName(expected string) *PasswordPolicyDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyDetailsAssert) HasNameNotEmpty() *PasswordPolicyDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyDetailsAssert) HasDatabaseName(expected string) *PasswordPolicyDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
+		t.Helper()
+		if o.DatabaseName != expected {
+			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyDetailsAssert) HasDatabaseNameNotEmpty() *PasswordPolicyDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyDetailsAssert) HasSchemaName(expected string) *PasswordPolicyDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
+		t.Helper()
+		if o.SchemaName != expected {
+			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyDetailsAssert) HasSchemaNameNotEmpty() *PasswordPolicyDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -48,11 +108,33 @@ func (p *PasswordPolicyDetailsAssert) HasOwner(expected string) *PasswordPolicyD
 	return p
 }
 
+func (p *PasswordPolicyDetailsAssert) HasOwnerNotEmpty() *PasswordPolicyDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return p
+}
+
 func (p *PasswordPolicyDetailsAssert) HasComment(expected string) *PasswordPolicyDetailsAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PasswordPolicyDetailsAssert) HasCommentNotEmpty() *PasswordPolicyDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PasswordPolicyDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})

@@ -20,7 +20,7 @@ func (s *Schema) IsManagedAccess() bool {
 }
 
 func (v *schemas) Use(ctx context.Context, id DatabaseObjectIdentifier) error {
-	return v.client.Sessions.UseSchema(ctx, id)
+	return v.client.Sessions.UseSchema(ctx, NewUseSchemaSessionRequest(id))
 }
 
 func (opts *CloneSchemaOptions) additionalValidations() error {

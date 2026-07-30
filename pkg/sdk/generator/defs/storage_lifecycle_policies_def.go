@@ -48,7 +48,7 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			Alter().
 			SQL("STORAGE LIFECYCLE POLICY").
 			Name().
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			OptionalSetBodyWithPrecedingArrow().
 			OptionalQueryStructField(
 				"Set",
@@ -106,6 +106,8 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-storage-lifecycle-policy",
 		g.StructPair("describeStorageLifecyclePolicyDBRow", "StorageLifecyclePolicyDetails").
 			Text("name").
+			PlainOnlyField("DatabaseName", "string").
+			PlainOnlyField("SchemaName", "string").
 			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignatureWithVectorSupport")).
 			DataType("return_type").
 			Text("body").
@@ -117,4 +119,5 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
+	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "*StorageLifecyclePolicyDetails", "error").
 	WithEnums(StorageLifecyclePolicyArchiveTierEnumDef)

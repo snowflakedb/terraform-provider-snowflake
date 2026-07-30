@@ -31,7 +31,7 @@ type CreatePasswordPolicyRequest struct {
 type AlterPasswordPolicyRequest struct {
 	IfExists *bool
 	name     SchemaObjectIdentifier // required
-	NewName  *SchemaObjectIdentifier
+	RenameTo *SchemaObjectIdentifier
 	Set      *PasswordPolicySetRequest
 	Unset    *PasswordPolicyUnsetRequest
 }

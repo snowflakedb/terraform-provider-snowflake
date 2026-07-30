@@ -51,7 +51,6 @@ func (e expectDriftPlanCheck) CheckPlan(_ context.Context, req plancheck.CheckPl
 		valueAfter, valueAfterOk := after[attributeRoot]
 
 		for idx, part := range attributePathParts {
-			part := part
 			if idx == 0 {
 				continue
 			}

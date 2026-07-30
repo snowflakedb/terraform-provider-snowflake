@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -113,7 +114,8 @@ func StorageIntegrationAzure() *schema.Resource {
 }
 
 func ImportStorageIntegrationAzure(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
 		return nil, err
@@ -128,9 +130,16 @@ func ImportStorageIntegrationAzure(ctx context.Context, d *schema.ResourceData, 
 		return nil, fmt.Errorf("expected AZURE storage provider got %s", azureDetails.Provider)
 	}
 
+	setDefaults := experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ImportBooleanDefault, providerCtx.EnabledExperiments)
+
+	usePrivateLinkEndpointValue := booleanStringFromBool(azureDetails.UsePrivatelinkEndpoint)
+	if setDefaults {
+		usePrivateLinkEndpointValue = BooleanDefault
+	}
+
 	errs := errors.Join(
 		d.Set("name", azureDetails.ID().Name()),
-		d.Set("use_privatelink_endpoint", booleanStringFromBool(azureDetails.UsePrivatelinkEndpoint)),
+		d.Set("use_privatelink_endpoint", usePrivateLinkEndpointValue),
 	)
 	if errs != nil {
 		return nil, errs

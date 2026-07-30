@@ -73,7 +73,7 @@ type OrganizationAccountUnset struct {
 }
 
 type OrganizationAccountRename struct {
-	NewName    *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
+	RenameTo   *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	SaveOldUrl *bool                    `ddl:"parameter" sql:"SAVE_OLD_URL"`
 }
 

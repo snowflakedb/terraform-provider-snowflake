@@ -109,16 +109,10 @@ func (r *CreateViewRequest) toOpts() *CreateViewOptions {
 		opts.Columns = columns
 	}
 	if r.RowAccessPolicy != nil {
-		opts.RowAccessPolicy = &ViewRowAccessPolicy{
-			RowAccessPolicy: r.RowAccessPolicy.RowAccessPolicy,
-			On:              r.RowAccessPolicy.On,
-		}
+		opts.RowAccessPolicy = r.RowAccessPolicy.toOpts()
 	}
 	if r.AggregationPolicy != nil {
-		opts.AggregationPolicy = &ViewAggregationPolicy{
-			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
-			EntityKey:         r.AggregationPolicy.EntityKey,
-		}
+		opts.AggregationPolicy = r.AggregationPolicy.toOpts()
 	}
 	return opts
 }
@@ -161,35 +155,19 @@ func (r *AlterViewRequest) toOpts() *AlterViewOptions {
 		opts.UnsetDataMetricSchedule = &ViewUnsetDataMetricSchedule{}
 	}
 	if r.AddRowAccessPolicy != nil {
-		opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{
-			RowAccessPolicy: r.AddRowAccessPolicy.RowAccessPolicy,
-			On:              r.AddRowAccessPolicy.On,
-		}
+		opts.AddRowAccessPolicy = r.AddRowAccessPolicy.toOpts()
 	}
 	if r.DropRowAccessPolicy != nil {
-		opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{
-			RowAccessPolicy: r.DropRowAccessPolicy.RowAccessPolicy,
-		}
+		opts.DropRowAccessPolicy = r.DropRowAccessPolicy.toOpts()
 	}
 	if r.DropAndAddRowAccessPolicy != nil {
-		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{}
-		opts.DropAndAddRowAccessPolicy.Drop = ViewDropRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy,
-		}
-		opts.DropAndAddRowAccessPolicy.Add = ViewAddRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Add.RowAccessPolicy,
-			On:              r.DropAndAddRowAccessPolicy.Add.On,
-		}
+		opts.DropAndAddRowAccessPolicy = r.DropAndAddRowAccessPolicy.toOpts()
 	}
 	if r.SetAggregationPolicy != nil {
-		opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
-			AggregationPolicy: r.SetAggregationPolicy.AggregationPolicy,
-			EntityKey:         r.SetAggregationPolicy.EntityKey,
-			Force:             r.SetAggregationPolicy.Force,
-		}
+		opts.SetAggregationPolicy = r.SetAggregationPolicy.toOpts()
 	}
 	if r.UnsetAggregationPolicy != nil {
-		opts.UnsetAggregationPolicy = &ViewUnsetAggregationPolicy{}
+		opts.UnsetAggregationPolicy = r.UnsetAggregationPolicy.toOpts()
 	}
 	if r.SetMaskingPolicyOnColumn != nil {
 		opts.SetMaskingPolicyOnColumn = &ViewSetColumnMaskingPolicy{
@@ -292,4 +270,56 @@ func (r viewDetailsRow) convert() (*ViewDetails, error) {
 	mapNullString(&result.PolicyName, r.PolicyName)
 	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
 	return result, nil
+}
+
+func (r *ViewRowAccessPolicyRequest) toOpts() *ViewRowAccessPolicy {
+	opts := &ViewRowAccessPolicy{
+		RowAccessPolicy: r.RowAccessPolicy,
+		On:              r.On,
+	}
+	return opts
+}
+
+func (r *ViewAggregationPolicyRequest) toOpts() *ViewAggregationPolicy {
+	opts := &ViewAggregationPolicy{
+		AggregationPolicy: r.AggregationPolicy,
+		EntityKey:         r.EntityKey,
+	}
+	return opts
+}
+
+func (r *ViewAddRowAccessPolicyRequest) toOpts() *ViewAddRowAccessPolicy {
+	opts := &ViewAddRowAccessPolicy{
+		RowAccessPolicy: r.RowAccessPolicy,
+		On:              r.On,
+	}
+	return opts
+}
+
+func (r *ViewDropRowAccessPolicyRequest) toOpts() *ViewDropRowAccessPolicy {
+	opts := &ViewDropRowAccessPolicy{
+		RowAccessPolicy: r.RowAccessPolicy,
+	}
+	return opts
+}
+
+func (r *ViewDropAndAddRowAccessPolicyRequest) toOpts() *ViewDropAndAddRowAccessPolicy {
+	opts := &ViewDropAndAddRowAccessPolicy{}
+	opts.Drop = *r.Drop.toOpts()
+	opts.Add = *r.Add.toOpts()
+	return opts
+}
+
+func (r *ViewSetAggregationPolicyRequest) toOpts() *ViewSetAggregationPolicy {
+	opts := &ViewSetAggregationPolicy{
+		AggregationPolicy: r.AggregationPolicy,
+		EntityKey:         r.EntityKey,
+		Force:             r.Force,
+	}
+	return opts
+}
+
+func (r *ViewUnsetAggregationPolicyRequest) toOpts() *ViewUnsetAggregationPolicy {
+	opts := &ViewUnsetAggregationPolicy{}
+	return opts
 }

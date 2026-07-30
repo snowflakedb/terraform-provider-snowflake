@@ -117,6 +117,12 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 	// Handling user separately, due to existing test with "." as part of the identifier.
 	case resources.User:
 		return sdk.ParseAccountObjectIdentifier(rs.Primary.ID)
+	case resources.Account:
+		id, err := sdk.ParseObjectIdentifierString(rs.Primary.ID)
+		if err != nil {
+			return id, err
+		}
+		return sdk.NewAccountObjectIdentifier(id.Name()), nil
 	default:
 		return sdk.ParseObjectIdentifierString(rs.Primary.ID)
 	}
@@ -156,7 +162,7 @@ func (e *IncorrectIdentifierError) Error() string {
 
 func asId[T supportedIdentifierTypes](id sdk.ObjectIdentifier) (*T, error) {
 	if idCast, ok := id.(T); !ok {
-		return nil, &IncorrectIdentifierError{reflect.TypeOf(new(T)).Elem().Name(), id}
+		return nil, &IncorrectIdentifierError{reflect.TypeFor[T]().Name(), id}
 	} else {
 		return &idCast, nil
 	}
@@ -278,7 +284,7 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.FailoverGroups.ShowByID)
 	},
 	resources.FileFormat: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
-		return runShowById(ctx, id, client.FileFormats.ShowByID)
+		return runShowById(ctx, id, client.FileFormatsLegacy.ShowByID)
 	},
 	resources.FunctionJava: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Functions.ShowByID)
@@ -298,10 +304,19 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.GitRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.GitRepositories.ShowByID)
 	},
+	resources.IcebergTable: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
 	resources.IcebergTableFromDeltaFiles: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.IcebergTables.ShowByID)
 	},
 	resources.IcebergTableFromFiles: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
+	resources.IcebergTableFromAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.IcebergTables.ShowByID)
+	},
+	resources.IcebergTableFromRest: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.IcebergTables.ShowByID)
 	},
 	resources.ImageRepository: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
@@ -330,6 +345,27 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.MaterializedView: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.MaterializedViews.ShowByID)
+	},
+	resources.McpServer: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.McpServers.ShowByID)
+	},
+	resources.FileFormatCsv: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FileFormats.ShowByID)
+	},
+	resources.FileFormatJson: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FileFormats.ShowByID)
+	},
+	resources.FileFormatOrc: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FileFormats.ShowByID)
+	},
+	resources.FileFormatAvro: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FileFormats.ShowByID)
+	},
+	resources.FileFormatParquet: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FileFormats.ShowByID)
+	},
+	resources.FileFormatXml: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FileFormats.ShowByID)
 	},
 	resources.NetworkPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NetworkPolicies.ShowByID)
@@ -464,7 +500,7 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.Streamlits.ShowByID)
 	},
 	resources.Table: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
-		return runShowById(ctx, id, client.Tables.ShowByID)
+		return runShowById(ctx, id, client.TablesLegacy.ShowByID)
 	},
 	resources.Tag: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Tags.ShowByID)
@@ -479,6 +515,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.Views.ShowByID)
 	},
 	resources.WarehouseAdaptive: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Warehouses.ShowByID)
+	},
+	resources.WarehouseInteractive: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Warehouses.ShowByID)
 	},
 	resources.Warehouse: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
@@ -658,16 +697,34 @@ func CheckUserPasswordPolicyAttachmentDestroy(t *testing.T) func(*terraform.Stat
 	return checkUserPolicyAttachmentDestroy(t, resources.UserPasswordPolicyAttachment, sdk.PolicyKindPasswordPolicy)
 }
 
+// CheckAccountPasswordPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
+func CheckAccountPasswordPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkAccountPolicyAttachmentDestroy(t, resources.AccountPasswordPolicyAttachment, sdk.PolicyKindPasswordPolicy)
+}
+
 // CheckUserAuthenticationPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
 func CheckUserAuthenticationPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
 	return checkUserPolicyAttachmentDestroy(t, resources.UserAuthenticationPolicyAttachment, sdk.PolicyKindAuthenticationPolicy)
 }
 
+// CheckAccountAuthenticationPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
+func CheckAccountAuthenticationPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkAccountPolicyAttachmentDestroy(t, resources.AccountAuthenticationPolicyAttachment, sdk.PolicyKindAuthenticationPolicy)
+}
+
 // CheckUserSessionPolicyAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy
 func CheckUserSessionPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
 	t.Helper()
 	return checkUserPolicyAttachmentDestroy(t, resources.UserSessionPolicyAttachment, sdk.PolicyKindSessionPolicy)
+}
+
+// CheckAccountSessionPolicyAttachmentDestroy is a custom checks that should be later incorporated into generic CheckDestroy
+func CheckAccountSessionPolicyAttachmentDestroy(t *testing.T) func(*terraform.State) error {
+	t.Helper()
+	return checkAccountPolicyAttachmentDestroy(t, resources.AccountSessionPolicyAttachment, sdk.PolicyKindSessionPolicy)
 }
 
 // CheckTableStorageLifecyclePolicyAttachmentDestroy is a custom check that should be later incorporated into generic CheckDestroy
@@ -696,7 +753,7 @@ func CheckResourceTagUnset(t *testing.T) func(*terraform.State) error {
 			if err != nil {
 				return err
 			}
-			for i := 0; i < idLen; i++ {
+			for i := range idLen {
 				idRaw := rs.Primary.Attributes[fmt.Sprintf("object_identifiers.%d", i)]
 				var id sdk.ObjectIdentifier
 				// TODO(SNOW-1229218): Use a common mapper to get object id.
@@ -837,6 +894,13 @@ func checkUserPolicyAttachmentDestroy(t *testing.T, resource resources.Resource,
 	return checkPolicyAttachmentDestroy(t, resource, func(rs *terraform.ResourceState) (sdk.ObjectIdentifier, error) {
 		return sdk.NewAccountObjectIdentifierFromFullyQualifiedName(rs.Primary.Attributes["user_name"]), nil
 	}, sdk.PolicyEntityDomainUser, policyKind)
+}
+
+func checkAccountPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, policyKind sdk.PolicyKind) func(*terraform.State) error {
+	t.Helper()
+	return checkPolicyAttachmentDestroy(t, resource, func(_ *terraform.ResourceState) (sdk.ObjectIdentifier, error) {
+		return sdk.NewAccountIdentifierFromAccountLocator(testClient().GetAccountLocator()), nil
+	}, sdk.PolicyEntityDomainAccount, policyKind)
 }
 
 func checkPolicyAttachmentDestroy(t *testing.T, resource resources.Resource, getEntityId func(rs *terraform.ResourceState) (sdk.ObjectIdentifier, error), entityDomain sdk.PolicyEntityDomain, policyKind sdk.PolicyKind) func(*terraform.State) error {

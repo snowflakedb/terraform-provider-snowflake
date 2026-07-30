@@ -219,9 +219,9 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("alter with rename to and if exists", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Rename = &TagRename{Name: randomSchemaObjectIdentifierInSchema(id.SchemaId())}
+		opts.RenameTo = Pointer(randomSchemaObjectIdentifierInSchema(id.SchemaId()))
 		opts.IfExists = Pointer(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), opts.Rename.Name.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER TAG IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), opts.RenameTo.FullyQualifiedName())
 	})
 
 	t.Run("alter with add", func(t *testing.T) {
@@ -317,7 +317,7 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("validation: no alter action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "RenameTo"))
 	})
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
@@ -328,7 +328,7 @@ func TestTagAlter(t *testing.T) {
 		opts.Unset = &TagUnset{
 			AllowedValues: Bool(true),
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "Rename"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTagOptions", "Add", "Drop", "Set", "Unset", "RenameTo"))
 	})
 
 	t.Run("validation: multiple fields in set", func(t *testing.T) {
@@ -358,9 +358,7 @@ func TestTagAlter(t *testing.T) {
 
 	t.Run("validation: invalid new name", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Rename = &TagRename{
-			Name: emptySchemaObjectIdentifier,
-		}
+		opts.RenameTo = &emptySchemaObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -368,9 +366,7 @@ func TestTagAlter(t *testing.T) {
 		newId := randomSchemaObjectIdentifier()
 
 		opts := defaultOpts()
-		opts.Rename = &TagRename{
-			Name: newId,
-		}
+		opts.RenameTo = &newId
 		assertOptsValid(t, opts)
 	})
 
