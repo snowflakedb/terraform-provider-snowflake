@@ -47,7 +47,7 @@ func CreateAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 	}
 
 	err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithSet(*sdk.NewAccountSetRequest().WithSessionPolicy(sessionPolicyId)))
+		WithSet(*sdk.NewAccountSetRequest().WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().WithSessionPolicy(sessionPolicyId))))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error while creating session policy attachment, err = %w", err))
 	}
@@ -117,12 +117,12 @@ func UpdateAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 		}
 
 		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicy(true))); err != nil {
+			WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().WithSessionPolicy(true)))); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while unsetting old session policy from account, err = %w", err))
 		}
 		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().WithSessionPolicy(newSessionPolicyName))); err != nil {
+			WithSet(*sdk.NewAccountSetRequest().WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().WithSessionPolicy(newSessionPolicyName)))); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while setting new session policy on account, err = %w", err))
 		}
@@ -137,7 +137,7 @@ func DeleteAccountSessionPolicyAttachment(ctx context.Context, d *schema.Resourc
 	client := meta.(*provider.Context).Client
 
 	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicy(true)))
+		WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().WithSessionPolicy(true))))
 	if err != nil {
 		return diag.FromErr(err)
 	}

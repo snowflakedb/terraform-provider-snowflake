@@ -51,7 +51,7 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 	}
 
 	err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicy(authenticationPolicy)))
+		WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(authenticationPolicy))))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("error while creating authentication policy attachment, err = %w", err))
 	}
@@ -121,12 +121,12 @@ func UpdateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 		}
 
 		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicy(true))); err != nil {
+			WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().WithAuthenticationPolicy(true)))); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while unsetting old authentication policy from account, err = %w", err))
 		}
 		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicy(newAuthenticationPolicyName))); err != nil {
+			WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(newAuthenticationPolicyName)))); err != nil {
 			d.Partial(true)
 			return diag.FromErr(fmt.Errorf("error while setting new authentication policy on account, err = %w", err))
 		}
@@ -141,7 +141,7 @@ func DeleteAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 	client := meta.(*provider.Context).Client
 
 	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicy(true)))
+		WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().WithAuthenticationPolicy(true))))
 	if err != nil {
 		return diag.FromErr(err)
 	}

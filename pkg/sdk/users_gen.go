@@ -148,6 +148,7 @@ type UserSet struct {
 	ObjectProperties     *UserAlterObjectProperties `ddl:"keyword"`
 	ObjectParameters     *UserObjectParameters      `ddl:"keyword"`
 	SessionParameters    *SessionParameters         `ddl:"keyword"`
+	Force                *bool                      `ddl:"keyword" sql:"FORCE"`
 }
 
 type UserAlterObjectProperties struct {

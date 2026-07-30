@@ -22,8 +22,13 @@ func (opts *CreateAccountOptions) additionalValidations() error {
 
 func (opts *AccountSet) additionalValidations() error {
 	var errs []error
-	if valueSet(opts.Force) && !valueSet(opts.PackagesPolicy) && !valueSet(opts.FeaturePolicySet) {
-		errs = append(errs, NewError("force can only be set with PackagesPolicy and FeaturePolicy"))
+	if valueSet(opts.Force) &&
+		!valueSet(opts.PackagesPolicy) &&
+		!valueSet(opts.PasswordPolicy) &&
+		!valueSet(opts.SessionPolicySet) &&
+		!valueSet(opts.AuthenticationPolicySet) &&
+		!valueSet(opts.FeaturePolicySet) {
+		errs = append(errs, NewError("force can only be set with PackagesPolicy, PasswordPolicy, SessionPolicy, AuthenticationPolicy, or FeaturePolicy"))
 	}
 	return errors.Join(errs...)
 }
@@ -270,7 +275,7 @@ func (c *accounts) UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
 	var unset *AccountUnsetRequest
 	switch kind {
 	case PolicyKindAuthenticationPolicy:
-		unset = NewAccountUnsetRequest().WithAuthenticationPolicy(true)
+		unset = NewAccountUnsetRequest().WithAuthenticationPolicyUnset(*NewAccountAuthenticationPolicyUnsetRequest().WithAuthenticationPolicy(true))
 	case PolicyKindFeaturePolicy:
 		unset = NewAccountUnsetRequest().WithFeaturePolicyUnset(*NewAccountFeaturePolicyUnsetRequest().WithFeaturePolicy(true))
 	case PolicyKindPackagesPolicy:
@@ -278,7 +283,7 @@ func (c *accounts) UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
 	case PolicyKindPasswordPolicy:
 		unset = NewAccountUnsetRequest().WithPasswordPolicy(true)
 	case PolicyKindSessionPolicy:
-		unset = NewAccountUnsetRequest().WithSessionPolicy(true)
+		unset = NewAccountUnsetRequest().WithSessionPolicyUnset(*NewAccountSessionPolicyUnsetRequest().WithSessionPolicy(true))
 	default:
 		return fmt.Errorf("policy kind %s is not supported for account policies", kind)
 	}

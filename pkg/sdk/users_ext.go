@@ -3,6 +3,7 @@ package sdk
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -273,10 +274,14 @@ func (r *userDBRow) additionalConvert(result *User) error {
 // additionalValidations for UserSet — handles the cross-field policy/property exclusion check
 // that cannot be expressed as a single generator validation type.
 func (opts *UserSet) additionalValidations() error {
+	var errs []error
 	if anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) && anyValueSet(opts.ObjectProperties, opts.ObjectParameters, opts.SessionParameters) {
-		return NewError("policies cannot be set with user properties or parameters at the same time")
+		errs = append(errs, NewError("policies cannot be set with user properties or parameters at the same time"))
 	}
-	return nil
+	if valueSet(opts.Force) && !anyValueSet(opts.PasswordPolicy, opts.SessionPolicy, opts.AuthenticationPolicy) {
+		errs = append(errs, NewError("force can only be set with PasswordPolicy, SessionPolicy, or AuthenticationPolicy"))
+	}
+	return errors.Join(errs...)
 }
 
 // additionalValidations for UserUnset — handles the cross-field policy/property exclusion check

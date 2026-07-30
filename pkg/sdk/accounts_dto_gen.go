@@ -45,8 +45,8 @@ type AccountSetRequest struct {
 	ResourceMonitor          *AccountObjectIdentifier
 	PackagesPolicy           *SchemaObjectIdentifier
 	PasswordPolicy           *SchemaObjectIdentifier
-	SessionPolicy            *SchemaObjectIdentifier
-	AuthenticationPolicy     *SchemaObjectIdentifier
+	SessionPolicySet         *AccountSessionPolicySetRequest
+	AuthenticationPolicySet  *AccountAuthenticationPolicySetRequest
 	FeaturePolicySet         *AccountFeaturePolicySetRequest
 	ConsumptionBillingEntity *string
 	OrgAdmin                 *bool
@@ -60,20 +60,32 @@ type AccountLevelParametersRequest struct {
 	UserParameters    *UserParameters
 }
 
+type AccountSessionPolicySetRequest struct {
+	SessionPolicy      *SchemaObjectIdentifier
+	ForAllPersonUsers  *bool
+	ForAllServiceUsers *bool
+}
+
+type AccountAuthenticationPolicySetRequest struct {
+	AuthenticationPolicy *SchemaObjectIdentifier
+	ForAllPersonUsers    *bool
+	ForAllServiceUsers   *bool
+}
+
 type AccountFeaturePolicySetRequest struct {
 	FeaturePolicy *SchemaObjectIdentifier
 }
 
 type AccountUnsetRequest struct {
-	Parameters               *AccountParametersUnset
-	LegacyParameters         *AccountLevelParametersUnsetRequest
-	AuthenticationPolicy     *bool
-	FeaturePolicyUnset       *AccountFeaturePolicyUnsetRequest
-	PackagesPolicy           *bool
-	PasswordPolicy           *bool
-	SessionPolicy            *bool
-	ResourceMonitor          *bool
-	ConsumptionBillingEntity *bool
+	Parameters                *AccountParametersUnset
+	LegacyParameters          *AccountLevelParametersUnsetRequest
+	AuthenticationPolicyUnset *AccountAuthenticationPolicyUnsetRequest
+	FeaturePolicyUnset        *AccountFeaturePolicyUnsetRequest
+	PackagesPolicy            *bool
+	PasswordPolicy            *bool
+	SessionPolicyUnset        *AccountSessionPolicyUnsetRequest
+	ResourceMonitor           *bool
+	ConsumptionBillingEntity  *bool
 }
 
 type AccountLevelParametersUnsetRequest struct {
@@ -83,8 +95,20 @@ type AccountLevelParametersUnsetRequest struct {
 	UserParameters    *UserParametersUnset
 }
 
+type AccountAuthenticationPolicyUnsetRequest struct {
+	AuthenticationPolicy *bool
+	ForAllPersonUsers    *bool
+	ForAllServiceUsers   *bool
+}
+
 type AccountFeaturePolicyUnsetRequest struct {
 	FeaturePolicy *bool
+}
+
+type AccountSessionPolicyUnsetRequest struct {
+	SessionPolicy      *bool
+	ForAllPersonUsers  *bool
+	ForAllServiceUsers *bool
 }
 
 type AccountDropRequest struct {

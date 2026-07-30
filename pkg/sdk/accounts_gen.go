@@ -64,17 +64,17 @@ type AlterAccountOptions struct {
 }
 
 type AccountSet struct {
-	Parameters               *AccountParameters       `ddl:"list,no_parentheses"`
-	LegacyParameters         *AccountLevelParameters  `ddl:"list,no_parentheses"`
-	ResourceMonitor          *AccountObjectIdentifier `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
-	PackagesPolicy           *SchemaObjectIdentifier  `ddl:"identifier" sql:"PACKAGES POLICY"`
-	PasswordPolicy           *SchemaObjectIdentifier  `ddl:"identifier" sql:"PASSWORD POLICY"`
-	SessionPolicy            *SchemaObjectIdentifier  `ddl:"identifier" sql:"SESSION POLICY"`
-	AuthenticationPolicy     *SchemaObjectIdentifier  `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
-	FeaturePolicySet         *AccountFeaturePolicySet `ddl:"keyword"`
-	ConsumptionBillingEntity *string                  `ddl:"parameter,double_quotes" sql:"CONSUMPTION_BILLING_ENTITY"`
-	OrgAdmin                 *bool                    `ddl:"parameter" sql:"IS_ORG_ADMIN"`
-	Force                    *bool                    `ddl:"keyword" sql:"FORCE"`
+	Parameters               *AccountParameters              `ddl:"list,no_parentheses"`
+	LegacyParameters         *AccountLevelParameters         `ddl:"list,no_parentheses"`
+	ResourceMonitor          *AccountObjectIdentifier        `ddl:"identifier,equals" sql:"RESOURCE_MONITOR"`
+	PackagesPolicy           *SchemaObjectIdentifier         `ddl:"identifier" sql:"PACKAGES POLICY"`
+	PasswordPolicy           *SchemaObjectIdentifier         `ddl:"identifier" sql:"PASSWORD POLICY"`
+	SessionPolicySet         *AccountSessionPolicySet        `ddl:"keyword"`
+	AuthenticationPolicySet  *AccountAuthenticationPolicySet `ddl:"keyword"`
+	FeaturePolicySet         *AccountFeaturePolicySet        `ddl:"keyword"`
+	ConsumptionBillingEntity *string                         `ddl:"parameter,double_quotes" sql:"CONSUMPTION_BILLING_ENTITY"`
+	OrgAdmin                 *bool                           `ddl:"parameter" sql:"IS_ORG_ADMIN"`
+	Force                    *bool                           `ddl:"keyword" sql:"FORCE"`
 }
 
 type AccountLevelParameters struct {
@@ -84,21 +84,33 @@ type AccountLevelParameters struct {
 	UserParameters    *UserParameters          `ddl:"list,no_parentheses"`
 }
 
+type AccountSessionPolicySet struct {
+	SessionPolicy      *SchemaObjectIdentifier `ddl:"identifier" sql:"SESSION POLICY"`
+	ForAllPersonUsers  *bool                   `ddl:"keyword" sql:"FOR ALL PERSON USERS"`
+	ForAllServiceUsers *bool                   `ddl:"keyword" sql:"FOR ALL SERVICE USERS"`
+}
+
+type AccountAuthenticationPolicySet struct {
+	AuthenticationPolicy *SchemaObjectIdentifier `ddl:"identifier" sql:"AUTHENTICATION POLICY"`
+	ForAllPersonUsers    *bool                   `ddl:"keyword" sql:"FOR ALL PERSON USERS"`
+	ForAllServiceUsers   *bool                   `ddl:"keyword" sql:"FOR ALL SERVICE USERS"`
+}
+
 type AccountFeaturePolicySet struct {
 	FeaturePolicy      *SchemaObjectIdentifier `ddl:"identifier" sql:"FEATURE POLICY"`
 	forAllApplications bool                    `ddl:"static" sql:"FOR ALL APPLICATIONS"`
 }
 
 type AccountUnset struct {
-	Parameters               *AccountParametersUnset      `ddl:"list,no_parentheses"`
-	LegacyParameters         *AccountLevelParametersUnset `ddl:"list,no_parentheses"`
-	AuthenticationPolicy     *bool                        `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
-	FeaturePolicyUnset       *AccountFeaturePolicyUnset   `ddl:"keyword"`
-	PackagesPolicy           *bool                        `ddl:"keyword" sql:"PACKAGES POLICY"`
-	PasswordPolicy           *bool                        `ddl:"keyword" sql:"PASSWORD POLICY"`
-	SessionPolicy            *bool                        `ddl:"keyword" sql:"SESSION POLICY"`
-	ResourceMonitor          *bool                        `ddl:"keyword" sql:"RESOURCE_MONITOR"`
-	ConsumptionBillingEntity *bool                        `ddl:"keyword" sql:"CONSUMPTION_BILLING_ENTITY"`
+	Parameters                *AccountParametersUnset           `ddl:"list,no_parentheses"`
+	LegacyParameters          *AccountLevelParametersUnset      `ddl:"list,no_parentheses"`
+	AuthenticationPolicyUnset *AccountAuthenticationPolicyUnset `ddl:"keyword"`
+	FeaturePolicyUnset        *AccountFeaturePolicyUnset        `ddl:"keyword"`
+	PackagesPolicy            *bool                             `ddl:"keyword" sql:"PACKAGES POLICY"`
+	PasswordPolicy            *bool                             `ddl:"keyword" sql:"PASSWORD POLICY"`
+	SessionPolicyUnset        *AccountSessionPolicyUnset        `ddl:"keyword"`
+	ResourceMonitor           *bool                             `ddl:"keyword" sql:"RESOURCE_MONITOR"`
+	ConsumptionBillingEntity  *bool                             `ddl:"keyword" sql:"CONSUMPTION_BILLING_ENTITY"`
 }
 
 type AccountLevelParametersUnset struct {
@@ -108,9 +120,21 @@ type AccountLevelParametersUnset struct {
 	UserParameters    *UserParametersUnset          `ddl:"list,no_parentheses"`
 }
 
+type AccountAuthenticationPolicyUnset struct {
+	AuthenticationPolicy *bool `ddl:"keyword" sql:"AUTHENTICATION POLICY"`
+	ForAllPersonUsers    *bool `ddl:"keyword" sql:"FOR ALL PERSON USERS"`
+	ForAllServiceUsers   *bool `ddl:"keyword" sql:"FOR ALL SERVICE USERS"`
+}
+
 type AccountFeaturePolicyUnset struct {
 	FeaturePolicy      *bool `ddl:"keyword" sql:"FEATURE POLICY"`
 	forAllApplications bool  `ddl:"static" sql:"FOR ALL APPLICATIONS"`
+}
+
+type AccountSessionPolicyUnset struct {
+	SessionPolicy      *bool `ddl:"keyword" sql:"SESSION POLICY"`
+	ForAllPersonUsers  *bool `ddl:"keyword" sql:"FOR ALL PERSON USERS"`
+	ForAllServiceUsers *bool `ddl:"keyword" sql:"FOR ALL SERVICE USERS"`
 }
 
 type AccountDrop struct {

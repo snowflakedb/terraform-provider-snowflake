@@ -74,7 +74,7 @@ func TestAccountAlter(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: no name passed when setting consumption billing entity", func(t *testing.T) {
@@ -113,30 +113,30 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("validation: exactly one value set in AccountSet - multiple set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				PasswordPolicy:       Pointer(randomSchemaObjectIdentifier()),
-				SessionPolicy:        Pointer(randomSchemaObjectIdentifier()),
-				AuthenticationPolicy: Pointer(randomSchemaObjectIdentifier()),
+				PasswordPolicy:          new(randomSchemaObjectIdentifier()),
+				SessionPolicySet:        &AccountSessionPolicySet{SessionPolicy: new(randomSchemaObjectIdentifier())},
+				AuthenticationPolicySet: &AccountAuthenticationPolicySet{AuthenticationPolicy: new(randomSchemaObjectIdentifier())},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - nothing set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("validation: exactly one value set in AccountUnset - multiple set", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				PasswordPolicy:       Bool(true),
-				SessionPolicy:        Bool(true),
-				AuthenticationPolicy: Bool(true),
+				PasswordPolicy:            Bool(true),
+				SessionPolicyUnset:        &AccountSessionPolicyUnset{SessionPolicy: new(true)},
+				AuthenticationPolicyUnset: &AccountAuthenticationPolicyUnset{AuthenticationPolicy: new(true)},
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 	})
 
 	t.Run("with legacy set params", func(t *testing.T) {
@@ -486,15 +486,58 @@ func TestAccountAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET PACKAGES POLICY %s FORCE`, id.FullyQualifiedName())
 	})
 
-	t.Run("validate: force with other policy than packages", func(t *testing.T) {
+	t.Run("with set password policy with force", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
 				PasswordPolicy: &id,
-				Force:          Bool(true),
+				Force:          new(true),
 			},
 		}
-		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("force can only be set with PackagesPolicy and FeaturePolicy"))
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET PASSWORD POLICY %s FORCE`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set session policy with force", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				SessionPolicySet: &AccountSessionPolicySet{SessionPolicy: &id},
+				Force:            new(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET SESSION POLICY %s FORCE`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set authentication policy with force", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				AuthenticationPolicySet: &AccountAuthenticationPolicySet{AuthenticationPolicy: &id},
+				Force:                   new(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET AUTHENTICATION POLICY %s FORCE`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set feature policy with force", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				FeaturePolicySet: &AccountFeaturePolicySet{FeaturePolicy: &id},
+				Force:            new(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET FEATURE POLICY %s FOR ALL APPLICATIONS FORCE`, id.FullyQualifiedName())
+	})
+
+	t.Run("validate: force cannot be set with a non-policy field", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				ConsumptionBillingEntity: new("my_consumption_billing_entity"),
+				Force:                    new(true),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, fmt.Errorf("force can only be set with PackagesPolicy, PasswordPolicy, SessionPolicy, AuthenticationPolicy, or FeaturePolicy"))
 	})
 
 	t.Run("with set password policy", func(t *testing.T) {
@@ -511,20 +554,86 @@ func TestAccountAlter(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				SessionPolicy: &id,
+				SessionPolicySet: &AccountSessionPolicySet{SessionPolicy: &id},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET SESSION POLICY %s`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set session policy for all person users", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				SessionPolicySet: &AccountSessionPolicySet{SessionPolicy: &id, ForAllPersonUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET SESSION POLICY %s FOR ALL PERSON USERS`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set session policy for all service users", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				SessionPolicySet: &AccountSessionPolicySet{SessionPolicy: &id, ForAllServiceUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET SESSION POLICY %s FOR ALL SERVICE USERS`, id.FullyQualifiedName())
 	})
 
 	t.Run("with set authentication policy", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &AlterAccountOptions{
 			Set: &AccountSet{
-				AuthenticationPolicy: &id,
+				AuthenticationPolicySet: &AccountAuthenticationPolicySet{AuthenticationPolicy: &id},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET AUTHENTICATION POLICY %s`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set authentication policy for all person users", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				AuthenticationPolicySet: &AccountAuthenticationPolicySet{AuthenticationPolicy: &id, ForAllPersonUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET AUTHENTICATION POLICY %s FOR ALL PERSON USERS`, id.FullyQualifiedName())
+	})
+
+	t.Run("with set authentication policy for all service users", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				AuthenticationPolicySet: &AccountAuthenticationPolicySet{AuthenticationPolicy: &id, ForAllServiceUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT SET AUTHENTICATION POLICY %s FOR ALL SERVICE USERS`, id.FullyQualifiedName())
+	})
+
+	t.Run("validation: conflicting fields for [opts.Set.SessionPolicySet.ForAllPersonUsers opts.Set.SessionPolicySet.ForAllServiceUsers]", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				SessionPolicySet: &AccountSessionPolicySet{
+					SessionPolicy:      new(randomSchemaObjectIdentifier()),
+					ForAllPersonUsers:  new(true),
+					ForAllServiceUsers: new(true),
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterAccountOptions.Set.SessionPolicySet", "ForAllPersonUsers", "ForAllServiceUsers"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.Set.AuthenticationPolicySet.ForAllPersonUsers opts.Set.AuthenticationPolicySet.ForAllServiceUsers]", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Set: &AccountSet{
+				AuthenticationPolicySet: &AccountAuthenticationPolicySet{
+					AuthenticationPolicy: new(randomSchemaObjectIdentifier()),
+					ForAllPersonUsers:    new(true),
+					ForAllServiceUsers:   new(true),
+				},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterAccountOptions.Set.AuthenticationPolicySet", "ForAllPersonUsers", "ForAllServiceUsers"))
 	})
 
 	t.Run("with set consumption billing entity", func(t *testing.T) {
@@ -579,19 +688,73 @@ func TestAccountAlter(t *testing.T) {
 	t.Run("with unset session policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				SessionPolicy: Bool(true),
+				SessionPolicyUnset: &AccountSessionPolicyUnset{SessionPolicy: new(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET SESSION POLICY`)
 	})
 
+	t.Run("with unset session policy for all person users", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				SessionPolicyUnset: &AccountSessionPolicyUnset{SessionPolicy: new(true), ForAllPersonUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET SESSION POLICY FOR ALL PERSON USERS`)
+	})
+
+	t.Run("with unset session policy for all service users", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				SessionPolicyUnset: &AccountSessionPolicyUnset{SessionPolicy: new(true), ForAllServiceUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET SESSION POLICY FOR ALL SERVICE USERS`)
+	})
+
 	t.Run("with unset authentication policy", func(t *testing.T) {
 		opts := &AlterAccountOptions{
 			Unset: &AccountUnset{
-				AuthenticationPolicy: Bool(true),
+				AuthenticationPolicyUnset: &AccountAuthenticationPolicyUnset{AuthenticationPolicy: new(true)},
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET AUTHENTICATION POLICY`)
+	})
+
+	t.Run("with unset authentication policy for all person users", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				AuthenticationPolicyUnset: &AccountAuthenticationPolicyUnset{AuthenticationPolicy: new(true), ForAllPersonUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET AUTHENTICATION POLICY FOR ALL PERSON USERS`)
+	})
+
+	t.Run("with unset authentication policy for all service users", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				AuthenticationPolicyUnset: &AccountAuthenticationPolicyUnset{AuthenticationPolicy: new(true), ForAllServiceUsers: new(true)},
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER ACCOUNT UNSET AUTHENTICATION POLICY FOR ALL SERVICE USERS`)
+	})
+
+	t.Run("validation: conflicting fields for [opts.Unset.SessionPolicyUnset.ForAllPersonUsers opts.Unset.SessionPolicyUnset.ForAllServiceUsers]", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				SessionPolicyUnset: &AccountSessionPolicyUnset{SessionPolicy: new(true), ForAllPersonUsers: new(true), ForAllServiceUsers: new(true)},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterAccountOptions.Unset.SessionPolicyUnset", "ForAllPersonUsers", "ForAllServiceUsers"))
+	})
+
+	t.Run("validation: conflicting fields for [opts.Unset.AuthenticationPolicyUnset.ForAllPersonUsers opts.Unset.AuthenticationPolicyUnset.ForAllServiceUsers]", func(t *testing.T) {
+		opts := &AlterAccountOptions{
+			Unset: &AccountUnset{
+				AuthenticationPolicyUnset: &AccountAuthenticationPolicyUnset{AuthenticationPolicy: new(true), ForAllPersonUsers: new(true), ForAllServiceUsers: new(true)},
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterAccountOptions.Unset.AuthenticationPolicyUnset", "ForAllPersonUsers", "ForAllServiceUsers"))
 	})
 
 	t.Run("with unset resource monitor", func(t *testing.T) {

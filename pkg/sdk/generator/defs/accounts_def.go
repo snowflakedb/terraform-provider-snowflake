@@ -45,6 +45,38 @@ func accountFeaturePolicyUnset() *g.QueryStruct {
 		SQL("FOR ALL APPLICATIONS")
 }
 
+func accountSessionPolicySet() *g.QueryStruct {
+	return g.NewQueryStruct("AccountSessionPolicySet").
+		OptionalIdentifier("SessionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
+		OptionalSQL("FOR ALL PERSON USERS").
+		OptionalSQL("FOR ALL SERVICE USERS").
+		WithValidation(g.ConflictingFields, "ForAllPersonUsers", "ForAllServiceUsers")
+}
+
+func accountAuthenticationPolicySet() *g.QueryStruct {
+	return g.NewQueryStruct("AccountAuthenticationPolicySet").
+		OptionalIdentifier("AuthenticationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AUTHENTICATION POLICY")).
+		OptionalSQL("FOR ALL PERSON USERS").
+		OptionalSQL("FOR ALL SERVICE USERS").
+		WithValidation(g.ConflictingFields, "ForAllPersonUsers", "ForAllServiceUsers")
+}
+
+func accountSessionPolicyUnset() *g.QueryStruct {
+	return g.NewQueryStruct("AccountSessionPolicyUnset").
+		OptionalSQL("SESSION POLICY").
+		OptionalSQL("FOR ALL PERSON USERS").
+		OptionalSQL("FOR ALL SERVICE USERS").
+		WithValidation(g.ConflictingFields, "ForAllPersonUsers", "ForAllServiceUsers")
+}
+
+func accountAuthenticationPolicyUnset() *g.QueryStruct {
+	return g.NewQueryStruct("AccountAuthenticationPolicyUnset").
+		OptionalSQL("AUTHENTICATION POLICY").
+		OptionalSQL("FOR ALL PERSON USERS").
+		OptionalSQL("FOR ALL SERVICE USERS").
+		WithValidation(g.ConflictingFields, "ForAllPersonUsers", "ForAllServiceUsers")
+}
+
 func accountSet() *g.QueryStruct {
 	return g.NewQueryStruct("AccountSet").
 		PredefinedQueryStructField("Parameters", "*AccountParameters", g.ListOptions().NoParentheses()).
@@ -52,13 +84,13 @@ func accountSet() *g.QueryStruct {
 		OptionalIdentifier("ResourceMonitor", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
 		OptionalIdentifier("PackagesPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PACKAGES POLICY")).
 		OptionalIdentifier("PasswordPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
-		OptionalIdentifier("SessionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("SESSION POLICY")).
-		OptionalIdentifier("AuthenticationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AUTHENTICATION POLICY")).
+		OptionalQueryStructField("SessionPolicySet", accountSessionPolicySet(), g.KeywordOptions()).
+		OptionalQueryStructField("AuthenticationPolicySet", accountAuthenticationPolicySet(), g.KeywordOptions()).
 		OptionalQueryStructField("FeaturePolicySet", accountFeaturePolicySet(), g.KeywordOptions()).
 		OptionalTextAssignment("CONSUMPTION_BILLING_ENTITY", g.ParameterOptions().DoubleQuotes()).
 		OptionalAssignmentWithFieldName("IS_ORG_ADMIN", "bool", g.ParameterOptions(), "OrgAdmin").
 		OptionalSQL("FORCE").
-		WithValidation(g.ExactlyOneValueSet, "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity").
+		WithValidation(g.ExactlyOneValueSet, "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity").
 		WithAdditionalValidations()
 }
 
@@ -66,14 +98,14 @@ func accountUnset() *g.QueryStruct {
 	return g.NewQueryStruct("AccountUnset").
 		PredefinedQueryStructField("Parameters", "*AccountParametersUnset", g.ListOptions().NoParentheses()).
 		OptionalQueryStructField("LegacyParameters", accountLevelParametersUnset(), g.ListOptions().NoParentheses()).
-		OptionalSQL("AUTHENTICATION POLICY").
+		OptionalQueryStructField("AuthenticationPolicyUnset", accountAuthenticationPolicyUnset(), g.KeywordOptions()).
 		OptionalQueryStructField("FeaturePolicyUnset", accountFeaturePolicyUnset(), g.KeywordOptions()).
 		OptionalSQL("PACKAGES POLICY").
 		OptionalSQL("PASSWORD POLICY").
-		OptionalSQL("SESSION POLICY").
+		OptionalQueryStructField("SessionPolicyUnset", accountSessionPolicyUnset(), g.KeywordOptions()).
 		OptionalSQL("RESOURCE_MONITOR").
 		OptionalSQL("CONSUMPTION_BILLING_ENTITY").
-		WithValidation(g.ExactlyOneValueSet, "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity").
+		WithValidation(g.ExactlyOneValueSet, "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity").
 		WithAdditionalValidations()
 }
 

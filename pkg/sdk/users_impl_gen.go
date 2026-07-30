@@ -187,6 +187,7 @@ func (r *AlterUserRequest) toOpts() *AlterUserOptions {
 			SessionPolicy:        r.Set.SessionPolicy,
 			AuthenticationPolicy: r.Set.AuthenticationPolicy,
 			SessionParameters:    r.Set.SessionParameters,
+			Force:                r.Set.Force,
 		}
 		if r.Set.ObjectProperties != nil {
 			opts.Set.ObjectProperties = &UserAlterObjectProperties{
