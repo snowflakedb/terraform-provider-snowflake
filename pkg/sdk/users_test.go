@@ -417,6 +417,55 @@ func TestUserAlter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET SESSION POLICY %s", id.FullyQualifiedName(), sessionPolicy.FullyQualifiedName())
 	})
 
+	t.Run("with setting a password policy with force", func(t *testing.T) {
+		passwordPolicy := randomSchemaObjectIdentifier()
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				PasswordPolicy: &passwordPolicy,
+				Force:          new(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET PASSWORD POLICY %s FORCE", id.FullyQualifiedName(), passwordPolicy.FullyQualifiedName())
+	})
+
+	t.Run("with setting a session policy with force", func(t *testing.T) {
+		sessionPolicy := randomSchemaObjectIdentifier()
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				SessionPolicy: &sessionPolicy,
+				Force:         new(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET SESSION POLICY %s FORCE", id.FullyQualifiedName(), sessionPolicy.FullyQualifiedName())
+	})
+
+	t.Run("with setting an authentication policy with force", func(t *testing.T) {
+		authenticationPolicy := randomSchemaObjectIdentifier()
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				AuthenticationPolicy: &authenticationPolicy,
+				Force:                new(true),
+			},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET AUTHENTICATION POLICY %s FORCE", id.FullyQualifiedName(), authenticationPolicy.FullyQualifiedName())
+	})
+
+	t.Run("validate: force cannot be set with a non-policy field", func(t *testing.T) {
+		opts := &AlterUserOptions{
+			name: id,
+			Set: &UserSet{
+				ObjectProperties: &UserAlterObjectProperties{
+					LoginName: new("some_login"),
+				},
+				Force: new(true),
+			},
+		}
+		assertOptsInvalidJoinedErrors(t, opts, NewError("force can only be set with PasswordPolicy, SessionPolicy, or AuthenticationPolicy"))
+	})
+
 	t.Run("with setting tags", func(t *testing.T) {
 		tagId1 := randomSchemaObjectIdentifier()
 		tagId2 := randomSchemaObjectIdentifierInSchema(tagId1.SchemaId())

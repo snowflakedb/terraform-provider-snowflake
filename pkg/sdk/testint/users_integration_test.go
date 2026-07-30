@@ -1837,6 +1837,38 @@ func TestInt_Users(t *testing.T) {
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
+	t.Run("set authentication policy with force", func(t *testing.T) {
+		authenticationPolicy, authenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authenticationPolicyCleanup)
+
+		newAuthenticationPolicy, newAuthenticationPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(newAuthenticationPolicyCleanup)
+
+		err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().WithAuthenticationPolicy(authenticationPolicy.ID())))
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
+				WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true)))
+			require.NoError(t, err)
+		})
+
+		// With FORCE, the new authentication policy replaces the existing one without unsetting it first.
+		err = client.Users.Alter(ctx, sdk.NewAlterUserRequest(user.ID()).
+			WithSet(*sdk.NewUserSetRequest().
+				WithAuthenticationPolicy(newAuthenticationPolicy.ID()).
+				WithForce(true)))
+		require.NoError(t, err)
+
+		policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, user.ID(), sdk.PolicyEntityDomainUser)
+		require.NoError(t, err)
+
+		_, err = collections.FindFirst(policies, func(reference sdk.PolicyReference) bool {
+			return reference.PolicyKind == sdk.PolicyKindAuthenticationPolicy
+		})
+		require.NoError(t, err)
+	})
+
 	for _, userType := range sdk.AllUserTypes {
 		userType := userType
 		t.Run(fmt.Sprintf("alter: set and unset parameters - type %s", userType), func(t *testing.T) {

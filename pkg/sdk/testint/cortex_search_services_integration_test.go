@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -27,132 +27,306 @@ func TestInt_CortexSearchServices(t *testing.T) {
 		return fmt.Sprintf(`select %s from %s`, on, tableId.FullyQualifiedName())
 	}
 
-	createCortexSearchService := func(t *testing.T, id sdk.SchemaObjectIdentifier) *sdk.CortexSearchService {
+	createBasic := func(t *testing.T) sdk.SchemaObjectIdentifier {
 		t.Helper()
 
-		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumns(t)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForCortexSearchService(t)
 		t.Cleanup(tableCleanup)
 
 		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(id, on, warehouseId, targetLag, buildQuery(table.ID())))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().CortexSearchService.DropCortexSearchServiceFunc(t, id))
 
-		cortexSearchService, err := client.CortexSearchServices.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		return cortexSearchService
+		return id
 	}
 
-	t.Run("create: test complete", func(t *testing.T) {
-		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumns(t)
+	t.Run("create: minimal", func(t *testing.T) {
+		id := createBasic(t)
+
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasWarehouseNotEmpty().
+			HasTargetLag(targetLag).
+			HasSearchColumn(strings.ToUpper(on)).
+			HasNoAttributeColumns().
+			HasColumns(strings.ToUpper(on)).
+			HasNoPrimaryKeyColumns().
+			HasScoringProfileCount(0).
+			HasComment(""))
+
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasTargetLag(targetLag).
+			HasWarehouseNotEmpty().
+			HasSearchColumn(strings.ToUpper(on)).
+			HasNoAttributeColumns().
+			HasColumns(strings.ToUpper(on)).
+			HasNoComment().
+			HasServiceQueryUrlNotEmpty().
+			HasDataTimestampNotEmpty().
+			HasIndexingStateNotEmpty().
+			HasIndexingError("").
+			HasEmbeddingModel("snowflake-arctic-embed-m-v1.5").
+			HasServingStateNotEmpty().
+			HasScoringProfileCount(0).
+			HasNoPrimaryKeyColumns().
+			HasNoFullIndexBuildIntervalDays())
+	})
+
+	t.Run("create: with primary key", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForCortexSearchService(t)
 		t.Cleanup(tableCleanup)
 
-		name := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		query := fmt.Sprintf(`select %s, id from %s`, on, table.ID().FullyQualifiedName())
+
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(id, on, warehouseId, targetLag, query).
+			WithPrimaryKey([]string{"id"}))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().CortexSearchService.DropCortexSearchServiceFunc(t, id))
+
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasPrimaryKeyColumns("ID").
+			HasColumns("SOME_TEXT_COLUMN", "ID"))
+
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasPrimaryKeyColumns("ID").
+			HasColumns("SOME_TEXT_COLUMN", "ID").
+			HasFullIndexBuildIntervalDays(1))
+	})
+
+	t.Run("create: complete", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForCortexSearchService(t)
+		t.Cleanup(tableCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
 		embeddingModel := "snowflake-arctic-embed-m-v1.5"
-		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(name, on, testClientHelper().Ids.WarehouseId(), targetLag, buildQuery(table.ID())).
+		query := fmt.Sprintf(`select %s, id, some_other_text_column, another_text_column from %s`, on, table.ID().FullyQualifiedName())
+
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(id, on, warehouseId, targetLag, query).
 			WithOrReplace(true).
-			WithComment(comment).
-			WithEmbeddingModel(embeddingModel))
+			WithPrimaryKey([]string{"id", "another_text_column"}).
+			WithAttributes(*sdk.NewAttributesRequest().WithColumns([]string{"some_other_text_column", "another_text_column"})).
+			WithEmbeddingModel(embeddingModel).
+			WithRefreshMode(sdk.CortexSearchServiceRefreshModeIncremental).
+			WithInitialize(sdk.CortexSearchServiceInitializeOnCreate).
+			WithFullIndexBuildIntervalDays(30).
+			WithRequestLogging(true).
+			WithAutoSuspend(3600).
+			WithComment(comment))
 		require.NoError(t, err)
-		t.Cleanup(func() {
-			err = client.CortexSearchServices.Drop(ctx, sdk.NewDropCortexSearchServiceRequest(name))
-			require.NoError(t, err)
-		})
-		showResults, err := client.CortexSearchServices.Show(ctx, sdk.NewShowCortexSearchServiceRequest().WithLike(sdk.Like{Pattern: sdk.String(name.Name())}))
-		require.NoError(t, err)
-		require.Len(t, showResults, 1)
+		t.Cleanup(testClientHelper().CortexSearchService.DropCortexSearchServiceFunc(t, id))
 
-		showResult := showResults[0]
-		require.NotNil(t, showResult)
-		require.Equal(t, name.Name(), showResult.Name)
-		require.NotEmpty(t, showResult.CreatedOn)
-		require.Equal(t, name.DatabaseName(), showResult.DatabaseName)
-		require.Equal(t, name.SchemaName(), showResult.SchemaName)
-		require.Equal(t, comment, showResult.Comment)
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasWarehouse(warehouseId.Name()).
+			HasTargetLag(targetLag).
+			HasSearchColumn(strings.ToUpper(on)).
+			HasAttributeColumns("SOME_OTHER_TEXT_COLUMN", "ANOTHER_TEXT_COLUMN").
+			HasColumns("SOME_TEXT_COLUMN", "ID", "SOME_OTHER_TEXT_COLUMN", "ANOTHER_TEXT_COLUMN").
+			HasPrimaryKeyColumns("ID", "ANOTHER_TEXT_COLUMN").
+			HasScoringProfileCount(0).
+			HasComment(comment))
 
-		cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, name)
-		require.NoError(t, err)
-		require.NotNil(t, cortexSearchServiceDetails)
-		require.NotEmpty(t, cortexSearchServiceDetails.CreatedOn)
-		require.Equal(t, name.Name(), cortexSearchServiceDetails.Name)
-		require.Equal(t, name.DatabaseName(), cortexSearchServiceDetails.DatabaseName)
-		require.Equal(t, name.SchemaName(), cortexSearchServiceDetails.SchemaName)
-		require.NotNil(t, cortexSearchServiceDetails.Comment)
-		require.Equal(t, comment, *cortexSearchServiceDetails.Comment)
-		require.NotNil(t, cortexSearchServiceDetails.EmbeddingModel)
-		require.Equal(t, embeddingModel, *cortexSearchServiceDetails.EmbeddingModel)
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasTargetLag(targetLag).
+			HasWarehouse(warehouseId.Name()).
+			HasSearchColumn(strings.ToUpper(on)).
+			HasAttributeColumns("SOME_OTHER_TEXT_COLUMN", "ANOTHER_TEXT_COLUMN").
+			HasColumns("SOME_TEXT_COLUMN", "ID", "SOME_OTHER_TEXT_COLUMN", "ANOTHER_TEXT_COLUMN").
+			HasPrimaryKeyColumns("ID", "ANOTHER_TEXT_COLUMN").
+			HasComment(comment).
+			HasServiceQueryUrlNotEmpty().
+			HasDataTimestampNotEmpty().
+			HasIndexingStateNotEmpty().
+			HasIndexingError("").
+			HasEmbeddingModel(embeddingModel).
+			HasServingStateNotEmpty().
+			HasScoringProfileCount(0).
+			HasFullIndexBuildIntervalDays(30))
 	})
 
-	t.Run("describe: when cortex search service exists", func(t *testing.T) {
+	// There are no UNSETs for the attributes used in set, so we don't run "normal" UNSETs in this test but SET to defaults instead
+	t.Run("alter: set and unset", func(t *testing.T) {
+		newWarehouse, newWarehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(newWarehouseCleanup)
+
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForCortexSearchService(t)
+		t.Cleanup(tableCleanup)
+
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		cortexSearchService := createCortexSearchService(t, id)
+		query := fmt.Sprintf(`select %s, id from %s`, on, table.ID().FullyQualifiedName())
 
-		cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, cortexSearchService.ID())
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(id, on, warehouseId, targetLag, query).
+			WithPrimaryKey([]string{"id"}))
 		require.NoError(t, err)
-		assert.NotEmpty(t, cortexSearchServiceDetails.CreatedOn)
-		assert.Equal(t, cortexSearchService.Name, cortexSearchServiceDetails.Name)
-		// Yes, the names are exchanged on purpose, because now it works like this
-		assert.Equal(t, cortexSearchService.DatabaseName, cortexSearchServiceDetails.DatabaseName)
-		assert.Equal(t, cortexSearchService.SchemaName, cortexSearchServiceDetails.SchemaName)
-		assert.Equal(t, targetLag, cortexSearchServiceDetails.TargetLag)
-		assert.NotEmpty(t, cortexSearchServiceDetails.Warehouse)
-		assert.Equal(t, strings.ToUpper(on), *cortexSearchServiceDetails.SearchColumn)
-		assert.Empty(t, cortexSearchServiceDetails.AttributeColumns)
-		assert.NotEmpty(t, cortexSearchServiceDetails.Columns)
-		assert.NotEmpty(t, cortexSearchServiceDetails.Definition)
-		assert.Nil(t, cortexSearchServiceDetails.Comment)
-		assert.NotEmpty(t, cortexSearchServiceDetails.ServiceQueryUrl)
-		assert.NotEmpty(t, cortexSearchServiceDetails.DataTimestamp)
-		assert.GreaterOrEqual(t, cortexSearchServiceDetails.SourceDataNumRows, 0)
-		assert.NotEmpty(t, cortexSearchServiceDetails.IndexingState)
-		assert.Empty(t, cortexSearchServiceDetails.IndexingError)
-		require.NotNil(t, cortexSearchServiceDetails.EmbeddingModel)
-		require.Equal(t, "snowflake-arctic-embed-m-v1.5", *cortexSearchServiceDetails.EmbeddingModel)
-	})
+		t.Cleanup(testClientHelper().CortexSearchService.DropCortexSearchServiceFunc(t, id))
 
-	t.Run("describe: when cortex search service does not exist", func(t *testing.T) {
-		_, err := client.CortexSearchServices.Describe(ctx, NonExistingSchemaObjectIdentifier)
-		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
-	})
-
-	t.Run("alter: with set", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		createCortexSearchService(t, id)
-
-		newComment := "new comment"
+		newComment := random.Comment()
 		newTargetLag := "10 minutes"
 
-		err := client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSet(
+		err = client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSet(
 			*sdk.NewCortexSearchServiceSetRequest().
 				WithTargetLag(newTargetLag).
+				WithWarehouse(newWarehouse.ID()).
+				WithFullIndexBuildIntervalDays(30).
+				WithRequestLogging(true).
+				WithAutoSuspend(3600).
 				WithComment(newComment),
 		))
 		require.NoError(t, err)
 
-		alteredService, err := client.CortexSearchServices.ShowByID(ctx, id)
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasWarehouse(newWarehouse.ID().Name()).
+			HasTargetLag(newTargetLag).
+			HasComment(newComment).
+			HasPrimaryKeyColumns("ID"))
+
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasWarehouse(newWarehouse.ID().Name()).
+			HasTargetLag(newTargetLag).
+			HasComment(newComment).
+			HasPrimaryKeyColumns("ID").
+			HasFullIndexBuildIntervalDays(30))
+
+		err = client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSet(
+			*sdk.NewCortexSearchServiceSetRequest().
+				WithFullIndexBuildIntervalDays(0).
+				WithRequestLogging(false).
+				WithComment(""),
+		))
 		require.NoError(t, err)
 
-		require.Equal(t, newComment, alteredService.Comment)
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasComment(""))
 
-		cortexSearchServiceDetails, err := client.CortexSearchServices.Describe(ctx, id)
+		// REQUEST_LOGGING and AUTO_SUSPEND are not exposed in SHOW or DESCRIBE output
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasComment("").
+			HasFullIndexBuildIntervalDays(0))
+
+		err = client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSetDefaults(
+			*sdk.NewCortexSearchServiceSetDefaultsRequest().WithAutoSuspend(true),
+		))
+		require.NoError(t, err)
+	})
+
+	t.Run("alter: set and unset primary key", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForCortexSearchService(t)
+		t.Cleanup(tableCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		query := fmt.Sprintf(`select %s, id, another_text_column from %s`, on, table.ID().FullyQualifiedName())
+
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(id, on, warehouseId, targetLag, query))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().CortexSearchService.DropCortexSearchServiceFunc(t, id))
+
+		err = client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSetPrimaryKey(
+			*sdk.NewCortexSearchServiceSetPrimaryKeyRequest().WithPrimaryKey([]string{"id", "another_text_column"}),
+		))
 		require.NoError(t, err)
 
-		require.Equal(t, newComment, *cortexSearchServiceDetails.Comment)
-		require.Equal(t, newTargetLag, cortexSearchServiceDetails.TargetLag)
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasPrimaryKeyColumns("ID", "ANOTHER_TEXT_COLUMN"))
+
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasPrimaryKeyColumns("ID", "ANOTHER_TEXT_COLUMN"))
+
+		err = client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithUnsetPrimaryKey(true))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasNoPrimaryKeyColumns())
+
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasNoPrimaryKeyColumns())
+	})
+
+	t.Run("alter: set and unset attributes", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsForCortexSearchService(t)
+		t.Cleanup(tableCleanup)
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		query := fmt.Sprintf(`select %s, some_other_text_column from %s`, on, table.ID().FullyQualifiedName())
+
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(id, on, warehouseId, targetLag, query))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().CortexSearchService.DropCortexSearchServiceFunc(t, id))
+
+		err = client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithSetAttributes(
+			*sdk.NewCortexSearchServiceSetAttributesRequest().WithColumns([]string{"some_other_text_column"}),
+		))
+		require.NoError(t, err)
+
+		// columns lists all columns of the source query and is not affected by SET/UNSET ATTRIBUTES
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasAttributeColumns("SOME_OTHER_TEXT_COLUMN").
+			HasColumns("SOME_TEXT_COLUMN", "SOME_OTHER_TEXT_COLUMN"))
+
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasAttributeColumns("SOME_OTHER_TEXT_COLUMN").
+			HasColumns("SOME_TEXT_COLUMN", "SOME_OTHER_TEXT_COLUMN"))
+
+		err = client.CortexSearchServices.Alter(ctx, sdk.NewAlterCortexSearchServiceRequest(id).WithUnsetAttributes(true))
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.CortexSearchService(t, id).
+			HasNoAttributeColumns().
+			HasColumns("SOME_TEXT_COLUMN", "SOME_OTHER_TEXT_COLUMN"))
+
+		assertThatObject(t, objectassert.CortexSearchServiceDetails(t, id).
+			HasNoAttributeColumns().
+			HasColumns("SOME_TEXT_COLUMN", "SOME_OTHER_TEXT_COLUMN"))
+	})
+
+	t.Run("describe: when cortex search service does not exist", func(t *testing.T) {
+		_, err := client.CortexSearchServices.Describe(ctx, NonExistingSchemaObjectIdentifier)
+		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	// Documents a Snowflake limitation: cortex search services reject double-quoted identifiers
+	// in the source query. This means lowercase (case-sensitive) column names
+	// cannot be used, and all column references must use the uppercase form that Snowflake stores for unquoted identifiers.
+	t.Run("create: does not support double-quoted column names in source query", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsLowercased(t)
+		t.Cleanup(tableCleanup)
+
+		name := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		query := fmt.Sprintf(`select "some_text_column" from %s`, table.ID().FullyQualifiedName())
+
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(name, `"some_text_column"`, warehouseId, targetLag, query))
+		require.ErrorContains(t, err, "399115 (42601): Invalid source query: quoted identifier or reserved word \"some_text_column\" not allowed.")
 	})
 
 	t.Run("show by id - same name in different schemas", func(t *testing.T) {
-		// order matters in this test, creating the schema first and then trying to create cortex search service in the default test schema fails with a strange error
-		// (probably caused by the implicit use schema after schema creation)
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		createCortexSearchService(t, id1)
-
 		schema, schemaCleanup := testClientHelper().Schema.CreateSchema(t)
 		t.Cleanup(schemaCleanup)
 
+		table, tableCleanup := testClientHelper().Table.CreateWithPredefinedColumnsInSchema(t, schema.ID())
+		t.Cleanup(tableCleanup)
+
+		id1 := createBasic(t)
 		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(id1.Name(), schema.ID())
-		createCortexSearchService(t, id2)
+
+		err := client.CortexSearchServices.Create(ctx, sdk.NewCreateCortexSearchServiceRequest(id2, on, warehouseId, targetLag, buildQuery(table.ID())))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().CortexSearchService.DropCortexSearchServiceFunc(t, id2))
 
 		e1, err := client.CortexSearchServices.ShowByID(ctx, id1)
 		require.NoError(t, err)

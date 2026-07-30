@@ -149,13 +149,13 @@ func (s *AccountSetRequest) WithPasswordPolicy(passwordPolicy SchemaObjectIdenti
 	return s
 }
 
-func (s *AccountSetRequest) WithSessionPolicy(sessionPolicy SchemaObjectIdentifier) *AccountSetRequest {
-	s.SessionPolicy = &sessionPolicy
+func (s *AccountSetRequest) WithSessionPolicySet(sessionPolicySet AccountSessionPolicySetRequest) *AccountSetRequest {
+	s.SessionPolicySet = &sessionPolicySet
 	return s
 }
 
-func (s *AccountSetRequest) WithAuthenticationPolicy(authenticationPolicy SchemaObjectIdentifier) *AccountSetRequest {
-	s.AuthenticationPolicy = &authenticationPolicy
+func (s *AccountSetRequest) WithAuthenticationPolicySet(authenticationPolicySet AccountAuthenticationPolicySetRequest) *AccountSetRequest {
+	s.AuthenticationPolicySet = &authenticationPolicySet
 	return s
 }
 
@@ -204,6 +204,46 @@ func (s *AccountLevelParametersRequest) WithUserParameters(userParameters UserPa
 	return s
 }
 
+func NewAccountSessionPolicySetRequest() *AccountSessionPolicySetRequest {
+	s := AccountSessionPolicySetRequest{}
+	return &s
+}
+
+func (s *AccountSessionPolicySetRequest) WithSessionPolicy(sessionPolicy SchemaObjectIdentifier) *AccountSessionPolicySetRequest {
+	s.SessionPolicy = &sessionPolicy
+	return s
+}
+
+func (s *AccountSessionPolicySetRequest) WithForAllPersonUsers(forAllPersonUsers bool) *AccountSessionPolicySetRequest {
+	s.ForAllPersonUsers = &forAllPersonUsers
+	return s
+}
+
+func (s *AccountSessionPolicySetRequest) WithForAllServiceUsers(forAllServiceUsers bool) *AccountSessionPolicySetRequest {
+	s.ForAllServiceUsers = &forAllServiceUsers
+	return s
+}
+
+func NewAccountAuthenticationPolicySetRequest() *AccountAuthenticationPolicySetRequest {
+	s := AccountAuthenticationPolicySetRequest{}
+	return &s
+}
+
+func (s *AccountAuthenticationPolicySetRequest) WithAuthenticationPolicy(authenticationPolicy SchemaObjectIdentifier) *AccountAuthenticationPolicySetRequest {
+	s.AuthenticationPolicy = &authenticationPolicy
+	return s
+}
+
+func (s *AccountAuthenticationPolicySetRequest) WithForAllPersonUsers(forAllPersonUsers bool) *AccountAuthenticationPolicySetRequest {
+	s.ForAllPersonUsers = &forAllPersonUsers
+	return s
+}
+
+func (s *AccountAuthenticationPolicySetRequest) WithForAllServiceUsers(forAllServiceUsers bool) *AccountAuthenticationPolicySetRequest {
+	s.ForAllServiceUsers = &forAllServiceUsers
+	return s
+}
+
 func NewAccountFeaturePolicySetRequest() *AccountFeaturePolicySetRequest {
 	s := AccountFeaturePolicySetRequest{}
 	return &s
@@ -229,8 +269,8 @@ func (s *AccountUnsetRequest) WithLegacyParameters(legacyParameters AccountLevel
 	return s
 }
 
-func (s *AccountUnsetRequest) WithAuthenticationPolicy(authenticationPolicy bool) *AccountUnsetRequest {
-	s.AuthenticationPolicy = &authenticationPolicy
+func (s *AccountUnsetRequest) WithAuthenticationPolicyUnset(authenticationPolicyUnset AccountAuthenticationPolicyUnsetRequest) *AccountUnsetRequest {
+	s.AuthenticationPolicyUnset = &authenticationPolicyUnset
 	return s
 }
 
@@ -249,8 +289,8 @@ func (s *AccountUnsetRequest) WithPasswordPolicy(passwordPolicy bool) *AccountUn
 	return s
 }
 
-func (s *AccountUnsetRequest) WithSessionPolicy(sessionPolicy bool) *AccountUnsetRequest {
-	s.SessionPolicy = &sessionPolicy
+func (s *AccountUnsetRequest) WithSessionPolicyUnset(sessionPolicyUnset AccountSessionPolicyUnsetRequest) *AccountUnsetRequest {
+	s.SessionPolicyUnset = &sessionPolicyUnset
 	return s
 }
 
@@ -289,6 +329,26 @@ func (s *AccountLevelParametersUnsetRequest) WithUserParameters(userParameters U
 	return s
 }
 
+func NewAccountAuthenticationPolicyUnsetRequest() *AccountAuthenticationPolicyUnsetRequest {
+	s := AccountAuthenticationPolicyUnsetRequest{}
+	return &s
+}
+
+func (s *AccountAuthenticationPolicyUnsetRequest) WithAuthenticationPolicy(authenticationPolicy bool) *AccountAuthenticationPolicyUnsetRequest {
+	s.AuthenticationPolicy = &authenticationPolicy
+	return s
+}
+
+func (s *AccountAuthenticationPolicyUnsetRequest) WithForAllPersonUsers(forAllPersonUsers bool) *AccountAuthenticationPolicyUnsetRequest {
+	s.ForAllPersonUsers = &forAllPersonUsers
+	return s
+}
+
+func (s *AccountAuthenticationPolicyUnsetRequest) WithForAllServiceUsers(forAllServiceUsers bool) *AccountAuthenticationPolicyUnsetRequest {
+	s.ForAllServiceUsers = &forAllServiceUsers
+	return s
+}
+
 func NewAccountFeaturePolicyUnsetRequest() *AccountFeaturePolicyUnsetRequest {
 	s := AccountFeaturePolicyUnsetRequest{}
 	return &s
@@ -296,6 +356,26 @@ func NewAccountFeaturePolicyUnsetRequest() *AccountFeaturePolicyUnsetRequest {
 
 func (s *AccountFeaturePolicyUnsetRequest) WithFeaturePolicy(featurePolicy bool) *AccountFeaturePolicyUnsetRequest {
 	s.FeaturePolicy = &featurePolicy
+	return s
+}
+
+func NewAccountSessionPolicyUnsetRequest() *AccountSessionPolicyUnsetRequest {
+	s := AccountSessionPolicyUnsetRequest{}
+	return &s
+}
+
+func (s *AccountSessionPolicyUnsetRequest) WithSessionPolicy(sessionPolicy bool) *AccountSessionPolicyUnsetRequest {
+	s.SessionPolicy = &sessionPolicy
+	return s
+}
+
+func (s *AccountSessionPolicyUnsetRequest) WithForAllPersonUsers(forAllPersonUsers bool) *AccountSessionPolicyUnsetRequest {
+	s.ForAllPersonUsers = &forAllPersonUsers
+	return s
+}
+
+func (s *AccountSessionPolicyUnsetRequest) WithForAllServiceUsers(forAllServiceUsers bool) *AccountSessionPolicyUnsetRequest {
+	s.ForAllServiceUsers = &forAllServiceUsers
 	return s
 }
 

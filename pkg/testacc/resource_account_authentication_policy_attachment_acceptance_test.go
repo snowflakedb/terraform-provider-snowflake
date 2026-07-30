@@ -79,7 +79,7 @@ func TestAcc_AccountAuthenticationPolicyAttachment_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().
-						WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicy(true)))
+						WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().WithAuthenticationPolicy(true))))
 				},
 				Config: config.FromModels(t, basicModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{

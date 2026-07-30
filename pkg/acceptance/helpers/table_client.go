@@ -82,10 +82,47 @@ func (c *TableClient) CreateWithColumns(t *testing.T, columns []sdk.TableColumnR
 func (c *TableClient) CreateWithPredefinedColumns(t *testing.T) (*sdk.Table, func()) {
 	t.Helper()
 
+	return c.CreateWithPredefinedColumnsInSchema(t, c.ids.SchemaId())
+}
+
+func (c *TableClient) CreateWithPredefinedColumnsInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Table, func()) {
+	t.Helper()
+
 	columns := []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", "NUMBER"),
 		*sdk.NewTableColumnRequest("some_text_column", "VARCHAR"),
 		*sdk.NewTableColumnRequest("some_other_text_column", "VARCHAR"),
+	}
+
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns))
+}
+
+func (c *TableClient) CreateWithPredefinedColumnsForCortexSearchService(t *testing.T) (*sdk.Table, func()) {
+	t.Helper()
+
+	return c.CreateWithPredefinedColumnsForCortexSearchServiceInSchema(t, c.ids.SchemaId())
+}
+
+func (c *TableClient) CreateWithPredefinedColumnsForCortexSearchServiceInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) (*sdk.Table, func()) {
+	t.Helper()
+
+	columns := []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("id", "VARCHAR"),
+		*sdk.NewTableColumnRequest("some_text_column", "VARCHAR"),
+		*sdk.NewTableColumnRequest("some_other_text_column", "VARCHAR"),
+		*sdk.NewTableColumnRequest("another_text_column", "VARCHAR"),
+	}
+
+	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), columns))
+}
+
+func (c *TableClient) CreateWithPredefinedColumnsLowercased(t *testing.T) (*sdk.Table, func()) {
+	t.Helper()
+
+	columns := []sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest(`"id"`, "NUMBER"),
+		*sdk.NewTableColumnRequest(`"some_text_column"`, "VARCHAR"),
+		*sdk.NewTableColumnRequest(`"some_other_text_column"`, "VARCHAR"),
 	}
 
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), columns))

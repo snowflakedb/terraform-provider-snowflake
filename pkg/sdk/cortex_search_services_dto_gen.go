@@ -11,16 +11,22 @@ var (
 )
 
 type CreateCortexSearchServiceRequest struct {
-	OrReplace       *bool
-	IfNotExists     *bool
-	name            SchemaObjectIdentifier // required
-	On              string                 // required
-	Attributes      *AttributesRequest
-	Warehouse       AccountObjectIdentifier // required
-	TargetLag       string                  // required
-	EmbeddingModel  *string
-	Comment         *string
-	QueryDefinition string // required
+	OrReplace                  *bool
+	IfNotExists                *bool
+	name                       SchemaObjectIdentifier // required
+	On                         string                 // required
+	PrimaryKey                 []string
+	Attributes                 *AttributesRequest
+	Warehouse                  AccountObjectIdentifier // required
+	TargetLag                  string                  // required
+	EmbeddingModel             *string
+	RefreshMode                *CortexSearchServiceRefreshMode
+	Initialize                 *CortexSearchServiceInitialize
+	FullIndexBuildIntervalDays *int
+	RequestLogging             *bool
+	AutoSuspend                *int
+	Comment                    *string
+	QueryDefinition            string // required
 }
 
 type AttributesRequest struct {
@@ -28,15 +34,40 @@ type AttributesRequest struct {
 }
 
 type AlterCortexSearchServiceRequest struct {
-	IfExists *bool
-	name     SchemaObjectIdentifier // required
-	Set      *CortexSearchServiceSetRequest
+	IfExists        *bool
+	name            SchemaObjectIdentifier // required
+	Suspend         *bool
+	Resume          *bool
+	Refresh         *bool
+	Set             *CortexSearchServiceSetRequest
+	SetDefaults     *CortexSearchServiceSetDefaultsRequest
+	SetPrimaryKey   *CortexSearchServiceSetPrimaryKeyRequest
+	SetAttributes   *CortexSearchServiceSetAttributesRequest
+	UnsetPrimaryKey *bool
+	UnsetAttributes *bool
+	SetTags         []TagAssociation
+	UnsetTags       []ObjectIdentifier
 }
 
 type CortexSearchServiceSetRequest struct {
-	TargetLag *string
-	Warehouse *AccountObjectIdentifier
-	Comment   *string
+	TargetLag                  *string
+	Warehouse                  *AccountObjectIdentifier
+	FullIndexBuildIntervalDays *int
+	RequestLogging             *bool
+	AutoSuspend                *int
+	Comment                    *string
+}
+
+type CortexSearchServiceSetDefaultsRequest struct {
+	AutoSuspend *bool
+}
+
+type CortexSearchServiceSetPrimaryKeyRequest struct {
+	PrimaryKey []string
+}
+
+type CortexSearchServiceSetAttributesRequest struct {
+	Columns []string
 }
 
 type ShowCortexSearchServiceRequest struct {

@@ -118,6 +118,7 @@ type UserSetRequest struct {
 	ObjectProperties     *UserAlterObjectPropertiesRequest
 	ObjectParameters     *UserObjectParametersRequest
 	SessionParameters    *SessionParameters
+	Force                *bool
 }
 
 type UserAlterObjectPropertiesRequest struct {

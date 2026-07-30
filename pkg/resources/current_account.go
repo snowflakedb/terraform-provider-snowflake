@@ -98,8 +98,13 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	handlePolicyCreate := func(kind sdk.PolicyKind, policyIdFieldPointerGetter func(*sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier, hasForce bool) error {
 		key := strings.ToLower(string(kind))
 		set := new(sdk.AccountSetRequest)
-		if kind == sdk.PolicyKindFeaturePolicy {
+		switch kind {
+		case sdk.PolicyKindFeaturePolicy:
 			set.FeaturePolicySet = new(sdk.AccountFeaturePolicySetRequest)
+		case sdk.PolicyKindSessionPolicy:
+			set.SessionPolicySet = new(sdk.AccountSessionPolicySetRequest)
+		case sdk.PolicyKindAuthenticationPolicy:
+			set.AuthenticationPolicySet = new(sdk.AccountAuthenticationPolicySetRequest)
 		}
 
 		if hasForce {
@@ -128,13 +133,17 @@ func CreateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	if errs := errors.Join(
-		handlePolicyCreate(sdk.PolicyKindAuthenticationPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.AuthenticationPolicy }, false),
+		handlePolicyCreate(sdk.PolicyKindAuthenticationPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
+			return &set.AuthenticationPolicySet.AuthenticationPolicy
+		}, false),
 		handlePolicyCreate(sdk.PolicyKindFeaturePolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
 			return &set.FeaturePolicySet.FeaturePolicy
 		}, true),
 		handlePolicyCreate(sdk.PolicyKindPackagesPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PackagesPolicy }, true),
 		handlePolicyCreate(sdk.PolicyKindPasswordPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PasswordPolicy }, false),
-		handlePolicyCreate(sdk.PolicyKindSessionPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.SessionPolicy }, false),
+		handlePolicyCreate(sdk.PolicyKindSessionPolicy, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
+			return &set.SessionPolicySet.SessionPolicy
+		}, false),
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
@@ -216,9 +225,14 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		key := strings.ToLower(string(kind))
 		if d.HasChange(key) {
 			set, unset := new(sdk.AccountSetRequest), new(sdk.AccountUnsetRequest)
-			if kind == sdk.PolicyKindFeaturePolicy {
+			switch kind {
+			case sdk.PolicyKindFeaturePolicy:
 				set.FeaturePolicySet = new(sdk.AccountFeaturePolicySetRequest)
 				unset.FeaturePolicyUnset = new(sdk.AccountFeaturePolicyUnsetRequest)
+			case sdk.PolicyKindSessionPolicy:
+				set.SessionPolicySet = new(sdk.AccountSessionPolicySetRequest)
+			case sdk.PolicyKindAuthenticationPolicy:
+				set.AuthenticationPolicySet = new(sdk.AccountAuthenticationPolicySetRequest)
 			}
 
 			setFieldPointer, unsetBoolFlag := setFieldGetter(set), sdk.Bool(false)
@@ -252,13 +266,17 @@ func UpdateCurrentAccount(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	if errs := errors.Join(
-		handlePolicyUpdate(sdk.PolicyKindAuthenticationPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.AuthenticationPolicy }),
+		handlePolicyUpdate(sdk.PolicyKindAuthenticationPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
+			return &set.AuthenticationPolicySet.AuthenticationPolicy
+		}),
 		handlePolicyUpdate(sdk.PolicyKindFeaturePolicy, true, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
 			return &set.FeaturePolicySet.FeaturePolicy
 		}),
 		handlePolicyUpdate(sdk.PolicyKindPackagesPolicy, true, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PackagesPolicy }),
 		handlePolicyUpdate(sdk.PolicyKindPasswordPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.PasswordPolicy }),
-		handlePolicyUpdate(sdk.PolicyKindSessionPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier { return &set.SessionPolicy }),
+		handlePolicyUpdate(sdk.PolicyKindSessionPolicy, false, func(set *sdk.AccountSetRequest) **sdk.SchemaObjectIdentifier {
+			return &set.SessionPolicySet.SessionPolicy
+		}),
 	); errs != nil {
 		return diag.FromErr(errs)
 	}
