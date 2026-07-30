@@ -17,6 +17,8 @@ type ExternalAccessIntegrations interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalAccessIntegration, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ExternalAccessIntegration, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) ([]ExternalAccessIntegrationProperty, error)
+	// DescribeDetails returns the parsed describe output for an external access integration.
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalAccessIntegrationDetails, error)
 }
 
 // CreateExternalAccessIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration.
@@ -130,4 +132,14 @@ type ExternalAccessIntegrationProperty struct {
 	Type    string
 	Value   string
 	Default string
+}
+
+type ExternalAccessIntegrationDetails struct {
+	Id                                       AccountObjectIdentifier
+	AllowedNetworkRules                      []SchemaObjectIdentifier
+	AllowedApiAuthenticationIntegrationsList []AccountObjectIdentifier
+	AllowedAuthenticationSecretsAll          bool
+	AllowedAuthenticationSecretsList         []SchemaObjectIdentifier
+	Enabled                                  bool
+	Comment                                  string
 }

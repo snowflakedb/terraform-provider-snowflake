@@ -21,6 +21,15 @@ func allowedAuthenticationSecrets() *g.QueryStruct {
 		WithValidation(g.ExactlyOneValueSet, "All", "None", "Secrets")
 }
 
+var externalAccessIntegrationDetailsDef = g.PlainStruct("ExternalAccessIntegrationDetails").
+	AccountObjectIdentifier().
+	Field("AllowedNetworkRules", "[]SchemaObjectIdentifier").
+	Field("AllowedApiAuthenticationIntegrationsList", "[]AccountObjectIdentifier").
+	Bool("AllowedAuthenticationSecretsAll").
+	Field("AllowedAuthenticationSecretsList", "[]SchemaObjectIdentifier").
+	Bool("Enabled").
+	Text("Comment")
+
 var externalAccessIntegrationsDef = g.NewInterface(
 	"ExternalAccessIntegrations",
 	"ExternalAccessIntegration",
@@ -122,4 +131,10 @@ var externalAccessIntegrationsDef = g.NewInterface(
 		SQL("EXTERNAL ACCESS INTEGRATION").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
+	externalAccessIntegrationDetailsDef,
+).WithCustomInterfaceMethod(
+	"DescribeDetails",
+	"DescribeDetails returns the parsed describe output for an external access integration.",
+	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
+	"*ExternalAccessIntegrationDetails", "error",
 ).WithShowObjectType("Integration")
