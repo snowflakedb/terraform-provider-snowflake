@@ -38,12 +38,27 @@ func (opts *AlterCortexSearchServiceOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Set) {
-		errs = append(errs, errExactlyOneOf("AlterCortexSearchServiceOptions", "Set"))
+	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.Refresh, opts.Set, opts.SetDefaults, opts.SetPrimaryKey, opts.SetAttributes, opts.UnsetPrimaryKey, opts.UnsetAttributes, opts.SetTags, opts.UnsetTags) {
+		errs = append(errs, errExactlyOneOf("AlterCortexSearchServiceOptions", "Suspend", "Resume", "Refresh", "Set", "SetDefaults", "SetPrimaryKey", "SetAttributes", "UnsetPrimaryKey", "UnsetAttributes", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.TargetLag, opts.Set.Warehouse, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterCortexSearchServiceOptions.Set", "TargetLag", "Warehouse", "Comment"))
+		if !anyValueSet(opts.Set.TargetLag, opts.Set.Warehouse, opts.Set.FullIndexBuildIntervalDays, opts.Set.RequestLogging, opts.Set.AutoSuspend, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterCortexSearchServiceOptions.Set", "TargetLag", "Warehouse", "FullIndexBuildIntervalDays", "RequestLogging", "AutoSuspend", "Comment"))
+		}
+	}
+	if valueSet(opts.SetDefaults) {
+		if !anyValueSet(opts.SetDefaults.AutoSuspend) {
+			errs = append(errs, errAtLeastOneOf("AlterCortexSearchServiceOptions.SetDefaults", "AutoSuspend"))
+		}
+	}
+	if valueSet(opts.SetPrimaryKey) {
+		if !valueSet(opts.SetPrimaryKey.PrimaryKey) {
+			errs = append(errs, errNotSet("AlterCortexSearchServiceOptions.SetPrimaryKey", "PrimaryKey"))
+		}
+	}
+	if valueSet(opts.SetAttributes) {
+		if !valueSet(opts.SetAttributes.Columns) {
+			errs = append(errs, errNotSet("AlterCortexSearchServiceOptions.SetAttributes", "Columns"))
 		}
 	}
 	return JoinErrors(errs...)
