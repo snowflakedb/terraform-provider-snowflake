@@ -1,14 +1,11 @@
-<!-- Feel free to delete comments as you fill this in -->
+<!-- Feel free to delete comments and unused sections as you fill this in -->
 
-<!-- summary of changes -->
+## Changes
+<!-- One short paragraph: the problem being solved or the capability being added, and why this approach. -->
+<!-- Then one bullet per change, imperative mood ("Add ...", "Fix ...", "Update ..."). -->
 
-## Test Plan
-<!-- detail ways in which this PR has been tested or needs to be tested -->
-* [ ] acceptance tests
-<!-- add more below if you think they are relevant -->
-* [ ] …
+## How
+<!-- Optional. The mechanism behind non-obvious changes, and design decisions worth pre-empting in review. Delete if the bullets above already say it. -->
 
 ## References
-<!-- issues documentation links, etc  -->
-
-* 
+<!-- Related GitHub issues and PRs (#1234), and Snowflake docs. -->
