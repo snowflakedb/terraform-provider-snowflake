@@ -65,6 +65,21 @@ func TestCortexSearchServices_Create(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' EMBEDDING_MODEL = 'snowflake-arctic-embed-m-v1.5' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
 	})
 
+	// added manually
+	t.Run("with primary key", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.PrimaryKey = []string{"id", "ts"}
+		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE %s ON searchable_text PRIMARY KEY (id, ts) WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
+	})
+
+	// added manually
+	t.Run("with refresh mode and initialize", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.RefreshMode = Pointer(CortexSearchServiceRefreshModeIncremental)
+		opts.Initialize = Pointer(CortexSearchServiceInitializeOnSchedule)
+		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' REFRESH_MODE = INCREMENTAL INITIALIZE = ON_SCHEDULE AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
+	})
+
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfNotExists = Bool(true)
@@ -72,8 +87,14 @@ func TestCortexSearchServices_Create(t *testing.T) {
 			Columns: []string{"product_id", "product_name"},
 		}
 		opts.EmbeddingModel = String("snowflake-arctic-embed-l-v2.0")
+		opts.PrimaryKey = []string{"product_id"}
+		opts.RefreshMode = Pointer(CortexSearchServiceRefreshModeFull)
+		opts.Initialize = Pointer(CortexSearchServiceInitializeOnCreate)
+		opts.FullIndexBuildIntervalDays = Int(30)
+		opts.RequestLogging = Bool(true)
+		opts.AutoSuspend = Int(3600)
 		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE IF NOT EXISTS %s ON searchable_text ATTRIBUTES product_id, product_name WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' EMBEDDING_MODEL = 'snowflake-arctic-embed-l-v2.0' COMMENT = 'comment' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE IF NOT EXISTS %s ON searchable_text PRIMARY KEY (product_id) ATTRIBUTES product_id, product_name WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' EMBEDDING_MODEL = 'snowflake-arctic-embed-l-v2.0' REFRESH_MODE = FULL INITIALIZE = ON_CREATE FULL_INDEX_BUILD_INTERVAL_DAYS = 30 REQUEST_LOGGING = true AUTO_SUSPEND = 3600 COMMENT = 'comment' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
 	})
 }
 
@@ -97,18 +118,90 @@ func TestCortexSearchServices_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.Set] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.*] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCortexSearchServiceOptions", "Set"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCortexSearchServiceOptions", "Suspend", "Resume", "Refresh", "Set", "SetDefaults", "SetPrimaryKey", "SetAttributes", "UnsetPrimaryKey", "UnsetAttributes", "SetTags", "UnsetTags"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Set.TargetLag opts.Set.Warehouse opts.Set.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Set.*] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &CortexSearchServiceSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCortexSearchServiceOptions.Set", "TargetLag", "Warehouse", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCortexSearchServiceOptions.Set", "TargetLag", "Warehouse", "FullIndexBuildIntervalDays", "RequestLogging", "AutoSuspend", "Comment"))
 	})
 
-	t.Run("basic", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.SetDefaults.*] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetDefaults = &CortexSearchServiceSetDefaults{}
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCortexSearchServiceOptions.SetDefaults", "AutoSuspend"))
+	})
+
+	t.Run("validation: [opts.SetPrimaryKey.PrimaryKey] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetPrimaryKey = &CortexSearchServiceSetPrimaryKey{}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("AlterCortexSearchServiceOptions.SetPrimaryKey", "PrimaryKey"))
+	})
+
+	t.Run("validation: [opts.SetAttributes.Columns] should be set", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetAttributes = &CortexSearchServiceSetAttributes{}
+		assertOptsInvalidJoinedErrors(t, opts, errNotSet("AlterCortexSearchServiceOptions.SetAttributes", "Columns"))
+	})
+
+	t.Run("suspend", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Suspend = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SUSPEND`, id.FullyQualifiedName())
+	})
+
+	t.Run("resume", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Resume = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s RESUME`, id.FullyQualifiedName())
+	})
+
+	t.Run("refresh", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.Refresh = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s REFRESH`, id.FullyQualifiedName())
+	})
+
+	t.Run("set defaults", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetDefaults = &CortexSearchServiceSetDefaults{
+			AutoSuspend: Bool(true),
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET AUTO_SUSPEND = NULL`, id.FullyQualifiedName())
+	})
+
+	t.Run("unset primary key", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetPrimaryKey = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s UNSET PRIMARY KEY`, id.FullyQualifiedName())
+	})
+
+	t.Run("unset attributes", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.UnsetAttributes = Bool(true)
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s UNSET ATTRIBUTES`, id.FullyQualifiedName())
+	})
+
+	t.Run("set primary key", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetPrimaryKey = &CortexSearchServiceSetPrimaryKey{
+			PrimaryKey: []string{"id", "ts"},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET PRIMARY KEY = (id, ts)`, id.FullyQualifiedName())
+	})
+
+	t.Run("set attributes", func(t *testing.T) {
+		opts := defaultOpts()
+		opts.SetAttributes = &CortexSearchServiceSetAttributes{
+			Columns: []string{"col1", "col2"},
+		}
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET ATTRIBUTES (col1, col2)`, id.FullyQualifiedName())
+	})
+
+	t.Run("set basic", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &CortexSearchServiceSet{
 			TargetLag: String("1 minutes"),
@@ -116,16 +209,19 @@ func TestCortexSearchServices_Alter(t *testing.T) {
 		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET TARGET_LAG = '1 minutes'`, id.FullyQualifiedName())
 	})
 
-	t.Run("all options", func(t *testing.T) {
+	t.Run("set all options", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &CortexSearchServiceSet{
 			TargetLag: String("1 minutes"),
 			Warehouse: &AccountObjectIdentifier{
 				name: "warehouse_name",
 			},
-			Comment: String("comment"),
+			FullIndexBuildIntervalDays: Int(30),
+			RequestLogging:             Bool(true),
+			AutoSuspend:                Int(3600),
+			Comment:                    String("comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name" COMMENT = 'comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name" FULL_INDEX_BUILD_INTERVAL_DAYS = 30 REQUEST_LOGGING = true AUTO_SUSPEND = 3600 COMMENT = 'comment'`, id.FullyQualifiedName())
 	})
 }
 

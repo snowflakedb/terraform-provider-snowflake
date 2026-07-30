@@ -469,6 +469,15 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.CortexSearchService{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.CortexSearchServiceDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.McpServer{},
 	},
 	{
