@@ -105,6 +105,7 @@ Read-Only:
 Read-Only:
 
 - `allowed_email_patterns` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--allowed_email_patterns))
+- `allowed_roles_list` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--allowed_roles_list))
 - `allowed_user_domains` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--allowed_user_domains))
 - `auth_type` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--auth_type))
 - `blocked_roles_list` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--blocked_roles_list))
@@ -159,6 +160,17 @@ Read-Only:
 
 <a id="nestedobjatt--security_integrations--describe_output--allowed_email_patterns"></a>
 ### Nested Schema for `security_integrations.describe_output.allowed_email_patterns`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--security_integrations--describe_output--allowed_roles_list"></a>
+### Nested Schema for `security_integrations.describe_output.allowed_roles_list`
 
 Read-Only:
 

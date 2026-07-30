@@ -464,11 +464,11 @@ func UpdateContextExternalVolume(ctx context.Context, d *schema.ResourceData, me
 			removedLocations = oldLocations
 			addedLocations = newLocations
 		} else {
-			// Could +1 on the prefix here as the lists until and including this index
-			// are identical, would need to add some more checks for list length to avoid
-			// an array index out of bounds error
-			removedLocations = oldLocations[commonPrefixLastIndex:]
-			addedLocations = newLocations[commonPrefixLastIndex:]
+			// commonPrefixLastIndex is inclusive, so the elements up to and including it are
+			// identical between old and new; slicing from the next index excludes them from
+			// both removed and added, avoiding an unnecessary remove/re-add of unchanged locations.
+			removedLocations = oldLocations[commonPrefixLastIndex+1:]
+			addedLocations = newLocations[commonPrefixLastIndex+1:]
 		}
 
 		if len(removedLocations) == len(oldLocations) {

@@ -620,5 +620,6 @@ func StageFileFormatXmlToSchema(xml *sdk.FileFormatXml) map[string]any {
 		"disable_auto_convert":       xml.DisableAutoConvert,
 		"replace_invalid_characters": xml.ReplaceInvalidCharacters,
 		"skip_byte_order_mark":       xml.SkipByteOrderMark,
+		// disable_snowflake_data is deprecated in Snowflake
 	}
 }

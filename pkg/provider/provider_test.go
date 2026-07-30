@@ -22,9 +22,9 @@ func TestProvider(t *testing.T) {
 }
 
 func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]interface{}{})
+	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{})
 
-	config, err := getDriverConfigFromTerraform(d)
+	config, err := getDriverConfigFromTerraform(d, nil)
 
 	require.NoError(t, err)
 	assert.Equal(t, "terraform-provider-snowflake", config.Application)
@@ -85,7 +85,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
-	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]interface{}{ //nolint:gosec // test credentials
+	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{ //nolint:gosec // test credentials
 		"account_name":                      "test_account",
 		"organization_name":                 "test_org",
 		"user":                              "test_user",
@@ -118,7 +118,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"driver_tracing":                    "INFO",
 		"tmp_directory_path":                "/tmp/snowflake",
 		"disable_console_login":             "false",
-		"params": map[string]interface{}{
+		"params": map[string]any{
 			"QUERY_TAG": "test_tag",
 			"TIMEZONE":  "UTC",
 		},
@@ -148,7 +148,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"disable_saml_url_check":                 "true",
 	})
 
-	config, err := getDriverConfigFromTerraform(d)
+	config, err := getDriverConfigFromTerraform(d, nil)
 
 	require.NoError(t, err)
 

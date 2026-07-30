@@ -11,28 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
-func (t *TaskAssert) HasNotEmptyCreatedOn() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created on not empty; got: %v", o.CreatedOn)
-		}
-		return nil
-	})
-	return t
-}
-
-func (t *TaskAssert) HasNotEmptyId() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.Id == "" {
-			return fmt.Errorf("expected id not empty; got: %v", o.CreatedOn)
-		}
-		return nil
-	})
-	return t
-}
-
 func (t *TaskAssert) HasPredecessorsInAnyOrder(ids ...sdk.SchemaObjectIdentifier) *TaskAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
 		t.Helper()
@@ -58,39 +36,6 @@ func (t *TaskAssert) HasTaskRelations(expected sdk.TaskRelations) *TaskAssert {
 			errs = append(errs, fmt.Errorf("expected finalized root task: %v; got: %v", expected.FinalizedRootTask, o.TaskRelations.FinalizedRootTask))
 		}
 		return errors.Join(errs...)
-	})
-	return t
-}
-
-func (t *TaskAssert) HasNoWarehouse() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.Warehouse != nil {
-			return fmt.Errorf("expected warehouse to have no value; got: %s", o.Warehouse.Name())
-		}
-		return nil
-	})
-	return t
-}
-
-func (t *TaskAssert) HasNoErrorIntegration() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.ErrorIntegration != nil {
-			return fmt.Errorf("expected error integration to have no value; got: %s", o.ErrorIntegration.Name())
-		}
-		return nil
-	})
-	return t
-}
-
-func (t *TaskAssert) HasNoTargetCompletionInterval() *TaskAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.Task) error {
-		t.Helper()
-		if o.TargetCompletionInterval != nil {
-			return fmt.Errorf("expected target completion interval to have no value; got: %v", o.TargetCompletionInterval)
-		}
-		return nil
 	})
 	return t
 }

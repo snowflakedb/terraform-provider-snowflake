@@ -52,15 +52,15 @@ type TagOnConflict struct {
 
 // AlterTagOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-tag.
 type AlterTagOptions struct {
-	alter    bool                   `ddl:"static" sql:"ALTER"`
-	tag      bool                   `ddl:"static" sql:"TAG"`
-	IfExists *bool                  `ddl:"keyword" sql:"IF EXISTS"`
-	name     SchemaObjectIdentifier `ddl:"identifier"`
-	Add      *TagAdd                `ddl:"keyword" sql:"ADD"`
-	Drop     *TagDrop               `ddl:"keyword" sql:"DROP"`
-	Set      *TagSet                `ddl:"keyword" sql:"SET"`
-	Unset    *TagUnset              `ddl:"keyword" sql:"UNSET"`
-	Rename   *TagRename             `ddl:"keyword" sql:"RENAME TO"`
+	alter    bool                    `ddl:"static" sql:"ALTER"`
+	tag      bool                    `ddl:"static" sql:"TAG"`
+	IfExists *bool                   `ddl:"keyword" sql:"IF EXISTS"`
+	name     SchemaObjectIdentifier  `ddl:"identifier"`
+	Add      *TagAdd                 `ddl:"keyword" sql:"ADD"`
+	Drop     *TagDrop                `ddl:"keyword" sql:"DROP"`
+	Set      *TagSet                 `ddl:"keyword" sql:"SET"`
+	Unset    *TagUnset               `ddl:"keyword" sql:"UNSET"`
+	RenameTo *SchemaObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 }
 
 type TagAdd struct {
@@ -97,10 +97,6 @@ type TagUnset struct {
 
 type TagUnsetMaskingPolicies struct {
 	MaskingPolicies []TagMaskingPolicy `ddl:"list"`
-}
-
-type TagRename struct {
-	Name SchemaObjectIdentifier `ddl:"identifier"`
 }
 
 // ShowTagOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-tags.

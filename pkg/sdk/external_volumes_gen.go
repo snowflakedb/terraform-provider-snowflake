@@ -16,6 +16,7 @@ type ExternalVolumes interface {
 	Show(ctx context.Context, request *ShowExternalVolumeRequest) ([]ExternalVolume, error)
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolume, error)
+	DescribeDetails(ctx context.Context, id AccountObjectIdentifier) (*ExternalVolumeDetails, error)
 }
 
 // CreateExternalVolumeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-external-volume.

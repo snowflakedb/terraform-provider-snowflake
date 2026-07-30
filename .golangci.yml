@@ -11,6 +11,7 @@ linters:
     - ineffassign
     - makezero
     - misspell
+    - modernize
     - prealloc
     - revive
     - staticcheck
@@ -20,6 +21,10 @@ linters:
     - wastedassign
     - whitespace
   settings:
+    modernize:
+      disable:
+        # Simplify code by using go1.26's new(expr).
+        - newexpr
     misspell:
       locale: US
     revive:

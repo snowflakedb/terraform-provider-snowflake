@@ -25,6 +25,8 @@ type CreateSchemaRequest struct {
 	PipeExecutionPaused                     *bool
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *StringAllowEmpty
+	DefaultNotebookComputePoolCpu           *string
+	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -51,7 +53,7 @@ type CloneSchemaRequest struct {
 type AlterSchemaRequest struct {
 	IfExists             *bool
 	name                 DatabaseObjectIdentifier // required
-	NewName              *DatabaseObjectIdentifier
+	RenameTo             *DatabaseObjectIdentifier
 	SwapWith             *DatabaseObjectIdentifier
 	Set                  *SchemaSetRequest
 	Unset                *SchemaUnsetRequest
@@ -69,6 +71,8 @@ type SchemaSetRequest struct {
 	PipeExecutionPaused                     *bool
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *StringAllowEmpty
+	DefaultNotebookComputePoolCpu           *string
+	DefaultNotebookComputePoolGpu           *string
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	LogLevel                                *LogLevel
 	LogEventLevel                           *LogLevel
@@ -91,6 +95,8 @@ type SchemaUnsetRequest struct {
 	PipeExecutionPaused                     *bool
 	ReplaceInvalidCharacters                *bool
 	DefaultDdlCollation                     *bool
+	DefaultNotebookComputePoolCpu           *bool
+	DefaultNotebookComputePoolGpu           *bool
 	StorageSerializationPolicy              *bool
 	LogLevel                                *bool
 	LogEventLevel                           *bool

@@ -15,12 +15,10 @@ type IcebergTableDetailsAssert struct {
 	*assert.SnowflakeObjectAssert[sdk.IcebergTableDetails, sdk.SchemaObjectIdentifier]
 }
 
-// IcebergTableDetails removed manually because DESC returns a slice of column details.
-
 func IcebergTableDetailsFromObject(t *testing.T, icebergTableDetails *sdk.IcebergTableDetails) *IcebergTableDetailsAssert {
 	t.Helper()
 	return &IcebergTableDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("IcebergTableDetails"), sdk.NewSchemaObjectIdentifier("DOES", "NOT", "MATTER"), icebergTableDetails),
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("IcebergTableDetails"), sdk.NewSchemaObjectIdentifier("", "", ""), icebergTableDetails),
 	}
 }
 
@@ -35,7 +33,17 @@ func (i *IcebergTableDetailsAssert) HasName(expected string) *IcebergTableDetail
 	return i
 }
 
-// Adjusted manually: uses datatypes.AreTheSame for semantic comparison instead of direct equality.
+func (i *IcebergTableDetailsAssert) HasNameNotEmpty() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasType(expected datatypes.DataType) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -61,11 +69,33 @@ func (i *IcebergTableDetailsAssert) HasSourceIcebergType(expected string) *Icebe
 	return i
 }
 
+func (i *IcebergTableDetailsAssert) HasNoSourceIcebergType() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.SourceIcebergType != nil {
+			return fmt.Errorf("expected source iceberg type to be nil; got: %v", *o.SourceIcebergType)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasKind(expected string) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
 		if o.Kind != expected {
 			return fmt.Errorf("expected kind: %v; got: %v", expected, o.Kind)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableDetailsAssert) HasKindNotEmpty() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
 		}
 		return nil
 	})
@@ -91,6 +121,17 @@ func (i *IcebergTableDetailsAssert) HasDefault(expected string) *IcebergTableDet
 		}
 		if *o.Default != expected {
 			return fmt.Errorf("expected default: %v; got: %v", expected, *o.Default)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableDetailsAssert) HasNoDefault() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Default != nil {
+			return fmt.Errorf("expected default to be nil; got: %v", *o.Default)
 		}
 		return nil
 	})
@@ -133,6 +174,17 @@ func (i *IcebergTableDetailsAssert) HasCheck(expected string) *IcebergTableDetai
 	return i
 }
 
+func (i *IcebergTableDetailsAssert) HasNoCheck() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Check != nil {
+			return fmt.Errorf("expected check to be nil; got: %v", *o.Check)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasExpression(expected string) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -141,6 +193,17 @@ func (i *IcebergTableDetailsAssert) HasExpression(expected string) *IcebergTable
 		}
 		if *o.Expression != expected {
 			return fmt.Errorf("expected expression: %v; got: %v", expected, *o.Expression)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableDetailsAssert) HasNoExpression() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Expression != nil {
+			return fmt.Errorf("expected expression to be nil; got: %v", *o.Expression)
 		}
 		return nil
 	})
@@ -161,14 +224,36 @@ func (i *IcebergTableDetailsAssert) HasComment(expected string) *IcebergTableDet
 	return i
 }
 
+func (i *IcebergTableDetailsAssert) HasNoComment() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasPolicyName(expected sdk.SchemaObjectIdentifier) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
 		if o.PolicyName == nil {
 			return fmt.Errorf("expected policy name to have value; got: nil")
 		}
-		if o.PolicyName.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected policy name: %v; got: %v", expected.FullyQualifiedName(), o.PolicyName.FullyQualifiedName())
+		if (*o.PolicyName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected policy name: %v; got: %v", expected.FullyQualifiedName(), (*o.PolicyName).FullyQualifiedName())
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableDetailsAssert) HasNoPolicyName() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.PolicyName != nil {
+			return fmt.Errorf("expected policy name to be nil; got: %v", *o.PolicyName)
 		}
 		return nil
 	})
@@ -189,6 +274,17 @@ func (i *IcebergTableDetailsAssert) HasPrivacyDomain(expected string) *IcebergTa
 	return i
 }
 
+func (i *IcebergTableDetailsAssert) HasNoPrivacyDomain() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.PrivacyDomain != nil {
+			return fmt.Errorf("expected privacy domain to be nil; got: %v", *o.PrivacyDomain)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasNameMapping(expected string) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -203,6 +299,17 @@ func (i *IcebergTableDetailsAssert) HasNameMapping(expected string) *IcebergTabl
 	return i
 }
 
+func (i *IcebergTableDetailsAssert) HasNoNameMapping() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.NameMapping != nil {
+			return fmt.Errorf("expected name mapping to be nil; got: %v", *o.NameMapping)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasWriteDefault(expected string) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
@@ -211,6 +318,17 @@ func (i *IcebergTableDetailsAssert) HasWriteDefault(expected string) *IcebergTab
 		}
 		if *o.WriteDefault != expected {
 			return fmt.Errorf("expected write default: %v; got: %v", expected, *o.WriteDefault)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableDetailsAssert) HasNoWriteDefault() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.WriteDefault != nil {
+			return fmt.Errorf("expected write default to be nil; got: %v", *o.WriteDefault)
 		}
 		return nil
 	})

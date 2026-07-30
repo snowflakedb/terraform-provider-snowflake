@@ -43,6 +43,7 @@ type CreateAdaptiveWarehouseRequest struct {
 	Comment                         *string
 	MaxQueryPerformanceLevel        *MaxQueryPerformanceLevel
 	QueryThroughputMultiplier       *int
+	ResourceMonitor                 *AccountObjectIdentifier
 	Tag                             []TagAssociation
 	StatementQueuedTimeoutInSeconds *int
 	StatementTimeoutInSeconds       *int
@@ -64,6 +65,7 @@ type CreateInteractiveWarehouseRequest struct {
 	MaxConcurrencyLevel             *int
 	StatementQueuedTimeoutInSeconds *int
 	StatementTimeoutInSeconds       *int
+	FallbackWarehouse               *AccountObjectIdentifier
 	Tag                             []TagAssociation
 }
 

@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -25,13 +26,29 @@ func CortexAgentDetails(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgen
 	}
 }
 
-// Adjusted manually: removed CortexAgentDetailsFromObject — CortexAgentDetails has no Id field or ID() method.
+func CortexAgentDetailsFromObject(t *testing.T, cortexAgentDetails *sdk.CortexAgentDetails) *CortexAgentDetailsAssert {
+	t.Helper()
+	return &CortexAgentDetailsAssert{
+		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectType("CortexAgentDetails"), cortexAgentDetails.ID(), cortexAgentDetails),
+	}
+}
 
 func (c *CortexAgentDetailsAssert) HasName(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentDetailsAssert) HasNameNotEmpty() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -49,11 +66,33 @@ func (c *CortexAgentDetailsAssert) HasDatabaseName(expected string) *CortexAgent
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasDatabaseNameNotEmpty() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasSchemaName(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentDetailsAssert) HasSchemaNameNotEmpty() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -71,6 +110,17 @@ func (c *CortexAgentDetailsAssert) HasOwner(expected string) *CortexAgentDetails
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasOwnerNotEmpty() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasComment(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
@@ -82,10 +132,21 @@ func (c *CortexAgentDetailsAssert) HasComment(expected string) *CortexAgentDetai
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasCommentNotEmpty() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasProfile(expected sdk.CortexAgentProfile) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
-		if o.Profile != expected {
+		if !reflect.DeepEqual(o.Profile, expected) {
 			return fmt.Errorf("expected profile: %v; got: %v", expected, o.Profile)
 		}
 		return nil
@@ -104,11 +165,33 @@ func (c *CortexAgentDetailsAssert) HasAgentSpec(expected string) *CortexAgentDet
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasAgentSpecNotEmpty() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.AgentSpec == "" {
+			return fmt.Errorf("expected agent spec to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasCreatedOn(expected time.Time) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentDetailsAssert) HasCreatedOnNotEmpty() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})
@@ -129,6 +212,17 @@ func (c *CortexAgentDetailsAssert) HasDefaultVersionName(expected string) *Corte
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasNoDefaultVersionName() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.DefaultVersionName != nil {
+			return fmt.Errorf("expected default version name to be nil; got: %v", *o.DefaultVersionName)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasVersions(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
@@ -143,6 +237,17 @@ func (c *CortexAgentDetailsAssert) HasVersions(expected string) *CortexAgentDeta
 	return c
 }
 
+func (c *CortexAgentDetailsAssert) HasNoVersions() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.Versions != nil {
+			return fmt.Errorf("expected versions to be nil; got: %v", *o.Versions)
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentDetailsAssert) HasAliases(expected string) *CortexAgentDetailsAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
 		t.Helper()
@@ -151,6 +256,17 @@ func (c *CortexAgentDetailsAssert) HasAliases(expected string) *CortexAgentDetai
 		}
 		if *o.Aliases != expected {
 			return fmt.Errorf("expected aliases: %v; got: %v", expected, *o.Aliases)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentDetailsAssert) HasNoAliases() *CortexAgentDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgentDetails) error {
+		t.Helper()
+		if o.Aliases != nil {
+			return fmt.Errorf("expected aliases to be nil; got: %v", *o.Aliases)
 		}
 		return nil
 	})

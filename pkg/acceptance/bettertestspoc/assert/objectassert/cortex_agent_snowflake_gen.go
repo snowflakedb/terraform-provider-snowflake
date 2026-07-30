@@ -4,6 +4,7 @@ package objectassert
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
@@ -19,7 +20,7 @@ type CortexAgentAssert struct {
 func CortexAgent(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgentAssert {
 	t.Helper()
 	return &CortexAgentAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("CortexAgent"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CortexAgent, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeAgent, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.CortexAgent, sdk.SchemaObjectIdentifier] {
 			return testClient.CortexAgent.Show
 		}),
 	}
@@ -28,7 +29,6 @@ func CortexAgent(t *testing.T, id sdk.SchemaObjectIdentifier) *CortexAgentAssert
 func CortexAgentFromObject(t *testing.T, cortexAgent *sdk.CortexAgent) *CortexAgentAssert {
 	t.Helper()
 	return &CortexAgentAssert{
-		// object type adjusted manually
 		assert.NewSnowflakeObjectAssertWithObject(sdk.ObjectTypeAgent, cortexAgent.ID(), cortexAgent),
 	}
 }
@@ -38,6 +38,17 @@ func (c *CortexAgentAssert) HasCreatedOn(expected time.Time) *CortexAgentAssert 
 		t.Helper()
 		if o.CreatedOn != expected {
 			return fmt.Errorf("expected created on: %v; got: %v", expected, o.CreatedOn)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentAssert) HasCreatedOnNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})
@@ -55,11 +66,33 @@ func (c *CortexAgentAssert) HasName(expected string) *CortexAgentAssert {
 	return c
 }
 
+func (c *CortexAgentAssert) HasNameNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentAssert) HasDatabaseName(expected string) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
 		if o.DatabaseName != expected {
 			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentAssert) HasDatabaseNameNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
 		}
 		return nil
 	})
@@ -77,11 +110,33 @@ func (c *CortexAgentAssert) HasSchemaName(expected string) *CortexAgentAssert {
 	return c
 }
 
+func (c *CortexAgentAssert) HasSchemaNameNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentAssert) HasOwner(expected string) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
 		if o.Owner != expected {
 			return fmt.Errorf("expected owner: %v; got: %v", expected, o.Owner)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CortexAgentAssert) HasOwnerNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
 		}
 		return nil
 	})
@@ -99,10 +154,21 @@ func (c *CortexAgentAssert) HasComment(expected string) *CortexAgentAssert {
 	return c
 }
 
+func (c *CortexAgentAssert) HasCommentNotEmpty() *CortexAgentAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
+
 func (c *CortexAgentAssert) HasProfile(expected sdk.CortexAgentProfile) *CortexAgentAssert {
 	c.AddAssertion(func(t *testing.T, o *sdk.CortexAgent) error {
 		t.Helper()
-		if o.Profile != expected {
+		if !reflect.DeepEqual(o.Profile, expected) {
 			return fmt.Errorf("expected profile: %v; got: %v", expected, o.Profile)
 		}
 		return nil

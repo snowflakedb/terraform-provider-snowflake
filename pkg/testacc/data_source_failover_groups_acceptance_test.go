@@ -17,7 +17,9 @@ func TestAcc_FailoverGroups(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
 	failoverGroupId := testClient().Ids.RandomAccountObjectIdentifier()
+	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -27,30 +29,29 @@ func TestAcc_FailoverGroups(t *testing.T) {
 		CheckDestroy: nil,
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupsConfig(failoverGroupId, accountName),
+				Config: failoverGroupsConfig(failoverGroupId, currentAccountId, businessCriticalAccountId),
 				Check: resource.ComposeTestCheckFunc(
 					// TODO [SNOW-1348343]: fix these assertions - there might be multiple failover groups if we run tests in parallel
-					resource.TestCheckResourceAttr("data.snowflake_failover_groups.d", "failover_groups.#", "1"),
+					resource.TestCheckResourceAttr("data.snowflake_failover_groups.d", "failover_groups.#", "2"),
 					resource.TestCheckResourceAttr("data.snowflake_failover_groups.d", "failover_groups.0.object_types.#", "1"),
 					resource.TestCheckResourceAttr("data.snowflake_failover_groups.d", "failover_groups.0.object_types.0", "ROLES"),
-					resource.TestCheckResourceAttr("data.snowflake_failover_groups.d", "failover_groups.0.allowed_accounts.#", "1"),
-					resource.TestCheckResourceAttr("data.snowflake_failover_groups.d", "failover_groups.0.allowed_accounts.0", accountName),
+					resource.TestCheckResourceAttr("data.snowflake_failover_groups.d", "failover_groups.0.allowed_accounts.#", "2"),
 				),
 			},
 		},
 	})
 }
 
-func failoverGroupsConfig(failoverGroupId sdk.AccountObjectIdentifier, allowedAccount string) string {
+func failoverGroupsConfig(failoverGroupId sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier) string {
 	return fmt.Sprintf(`
 	resource "snowflake_failover_group" "source_failover_group" {
 		name                      = "%s"
 		object_types              = ["ROLES"]
-		allowed_accounts          = ["%s"]
+		allowed_accounts          = ["%s", "%s"]
 	}
 
 	data "snowflake_failover_groups" "d" {
 		depends_on = [snowflake_failover_group.source_failover_group]
 	}
-	`, failoverGroupId.Name(), allowedAccount)
+	`, failoverGroupId.Name(), currentAccountId.Name(), allowedAccountId.Name())
 }

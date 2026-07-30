@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 	"time"
@@ -92,7 +93,7 @@ var dynamicTableSchema = map[string]*schema.Schema{
 		Optional:     true,
 		Default:      sdk.DynamicTableRefreshModeAuto,
 		Description:  "INCREMENTAL to use incremental refreshes, FULL to recompute the whole table on every refresh, or AUTO to let Snowflake decide.",
-		ValidateFunc: validation.StringInSlice(sdk.AsStringList(sdk.AllDynamicRefreshModes), true),
+		ValidateFunc: validation.StringInSlice(sdk.AsStringList(sdk.AllDynamicTableRefreshModes), true),
 		ForceNew:     true,
 	},
 	"initialize": {
@@ -223,15 +224,15 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if err := d.Set("comment", dynamicTable.Comment); err != nil {
 		return diag.FromErr(err)
 	}
-	tl := map[string]interface{}{}
+	tl := map[string]any{}
 	if dynamicTable.TargetLag == "DOWNSTREAM" {
 		tl["downstream"] = true
-		if err := d.Set("target_lag", []interface{}{tl}); err != nil {
+		if err := d.Set("target_lag", []any{tl}); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
 		tl["maximum_duration"] = dynamicTable.TargetLag
-		if err := d.Set("target_lag", []interface{}{tl}); err != nil {
+		if err := d.Set("target_lag", []any{tl}); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -289,8 +290,10 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 		https://pkg.go.dev/time
 		note: format may depend on what the account parameter for TIMESTAMP_OUTPUT_FORMAT is set to. Perhaps we should return this as a string rather than a time.Time?
 	*/
-	if err := d.Set("last_suspended_on", dynamicTable.LastSuspendedOn.Format("2006-01-02T16:04:05.000 -0700")); err != nil {
-		return diag.FromErr(err)
+	if dynamicTable.LastSuspendedOn != nil {
+		if err := d.Set("last_suspended_on", dynamicTable.LastSuspendedOn.Format("2006-01-02T16:04:05.000 -0700")); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if err := d.Set("is_clone", dynamicTable.IsClone); err != nil {
 		return diag.FromErr(err)
@@ -298,8 +301,10 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if err := d.Set("is_replica", dynamicTable.IsReplica); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("data_timestamp", dynamicTable.DataTimestamp.Format("2006-01-02T16:04:05.000 -0700")); err != nil {
-		return diag.FromErr(err)
+	if dynamicTable.DataTimestamp != nil {
+		if err := d.Set("data_timestamp", dynamicTable.DataTimestamp.Format("2006-01-02T16:04:05.000 -0700")); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if err := d.Set("warehouse", dynamicTable.Warehouse); err != nil {
@@ -334,9 +339,9 @@ func ReadDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) dia
 	return nil
 }
 
-func parseTargetLag(v interface{}) sdk.TargetLag {
-	var result sdk.TargetLag
-	tl := v.([]interface{})[0].(map[string]interface{})
+func parseTargetLag(v any) sdk.TargetLagRequest {
+	var result sdk.TargetLagRequest
+	tl := v.([]any)[0].(map[string]any)
 	if v, ok := tl["maximum_duration"]; ok {
 		result.MaximumDuration = sdk.String(v.(string))
 	}
@@ -360,9 +365,9 @@ func CreateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	tl := parseTargetLag(d.Get("target_lag"))
 	query := d.Get("query").(string)
 
-	request := sdk.NewCreateDynamicTableRequest(id, warehouse, tl, query)
+	request := sdk.NewCreateDynamicTableRequest(id, tl, warehouse, query)
 	if v, ok := d.GetOk("comment"); ok {
-		request.WithComment(sdk.String(v.(string)))
+		request.WithComment(v.(string))
 	}
 	if v, ok := d.GetOk("or_replace"); ok && v.(bool) {
 		request.WithOrReplace(true)
@@ -385,36 +390,24 @@ func CreateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 func UpdateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id := helpers.DecodeSnowflakeIDLegacy(d.Id()).(sdk.SchemaObjectIdentifier)
-	request := sdk.NewAlterDynamicTableRequest(id)
-
-	runSet := false
 	set := sdk.NewDynamicTableSetRequest()
 	if d.HasChange("target_lag") {
-		tl := parseTargetLag(d.Get("target_lag"))
-		set.WithTargetLag(tl)
-		runSet = true
+		set.WithTargetLag(parseTargetLag(d.Get("target_lag")))
 	}
-
 	if d.HasChange("warehouse") {
-		warehouseName := d.Get("warehouse").(string)
-		set.WithWarehouse(sdk.NewAccountObjectIdentifier(warehouseName))
-		runSet = true
+		set.WithWarehouse(sdk.NewAccountObjectIdentifier(d.Get("warehouse").(string)))
 	}
-
-	if runSet {
-		request.WithSet(set)
-		if err := client.DynamicTables.Alter(ctx, request); err != nil {
+	if !reflect.DeepEqual(*set, *sdk.NewDynamicTableSetRequest()) {
+		if err := client.DynamicTables.Alter(ctx, sdk.NewAlterDynamicTableRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("comment") {
-		err := client.Comments.Set(ctx, &sdk.SetCommentOptions{
-			ObjectType: sdk.ObjectTypeDynamicTable,
-			ObjectName: id,
-			Value:      sdk.String(d.Get("comment").(string)),
-		})
-		if err != nil {
+		if err := client.DynamicTables.Alter(
+			ctx,
+			sdk.NewAlterDynamicTableRequest(id).WithSetComment(d.Get("comment").(string)),
+		); err != nil {
 			return diag.FromErr(err)
 		}
 	}

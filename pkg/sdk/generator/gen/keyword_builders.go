@@ -145,3 +145,9 @@ func (v *QueryStruct) BodyWithPrecedingArrow() *QueryStruct {
 func (v *QueryStruct) OptionalSetBodyWithPrecedingArrow() *QueryStruct {
 	return v.PredefinedQueryStructField("SetBody", "*string", ParameterOptions().NoEquals().NoQuotes().SQL("SET BODY ->"))
 }
+
+// OptionalInlineQueryStructField adds an optional struct field that renders its
+// sub-fields inline with no wrapper keyword — equivalent to ddl:"-" on the field.
+func (v *QueryStruct) OptionalInlineQueryStructField(name string, queryStruct *QueryStruct) *QueryStruct {
+	return v.OptionalQueryStructField(name, queryStruct, InlineOptions())
+}

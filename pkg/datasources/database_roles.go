@@ -111,7 +111,6 @@ func ReadDatabaseRoles(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	flattenedDatabaseRoles := make([]map[string]any, len(databaseRoles))
 	for i, databaseRole := range databaseRoles {
-		databaseRole := databaseRole
 		flattenedDatabaseRoles[i] = map[string]any{
 			resources.ShowOutputAttributeName: []map[string]any{schemas.DatabaseRoleToSchema(&databaseRole)},
 		}

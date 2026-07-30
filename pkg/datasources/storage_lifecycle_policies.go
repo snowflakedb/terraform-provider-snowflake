@@ -80,7 +80,7 @@ func ReadStorageLifecyclePolicies(ctx context.Context, d *schema.ResourceData, m
 		policy := storageLifecyclePolicies[i]
 		var describeOutput []map[string]any
 		if d.Get("with_describe").(bool) {
-			details, err := client.StorageLifecyclePolicies.Describe(ctx, policy.ID())
+			details, err := client.StorageLifecyclePolicies.DescribeDetails(ctx, policy.ID())
 			if err != nil {
 				return diag.FromErr(err)
 			}

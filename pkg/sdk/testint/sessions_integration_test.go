@@ -13,30 +13,24 @@ import (
 func TestInt_AlterSession(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
-	opts := &sdk.AlterSessionOptions{
-		Set: &sdk.SessionSet{
-			SessionParameters: &sdk.SessionParameters{
-				AbortDetachedQuery:    sdk.Bool(true),
-				Autocommit:            sdk.Bool(true),
-				GeographyOutputFormat: sdk.Pointer(sdk.GeographyOutputFormatGeoJSON),
-				WeekOfYearPolicy:      sdk.Int(1),
-			},
+	err := client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithSet(sdk.SessionSetRequest{
+		SessionParameters: &sdk.SessionParameters{
+			AbortDetachedQuery:    sdk.Bool(true),
+			Autocommit:            sdk.Bool(true),
+			GeographyOutputFormat: sdk.Pointer(sdk.GeographyOutputFormatGeoJSON),
+			WeekOfYearPolicy:      sdk.Int(1),
 		},
-	}
-	err := client.Sessions.AlterSession(ctx, opts)
+	}))
 	require.NoError(t, err)
 	cleanup := func() {
-		opts = &sdk.AlterSessionOptions{
-			Unset: &sdk.SessionUnset{
-				SessionParametersUnset: &sdk.SessionParametersUnset{
-					AbortDetachedQuery:    sdk.Bool(true),
-					Autocommit:            sdk.Bool(true),
-					GeographyOutputFormat: sdk.Bool(true),
-					WeekOfYearPolicy:      sdk.Bool(true),
-				},
+		err := client.Sessions.Alter(ctx, sdk.NewAlterSessionRequest().WithUnset(sdk.SessionUnsetRequest{
+			SessionParametersUnset: &sdk.SessionParametersUnset{
+				AbortDetachedQuery:    sdk.Bool(true),
+				Autocommit:            sdk.Bool(true),
+				GeographyOutputFormat: sdk.Bool(true),
+				WeekOfYearPolicy:      sdk.Bool(true),
 			},
-		}
-		err := client.Sessions.AlterSession(ctx, opts)
+		}))
 		require.NoError(t, err)
 	}
 	t.Cleanup(cleanup)
@@ -101,13 +95,13 @@ func TestInt_UseWarehouse(t *testing.T) {
 	ctx := testContext(t)
 
 	t.Cleanup(func() {
-		err := client.Sessions.UseWarehouse(ctx, testClientHelper().Ids.WarehouseId())
+		err := client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(testClientHelper().Ids.WarehouseId()))
 		require.NoError(t, err)
 	})
 	// new warehouse created on purpose
 	warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
 	t.Cleanup(warehouseCleanup)
-	err := client.Sessions.UseWarehouse(ctx, warehouse.ID())
+	err := client.Sessions.UseWarehouse(ctx, sdk.NewUseWarehouseSessionRequest(warehouse.ID()))
 	require.NoError(t, err)
 	actual, err := client.ContextFunctions.CurrentWarehouse(ctx)
 	require.NoError(t, err)
@@ -120,13 +114,13 @@ func TestInt_UseDatabase(t *testing.T) {
 	ctx := testContext(t)
 
 	t.Cleanup(func() {
-		err := client.Sessions.UseSchema(ctx, testClientHelper().Ids.SchemaId())
+		err := client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(testClientHelper().Ids.SchemaId()))
 		require.NoError(t, err)
 	})
 	// new database created on purpose
 	database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
 	t.Cleanup(databaseCleanup)
-	err := client.Sessions.UseDatabase(ctx, database.ID())
+	err := client.Sessions.UseDatabase(ctx, sdk.NewUseDatabaseSessionRequest(database.ID()))
 	require.NoError(t, err)
 	actual, err := client.ContextFunctions.CurrentDatabase(ctx)
 	require.NoError(t, err)
@@ -139,7 +133,7 @@ func TestInt_UseSchema(t *testing.T) {
 	ctx := testContext(t)
 
 	t.Cleanup(func() {
-		err := client.Sessions.UseSchema(ctx, testClientHelper().Ids.SchemaId())
+		err := client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(testClientHelper().Ids.SchemaId()))
 		require.NoError(t, err)
 	})
 	// new database and schema created on purpose
@@ -147,7 +141,7 @@ func TestInt_UseSchema(t *testing.T) {
 	t.Cleanup(databaseCleanup)
 	schema, schemaCleanup := testClientHelper().Schema.CreateSchemaInDatabase(t, database.ID())
 	t.Cleanup(schemaCleanup)
-	err := client.Sessions.UseSchema(ctx, schema.ID())
+	err := client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(schema.ID()))
 	require.NoError(t, err)
 	actual, err := client.ContextFunctions.CurrentSchema(ctx)
 	require.NoError(t, err)

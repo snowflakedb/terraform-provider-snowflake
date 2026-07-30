@@ -315,6 +315,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 					"external_oauth_any_role_mode",
 					"external_oauth_scope_delimiter",
 					"external_oauth_allowed_roles_list",
+					"external_oauth_blocked_roles_list",
 				},
 			},
 		},

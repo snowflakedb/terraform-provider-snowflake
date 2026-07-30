@@ -16,7 +16,7 @@ var semanticViewPairs = g.StructPair("semanticViewDBRow", "SemanticView").
 	Text("owner_role_type").
 	OptionalText("extension")
 
-var semanticViewDetailsPairs = g.StructPair("semanticViewDetailsRow", "SemanticViewDetails").
+var semanticViewDetailsPairs = g.StructPair("semanticViewDetailsRow", "SemanticViewDetail").
 	OptionalText("object_kind").
 	OptionalText("object_name").
 	OptionalText("parent_entity").
@@ -57,7 +57,7 @@ var semanticViewsDef = g.NewInterface(
 			Name().
 			OptionalTextAssignment("SET COMMENT", g.ParameterOptions().SingleQuotes()).
 			OptionalSQL("UNSET COMMENT").
-			OptionalIdentifier("RenameTo", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+			RenameTo().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ExactlyOneValueSet, "SetComment", "UnsetComment", "RenameTo"),
 	).
@@ -98,7 +98,7 @@ var semanticViewsDef = g.NewInterface(
 		"DescribeSemanticViewDetails",
 		"DescribeSemanticViewDetails returns converted describe output for semantic views.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
-		"*SemanticViewDescribeDetails", "error",
+		"*SemanticViewDetails", "error",
 	)
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").

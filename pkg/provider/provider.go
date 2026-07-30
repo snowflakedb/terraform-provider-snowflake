@@ -72,6 +72,12 @@ func Provider() *schema.Provider {
 
 func GetProviderSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"account": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Specifies the Snowflake account identifier. Can be provided in the `org-name` format (e.g. `\"myorg-myaccount\"`) or as an account locator (e.g. `\"xy12345\"`). Use as a fallback when `account_name` and `organization_name` are not set. If both `account_name` and `organization_name` are set, they take precedence. Requires the [`PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`](../#provider_configuration_account_fallback) experiment to be enabled.", snowflakeenvs.Account),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Account, nil),
+		},
 		"account_name": {
 			Type:         schema.TypeString,
 			Description:  envNameFieldDescription("Specifies your Snowflake account name assigned by Snowflake. For information about account identifiers, see the [Snowflake documentation](https://docs.snowflake.com/en/user-guide/admin-account-identifier#account-name). Required unless using `profile`.", snowflakeenvs.AccountName),
@@ -409,8 +415,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 		},
 		"skip_toml_file_permission_verification": {
 			Type:        schema.TypeBool,
-			Description: envNameFieldDescription("False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations).", snowflakeenvs.SkipTomlFilePermissionVerification),
+			Description: envNameFieldDescription("This field is deprecated. It will be removed in the next major release. False by default. Skips TOML configuration file permission verification. This flag has no effect on Windows systems, as the permissions are not checked on this platform. Instead of skipping the permissions verification, we recommend setting the proper privileges - see [the section below](#toml-file-limitations).", snowflakeenvs.SkipTomlFilePermissionVerification),
 			Optional:    true,
+			Deprecated:  "This field is deprecated. It will be removed in the next major release. Skipping TOML configuration file permission verification will be disallowed in the next major release. Make sure the TOML configuration file permissions are set correctly before removing this flag.",
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.SkipTomlFilePermissionVerification, false),
 		},
 		"use_legacy_toml_file": {
@@ -626,6 +633,12 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_external_volume":                                              resources.ExternalVolume(),
 		"snowflake_failover_group":                                               resources.FailoverGroup(),
 		"snowflake_file_format":                                                  resources.FileFormat(),
+		"snowflake_file_format_avro":                                             resources.FileFormatAvro(),
+		"snowflake_file_format_csv":                                              resources.FileFormatCsv(),
+		"snowflake_file_format_json":                                             resources.FileFormatJson(),
+		"snowflake_file_format_orc":                                              resources.FileFormatOrc(),
+		"snowflake_file_format_parquet":                                          resources.FileFormatParquet(),
+		"snowflake_file_format_xml":                                              resources.FileFormatXml(),
 		"snowflake_function_java":                                                resources.FunctionJava(),
 		"snowflake_function_javascript":                                          resources.FunctionJavascript(),
 		"snowflake_function_python":                                              resources.FunctionPython(),
@@ -639,8 +652,11 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_grant_privileges_to_database_role":                            resources.GrantPrivilegesToDatabaseRole(),
 		"snowflake_grant_privileges_to_share":                                    resources.GrantPrivilegesToShare(),
 		"snowflake_git_repository":                                               resources.GitRepository(),
+		"snowflake_iceberg_table":                                                resources.IcebergTable(),
+		"snowflake_iceberg_table_from_aws_glue":                                  resources.IcebergTableFromAwsGlue(),
 		"snowflake_iceberg_table_from_delta_files":                               resources.IcebergTableFromDeltaFiles(),
 		"snowflake_iceberg_table_from_files":                                     resources.IcebergTableFromFiles(),
+		"snowflake_iceberg_table_from_rest":                                      resources.IcebergTableFromRest(),
 		"snowflake_image_repository":                                             resources.ImageRepository(),
 		"snowflake_stage_internal":                                               resources.InternalStage(),
 		"snowflake_job_service":                                                  resources.JobService(),
@@ -649,6 +665,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_managed_account":                                              resources.ManagedAccount(),
 		"snowflake_masking_policy":                                               resources.MaskingPolicy(),
 		"snowflake_materialized_view":                                            resources.MaterializedView(),
+		"snowflake_mcp_server":                                                   resources.McpServer(),
 		"snowflake_network_policy":                                               resources.NetworkPolicy(),
 		"snowflake_network_policy_attachment":                                    resources.NetworkPolicyAttachment(),
 		"snowflake_network_rule":                                                 resources.NetworkRule(),
@@ -711,6 +728,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_view":                                                         resources.View(),
 		"snowflake_warehouse":                                                    resources.Warehouse(),
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
+		"snowflake_warehouse_interactive":                                        resources.WarehouseInteractive(),
 	}
 }
 
@@ -741,10 +759,12 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_functions":                          datasources.Functions(),
 		"snowflake_git_repositories":                   datasources.GitRepositories(),
 		"snowflake_grants":                             datasources.Grants(),
+		"snowflake_iceberg_tables":                     datasources.IcebergTables(),
 		"snowflake_image_repositories":                 datasources.ImageRepositories(),
 		"snowflake_listings":                           datasources.Listings(),
 		"snowflake_masking_policies":                   datasources.MaskingPolicies(),
 		"snowflake_materialized_views":                 datasources.MaterializedViews(),
+		"snowflake_mcp_servers":                        datasources.McpServers(),
 		"snowflake_network_policies":                   datasources.NetworkPolicies(),
 		"snowflake_network_rules":                      datasources.NetworkRules(),
 		"snowflake_notebooks":                          datasources.Notebooks(),
@@ -782,7 +802,12 @@ func getDataSources() map[string]*schema.Resource {
 }
 
 func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
-	config, err := getDriverConfigFromTerraform(s)
+	var enabledExperiments []string
+	if v, ok := s.GetOk("experimental_features_enabled"); ok {
+		enabledExperiments = expandStringList(v.(*schema.Set).List())
+	}
+
+	config, err := getDriverConfigFromTerraform(s, enabledExperiments)
 	if err != nil {
 		return nil, diag.FromErr(err)
 	}
@@ -801,7 +826,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 	}
 
 	if v, ok := s.GetOk("profile"); ok && v.(string) != "" {
-		tomlConfig, err := GetDriverConfigFromTOML(v.(string), verifyPermissions, useLegacyTomlFile)
+		profile := v.(string)
+		rejectAccountField := !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments)
+		tomlConfig, err := GetDriverConfigFromTOML(profile, verifyPermissions, useLegacyTomlFile, rejectAccountField)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
@@ -809,9 +836,11 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		fixBooleanConfigFields(s, config)
 	}
 	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
-	if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
-		if config.Token != "" {
-			config.Authenticator = gosnowflake.AuthTypeOAuth
+	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+		if config.Authenticator == sdk.GosnowflakeAuthTypeEmpty {
+			if config.Token != "" {
+				config.Authenticator = gosnowflake.AuthTypeOAuth
+			}
 		}
 	}
 
@@ -837,9 +866,7 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		}
 	}
 
-	if v, ok := s.GetOk("experimental_features_enabled"); ok {
-		providerCtx.EnabledExperiments = expandStringList(v.(*schema.Set).List())
-	}
+	providerCtx.EnabledExperiments = enabledExperiments
 
 	return providerCtx, diags
 }
@@ -870,7 +897,7 @@ func fixBooleanConfigFields(s *schema.ResourceData, config *gosnowflake.Config) 
 }
 
 // TODO: reuse with the function from resources package
-func expandStringList(configured []interface{}) []string {
+func expandStringList(configured []any) []string {
 	vs := make([]string, 0, len(configured))
 	for _, v := range configured {
 		val, ok := v.(string)
@@ -881,11 +908,12 @@ func expandStringList(configured []interface{}) []string {
 	return vs
 }
 
-func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile bool) (*gosnowflake.Config, error) {
+func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFile, rejectAccountField bool) (*gosnowflake.Config, error) {
 	if profile == "default" {
 		return sdk.DefaultConfig(
 			sdk.WithVerifyPermissions(verifyPermissions),
 			sdk.WithUseLegacyTomlFormat(useLegacyTomlFile),
+			sdk.WithRejectAccountField(rejectAccountField),
 		), nil
 	}
 	path, err := sdk.GetConfigFileName()
@@ -897,6 +925,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 		profile,
 		sdk.WithVerifyPermissions(verifyPermissions),
 		sdk.WithUseLegacyTomlFormat(useLegacyTomlFile),
+		sdk.WithRejectAccountField(rejectAccountField),
 	)
 	if err != nil {
 		return nil, fmt.Errorf(`could not retrieve "%s" profile config from file %s: %w`, profile, path, err)
@@ -907,7 +936,7 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 	return profileConfig, nil
 }
 
-func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, error) {
+func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []string) (*gosnowflake.Config, error) {
 	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
 
 	err := errors.Join(
@@ -1012,15 +1041,28 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 	}
 
 	// account_name and organization_name override legacy account field
+	account := s.Get("account").(string)
 	accountName := s.Get("account_name").(string)
 	organizationName := s.Get("organization_name").(string)
-	if accountName != "" && organizationName != "" {
-		config.Account = strings.Join([]string{organizationName, accountName}, "-")
+
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments) {
+		if accountName != "" && organizationName != "" {
+			config.Account = fmt.Sprintf("%s-%s", organizationName, accountName)
+		} else if account != "" {
+			config.Account = account
+		}
+	} else {
+		if account != "" {
+			return nil, fmt.Errorf("the account field requires the %q experiment to be enabled; add it to experimental_features_enabled in provider configuration", experimentalfeatures.ProviderConfigurationAccountFallback)
+		}
+		if accountName != "" && organizationName != "" {
+			config.Account = strings.Join([]string{organizationName, accountName}, "-")
+		}
 	}
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 	if v, ok := s.GetOk("params"); ok {
-		m = v.(map[string]interface{})
+		m = v.(map[string]any)
 	}
 
 	params := make(map[string]*string)
@@ -1047,7 +1089,9 @@ func getDriverConfigFromTerraform(s *schema.ResourceData) (*gosnowflake.Config, 
 				return nil, fmt.Errorf("could not retrieve access token from refresh token, err = %w", err)
 			}
 			config.Token = accessToken
-			config.Authenticator = gosnowflake.AuthTypeOAuth
+			if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
+				config.Authenticator = gosnowflake.AuthTypeOAuth
+			}
 		}
 	}
 

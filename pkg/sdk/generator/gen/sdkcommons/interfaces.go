@@ -1,3 +1,3 @@
 package sdkcommons
 
-type Location interface{}
+type Location any

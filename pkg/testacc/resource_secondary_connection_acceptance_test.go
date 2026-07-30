@@ -78,7 +78,7 @@ func TestAcc_SecondaryConnection_Basic(t *testing.T) {
 							HasOrganizationName(accountId.OrganizationName()).
 							HasComment("").
 							HasIsPrimary(false).
-							HasPrimaryIdentifier(primaryConnectionAsExternalId).
+							HasPrimary(primaryConnectionAsExternalId).
 							HasFailoverAllowedToAccounts().
 							HasConnectionUrl(azureTestClient().Connection.GetConnectionUrl(accountId.OrganizationName(), connection.ID().Name())),
 					),

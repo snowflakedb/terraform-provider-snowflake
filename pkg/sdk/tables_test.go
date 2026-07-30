@@ -439,7 +439,7 @@ func TestTableCreate(t *testing.T) {
 		}
 		stageFileFormat := LegacyFileFormat{
 			FileFormatType: Pointer(FileFormatTypeCsv),
-			Options: &LegacyFileFormatTypeOptions{
+			Options: &FileFormatTypeOptionsLegacy{
 				CSVCompression: Pointer(CsvCompressionAuto),
 			},
 		}

@@ -31,14 +31,14 @@ func (c *ShareClient) CreateShare(t *testing.T) (*sdk.Share, func()) {
 
 func (c *ShareClient) CreateShareWithIdentifier(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Share, func()) {
 	t.Helper()
-	return c.CreateShareWithOptions(t, id, &sdk.CreateShareOptions{})
+	return c.CreateShareWithRequest(t, id, sdk.NewCreateShareRequest(id))
 }
 
-func (c *ShareClient) CreateShareWithOptions(t *testing.T, id sdk.AccountObjectIdentifier, opts *sdk.CreateShareOptions) (*sdk.Share, func()) {
+func (c *ShareClient) CreateShareWithRequest(t *testing.T, id sdk.AccountObjectIdentifier, req *sdk.CreateShareRequest) (*sdk.Share, func()) {
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Create(ctx, id, opts)
+	err := c.client().Create(ctx, req)
 	require.NoError(t, err)
 
 	share, err := c.client().ShowByID(ctx, id)
@@ -52,7 +52,7 @@ func (c *ShareClient) DropShareFunc(t *testing.T, id sdk.AccountObjectIdentifier
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, id, &sdk.DropShareOptions{IfExists: sdk.Bool(true)})
+		err := c.client().Drop(ctx, sdk.NewDropShareRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
 }
@@ -61,10 +61,8 @@ func (c *ShareClient) SetAccountOnShare(t *testing.T, accountId sdk.AccountIdent
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().Alter(ctx, shareId, &sdk.AlterShareOptions{
-		Set: &sdk.ShareSet{
-			Accounts: []sdk.AccountIdentifier{accountId},
-		},
-	})
+	err := c.client().Alter(ctx, sdk.NewAlterShareRequest(shareId).WithSet(sdk.ShareSetRequest{
+		Accounts: []sdk.AccountIdentifier{accountId},
+	}))
 	require.NoError(t, err)
 }

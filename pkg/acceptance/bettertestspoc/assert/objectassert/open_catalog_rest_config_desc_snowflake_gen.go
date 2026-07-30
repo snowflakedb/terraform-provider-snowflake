@@ -11,16 +11,11 @@ import (
 )
 
 type OpenCatalogRestConfigDetailsAssert struct {
-	*assert.SnowflakeObjectAssert[sdk.OpenCatalogRestConfigDetails, sdk.AccountObjectIdentifier]
+	*assert.SubStructAssert[sdk.OpenCatalogRestConfigDetails]
 }
 
-// OpenCatalogRestConfigDetails removed manually
-
-func OpenCatalogRestConfigDetailsFromObject(t *testing.T, openCatalogRestConfigDetails *sdk.OpenCatalogRestConfigDetails) *OpenCatalogRestConfigDetailsAssert {
-	t.Helper()
-	return &OpenCatalogRestConfigDetailsAssert{
-		assert.NewSnowflakeObjectAssertWithObject("OpenCatalogRestConfigDetails", sdk.NewAccountObjectIdentifier(""), openCatalogRestConfigDetails),
-	}
+func NewOpenCatalogRestConfigDetailsAssert() *OpenCatalogRestConfigDetailsAssert {
+	return &OpenCatalogRestConfigDetailsAssert{assert.NewSubStructAssert[sdk.OpenCatalogRestConfigDetails]()}
 }
 
 func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogUri(expected string) *OpenCatalogRestConfigDetailsAssert {
@@ -28,6 +23,17 @@ func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogUri(expected string) *Ope
 		t.Helper()
 		if o.CatalogUri != expected {
 			return fmt.Errorf("expected catalog uri: %v; got: %v", expected, o.CatalogUri)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogUriNotEmpty() *OpenCatalogRestConfigDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenCatalogRestConfigDetails) error {
+		t.Helper()
+		if o.CatalogUri == "" {
+			return fmt.Errorf("expected catalog uri to be non-empty")
 		}
 		return nil
 	})
@@ -50,6 +56,17 @@ func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogName(expected string) *Op
 		t.Helper()
 		if o.CatalogName != expected {
 			return fmt.Errorf("expected catalog name: %v; got: %v", expected, o.CatalogName)
+		}
+		return nil
+	})
+	return o
+}
+
+func (o *OpenCatalogRestConfigDetailsAssert) HasCatalogNameNotEmpty() *OpenCatalogRestConfigDetailsAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenCatalogRestConfigDetails) error {
+		t.Helper()
+		if o.CatalogName == "" {
+			return fmt.Errorf("expected catalog name to be non-empty")
 		}
 		return nil
 	})

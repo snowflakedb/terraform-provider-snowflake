@@ -27,10 +27,14 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Database{}):                {"Databases"},
 	normalized(sdk.DatabaseRole{}):            {"DatabaseRoles"},
 	normalized(sdk.ExternalVolume{}):          {"ExternalVolumes"},
+	normalized(sdk.FileFormat{}):              {"FileFormats"},
 	normalized(sdk.GitRepository{}):           {"GitRepositories"},
+	normalized(sdk.IcebergTable{}):            {"IcebergTables"},
 	normalized(sdk.ImageRepository{}):         {"ImageRepositories"},
 	normalized(sdk.Listing{}):                 {"Listings"},
 	normalized(sdk.MaskingPolicy{}):           {"MaskingPolicies"},
+	normalized(sdk.McpServer{}):               {"McpServers"},
+	normalized(sdk.McpServerDetails{}):        {"McpServers"},
 	normalized(sdk.NetworkPolicy{}):           {"NetworkPolicies"},
 	normalized(sdk.NetworkRule{}):             {"NetworkRules"},
 	normalized(sdk.NetworkRuleDetails{}):      {"NetworkRules"},
@@ -61,8 +65,11 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.CatalogIntegrationAllDetails{}):  {"CatalogIntegrations"},
 	normalized(sdk.CortexAgentDetails{}):            {"CortexAgents"},
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
+	normalized(sdk.FileFormatAllDetails{}):          {"FileFormats"},
+	normalized(sdk.IcebergTableDetails{}):           {"IcebergTables"},
 	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
 	normalized(sdk.SessionPolicyDetails{}):          {"SessionPolicies"},
+	normalized(sdk.StorageIntegrationAllDetails{}):  {"StorageIntegrations"},
 	normalized(sdk.StorageLifecyclePolicyDetails{}): {"StorageLifecyclePolicies"},
 }
 
@@ -84,6 +91,7 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 
 var (
 	objectsNotBeingResources = []any{
+		sdk.BearerRestAuthenticationDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
 		sdk.IcebergRestRestConfigDetails{},
 		sdk.OAuthRestAuthenticationDetails{},
@@ -95,6 +103,8 @@ var (
 		sdk.StorageLocationS3CompatDetails{},
 		sdk.StorageLocationS3Details{},
 		sdk.TagReference{},
+		sdk.TableCheckConstraintDetails{},
+		sdk.TableConstraintDetails{},
 		sdk.UserWorkloadIdentityAuthenticationMethod{},
 	}
 	objectNamesNotBeingResources = collections.Map(objectsNotBeingResources, func(o any) string {

@@ -143,6 +143,11 @@ func (s *CreateAdaptiveWarehouseRequest) WithQueryThroughputMultiplier(queryThro
 	return s
 }
 
+func (s *CreateAdaptiveWarehouseRequest) WithResourceMonitor(resourceMonitor AccountObjectIdentifier) *CreateAdaptiveWarehouseRequest {
+	s.ResourceMonitor = &resourceMonitor
+	return s
+}
+
 func (s *CreateAdaptiveWarehouseRequest) WithTag(tag []TagAssociation) *CreateAdaptiveWarehouseRequest {
 	s.Tag = tag
 	return s
@@ -233,6 +238,11 @@ func (s *CreateInteractiveWarehouseRequest) WithStatementQueuedTimeoutInSeconds(
 
 func (s *CreateInteractiveWarehouseRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *CreateInteractiveWarehouseRequest {
 	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *CreateInteractiveWarehouseRequest) WithFallbackWarehouse(fallbackWarehouse AccountObjectIdentifier) *CreateInteractiveWarehouseRequest {
+	s.FallbackWarehouse = &fallbackWarehouse
 	return s
 }
 

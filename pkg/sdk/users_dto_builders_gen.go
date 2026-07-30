@@ -215,6 +215,11 @@ func (s *UserObjectWorkloadIdentityAwsRequest) WithArn(arn string) *UserObjectWo
 	return s
 }
 
+func (s *UserObjectWorkloadIdentityAwsRequest) WithIssuer(issuer string) *UserObjectWorkloadIdentityAwsRequest {
+	s.Issuer = &issuer
+	return s
+}
+
 func NewUserObjectWorkloadIdentityAzureRequest() *UserObjectWorkloadIdentityAzureRequest {
 	s := UserObjectWorkloadIdentityAzureRequest{}
 	return &s
@@ -293,8 +298,8 @@ func (s *AlterUserRequest) WithIfExists(ifExists bool) *AlterUserRequest {
 	return s
 }
 
-func (s *AlterUserRequest) WithNewName(newName AccountObjectIdentifier) *AlterUserRequest {
-	s.NewName = &newName
+func (s *AlterUserRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterUserRequest {
+	s.RenameTo = &renameTo
 	return s
 }
 

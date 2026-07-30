@@ -131,18 +131,18 @@ func ReadFailoverGroups(ctx context.Context, d *schema.ResourceData, meta any) d
 	client := meta.(*provider.Context).Client
 
 	inAccount := d.Get("in_account").(string)
-	opts := sdk.ShowFailoverGroupOptions{}
+	req := sdk.NewShowFailoverGroupRequest()
 	if inAccount != "" {
-		opts.InAccount = sdk.NewAccountIdentifierFromAccountLocator(inAccount)
+		req.WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(inAccount))
 	}
-	failoverGroups, err := client.FailoverGroups.Show(ctx, &opts)
+	failoverGroups, err := client.FailoverGroups.Show(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId("failover_groups")
-	failoverGroupsFlatten := []map[string]interface{}{}
+	failoverGroupsFlatten := []map[string]any{}
 	for _, failoverGroup := range failoverGroups {
-		m := map[string]interface{}{}
+		m := map[string]any{}
 		m["region_group"] = failoverGroup.RegionGroup
 		m["snowflake_region"] = failoverGroup.SnowflakeRegion
 		m["created_on"] = failoverGroup.CreatedOn.String()

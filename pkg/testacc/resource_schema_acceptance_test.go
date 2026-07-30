@@ -94,6 +94,8 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 		WithCatalog(catalogId.Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
+		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
 		WithLogEventLevel(string(sdk.LogLevelInfo)).
@@ -121,7 +123,9 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 
 		// TODO(SNOW-1501905): update assertions after updating schema parameters
 		objectparametersassert.SchemaParameters(t, newId).
-			HasDefaultDdlCollation("en_US"),
+			HasDefaultDdlCollation("en_US").
+			HasDefaultNotebookComputePoolCpu("CPU_X64_S").
+			HasDefaultNotebookComputePoolGpu("GPU_NV_S"),
 
 		resourceassert.SchemaResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
@@ -136,6 +140,8 @@ func TestAcc_Schema_BasicUseCase(t *testing.T) {
 			HasCatalogString(catalogId.Name()).
 			HasReplaceInvalidCharactersString("true").
 			HasDefaultDdlCollationString("en_US").
+			HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
+			HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 			HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 			HasLogLevelString(string(sdk.LogLevelInfo)).
 			HasLogEventLevelString(string(sdk.LogLevelInfo)).
@@ -295,6 +301,8 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 		WithCatalog(catalogId.Name()).
 		WithReplaceInvalidCharacters(true).
 		WithDefaultDdlCollation("en_US").
+		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
 		WithLogLevel(string(sdk.LogLevelInfo)).
 		WithLogEventLevel(string(sdk.LogLevelInfo)).
@@ -344,6 +352,8 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 						HasCatalogString(catalogId.Name()).
 						HasReplaceInvalidCharactersString("true").
 						HasDefaultDdlCollationString("en_US").
+						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
+						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
 						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
 						HasLogLevelString(string(sdk.LogLevelInfo)).
 						HasLogEventLevelString(string(sdk.LogLevelInfo)).
@@ -359,7 +369,9 @@ func TestAcc_Schema_CompleteUseCase(t *testing.T) {
 
 					// TODO(SNOW-1501905): update assertions after updating schema parameters
 					objectparametersassert.SchemaParameters(t, id).
-						HasDefaultDdlCollation("en_US"),
+						HasDefaultDdlCollation("en_US").
+						HasDefaultNotebookComputePoolCpu("CPU_X64_S").
+						HasDefaultNotebookComputePoolGpu("GPU_NV_S"),
 
 					resourceshowoutputassert.SchemaShowOutput(t, complete.ResourceReference()).
 						HasCreatedOnNotEmpty().

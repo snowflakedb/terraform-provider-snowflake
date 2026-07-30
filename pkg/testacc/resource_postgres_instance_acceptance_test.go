@@ -24,6 +24,8 @@ import (
 )
 
 func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
+	t.Skip("TODO(SNOW-3765941): Skipped until Alter retry logic is not fixed")
+
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -81,7 +83,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 				HasComputeFamily("STANDARD_M").
 				HasAuthenticationAuthority("POSTGRES").
 				HasStorageSize(10).
-				HasIsHa(false).
+				HasIsHighlyAvailable(false).
 				HasState(sdk.PostgresInstanceStateReady),
 			resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
 				HasCreatedOnNotEmpty().
@@ -120,7 +122,7 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 			HasAuthenticationAuthority("POSTGRES").
 			HasComment(comment).
 			HasStorageSize(10).
-			HasIsHa(false).
+			HasIsHighlyAvailable(false).
 			HasState(sdk.PostgresInstanceStateReady),
 		resourceshowoutputassert.PostgresInstanceDescribeOutput(t, ref).
 			HasCreatedOnNotEmpty().

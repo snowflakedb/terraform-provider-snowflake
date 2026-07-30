@@ -1,5 +1,3 @@
-//go:build sdk_generation
-
 package defs
 
 import (
@@ -31,6 +29,8 @@ var databaseSetStruct = g.NewQueryStruct("DatabaseSet").
 	OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
 	OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
 	OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
+	OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
+	OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
 	OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
 	WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
 	WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
@@ -47,7 +47,8 @@ var databaseSetStruct = g.NewQueryStruct("DatabaseSet").
 	WithValidation(g.ValidIdentifierIfSet, "Catalog").
 	WithValidation(g.AtLeastOneValueSet,
 		"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog",
-		"ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy",
+		"ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu",
+		"StorageSerializationPolicy",
 		"LogLevel", "LogEventLevel", "TraceLevel",
 		"SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize",
 		"UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds",
@@ -60,6 +61,8 @@ var databaseUnsetStruct = g.NewQueryStruct("DatabaseUnset").
 	OptionalSQL("CATALOG").
 	OptionalSQL("REPLACE_INVALID_CHARACTERS").
 	OptionalSQL("DEFAULT_DDL_COLLATION").
+	OptionalSQL("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU").
+	OptionalSQL("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU").
 	OptionalSQL("STORAGE_SERIALIZATION_POLICY").
 	OptionalSQL("LOG_LEVEL").
 	OptionalSQL("LOG_EVENT_LEVEL").
@@ -74,7 +77,8 @@ var databaseUnsetStruct = g.NewQueryStruct("DatabaseUnset").
 	OptionalSQL("COMMENT").
 	WithValidation(g.AtLeastOneValueSet,
 		"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ExternalVolume", "Catalog",
-		"ReplaceInvalidCharacters", "DefaultDdlCollation", "StorageSerializationPolicy",
+		"ReplaceInvalidCharacters", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu",
+		"StorageSerializationPolicy",
 		"LogLevel", "LogEventLevel", "TraceLevel",
 		"SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "UserTaskManagedInitialWarehouseSize",
 		"UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds",
@@ -99,6 +103,8 @@ var databasesDef = g.NewInterface(
 		OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
 		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
@@ -145,6 +151,8 @@ var databasesDef = g.NewInterface(
 		OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
 		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
@@ -180,6 +188,8 @@ var databasesDef = g.NewInterface(
 		OptionalIdentifier("Catalog", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals()).
 		OptionalBooleanAssignment("REPLACE_INVALID_CHARACTERS", nil).
 		OptionalTextAssignment("DEFAULT_DDL_COLLATION", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU", g.ParameterOptions().SingleQuotes()).
+		OptionalTextAssignment("DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU", g.ParameterOptions().SingleQuotes()).
 		OptionalAssignment("STORAGE_SERIALIZATION_POLICY", "StorageSerializationPolicy", g.ParameterOptions()).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_LEVEL"))).
 		WithField(g.OptionalEnumLegacy[sdkcommons.LogLevel]("LogEventLevel", g.ParameterOptions().SingleQuotes().SQL("LOG_EVENT_LEVEL"))).
@@ -214,15 +224,15 @@ var databasesDef = g.NewInterface(
 		SQL("DATABASE").
 		IfExists().
 		Name().
-		Identifier("NewName", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		Identifier("SwapWith", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("SWAP WITH")).
 		OptionalQueryStructField("Set", databaseSetStruct, g.ListOptions().NoParentheses().SQL("SET")).
 		OptionalQueryStructField("Unset", databaseUnsetStruct, g.ListOptions().NoParentheses().SQL("UNSET")).
 		OptionalSetTags().
 		OptionalUnsetTags().
 		WithValidation(g.ValidIdentifier, "name").
-		WithValidation(g.ExactlyOneValueSet, "NewName", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags").
-		WithValidation(g.ValidIdentifierIfSet, "NewName").
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "SwapWith", "SetTags", "UnsetTags").
+		WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 		WithValidation(g.ValidIdentifierIfSet, "SwapWith"),
 ).CustomOperation(
 	"AlterReplication",

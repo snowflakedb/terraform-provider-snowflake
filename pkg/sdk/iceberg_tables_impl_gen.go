@@ -314,6 +314,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	if r.AggregationPolicy != nil {
 		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
 			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
+			EntityKey:         r.AggregationPolicy.EntityKey,
 		}
 	}
 	return opts
@@ -395,14 +396,11 @@ func (r *CreateFromAwsGlueIcebergTableRequest) toOpts() *CreateFromAwsGlueIceber
 
 func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 	opts := &AlterIcebergTableOptions{
-		IfExists:                  r.IfExists,
-		name:                      r.name,
-		SetTags:                   r.SetTags,
-		UnsetTags:                 r.UnsetTags,
-		AddRowAccessPolicy:        r.AddRowAccessPolicy,
-		DropRowAccessPolicy:       r.DropRowAccessPolicy,
-		DropAndAddRowAccessPolicy: r.DropAndAddRowAccessPolicy,
-		DropAllRowAccessPolicies:  r.DropAllRowAccessPolicies,
+		IfExists:                 r.IfExists,
+		name:                     r.name,
+		SetTags:                  r.SetTags,
+		UnsetTags:                r.UnsetTags,
+		DropAllRowAccessPolicies: r.DropAllRowAccessPolicies,
 	}
 	if r.AddColumnAction != nil {
 		opts.AddColumnAction = &IcebergTableAddColumnAction{
@@ -582,15 +580,27 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			Comment:                    r.Unset.Comment,
 		}
 	}
-	if r.SetAggregationPolicy != nil {
-		opts.SetAggregationPolicy = &TableSetAggregationPolicy{
-			AggregationPolicy: r.SetAggregationPolicy.AggregationPolicy,
-			EntityKey:         r.SetAggregationPolicy.EntityKey,
-			Force:             r.SetAggregationPolicy.Force,
+	if r.AddRowAccessPolicy != nil {
+		opts.AddRowAccessPolicy = r.AddRowAccessPolicy.toOpts()
+	}
+	if r.DropRowAccessPolicy != nil {
+		opts.DropRowAccessPolicy = r.DropRowAccessPolicy.toOpts()
+	}
+	if r.DropAndAddRowAccessPolicy != nil {
+		opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
+		opts.DropAndAddRowAccessPolicy.Drop = IcebergTableDropRowAccessPolicy{
+			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy,
+		}
+		opts.DropAndAddRowAccessPolicy.Add = IcebergTableAddRowAccessPolicy{
+			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Add.RowAccessPolicy,
+			On:              r.DropAndAddRowAccessPolicy.Add.On,
 		}
 	}
+	if r.SetAggregationPolicy != nil {
+		opts.SetAggregationPolicy = r.SetAggregationPolicy.toOpts()
+	}
 	if r.UnsetAggregationPolicy != nil {
-		opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{}
+		opts.UnsetAggregationPolicy = r.UnsetAggregationPolicy.toOpts()
 	}
 	if r.SetJoinPolicy != nil {
 		opts.SetJoinPolicy = &TableSetJoinPolicy{
@@ -675,7 +685,6 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		CanWriteMetadata:          r.CanWriteMetadata == "Y",
 		OwnerRoleType:             r.OwnerRoleType,
 		CatalogSyncName:           r.CatalogSyncName,
-		PartitionSpecs:            r.PartitionSpecs,
 		CurrentPartitionSpecId:    r.CurrentPartitionSpecId,
 		IcebergTableFormatVersion: r.IcebergTableFormatVersion,
 	}
@@ -692,6 +701,9 @@ func (r icebergTableRow) convert() (*IcebergTable, error) {
 		if err := json.Unmarshal([]byte(r.AutoRefreshStatus), &result.AutoRefreshStatus); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal AutoRefreshStatus: %w", err)
 		}
+	}
+	if err := json.Unmarshal([]byte(r.PartitionSpecs), &result.PartitionSpecs); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal PartitionSpecs: %w", err)
 	}
 	return result, nil
 }

@@ -34,6 +34,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AccountRole().Schema,
 	},
 	{
+		name:   "AccountAuthenticationPolicyAttachment",
+		schema: resources.AccountAuthenticationPolicyAttachment().Schema,
+	},
+	{
 		name:   "AccountSessionPolicyAttachment",
 		schema: resources.AccountSessionPolicyAttachment().Schema,
 	},
@@ -158,6 +162,30 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ExternalOauthIntegration().Schema,
 	},
 	{
+		name:   "FileFormatAvro",
+		schema: resources.FileFormatAvro().Schema,
+	},
+	{
+		name:   "FileFormatCsv",
+		schema: resources.FileFormatCsv().Schema,
+	},
+	{
+		name:   "FileFormatJson",
+		schema: resources.FileFormatJson().Schema,
+	},
+	{
+		name:   "FileFormatOrc",
+		schema: resources.FileFormatOrc().Schema,
+	},
+	{
+		name:   "FileFormatParquet",
+		schema: resources.FileFormatParquet().Schema,
+	},
+	{
+		name:   "FileFormatXml",
+		schema: resources.FileFormatXml().Schema,
+	},
+	{
 		name:   "FunctionJava",
 		schema: resources.FunctionJava().Schema,
 	},
@@ -186,12 +214,24 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.HybridTable().Schema,
 	},
 	{
+		name:   "IcebergTable",
+		schema: resources.IcebergTable().Schema,
+	},
+	{
+		name:   "IcebergTableFromAwsGlue",
+		schema: resources.IcebergTableFromAwsGlue().Schema,
+	},
+	{
 		name:   "IcebergTableFromDeltaFiles",
 		schema: resources.IcebergTableFromDeltaFiles().Schema,
 	},
 	{
 		name:   "IcebergTableFromFiles",
 		schema: resources.IcebergTableFromFiles().Schema,
+	},
+	{
+		name:   "IcebergTableFromRest",
+		schema: resources.IcebergTableFromRest().Schema,
 	},
 	{
 		name:   "ImageRepository",
@@ -224,6 +264,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "MaterializedView",
 		schema: resources.MaterializedView().Schema,
+	},
+	{
+		name:   "McpServer",
+		schema: resources.McpServer().Schema,
 	},
 	{
 		name:   "NetworkPolicy",
@@ -410,6 +454,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.User().Schema,
 	},
 	{
+		name:   "UserAuthenticationPolicyAttachment",
+		schema: resources.UserAuthenticationPolicyAttachment().Schema,
+	},
+	{
 		name:   "UserProgrammaticAccessToken",
 		schema: resources.UserProgrammaticAccessToken().Schema,
 	},
@@ -432,6 +480,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "WarehouseAdaptive",
 		schema: resources.WarehouseAdaptive().Schema,
+	},
+	{
+		name:   "WarehouseInteractive",
+		schema: resources.WarehouseInteractive().Schema,
 	},
 	{
 		name:   "GrantPrivilegesToAccountRole",

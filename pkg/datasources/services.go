@@ -125,7 +125,6 @@ func ReadServices(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 
 	flattenedServices := make([]map[string]any, len(services))
 	for i, service := range services {
-		service := service
 		var serviceDetails []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Services.Describe(ctx, service.ID())

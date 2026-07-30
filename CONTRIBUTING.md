@@ -2,27 +2,37 @@
 
 # Contributing
 
-- [Setting up the development environment](#setting-up-the-development-environment)
-- [Repository structure](#repository-structure)
-- [Running the tests locally](#running-the-tests-locally)
-- [Making a contribution](#making-a-contribution)
-  - [Discuss a change with us!](#discuss-a-change-with-us)
-  - [Follow the code conventions inside the repository](#follow-the-code-conventions-inside-the-repository)
-  - [Test the change](#test-the-change)
-  - [Describe the breaking changes](#describe-the-breaking-changes)
-  - [Before submitting the PR](#before-submitting-the-pr)
-  - [Naming and describing the PR](#naming-and-describing-the-pr)
-  - [Requesting the review](#requesting-the-review)
-  - [Adding support for a new snowflake object](#adding-support-for-a-new-snowflake-object)
-- [Advanced Debugging](#advanced-debugging)
-- [Extending the migration script](#extending-the-migration-script)
+- [Contributing](#contributing)
+  - [Setting up the development environment](#setting-up-the-development-environment)
+  - [Repository structure](#repository-structure)
+  - [Code Generation](#code-generation)
+  - [Running the tests locally](#running-the-tests-locally)
+  - [Making a contribution](#making-a-contribution)
+    - [Discuss a change with us!](#discuss-a-change-with-us)
+    - [Follow the code conventions inside the repository](#follow-the-code-conventions-inside-the-repository)
+    - [Test the change](#test-the-change)
+    - [Describe the breaking changes](#describe-the-breaking-changes)
+    - [Hide the changes behind the feature switch (if applies)](#hide-the-changes-behind-the-feature-switch-if-applies)
+    - [Before submitting the PR](#before-submitting-the-pr)
+    - [Naming and describing the PR](#naming-and-describing-the-pr)
+    - [Requesting the review](#requesting-the-review)
+    - [Adding Support for a new Snowflake Object](#adding-support-for-a-new-snowflake-object)
+      - [1. Add the object to the SDK](#1-add-the-object-to-the-sdk)
+      - [2. Add integration tests](#2-add-integration-tests)
+      - [3. Add resource](#3-add-resource)
+      - [4. Add data source](#4-add-data-source)
+      - [5. Register in provider](#5-register-in-provider)
+  - [Advanced Debugging](#advanced-debugging)
+  - [Extending the migration script](#extending-the-migration-script)
 
 ## Setting up the development environment
 
-1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on your OS).
+1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on your OS). Go 1.26.3+ is required — see `go.mod` for the exact version.
 2. Fork this repo and clone it. Base your changes on the [dev](https://github.com/snowflakedb/terraform-provider-snowflake/tree/dev) branch as it contains the latest unreleased changes.
 3. Run `make dev-setup` in the main directory of the cloned repository.
 4. You can clean up the dev setup by running `make dev-cleanup`.
+
+> **Danger:** `make sweep` destroys the entire Snowflake test infrastructure — use only on dedicated development accounts.
 
 ## Repository structure
 
@@ -36,6 +46,10 @@ The notable technical files/directories inside the repository:
 - `pkg/sdk/testint` - integration tests for the SDK (consult section [Running the tests locally](#running-the-tests-locally) below)
 
 **⚠️ Important ⚠️** We are in progress of cleaning up the repository structure, so beware of the changes in the packages/directories.
+
+## Code Generation
+
+Much of the codebase is produced by a custom generation framework. Before making changes that touch generated files, read the [Running Generators](pkg/internal/genhelpers/README.md#running-generators) section of the genhelpers README. It covers which files are generated (never edit `*_gen.go`), which `make` targets regenerate which outputs, when to regenerate after a change, CLI filtering flags, and troubleshooting.
 
 ## Running the tests locally
 
@@ -82,6 +96,18 @@ role = "<your role on the Azure account>"
 host="<host of your Azure account, e.g. organisation-azure_account_name.snowflakecomputing.com>"
 ```
 
+Some tests also require a Snowflake defaults account profile `[snowflake_defaults_test_account]`. This is only used in non-prod environments for tests that check for Snowflake default behavior (e.g. having the built-in account authentication policy on account when no user-defined policy is attached):
+
+```toml
+[snowflake_defaults_test_account]
+account_name = "<your Snowflake defaults account name>"
+organization_name = "<organization in which your Snowflake defaults account is located>"
+user = "<your user on the Snowflake defaults account>"
+password = "<your password on the Snowflake defaults account>"
+role = "<your role on the Snowflake defaults account>"
+host="<host of your Snowflake defaults account, e.g. organisation-defaults_account_name.snowflakecomputing.com>"
+```
+
 **TIP**: check [how-can-i-get-my-organization-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-organization-name) and [how-can-i-get-my-account-name](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods#how-can-i-get-my-account-name) sections in our guides if you have troubles setting the proper `organization_name` and `account_name`.
 
 We are aware that not everyone has access to two different accounts, so the majority of tests can be run using just one account. The tests setup however, requires both profiles (`default` and `secondary_test_account`) to be present. You can use the same details for `secondary_test_account` as in the `default` one, if you don't plan to run tests requiring multiple accounts. The warning will be logged when setting up tests with just a single account.
@@ -90,6 +116,10 @@ There is also environment flag `TEST_SF_TF_SIMPLIFIED_INTEGRATION_TESTS_SETUP` a
 
 **⚠️ Important ⚠️** Some of the tests require the privileged role (like `ACCOUNTADMIN`). Otherwise, the managed objects may not be created. If you want to use lower role, you have to make sure it has all the necessary privileges added.
 
+**When to run which:**
+- **Integration tests** — when directly working with a Snowflake object in the SDK
+- **Acceptance tests** — when modifying the underlying SDK object or creating/modifying a resource/data source
+
 To run the tests we have the following commands:
 - `make test-unit` run unit tests
 - `make test-acceptance` run acceptance tests (without account-level ones)
@@ -97,9 +127,28 @@ To run the tests we have the following commands:
 - `make test-account-level-features` run both integration and acceptance tests verifying account-level features
 - `make test-functional` run functional tests of the underlying terraform libraries (currently SDKv2)
 
+**Run a single test:**
+```bash
+# Run tests for a single resource (PascalCase resource name)
+make test-acceptance-Warehouse   # runs all TestAcc_Warehouse* tests
+
+# Run a single acceptance test
+TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 \
+  SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true \
+  go test --tags=non_account_level_tests -run "^TestAcc_SpecificTestName$" -v -timeout=20m ./pkg/testacc
+
+# Run a single integration test
+TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 \
+  go test --tags=non_account_level_tests -run "^TestInt_SpecificTestName$" -v -timeout=60m ./pkg/sdk/testint
+
+# Find test names
+grep -r "func TestAcc_" ./pkg/testacc | grep -i <keyword>
+grep -r "func TestInt_" ./pkg/sdk/testint | grep -i <keyword>
+```
+
 The tests distinction between account-level and non-account-level tests is currently achieved by go build directive:
-- `//go:build account_level_tests` for account-level tests;
-- `//go:build non_account_level_tests` for non-account-level tests.
+- `//go:build account_level_tests` — tests that modify account-level settings; must not be run in parallel (use `-p=1`)
+- `//go:build non_account_level_tests` — tests which do not modify account-level settings; safe to run concurrently on the same account
 Make sure you specify the correct directive when adding new integration or acceptance test file.
 
 You can run the particular tests from inside your chosen IDE but remember that you have to set `TF_ACC=1` environment variable to run any acceptance tests (the above commands set it for you). There are more environment variables set in the above Makefile rules, so familiarize with them before using them. It is also worth setting up more verbose logging (check [this section](FAQ.md#how-can-i-turn-on-logs) for more details).
@@ -115,6 +164,8 @@ It's best to approach us through the GitHub issues: either by commenting the alr
 
 ### Follow the code conventions inside the repository
 We believe that code following the same conventions is easier to maintain and extend. When working on the given part of the provider try to follow the local solutions and not introduce too many new ideas.
+
+Parts of the codebase are auto-generated (`*_gen.go` files). **Never edit these files directly.** Instead, edit the definition files (`pkg/sdk/generator/defs/*_def.go`) or the `*_ext.go` extension files that sit alongside the generated code. `make pre-push` runs all generators.
 
 ### Test the change
 Every introduced change should be tested. Depending on the type of the change it may require (any or mix of):
@@ -160,13 +211,18 @@ if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.UserEnableDefau
 
 ### Before submitting the PR
 
-The documentation for the provider is generated automatically. We follow the few formatting conventions that are automatically checked with every PR. They can fail and delay the resolution of your PR. To make it much less possible, run `make pre-push` before pushing your changes to GH. It will reformat your code (or suggest reformatting), generate all the missing docs, clean the dependencies, etc.
+The documentation for the provider is generated automatically. We follow the few formatting conventions that are automatically checked with every PR. They can fail and delay the resolution of your PR. To make it much less possible, run `make pre-push` before pushing your changes to GH. It will reformat your code (or suggest reformatting), generate all the missing docs, clean the dependencies, etc. To verify the same checks *without* modifying files, use `make pre-push-check` (generated files are removed after) — useful for a dry-run before opening a PR.
 
 ### Naming and describing the PR
 
 We use [Conventional Commits](https://www.conventionalcommits.org/) for commit message formatting and PR titles. Please try to adhere to the standard.
 
-Refer to the [regular expression](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/.github/workflows/title-lint.yml#L17) for PR title validation.
+PR titles must match the pattern:
+```
+(chore|feat|fix|docs)(\(scope\))?(!)?: description
+```
+
+Refer to the [regular expression](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/.github/workflows/title-lint.yml#L17) for the full PR title validation regex.
 
 Implemented changes should be described thoroughly (we will prepare PR template for the known use cases soon):
 - reference the issue that is addressed with the given change
@@ -190,30 +246,44 @@ This guide describes the end-to-end process to add support for a new Snowflake o
 
 | Step | Description | Example PR |
 |------|-------------|------------|
-| 1. SDK | Add SDK definitions and unit tests | [#4084](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084) |
-| 2. Integration Tests | Add SDK integration tests | [#4123](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4123) |
-| 3. Resource | Add resource | [#4195](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195) |
-| 4. Data Source | Add data source | [#4209](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209), [#4237](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237) |
+| 1. SDK | Add SDK definitions and unit tests | [#4818](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4818) |
+| 2. Integration Tests | Add SDK integration tests | [#4823](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4823) |
+| 3. Resource | Add resource; register in test provider | [#4852](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4852) |
+| 4. Data Source | Add data source; register in test provider | [#4879](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4879) |
+| 5. Register in Provider | Move from test provider to production provider; add docs and examples | — |
+
+**PR sizing:** Each step above maps to one PR, but treat this as a minimum split, not a maximum. If a step grows too large — especially step 3 for complex resources — split it further. For example, a resource with many attributes or non-trivial behavior can be broken into:
+- a basic version (core CRUD, most common attributes, basic acceptance tests)
+- handling for remaining or optional attributes
+- external change detection and drift handling
+- type conversions, parameter blocks, or other advanced behaviors
+
+Reviewers can engage earlier with smaller PRs, and CI is faster to re-run on narrowly scoped changes. When in doubt, split.
 
 #### 1. Add the object to the SDK
 
-Take a look at an example [SDK implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4084).
+Take a look at an example [SDK implementation for Storage Lifecycle Policy](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4818).
 
-- Follow the [SDK Generator guide](pkg/sdk/generator/README.md) to generate the object's SDK.
+Follow the [Developer Workflow](pkg/sdk/generator/README.md#developer-workflow) section of the SDK Generator README to create the definition file, register it, run generation, and verify idempotency. It covers file conventions, a step-by-step workflow, and the Request DTO builder pattern required when using the generated SDK.
 
-- Implement unit tests.
+Implement unit tests.
 
 #### 2. Add integration tests
 
-Take a look at an example [Integration tests implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4123).
+Take a look at an example [Integration tests implementation for Storage Lifecycle Policy](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4823).
 
 Add integration tests under the SDK’s testint package to validate the SDK behavior against a live Snowflake connection.
 
-- Follow the [Objects assertions guide](pkg/acceptance/bettertestspoc/README.md#adding-new-snowflake-object-assertions) to generate the necessary assertions.
+- Follow the [Objects assertions guide](pkg/acceptance/bettertestspoc/README.md#adding-new-snowflake-object-assertions) to generate the necessary assertions. The test framework provides the following assertion types:
+  - `resourceassert` — verifies Terraform state attributes
+  - `resourceshowoutputassert` — verifies `show_output` and `describe_output` block values
+  - `resourceparametersassert` — verifies `parameters` block values in Terraform state
+  - `objectassert` — verifies actual Snowflake object state directly via SDK (not Terraform state)
+  - `objectparametersassert` — verifies actual Snowflake parameters directly
 
 #### 3. Add resource
 
-Take a look at an example [Resource implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4195).
+Take a look at an example [Resource implementation for Storage Lifecycle Policy](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4852).
 
 Implement the resource schema, read/create/update/delete, acceptance tests, and docs. Use the SDK as the source of truth and mirror its SHOW/DESC coverage and validations.
 
@@ -248,9 +318,11 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
 
 - Follow the [Resource assertions guide](pkg/acceptance/bettertestspoc/README.md#adding-new-resource-assertions) to generate the necessary assertions.
 
+- Register the new resource in [`pkg/testacc/1_setup_provider_test.go`](pkg/testacc/1_setup_provider_test.go) (`acceptanceTestsProvider()` function) — **not** in the production provider yet. The resource lives here during the preview/development phase so acceptance tests can run against it.
+
 #### 4. Add data source
 
-Take a look at an example [Data source implementation for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4209) and its follow-up with extra tests [Extended test coverage for notebooks](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4237)
+Take a look at an example [Data source implementation for Storage Lifecycle Policy](https://github.com/snowflakedb/terraform-provider-snowflake/pull/4879)
 
 While not strictly required to “support” the object, a data source improves discoverability and enables read-only use cases. For parity with other objects, we recommend adding one.
 
@@ -268,6 +340,16 @@ Example patterns validated by the data source:
   - Add the “Added data source” H4 subsection under the same feature entry in the Migration Guide and link Snowflake’s SHOW docs where appropriate.
 
 - Follow the [Data source config guide](pkg/acceptance/bettertestspoc/README.md#adding-new-datasource-config-model-builders) to generate config model.
+
+- Register the new data source in [`pkg/testacc/1_setup_provider_test.go`](pkg/testacc/1_setup_provider_test.go) (`acceptanceTestsProvider()` function) — **not** in the production provider yet.
+
+#### 5. Register in provider
+
+Once the resource and data source are stable (promoted from preview), move the registrations:
+
+- Move resource/data source registration from `acceptanceTestsProvider()` in `pkg/testacc/1_setup_provider_test.go` to the production provider in `pkg/provider/provider.go`
+- Add documentation templates (`templates/resources/`, `templates/data-sources/`) and usage examples (`examples/resources/`, `examples/data-sources/`)
+- Run `make docs` to generate final documentation
 
 ## Advanced Debugging
 

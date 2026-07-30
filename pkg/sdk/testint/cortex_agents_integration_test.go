@@ -57,7 +57,7 @@ func TestInt_CortexAgents(t *testing.T) {
 				HasSchemaName(id.SchemaName()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComment(comment).
-				HasCortexAgentProfile(expectedProfile),
+				HasProfile(expectedProfile),
 		)
 		assertThatObject(
 			t, objectassert.CortexAgentDetails(t, id).
@@ -66,7 +66,7 @@ func TestInt_CortexAgents(t *testing.T) {
 				HasSchemaName(id.SchemaName()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComment(comment).
-				HasCortexAgentProfile(expectedProfile).
+				HasProfile(expectedProfile).
 				HasAgentSpec(descSpec).
 				HasCreatedOnNotEmpty().
 				HasDefaultVersionName("LAST").
@@ -93,7 +93,7 @@ func TestInt_CortexAgents(t *testing.T) {
 				HasSchemaName(id.SchemaName()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComment("").
-				HasCortexAgentProfile(sdk.CortexAgentProfile{}),
+				HasProfile(sdk.CortexAgentProfile{}),
 		)
 		assertThatObject(
 			t, objectassert.CortexAgentDetails(t, id).
@@ -102,7 +102,7 @@ func TestInt_CortexAgents(t *testing.T) {
 				HasSchemaName(id.SchemaName()).
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComment("").
-				HasCortexAgentProfile(sdk.CortexAgentProfile{}).
+				HasProfile(sdk.CortexAgentProfile{}).
 				HasAgentSpec(descSpec).
 				HasCreatedOnNotEmpty().
 				HasDefaultVersionName("LAST").
@@ -128,11 +128,11 @@ func TestInt_CortexAgents(t *testing.T) {
 		assertThatObject(
 			t, objectassert.CortexAgent(t, id).
 				HasComment(comment).
-				HasCortexAgentProfile(expectedProfile),
+				HasProfile(expectedProfile),
 		)
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
 			HasComment(comment).
-			HasCortexAgentProfile(expectedProfile))
+			HasProfile(expectedProfile))
 
 		err = client.CortexAgents.Alter(ctx, sdk.NewAlterCortexAgentRequest(id).
 			WithSet(*sdk.NewCortexAgentSetRequest().
@@ -144,11 +144,11 @@ func TestInt_CortexAgents(t *testing.T) {
 		assertThatObject(
 			t, objectassert.CortexAgent(t, id).
 				HasComment("").
-				HasCortexAgentProfile(expectedEmptyProfile),
+				HasProfile(expectedEmptyProfile),
 		)
 		assertThatObject(t, objectassert.CortexAgentDetails(t, id).
 			HasComment("").
-			HasCortexAgentProfile(expectedEmptyProfile))
+			HasProfile(expectedEmptyProfile))
 	})
 
 	t.Run("alter cortex agent: modify live version set", func(t *testing.T) {

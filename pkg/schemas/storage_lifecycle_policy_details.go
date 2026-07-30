@@ -11,6 +11,14 @@ var DescribeStorageLifecyclePolicyDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"database_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"schema_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"signature": {
 		Type: schema.TypeList,
 		Elem: &schema.Resource{
@@ -54,11 +62,13 @@ func StorageLifecyclePolicyDetailsToSchema(details sdk.StorageLifecyclePolicyDet
 		}
 	}
 	result := map[string]any{
-		"name":         details.Name,
-		"signature":    signatureElem,
-		"return_type":  details.ReturnType.ToSql(),
-		"body":         details.Body,
-		"archive_tier": details.ArchiveTier,
+		"name":          details.Name,
+		"database_name": details.DatabaseName,
+		"schema_name":   details.SchemaName,
+		"signature":     signatureElem,
+		"return_type":   details.ReturnType.ToSql(),
+		"body":          details.Body,
+		"archive_tier":  details.ArchiveTier,
 	}
 	if details.ArchiveForDays != nil {
 		result["archive_for_days"] = *details.ArchiveForDays

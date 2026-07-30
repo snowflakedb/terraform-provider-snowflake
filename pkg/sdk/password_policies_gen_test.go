@@ -75,9 +75,9 @@ func TestPasswordPolicies_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.NewName] should be present", func(t *testing.T) {
+	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "NewName"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "RenameTo"))
 	})
 
 	t.Run("validation: at least one of the fields [opts.Set.PasswordMinLength opts.Set.PasswordMaxLength opts.Set.PasswordMinUpperCaseChars opts.Set.PasswordMinLowerCaseChars opts.Set.PasswordMinNumericChars opts.Set.PasswordMinSpecialChars opts.Set.PasswordMinAgeDays opts.Set.PasswordMaxAgeDays opts.Set.PasswordMaxRetries opts.Set.PasswordLockoutTimeMins opts.Set.PasswordHistory opts.Set.Comment] should be set", func(t *testing.T) {
@@ -95,7 +95,7 @@ func TestPasswordPolicies_Alter(t *testing.T) {
 	t.Run("rename", func(t *testing.T) {
 		newID := randomSchemaObjectIdentifierInSchema(id.SchemaId())
 		opts := defaultOpts()
-		opts.NewName = &newID
+		opts.RenameTo = &newID
 		assertOptsValidAndSQLEquals(t, opts, "ALTER PASSWORD POLICY %s RENAME TO %s", id.FullyQualifiedName(), newID.FullyQualifiedName())
 	})
 

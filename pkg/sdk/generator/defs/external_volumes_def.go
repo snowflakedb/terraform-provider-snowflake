@@ -202,6 +202,7 @@ var externalVolumesDef = g.NewInterface(
 			SQL("EXTERNAL VOLUMES").
 			OptionalLike(),
 	).
+	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())}, "*ExternalVolumeDetails", "error").
 	WithEnums(
 		StorageProviderEnumDef,
 		S3StorageProviderEnumDef,

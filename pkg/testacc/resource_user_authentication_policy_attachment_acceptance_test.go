@@ -3,175 +3,131 @@
 package testacc
 
 import (
-	"fmt"
-	"regexp"
-	"strconv"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_UserAuthenticationPolicyAttachment(t *testing.T) {
-	// TODO [SNOW-2661409]: unskip
-	t.Skipf("Skip because error %s; will be fixed in SNOW-2661409", "Error: 000606 (57P03): No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.")
-
+func TestAcc_UserAuthenticationPolicyAttachment_BasicUseCase(t *testing.T) {
 	user1, user1Cleanup := testClient().User.CreateUser(t)
 	t.Cleanup(user1Cleanup)
+	userName := user1.ID().Name()
 
 	user2, user2Cleanup := testClient().User.CreateUser(t)
 	t.Cleanup(user2Cleanup)
+	newUserName := user2.ID().Name()
 
-	userId := user1.ID()
-	newUserId := user2.ID()
-	authenticationPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
-	newAuthenticationPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
+	authenticationPolicy, authenticationPolicyCleanup := testClient().AuthenticationPolicy.Create(t)
+	t.Cleanup(authenticationPolicyCleanup)
+	authenticationPolicyName := authenticationPolicy.ID().FullyQualifiedName()
+
+	newAuthenticationPolicy, newAuthenticationPolicyCleanup := testClient().AuthenticationPolicy.Create(t)
+	t.Cleanup(newAuthenticationPolicyCleanup)
+	newAuthenticationPolicyName := newAuthenticationPolicy.ID().FullyQualifiedName()
+
+	basicModel := model.UserAuthenticationPolicyAttachment("t", authenticationPolicyName, userName)
+
+	newUserModel := model.UserAuthenticationPolicyAttachment("t", authenticationPolicyName, newUserName)
+
+	newPolicyModel := model.UserAuthenticationPolicyAttachment("t", newAuthenticationPolicyName, newUserName)
+
+	ref := basicModel.ResourceReference()
+
+	basicAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.UserAuthenticationPolicyAttachmentResource(t, ref).
+			HasUserName(userName).
+			HasAuthenticationPolicyName(authenticationPolicyName),
+	}
+
+	newUserAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.UserAuthenticationPolicyAttachmentResource(t, ref).
+			HasUserName(newUserName).
+			HasAuthenticationPolicyName(authenticationPolicyName),
+	}
+
+	newPolicyAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.UserAuthenticationPolicyAttachmentResource(t, ref).
+			HasUserName(newUserName).
+			HasAuthenticationPolicyName(newAuthenticationPolicyName),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
-		CheckDestroy:             CheckUserAuthenticationPolicyAttachmentDestroy(t),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckUserAuthenticationPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
-			// CREATE
+			// Create
 			{
-				Config: userAuthenticationPolicyAttachmentConfig(userId, authenticationPolicyId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.ppa", "user_name", userId.Name()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.ppa", "authentication_policy_name", authenticationPolicyId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.ppa", "id", fmt.Sprintf("%s|%s", userId.FullyQualifiedName(), authenticationPolicyId.FullyQualifiedName())),
-				),
+				Config: config.FromModels(t, basicModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(t, basicAssertions...),
 			},
-			// UPDATE
+			// Change user
 			{
-				Config: userAuthenticationPolicyAttachmentConfig(newUserId, newAuthenticationPolicyId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.ppa", "user_name", newUserId.Name()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.ppa", "authentication_policy_name", newAuthenticationPolicyId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.ppa", "id", fmt.Sprintf("%s|%s", userId.FullyQualifiedName(), newAuthenticationPolicyId.FullyQualifiedName())),
-				),
+				Config: config.FromModels(t, newUserModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(t, newUserAssertions...),
 			},
-			// IMPORT
+			// Change policy
 			{
-				ResourceName:      "snowflake_user_authentication_policy_attachment.ppa",
+				Config: config.FromModels(t, newPolicyModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, newPolicyAssertions...),
+			},
+			// Import
+			{
+				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-		},
-	})
-}
-
-func userAuthenticationPolicyAttachmentConfig(userId sdk.AccountObjectIdentifier, authenticationPolicyId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_authentication_policy" "ap" {
-	database   = "%[2]s"
-	schema     = "%[3]s"
-	name       = "%[4]s"
-}
-
-resource "snowflake_user_authentication_policy_attachment" "apa" {
-	authentication_policy_name = snowflake_authentication_policy.ap.fully_qualified_name
-	user_name =  "%[1]s"
-}
-`, userId.Name(), authenticationPolicyId.DatabaseName(), authenticationPolicyId.SchemaName(), authenticationPolicyId.Name())
-}
-
-// prove that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672 is fixed
-func TestAcc_UserAuthenticationPolicyAttachment_MissingUser(t *testing.T) {
-	user, userCleanup := testClient().User.CreateUser(t)
-	t.Cleanup(userCleanup)
-
-	authPolicy, authPolicyCleanup := testClient().AuthenticationPolicy.Create(t)
-	t.Cleanup(authPolicyCleanup)
-
-	resource.Test(t, resource.TestCase{
-		Steps: []resource.TestStep{
+			// Drop user externally and remove attachment from config - expect empty plan
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
-				Config:            userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "user_name", user.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "authentication_policy_name", authPolicy.ID().FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "id", fmt.Sprintf("%s|%s", user.ID().FullyQualifiedName(), authPolicy.ID().FullyQualifiedName())),
-				),
+				PreConfig: user2Cleanup,
+				Config:    " ",
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
+			{
+				Config: config.FromModels(t, basicModel),
+			},
+			// Unset policy externally
 			{
 				PreConfig: func() {
-					userCleanup()
+					testClient().User.Alter(t, sdk.NewAlterUserRequest(user1.ID()).
+						WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true)))
 				},
-				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
-				Config:            userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				ExpectError:       regexp.MustCompile("object does not exist or not authorized"),
-				Check:             resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "id", fmt.Sprintf("%s|%s", user.ID().FullyQualifiedName(), authPolicy.ID().FullyQualifiedName())),
-			},
-			{
-				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
-				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				ExpectError:              regexp.MustCompile("object does not exist or not authorized"),
-				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),
-			},
-			{
-				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
-				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				ExpectError:              regexp.MustCompile("error while creating authentication policy attachment"),
-				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),
+				Config: config.FromModels(t, basicModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Check: assertThat(t, basicAssertions...),
 			},
 		},
 	})
-}
-
-// prove that https://github.com/snowflakedb/terraform-provider-snowflake/issues/3672 is fixed
-func TestAcc_UserAuthenticationPolicyAttachment_MissingAuthPolicy(t *testing.T) {
-	user, userCleanup := testClient().User.CreateUser(t)
-	t.Cleanup(userCleanup)
-
-	authPolicy, authPolicyCleanup := testClient().AuthenticationPolicy.Create(t)
-	t.Cleanup(authPolicyCleanup)
-
-	resource.Test(t, resource.TestCase{
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
-				Config:            userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "user_name", user.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "authentication_policy_name", authPolicy.ID().FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "id", fmt.Sprintf("%s|%s", user.ID().FullyQualifiedName(), authPolicy.ID().FullyQualifiedName())),
-				),
-			},
-			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.1.0"),
-				PreConfig: func() {
-					testClient().User.Alter(t, sdk.NewAlterUserRequest(user.ID()).WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true)))
-					authPolicyCleanup()
-				},
-				Config:      userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				ExpectError: regexp.MustCompile("object does not exist or not authorized"),
-				Check:       resource.TestCheckResourceAttr("snowflake_user_authentication_policy_attachment.test", "id", fmt.Sprintf("%s|%s", user.ID().FullyQualifiedName(), authPolicy.ID().FullyQualifiedName())),
-			},
-			{
-				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
-				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				ExpectError:              regexp.MustCompile("object does not exist or not authorized"),
-				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),
-			},
-			{
-				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
-				Config:                   userauthenticationpolicyattachmentMissingDependentObjectsConfig(user.ID(), authPolicy.ID()),
-				ExpectError:              regexp.MustCompile("error while creating authentication policy attachment"),
-				Check:                    resource.TestCheckNoResourceAttr("snowflake_user_authentication_policy_attachment.test", "id"),
-			},
-		},
-	})
-}
-
-func userauthenticationpolicyattachmentMissingDependentObjectsConfig(userId sdk.AccountObjectIdentifier, authenticationPolicyId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-provider "snowflake" {
-	preview_features_enabled = [ "snowflake_user_authentication_policy_attachment_resource" ]
-}
-
-resource "snowflake_user_authentication_policy_attachment" "test" {
-	user_name =  "%[1]s"
-	authentication_policy_name = %[2]s
-}
-`, userId.Name(), strconv.Quote(authenticationPolicyId.FullyQualifiedName()))
 }

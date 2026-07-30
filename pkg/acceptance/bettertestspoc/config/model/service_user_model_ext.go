@@ -72,8 +72,8 @@ func (u *ServiceUserModel) WithDefaultSecondaryRolesOptionEnum(option sdk.Second
 
 // WIF (Workload Identity Federation) helper methods
 
-func (u *ServiceUserModel) WithDefaultWorkloadIdentityAws(arn string) *ServiceUserModel {
-	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAwsVariable(arn)
+func (u *ServiceUserModel) WithDefaultWorkloadIdentityAws(arn string, issuer ...string) *ServiceUserModel {
+	u.DefaultWorkloadIdentity = UserDefaultWorkloadIdentityAwsVariable(arn, issuer...)
 	return u
 }
 

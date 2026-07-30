@@ -103,6 +103,98 @@ var tableSearchOptimizationAction = g.NewQueryStruct("TableSearchOptimizationAct
 	).
 	WithValidation(g.ExactlyOneValueSet, "Add", "Drop")
 
+var tableSearchOptimizationDetails = g.StructPair("tableSearchOptimizationDetailsRow", "TableSearchOptimizationDetails").
+	Number("expression_id").
+	Text("method").
+	Text("target").
+	DataType("target_data_type").
+	BoolFromText("active", g.WithBoolTrueValue("true"))
+
+var tableDescribeSearchOptimization = g.NewQueryStruct("DescribeSearchOptimization").
+	Describe().
+	SQL("SEARCH OPTIMIZATION").
+	SQL("ON").
+	Name().
+	WithValidation(g.ValidIdentifier, "name")
+
+var TableConstraintTypeDef = g.NewEnum(
+	"TableConstraintType", "TableConstraintTypes",
+	"PRIMARY KEY", "UNIQUE", "FOREIGN KEY",
+)
+
+var tableConstraintDetails = g.StructPair("tableConstraintDetailsRow", "TableConstraintDetails").
+	Text("CONSTRAINT_CATALOG").
+	Text("CONSTRAINT_SCHEMA").
+	Text("CONSTRAINT_NAME").
+	Text("TABLE_CATALOG").
+	Text("TABLE_SCHEMA").
+	Text("TABLE_NAME").
+	Enum("CONSTRAINT_TYPE", TableConstraintTypeDef).
+	BoolFromText("IS_DEFERRABLE", g.WithBoolTrueValue("YES")).
+	BoolFromText("INITIALLY_DEFERRED", g.WithBoolTrueValue("YES")).
+	OptionalText("COMMENT").
+	Time("CREATED").
+	Time("LAST_ALTERED").
+	BoolFromText("ENFORCED", g.WithBoolTrueValue("YES")).
+	BoolFromText("RELY", g.WithBoolTrueValue("YES"))
+
+var tableShowConstraints = g.NewQueryStruct("ShowTableConstraints").
+	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
+	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+	SQLWithCustomFieldName("dot", ".").
+	SQLWithCustomFieldName("informationSchemaTableConstraints", "INFORMATION_SCHEMA.TABLE_CONSTRAINTS").
+	SQLWithCustomFieldName("where", "WHERE").
+	TextAssignment("TABLE_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
+	SQLWithCustomFieldName("and", "AND").
+	TextAssignment("TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
+	WithValidation(g.ValidIdentifier, "Database")
+
+var tableCheckConstraintDetails = g.StructPair("tableCheckConstraintDetailsRow", "TableCheckConstraintDetails").
+	Text("CONSTRAINT_CATALOG").
+	Text("CONSTRAINT_SCHEMA").
+	Text("CONSTRAINT_TABLE").
+	Text("CONSTRAINT_NAME").
+	Text("CHECK_CLAUSE")
+
+var tableSelectCheckConstraints = g.NewQueryStruct("SelectCheckConstraints").
+	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
+	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
+	SQLWithCustomFieldName("dot", ".").
+	SQLWithCustomFieldName("informationSchemaCheckConstraints", "INFORMATION_SCHEMA.CHECK_CONSTRAINTS").
+	SQLWithCustomFieldName("where", "WHERE").
+	TextAssignment("CONSTRAINT_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
+	SQLWithCustomFieldName("and", "AND").
+	TextAssignment("CONSTRAINT_TABLE", g.ParameterOptions().SingleQuotes().Required()).
+	WithValidation(g.ValidIdentifier, "Database")
+
+var tablesDef = g.NewInterface(
+	"Tables",
+	"Table",
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
+).
+	CustomShowOperationWithPairedStructs(
+		"DescribeSearchOptimization",
+		g.ShowMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization",
+		tableSearchOptimizationDetails,
+		tableDescribeSearchOptimization,
+	).
+	CustomShowOperationWithPairedStructs(
+		"SelectTableConstraints",
+		g.ShowMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints",
+		tableConstraintDetails,
+		tableShowConstraints,
+	).
+	CustomShowOperationWithPairedStructs(
+		"SelectCheckConstraints",
+		g.ShowMappingKindSlice,
+		"https://docs.snowflake.com/en/sql-reference/info-schema/check_constraints",
+		tableCheckConstraintDetails,
+		tableSelectCheckConstraints,
+	).
+	WithEnums(TableConstraintTypeDef)
+
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").
 	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).

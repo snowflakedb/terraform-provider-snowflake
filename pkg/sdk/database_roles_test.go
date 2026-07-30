@@ -74,7 +74,7 @@ func TestDatabaseRoleAlter(t *testing.T) {
 
 	t.Run("validation: no alter action", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseRoleOptions", "Rename", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseRoleOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: multiple alter actions", func(t *testing.T) {
@@ -87,12 +87,12 @@ func TestDatabaseRoleAlter(t *testing.T) {
 		}
 		opts.SetTags = []TagAssociation{}
 		opts.UnsetTags = []ObjectIdentifier{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseRoleOptions", "Rename", "Set", "Unset", "SetTags", "UnsetTags"))
+		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterDatabaseRoleOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"))
 	})
 
 	t.Run("validation: invalid new name", func(t *testing.T) {
 		opts := defaultOpts()
-		opts.Rename = &emptyDatabaseObjectIdentifier
+		opts.RenameTo = &emptyDatabaseObjectIdentifier
 		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
 	})
 
@@ -100,7 +100,7 @@ func TestDatabaseRoleAlter(t *testing.T) {
 		newId := randomDatabaseObjectIdentifier()
 
 		opts := defaultOpts()
-		opts.Rename = &newId
+		opts.RenameTo = &newId
 		assertOptsInvalidJoinedErrors(t, opts, ErrDifferentDatabase)
 	})
 
@@ -114,7 +114,7 @@ func TestDatabaseRoleAlter(t *testing.T) {
 		newId := randomDatabaseObjectIdentifierInDatabase(id.DatabaseId())
 
 		opts := defaultOpts()
-		opts.Rename = &newId
+		opts.RenameTo = &newId
 		assertOptsValidAndSQLEquals(t, opts, `ALTER DATABASE ROLE %s RENAME TO %s`, id.FullyQualifiedName(), newId.FullyQualifiedName())
 	})
 

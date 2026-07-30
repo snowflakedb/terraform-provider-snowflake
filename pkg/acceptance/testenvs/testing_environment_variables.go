@@ -24,6 +24,7 @@ const (
 	AwsExternalKeyId       env = "TEST_SF_TF_AWS_EXTERNAL_KEY_ID"
 	AwsExternalSecretKey   env = "TEST_SF_TF_AWS_EXTERNAL_SECRET_KEY" // #nosec G101
 	AwsExternalRoleArn     env = "TEST_SF_TF_AWS_EXTERNAL_ROLE_ARN"
+	AwsExternalSnsTopicArn env = "TEST_SF_TF_AWS_EXTERNAL_SNS_TOPIC_ARN"
 	AzureExternalBucketUrl env = "TEST_SF_TF_AZURE_EXTERNAL_BUCKET_URL"
 	AzureExternalTenantId  env = "TEST_SF_TF_AZURE_EXTERNAL_TENANT_ID"
 	AzureExternalSasToken  env = "TEST_SF_TF_AZURE_EXTERNAL_SAS_TOKEN" // #nosec G101

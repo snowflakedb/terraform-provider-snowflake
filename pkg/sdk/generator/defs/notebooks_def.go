@@ -19,6 +19,7 @@ var notebookPairs = g.StructPair("notebookRow", "Notebook").
 	Field("code_warehouse", "string", "AccountObjectIdentifier", g.WithPlainFieldName("CodeWarehouse"))
 
 var notebookDetailsPairs = g.StructPair("NotebookDetailsRow", "NotebookDetails").
+	PlainOnlyField("Id", "SchemaObjectIdentifier").
 	OptionalText("title").
 	Text("main_file").
 	Field("query_warehouse", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("QueryWarehouse")).
@@ -87,7 +88,7 @@ var notebooksDef = g.NewInterface(
 		SQL("NOTEBOOK").
 		IfExists().
 		Name().
-		Identifier("RenameTo", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("RENAME TO")).
+		RenameTo().
 		OptionalQueryStructField(
 			"Set",
 			g.NewQueryStruct("NotebookSet").

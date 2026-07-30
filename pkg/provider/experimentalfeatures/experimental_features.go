@@ -18,14 +18,18 @@ const (
 	UserEnableDefaultWorkloadIdentity              ExperimentalFeature = "USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"
 	GrantsImportValidation                         ExperimentalFeature = "GRANTS_IMPORT_VALIDATION"
 	// TODO [SNOW-2739299]: Discuss having an additional ParametersNoOutput experiment
-	ParametersReducedOutput        ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
-	TagsAllowEmptyAllowedValues    ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
-	ImportBooleanDefault           ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
-	GrantsSafeDestroy              ExperimentalFeature = "GRANTS_SAFE_DESTROY"
-	TagAssociationSafeDestroy      ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
-	GrantAccountRoleSafePublicRole ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
-	GrantAccountRoleShowCaching    ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SHOW_CACHING"
-	HierarchyRenames               ExperimentalFeature = "HIERARCHY_RENAMES"
+	ParametersReducedOutput              ExperimentalFeature = "PARAMETERS_REDUCED_OUTPUT"
+	TagsAllowEmptyAllowedValues          ExperimentalFeature = "TAGS_ALLOW_EMPTY_ALLOWED_VALUES"
+	ImportBooleanDefault                 ExperimentalFeature = "IMPORT_BOOLEAN_DEFAULT"
+	GrantsSafeDestroy                    ExperimentalFeature = "GRANTS_SAFE_DESTROY"
+	TagAssociationSafeDestroy            ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
+	GrantAccountRoleSafePublicRole       ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
+	GrantAccountRoleShowCaching          ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SHOW_CACHING"
+	HierarchyRenames                     ExperimentalFeature = "HIERARCHY_RENAMES"
+	InheritedGrants                      ExperimentalFeature = "INHERITED_GRANTS"
+	ObjectParameterUnsetOnDelete         ExperimentalFeature = "OBJECT_PARAMETER_UNSET_ON_DELETE"
+	AuthenticatorExplicitOnly            ExperimentalFeature = "AUTHENTICATOR_EXPLICIT_ONLY"
+	ProviderConfigurationAccountFallback ExperimentalFeature = "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK"
 )
 
 type experimentalFeatureState string
@@ -169,6 +173,41 @@ var allExperiments = []Experiment{
 			"Currently supported by: `snowflake_schema`, `snowflake_table`.",
 			"Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on `snowflake_table` forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.",
 			"For more information, see the [object renaming guide](./guides/object_renaming_guide).",
+		),
+	},
+	{
+		InheritedGrants,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.",
+			"Without this experiment, using an `inherited` block results in an error.",
+		),
+	},
+	{
+		ObjectParameterUnsetOnDelete,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.",
+			"Without this experiment, deleting the resource fetches the parameter's default value and explicitly sets it back, which is fragile and doesn't truly remove the object-level override.",
+			"When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.",
+		),
+	},
+	{
+		AuthenticatorExplicitOnly,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Removes implicit authenticator derivation from other provider configuration fields.",
+			"Without this experiment, the provider automatically sets the authenticator to `OAUTH` when the `token` or `token_accessor` field is configured, even if `authenticator` is not explicitly set. This implicit behavior can be confusing and will be removed in v3.",
+			"When enabled, the `authenticator` field must be set explicitly in the provider configuration or TOML profile. The `SNOWFLAKE` default (when no authenticator is configured anywhere) is preserved.",
+		),
+	},
+	{
+		ProviderConfigurationAccountFallback,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"Re-introduces the `account` field as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.",
+			"When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `\"myorg-myaccount\"`) and an account locator (e.g. `\"xy12345\"`). If both `organization_name` and `account_name` are set, they take precedence over `account`.",
+			"Without this experiment, using the `account` field results in an error directing you to enable this experiment.",
 		),
 	},
 }

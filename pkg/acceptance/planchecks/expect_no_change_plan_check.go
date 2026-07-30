@@ -40,7 +40,6 @@ func (e expectNoChangePlanCheck) CheckPlan(_ context.Context, req plancheck.Chec
 		valueAfter := after[attributeRoot]
 
 		for idx, part := range attributePathParts {
-			part := part
 			if idx == 0 {
 				continue
 			}

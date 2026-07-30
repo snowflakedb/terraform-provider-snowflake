@@ -10,28 +10,24 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_account(t *testing.T) {
-	secondaryTestClient().EnsureValidNonProdAccountIsUsed(t)
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeNonProdEnvironment {
+		t.Skip("Missing snowflake defaults configuration on prod environment")
+	}
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithProfile(testprofiles.SnowflakeDefaults).
+		WithPreviewFeaturesEnabled("snowflake_authentication_policies_datasource")
 
 	basicModel := datasourcemodel.AuthenticationPolicies("test").
 		WithOnAccount()
-
-	policy := secondaryTestClient().AuthenticationPolicy.ShowOnCurrentAccount(t)
-	if policy != nil {
-		secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
-			Unset: &sdk.AccountUnset{AuthenticationPolicy: sdk.Bool(true)},
-		})
-		t.Cleanup(func() {
-			secondaryTestClient().Account.Alter(t, &sdk.AlterAccountOptions{
-				Set: &sdk.AccountSet{AuthenticationPolicy: sdk.Pointer(policy.ID())},
-			})
-		})
-	}
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -40,14 +36,15 @@ func TestAcc_AuthenticationPolicies_handling_with_builtin_policy_set_on_current_
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.11.0"),
-				Config:            accconfig.FromModels(t, basicModel),
+				Config:            accconfig.FromModels(t, providerModel, basicModel),
 				ExpectError:       regexp.MustCompile("Error: sql: Scan error on column index 0, name \"created_on\""),
 			},
 			{
-				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
-				Config:                   accconfig.FromModels(t, basicModel),
+				ProtoV6ProviderFactories: snowflakeDefaultsAccountProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModel, basicModel),
 				Check: assertThat(
 					t,
+					// Due to custom SHOW query logic the BUILT-IN authentication policy is not populated in the data source
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.show_output.#", "0")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.DatasourceReference(), "authentication_policies.0.describe_output.#", "0")),
 				),

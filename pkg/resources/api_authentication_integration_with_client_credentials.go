@@ -81,7 +81,7 @@ func ImportApiAuthenticationWithClientCredentials(ctx context.Context, d *schema
 	return []*schema.ResourceData{d}, nil
 }
 
-func CreateContextApiAuthenticationIntegrationWithClientCredentials(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextApiAuthenticationIntegrationWithClientCredentials(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	commonCreate, err := handleApiAuthCreate(d)
 	if err != nil {
@@ -119,7 +119,7 @@ func CreateContextApiAuthenticationIntegrationWithClientCredentials(ctx context.
 }
 
 func ReadContextApiAuthenticationIntegrationWithClientCredentials(withExternalChangesMarking bool) schema.ReadContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 		client := meta.(*provider.Context).Client
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
@@ -168,7 +168,7 @@ func ReadContextApiAuthenticationIntegrationWithClientCredentials(withExternalCh
 	}
 }
 
-func UpdateContextApiAuthenticationIntegrationWithClientCredentials(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextApiAuthenticationIntegrationWithClientCredentials(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {

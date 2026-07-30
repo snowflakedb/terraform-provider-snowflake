@@ -19,7 +19,7 @@ type StageAssert struct {
 func Stage(t *testing.T, id sdk.SchemaObjectIdentifier) *StageAssert {
 	t.Helper()
 	return &StageAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("Stage"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stage, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeStage, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.Stage, sdk.SchemaObjectIdentifier] {
 			return testClient.Stage.Show
 		}),
 	}
@@ -43,11 +43,33 @@ func (s *StageAssert) HasCreatedOn(expected time.Time) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasCreatedOnNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasName(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasNameNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,6 +87,17 @@ func (s *StageAssert) HasDatabaseName(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasDatabaseNameNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasSchemaName(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
@@ -76,11 +109,33 @@ func (s *StageAssert) HasSchemaName(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasSchemaNameNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasUrl(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Url != expected {
 			return fmt.Errorf("expected url: %v; got: %v", expected, o.Url)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasUrlNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Url == "" {
+			return fmt.Errorf("expected url to be non-empty")
 		}
 		return nil
 	})
@@ -120,11 +175,33 @@ func (s *StageAssert) HasOwner(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasOwnerNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Owner == "" {
+			return fmt.Errorf("expected owner to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasComment(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.Comment != expected {
 			return fmt.Errorf("expected comment: %v; got: %v", expected, o.Comment)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasCommentNotEmpty() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Comment == "" {
+			return fmt.Errorf("expected comment to be non-empty")
 		}
 		return nil
 	})
@@ -139,6 +216,17 @@ func (s *StageAssert) HasRegion(expected string) *StageAssert {
 		}
 		if *o.Region != expected {
 			return fmt.Errorf("expected region: %v; got: %v", expected, *o.Region)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasNoRegion() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Region != nil {
+			return fmt.Errorf("expected region to be nil; got: %v", *o.Region)
 		}
 		return nil
 	})
@@ -170,14 +258,36 @@ func (s *StageAssert) HasCloud(expected sdk.StageCloud) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasNoCloud() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Cloud != nil {
+			return fmt.Errorf("expected cloud to be nil; got: %v", *o.Cloud)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasStorageIntegration(expected sdk.AccountObjectIdentifier) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
 		if o.StorageIntegration == nil {
 			return fmt.Errorf("expected storage integration to have value; got: nil")
 		}
-		if o.StorageIntegration.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected storage integration: %v; got: %v", expected, *o.StorageIntegration)
+		if (*o.StorageIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected storage integration: %v; got: %v", expected.FullyQualifiedName(), (*o.StorageIntegration).FullyQualifiedName())
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasNoStorageIntegration() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.StorageIntegration != nil {
+			return fmt.Errorf("expected storage integration to be nil; got: %v", *o.StorageIntegration)
 		}
 		return nil
 	})
@@ -198,6 +308,17 @@ func (s *StageAssert) HasEndpoint(expected string) *StageAssert {
 	return s
 }
 
+func (s *StageAssert) HasNoEndpoint() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.Endpoint != nil {
+			return fmt.Errorf("expected endpoint to be nil; got: %v", *o.Endpoint)
+		}
+		return nil
+	})
+	return s
+}
+
 func (s *StageAssert) HasOwnerRoleType(expected string) *StageAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
 		t.Helper()
@@ -206,6 +327,17 @@ func (s *StageAssert) HasOwnerRoleType(expected string) *StageAssert {
 		}
 		if *o.OwnerRoleType != expected {
 			return fmt.Errorf("expected owner role type: %v; got: %v", expected, *o.OwnerRoleType)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *StageAssert) HasNoOwnerRoleType() *StageAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.Stage) error {
+		t.Helper()
+		if o.OwnerRoleType != nil {
+			return fmt.Errorf("expected owner role type to be nil; got: %v", *o.OwnerRoleType)
 		}
 		return nil
 	})

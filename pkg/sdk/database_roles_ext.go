@@ -55,8 +55,8 @@ func (s *RevokeDatabaseRoleRequest) WithDatabaseRole(databaseRole DatabaseObject
 }
 
 func (opts *AlterDatabaseRoleOptions) additionalValidations() error {
-	if opts.Rename != nil {
-		if opts.name.DatabaseName() != opts.Rename.DatabaseName() {
+	if opts.RenameTo != nil {
+		if opts.name.DatabaseName() != opts.RenameTo.DatabaseName() {
 			return errors.Join(ErrDifferentDatabase)
 		}
 	}
@@ -67,5 +67,11 @@ func (opts *ShowDatabaseRoleOptions) additionalValidations() error {
 	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
 		return errors.Join(ErrPatternRequiredForLikeKeyword)
 	}
+	return nil
+}
+
+func (r databaseRoleDBRow) additionalConvert(_ *DatabaseRole) error {
+	// additionalConvert is generated as DatabaseName is a plain only field.
+	// it can't be currently set here, as it is not a returned value, and we can get it only from ID(), which is not passed to convert method
 	return nil
 }

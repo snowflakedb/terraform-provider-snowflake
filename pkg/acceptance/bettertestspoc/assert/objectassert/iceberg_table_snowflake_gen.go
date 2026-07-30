@@ -4,11 +4,13 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -19,7 +21,7 @@ type IcebergTableAssert struct {
 func IcebergTable(t *testing.T, id sdk.SchemaObjectIdentifier) *IcebergTableAssert {
 	t.Helper()
 	return &IcebergTableAssert{
-		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectType("IcebergTable"), id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.IcebergTable, sdk.SchemaObjectIdentifier] {
+		assert.NewSnowflakeObjectAssertWithTestClientObjectProvider(sdk.ObjectTypeIcebergTable, id, func(testClient *helpers.TestClient) assert.ObjectProvider[sdk.IcebergTable, sdk.SchemaObjectIdentifier] {
 			return testClient.IcebergTable.Show
 		}),
 	}
@@ -43,11 +45,33 @@ func (i *IcebergTableAssert) HasCreatedOn(expected time.Time) *IcebergTableAsser
 	return i
 }
 
+func (i *IcebergTableAssert) HasCreatedOnNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasName(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.Name != expected {
 			return fmt.Errorf("expected name: %v; got: %v", expected, o.Name)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNameNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.Name == "" {
+			return fmt.Errorf("expected name to be non-empty")
 		}
 		return nil
 	})
@@ -65,11 +89,33 @@ func (i *IcebergTableAssert) HasDatabaseName(expected string) *IcebergTableAsser
 	return i
 }
 
+func (i *IcebergTableAssert) HasDatabaseNameNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasSchemaName(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.SchemaName != expected {
 			return fmt.Errorf("expected schema name: %v; got: %v", expected, o.SchemaName)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasSchemaNameNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.SchemaName == "" {
+			return fmt.Errorf("expected schema name to be non-empty")
 		}
 		return nil
 	})
@@ -90,14 +136,36 @@ func (i *IcebergTableAssert) HasOwner(expected string) *IcebergTableAssert {
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoOwner() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.Owner != nil {
+			return fmt.Errorf("expected owner to be nil; got: %v", *o.Owner)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasExternalVolumeName(expected sdk.AccountObjectIdentifier) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
 		if o.ExternalVolumeName == nil {
 			return fmt.Errorf("expected external volume name to have value; got: nil")
 		}
-		if (*o.ExternalVolumeName).Name() != expected.Name() {
-			return fmt.Errorf("expected external volume name: %v; got: %v", expected.Name(), (*o.ExternalVolumeName).Name())
+		if (*o.ExternalVolumeName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected external volume name: %v; got: %v", expected.FullyQualifiedName(), (*o.ExternalVolumeName).FullyQualifiedName())
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoExternalVolumeName() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.ExternalVolumeName != nil {
+			return fmt.Errorf("expected external volume name to be nil; got: %v", *o.ExternalVolumeName)
 		}
 		return nil
 	})
@@ -110,8 +178,19 @@ func (i *IcebergTableAssert) HasCatalogName(expected sdk.AccountObjectIdentifier
 		if o.CatalogName == nil {
 			return fmt.Errorf("expected catalog name to have value; got: nil")
 		}
-		if (*o.CatalogName).Name() != expected.Name() {
-			return fmt.Errorf("expected catalog name: %v; got: %v", expected.Name(), (*o.CatalogName).Name())
+		if (*o.CatalogName).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected catalog name: %v; got: %v", expected.FullyQualifiedName(), (*o.CatalogName).FullyQualifiedName())
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoCatalogName() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CatalogName != nil {
+			return fmt.Errorf("expected catalog name to be nil; got: %v", *o.CatalogName)
 		}
 		return nil
 	})
@@ -143,6 +222,17 @@ func (i *IcebergTableAssert) HasCatalogTableName(expected string) *IcebergTableA
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoCatalogTableName() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CatalogTableName != nil {
+			return fmt.Errorf("expected catalog table name to be nil; got: %v", *o.CatalogTableName)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasCatalogNamespace(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -157,6 +247,17 @@ func (i *IcebergTableAssert) HasCatalogNamespace(expected string) *IcebergTableA
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoCatalogNamespace() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.CatalogNamespace != nil {
+			return fmt.Errorf("expected catalog namespace to be nil; got: %v", *o.CatalogNamespace)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasBaseLocation(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -165,6 +266,17 @@ func (i *IcebergTableAssert) HasBaseLocation(expected string) *IcebergTableAsser
 		}
 		if *o.BaseLocation != expected {
 			return fmt.Errorf("expected base location: %v; got: %v", expected, *o.BaseLocation)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoBaseLocation() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.BaseLocation != nil {
+			return fmt.Errorf("expected base location to be nil; got: %v", *o.BaseLocation)
 		}
 		return nil
 	})
@@ -196,6 +308,17 @@ func (i *IcebergTableAssert) HasComment(expected string) *IcebergTableAssert {
 	return i
 }
 
+func (i *IcebergTableAssert) HasNoComment() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.Comment != nil {
+			return fmt.Errorf("expected comment to be nil; got: %v", *o.Comment)
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasNameMapping(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -204,6 +327,17 @@ func (i *IcebergTableAssert) HasNameMapping(expected string) *IcebergTableAssert
 		}
 		if *o.NameMapping != expected {
 			return fmt.Errorf("expected name mapping: %v; got: %v", expected, *o.NameMapping)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoNameMapping() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.NameMapping != nil {
+			return fmt.Errorf("expected name mapping to be nil; got: %v", *o.NameMapping)
 		}
 		return nil
 	})
@@ -221,6 +355,17 @@ func (i *IcebergTableAssert) HasOwnerRoleType(expected string) *IcebergTableAsse
 	return i
 }
 
+func (i *IcebergTableAssert) HasOwnerRoleTypeNotEmpty() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if o.OwnerRoleType == "" {
+			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableAssert) HasCatalogSyncName(expected string) *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
@@ -232,11 +377,35 @@ func (i *IcebergTableAssert) HasCatalogSyncName(expected string) *IcebergTableAs
 	return i
 }
 
-func (i *IcebergTableAssert) HasPartitionSpecs(expected string) *IcebergTableAssert {
+func (i *IcebergTableAssert) HasCatalogSyncNameNotEmpty() *IcebergTableAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
 		t.Helper()
-		if o.PartitionSpecs != expected {
+		if o.CatalogSyncName == "" {
+			return fmt.Errorf("expected catalog sync name to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasPartitionSpecs(expected ...sdk.IcebergTablePartitionSpec) *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		mapped := collections.Map(o.PartitionSpecs, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.IcebergTablePartitionSpec) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
 			return fmt.Errorf("expected partition specs: %v; got: %v", expected, o.PartitionSpecs)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableAssert) HasNoPartitionSpecs() *IcebergTableAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTable) error {
+		t.Helper()
+		if len(o.PartitionSpecs) > 0 {
+			return fmt.Errorf("expected partition specs to be empty; got: %v", o.PartitionSpecs)
 		}
 		return nil
 	})

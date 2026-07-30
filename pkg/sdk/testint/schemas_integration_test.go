@@ -53,6 +53,8 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, testClientHelper().Database.TestDatabaseCatalog().Name())
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
+		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolCpu)
+		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolGpu)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
@@ -76,6 +78,8 @@ func TestInt_Schemas(t *testing.T) {
 			WithDataRetentionTimeInDays(10).
 			WithMaxDataExtensionTimeInDays(10).
 			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US-trim"}).
+			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 			WithWithManagedAccess(true).
 			WithComment(comment))
 		require.NoError(t, err)
@@ -176,6 +180,8 @@ func TestInt_Schemas(t *testing.T) {
 			WithCatalog(catalog).
 			WithReplaceInvalidCharacters(true).
 			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en_US"}).
+			WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+			WithDefaultNotebookComputePoolGpu("GPU_NV_S").
 			WithStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
 			WithLogLevel(sdk.LogLevelInfo).
 			WithLogEventLevel(sdk.LogLevelInfo).
@@ -211,6 +217,8 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterDataRetentionTimeInDays, "0")
 		assertParameterEquals(t, sdk.AccountParameterMaxDataExtensionTimeInDays, "10")
 		assertParameterEquals(t, sdk.AccountParameterDefaultDdlCollation, "en_US")
+		assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolCpu, "CPU_X64_S")
+		assertParameterEquals(t, sdk.AccountParameterDefaultNotebookComputePoolGpu, "GPU_NV_S")
 		assertParameterEquals(t, sdk.AccountParameterExternalVolume, externalVolume.Name())
 		assertParameterEquals(t, sdk.AccountParameterCatalog, catalog.Name())
 		assertParameterEquals(t, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
@@ -240,11 +248,11 @@ func TestInt_Schemas(t *testing.T) {
 		// new schema created on purpose
 		schema, _ := testClientHelper().Schema.CreateSchema(t)
 		t.Cleanup(func() {
-			err := client.Sessions.UseSchema(ctx, testClientHelper().Ids.SchemaId())
+			err := client.Sessions.UseSchema(ctx, sdk.NewUseSchemaSessionRequest(testClientHelper().Ids.SchemaId()))
 			require.NoError(t, err)
 		})
 		newID := testClientHelper().Ids.RandomDatabaseObjectIdentifier()
-		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schema.ID()).WithNewName(newID))
+		err := client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(schema.ID()).WithRenameTo(newID))
 		require.NoError(t, err)
 		s, err := client.Schemas.ShowByID(ctx, newID)
 		require.NoError(t, err)
@@ -265,7 +273,7 @@ func TestInt_Schemas(t *testing.T) {
 		table, _ := testClientHelper().Table.CreateInSchema(t, schema.ID())
 		t.Cleanup(func() {
 			newId := sdk.NewSchemaObjectIdentifierInSchema(swapSchema.ID(), table.Name)
-			err := client.Tables.Drop(ctx, sdk.NewDropTableRequest(newId))
+			err := client.TablesLegacy.Drop(ctx, sdk.NewDropTableRequest(newId))
 			require.NoError(t, err)
 		})
 
@@ -297,6 +305,8 @@ func TestInt_Schemas(t *testing.T) {
 			Catalog:                                 &catalogIntegrationTest,
 			ReplaceInvalidCharacters:                sdk.Bool(true),
 			DefaultDdlCollation:                     sdk.Pointer(sdk.StringAllowEmpty{Value: "en_US"}),
+			DefaultNotebookComputePoolCpu:           sdk.String("CPU_X64_S"),
+			DefaultNotebookComputePoolGpu:           sdk.String("GPU_NV_S"),
 			StorageSerializationPolicy:              sdk.Pointer(sdk.StorageSerializationPolicyCompatible),
 			LogLevel:                                sdk.Pointer(sdk.LogLevelInfo),
 			LogEventLevel:                           sdk.Pointer(sdk.LogLevelInfo),
@@ -320,6 +330,8 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, catalogIntegrationTest.Name())
 		assertParameterEquals(t, params, sdk.AccountParameterReplaceInvalidCharacters, "true")
 		assertParameterEquals(t, params, sdk.AccountParameterDefaultDdlCollation, "en_US")
+		assertParameterEquals(t, params, sdk.AccountParameterDefaultNotebookComputePoolCpu, "CPU_X64_S")
+		assertParameterEquals(t, params, sdk.AccountParameterDefaultNotebookComputePoolGpu, "GPU_NV_S")
 		assertParameterEquals(t, params, sdk.AccountParameterStorageSerializationPolicy, string(sdk.StorageSerializationPolicyCompatible))
 		assertParameterEquals(t, params, sdk.AccountParameterLogLevel, string(sdk.LogLevelInfo))
 		assertParameterEquals(t, params, sdk.AccountParameterLogEventLevel, string(sdk.LogLevelInfo))
@@ -340,6 +352,8 @@ func TestInt_Schemas(t *testing.T) {
 			Catalog:                                 sdk.Bool(true),
 			ReplaceInvalidCharacters:                sdk.Bool(true),
 			DefaultDdlCollation:                     sdk.Bool(true),
+			DefaultNotebookComputePoolCpu:           sdk.Bool(true),
+			DefaultNotebookComputePoolGpu:           sdk.Bool(true),
 			StorageSerializationPolicy:              sdk.Bool(true),
 			LogLevel:                                sdk.Bool(true),
 			LogEventLevel:                           sdk.Bool(true),
@@ -363,6 +377,8 @@ func TestInt_Schemas(t *testing.T) {
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, testClientHelper().Database.TestDatabaseCatalog().Name())
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
+		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolCpu)
+		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolGpu)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
 		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)

@@ -134,7 +134,7 @@ func NetworkPolicy() *schema.Resource {
 	}
 }
 
-func CreateContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func CreateContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	id, err := sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -290,7 +290,7 @@ func ReadContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func UpdateContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func UpdateContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
@@ -378,7 +378,7 @@ func UpdateContextNetworkPolicy(ctx context.Context, d *schema.ResourceData, met
 }
 
 // parseIPList is a helper function to parse a given ip list from ResourceData.
-func parseIPList(v interface{}) []sdk.IPRequest {
+func parseIPList(v any) []sdk.IPRequest {
 	ipList := expandStringList(v.(*schema.Set).List())
 	ipRequests := make([]sdk.IPRequest, len(ipList))
 	for i, v := range ipList {

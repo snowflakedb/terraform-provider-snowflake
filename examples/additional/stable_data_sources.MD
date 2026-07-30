@@ -15,6 +15,7 @@
 - [snowflake_image_repositories](./docs/data-sources/image_repositories)
 - [snowflake_masking_policies](./docs/data-sources/masking_policies)
 - [snowflake_network_policies](./docs/data-sources/network_policies)
+- [snowflake_network_rules](./docs/data-sources/network_rules)
 - [snowflake_password_policies](./docs/data-sources/password_policies)
 - [snowflake_resource_monitors](./docs/data-sources/resource_monitors)
 - [snowflake_row_access_policies](./docs/data-sources/row_access_policies)

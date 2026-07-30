@@ -48,7 +48,7 @@ func (c *IdsGenerator) RandomAccountObjectIdentifier() sdk.AccountObjectIdentifi
 }
 
 func (c *IdsGenerator) RandomSensitiveAccountObjectIdentifier() sdk.AccountObjectIdentifier {
-	return c.RandomAccountObjectIdentifierWithPrefix(random.SensitiveAlphanumeric())
+	return sdk.NewAccountObjectIdentifier(random.AccountName())
 }
 
 func (c *IdsGenerator) RandomAccountObjectIdentifierWithPrefix(prefix string) sdk.AccountObjectIdentifier {

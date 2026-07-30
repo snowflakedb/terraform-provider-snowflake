@@ -121,7 +121,7 @@ func UpdateSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta a
 			return diag.FromErr(err)
 		}
 
-		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(secondaryDatabaseId).WithNewName(newId))
+		err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(secondaryDatabaseId).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -196,7 +196,6 @@ func ReadSecondaryDatabase(ctx context.Context, d *schema.ResourceData, meta any
 
 	var replicationPrimaryDatabase *sdk.ReplicationDatabase
 	for _, replicationDatabase := range replicationDatabases {
-		replicationDatabase := replicationDatabase
 		if !replicationDatabase.IsPrimary &&
 			replicationDatabase.AccountLocator == client.GetAccountLocator() &&
 			replicationDatabase.Name == secondaryDatabaseId.Name() {

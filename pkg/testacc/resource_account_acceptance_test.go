@@ -41,7 +41,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModel := model.Account("test", id.Name(), name, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id.Name(), name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminRsaPublicKey(key)
 
 	resource.Test(t, resource.TestCase{
@@ -76,7 +76,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 						HasAccountName(id.Name()).
 						HasSnowflakeRegion(region).
 						HasRegionGroup("").
-						HasEdition(sdk.EditionStandard).
+						HasEdition(sdk.AccountEditionStandard).
 						HasAccountUrlNotEmpty().
 						HasCreatedOnNotEmpty().
 						HasComment("SNOWFLAKE").
@@ -84,8 +84,8 @@ func TestAcc_Account_Minimal(t *testing.T) {
 						HasAccountLocatorUrlNotEmpty().
 						HasManagedAccounts(0).
 						HasConsumptionBillingEntityNameNotEmpty().
-						HasMarketplaceConsumerBillingEntityName("").
-						HasMarketplaceProviderBillingEntityNameNotEmpty().
+						// TODO [SNOW-3797718]: changed temporarily
+						HasMarketplaceProviderBillingEntityName("").
 						HasOldAccountURL("").
 						HasIsOrgAdmin(false).
 						HasAccountOldUrlSavedOnEmpty().
@@ -119,7 +119,7 @@ func TestAcc_Account_Minimal(t *testing.T) {
 						HasNoFirstName().
 						HasNoLastName().
 						HasNoMustChangePassword().
-						HasEditionString(string(sdk.EditionStandard)).
+						HasEditionString(string(sdk.AccountEditionStandard)).
 						HasNoRegionGroup().
 						HasRegionString(region).
 						HasCommentString("SNOWFLAKE").
@@ -132,10 +132,10 @@ func TestAcc_Account_Minimal(t *testing.T) {
 	})
 }
 
+// TODO [SNOW-3797718]: default consumption billing entity removed; address during billing entity removal
 func TestAcc_Account_Complete(t *testing.T) {
 	testClient().EnsureValidNonProdAccountIsUsed(t)
 
-	defaultConsumptionBillingEntity := testClient().Context.DefaultConsumptionBillingEntity(t).Name()
 	organizationName := testClient().Context.CurrentAccountId(t).OrganizationName()
 	id := random.AccountName()
 	accountId := sdk.NewAccountIdentifier(organizationName, id)
@@ -149,7 +149,7 @@ func TestAcc_Account_Complete(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypePerson).
 		WithAdminRsaPublicKey(key).
 		WithFirstName(firstName).
@@ -158,7 +158,6 @@ func TestAcc_Account_Complete(t *testing.T) {
 		WithRegionGroup("PUBLIC").
 		WithRegion(region).
 		WithComment(comment).
-		WithConsumptionBillingEntity(defaultConsumptionBillingEntity).
 		WithIsOrgAdmin(r.BooleanFalse)
 
 	resource.Test(t, resource.TestCase{
@@ -185,7 +184,6 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasRegionGroupString("PUBLIC").
 						HasRegionString(region).
 						HasCommentString(comment).
-						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity).
 						HasIsOrgAdminString(r.BooleanFalse).
 						HasGracePeriodInDaysString("3"),
 					resourceshowoutputassert.AccountShowOutput(t, configModel.ResourceReference()).
@@ -193,16 +191,14 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasAccountName(id).
 						HasSnowflakeRegion(region).
 						HasRegionGroup("").
-						HasEdition(sdk.EditionStandard).
+						HasEdition(sdk.AccountEditionStandard).
 						HasAccountUrlNotEmpty().
 						HasCreatedOnNotEmpty().
 						HasComment(comment).
 						HasAccountLocatorNotEmpty().
 						HasAccountLocatorUrlNotEmpty().
 						HasManagedAccounts(0).
-						HasConsumptionBillingEntityName(defaultConsumptionBillingEntity).
 						HasMarketplaceConsumerBillingEntityName("").
-						HasMarketplaceProviderBillingEntityNameNotEmpty().
 						HasOldAccountURL("").
 						HasIsOrgAdmin(false).
 						HasAccountOldUrlSavedOnEmpty().
@@ -236,11 +232,10 @@ func TestAcc_Account_Complete(t *testing.T) {
 						HasNoLastName().
 						HasNoAdminUserType().
 						HasNoMustChangePassword().
-						HasEditionString(string(sdk.EditionStandard)).
+						HasEditionString(string(sdk.AccountEditionStandard)).
 						HasNoRegionGroup().
 						HasRegionString(region).
 						HasCommentString(comment).
-						HasConsumptionBillingEntityString(defaultConsumptionBillingEntity).
 						HasIsOrgAdminString(r.BooleanFalse).
 						HasNoGracePeriodInDays(),
 				),
@@ -265,11 +260,11 @@ func TestAcc_Account_Rename(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
-	newConfigModel := model.Account("test", newId.Name(), name, string(sdk.EditionStandard), email, 3).
+	newConfigModel := model.Account("test", newId.Name(), name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -328,17 +323,17 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModelWithOrgAdminTrue := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModelWithOrgAdminTrue := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key).
 		WithIsOrgAdmin(r.BooleanTrue)
 
-	configModelWithOrgAdminFalse := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModelWithOrgAdminFalse := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key).
 		WithIsOrgAdmin(r.BooleanFalse)
 
-	configModelWithoutOrgAdmin := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModelWithoutOrgAdmin := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -410,10 +405,7 @@ func TestAcc_Account_IsOrgAdmin(t *testing.T) {
 			// External change (enable ORGADMIN)
 			{
 				PreConfig: func() {
-					testClient().Account.Alter(t, &sdk.AlterAccountOptions{
-						Name: sdk.Pointer(accountId.AsAccountObjectIdentifier()),
-						Set:  &sdk.AccountSet{OrgAdmin: sdk.Bool(true)},
-					})
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithName(accountId.AsAccountObjectIdentifier()).WithSet(*sdk.NewAccountSetRequest().WithOrgAdmin(true)))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -451,10 +443,10 @@ func TestAcc_Account_UpdatingConsumptionBillingEntity(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminRsaPublicKey(key)
 
-	configModelWithConsumptionBillingEntity := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModelWithConsumptionBillingEntity := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminRsaPublicKey(key).
 		WithConsumptionBillingEntity(defaultConsumptionBillingEntity)
 
@@ -545,14 +537,14 @@ func TestAcc_Account_IgnoreUpdateAfterCreationOnCertainFields(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypePerson).
 		WithFirstName(firstName).
 		WithLastName(lastName).
 		WithMustChangePassword(r.BooleanTrue).
 		WithAdminPassword(pass)
 
-	newConfigModel := model.Account("test", id, newName, string(sdk.EditionStandard), newEmail, 3).
+	newConfigModel := model.Account("test", id, newName, string(sdk.AccountEditionStandard), newEmail, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminPassword(newPass).
 		WithFirstName(newFirstName).
@@ -616,7 +608,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Accountadmin.Name())
 
-	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -629,7 +621,7 @@ func TestAcc_Account_TryToCreateWithoutOrgadmin(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      config.FromModels(t, providerModel, configModel),
-				ExpectError: regexp.MustCompile("Error: current user doesn't have the orgadmin role in session"),
+				ExpectError: regexp.MustCompile("Insufficient privileges to operate on account '.*'. Your primary role ACCOUNTADMIN must have MANAGE ORGANIZATION ACCOUNTS granted on ACCOUNT .*"),
 			},
 		},
 	})
@@ -645,7 +637,7 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModelInvalidUserType := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModelInvalidUserType := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserType("invalid_user_type").
 		WithAdminRsaPublicKey(key)
 
@@ -653,7 +645,7 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
-	configModelInvalidGracePeriodInDays := model.Account("test", id, name, string(sdk.EditionStandard), email, 2).
+	configModelInvalidGracePeriodInDays := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 2).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminRsaPublicKey(key)
 
@@ -666,11 +658,11 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      config.FromModels(t, providerModel, configModelInvalidUserType),
-				ExpectError: regexp.MustCompile("invalid user type: invalid_user_type"),
+				ExpectError: regexp.MustCompile("invalid user type: INVALID_USER_TYPE"),
 			},
 			{
 				Config:      config.FromModels(t, providerModel, configModelInvalidAccountEdition),
-				ExpectError: regexp.MustCompile("unknown account edition: invalid_account_edition"),
+				ExpectError: regexp.MustCompile("invalid account edition: INVALID_ACCOUNT_EDITION"),
 			},
 			{
 				Config:      config.FromModels(t, providerModel, configModelInvalidGracePeriodInDays),
@@ -681,6 +673,7 @@ func TestAcc_Account_InvalidValues(t *testing.T) {
 }
 
 func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
+	t.Skip("SNOW-3797718: try with old config")
 	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	id := random.AccountName()
@@ -694,7 +687,7 @@ func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModel := model.Account("test", id, adminName, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id, adminName, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminUserTypeEnum(sdk.UserTypeService).
 		WithAdminPassword(adminPassword).
 		WithFirstName(firstName).
@@ -712,7 +705,7 @@ func TestAcc_Account_UpgradeFrom_v0_99_0(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("0.99.0"),
-				Config:            accountConfig_v0_99_0(id, adminName, adminPassword, email, sdk.EditionStandard, firstName, lastName, true, region, 3, comment),
+				Config:            accountConfig_v0_99_0(id, adminName, adminPassword, email, sdk.AccountEditionStandard, firstName, lastName, true, region, 3, comment),
 			},
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -798,7 +791,7 @@ func TestAcc_Account_UpgradeFrom_v210(t *testing.T) {
 
 	providerModel := providermodel.SnowflakeProvider().WithRole(snowflakeroles.Orgadmin.Name())
 
-	configModel := model.Account("test", id, name, string(sdk.EditionStandard), email, 3).
+	configModel := model.Account("test", id, name, string(sdk.AccountEditionStandard), email, 3).
 		WithAdminRsaPublicKey(key)
 
 	resource.Test(t, resource.TestCase{

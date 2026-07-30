@@ -200,7 +200,7 @@ func PasswordPolicy() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.PasswordPolicy, customdiff.All(
 			ComputedIfAnyAttributeChanged(passwordPolicySchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
-			ComputedIfAnyAttributeChanged(passwordPolicySchema, DescribeOutputAttributeName, "name", "comment",
+			ComputedIfAnyAttributeChanged(passwordPolicySchema, DescribeOutputAttributeName, "name", "database", "schema", "comment",
 				"min_length", "max_length", "min_upper_case_chars", "min_lower_case_chars",
 				"min_numeric_chars", "min_special_chars", "min_age_days", "max_age_days",
 				"max_retries", "lockout_time_mins", "history"),
@@ -311,7 +311,7 @@ func UpdatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any)
 
 	if d.HasChange("database") || d.HasChange("schema") || d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string))
-		if err := client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(id).WithNewName(newId)); err != nil {
+		if err := client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming password policy from %v to %v, err = %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
 		}
 		d.SetId(helpers.EncodeResourceIdentifier(newId))

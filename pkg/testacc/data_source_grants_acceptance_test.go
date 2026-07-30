@@ -601,6 +601,95 @@ func TestAcc_Grants_FutureTo_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
 	})
 }
 
+func TestAcc_Grants_InheritedIn_Account(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	testClient().Grant.GrantInheritedPrivilegesToAccountRole(
+		t,
+		role.ID(),
+		sdk.InheritedAccountRoleGrantPrivileges{AccountObjectPrivileges: []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeUsage}},
+		sdk.PluralObjectTypeWarehouses,
+		sdk.InheritedAccountRoleGrantIn{Account: new(true)},
+	)
+
+	grantsModel := datasourcemodel.InheritedGrantsInAccount("test")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, grantsModel),
+				Check:  checkAtLeastOneInheritedGrantPresent("ACCOUNT", "", ""),
+			},
+		},
+	})
+}
+
+func TestAcc_Grants_InheritedIn_Database(t *testing.T) {
+	databaseId := testClient().Ids.DatabaseId()
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	testClient().Grant.GrantInheritedPrivilegesToAccountRole(
+		t,
+		role.ID(),
+		sdk.InheritedAccountRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
+		sdk.PluralObjectTypeTables,
+		sdk.InheritedAccountRoleGrantIn{Database: &databaseId},
+	)
+
+	grantsModel := datasourcemodel.InheritedGrantsInDatabase("test", databaseId)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, grantsModel),
+				Check:  checkAtLeastOneInheritedGrantPresent("DATABASE", databaseId.Name(), ""),
+			},
+		},
+	})
+}
+
+func TestAcc_Grants_InheritedIn_Schema(t *testing.T) {
+	schemaId := testClient().Ids.SchemaId()
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	testClient().Grant.GrantInheritedPrivilegesToAccountRole(
+		t,
+		role.ID(),
+		sdk.InheritedAccountRoleGrantPrivileges{SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeSelect}},
+		sdk.PluralObjectTypeTables,
+		sdk.InheritedAccountRoleGrantIn{Schema: &schemaId},
+	)
+
+	grantsModel := datasourcemodel.InheritedGrantsInSchema("test", schemaId)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, grantsModel),
+				Check:  checkAtLeastOneInheritedGrantPresent("SCHEMA", schemaId.DatabaseName(), schemaId.Name()),
+			},
+		},
+	})
+}
+
 func checkAtLeastOneGrantPresent() resource.TestCheckFunc {
 	datasourceName := "data.snowflake_grants.test"
 	return resource.ComposeTestCheckFunc(
@@ -612,6 +701,10 @@ func checkAtLeastOneGrantPresent() resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.granted_to"),
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.grantee_name"),
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.grant_option"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.is_inherited", "false"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from", ""),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_database", ""),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_schema", ""),
 	)
 }
 
@@ -624,6 +717,10 @@ func checkAtLeastOneFutureGrantPresent() resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.name"),
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.grantee_name"),
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.grant_option"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.is_inherited", "false"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from", ""),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_database", ""),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_schema", ""),
 	)
 }
 
@@ -633,5 +730,25 @@ func checkAtLeastOneGrantPresentLimited() resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.#"),
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.created_on"),
 		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.granted_to"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.is_inherited", "false"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from", ""),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_database", ""),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_schema", ""),
+	)
+}
+
+func checkAtLeastOneInheritedGrantPresent(inheritedFrom string, inheritedFromDatabase string, inheritedFromSchema string) resource.TestCheckFunc {
+	datasourceName := "data.snowflake_grants.test"
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttrSet(datasourceName, "grants.#"),
+		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.created_on"),
+		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.privilege"),
+		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.granted_on"),
+		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.granted_to"),
+		resource.TestCheckResourceAttrSet(datasourceName, "grants.0.grantee_name"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.is_inherited", "true"),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from", inheritedFrom),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_database", inheritedFromDatabase),
+		resource.TestCheckResourceAttr(datasourceName, "grants.0.inherited_from_schema", inheritedFromSchema),
 	)
 }

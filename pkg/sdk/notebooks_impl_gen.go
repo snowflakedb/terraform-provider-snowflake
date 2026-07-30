@@ -182,6 +182,9 @@ func (r NotebookDetailsRow) convert() (*NotebookDetails, error) {
 	mapNullString(&result.LastVersionSourceLocationUri, r.LastVersionSourceLocationUri)
 	mapNullString(&result.LastVersionGitCommitHash, r.LastVersionGitCommitHash)
 	mapNullString(&result.LiveVersionLocationUri, r.LiveVersionLocationUri)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 

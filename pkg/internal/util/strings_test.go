@@ -25,7 +25,6 @@ func Test_TrimAllPrefixes(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.input, func(t *testing.T) {
 			output := TrimAllPrefixes(tc.input, tc.prefixes...)
 			require.Equal(t, tc.expected, output)

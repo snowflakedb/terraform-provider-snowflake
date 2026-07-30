@@ -60,7 +60,7 @@ func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		objectassert.ApiIntegrationAzureDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
+			HasApiProviderType(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
 			HasAllowedPrefixes(azureAllowedPrefix).
@@ -93,7 +93,7 @@ func TestAcc_ApiIntegrationAzureApiManagement_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationAzureDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
+			HasApiProviderType(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
 			HasAllowedPrefixes(azureAllowedPrefix).
@@ -223,7 +223,7 @@ func TestAcc_ApiIntegrationAzureApiManagement_CompleteUseCase(t *testing.T) {
 			HasComment(comment),
 		objectassert.ApiIntegrationAzureDetails(t, id).
 			HasEnabled(true).
-			HasApiProvider(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
+			HasApiProviderType(sdk.ApiIntegrationAzureApiProviderTypeAzureApiManagement).
 			HasAzureTenantId(azureTenantId).
 			HasAzureAdApplicationId(azureAdApplicationId).
 			HasAllowedPrefixes(azureAllowedPrefix).

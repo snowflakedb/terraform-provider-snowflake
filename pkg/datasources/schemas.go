@@ -193,7 +193,6 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	flattenedSchemas := make([]map[string]any, len(schemas))
 
 	for i, schema := range schemas {
-		schema := schema
 		var schemaDescription []map[string]any
 		if d.Get("with_describe").(bool) {
 			describeResult, err := client.Schemas.Describe(ctx, schema.ID())

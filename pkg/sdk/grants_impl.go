@@ -61,6 +61,16 @@ func (v *grants) GrantPrivilegesToAccountRole(ctx context.Context, privileges *A
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *grants) GrantInheritedPrivilegesToAccountRole(ctx context.Context, privileges InheritedAccountRoleGrantPrivileges, onAll PluralObjectType, in InheritedAccountRoleGrantIn, role AccountObjectIdentifier) error {
+	opts := &grantInheritedPrivilegesToAccountRoleOptions{
+		privileges:  privileges,
+		onAll:       onAll,
+		in:          in,
+		accountRole: role,
+	}
+	return validateAndExec(v.client, ctx, opts)
+}
+
 func (v *grants) RevokePrivilegesFromAccountRole(ctx context.Context, privileges *AccountRoleGrantPrivileges, on *AccountRoleGrantOn, role AccountObjectIdentifier, opts *RevokePrivilegesFromAccountRoleOptions) error {
 	return v.revokePrivilegesFromAccountRole(ctx, privileges, on, role, opts, noopExecWrapper)
 }
@@ -124,6 +134,33 @@ func (v *grants) revokePrivilegesFromAccountRole(
 	})
 }
 
+func (v *grants) RevokeInheritedPrivilegesFromAccountRole(ctx context.Context, privileges InheritedAccountRoleGrantPrivileges, onAll PluralObjectType, in InheritedAccountRoleGrantIn, role AccountObjectIdentifier) error {
+	return v.revokeInheritedPrivilegesFromAccountRole(ctx, privileges, onAll, in, role, noopExecWrapper)
+}
+
+func (v *grants) RevokeInheritedPrivilegesFromAccountRoleSafely(ctx context.Context, privileges InheritedAccountRoleGrantPrivileges, onAll PluralObjectType, in InheritedAccountRoleGrantIn, role AccountObjectIdentifier) error {
+	return v.revokeInheritedPrivilegesFromAccountRole(ctx, privileges, onAll, in, role, SafeRevokePrivileges)
+}
+
+func (v *grants) revokeInheritedPrivilegesFromAccountRole(
+	ctx context.Context,
+	privileges InheritedAccountRoleGrantPrivileges,
+	onAll PluralObjectType,
+	in InheritedAccountRoleGrantIn,
+	role AccountObjectIdentifier,
+	execWrapper func(func() error) error,
+) error {
+	opts := &revokeInheritedPrivilegesFromAccountRoleOptions{
+		privileges:  privileges,
+		onAll:       onAll,
+		in:          in,
+		accountRole: role,
+	}
+	return execWrapper(func() error {
+		return validateAndExec(v.client, ctx, opts)
+	})
+}
+
 func (v *grants) GrantPrivilegesToDatabaseRole(ctx context.Context, privileges *DatabaseRoleGrantPrivileges, on *DatabaseRoleGrantOn, role DatabaseObjectIdentifier, opts *GrantPrivilegesToDatabaseRoleOptions) error {
 	if opts == nil {
 		opts = &GrantPrivilegesToDatabaseRoleOptions{}
@@ -162,6 +199,16 @@ func (v *grants) GrantPrivilegesToDatabaseRole(ctx context.Context, privileges *
 		)
 	}
 
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *grants) GrantInheritedPrivilegesToDatabaseRole(ctx context.Context, privileges InheritedDatabaseRoleGrantPrivileges, onAll PluralObjectType, in InheritedDatabaseRoleGrantIn, role DatabaseObjectIdentifier) error {
+	opts := &grantInheritedPrivilegesToDatabaseRoleOptions{
+		privileges:   privileges,
+		onAll:        onAll,
+		in:           in,
+		databaseRole: role,
+	}
 	return validateAndExec(v.client, ctx, opts)
 }
 
@@ -219,6 +266,33 @@ func (v *grants) revokePrivilegesFromDatabaseRole(
 		)
 	}
 
+	return execWrapper(func() error {
+		return validateAndExec(v.client, ctx, opts)
+	})
+}
+
+func (v *grants) RevokeInheritedPrivilegesFromDatabaseRole(ctx context.Context, privileges InheritedDatabaseRoleGrantPrivileges, onAll PluralObjectType, in InheritedDatabaseRoleGrantIn, role DatabaseObjectIdentifier) error {
+	return v.revokeInheritedPrivilegesFromDatabaseRole(ctx, privileges, onAll, in, role, noopExecWrapper)
+}
+
+func (v *grants) RevokeInheritedPrivilegesFromDatabaseRoleSafely(ctx context.Context, privileges InheritedDatabaseRoleGrantPrivileges, onAll PluralObjectType, in InheritedDatabaseRoleGrantIn, role DatabaseObjectIdentifier) error {
+	return v.revokeInheritedPrivilegesFromDatabaseRole(ctx, privileges, onAll, in, role, SafeRevokePrivileges)
+}
+
+func (v *grants) revokeInheritedPrivilegesFromDatabaseRole(
+	ctx context.Context,
+	privileges InheritedDatabaseRoleGrantPrivileges,
+	onAll PluralObjectType,
+	in InheritedDatabaseRoleGrantIn,
+	role DatabaseObjectIdentifier,
+	execWrapper func(func() error) error,
+) error {
+	opts := &revokeInheritedPrivilegesFromDatabaseRoleOptions{
+		privileges:   privileges,
+		onAll:        onAll,
+		in:           in,
+		databaseRole: role,
+	}
 	return execWrapper(func() error {
 		return validateAndExec(v.client, ctx, opts)
 	})

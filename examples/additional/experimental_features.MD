@@ -103,4 +103,30 @@ Without this experiment, changing the `database` field on `snowflake_schema` or 
 
 For more information, see the [object renaming guide](./guides/object_renaming_guide).
 
+#### INHERITED_GRANTS
+Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.
+
+Without this experiment, using an `inherited` block results in an error.
+
+#### OBJECT_PARAMETER_UNSET_ON_DELETE
+Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.
+
+Without this experiment, deleting the resource fetches the parameter's default value and explicitly sets it back, which is fragile and doesn't truly remove the object-level override.
+
+When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.
+
+#### AUTHENTICATOR_EXPLICIT_ONLY
+Removes implicit authenticator derivation from other provider configuration fields.
+
+Without this experiment, the provider automatically sets the authenticator to `OAUTH` when the `token` or `token_accessor` field is configured, even if `authenticator` is not explicitly set. This implicit behavior can be confusing and will be removed in v3.
+
+When enabled, the `authenticator` field must be set explicitly in the provider configuration or TOML profile. The `SNOWFLAKE` default (when no authenticator is configured anywhere) is preserved.
+
+#### PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK
+Re-introduces the `account` field as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.
+
+When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence over `account`.
+
+Without this experiment, using the `account` field results in an error directing you to enable this experiment.
+
 
