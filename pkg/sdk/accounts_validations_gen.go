@@ -38,22 +38,42 @@ func (opts *AlterAccountOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
-		if !exactlyOneValueSet(opts.Set.Parameters, opts.Set.LegacyParameters, opts.Set.ResourceMonitor, opts.Set.PackagesPolicy, opts.Set.PasswordPolicy, opts.Set.SessionPolicy, opts.Set.AuthenticationPolicy, opts.Set.FeaturePolicySet, opts.Set.OrgAdmin, opts.Set.ConsumptionBillingEntity) {
-			errs = append(errs, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
+		if !exactlyOneValueSet(opts.Set.Parameters, opts.Set.LegacyParameters, opts.Set.ResourceMonitor, opts.Set.PackagesPolicy, opts.Set.PasswordPolicy, opts.Set.SessionPolicySet, opts.Set.AuthenticationPolicySet, opts.Set.FeaturePolicySet, opts.Set.OrgAdmin, opts.Set.ConsumptionBillingEntity) {
+			errs = append(errs, errExactlyOneOf("AlterAccountOptions.Set", "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity"))
 		}
 		errs = append(errs, opts.Set.additionalValidations())
 		if valueSet(opts.Set.LegacyParameters) {
 			errs = append(errs, opts.Set.LegacyParameters.additionalValidations())
 		}
+		if valueSet(opts.Set.SessionPolicySet) {
+			if everyValueSet(opts.Set.SessionPolicySet.ForAllPersonUsers, opts.Set.SessionPolicySet.ForAllServiceUsers) {
+				errs = append(errs, errOneOf("AlterAccountOptions.Set.SessionPolicySet", "ForAllPersonUsers", "ForAllServiceUsers"))
+			}
+		}
+		if valueSet(opts.Set.AuthenticationPolicySet) {
+			if everyValueSet(opts.Set.AuthenticationPolicySet.ForAllPersonUsers, opts.Set.AuthenticationPolicySet.ForAllServiceUsers) {
+				errs = append(errs, errOneOf("AlterAccountOptions.Set.AuthenticationPolicySet", "ForAllPersonUsers", "ForAllServiceUsers"))
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
-		if !exactlyOneValueSet(opts.Unset.Parameters, opts.Unset.LegacyParameters, opts.Unset.PackagesPolicy, opts.Unset.PasswordPolicy, opts.Unset.SessionPolicy, opts.Unset.AuthenticationPolicy, opts.Unset.ResourceMonitor, opts.Unset.FeaturePolicyUnset, opts.Unset.ConsumptionBillingEntity) {
-			errs = append(errs, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
+		if !exactlyOneValueSet(opts.Unset.Parameters, opts.Unset.LegacyParameters, opts.Unset.PackagesPolicy, opts.Unset.PasswordPolicy, opts.Unset.SessionPolicyUnset, opts.Unset.AuthenticationPolicyUnset, opts.Unset.ResourceMonitor, opts.Unset.FeaturePolicyUnset, opts.Unset.ConsumptionBillingEntity) {
+			errs = append(errs, errExactlyOneOf("AlterAccountOptions.Unset", "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity"))
 		}
 		errs = append(errs, opts.Unset.additionalValidations())
 		if valueSet(opts.Unset.LegacyParameters) {
 			if !anyValueSet(opts.Unset.LegacyParameters.AccountParameters, opts.Unset.LegacyParameters.SessionParameters, opts.Unset.LegacyParameters.ObjectParameters, opts.Unset.LegacyParameters.UserParameters) {
 				errs = append(errs, errAtLeastOneOf("AlterAccountOptions.Unset.LegacyParameters", "AccountParameters", "SessionParameters", "ObjectParameters", "UserParameters"))
+			}
+		}
+		if valueSet(opts.Unset.AuthenticationPolicyUnset) {
+			if everyValueSet(opts.Unset.AuthenticationPolicyUnset.ForAllPersonUsers, opts.Unset.AuthenticationPolicyUnset.ForAllServiceUsers) {
+				errs = append(errs, errOneOf("AlterAccountOptions.Unset.AuthenticationPolicyUnset", "ForAllPersonUsers", "ForAllServiceUsers"))
+			}
+		}
+		if valueSet(opts.Unset.SessionPolicyUnset) {
+			if everyValueSet(opts.Unset.SessionPolicyUnset.ForAllPersonUsers, opts.Unset.SessionPolicyUnset.ForAllServiceUsers) {
+				errs = append(errs, errOneOf("AlterAccountOptions.Unset.SessionPolicyUnset", "ForAllPersonUsers", "ForAllServiceUsers"))
 			}
 		}
 	}

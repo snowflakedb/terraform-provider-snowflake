@@ -608,11 +608,11 @@ func TestAcc_CurrentAccount_NonParameterValues(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithResourceMonitor(resourceMonitor.ID())))
-					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicy(authenticationPolicy.ID())))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(authenticationPolicy.ID()))))
 					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithFeaturePolicySet(*sdk.NewAccountFeaturePolicySetRequest().WithFeaturePolicy(featurePolicyId))))
 					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithPackagesPolicy(packagesPolicyId)))
 					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithPasswordPolicy(passwordPolicy.ID())))
-					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithSessionPolicy(sessionPolicy.ID())))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().WithSessionPolicy(sessionPolicy.ID()))))
 				},
 				Config: config.FromModels(t, provider, unsetModel),
 				Check: assertThat(

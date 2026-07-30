@@ -220,6 +220,7 @@ func userSetStruct() *g.QueryStruct {
 		OptionalQueryStructField("ObjectProperties", userAlterObjectPropertiesStruct(), g.KeywordOptions()).
 		OptionalQueryStructField("ObjectParameters", userObjectParametersStruct(), g.KeywordOptions()).
 		PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.KeywordOptions()).
+		OptionalSQL("FORCE").
 		WithValidation(g.AtLeastOneValueSet, "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy", "ObjectProperties", "ObjectParameters", "SessionParameters").
 		WithValidation(g.MoreThanOneValueSet, "PasswordPolicy", "SessionPolicy", "AuthenticationPolicy").
 		WithAdditionalValidations()

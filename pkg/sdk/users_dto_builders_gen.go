@@ -413,6 +413,11 @@ func (s *UserSetRequest) WithSessionParameters(sessionParameters SessionParamete
 	return s
 }
 
+func (s *UserSetRequest) WithForce(force bool) *UserSetRequest {
+	s.Force = &force
+	return s
+}
+
 func NewUserAlterObjectPropertiesRequest() *UserAlterObjectPropertiesRequest {
 	s := UserAlterObjectPropertiesRequest{}
 	return &s

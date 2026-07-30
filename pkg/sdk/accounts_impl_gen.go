@@ -99,8 +99,6 @@ func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 			ResourceMonitor:          r.Set.ResourceMonitor,
 			PackagesPolicy:           r.Set.PackagesPolicy,
 			PasswordPolicy:           r.Set.PasswordPolicy,
-			SessionPolicy:            r.Set.SessionPolicy,
-			AuthenticationPolicy:     r.Set.AuthenticationPolicy,
 			ConsumptionBillingEntity: r.Set.ConsumptionBillingEntity,
 			OrgAdmin:                 r.Set.OrgAdmin,
 			Force:                    r.Set.Force,
@@ -113,6 +111,20 @@ func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 				UserParameters:    r.Set.LegacyParameters.UserParameters,
 			}
 		}
+		if r.Set.SessionPolicySet != nil {
+			opts.Set.SessionPolicySet = &AccountSessionPolicySet{
+				SessionPolicy:      r.Set.SessionPolicySet.SessionPolicy,
+				ForAllPersonUsers:  r.Set.SessionPolicySet.ForAllPersonUsers,
+				ForAllServiceUsers: r.Set.SessionPolicySet.ForAllServiceUsers,
+			}
+		}
+		if r.Set.AuthenticationPolicySet != nil {
+			opts.Set.AuthenticationPolicySet = &AccountAuthenticationPolicySet{
+				AuthenticationPolicy: r.Set.AuthenticationPolicySet.AuthenticationPolicy,
+				ForAllPersonUsers:    r.Set.AuthenticationPolicySet.ForAllPersonUsers,
+				ForAllServiceUsers:   r.Set.AuthenticationPolicySet.ForAllServiceUsers,
+			}
+		}
 		if r.Set.FeaturePolicySet != nil {
 			opts.Set.FeaturePolicySet = &AccountFeaturePolicySet{
 				FeaturePolicy: r.Set.FeaturePolicySet.FeaturePolicy,
@@ -122,10 +134,8 @@ func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 	if r.Unset != nil {
 		opts.Unset = &AccountUnset{
 			Parameters:               r.Unset.Parameters,
-			AuthenticationPolicy:     r.Unset.AuthenticationPolicy,
 			PackagesPolicy:           r.Unset.PackagesPolicy,
 			PasswordPolicy:           r.Unset.PasswordPolicy,
-			SessionPolicy:            r.Unset.SessionPolicy,
 			ResourceMonitor:          r.Unset.ResourceMonitor,
 			ConsumptionBillingEntity: r.Unset.ConsumptionBillingEntity,
 		}
@@ -137,9 +147,23 @@ func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 				UserParameters:    r.Unset.LegacyParameters.UserParameters,
 			}
 		}
+		if r.Unset.AuthenticationPolicyUnset != nil {
+			opts.Unset.AuthenticationPolicyUnset = &AccountAuthenticationPolicyUnset{
+				AuthenticationPolicy: r.Unset.AuthenticationPolicyUnset.AuthenticationPolicy,
+				ForAllPersonUsers:    r.Unset.AuthenticationPolicyUnset.ForAllPersonUsers,
+				ForAllServiceUsers:   r.Unset.AuthenticationPolicyUnset.ForAllServiceUsers,
+			}
+		}
 		if r.Unset.FeaturePolicyUnset != nil {
 			opts.Unset.FeaturePolicyUnset = &AccountFeaturePolicyUnset{
 				FeaturePolicy: r.Unset.FeaturePolicyUnset.FeaturePolicy,
+			}
+		}
+		if r.Unset.SessionPolicyUnset != nil {
+			opts.Unset.SessionPolicyUnset = &AccountSessionPolicyUnset{
+				SessionPolicy:      r.Unset.SessionPolicyUnset.SessionPolicy,
+				ForAllPersonUsers:  r.Unset.SessionPolicyUnset.ForAllPersonUsers,
+				ForAllServiceUsers: r.Unset.SessionPolicyUnset.ForAllServiceUsers,
 			}
 		}
 	}
