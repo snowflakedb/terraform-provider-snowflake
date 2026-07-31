@@ -24,6 +24,24 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.19.0 ➞ v2.19.1
+
+### *(bug fix)* Deprecation warning raised for `skip_toml_file_permission_verification` that was not set
+
+Previously, every `terraform plan` / `terraform apply` raised the `Argument is deprecated` warning for the `skip_toml_file_permission_verification` provider field, even when the field was not set in the provider configuration (once per provider block, so configurations with multiple aliased providers got multiple warnings):
+
+```
+│ Warning: Argument is deprecated
+│
+│   with provider["registry.terraform.io/snowflakedb/snowflake"].sysadmin,
+│
+│ This field is deprecated. It will be removed in the next major release. Skipping TOML configuration file permission verification will be disallowed in the next major release. (...)
+```
+
+The warning was purely cosmetic - the TOML file permission verification itself was not affected. Now the warning is raised only when the field is set explicitly (in the configuration or with the `SNOWFLAKE_SKIP_TOML_FILE_PERMISSION_VERIFICATION` environment variable). The field's effective default is still `false`, so no changes in configuration are required.
+
+Reference: [#5082](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5082)
+
 ## v2.18.x ➞ v2.19.0
 
 ### *(improvement)* Rework of `snowflake_account_authentication_policy_attachment` and `snowflake_user_authentication_policy_attachment`
