@@ -4,11 +4,13 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -224,6 +226,30 @@ func (a *AuthenticationPolicyAssert) HasOptionsNotEmpty() *AuthenticationPolicyA
 		t.Helper()
 		if o.Options == "" {
 			return fmt.Errorf("expected options to be non-empty")
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyAssert) HasTargetScopes(expected ...sdk.AuthenticationPolicyTargetScope) *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		mapped := collections.Map(o.TargetScopes, func(item sdk.AuthenticationPolicyTargetScope) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.AuthenticationPolicyTargetScope) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected target scopes: %v; got: %v", expected, o.TargetScopes)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyAssert) HasNoTargetScopes() *AuthenticationPolicyAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicy) error {
+		t.Helper()
+		if len(o.TargetScopes) > 0 {
+			return fmt.Errorf("expected target scopes to be empty; got: %v", o.TargetScopes)
 		}
 		return nil
 	})

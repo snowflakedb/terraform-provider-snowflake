@@ -4,6 +4,7 @@ package testint
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -502,8 +503,17 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 	})
 
 	t.Run("set / unset policies", func(t *testing.T) {
-		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
-		t.Cleanup(authPolicyCleanup)
+		authPolicyForAccountAndPersonUsers, authPolicyForAccountAndPersonUsersCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authPolicyForAccountAndPersonUsersCleanup)
+
+		authPolicyForServiceUsers, authPolicyForServiceUsersCleanup := testClientHelper().AuthenticationPolicy.Create(t)
+		t.Cleanup(authPolicyForServiceUsersCleanup)
+
+		sessionPolicyForPersonAndServiceUsers, sessionPolicyForPersonAndServiceUsersCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
+		t.Cleanup(sessionPolicyForPersonAndServiceUsersCleanup)
+
+		sessionPolicyForAccount, sessionPolicyForAccountCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
+		t.Cleanup(sessionPolicyForAccountCleanup)
 
 		featurePolicyId, featurePolicyCleanup := testClientHelper().FeaturePolicy.Create(t)
 		t.Cleanup(featurePolicyCleanup)
@@ -511,24 +521,84 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		passwordPolicy, passwordPolicyCleanup := testClientHelper().PasswordPolicy.CreatePasswordPolicy(t)
 		t.Cleanup(passwordPolicyCleanup)
 
-		sessionPolicy, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
-		t.Cleanup(sessionPolicyCleanup)
-
 		packagesPolicyId, packagesPolicyCleanup := testClientHelper().PackagesPolicy.Create(t)
 		t.Cleanup(packagesPolicyCleanup)
 
 		t.Cleanup(func() {
-			err := client.Accounts.UnsetAllPoliciesSafely(ctx)
+			// The account-wide (no FOR ALL clause) attachments are removed with the safe helper, but the per-user-type
+			// scoped attachments have to be unset with the same FOR ALL syntax that was used to set them.
+			err := errors.Join(
+				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+					WithUnset(*sdk.NewAccountUnsetRequest().
+						WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().
+							WithAuthenticationPolicy(true).
+							WithForAllPersonUsers(true)))),
+				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+					WithUnset(*sdk.NewAccountUnsetRequest().
+						WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().
+							WithAuthenticationPolicy(true).
+							WithForAllServiceUsers(true)))),
+				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+					WithUnset(*sdk.NewAccountUnsetRequest().
+						WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().
+							WithSessionPolicy(true).
+							WithForAllPersonUsers(true)))),
+				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+					WithUnset(*sdk.NewAccountUnsetRequest().
+						WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().
+							WithSessionPolicy(true).
+							WithForAllServiceUsers(true)))),
+				client.Accounts.UnsetAllPoliciesSafely(ctx),
+			)
 			assert.NoError(t, err)
 			assertThatNoPolicyIsSetOnAccount(t)
 		})
 
+		// Authentication policies: one policy attached account-wide and FOR ALL PERSON USERS, another attached
+		// FOR ALL SERVICE USERS.
 		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
 			WithSet(*sdk.NewAccountSetRequest().
 				WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().
-					WithAuthenticationPolicy(authPolicy.ID()))))
+					WithAuthenticationPolicy(authPolicyForAccountAndPersonUsers.ID()))))
 		require.NoError(t, err)
 
+		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+			WithSet(*sdk.NewAccountSetRequest().
+				WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().
+					WithAuthenticationPolicy(authPolicyForAccountAndPersonUsers.ID()).
+					WithForAllPersonUsers(true))))
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+			WithSet(*sdk.NewAccountSetRequest().
+				WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().
+					WithAuthenticationPolicy(authPolicyForServiceUsers.ID()).
+					WithForAllServiceUsers(true))))
+		require.NoError(t, err)
+
+		// Session policies: one policy attached FOR ALL PERSON USERS and FOR ALL SERVICE USERS, another attached
+		// account-wide.
+		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+			WithSet(*sdk.NewAccountSetRequest().
+				WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().
+					WithSessionPolicy(sessionPolicyForPersonAndServiceUsers.ID()).
+					WithForAllPersonUsers(true))))
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+			WithSet(*sdk.NewAccountSetRequest().
+				WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().
+					WithSessionPolicy(sessionPolicyForPersonAndServiceUsers.ID()).
+					WithForAllServiceUsers(true))))
+		require.NoError(t, err)
+
+		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
+			WithSet(*sdk.NewAccountSetRequest().
+				WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().
+					WithSessionPolicy(sessionPolicyForAccount.ID()))))
+		require.NoError(t, err)
+
+		// Remaining policy kinds.
 		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithFeaturePolicySet(*sdk.NewAccountFeaturePolicySetRequest().WithFeaturePolicy(featurePolicyId))))
 		require.NoError(t, err)
 
@@ -538,63 +608,21 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithPasswordPolicy(passwordPolicy.ID())))
 		require.NoError(t, err)
 
-		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().
-				WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().
-					WithSessionPolicy(sessionPolicy.ID()))))
-		require.NoError(t, err)
+		assertThatPolicyIsSetOnAccount(
+			t,
+			expectedAccountPolicy{sdk.PolicyKindAuthenticationPolicy, authPolicyForAccountAndPersonUsers.ID()},
+			expectedAccountPolicy{sdk.PolicyKindAuthenticationPolicy, authPolicyForServiceUsers.ID()},
+			expectedAccountPolicy{sdk.PolicyKindSessionPolicy, sessionPolicyForPersonAndServiceUsers.ID()},
+			expectedAccountPolicy{sdk.PolicyKindSessionPolicy, sessionPolicyForAccount.ID()},
+			expectedAccountPolicy{sdk.PolicyKindFeaturePolicy, featurePolicyId},
+			expectedAccountPolicy{sdk.PolicyKindPasswordPolicy, passwordPolicy.ID()},
+			expectedAccountPolicy{sdk.PolicyKindPackagesPolicy, packagesPolicyId},
+		)
 
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, featurePolicyId)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authPolicy.ID())
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPasswordPolicy, passwordPolicy.ID())
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindSessionPolicy, sessionPolicy.ID())
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, packagesPolicyId)
-	})
-
-	t.Run("set / unset authentication policy for all person users", func(t *testing.T) {
-		authPolicy, authPolicyCleanup := testClientHelper().AuthenticationPolicy.Create(t)
-		t.Cleanup(authPolicyCleanup)
-
-		t.Cleanup(func() {
-			err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-				WithUnset(*sdk.NewAccountUnsetRequest().
-					WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().
-						WithAuthenticationPolicy(true).
-						WithForAllPersonUsers(true))))
-			require.NoError(t, err)
-			assertThatNoPolicyIsSetOnAccount(t)
-		})
-
-		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().
-				WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().
-					WithAuthenticationPolicy(authPolicy.ID()).
-					WithForAllPersonUsers(true))))
-		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authPolicy.ID())
-	})
-
-	t.Run("set / unset session policy for all service users", func(t *testing.T) {
-		sessionPolicy, sessionPolicyCleanup := testClientHelper().SessionPolicy.CreateSessionPolicy(t)
-		t.Cleanup(sessionPolicyCleanup)
-
-		t.Cleanup(func() {
-			err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-				WithUnset(*sdk.NewAccountUnsetRequest().
-					WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().
-						WithSessionPolicy(true).
-						WithForAllServiceUsers(true))))
-			require.NoError(t, err)
-			assertThatNoPolicyIsSetOnAccount(t)
-		})
-
-		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().
-				WithSessionPolicySet(*sdk.NewAccountSessionPolicySetRequest().
-					WithSessionPolicy(sessionPolicy.ID()).
-					WithForAllServiceUsers(true))))
-		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindSessionPolicy, sessionPolicy.ID())
+		assertThatAuthenticationPolicyIsSetOnAccountWithScopes(t, authPolicyForAccountAndPersonUsers.ID(), sdk.AuthenticationPolicyTargetScopeAccount, sdk.AuthenticationPolicyTargetScopePersonUsers)
+		assertThatAuthenticationPolicyIsSetOnAccountWithScopes(t, authPolicyForServiceUsers.ID(), sdk.AuthenticationPolicyTargetScopeServiceUsers)
+		assertThatSessionPolicyIsSetOnAccountWithScopes(t, sessionPolicyForPersonAndServiceUsers.ID(), sdk.SessionPolicyTargetScopePersonUsers, sdk.SessionPolicyTargetScopeServiceUsers)
+		assertThatSessionPolicyIsSetOnAccountWithScopes(t, sessionPolicyForAccount.ID(), sdk.SessionPolicyTargetScopeAccount)
 	})
 
 	t.Run("force new packages policy", func(t *testing.T) {
@@ -606,7 +634,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithPackagesPolicy(packagesPolicyId)))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, packagesPolicyId)
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindPackagesPolicy, packagesPolicyId})
 		t.Cleanup(func() {
 			err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithPackagesPolicy(true)))
 			require.NoError(t, err)
@@ -618,7 +646,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithPackagesPolicy(newPackagesPolicyId).WithForce(true)))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPackagesPolicy, newPackagesPolicyId)
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindPackagesPolicy, newPackagesPolicyId})
 	})
 
 	t.Run("force new feature policy", func(t *testing.T) {
@@ -630,7 +658,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithFeaturePolicySet(*sdk.NewAccountFeaturePolicySetRequest().WithFeaturePolicy(featurePolicyId))))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, featurePolicyId)
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindFeaturePolicy, featurePolicyId})
 		t.Cleanup(func() {
 			err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithFeaturePolicyUnset(*sdk.NewAccountFeaturePolicyUnsetRequest().WithFeaturePolicy(true))))
 			require.NoError(t, err)
@@ -644,7 +672,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		// To set a new feature policy on the account without firstly unsetting it, we can use FORCE parameter.
 		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithFeaturePolicySet(*sdk.NewAccountFeaturePolicySetRequest().WithFeaturePolicy(newFeaturePolicyId)).WithForce(true)))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindFeaturePolicy, newFeaturePolicyId)
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindFeaturePolicy, newFeaturePolicyId})
 	})
 
 	t.Run("unset policy safely", func(t *testing.T) {
@@ -660,7 +688,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(authenticationPolicy.ID()))))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindAuthenticationPolicy, authenticationPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindAuthenticationPolicy, authenticationPolicy.ID()})
 
 		err = client.Accounts.UnsetPolicySafely(ctx, sdk.PolicyKindAuthenticationPolicy)
 		assert.NoError(t, err)

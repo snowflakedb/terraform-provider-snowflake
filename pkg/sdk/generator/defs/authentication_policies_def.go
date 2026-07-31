@@ -54,6 +54,10 @@ var (
 		"EnforceMfaOnExternalAuthenticationOption", "EnforceMfaOnExternalAuthenticationOptions",
 		"ALL", "NONE",
 	)
+	AuthenticationPolicyTargetScopeEnumDef = g.NewEnum(
+		"AuthenticationPolicyTargetScope", "AuthenticationPolicyTargetScopes",
+		"ACCOUNT", "PERSON_USERS", "SERVICE_USERS",
+	)
 
 	AuthenticationMethodsOptionDef = g.NewQueryStruct("AuthenticationMethods").Enum("Method", AuthenticationMethodsOptionEnumDef, g.KeywordOptions().SingleQuotes().Required())
 	ClientTypesOptionDef           = g.NewQueryStruct("ClientTypes").Enum("ClientType", ClientTypesOptionEnumDef, g.KeywordOptions().SingleQuotes().Required())
@@ -183,6 +187,7 @@ var authenticationPoliciesDef = g.NewInterface(
 			OptionalText("owner", g.WithRequiredInPlain()).
 			OptionalText("owner_role_type", g.WithRequiredInPlain()).
 			Text("options").
+			PlainOnlyField("TargetScopes", "[]AuthenticationPolicyTargetScope").
 			WithShowResultFilterHook(),
 		g.NewQueryStruct("ShowAuthenticationPolicies").
 			Show().
@@ -221,4 +226,5 @@ var authenticationPoliciesDef = g.NewInterface(
 		NetworkPolicyEvaluationOptionEnumDef,
 		MfaPolicyAllowedMethodsOptionEnumDef,
 		EnforceMfaOnExternalAuthenticationOptionEnumDef,
+		AuthenticationPolicyTargetScopeEnumDef,
 	)

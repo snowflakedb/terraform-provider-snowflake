@@ -2,9 +2,36 @@ package sdk
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"slices"
 	"strconv"
 )
+
+func (r showSessionPolicyDBRow) additionalConvert(result *SessionPolicy) error {
+	targetScopes, err := parseSessionPolicyTargetScopes(r.Options)
+	if err != nil {
+		return fmt.Errorf("parsing target scopes for session policy with name %s: %w", r.Name, err)
+	}
+	result.TargetScopes = targetScopes
+	return nil
+}
+
+// parseSessionPolicyTargetScopes extracts the "target_scopes" JSON array from the raw options column.
+func parseSessionPolicyTargetScopes(options string) ([]SessionPolicyTargetScope, error) {
+	if options == "" {
+		return nil, nil
+	}
+	var raw struct {
+		TargetScopes []SessionPolicyTargetScope `json:"target_scopes"`
+	}
+	if err := json.Unmarshal([]byte(options), &raw); err != nil {
+		return nil, err
+	}
+	slices.Sort(raw.TargetScopes)
+	return raw.TargetScopes, nil
+}
 
 // Validates whether both All and None aren't non-nil pointers to false.
 func (s *SessionPolicySecondaryRoles) validate() error {

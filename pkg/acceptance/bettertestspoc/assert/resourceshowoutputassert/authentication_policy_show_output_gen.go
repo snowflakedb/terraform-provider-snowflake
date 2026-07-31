@@ -143,3 +143,8 @@ func (a *AuthenticationPolicyShowOutputAssert) HasNoOptions() *AuthenticationPol
 	a.ValueNotSet("options")
 	return a
 }
+
+func (a *AuthenticationPolicyShowOutputAssert) HasNoTargetScopes() *AuthenticationPolicyShowOutputAssert {
+	a.ValueSet("target_scopes.#", "0")
+	return a
+}

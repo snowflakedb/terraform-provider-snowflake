@@ -410,3 +410,31 @@ func ToEnforceMfaOnExternalAuthenticationOption(s string) (EnforceMfaOnExternalA
 		return "", fmt.Errorf("invalid enforce mfa on external authentication option: %s", s)
 	}
 }
+
+type AuthenticationPolicyTargetScope string
+
+const (
+	AuthenticationPolicyTargetScopeAccount      AuthenticationPolicyTargetScope = "ACCOUNT"
+	AuthenticationPolicyTargetScopePersonUsers  AuthenticationPolicyTargetScope = "PERSON_USERS"
+	AuthenticationPolicyTargetScopeServiceUsers AuthenticationPolicyTargetScope = "SERVICE_USERS"
+)
+
+var AllAuthenticationPolicyTargetScopes = []AuthenticationPolicyTargetScope{
+	AuthenticationPolicyTargetScopeAccount,
+	AuthenticationPolicyTargetScopePersonUsers,
+	AuthenticationPolicyTargetScopeServiceUsers,
+}
+
+func ToAuthenticationPolicyTargetScope(s string) (AuthenticationPolicyTargetScope, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(AuthenticationPolicyTargetScopeAccount):
+		return AuthenticationPolicyTargetScopeAccount, nil
+	case string(AuthenticationPolicyTargetScopePersonUsers):
+		return AuthenticationPolicyTargetScopePersonUsers, nil
+	case string(AuthenticationPolicyTargetScopeServiceUsers):
+		return AuthenticationPolicyTargetScopeServiceUsers, nil
+	default:
+		return "", fmt.Errorf("invalid authentication policy target scope: %s", s)
+	}
+}

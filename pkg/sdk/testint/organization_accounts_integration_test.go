@@ -74,7 +74,7 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 
 		err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithPasswordPolicy(passwordPolicy.ID())))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindPasswordPolicy, passwordPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindPasswordPolicy, passwordPolicy.ID()})
 
 		// Set another password policy without unsetting the previous one
 		err = client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithPasswordPolicy(passwordPolicy2.ID())))
@@ -98,7 +98,7 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 
 		err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicy.ID())))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindSessionPolicy, sessionPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindSessionPolicy, sessionPolicy.ID()})
 
 		// Set another session policy without unsetting the previous one
 		err = client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicy2.ID())))
@@ -122,7 +122,7 @@ func TestInt_OrganizationAccount_SelfAlter(t *testing.T) {
 
 		err := client.OrganizationAccounts.Alter(ctx, sdk.NewAlterOrganizationAccountRequest().WithSet(*sdk.NewOrganizationAccountSetRequest().WithSessionPolicy(sessionPolicy.ID())))
 		require.NoError(t, err)
-		assertThatPolicyIsSetOnAccount(t, sdk.PolicyKindSessionPolicy, sessionPolicy.ID())
+		assertThatPolicyIsSetOnAccount(t, expectedAccountPolicy{sdk.PolicyKindSessionPolicy, sessionPolicy.ID()})
 
 		// Try to set policy when there's already one set
 		err = client.OrganizationAccounts.SetPolicySafely(ctx, sdk.PolicyKindSessionPolicy, sessionPolicy2.ID())

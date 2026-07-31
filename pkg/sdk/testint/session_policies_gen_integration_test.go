@@ -19,17 +19,21 @@ func TestInt_SessionPolicies(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	assertSessionPolicy := func(t *testing.T, sessionPolicy *sdk.SessionPolicy, id sdk.SchemaObjectIdentifier, expectedComment string) {
+	assertSessionPolicy := func(t *testing.T, id sdk.SchemaObjectIdentifier, expectedComment string) {
 		t.Helper()
-		assert.NotEmpty(t, sessionPolicy.CreatedOn)
-		assert.Equal(t, id.Name(), sessionPolicy.Name)
-		assert.Equal(t, id.SchemaName(), sessionPolicy.SchemaName)
-		assert.Equal(t, id.DatabaseName(), sessionPolicy.DatabaseName)
-		assert.Equal(t, "ACCOUNTADMIN", sessionPolicy.Owner)
-		assert.Equal(t, expectedComment, sessionPolicy.Comment)
-		assert.Equal(t, "SESSION_POLICY", sessionPolicy.Kind)
-		assert.Equal(t, "ROLE", sessionPolicy.OwnerRoleType)
-		assert.Equal(t, "", sessionPolicy.Options)
+		assertThatObject(
+			t,
+			objectassert.SessionPolicy(t, id).
+				HasCreatedOnNotEmpty().
+				HasName(id.Name()).
+				HasDatabaseName(id.DatabaseName()).
+				HasSchemaName(id.SchemaName()).
+				HasKind("SESSION_POLICY").
+				HasOptions("").
+				HasOwner(snowflakeroles.Accountadmin.Name()).
+				HasComment(expectedComment).
+				HasOwnerRoleType("ROLE"),
+		)
 	}
 
 	cleanupSessionPolicyProvider := func(id sdk.SchemaObjectIdentifier) func() {
@@ -80,10 +84,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupSessionPolicyProvider(id))
 
-		sessionPolicy, err := client.SessionPolicies.ShowByID(ctx, id)
-
-		require.NoError(t, err)
-		assertSessionPolicy(t, sessionPolicy, id, comment)
+		assertSessionPolicy(t, id, comment)
 		assertThatObject(t, objectassert.SessionPolicyDetails(t, id).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -103,10 +104,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupSessionPolicyProvider(id))
 
-		sessionPolicy, err := client.SessionPolicies.ShowByID(ctx, id)
-
-		require.NoError(t, err)
-		assertSessionPolicy(t, sessionPolicy, id, "")
+		assertSessionPolicy(t, id, "")
 		assertThatObject(t, objectassert.SessionPolicyDetails(t, id).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
@@ -192,10 +190,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		_, err = client.SessionPolicies.ShowByID(ctx, id)
 		assert.ErrorIs(t, err, collections.ErrObjectNotFound)
 
-		sessionPolicy, err := client.SessionPolicies.ShowByID(ctx, newId)
-		require.NoError(t, err)
-
-		assertSessionPolicy(t, sessionPolicy, newId, "")
+		assertSessionPolicy(t, newId, "")
 	})
 
 	t.Run("show session policies", func(t *testing.T) {
