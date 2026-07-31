@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -327,15 +328,57 @@ func setAndUnsetAccountParametersTest(
 	}
 }
 
-func assertThatPolicyIsSetOnAccount(t *testing.T, kind sdk.PolicyKind, id sdk.SchemaObjectIdentifier) {
+// expectedAccountPolicy describes a single policy expected to be attached to the account.
+type expectedAccountPolicy struct {
+	Kind sdk.PolicyKind
+	ID   sdk.SchemaObjectIdentifier
+}
+
+func assertThatPolicyIsSetOnAccount(t *testing.T, expectedPolicies ...expectedAccountPolicy) {
 	t.Helper()
 
 	policies, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, sdk.NewAccountObjectIdentifier(testClient(t).GetAccountLocator()), sdk.PolicyEntityDomainAccount)
 	require.NoError(t, err)
-	_, err = collections.FindFirst(policies, func(reference sdk.PolicyReference) bool {
-		return reference.PolicyName == id.Name() && reference.PolicyKind == kind
-	})
+	for _, expected := range expectedPolicies {
+		_, err = collections.FindFirst(policies, func(reference sdk.PolicyReference) bool {
+			return reference.PolicyName == expected.ID.Name() && reference.PolicyKind == expected.Kind
+		})
+		require.NoError(t, err, "expected a policy reference of kind %s with name %s to be set on the account", expected.Kind, expected.ID.Name())
+	}
+}
+
+func assertThatAuthenticationPolicyIsSetOnAccountWithScopes(t *testing.T, id sdk.SchemaObjectIdentifier, expectedScopes ...sdk.AuthenticationPolicyTargetScope) {
+	t.Helper()
+
+	policies, err := testClient(t).AuthenticationPolicies.Show(context.Background(), sdk.NewShowAuthenticationPolicyRequest().WithOn(sdk.On{Account: new(true)}))
 	require.NoError(t, err)
+
+	attachedPolicy, err := collections.FindFirst(policies, func(p sdk.AuthenticationPolicy) bool {
+		return p.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
+	require.NoError(t, err, "expected authentication policy with name %s to be returned by SHOW AUTHENTICATION POLICIES ON ACCOUNT", id.FullyQualifiedName())
+
+	assertThatObject(
+		t, objectassert.AuthenticationPolicyFromObject(t, attachedPolicy).
+			HasTargetScopes(expectedScopes...),
+	)
+}
+
+func assertThatSessionPolicyIsSetOnAccountWithScopes(t *testing.T, id sdk.SchemaObjectIdentifier, expectedScopes ...sdk.SessionPolicyTargetScope) {
+	t.Helper()
+
+	policies, err := testClient(t).SessionPolicies.Show(context.Background(), sdk.NewShowSessionPolicyRequest().WithOn(sdk.On{Account: new(true)}))
+	require.NoError(t, err)
+
+	attachedPolicy, err := collections.FindFirst(policies, func(p sdk.SessionPolicy) bool {
+		return p.ID().FullyQualifiedName() == id.FullyQualifiedName()
+	})
+	require.NoError(t, err, "expected session policy with name %s to be returned by SHOW SESSION POLICIES ON ACCOUNT", id.FullyQualifiedName())
+
+	assertThatObject(
+		t, objectassert.SessionPolicyFromObject(t, attachedPolicy).
+			HasTargetScopes(expectedScopes...),
+	)
 }
 
 func assertThatNoPolicyIsSetOnAccount(t *testing.T) {

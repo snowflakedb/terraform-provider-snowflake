@@ -108,6 +108,7 @@ type SessionPolicy struct {
 	Comment       string
 	OwnerRoleType string
 	Options       string
+	TargetScopes  []SessionPolicyTargetScope
 }
 
 func (v *SessionPolicy) ID() SchemaObjectIdentifier {

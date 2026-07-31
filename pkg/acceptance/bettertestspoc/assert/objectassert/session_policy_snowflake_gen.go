@@ -4,10 +4,12 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -223,6 +225,30 @@ func (s *SessionPolicyAssert) HasOptionsNotEmpty() *SessionPolicyAssert {
 		t.Helper()
 		if o.Options == "" {
 			return fmt.Errorf("expected options to be non-empty")
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyAssert) HasTargetScopes(expected ...sdk.SessionPolicyTargetScope) *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		mapped := collections.Map(o.TargetScopes, func(item sdk.SessionPolicyTargetScope) any { return item })
+		mappedExpected := collections.Map(expected, func(item sdk.SessionPolicyTargetScope) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected target scopes: %v; got: %v", expected, o.TargetScopes)
+		}
+		return nil
+	})
+	return s
+}
+
+func (s *SessionPolicyAssert) HasNoTargetScopes() *SessionPolicyAssert {
+	s.AddAssertion(func(t *testing.T, o *sdk.SessionPolicy) error {
+		t.Helper()
+		if len(o.TargetScopes) > 0 {
+			return fmt.Errorf("expected target scopes to be empty; got: %v", o.TargetScopes)
 		}
 		return nil
 	})

@@ -142,3 +142,8 @@ func (s *SessionPolicyShowOutputAssert) HasNoOptions() *SessionPolicyShowOutputA
 	s.ValueNotSet("options")
 	return s
 }
+
+func (s *SessionPolicyShowOutputAssert) HasNoTargetScopes() *SessionPolicyShowOutputAssert {
+	s.ValueSet("target_scopes.#", "0")
+	return s
+}

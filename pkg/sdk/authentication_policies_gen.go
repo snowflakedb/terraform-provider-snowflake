@@ -162,6 +162,7 @@ type AuthenticationPolicy struct {
 	Owner         string
 	OwnerRoleType string
 	Options       string
+	TargetScopes  []AuthenticationPolicyTargetScope
 }
 
 func (v *AuthenticationPolicy) ID() SchemaObjectIdentifier {

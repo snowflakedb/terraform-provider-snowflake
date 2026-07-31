@@ -1,8 +1,10 @@
 package sdk
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -24,7 +26,28 @@ func (r showAuthenticationPolicyDBRow) additionalConvert(result *AuthenticationP
 	}
 	mapNullStringToNonNullableField(&result.DatabaseName, r.DatabaseName)
 	mapNullStringToNonNullableField(&result.SchemaName, r.SchemaName)
+
+	targetScopes, err := parseAuthenticationPolicyTargetScopes(r.Options)
+	if err != nil {
+		return fmt.Errorf("parsing target scopes for authentication policy with name %s: %w", r.Name, err)
+	}
+	result.TargetScopes = targetScopes
 	return nil
+}
+
+// parseAuthenticationPolicyTargetScopes extracts the "target_scopes" JSON array from the raw options column.
+func parseAuthenticationPolicyTargetScopes(options string) ([]AuthenticationPolicyTargetScope, error) {
+	if options == "" {
+		return nil, nil
+	}
+	var raw struct {
+		TargetScopes []AuthenticationPolicyTargetScope `json:"target_scopes"`
+	}
+	if err := json.Unmarshal([]byte(options), &raw); err != nil {
+		return nil, err
+	}
+	slices.Sort(raw.TargetScopes)
+	return raw.TargetScopes, nil
 }
 
 type AuthenticationPolicyDetails []AuthenticationPolicyDescription

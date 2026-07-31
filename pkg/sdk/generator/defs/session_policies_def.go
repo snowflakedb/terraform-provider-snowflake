@@ -6,6 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+var SessionPolicyTargetScopeEnumDef = g.NewEnum(
+	"SessionPolicyTargetScope", "SessionPolicyTargetScopes",
+	"ACCOUNT", "PERSON_USERS", "SERVICE_USERS",
+)
+
 var sessionPolicySecondaryRoles = g.NewQueryStruct("SessionPolicySecondaryRoles").
 	OptionalSQLWithCustomFieldName("All", "('ALL')").
 	OptionalSQLWithCustomFieldName("None", "()").
@@ -92,7 +97,8 @@ var sessionPoliciesDef = g.NewInterface(
 			Text("owner").
 			Text("comment").
 			Text("owner_role_type").
-			Text("options"),
+			Text("options").
+			PlainOnlyField("TargetScopes", "[]SessionPolicyTargetScope"),
 		g.NewQueryStruct("ShowSessionPolicies").
 			Show().
 			SQL("SESSION POLICIES").
@@ -132,4 +138,7 @@ var sessionPoliciesDef = g.NewInterface(
 		"",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
 		"*SessionPolicyDetails", "error",
+	).
+	WithEnums(
+		SessionPolicyTargetScopeEnumDef,
 	)
