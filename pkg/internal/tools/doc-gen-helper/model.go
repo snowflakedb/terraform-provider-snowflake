@@ -7,8 +7,8 @@ type DeprecatedResourcesContext struct {
 }
 
 type DeprecatedResource struct {
-	NameRelativeLink        string
-	ReplacementRelativeLink string
+	NameRelativeLink         string
+	ReplacementRelativeLinks string
 }
 
 type DeprecatedDataSourcesContext struct {
@@ -16,8 +16,8 @@ type DeprecatedDataSourcesContext struct {
 }
 
 type DeprecatedDataSource struct {
-	NameRelativeLink        string
-	ReplacementRelativeLink string
+	NameRelativeLink         string
+	ReplacementRelativeLinks string
 }
 
 type FeatureType string
