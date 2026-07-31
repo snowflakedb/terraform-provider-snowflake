@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,10 +19,8 @@ import (
 
 func main() {
 	accessToken := getAccessToken()
-	repoLabels := loadRepoLabels(accessToken)
-	jsonRepoLabels, _ := json.MarshalIndent(repoLabels, "", "\t")
-	log.Println(string(jsonRepoLabels))
-	successful, failed := createLabelsIfNotPresent(accessToken, repoLabels, issues.RepositoryLabels)
+	gotLabels := loadRepoLabels(accessToken)
+	successful, failed := createLabelsIfNotPresent(accessToken, gotLabels, issues.RepositoryLabels)
 	fmt.Printf("\nSuccessfully created labels:\n")
 	for _, label := range successful {
 		fmt.Println(label)
@@ -42,32 +41,61 @@ type ReadLabel struct {
 	Default     bool   `json:"default"`
 }
 
+// perPage is the maximum page size allowed by the GitHub API, see https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository.
+const perPage = 100
+
 func loadRepoLabels(accessToken string) []ReadLabel {
+	var allLabels []ReadLabel
+
+	for page := 1; ; page++ {
+		pageLabels, err := loadRepoLabelsPage(accessToken, page)
+		if err != nil {
+			panic(fmt.Sprintf("failed to list repository labels (page %d): %s", page, err.Error()))
+		}
+		allLabels = append(allLabels, pageLabels...)
+
+		// The last page is shorter than the requested page size (possibly empty).
+		if len(pageLabels) < perPage {
+			return allLabels
+		}
+	}
+}
+
+func loadRepoLabelsPage(accessToken string, page int) ([]ReadLabel, error) {
 	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/labels", nil)
 	if err != nil {
-		panic("failed to create list labels request: " + err.Error())
+		return nil, fmt.Errorf("failed to create list labels request: %w", err)
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
+	query := req.URL.Query()
+	query.Set("per_page", strconv.Itoa(perPage))
+	query.Set("page", strconv.Itoa(page))
+	req.URL.RawQuery = query.Encode()
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic("failed to retrieve repository labels: " + err.Error())
+		return nil, fmt.Errorf("failed to retrieve repository labels: %w", err)
 	}
+	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		panic("failed to read list labels response body: " + err.Error())
+		return nil, fmt.Errorf("failed to read list labels response body: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("incorrect status code, expected 200, and got: %d %s", resp.StatusCode, string(bodyBytes))
 	}
 
 	var readLabels []ReadLabel
-	err = json.Unmarshal(bodyBytes, &readLabels)
-	if err != nil {
-		panic("failed to unmarshal read labels: " + err.Error())
+	if err := json.Unmarshal(bodyBytes, &readLabels); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal read labels: %w", err)
 	}
 
-	return readLabels
+	return readLabels, nil
 }
 
 type CreateLabelRequestBody struct {
@@ -76,14 +104,15 @@ type CreateLabelRequestBody struct {
 	Color       string `json:"color"`
 }
 
-func createLabelsIfNotPresent(accessToken string, repoLabels []ReadLabel, labels []string) (successful []string, failed []string) {
-	repoLabelNames := make([]string, len(repoLabels))
-	for i, label := range repoLabels {
-		repoLabelNames[i] = label.Name
+func createLabelsIfNotPresent(accessToken string, haveLabels []ReadLabel, wantLabels []string) (successful []string, failed []string) {
+	gotLabelNames := make([]string, len(haveLabels))
+	for i, label := range haveLabels {
+		gotLabelNames[i] = label.Name
 	}
 
-	for _, label := range labels {
-		if slices.Contains(repoLabelNames, label) {
+	for _, label := range wantLabels {
+		if slices.Contains(gotLabelNames, label) {
+			fmt.Printf("Label %s already exists, skipping...\n", label)
 			continue
 		}
 
@@ -119,7 +148,7 @@ func createLabelsIfNotPresent(accessToken string, repoLabels []ReadLabel, labels
 		}
 
 		time.Sleep(1 * time.Second)
-		log.Println("Processing:", label)
+		log.Println("Processing label:", label)
 
 		// based on https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#create-a-label
 		req, err := http.NewRequest(http.MethodPost, "https://api.github.com/repos/snowflakedb/terraform-provider-snowflake/labels", bytes.NewReader(requestBody))
