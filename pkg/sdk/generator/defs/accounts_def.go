@@ -225,7 +225,7 @@ var accountsDef = g.NewInterface(
 	).
 	WithCustomInterfaceMethod(
 		"UnsetAllPoliciesSafely",
-		"UnsetAllPoliciesSafely calls UnsetPolicySafely for every policy that can be unset from the current account.",
+		"UnsetAllPoliciesSafely safely unsets every policy that can be attached to the current account, including authentication and session policies attached to a specific user type (FOR ALL PERSON USERS / FOR ALL SERVICE USERS).",
 		[]*g.MethodParameter{},
 		"error",
 	).
