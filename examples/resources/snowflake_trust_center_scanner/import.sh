@@ -1,0 +1,1 @@
+terraform import snowflake_trust_center_scanner.mfa_check 'SNOWFLAKE|SECURITY_ESSENTIALS|SECURITY_ESSENTIALS_MFA_REQUIRED_FOR_USERS_CHECK'
