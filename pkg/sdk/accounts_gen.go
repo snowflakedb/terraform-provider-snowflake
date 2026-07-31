@@ -19,7 +19,7 @@ type Accounts interface {
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*Account, error)
 	ShowParameters(ctx context.Context) ([]*Parameter, error)
 	UnsetAllParameters(ctx context.Context) error
-	// UnsetAllPoliciesSafely calls UnsetPolicySafely for every policy that can be unset from the current account.
+	// UnsetAllPoliciesSafely safely unsets every policy that can be attached to the current account, including authentication and session policies attached to a specific user type (FOR ALL PERSON USERS / FOR ALL SERVICE USERS).
 	UnsetAllPoliciesSafely(ctx context.Context) error
 	// UnsetPolicySafely unsets a policy on the current account by a given supported kind.
 	// It ignores an error that occurs on the Snowflake side whenever you try to unset policy which is already unset.

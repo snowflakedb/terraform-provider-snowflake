@@ -268,6 +268,28 @@ func (c *accounts) UnsetAllPoliciesSafely(ctx context.Context) error {
 		c.UnsetPolicySafely(ctx, PolicyKindPackagesPolicy),
 		c.UnsetPolicySafely(ctx, PolicyKindPasswordPolicy),
 		c.UnsetPolicySafely(ctx, PolicyKindSessionPolicy),
+		// The account-wide unsets above do not cover authentication and session policies attached to a specific user
+		// type, so those scoped attachments have to be unset with the same FOR ALL syntax that was used to set them.
+		c.unsetPolicySafely(ctx, NewAccountUnsetRequest().WithAuthenticationPolicyUnset(
+			*NewAccountAuthenticationPolicyUnsetRequest().
+				WithAuthenticationPolicy(true).
+				WithForAllPersonUsers(true),
+		)),
+		c.unsetPolicySafely(ctx, NewAccountUnsetRequest().WithAuthenticationPolicyUnset(
+			*NewAccountAuthenticationPolicyUnsetRequest().
+				WithAuthenticationPolicy(true).
+				WithForAllServiceUsers(true),
+		)),
+		c.unsetPolicySafely(ctx, NewAccountUnsetRequest().WithSessionPolicyUnset(
+			*NewAccountSessionPolicyUnsetRequest().
+				WithSessionPolicy(true).
+				WithForAllPersonUsers(true),
+		)),
+		c.unsetPolicySafely(ctx, NewAccountUnsetRequest().WithSessionPolicyUnset(
+			*NewAccountSessionPolicyUnsetRequest().
+				WithSessionPolicy(true).
+				WithForAllServiceUsers(true),
+		)),
 	)
 }
 
@@ -287,7 +309,10 @@ func (c *accounts) UnsetPolicySafely(ctx context.Context, kind PolicyKind) error
 	default:
 		return fmt.Errorf("policy kind %s is not supported for account policies", kind)
 	}
-	// If the policy is not attached to the account, Snowflake returns an error.
+	return c.unsetPolicySafely(ctx, unset)
+}
+
+func (c *accounts) unsetPolicySafely(ctx context.Context, unset *AccountUnsetRequest) error {
 	err := c.Alter(ctx, NewAlterAccountRequest().WithUnset(*unset))
 	if errors.Is(err, ErrPolicyNotAttachedToAccount) {
 		return nil

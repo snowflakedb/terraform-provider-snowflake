@@ -4,7 +4,6 @@ package testint
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 
@@ -525,32 +524,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 		t.Cleanup(packagesPolicyCleanup)
 
 		t.Cleanup(func() {
-			// The account-wide (no FOR ALL clause) attachments are removed with the safe helper, but the per-user-type
-			// scoped attachments have to be unset with the same FOR ALL syntax that was used to set them.
-			err := errors.Join(
-				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-					WithUnset(*sdk.NewAccountUnsetRequest().
-						WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().
-							WithAuthenticationPolicy(true).
-							WithForAllPersonUsers(true)))),
-				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-					WithUnset(*sdk.NewAccountUnsetRequest().
-						WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().
-							WithAuthenticationPolicy(true).
-							WithForAllServiceUsers(true)))),
-				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-					WithUnset(*sdk.NewAccountUnsetRequest().
-						WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().
-							WithSessionPolicy(true).
-							WithForAllPersonUsers(true)))),
-				client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-					WithUnset(*sdk.NewAccountUnsetRequest().
-						WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().
-							WithSessionPolicy(true).
-							WithForAllServiceUsers(true)))),
-				client.Accounts.UnsetAllPoliciesSafely(ctx),
-			)
-			assert.NoError(t, err)
+			assert.NoError(t, client.Accounts.UnsetAllPoliciesSafely(ctx))
 			assertThatNoPolicyIsSetOnAccount(t)
 		})
 
