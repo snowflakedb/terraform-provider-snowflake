@@ -280,10 +280,6 @@ An example terraform configuration file equivalent:
 
 {{ codefile "terraform" "examples/additional/provider_config_tf.MD" | trimspace }}
 
-{{ index (split (codefile "" "examples/additional/deprecated_resources.MD") "```") 1 | trimspace }}
-
-{{ index (split (codefile "" "examples/additional/deprecated_data_sources.MD") "```") 1 | trimspace }}
-
 ## Proxy
 
 Terraform is plugin-based. It means that every plugin (provider) is responsible for making its own network requests.
@@ -397,6 +393,10 @@ To use them, add the relevant feature name to the `preview_features_enabled` fie
 {{ index (split (codefile "" "examples/additional/preview_resources.MD") "```") 1 | trimspace }}
 
 {{ index (split (codefile "" "examples/additional/preview_data_sources.MD") "```") 1 | trimspace }}
+
+{{ index (split (codefile "" "examples/additional/deprecated_resources.MD") "```") 1 | trimspace }}
+
+{{ index (split (codefile "" "examples/additional/deprecated_data_sources.MD") "```") 1 | trimspace }}
 
 ## Experimental features
 

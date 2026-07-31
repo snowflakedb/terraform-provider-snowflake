@@ -95,29 +95,26 @@ func main() {
 }
 
 func newDeprecatedResource(nameRelativeLink string, resource *schema.Resource) DeprecatedResource {
-	replacement, path, _ := docs.GetDeprecatedResourceReplacement(resource.DeprecationMessage)
-	var replacementRelativeLink string
-	if replacement != "" && path != "" {
-		replacementRelativeLink = docs.RelativeLink(replacement, filepath.Join("docs", "resources", path))
-	}
-
 	return DeprecatedResource{
-		NameRelativeLink:        nameRelativeLink,
-		ReplacementRelativeLink: replacementRelativeLink,
+		NameRelativeLink:         nameRelativeLink,
+		ReplacementRelativeLinks: replacementRelativeLinks(resource.DeprecationMessage, "resources"),
 	}
 }
 
 func newDeprecatedDataSource(nameRelativeLink string, dataSource *schema.Resource) DeprecatedDataSource {
-	replacement, path, _ := docs.GetDeprecatedResourceReplacement(dataSource.DeprecationMessage)
-	var replacementRelativeLink string
-	if replacement != "" && path != "" {
-		replacementRelativeLink = docs.RelativeLink(replacement, filepath.Join("docs", "data-sources", path))
-	}
-
 	return DeprecatedDataSource{
-		NameRelativeLink:        nameRelativeLink,
-		ReplacementRelativeLink: replacementRelativeLink,
+		NameRelativeLink:         nameRelativeLink,
+		ReplacementRelativeLinks: replacementRelativeLinks(dataSource.DeprecationMessage, "data-sources"),
 	}
+}
+
+// replacementRelativeLinks returns a comma-separated list of relative links to all replacements
+// listed in the deprecation message (empty when the message does not mention any).
+func replacementRelativeLinks(deprecationMessage string, docsSubdirectory string) string {
+	links := collections.Map(docs.GetDeprecatedObjectReplacements(deprecationMessage), func(replacement docs.Replacement) string {
+		return docs.RelativeLink(replacement.Name, filepath.Join("docs", docsSubdirectory, replacement.Page()))
+	})
+	return strings.Join(links, ", ")
 }
 
 func printTo(template *template.Template, model any, path string) error {

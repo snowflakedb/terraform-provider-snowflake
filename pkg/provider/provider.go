@@ -32,9 +32,8 @@ func init() {
 		desc := r.Description
 		if r.DeprecationMessage != "" {
 			deprecationMessage := r.DeprecationMessage
-			replacement, path, ok := docs.GetDeprecatedResourceReplacement(deprecationMessage)
-			if ok {
-				deprecationMessage = strings.ReplaceAll(deprecationMessage, replacement, docs.RelativeLink(replacement, path))
+			for _, replacement := range docs.GetDeprecatedObjectReplacements(deprecationMessage) {
+				deprecationMessage = strings.ReplaceAll(deprecationMessage, replacement.Quoted(), docs.RelativeLink(replacement.Name, replacement.Page()))
 			}
 			// <deprecation> tag is a hack to split description into two parts (deprecation/real description) nicely. This tag won't be rendered.
 			// Check resources.md.tmpl for usage example.
