@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
@@ -73,9 +74,8 @@ func GetProviderSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"account": {
 			Type:        schema.TypeString,
-			Description: envNameFieldDescription("Specifies the Snowflake account identifier. Can be provided in the `org-name` format (e.g. `\"myorg-myaccount\"`) or as an account locator (e.g. `\"xy12345\"`). Use as a fallback when `account_name` and `organization_name` are not set. If both `account_name` and `organization_name` are set, they take precedence. Requires the [`PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`](../#provider_configuration_account_fallback) experiment to be enabled.", snowflakeenvs.Account),
+			Description: fmt.Sprintf("Specifies the Snowflake account identifier. Can be provided in the `org-name` format (e.g. `\"myorg-myaccount\"`) or as an account locator (e.g. `\"xy12345\"`). Use as a fallback when `account_name` and `organization_name` are not set. If both `account_name` and `organization_name` are set, they take precedence. Requires the [`PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`](../#provider_configuration_account_fallback) experiment to be enabled. Can also be sourced from the `%s` environment variable; without the experiment, the variable's value is ignored with a warning instead of resulting in an error.", snowflakeenvs.Account),
 			Optional:    true,
-			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Account, nil),
 		},
 		"account_name": {
 			Type:         schema.TypeString,
@@ -809,9 +809,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		enabledExperiments = expandStringList(v.(*schema.Set).List())
 	}
 
-	config, err := getDriverConfigFromTerraform(s, enabledExperiments)
-	if err != nil {
-		return nil, diag.FromErr(err)
+	config, diags := getDriverConfigFromTerraform(s, enabledExperiments)
+	if diags.HasError() {
+		return nil, diags
 	}
 
 	var verifyPermissions bool
@@ -832,7 +832,7 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		rejectAccountField := !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments)
 		tomlConfig, err := GetDriverConfigFromTOML(profile, verifyPermissions, useLegacyTomlFile, rejectAccountField)
 		if err != nil {
-			return nil, diag.FromErr(err)
+			return nil, append(diags, diag.FromErr(err)...)
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 		fixBooleanConfigFields(s, config)
@@ -850,12 +850,11 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		GrantShowOfRoleCache: provider.NewCache[[]sdk.Grant](),
 	}
 	if client, err := sdk.NewClient(config); err != nil {
-		return nil, diag.FromErr(err)
+		return nil, append(diags, diag.FromErr(err)...)
 	} else {
 		providerCtx.Client = client
 	}
 
-	diags := make([]diag.Diagnostic, 0)
 	if v, ok := s.GetOk("preview_features_enabled"); ok {
 		providerCtx.EnabledFeatures = expandStringList(v.(*schema.Set).List())
 		promotedFeatures := previewfeatures.GetPromotedFeatures(providerCtx.EnabledFeatures)
@@ -938,8 +937,9 @@ func GetDriverConfigFromTOML(profile string, verifyPermissions, useLegacyTomlFil
 	return profileConfig, nil
 }
 
-func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []string) (*gosnowflake.Config, error) {
+func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []string) (*gosnowflake.Config, diag.Diagnostics) {
 	config := sdk.EmptyDriverConfigWithApplication("terraform-provider-snowflake")
+	var diags diag.Diagnostics
 
 	err := errors.Join(
 		// account_name and organization_name are handled below
@@ -1039,15 +1039,21 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 		handleBooleanStringAttribute(s, "disable_saml_url_check", &config.DisableSamlURLCheck),
 	)
 	if err != nil {
-		return nil, err
+		return nil, diag.FromErr(err)
 	}
 
 	// account_name and organization_name override legacy account field
 	account := s.Get("account").(string)
 	accountName := s.Get("account_name").(string)
 	organizationName := s.Get("organization_name").(string)
+	// The environment variable is read here instead of with schema.EnvDefaultFunc on the account field,
+	// so that it can never trigger the validation below if the experiment is not enabled.
+	accountEnvValue := oswrapper.Getenv(snowflakeenvs.Account)
 
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.ProviderConfigurationAccountFallback, enabledExperiments) {
+		if account == "" {
+			account = accountEnvValue
+		}
 		if accountName != "" && organizationName != "" {
 			config.Account = fmt.Sprintf("%s-%s", organizationName, accountName)
 		} else if account != "" {
@@ -1055,7 +1061,14 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 		}
 	} else {
 		if account != "" {
-			return nil, fmt.Errorf("the account field requires the %q experiment to be enabled; add it to experimental_features_enabled in provider configuration", experimentalfeatures.ProviderConfigurationAccountFallback)
+			return nil, diag.FromErr(fmt.Errorf("the account field requires the %q experiment to be enabled; add it to experimental_features_enabled in provider configuration", experimentalfeatures.ProviderConfigurationAccountFallback))
+		}
+		if accountEnvValue != "" {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("The %s environment variable is ignored.", snowflakeenvs.Account),
+				Detail:   fmt.Sprintf("The %[1]s environment variable sets the `account` field, which requires the %[2]q experiment to be enabled, so its value is currently ignored. The experiment will be enabled by default in v3, and the variable will be used as a fallback for `organization_name` and `account_name` (which take precedence over it) from that version on. To avoid an unexpected account change in v3, unset %[1]s for the Terraform run, or enable the %[2]q experiment now to verify the resulting behavior.", snowflakeenvs.Account, experimentalfeatures.ProviderConfigurationAccountFallback),
+			})
 		}
 		if accountName != "" && organizationName != "" {
 			config.Account = strings.Join([]string{organizationName, accountName}, "-")
@@ -1088,7 +1101,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 			redirectURI := tokenAccessor["redirect_uri"].(string)
 			accessToken, err := GetAccessTokenWithRefreshToken(tokenEndpoint, clientID, clientSecret, refreshToken, redirectURI)
 			if err != nil {
-				return nil, fmt.Errorf("could not retrieve access token from refresh token, err = %w", err)
+				return nil, diag.FromErr(fmt.Errorf("could not retrieve access token from refresh token, err = %w", err))
 			}
 			config.Token = accessToken
 			if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {
@@ -1101,11 +1114,11 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, enabledExperiments []s
 	privateKeyPassphrase := s.Get("private_key_passphrase").(string)
 	v, err := GetPrivateKey(privateKey, privateKeyPassphrase)
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve private key: %w", err)
+		return nil, diag.FromErr(fmt.Errorf("could not retrieve private key: %w", err))
 	}
 	if v != nil {
 		config.PrivateKey = v
 	}
 
-	return config, nil
+	return config, diags
 }

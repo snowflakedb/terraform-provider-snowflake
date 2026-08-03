@@ -1071,6 +1071,64 @@ func TestAcc_Experimental_Provider_AccountFallback_OrgAndNameTakePrecedence(t *t
 	})
 }
 
+// The SNOWFLAKE_ACCOUNT environment variable is read only with the account fallback experiment enabled.
+// Without the experiment, it must not trigger the account field validation, because it is commonly set
+// for other Snowflake tooling running next to Terraform (see https://github.com/snowflakedb/terraform-provider-snowflake/issues/5083).
+func TestAcc_Experimental_Provider_AccountFallback_AccountEnvVar(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+	// The profile points to a non-existing account, so a successful connection proves that the account
+	// was taken from the SNOWFLAKE_ACCOUNT environment variable.
+	wrongAccountConfig := testClient().StoreTempTomlConfig(t, func(profile string) string {
+		return helpers.TomlConfigForServiceUserWithModifiers(t, profile, tmpServiceUser, func(cfg *sdk.ConfigDTO) *sdk.ConfigDTO {
+			return cfg.
+				WithOrganizationName("wrong_organization_name").
+				WithAccountName("wrong_account_name")
+		})
+	})
+	accountId := testClient().Context.CurrentAccountId(t)
+	accountIdentifier := fmt.Sprintf("%s-%s", accountId.OrganizationName(), accountId.AccountName())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() {
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.Account)
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+			t.Setenv(snowflakeenvs.Account, "wrong_organization_name-wrong_account_name")
+		},
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			// the environment variable is not read without the experiment (the account comes from the profile)
+			{
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().
+					WithProfile(tmpServiceUserConfig.Profile),
+					datasourceModel()),
+			},
+			// the environment variable does not fail the validation when organization_name and account_name are set
+			{
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().
+					WithProfile(tmpServiceUserConfig.Profile).
+					WithOrganizationName(accountId.OrganizationName()).
+					WithAccountName(accountId.AccountName()),
+					datasourceModel()),
+			},
+			// the environment variable is used with the experiment enabled (the profile's account is wrong)
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.ConfigPath, wrongAccountConfig.Path)
+					t.Setenv(snowflakeenvs.Account, accountIdentifier)
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().
+					WithProfile(wrongAccountConfig.Profile).
+					WithExperimentalFeaturesEnabled(experimentalfeatures.ProviderConfigurationAccountFallback),
+					datasourceModel()),
+			},
+		},
+	})
+}
+
 func TestAcc_Provider_useNonExistentDefaultParams(t *testing.T) {
 	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
 	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)

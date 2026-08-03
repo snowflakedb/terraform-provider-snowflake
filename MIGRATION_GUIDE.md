@@ -65,6 +65,30 @@ Using the legacy `terraform import <resource> <id>` command did not show this er
 
 Reference: [#5086](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5086)
 
+### *(bugfix)* The `SNOWFLAKE_ACCOUNT` environment variable caused errors without `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` experiment being enabled
+
+The [`PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`](#new-feature-provider_configuration_account_fallback-experiment) experiment added in v2.19.0 re-introduced the `account` field, and using this field without the experiment enabled results in an error. Because the field could also be sourced from the `SNOWFLAKE_ACCOUNT` environment variable, merely having this variable set (e.g. for other Snowflake tooling running in the same pipeline) was enough to fail the provider configuration with:
+
+```
+Error: the account field requires the "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK" experiment to be enabled; add it to experimental_features_enabled in provider configuration
+```
+
+even when the provider configuration set only `organization_name` and `account_name`.
+
+Now, the value of the `SNOWFLAKE_ACCOUNT` environment variable is used only when the experiment is enabled. Without the experiment, the value is ignored (like before the `account` field was re-introduced) and the following warning is emitted instead of the error above:
+
+```
+Warning: The SNOWFLAKE_ACCOUNT environment variable is ignored.
+```
+
+Setting the `account` field in the provider configuration or in a TOML profile still requires the experiment.
+
+The warning is intentional: the experiment will be enabled by default in v3, and from that version on `SNOWFLAKE_ACCOUNT` will be used as a fallback for `organization_name` and `account_name` (which take precedence over it). If your account currently comes from a TOML profile and the variable points to a different account, this will change the account you connect to.
+
+No changes in the configuration are required. To silence the warning, either unset `SNOWFLAKE_ACCOUNT` for the Terraform run, or enable the experiment now to verify the behavior you will get in v3.
+
+References: [#5083](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5083)
+
 ## v2.18.x ➞ v2.19.0
 
 ### *(improvement)* Rework of `snowflake_account_authentication_policy_attachment` and `snowflake_user_authentication_policy_attachment`
