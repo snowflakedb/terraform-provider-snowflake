@@ -18,14 +18,16 @@ var userSessionPolicyAttachmentSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      "User name of the user you want to attach the session policy to.",
+		Description:      blocklistedPipesFieldDescription("User name of the user you want to attach the session policy to."),
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"session_policy_name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      "Fully qualified name of the session policy.",
+		Description:      blocklistedPipesFieldDescription("Fully qualified name of the session policy."),
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 }
 
@@ -152,12 +154,10 @@ func UpdateUserSessionPolicyAttachment(ctx context.Context, d *schema.ResourceDa
 			return diag.FromErr(err)
 		}
 
-		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(*userName).WithIfExists(true).WithUnset(*sdk.NewUserUnsetRequest().WithSessionPolicy(true))); err != nil {
-			d.Partial(true)
-			return diag.FromErr(fmt.Errorf("error while unsetting old session policy from user %v, err = %w", userName.FullyQualifiedName(), err))
-		}
-		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(*userName).WithIfExists(true).WithSet(*sdk.NewUserSetRequest().WithSessionPolicy(newSessionPolicyName))); err != nil {
-			d.Partial(true)
+		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(*userName).WithIfExists(true).
+			WithSet(*sdk.NewUserSetRequest().
+				WithSessionPolicy(newSessionPolicyName).
+				WithForce(true))); err != nil {
 			return diag.FromErr(fmt.Errorf("error while setting new session policy to user %v, err = %w", userName.FullyQualifiedName(), err))
 		}
 

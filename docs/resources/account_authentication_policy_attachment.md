@@ -7,8 +7,6 @@ description: |-
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
-~> **Required warehouse** For this resource, the provider uses [policy references](https://docs.snowflake.com/en/sql-reference/functions/policy_references) to get information about policies attached to the current account. This function requires a warehouse in the connection. Please, make sure you have either set a `DEFAULT_WAREHOUSE` for the user, or specified a warehouse in the provider configuration.
-
 !> **Warning** This resource shouldn't be used with `snowflake_current_account` resource in the same configuration, as it may lead to unexpected behavior.
 
 # snowflake_account_authentication_policy_attachment (Resource)
@@ -24,8 +22,23 @@ resource "snowflake_authentication_policy" "default" {
   name     = "default_policy"
 }
 
+# Attach the authentication policy account-wide (default behavior).
 resource "snowflake_account_authentication_policy_attachment" "attachment" {
   authentication_policy = snowflake_authentication_policy.default.fully_qualified_name
+}
+
+resource "snowflake_authentication_policy" "service_users" {
+  database = "prod"
+  schema   = "security"
+  name     = "service_users_policy"
+}
+
+# Attach the authentication policy to all service users only.
+# Use for_all_person_users = true to target all person users instead.
+# The two fields are mutually exclusive; when neither is set, the policy is attached account-wide.
+resource "snowflake_account_authentication_policy_attachment" "attachment_service_users" {
+  authentication_policy = snowflake_authentication_policy.service_users.fully_qualified_name
+  for_all_service_users = true
 }
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
@@ -38,10 +51,12 @@ resource "snowflake_account_authentication_policy_attachment" "attachment" {
 
 ### Required
 
-- `authentication_policy` (String) Fully qualified name of the authentication policy to apply to the current account.
+- `authentication_policy` (String) Fully qualified name of the authentication policy to apply to the current account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
 
 ### Optional
 
+- `for_all_person_users` (Boolean) If true, attaches the authentication policy to all person users in the current account. Conflicts with `for_all_service_users`. When neither field is set, the policy is attached account-wide.
+- `for_all_service_users` (Boolean) If true, attaches the authentication policy to all service users in the current account. Conflicts with `for_all_person_users`. When neither field is set, the policy is attached account-wide.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -63,5 +78,10 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_account_authentication_policy_attachment.example '"<database_name>"."<schema_name>"."<authentication_policy_name>"'
+# Account-wide attachment:
+terraform import snowflake_account_authentication_policy_attachment.example '"<database_name>"."<schema_name>"."<authentication_policy_name>"|ACCOUNT'
+# For all person users:
+terraform import snowflake_account_authentication_policy_attachment.example '"<database_name>"."<schema_name>"."<authentication_policy_name>"|PERSON_USERS'
+# For all service users:
+terraform import snowflake_account_authentication_policy_attachment.example '"<database_name>"."<schema_name>"."<authentication_policy_name>"|SERVICE_USERS'
 ```

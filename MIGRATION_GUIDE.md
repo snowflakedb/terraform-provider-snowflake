@@ -24,7 +24,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
-## v2.19.0 ➞ v2.19.1
+## v2.19.x ➞ v2.20.0
+
+### *(new feature)* `for_all_person_users` and `for_all_service_users` in account policy attachments
+
+Both `snowflake_account_authentication_policy_attachment` and `snowflake_account_session_policy_attachment` now support attaching a policy to a specific user type via two new mutually-exclusive boolean fields:
+
+- `for_all_person_users` – attaches the policy with `FOR ALL PERSON USERS`.
+- `for_all_service_users` – attaches the policy with `FOR ALL SERVICE USERS`.
+
+No configuration changes are needed unless you want to attach a policy to a specific user type. When neither field is set (the default), the policy is attached account-wide, exactly as before. A single account can have one attachment per scope (account-wide, person users, and service users) of the same policy kind at the same time, each managed by a separate resource instance.
 
 ### *(bug fix)* Deprecation warning raised for `skip_toml_file_permission_verification` that was not set
 

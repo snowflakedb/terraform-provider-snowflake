@@ -37,12 +37,32 @@ func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasAuthenticationP
 	return a
 }
 
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllPersonUsers(expected bool) *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.BoolValueSet("for_all_person_users", expected)
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllServiceUsers(expected bool) *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.BoolValueSet("for_all_service_users", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
 
 func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasAuthenticationPolicyString(expected string) *AccountAuthenticationPolicyAttachmentResourceAssert {
 	a.ValueSet("authentication_policy", expected)
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllPersonUsersString(expected string) *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_person_users", expected)
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllServiceUsersString(expected string) *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_service_users", expected)
 	return a
 }
 
@@ -55,9 +75,29 @@ func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasNoAuthenticatio
 	return a
 }
 
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasNoForAllPersonUsers() *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValueNotSet("for_all_person_users")
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasNoForAllServiceUsers() *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValueNotSet("for_all_service_users")
+	return a
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllPersonUsersEmpty() *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_person_users", "")
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllServiceUsersEmpty() *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_service_users", "")
+	return a
+}
 
 ///////////////////////////////
 // Attribute presence checks //
@@ -65,5 +105,15 @@ func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasNoAuthenticatio
 
 func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasAuthenticationPolicyNotEmpty() *AccountAuthenticationPolicyAttachmentResourceAssert {
 	a.ValuePresent("authentication_policy")
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllPersonUsersNotEmpty() *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValuePresent("for_all_person_users")
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentResourceAssert) HasForAllServiceUsersNotEmpty() *AccountAuthenticationPolicyAttachmentResourceAssert {
+	a.ValuePresent("for_all_service_users")
 	return a
 }

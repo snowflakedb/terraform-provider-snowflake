@@ -32,6 +32,16 @@ func ImportedAccountSessionPolicyAttachmentResource(t *testing.T, id string) *Ac
 // Attribute typed value checks //
 //////////////////////////////////
 
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllPersonUsers(expected bool) *AccountSessionPolicyAttachmentResourceAssert {
+	a.BoolValueSet("for_all_person_users", expected)
+	return a
+}
+
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllServiceUsers(expected bool) *AccountSessionPolicyAttachmentResourceAssert {
+	a.BoolValueSet("for_all_service_users", expected)
+	return a
+}
+
 func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyName(expected string) *AccountSessionPolicyAttachmentResourceAssert {
 	a.StringValueSet("session_policy_name", expected)
 	return a
@@ -40,6 +50,16 @@ func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyName(expe
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
+
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllPersonUsersString(expected string) *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_person_users", expected)
+	return a
+}
+
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllServiceUsersString(expected string) *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_service_users", expected)
+	return a
+}
 
 func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameString(expected string) *AccountSessionPolicyAttachmentResourceAssert {
 	a.ValueSet("session_policy_name", expected)
@@ -50,6 +70,16 @@ func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameStrin
 // Attribute no value checks //
 ///////////////////////////////
 
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasNoForAllPersonUsers() *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValueNotSet("for_all_person_users")
+	return a
+}
+
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasNoForAllServiceUsers() *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValueNotSet("for_all_service_users")
+	return a
+}
+
 func (a *AccountSessionPolicyAttachmentResourceAssert) HasNoSessionPolicyName() *AccountSessionPolicyAttachmentResourceAssert {
 	a.ValueNotSet("session_policy_name")
 	return a
@@ -59,9 +89,29 @@ func (a *AccountSessionPolicyAttachmentResourceAssert) HasNoSessionPolicyName() 
 // Attribute empty checks //
 ////////////////////////////
 
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllPersonUsersEmpty() *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_person_users", "")
+	return a
+}
+
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllServiceUsersEmpty() *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValueSet("for_all_service_users", "")
+	return a
+}
+
 ///////////////////////////////
 // Attribute presence checks //
 ///////////////////////////////
+
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllPersonUsersNotEmpty() *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValuePresent("for_all_person_users")
+	return a
+}
+
+func (a *AccountSessionPolicyAttachmentResourceAssert) HasForAllServiceUsersNotEmpty() *AccountSessionPolicyAttachmentResourceAssert {
+	a.ValuePresent("for_all_service_users")
+	return a
+}
 
 func (a *AccountSessionPolicyAttachmentResourceAssert) HasSessionPolicyNameNotEmpty() *AccountSessionPolicyAttachmentResourceAssert {
 	a.ValuePresent("session_policy_name")

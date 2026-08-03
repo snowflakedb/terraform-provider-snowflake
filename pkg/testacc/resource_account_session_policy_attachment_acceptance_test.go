@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -26,24 +27,46 @@ func TestAcc_AccountSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 	t.Cleanup(sessionPolicyCleanup2)
 	sessionPolicyName2 := sessionPolicy2.ID().FullyQualifiedName()
 
-	basic := model.AccountSessionPolicyAttachment("t", sessionPolicyName)
+	sessionPolicyForServiceUsers, sessionPolicyForServiceUsersCleanup := testClient().SessionPolicy.CreateSessionPolicy(t)
+	t.Cleanup(sessionPolicyForServiceUsersCleanup)
+	sessionPolicyForServiceUsersName := sessionPolicyForServiceUsers.ID().FullyQualifiedName()
 
-	newPolicy := model.AccountSessionPolicyAttachment("t", sessionPolicyName2)
+	basicModel := model.AccountSessionPolicyAttachment("account", sessionPolicyName)
+	personModel := model.AccountSessionPolicyAttachment("person", sessionPolicyName).WithForAllPersonUsers(true)
+	serviceModel := model.AccountSessionPolicyAttachment("service", sessionPolicyForServiceUsersName).WithForAllServiceUsers(true)
 
-	ref := basic.ResourceReference()
+	basicModelUpdated := model.AccountSessionPolicyAttachment("account", sessionPolicyName2)
+
+	personModelAsService := model.AccountSessionPolicyAttachment("person", sessionPolicyName).WithForAllServiceUsers(true)
+
+	basicRef := basicModel.ResourceReference()
+	personRef := personModel.ResourceReference()
+	serviceRef := serviceModel.ResourceReference()
 
 	basicAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.AccountSessionPolicyAttachmentResource(t, ref).
-			HasSessionPolicyName(sessionPolicyName),
+		resourceassert.AccountSessionPolicyAttachmentResource(t, basicRef).
+			HasSessionPolicyName(sessionPolicyName).
+			HasForAllPersonUsers(false).
+			HasForAllServiceUsers(false),
+		resourceassert.AccountSessionPolicyAttachmentResource(t, personRef).
+			HasSessionPolicyName(sessionPolicyName).
+			HasForAllPersonUsers(true).
+			HasForAllServiceUsers(false),
+		resourceassert.AccountSessionPolicyAttachmentResource(t, serviceRef).
+			HasSessionPolicyName(sessionPolicyForServiceUsersName).
+			HasForAllPersonUsers(false).
+			HasForAllServiceUsers(true),
 	}
 
-	newPolicyAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.AccountSessionPolicyAttachmentResource(t, ref).
-			HasSessionPolicyName(sessionPolicyName2),
-	}
+	updatedAssertions := append([]assert.TestCheckFuncProvider{
+		resourceassert.AccountSessionPolicyAttachmentResource(t, basicRef).
+			HasSessionPolicyName(sessionPolicyName2).
+			HasForAllPersonUsers(false).
+			HasForAllServiceUsers(false),
+	}, basicAssertions[1:]...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -51,56 +74,109 @@ func TestAcc_AccountSessionPolicyAttachment_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				Config: config.FromModels(t, basicModel, personModel, serviceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(personRef, plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(serviceRef, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertions...),
+				Check: assertThat(t, basicAssertions...),
 			},
 			// Import
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      ref,
+				ResourceName:      basicRef,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Change policy
 			{
+				ResourceName:      personRef,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      serviceRef,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Change the account-wide attachment's policy
+			{
+				Config: config.FromModels(t, basicModelUpdated, personModel, serviceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(personRef, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(serviceRef, plancheck.ResourceActionNoop),
 					},
 				},
-				Config: config.FromModels(t, newPolicy),
-				Check:  assertThat(t, newPolicyAssertions...),
+				Check: assertThat(t, updatedAssertions...),
 			},
-			// Destroy
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
-					},
-				},
-				Config:  config.FromModels(t, newPolicy),
-				Destroy: true,
-			},
-			{
-				Config: config.FromModels(t, basic),
-			},
-			// Unset policy externally
+			// Unset a single attachment (account-wide) outside of Terraform
 			{
 				PreConfig: func() {
-					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().WithSessionPolicy(true))))
+					testClient().Account.Alter(t, sdk.NewAlterAccountRequest().
+						WithUnset(*sdk.NewAccountUnsetRequest().WithSessionPolicyUnset(*sdk.NewAccountSessionPolicyUnsetRequest().WithSessionPolicy(true))))
 				},
+				Config: config.FromModels(t, basicModelUpdated, personModel, serviceModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(personRef, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(serviceRef, plancheck.ResourceActionNoop),
 					},
 				},
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertions...),
+				Check: assertThat(t, updatedAssertions...),
+			},
+			// Remove the service-users attachment, freeing that scope for the switch below
+			{
+				Config: config.FromModels(t, basicModelUpdated, personModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(personRef, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(serviceRef, plancheck.ResourceActionDestroy),
+					},
+				},
+			},
+			// Switch the person-users attachment to the service-users scope; changing the scope forces recreation
+			{
+				Config: config.FromModels(t, basicModelUpdated, personModelAsService),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(personRef, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.AccountSessionPolicyAttachmentResource(t, personRef).
+						HasSessionPolicyName(sessionPolicyName).
+						HasForAllPersonUsers(false).
+						HasForAllServiceUsers(true),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_AccountSessionPolicyAttachment_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	conflictingModel := model.AccountSessionPolicyAttachment("t", id.FullyQualifiedName()).
+		WithForAllPersonUsers(true).
+		WithForAllServiceUsers(true)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountSessionPolicyAttachmentDestroy(t),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, conflictingModel),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Conflicting configuration arguments"),
 			},
 		},
 	})

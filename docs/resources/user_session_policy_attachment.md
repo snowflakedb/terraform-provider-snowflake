@@ -40,8 +40,8 @@ resource "snowflake_user_session_policy_attachment" "spa" {
 
 ### Required
 
-- `session_policy_name` (String) Fully qualified name of the session policy.
-- `user_name` (String) User name of the user you want to attach the session policy to.
+- `session_policy_name` (String) Fully qualified name of the session policy. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
+- `user_name` (String) User name of the user you want to attach the session policy to. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
 
 ### Optional
 

@@ -12,6 +12,8 @@ import (
 
 type AccountAuthenticationPolicyAttachmentModel struct {
 	AuthenticationPolicy tfconfig.Variable `json:"authentication_policy,omitempty"`
+	ForAllPersonUsers    tfconfig.Variable `json:"for_all_person_users,omitempty"`
+	ForAllServiceUsers   tfconfig.Variable `json:"for_all_service_users,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -80,11 +82,31 @@ func (a *AccountAuthenticationPolicyAttachmentModel) WithAuthenticationPolicy(au
 	return a
 }
 
+func (a *AccountAuthenticationPolicyAttachmentModel) WithForAllPersonUsers(forAllPersonUsers bool) *AccountAuthenticationPolicyAttachmentModel {
+	a.ForAllPersonUsers = tfconfig.BoolVariable(forAllPersonUsers)
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentModel) WithForAllServiceUsers(forAllServiceUsers bool) *AccountAuthenticationPolicyAttachmentModel {
+	a.ForAllServiceUsers = tfconfig.BoolVariable(forAllServiceUsers)
+	return a
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
 
 func (a *AccountAuthenticationPolicyAttachmentModel) WithAuthenticationPolicyValue(value tfconfig.Variable) *AccountAuthenticationPolicyAttachmentModel {
 	a.AuthenticationPolicy = value
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentModel) WithForAllPersonUsersValue(value tfconfig.Variable) *AccountAuthenticationPolicyAttachmentModel {
+	a.ForAllPersonUsers = value
+	return a
+}
+
+func (a *AccountAuthenticationPolicyAttachmentModel) WithForAllServiceUsersValue(value tfconfig.Variable) *AccountAuthenticationPolicyAttachmentModel {
+	a.ForAllServiceUsers = value
 	return a
 }
