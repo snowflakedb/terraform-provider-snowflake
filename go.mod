@@ -22,10 +22,10 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78
 	golang.org/x/crypto v0.53.0
 	golang.org/x/exp v0.0.0-20260611194520-c48552f49976
-	golang.org/x/sync v0.21.0
+	golang.org/x/sync v0.22.0
 	golang.org/x/sys v0.46.0
-	golang.org/x/text v0.38.0
-	golang.org/x/tools v0.46.0
+	golang.org/x/text v0.40.0
+	golang.org/x/tools v0.47.0
 	mvdan.cc/gofumpt v0.10.0
 )
 
