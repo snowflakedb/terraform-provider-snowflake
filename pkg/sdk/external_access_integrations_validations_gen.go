@@ -62,8 +62,8 @@ func (opts *AlterExternalAccessIntegrationOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.AllowedNetworkRules, opts.Unset.AllowedApiAuthenticationIntegrations, opts.Unset.AllowedAuthenticationSecrets, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Unset", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Comment"))
+		if !anyValueSet(opts.Unset.AllowedNetworkRules, opts.Unset.AllowedApiAuthenticationIntegrations, opts.Unset.AllowedAuthenticationSecrets, opts.Unset.Enabled, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Unset", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

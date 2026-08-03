@@ -183,4 +183,80 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 				HasComment("test comment"),
 		)
 	})
+
+	t.Run("alter: set and unset all", func(t *testing.T) {
+		networkRule2, networkRule2Cleanup := testClientHelper().NetworkRule.Create(t)
+		t.Cleanup(networkRule2Cleanup)
+
+		apiAuth1, apiAuth1Cleanup := testClientHelper().SecurityIntegration.CreateApiAuthenticationWithClientCredentialsFlow(t)
+		t.Cleanup(apiAuth1Cleanup)
+
+		apiAuth2, apiAuth2Cleanup := testClientHelper().SecurityIntegration.CreateApiAuthenticationWithClientCredentialsFlow(t)
+		t.Cleanup(apiAuth2Cleanup)
+
+		secretId1 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		secret1, secret1Cleanup := testClientHelper().Secret.CreateWithGenericString(t, secretId1, "test-secret-1")
+		t.Cleanup(secret1Cleanup)
+
+		secretId2 := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		secret2, secret2Cleanup := testClientHelper().Secret.CreateWithGenericString(t, secretId2, "test-secret-2")
+		t.Cleanup(secret2Cleanup)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.ExternalAccessIntegrations.Create(
+			ctx,
+			sdk.NewCreateExternalAccessIntegrationRequest(id, []sdk.SchemaObjectIdentifier{networkRule.ID()}, true),
+		)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().ExternalAccessIntegration.DropExternalAccessIntegrationFunc(t, id))
+
+		err = client.ExternalAccessIntegrations.Alter(
+			ctx,
+			sdk.NewAlterExternalAccessIntegrationRequest(id).
+				WithSet(
+					*sdk.NewExternalAccessIntegrationSetRequest().
+						WithAllowedNetworkRules([]sdk.SchemaObjectIdentifier{networkRule.ID(), networkRule2.ID()}).
+						WithAllowedApiAuthenticationIntegrations(*sdk.NewExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest().
+							WithIntegrations([]sdk.AccountObjectIdentifier{apiAuth1.ID(), apiAuth2.ID()})).
+						WithAllowedAuthenticationSecrets(*sdk.NewExternalAccessIntegrationAllowedAuthenticationSecretsRequest().
+							WithSecrets([]sdk.SchemaObjectIdentifier{secret1.ID(), secret2.ID()})).
+						WithEnabled(false).
+						WithComment("updated comment"),
+				),
+		)
+		require.NoError(t, err)
+
+		assertThatObject(
+			t, objectassert.ExternalAccessIntegrationDetails(t, id).
+				HasAllowedNetworkRules(networkRule.ID(), networkRule2.ID()).
+				HasAllowedApiAuthenticationIntegrationsList(apiAuth1.ID(), apiAuth2.ID()).
+				HasAllowedAuthenticationSecretsList(secret1.ID(), secret2.ID()).
+				HasEnabled(false).
+				HasComment("updated comment"),
+		)
+
+		err = client.ExternalAccessIntegrations.Alter(
+			ctx,
+			sdk.NewAlterExternalAccessIntegrationRequest(id).
+				WithUnset(
+					*sdk.NewExternalAccessIntegrationUnsetRequest().
+						WithAllowedNetworkRules(true).
+						WithAllowedApiAuthenticationIntegrations(true).
+						WithAllowedAuthenticationSecrets(true).
+						WithEnabled(true).
+						WithComment(true),
+				),
+		)
+		require.NoError(t, err)
+
+		assertThatObject(
+			t, objectassert.ExternalAccessIntegrationDetails(t, id).
+				HasNoAllowedNetworkRules().
+				HasNoAllowedApiAuthenticationIntegrationsList().
+				HasAllowedAuthenticationSecretsAll(false).
+				HasNoAllowedAuthenticationSecretsList().
+				HasEnabled(true).
+				HasComment(""),
+		)
+	})
 }
