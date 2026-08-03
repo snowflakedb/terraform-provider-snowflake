@@ -206,8 +206,8 @@ var allExperiments = []Experiment{
 		ExperimentalFeatureStateActive,
 		joinWithDoubleNewline(
 			"Re-introduces the `account` field as a fallback for `organization_name` and `account_name` in both the provider configuration and TOML profiles.",
-			"When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `\"myorg-myaccount\"`) and an account locator (e.g. `\"xy12345\"`). If both `organization_name` and `account_name` are set, they take precedence over `account`.",
-			"Without this experiment, using the `account` field results in an error directing you to enable this experiment.",
+			"When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `\"myorg-myaccount\"`) and an account locator (e.g. `\"xy12345\"`). If both `organization_name` and `account_name` are set, they take precedence over `account`. The `SNOWFLAKE_ACCOUNT` environment variable is used as the `account` value only when this experiment is enabled.",
+			"Without this experiment, setting the `account` field in the provider configuration or in a TOML profile results in an error directing you to enable this experiment. A value coming from the `SNOWFLAKE_ACCOUNT` environment variable is ignored with a warning instead, because this experiment will be enabled by default in v3 and the variable will be taken into account from that version on.",
 		),
 	},
 }

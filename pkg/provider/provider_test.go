@@ -4,7 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/snowflakedb/gosnowflake/v2"
 	"github.com/stretchr/testify/assert"
@@ -22,11 +25,12 @@ func TestProvider(t *testing.T) {
 }
 
 func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
+	t.Setenv(snowflakeenvs.Account, "")
 	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{})
 
-	config, err := getDriverConfigFromTerraform(d, nil)
+	config, diags := getDriverConfigFromTerraform(d, nil)
 
-	require.NoError(t, err)
+	require.Empty(t, diags)
 	assert.Equal(t, "terraform-provider-snowflake", config.Application)
 	assert.Empty(t, config.User)
 	assert.Empty(t, config.Password)
@@ -85,6 +89,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 }
 
 func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
+	t.Setenv(snowflakeenvs.Account, "")
 	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{ //nolint:gosec // test credentials
 		"account_name":                      "test_account",
 		"organization_name":                 "test_org",
@@ -148,9 +153,9 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"disable_saml_url_check":                 "true",
 	})
 
-	config, err := getDriverConfigFromTerraform(d, nil)
+	config, diags := getDriverConfigFromTerraform(d, nil)
 
-	require.NoError(t, err)
+	require.Empty(t, diags)
 
 	assert.Equal(t, "terraform-provider-snowflake", config.Application)
 	assert.Equal(t, "test_org-test_account", config.Account)
@@ -209,4 +214,95 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.True(t, config.CrlOnDiskCacheDisabled)
 	assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
+}
+
+func TestGetDriverConfigFromTerraform_AccountFallback(t *testing.T) {
+	accountFallbackEnabled := []string{string(experimentalfeatures.ProviderConfigurationAccountFallback)}
+
+	tests := []struct {
+		name               string
+		configuration      map[string]any
+		accountEnvValue    string
+		enabledExperiments []string
+		expectedAccount    string
+		expectedError      string
+		expectedWarning    bool
+	}{
+		{
+			name:            "environment variable is ignored with a warning without the experiment",
+			configuration:   map[string]any{},
+			accountEnvValue: "env_org-env_account",
+			expectedAccount: "",
+			expectedWarning: true,
+		},
+		{
+			name:            "environment variable does not fail the validation without the experiment",
+			configuration:   map[string]any{"organization_name": "test_org", "account_name": "test_account"},
+			accountEnvValue: "env_org-env_account",
+			expectedAccount: "test_org-test_account",
+			expectedWarning: true,
+		},
+		{
+			name:            "no warning without the experiment when the environment variable is not set",
+			configuration:   map[string]any{"organization_name": "test_org", "account_name": "test_account"},
+			expectedAccount: "test_org-test_account",
+		},
+		{
+			name:          "account field fails the validation without the experiment",
+			configuration: map[string]any{"account": "config_org-config_account"},
+			expectedError: `the account field requires the "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK" experiment to be enabled`,
+		},
+		{
+			name:          "account field fails the validation without the experiment also with organization name and account name",
+			configuration: map[string]any{"account": "config_org-config_account", "organization_name": "test_org", "account_name": "test_account"},
+			expectedError: `the account field requires the "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK" experiment to be enabled`,
+		},
+		{
+			name:               "environment variable is used with the experiment",
+			configuration:      map[string]any{},
+			accountEnvValue:    "env_org-env_account",
+			enabledExperiments: accountFallbackEnabled,
+			expectedAccount:    "env_org-env_account",
+		},
+		{
+			name:               "account field takes precedence over the environment variable",
+			configuration:      map[string]any{"account": "config_org-config_account"},
+			accountEnvValue:    "env_org-env_account",
+			enabledExperiments: accountFallbackEnabled,
+			expectedAccount:    "config_org-config_account",
+		},
+		{
+			name:               "organization name and account name take precedence over the environment variable",
+			configuration:      map[string]any{"organization_name": "test_org", "account_name": "test_account"},
+			accountEnvValue:    "env_org-env_account",
+			enabledExperiments: accountFallbackEnabled,
+			expectedAccount:    "test_org-test_account",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Setenv(snowflakeenvs.Account, tc.accountEnvValue)
+			d := schema.TestResourceDataRaw(t, GetProviderSchema(), tc.configuration)
+
+			config, diags := getDriverConfigFromTerraform(d, tc.enabledExperiments)
+
+			if tc.expectedError != "" {
+				require.True(t, diags.HasError())
+				assert.Contains(t, diags[0].Summary, tc.expectedError)
+				return
+			}
+			require.False(t, diags.HasError())
+			assert.Equal(t, tc.expectedAccount, config.Account)
+			if tc.expectedWarning {
+				require.Len(t, diags, 1)
+				assert.Equal(t, diag.Warning, diags[0].Severity)
+				assert.Contains(t, diags[0].Summary, "The SNOWFLAKE_ACCOUNT environment variable is ignored.")
+				assert.Contains(t, diags[0].Detail, `requires the "PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK" experiment to be enabled`)
+				assert.Contains(t, diags[0].Detail, "enabled by default in v3")
+			} else {
+				assert.Empty(t, diags)
+			}
+		})
+	}
 }
