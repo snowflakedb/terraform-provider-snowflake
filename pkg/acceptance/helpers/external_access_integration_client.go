@@ -46,6 +46,18 @@ func (c *ExternalAccessIntegrationClient) CreateExternalAccessIntegrationWithNet
 	return id, c.DropExternalAccessIntegrationFunc(t, id)
 }
 
+func (c *ExternalAccessIntegrationClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ExternalAccessIntegration, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ExternalAccessIntegrations.ShowByID(ctx, id)
+}
+
+func (c *ExternalAccessIntegrationClient) DescribeDetails(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.ExternalAccessIntegrationDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+	return c.client().ExternalAccessIntegrations.DescribeDetails(ctx, id)
+}
+
 func (c *ExternalAccessIntegrationClient) DropExternalAccessIntegrationFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
