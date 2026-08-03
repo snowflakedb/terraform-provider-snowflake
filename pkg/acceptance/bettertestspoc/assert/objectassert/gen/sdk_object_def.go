@@ -592,6 +592,16 @@ var allStructs = []SdkObjectDef{
 			"NormalizedPackages",
 		},
 	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.ExternalAccessIntegration{},
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.ExternalAccessIntegrationDetails{},
+		IsDataSourceOutput: true,
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ExternalAccessIntegration", MethodName: "DescribeDetails"},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
