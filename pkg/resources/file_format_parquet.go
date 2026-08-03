@@ -90,8 +90,8 @@ func ImportFileFormatParquet(ctx context.Context, d *schema.ResourceData, meta a
 	for key, value := range parquetFileFormatToSchema(details, true) {
 		errs = append(errs, d.Set(key, value))
 	}
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
 	}
 
 	return []*schema.ResourceData{d}, nil

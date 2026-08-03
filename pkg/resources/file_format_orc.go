@@ -89,8 +89,8 @@ func ImportFileFormatOrc(ctx context.Context, d *schema.ResourceData, meta any) 
 	for key, value := range orcFileFormatToSchema(details, true) {
 		errs = append(errs, d.Set(key, value))
 	}
-	if len(errs) > 0 {
-		return nil, errors.Join(errs...)
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
 	}
 
 	return []*schema.ResourceData{d}, nil
