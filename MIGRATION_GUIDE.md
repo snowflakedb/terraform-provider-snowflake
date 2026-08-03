@@ -51,6 +51,20 @@ The warning was purely cosmetic - the TOML file permission verification itself w
 
 Reference: [#5082](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5082)
 
+### *(bug fix)* Fixed import of the per-type file format resources
+
+Importing `snowflake_file_format_parquet`, `snowflake_file_format_avro`, `snowflake_file_format_orc`, `snowflake_file_format_xml`, `snowflake_file_format_csv`, or `snowflake_file_format_json` (all preview resources) using a config-driven `import` block failed with:
+
+```
+Error: Import returned no resources
+
+While attempting to import with ID "...", the providerreturned no instance states.
+```
+
+Using the legacy `terraform import <resource> <id>` command did not show this error, but it silently produced an empty resource with no attributes in the state instead of the imported object. Both symptoms had the same root cause: a bug in import logic that misclassified a list of successful (no-op) results as a list of errors. No changes in configuration are required; upgrade the provider and reimport the affected resources.
+
+Reference: [#5086](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5086)
+
 ## v2.18.x ➞ v2.19.0
 
 ### *(improvement)* Rework of `snowflake_account_authentication_policy_attachment` and `snowflake_user_authentication_policy_attachment`
