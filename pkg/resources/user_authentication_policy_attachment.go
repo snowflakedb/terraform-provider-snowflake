@@ -22,14 +22,14 @@ var userAuthenticationPolicyAttachmentSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		Description:      "User name of the user you want to attach the authentication policy to.",
+		Description:      blocklistedPipesFieldDescription("User name of the user you want to attach the authentication policy to."),
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"authentication_policy_name": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      "Fully qualified name of the authentication policy.",
+		Description:      blocklistedPipesFieldDescription("Fully qualified name of the authentication policy."),
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -160,14 +160,9 @@ func UpdateUserAuthenticationPolicyAttachment(ctx context.Context, d *schema.Res
 
 		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).
 			WithIfExists(true).
-			WithUnset(*sdk.NewUserUnsetRequest().WithAuthenticationPolicy(true))); err != nil {
-			d.Partial(true)
-			return diag.FromErr(fmt.Errorf("error while unsetting old authentication policy from user %v, err = %w", userName.FullyQualifiedName(), err))
-		}
-		if err := client.Users.Alter(ctx, sdk.NewAlterUserRequest(userName).
-			WithIfExists(true).
-			WithSet(*sdk.NewUserSetRequest().WithAuthenticationPolicy(newAuthenticationPolicyName))); err != nil {
-			d.Partial(true)
+			WithSet(*sdk.NewUserSetRequest().
+				WithAuthenticationPolicy(newAuthenticationPolicyName).
+				WithForce(true))); err != nil {
 			return diag.FromErr(fmt.Errorf("error while setting new authentication policy to user %v, err = %w", userName.FullyQualifiedName(), err))
 		}
 

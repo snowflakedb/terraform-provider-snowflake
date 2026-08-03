@@ -42,8 +42,8 @@ resource "snowflake_user_authentication_policy_attachment" "apa" {
 
 ### Required
 
-- `authentication_policy_name` (String) Fully qualified name of the authentication policy.
-- `user_name` (String) User name of the user you want to attach the authentication policy to.
+- `authentication_policy_name` (String) Fully qualified name of the authentication policy. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
+- `user_name` (String) User name of the user you want to attach the authentication policy to. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
 
 ### Optional
 

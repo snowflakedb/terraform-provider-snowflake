@@ -5,8 +5,6 @@ description: |-
   Specifies the session policy to use for the current account. To set the session policy of a different account, use a provider alias.
 ---
 
-~> **Required warehouse** For this resource, the provider uses [policy references](https://docs.snowflake.com/en/sql-reference/functions/policy_references) to get information about policies attached to the current account. This function requires a warehouse in the connection. Please, make sure you have either set a `DEFAULT_WAREHOUSE` for the user, or specified a warehouse in the provider configuration.
-
 !> **Warning** This resource shouldn't be used with `snowflake_current_account` resource in the same configuration, as it may lead to unexpected behavior.
 
 # snowflake_account_session_policy_attachment (Resource)
@@ -22,8 +20,23 @@ resource "snowflake_session_policy" "sp" {
   name     = "default_session_policy"
 }
 
+# Attach the session policy account-wide (default behavior).
 resource "snowflake_account_session_policy_attachment" "attachment" {
   session_policy_name = snowflake_session_policy.sp.fully_qualified_name
+}
+
+resource "snowflake_session_policy" "service_users" {
+  database = "prod"
+  schema   = "security"
+  name     = "service_users_session_policy"
+}
+
+# Attach the session policy to all service users only.
+# Use for_all_person_users = true to target all person users instead.
+# The two fields are mutually exclusive; when neither is set, the policy is attached account-wide.
+resource "snowflake_account_session_policy_attachment" "attachment_service_users" {
+  session_policy_name   = snowflake_session_policy.service_users.fully_qualified_name
+  for_all_service_users = true
 }
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
@@ -36,10 +49,12 @@ resource "snowflake_account_session_policy_attachment" "attachment" {
 
 ### Required
 
-- `session_policy_name` (String) Fully qualified name of the session policy to apply to the current account.
+- `session_policy_name` (String) Fully qualified name of the session policy to apply to the current account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using pipes (`|`).
 
 ### Optional
 
+- `for_all_person_users` (Boolean) If true, attaches the session policy to all person users in the current account. Conflicts with `for_all_service_users`. When neither field is set, the policy is attached account-wide.
+- `for_all_service_users` (Boolean) If true, attaches the session policy to all service users in the current account. Conflicts with `for_all_person_users`. When neither field is set, the policy is attached account-wide.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -61,5 +76,10 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_account_session_policy_attachment.example '"<database_name>"."<schema_name>"."<session_policy_name>"'
+# Account-wide attachment:
+terraform import snowflake_account_session_policy_attachment.example '"<database_name>"."<schema_name>"."<session_policy_name>"|ACCOUNT'
+# For all person users:
+terraform import snowflake_account_session_policy_attachment.example '"<database_name>"."<schema_name>"."<session_policy_name>"|PERSON_USERS'
+# For all service users:
+terraform import snowflake_account_session_policy_attachment.example '"<database_name>"."<schema_name>"."<session_policy_name>"|SERVICE_USERS'
 ```

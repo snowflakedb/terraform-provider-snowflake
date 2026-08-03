@@ -11,7 +11,9 @@ import (
 )
 
 type AccountSessionPolicyAttachmentModel struct {
-	SessionPolicyName tfconfig.Variable `json:"session_policy_name,omitempty"`
+	ForAllPersonUsers  tfconfig.Variable `json:"for_all_person_users,omitempty"`
+	ForAllServiceUsers tfconfig.Variable `json:"for_all_service_users,omitempty"`
+	SessionPolicyName  tfconfig.Variable `json:"session_policy_name,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -75,6 +77,16 @@ func (a *AccountSessionPolicyAttachmentModel) WithTimeout(timeout config.Timeout
 // below all the proper values //
 /////////////////////////////////
 
+func (a *AccountSessionPolicyAttachmentModel) WithForAllPersonUsers(forAllPersonUsers bool) *AccountSessionPolicyAttachmentModel {
+	a.ForAllPersonUsers = tfconfig.BoolVariable(forAllPersonUsers)
+	return a
+}
+
+func (a *AccountSessionPolicyAttachmentModel) WithForAllServiceUsers(forAllServiceUsers bool) *AccountSessionPolicyAttachmentModel {
+	a.ForAllServiceUsers = tfconfig.BoolVariable(forAllServiceUsers)
+	return a
+}
+
 func (a *AccountSessionPolicyAttachmentModel) WithSessionPolicyName(sessionPolicyName string) *AccountSessionPolicyAttachmentModel {
 	a.SessionPolicyName = tfconfig.StringVariable(sessionPolicyName)
 	return a
@@ -83,6 +95,16 @@ func (a *AccountSessionPolicyAttachmentModel) WithSessionPolicyName(sessionPolic
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (a *AccountSessionPolicyAttachmentModel) WithForAllPersonUsersValue(value tfconfig.Variable) *AccountSessionPolicyAttachmentModel {
+	a.ForAllPersonUsers = value
+	return a
+}
+
+func (a *AccountSessionPolicyAttachmentModel) WithForAllServiceUsersValue(value tfconfig.Variable) *AccountSessionPolicyAttachmentModel {
+	a.ForAllServiceUsers = value
+	return a
+}
 
 func (a *AccountSessionPolicyAttachmentModel) WithSessionPolicyNameValue(value tfconfig.Variable) *AccountSessionPolicyAttachmentModel {
 	a.SessionPolicyName = value

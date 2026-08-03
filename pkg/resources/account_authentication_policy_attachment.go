@@ -2,7 +2,9 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -19,9 +21,25 @@ var accountAuthenticationPolicyAttachmentSchema = map[string]*schema.Schema{
 	"authentication_policy": {
 		Type:             schema.TypeString,
 		Required:         true,
-		Description:      "Fully qualified name of the authentication policy to apply to the current account.",
+		Description:      blocklistedPipesFieldDescription("Fully qualified name of the authentication policy to apply to the current account."),
 		ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
+	},
+	"for_all_person_users": {
+		Type:     schema.TypeBool,
+		Optional: true,
+		ForceNew: true,
+		Description: joinWithSpace("If true, attaches the authentication policy to all person users in the current account.",
+			"Conflicts with `for_all_service_users`. When neither field is set, the policy is attached account-wide."),
+		ConflictsWith: []string{"for_all_service_users"},
+	},
+	"for_all_service_users": {
+		Type:     schema.TypeBool,
+		Optional: true,
+		ForceNew: true,
+		Description: joinWithSpace("If true, attaches the authentication policy to all service users in the current account.",
+			"Conflicts with `for_all_person_users`. When neither field is set, the policy is attached account-wide."),
+		ConflictsWith: []string{"for_all_person_users"},
 	},
 }
 
@@ -50,13 +68,23 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 		return diag.FromErr(err)
 	}
 
-	err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(authenticationPolicy))))
-	if err != nil {
+	setRequest := sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(authenticationPolicy)
+	if err := errors.Join(
+		boolAttributeCreate(d, "for_all_person_users", &setRequest.ForAllPersonUsers),
+		boolAttributeCreate(d, "for_all_service_users", &setRequest.ForAllServiceUsers),
+	); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := client.Accounts.Alter(
+		ctx, sdk.NewAlterAccountRequest().
+			WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicySet(*setRequest)),
+	); err != nil {
 		return diag.FromErr(fmt.Errorf("error while creating authentication policy attachment, err = %w", err))
 	}
 
-	d.SetId(helpers.EncodeResourceIdentifier(authenticationPolicy))
+	scope := accountAuthenticationPolicyScope(d)
+	d.SetId(helpers.EncodeResourceIdentifier(authenticationPolicy.FullyQualifiedName(), string(scope)))
 
 	return ReadAccountAuthenticationPolicyAttachment(ctx, d, meta)
 }
@@ -64,49 +92,40 @@ func CreateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 func ReadAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	currentAccountId, err := sdk.ParseAccountObjectIdentifier(client.GetAccountLocator())
+	policies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithOn(sdk.On{Account: new(true)}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	policyReferences, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequest(currentAccountId, sdk.PolicyEntityDomainAccount))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	authenticationPolicyReferences := make([]sdk.PolicyReference, 0)
-	for _, policyReference := range policyReferences {
-		if policyReference.PolicyKind == sdk.PolicyKindAuthenticationPolicy {
-			authenticationPolicyReferences = append(authenticationPolicyReferences, policyReference)
+	var attachedPolicy *sdk.AuthenticationPolicy
+	expectedScope := accountAuthenticationPolicyScopeForRead(d)
+	for i := range policies {
+		if slices.Contains(policies[i].TargetScopes, expectedScope) {
+			attachedPolicy = &policies[i]
+			break
 		}
 	}
 
-	if len(authenticationPolicyReferences) > 1 {
-		return diag.FromErr(fmt.Errorf("internal error: multiple authentication policy references attached to an account. This should never happen"))
-	}
-
-	if len(authenticationPolicyReferences) == 0 {
+	if attachedPolicy == nil {
 		d.SetId("")
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  "Failed to find account's authentication policy. Marking the resource as removed.",
-				Detail:   fmt.Sprintf("Account id: %s", currentAccountId.Name()),
+				Detail:   fmt.Sprintf("No authentication policy is attached to the current account with the %s target scope.", expectedScope),
 			},
 		}
 	}
 
-	authenticationPolicyFromRef := sdk.NewSchemaObjectIdentifier(
-		*authenticationPolicyReferences[0].PolicyDb,
-		*authenticationPolicyReferences[0].PolicySchema,
-		authenticationPolicyReferences[0].PolicyName,
-	)
-
-	if err := d.Set("authentication_policy", authenticationPolicyFromRef.FullyQualifiedName()); err != nil {
+	if err := errors.Join(
+		d.Set("authentication_policy", attachedPolicy.ID().FullyQualifiedName()),
+		d.Set("for_all_person_users", expectedScope == sdk.AuthenticationPolicyTargetScopePersonUsers),
+		d.Set("for_all_service_users", expectedScope == sdk.AuthenticationPolicyTargetScopeServiceUsers),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(helpers.EncodeResourceIdentifier(authenticationPolicyFromRef))
+	d.SetId(helpers.EncodeResourceIdentifier(attachedPolicy.ID().FullyQualifiedName(), string(expectedScope)))
 
 	return nil
 }
@@ -120,18 +139,23 @@ func UpdateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 			return diag.FromErr(err)
 		}
 
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().WithAuthenticationPolicy(true)))); err != nil {
-			d.Partial(true)
-			return diag.FromErr(fmt.Errorf("error while unsetting old authentication policy from account, err = %w", err))
+		setRequest := sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(newAuthenticationPolicyName)
+		if err := errors.Join(
+			boolAttributeCreate(d, "for_all_person_users", &setRequest.ForAllPersonUsers),
+			boolAttributeCreate(d, "for_all_service_users", &setRequest.ForAllServiceUsers),
+		); err != nil {
+			return diag.FromErr(err)
 		}
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().WithAuthenticationPolicySet(*sdk.NewAccountAuthenticationPolicySetRequest().WithAuthenticationPolicy(newAuthenticationPolicyName)))); err != nil {
-			d.Partial(true)
+		if err := client.Accounts.Alter(
+			ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().
+				WithAuthenticationPolicySet(*setRequest).
+				WithForce(true)),
+		); err != nil {
 			return diag.FromErr(fmt.Errorf("error while setting new authentication policy on account, err = %w", err))
 		}
 
-		d.SetId(helpers.EncodeResourceIdentifier(newAuthenticationPolicyName))
+		scope := accountAuthenticationPolicyScope(d)
+		d.SetId(helpers.EncodeResourceIdentifier(newAuthenticationPolicyName.FullyQualifiedName(), string(scope)))
 	}
 
 	return ReadAccountAuthenticationPolicyAttachment(ctx, d, meta)
@@ -140,13 +164,45 @@ func UpdateAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.
 func DeleteAccountAuthenticationPolicyAttachment(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-		WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicyUnset(*sdk.NewAccountAuthenticationPolicyUnsetRequest().WithAuthenticationPolicy(true))))
-	if err != nil {
+	unsetRequest := sdk.NewAccountAuthenticationPolicyUnsetRequest().WithAuthenticationPolicy(true)
+	if err := errors.Join(
+		boolAttributeCreate(d, "for_all_person_users", &unsetRequest.ForAllPersonUsers),
+		boolAttributeCreate(d, "for_all_service_users", &unsetRequest.ForAllServiceUsers),
+	); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := client.Accounts.Alter(
+		ctx, sdk.NewAlterAccountRequest().
+			WithUnset(*sdk.NewAccountUnsetRequest().WithAuthenticationPolicyUnset(*unsetRequest)),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId("")
 
 	return nil
+}
+
+func accountAuthenticationPolicyScope(d *schema.ResourceData) sdk.AuthenticationPolicyTargetScope {
+	switch {
+	case d.Get("for_all_person_users").(bool):
+		return sdk.AuthenticationPolicyTargetScopePersonUsers
+	case d.Get("for_all_service_users").(bool):
+		return sdk.AuthenticationPolicyTargetScopeServiceUsers
+	default:
+		return sdk.AuthenticationPolicyTargetScopeAccount
+	}
+}
+
+// accountAuthenticationPolicyScopeForRead resolves the target scope managed by this resource instance from its id.
+// Since v2.20.0 the scope is encoded as the second id part (`<fully_qualified_name>|<scope>`, two parts). Older ids
+// predate scoped attachments and are always account-wide.
+func accountAuthenticationPolicyScopeForRead(d *schema.ResourceData) sdk.AuthenticationPolicyTargetScope {
+	if parts := helpers.ParseResourceIdentifier(d.Id()); len(parts) == 2 {
+		if scope, err := sdk.ToAuthenticationPolicyTargetScope(parts[1]); err == nil {
+			return scope
+		}
+	}
+	return sdk.AuthenticationPolicyTargetScopeAccount
 }
