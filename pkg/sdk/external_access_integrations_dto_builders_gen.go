@@ -152,6 +152,11 @@ func (s *ExternalAccessIntegrationUnsetRequest) WithAllowedAuthenticationSecrets
 	return s
 }
 
+func (s *ExternalAccessIntegrationUnsetRequest) WithEnabled(enabled bool) *ExternalAccessIntegrationUnsetRequest {
+	s.Enabled = &enabled
+	return s
+}
+
 func (s *ExternalAccessIntegrationUnsetRequest) WithComment(comment bool) *ExternalAccessIntegrationUnsetRequest {
 	s.Comment = &comment
 	return s

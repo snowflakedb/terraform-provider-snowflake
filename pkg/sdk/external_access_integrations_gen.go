@@ -69,6 +69,7 @@ type ExternalAccessIntegrationUnset struct {
 	AllowedNetworkRules                  *bool `ddl:"keyword" sql:"ALLOWED_NETWORK_RULES"`
 	AllowedApiAuthenticationIntegrations *bool `ddl:"keyword" sql:"ALLOWED_API_AUTHENTICATION_INTEGRATIONS"`
 	AllowedAuthenticationSecrets         *bool `ddl:"keyword" sql:"ALLOWED_AUTHENTICATION_SECRETS"`
+	Enabled                              *bool `ddl:"keyword" sql:"ENABLED"`
 	Comment                              *bool `ddl:"keyword" sql:"COMMENT"`
 }
 

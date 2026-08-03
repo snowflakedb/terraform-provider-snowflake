@@ -202,10 +202,10 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalAccessIntegrationOptions.Set.AllowedAuthenticationSecrets", "All", "None", "Secrets"))
 	})
 
-	t.Run("validation: at least one of the fields [opts.Unset.AllowedNetworkRules opts.Unset.AllowedApiAuthenticationIntegrations opts.Unset.AllowedAuthenticationSecrets opts.Unset.Comment] should be set", func(t *testing.T) {
+	t.Run("validation: at least one of the fields [opts.Unset.AllowedNetworkRules opts.Unset.AllowedApiAuthenticationIntegrations opts.Unset.AllowedAuthenticationSecrets opts.Unset.Enabled opts.Unset.Comment] should be set", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.Unset = &ExternalAccessIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Unset", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Comment"))
+		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalAccessIntegrationOptions.Unset", "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"))
 	})
 
 	t.Run("set: basic", func(t *testing.T) {
@@ -290,9 +290,10 @@ func TestExternalAccessIntegrations_Alter(t *testing.T) {
 			AllowedNetworkRules:                  Bool(true),
 			AllowedApiAuthenticationIntegrations: Bool(true),
 			AllowedAuthenticationSecrets:         Bool(true),
+			Enabled:                              Bool(true),
 			Comment:                              Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s UNSET ALLOWED_NETWORK_RULES, ALLOWED_API_AUTHENTICATION_INTEGRATIONS, ALLOWED_AUTHENTICATION_SECRETS, COMMENT`, id.FullyQualifiedName())
+		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL ACCESS INTEGRATION %s UNSET ALLOWED_NETWORK_RULES, ALLOWED_API_AUTHENTICATION_INTEGRATIONS, ALLOWED_AUTHENTICATION_SECRETS, ENABLED, COMMENT`, id.FullyQualifiedName())
 	})
 
 	t.Run("unset tags", func(t *testing.T) {

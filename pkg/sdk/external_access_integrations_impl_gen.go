@@ -127,6 +127,7 @@ func (r *AlterExternalAccessIntegrationRequest) toOpts() *AlterExternalAccessInt
 			AllowedNetworkRules:                  r.Unset.AllowedNetworkRules,
 			AllowedApiAuthenticationIntegrations: r.Unset.AllowedApiAuthenticationIntegrations,
 			AllowedAuthenticationSecrets:         r.Unset.AllowedAuthenticationSecrets,
+			Enabled:                              r.Unset.Enabled,
 			Comment:                              r.Unset.Comment,
 		}
 	}

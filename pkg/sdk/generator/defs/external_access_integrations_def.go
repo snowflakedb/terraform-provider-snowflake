@@ -89,8 +89,9 @@ var externalAccessIntegrationsDef = g.NewInterface(
 				OptionalSQL("ALLOWED_NETWORK_RULES").
 				OptionalSQL("ALLOWED_API_AUTHENTICATION_INTEGRATIONS").
 				OptionalSQL("ALLOWED_AUTHENTICATION_SECRETS").
+				OptionalSQL("ENABLED").
 				OptionalSQL("COMMENT").
-				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "AllowedNetworkRules", "AllowedApiAuthenticationIntegrations", "AllowedAuthenticationSecrets", "Enabled", "Comment"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		OptionalSetTags().

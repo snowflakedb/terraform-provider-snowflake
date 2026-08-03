@@ -52,6 +52,7 @@ type ExternalAccessIntegrationUnsetRequest struct {
 	AllowedNetworkRules                  *bool
 	AllowedApiAuthenticationIntegrations *bool
 	AllowedAuthenticationSecrets         *bool
+	Enabled                              *bool
 	Comment                              *bool
 }
 
