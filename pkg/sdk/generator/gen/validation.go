@@ -47,6 +47,46 @@ func (v *Validation) IsAdditionalValidations() bool {
 	return v.Type == AdditionalValidations
 }
 
+// TypeName returns the ValidationType's Go constant name, used to build generated unit test
+// case name slugs (e.g. "ExactlyOneValueSet").
+func (v *Validation) TypeName() string {
+	switch v.Type {
+	case ValidIdentifier:
+		return "ValidIdentifier"
+	case ValidIdentifierIfSet:
+		return "ValidIdentifierIfSet"
+	case ConflictingFields:
+		return "ConflictingFields"
+	case MoreThanOneValueSet:
+		return "MoreThanOneValueSet"
+	case ExactlyOneValueSet:
+		return "ExactlyOneValueSet"
+	case AtLeastOneValueSet:
+		return "AtLeastOneValueSet"
+	case ValidateValue:
+		return "ValidateValue"
+	case ValidateValueSet:
+		return "ValidateValueSet"
+	case AdditionalValidations:
+		return "AdditionalValidations"
+	case NoDoubleDollarQuotes:
+		return "NoDoubleDollarQuotes"
+	case NoDoubleDollarQuotesIfSet:
+		return "NoDoubleDollarQuotesIfSet"
+	}
+	panic("TypeName unknown for validation type")
+}
+
+// IsMultiField reports whether this validation spans more than one field name.
+func (v *Validation) IsMultiField() bool {
+	switch v.Type {
+	case ConflictingFields, MoreThanOneValueSet, ExactlyOneValueSet, AtLeastOneValueSet:
+		return true
+	default:
+		return false
+	}
+}
+
 func (v *Validation) paramsQuoted() []string {
 	params := make([]string, len(v.FieldNames))
 	for i, s := range v.FieldNames {
@@ -144,6 +184,46 @@ func (v *Validation) ReturnedError(field *Field) string {
 		return fmt.Sprintf(`errDoubleDollarQuotesNotAllowed("%s", "%s")`, field.PathWithRoot(), v.FieldNames[0])
 	}
 	panic("condition for validation unknown")
+}
+
+// DeriveModify returns the Go statements that make f fail this single-field validation, and true
+// if the modification is mechanically derivable. Returns nil, false when derivation requires
+// domain knowledge (e.g. ValidateValue calls sub.validate()).
+func (v *Validation) DeriveModify(f *Field) ([]string, bool) {
+	if len(v.FieldNames) == 0 {
+		return nil, false
+	}
+	targetFieldName := v.FieldNames[0]
+	target := f.FindChild(targetFieldName)
+	if target == nil {
+		// Field is directly on f (e.g. f is the OptsField root and the field is "name")
+		target = f
+	}
+
+	prime := primeAncestors(target)
+
+	switch v.Type {
+	case ValidIdentifier:
+		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.Path(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
+
+	case ValidIdentifierIfSet:
+		return append(prime, fmt.Sprintf("opts%s.%s = new(%s)", f.Path(), targetFieldName, emptyIdentifierVar(target.KindNoPtr()))), true
+
+	case ValidateValueSet:
+		return append(prime, fmt.Sprintf("opts%s.%s = %s", f.Path(), targetFieldName, zeroValueFor(target))), true
+
+	case NoDoubleDollarQuotes:
+		return append(prime, fmt.Sprintf(`opts%s.%s = "$$"`, f.Path(), targetFieldName)), true
+
+	case NoDoubleDollarQuotesIfSet:
+		return append(prime, fmt.Sprintf(`opts%s.%s = String("$$")`, f.Path(), targetFieldName)), true
+
+	case ValidateValue:
+		// ValidateValue calls sub.validate(); no mechanical modification is derivable without
+		// understanding the sub-struct's own requirements.
+		return nil, false
+	}
+	return nil, false
 }
 
 func (v *Validation) TodoComment(field *Field) string {

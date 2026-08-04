@@ -75,6 +75,18 @@ var (
 	unitTestTemplateContent string
 	UnitTestsTemplate       *template.Template
 
+	//go:embed templates/unit_tests_ctx_header.tmpl
+	unitTestsCtxHeaderTemplateContent string
+	UnitTestsCtxHeaderTemplate        *template.Template
+
+	//go:embed templates/unit_tests_ctx_context.tmpl
+	unitTestsCtxContextTemplateContent string
+	UnitTestsCtxContextTemplate        *template.Template
+
+	//go:embed templates/unit_tests_ctx_tests.tmpl
+	unitTestsCtxTestsTemplateContent string
+	UnitTestsCtxTestsTemplate        *template.Template
+
 	//go:embed templates/validations.tmpl
 	validationTemplateContent string
 	ValidationsTemplate       *template.Template
@@ -105,6 +117,12 @@ var (
 
 	//go:embed templates/sub_templates/validation_implementation.tmpl
 	validationImplementationTemplateContent string
+
+	//go:embed templates/sub_templates/unit_tests_validation_case.tmpl
+	unitTestsValidationCaseTemplateContent string
+
+	//go:embed templates/sub_templates/unit_tests_sql_case.tmpl
+	unitTestsSqlCaseTemplateContent string
 )
 
 func init() {
@@ -127,6 +145,8 @@ func init() {
 	subTemplates, _ = subTemplates.New("validationTest").Parse(validationTestTemplateContent)
 	subTemplates, _ = subTemplates.New("validationTests").Parse(validationTestsTemplateContent)
 	subTemplates, _ = subTemplates.New("validationImplementation").Parse(validationImplementationTemplateContent)
+	subTemplates, _ = subTemplates.New("unitTestsValidationCase").Parse(unitTestsValidationCaseTemplateContent)
+	subTemplates, _ = subTemplates.New("unitTestsSqlCase").Parse(unitTestsSqlCaseTemplateContent)
 	subTemplates, _ = subTemplates.New("optionsTemplate").Parse(operationStructTemplateContent)
 	subTemplates, _ = subTemplates.New("structTemplate").Parse(structTemplateContent)
 	subTemplates, _ = subTemplates.New("showObjectIdMethodTemplate").Parse(showObjectIdMethodTemplateContent)
@@ -141,6 +161,9 @@ func init() {
 	DtoBuildersTemplate, _ = subTemplates.New("dtoBuildersTemplate").Parse(dtoBuildersTemplateContent)
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
 	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
+	UnitTestsCtxHeaderTemplate, _ = subTemplates.New("unitTestsCtxHeaderTemplate").Parse(unitTestsCtxHeaderTemplateContent)
+	UnitTestsCtxContextTemplate, _ = subTemplates.New("unitTestsCtxContextTemplate").Parse(unitTestsCtxContextTemplateContent)
+	UnitTestsCtxTestsTemplate, _ = subTemplates.New("unitTestsCtxTestsTemplate").Parse(unitTestsCtxTestsTemplateContent)
 	ValidationsTemplate, _ = subTemplates.New("validationsTemplate").Parse(validationTemplateContent)
 	EnumTemplate, _ = subTemplates.New("enumTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
 		genhelpers.CamelToWords,

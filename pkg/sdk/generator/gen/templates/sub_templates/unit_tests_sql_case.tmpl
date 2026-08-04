@@ -1,0 +1,13 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.OperationTestModel*/ -}}
+
+{{- $optsType := .OptsType }}
+{{- $constPrefix := .TestNamePrefix }}
+{{- range .SqlCases }}
+	{{- $constName := print $constPrefix .Name }}
+	sqlCase[{{ $optsType }}]{
+		Name: {{ $constName }},
+		{{- if .IsBasic }}
+		NoModifyNeeded: true,
+		{{- end }}
+	},
+{{- end }}

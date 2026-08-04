@@ -1,0 +1,32 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+import "testing"
+{{- if .Enums }}
+
+func init() {
+{{- range .Enums }}
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[{{ .Name }}]{"{{ .Name }}", All{{ .NamePlural }}, To{{ .Name }}})
+{{- end }}
+}
+{{- end }}
+
+{{- if .UnitTests.IdVars }}
+
+var (
+{{- range .UnitTests.IdVars }}
+	{{ .Name }} = random{{ .Kind }}()
+{{- end }}
+)
+{{- end }}
+
+const (
+{{- $constPrefix := .UnitTests.TestNamePrefix }}
+{{- range .UnitTests.Operations }}
+	{{- range .ValidationCases }}
+		{{ $constPrefix }}{{ .Name }} testCaseName = "{{ .Name }}"
+	{{- end }}
+	{{- range .SqlCases }}
+		{{ $constPrefix }}{{ .Name }} testCaseName = "{{ .Name }}"
+	{{- end }}
+{{- end }}
+)

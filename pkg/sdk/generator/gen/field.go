@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 // Field defines properties of a single field or struct (by defining Fields)
@@ -174,6 +176,41 @@ func (f *Field) DtoKind() string {
 	default:
 		return f.Kind
 	}
+}
+
+// IsIdentifier reports whether this field has ddl:"identifier" tag.
+func (f *Field) IsIdentifier() bool {
+	return slices.Contains(f.Tags["ddl"], "identifier")
+}
+
+// SlugPath returns the field's path in the underscore-separated form with the root rendered as "opts"
+// (e.g. root -> "opts", ".Set.MinNodes" -> "opts_Set_MinNodes"). Unlike Path(), it never returns an empty string.
+func (f *Field) SlugPath() string {
+	if f.IsRoot() {
+		return "opts"
+	}
+	return f.Parent.SlugPath() + "_" + f.Name
+}
+
+// FindChild returns the direct child field with the given name, or nil if none exists.
+func (f *Field) FindChild(name string) *Field {
+	el, err := collections.FindFirst(f.Fields, func(f Field) bool {
+		return f.Name == name
+	})
+	if err != nil {
+		return nil
+	}
+	return el
+}
+
+// AncestorsFromRoot returns this field's ancestors ordered from the root down to (but not including) the field itself.
+// Use to derive the priming statements needed before given field can be reached
+// (e.g. opts.Set = &FunctionSet{} before opts.Set.Comment can be checked).
+func (f *Field) AncestorsFromRoot() []*Field {
+	if f.IsRoot() {
+		return nil
+	}
+	return append(f.Parent.AncestorsFromRoot(), f.Parent)
 }
 
 // DtoDecl returns how struct should be declared in generated DTO (e.g. definition is without a pointer)

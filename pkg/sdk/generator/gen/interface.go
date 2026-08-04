@@ -73,8 +73,25 @@ type Interface struct {
 	// ShowByIDFindPredicateKind selects the predicate strategy for the generated ShowByID FindFirst call.
 	ShowByIDFindPredicateKind ShowByIDFindPredicateKind
 
+	// UnitTests is the prepared model for the optional unit_tests generation part.
+	UnitTests *UnitTestsModel
+
 	*genhelpers.PreambleModel
 	*genhelpers.ObjectGenerationSettings
+}
+
+// HasEnabledGenerationPart reports whether this object has explicitly opted into an optional
+// (disabled-by-default) generation part via WithEnabledGenerationParts. It does not account for
+// the global --enable-generation-part-names CLI flag, which is applied later by genhelpers and is
+// not visible from the definition model.
+func (i *Interface) HasEnabledGenerationPart(part GenerationPartName) bool {
+	if i.ObjectGenerationSettings == nil {
+		return false
+	}
+	_, err := collections.FindFirst(i.ObjectGenerationSettings.EnabledGenerationParts, func(p genhelpers.GenerationPartNamer) bool {
+		return p.GenerationPartName() == part.GenerationPartName()
+	})
+	return err == nil
 }
 
 // WithAllowedGenerationParts restricts this object to only the specified generation parts.

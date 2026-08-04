@@ -1,0 +1,18 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.OperationTestModel*/ -}}
+
+{{- $optsType := .OptsType }}
+{{- $constPrefix := .TestNamePrefix }}
+{{- range .ValidationCases }}
+	{{- $constName := print $constPrefix .Name }}
+	validationCase[{{ $optsType }}]{
+		Name:         {{ $constName }},
+		ExpectedErr: {{ .ExpectedErrLine }},
+		{{- if .HasModify }}
+		DefaultModify: func(opts {{ $optsType }}) {
+		{{- range .ModifyLines }}
+			{{ . }}
+		{{- end }}
+		},
+		{{- end }}
+	},
+{{- end }}

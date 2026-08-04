@@ -28,7 +28,9 @@ func main() {
 		WithGenerationPart(gen.PartDto, filenameForPart("dto"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoTemplate}).
 		WithGenerationPart(gen.PartDtoBuilders, filenameForPart("dto_builders"), []*template.Template{genhelpers.PreambleTemplate, gen.DtoBuildersTemplate}).
 		WithGenerationPart(gen.PartImpl, filenameForPart("impl"), []*template.Template{genhelpers.PreambleTemplate, gen.ImplementationTemplate}).
-		WithGenerationPart(gen.PartUnitTests, testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, gen.UnitTestsTemplate}).
+		WithConditionalGenerationPart(gen.PartUnitTestsScaffold, testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, gen.UnitTestsTemplate},
+			func(i *gen.Interface) bool { return !i.HasEnabledGenerationPart(gen.PartUnitTests) }).
+		WithOptionalGenerationPart(gen.PartUnitTests, testFilenameForPart(""), []*template.Template{genhelpers.PreambleTemplate, gen.UnitTestsCtxHeaderTemplate, gen.UnitTestsCtxContextTemplate, gen.UnitTestsCtxTestsTemplate}).
 		WithGenerationPart(gen.PartValidations, filenameForPart("validations"), []*template.Template{genhelpers.PreambleTemplate, gen.ValidationsTemplate}).
 		WithConditionalGenerationPart(gen.PartEnums, filenameForPart("enums"), []*template.Template{genhelpers.PreambleTemplate, gen.EnumTemplate}, func(i *gen.Interface) bool {
 			return len(i.Enums) > 0
