@@ -42,8 +42,7 @@ func TestAcc_Task_Updates(t *testing.T) {
 	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
 	t.Cleanup(warehouseCleanup)
 
-	errorNotificationIntegration, errorNotificationIntegrationCleanup := testClient().NotificationIntegration.CreateWithGcpPubSub(t)
-	t.Cleanup(errorNotificationIntegrationCleanup)
+	errorNotificationIntegration := gcpPubSubNotificationIntegration()
 
 	taskConfig := `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`
 	comment := random.Comment()
@@ -378,8 +377,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
 	t.Cleanup(warehouseCleanup)
 
-	errorNotificationIntegration, errorNotificationIntegrationCleanup := testClient().NotificationIntegration.CreateWithGcpPubSub(t)
-	t.Cleanup(errorNotificationIntegrationCleanup)
+	errorNotificationIntegration := gcpPubSubNotificationIntegration()
 
 	taskConfig := `{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`
 	comment := random.Comment()
@@ -2088,8 +2086,7 @@ func TestAcc_Task_issue2036(t *testing.T) {
 }
 
 func TestAcc_Task_issue3113(t *testing.T) {
-	errorNotificationIntegration, errorNotificationIntegrationCleanup := testClient().NotificationIntegration.CreateWithGcpPubSub(t)
-	t.Cleanup(errorNotificationIntegrationCleanup)
+	errorNotificationIntegration := gcpPubSubNotificationIntegration()
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"

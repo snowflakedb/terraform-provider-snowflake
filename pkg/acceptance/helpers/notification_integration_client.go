@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -83,7 +84,7 @@ func (c *NotificationIntegrationClient) DropFunc(t *testing.T, id sdk.AccountObj
 	ctx := context.Background()
 
 	return func() {
-		err := c.client().Drop(ctx, sdk.NewDropNotificationIntegrationRequest(id).WithIfExists(true))
-		require.NoError(t, err)
+		// assert instead of require, so that a failed drop does not abort the remaining cleanups
+		assert.NoError(t, c.client().DropSafely(ctx, id))
 	}
 }
