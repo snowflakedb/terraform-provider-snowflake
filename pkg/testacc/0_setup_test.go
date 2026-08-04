@@ -47,6 +47,10 @@ type acceptanceTestContext struct {
 	azureTestEnv             snowflakeTestEnvironmentContext
 	snowflakeDefaultsTestEnv snowflakeTestEnvironmentContext
 
+	// gcpPubSubNotificationIntegration is shared by all the tests needing one and lives on the default account only,
+	// because the account-wide limit of GCP Pubsub queue integrations is 10.
+	gcpPubSubNotificationIntegration *sdk.NotificationIntegration
+
 	cleanups []func()
 }
 
@@ -97,6 +101,14 @@ func (atc *acceptanceTestContext) initialize() error {
 	if err := atc.initializeSnowflakeEnvironment(ctx, testprofiles.Default, &atc.defaultTestEnv); err != nil {
 		return err
 	}
+
+	// the cleanup is registered even on error, because the creation may have partially succeeded
+	notificationIntegration, notificationIntegrationCleanup, err := testClient().CreateTestGcpPubSubNotificationIntegration(ctx)
+	atc.cleanups = append(atc.cleanups, notificationIntegrationCleanup)
+	if err != nil {
+		return err
+	}
+	atc.gcpPubSubNotificationIntegration = notificationIntegration
 
 	// TODO [SNOW-1763603]: what do we do with SimplifiedIntegrationTestsSetup
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
@@ -219,4 +231,10 @@ func azureTestClient() *helpers.TestClient {
 
 func snowflakeDefaultsTestClient() *helpers.TestClient {
 	return atc.snowflakeDefaultsTestEnv.testClient
+}
+
+// gcpPubSubNotificationIntegration returns the notification integration shared by the whole test run.
+// Do not drop it in the tests; it's cleaned up together with the rest of the test setup.
+func gcpPubSubNotificationIntegration() *sdk.NotificationIntegration {
+	return atc.gcpPubSubNotificationIntegration
 }

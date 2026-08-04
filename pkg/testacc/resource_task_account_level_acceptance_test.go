@@ -237,8 +237,7 @@ func TestAcc_Task_Basic(t *testing.T) {
 func TestAcc_Task_Complete(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
 
-	errorNotificationIntegration, errorNotificationIntegrationCleanup := testClient().NotificationIntegration.CreateWithGcpPubSub(t)
-	t.Cleanup(errorNotificationIntegrationCleanup)
+	errorNotificationIntegration := gcpPubSubNotificationIntegration()
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"

@@ -62,11 +62,10 @@ func SweepAfterAcceptanceTests(client *sdk.Client, suffix string) error {
 }
 
 // TODO [SNOW-867247]: use if exists/use method from helper for dropping
-// TODO [SNOW-867247]: sweep all missing account-level objects (like users, integrations, replication groups, network policies, ...)
+// TODO [SNOW-867247]: sweep all missing account-level objects (like replication groups, connections, compute pools, external volumes, ...)
 // TODO [SNOW-867247]: extract sweepers to a separate dir
 // TODO [SNOW-867247]: rework the sweepers (funcs -> objects)
-// TODO [SNOW-867247]: consider generalization (almost all the sweepers follow the same pattern: show, drop if matches)
-// TODO [SNOW-867247]: consider failing after all sweepers and not with the first error
+// TODO [SNOW-867247]: consider generalization (almost all the sweepers follow the same pattern: show, drop if matches); partially done with nukeAccountObjects
 // TODO [SNOW-867247]: consider showing only objects with the given suffix (in almost every sweeper)
 func sweep(client *sdk.Client, suffix string) error {
 	if suffix == "" {
@@ -82,15 +81,20 @@ func sweep(client *sdk.Client, suffix string) error {
 		nukeFailoverGroups(client, suffix),
 		nukeShares(client, suffix),
 		nukeDatabases(client, "", suffix),
+		nukeNotificationIntegrations(client, suffix),
+		nukeStorageIntegrations(client, suffix),
+		nukeApiIntegrations(client, suffix),
+		nukeCatalogIntegrations(client, suffix),
+		nukeExternalAccessIntegrations(client, suffix),
 		nukeWarehouses(client, "", suffix),
 		nukeRoles(client, suffix),
 	}
+	// All the sweepers are run, even if some of them fail; otherwise a single failure would leave the objects handled by the subsequent sweepers behind.
+	var errs []error
 	for _, sweeper := range sweepers {
-		if err := sweeper(); err != nil {
-			return err
-		}
+		errs = append(errs, sweeper())
 	}
-	return nil
+	return errors.Join(errs...)
 }
 
 func Test_Sweeper_NukeStaleObjects(t *testing.T) {
@@ -204,6 +208,41 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
+	t.Run("sweep notification integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeNotificationIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep storage integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeStorageIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep api integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeApiIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep catalog integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeCatalogIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep external access integrations", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeExternalAccessIntegrations(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
 	t.Run("sweep warehouses", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeWarehouses(c, "", "")()
@@ -219,6 +258,134 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 
 // TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
 var stalePeriod = -12 * time.Hour
+
+// accountObjectSweeperConfig describes an account-level object that follows the usual show -> drop if matches pattern.
+type accountObjectSweeperConfig[T any] struct {
+	// objectTypeName is a lowercase singular name used in logs and errors, e.g. "notification integration".
+	objectTypeName string
+	protectedNames []string
+	show           func(ctx context.Context) ([]T, error)
+	name           func(T) string
+	createdOn      func(T) time.Time
+	id             func(T) sdk.AccountObjectIdentifier
+	dropSafely     func(ctx context.Context, id sdk.AccountObjectIdentifier) error
+}
+
+// nukeAccountObjects drops the objects with the given suffix, or the stale ones when the suffix is empty.
+func nukeAccountObjects[T any](suffix string, cfg accountObjectSweeperConfig[T]) func() error {
+	return func() error {
+		ctx := context.Background()
+
+		var dropCondition func(object T) bool
+		if suffix != "" {
+			log.Printf("[DEBUG] Sweeping %ss with suffix %s", cfg.objectTypeName, suffix)
+			dropCondition = func(object T) bool {
+				return strings.HasSuffix(cfg.name(object), suffix)
+			}
+		} else {
+			log.Printf("[DEBUG] Sweeping stale %ss", cfg.objectTypeName)
+			dropCondition = func(object T) bool {
+				return cfg.createdOn(object).Before(time.Now().Add(stalePeriod))
+			}
+		}
+
+		objects, err := cfg.show(ctx)
+		if err != nil {
+			return fmt.Errorf("showing %ss ended with error, err = %w", cfg.objectTypeName, err)
+		}
+
+		log.Printf("[DEBUG] Found %d %ss", len(objects), cfg.objectTypeName)
+
+		var errs []error
+		for idx, object := range objects {
+			id := cfg.id(object)
+			log.Printf("[DEBUG] Processing %s [%d/%d]: %s...", cfg.objectTypeName, idx+1, len(objects), id.FullyQualifiedName())
+
+			if !slices.Contains(cfg.protectedNames, cfg.name(object)) && dropCondition(object) {
+				log.Printf("[DEBUG] Dropping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
+				if err := cfg.dropSafely(ctx, id); err != nil {
+					log.Printf("[DEBUG] Dropping %s %s, resulted in error %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
+					errs = append(errs, fmt.Errorf("sweeping %s %s ended with error, err = %w", cfg.objectTypeName, id.FullyQualifiedName(), err))
+				}
+			} else {
+				log.Printf("[DEBUG] Skipping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
+			}
+		}
+
+		return errors.Join(errs...)
+	}
+}
+
+func nukeNotificationIntegrations(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.NotificationIntegration]{
+		objectTypeName: "notification integration",
+		show: func(ctx context.Context) ([]sdk.NotificationIntegration, error) {
+			return client.NotificationIntegrations.Show(ctx, sdk.NewShowNotificationIntegrationRequest())
+		},
+		name:       func(object sdk.NotificationIntegration) string { return object.Name },
+		createdOn:  func(object sdk.NotificationIntegration) time.Time { return object.CreatedOn },
+		id:         func(object sdk.NotificationIntegration) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.NotificationIntegrations.DropSafely,
+	})
+}
+
+func nukeStorageIntegrations(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.StorageIntegration]{
+		objectTypeName: "storage integration",
+		protectedNames: []string{
+			"S3_STORAGE_INTEGRATION",
+			"AZURE_STORAGE_INTEGRATION",
+			"GCP_STORAGE_INTEGRATION",
+			"TEST_INTEGRATION",
+		},
+		show: func(ctx context.Context) ([]sdk.StorageIntegration, error) {
+			return client.StorageIntegrations.Show(ctx, sdk.NewShowStorageIntegrationRequest())
+		},
+		name:       func(object sdk.StorageIntegration) string { return object.Name },
+		createdOn:  func(object sdk.StorageIntegration) time.Time { return object.CreatedOn },
+		id:         func(object sdk.StorageIntegration) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.StorageIntegrations.DropSafely,
+	})
+}
+
+func nukeApiIntegrations(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.ApiIntegration]{
+		objectTypeName: "api integration",
+		show: func(ctx context.Context) ([]sdk.ApiIntegration, error) {
+			return client.ApiIntegrations.Show(ctx, sdk.NewShowApiIntegrationRequest())
+		},
+		name:       func(object sdk.ApiIntegration) string { return object.Name },
+		createdOn:  func(object sdk.ApiIntegration) time.Time { return object.CreatedOn },
+		id:         func(object sdk.ApiIntegration) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.ApiIntegrations.DropSafely,
+	})
+}
+
+func nukeCatalogIntegrations(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.CatalogIntegration]{
+		objectTypeName: "catalog integration",
+		show: func(ctx context.Context) ([]sdk.CatalogIntegration, error) {
+			return client.CatalogIntegrations.Show(ctx, sdk.NewShowCatalogIntegrationRequest())
+		},
+		name:       func(object sdk.CatalogIntegration) string { return object.Name },
+		createdOn:  func(object sdk.CatalogIntegration) time.Time { return object.CreatedOn },
+		id:         func(object sdk.CatalogIntegration) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.CatalogIntegrations.DropSafely,
+	})
+}
+
+func nukeExternalAccessIntegrations(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.ExternalAccessIntegration]{
+		objectTypeName: "external access integration",
+		show: func(ctx context.Context) ([]sdk.ExternalAccessIntegration, error) {
+			return client.ExternalAccessIntegrations.Show(ctx, sdk.NewShowExternalAccessIntegrationRequest())
+		},
+		name:       func(object sdk.ExternalAccessIntegration) string { return object.Name },
+		createdOn:  func(object sdk.ExternalAccessIntegration) time.Time { return object.CreatedOn },
+		id:         func(object sdk.ExternalAccessIntegration) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.ExternalAccessIntegrations.DropSafely,
+	})
+}
 
 // TODO [SNOW-867247]: generalize nuke methods (sweepers too)
 // TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
