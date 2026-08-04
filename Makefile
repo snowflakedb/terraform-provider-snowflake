@@ -12,8 +12,15 @@ ADDITIONAL_TEST_FLAGS ?=
 UNIT_TESTS_EXCLUDE_PACKAGES=./pkg/testacc ./pkg/sdk/testint ./pkg/testfunctional ./pkg/manual_tests
 UNIT_TESTS_EXCLUDE_PATTERN=$(shell echo $(UNIT_TESTS_EXCLUDE_PACKAGES) | sed 's/ /|/g')
 
-# Usage: $(call GIT_DIFF_CHECK,path) — diff path against HEAD; on mismatch restore and exit with diff's status.
-GIT_DIFF_CHECK = git diff --exit-code -- $(1) || ( status=$$?; git restore -- $(1); exit "$$status" )
+# Usage: $(call GIT_DIFF_CHECK,path) — fails if path has uncommitted changes: modified tracked files or new untracked files.
+# On mismatch, reverts the tracked changes and/or removes the untracked files it found, then exits non-zero.
+GIT_DIFF_CHECK = diff_output=$$(git diff -- $(1)); \
+	untracked=$$(git ls-files --others --exclude-standard -- $(1)); \
+	if [ -n "$$diff_output" ] || [ -n "$$untracked" ]; then \
+		if [ -n "$$diff_output" ]; then echo "$$diff_output"; git restore -- $(1); fi; \
+		if [ -n "$$untracked" ]; then echo "Untracked files detected:"; echo "$$untracked"; echo "$$untracked" | xargs rm -f; fi; \
+		exit 1; \
+	fi
 
 default: help
 
