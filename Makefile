@@ -164,11 +164,11 @@ generate-dto-%: ./pkg/sdk/%_dto.go ## Generate DTO for given SDK interface
 generate-sdk: ## Generate all SDK objects
 	go generate ./pkg/sdk/generate.go
 
-generate-sdk-no-tests: ## Generated all SDK files (except tests)
-	make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
+generate-sdk-no-tests: ## Generated all SDK files (except legacy hand-edited unit test scaffolds)
+	make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests_scaffold'
 
-generate-sdk-no-tests-check: generate-sdk-no-tests ## Check that all generated SDK files (except tests) are up-to-date
-	$(call GIT_DIFF_CHECK,pkg/sdk/*_gen.go pkg/sdk/*_dto_gen.go pkg/sdk/*_dto_builders_gen.go pkg/sdk/*_impl_gen.go pkg/sdk/*_validations_gen.go)
+generate-sdk-no-tests-check: generate-sdk-no-tests ## Check that all generated SDK files are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/sdk/*_gen.go pkg/sdk/*_dto_gen.go pkg/sdk/*_dto_builders_gen.go pkg/sdk/*_impl_gen.go pkg/sdk/*_validations_gen.go pkg/sdk/*_gen_test.go)
 
 clean-generated-sdk: ## Clean all generated SDK objects
 	rm -f ./pkg/sdk/*_gen.go

@@ -1,0 +1,29 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+type {{ .UnitTests.TestContextTypeName }} struct {
+{{- range .UnitTests.Operations }}
+	{{ .Field }} *sdkTestCtx[{{ .OptsType }}]
+{{- end }}
+}
+
+var {{ .UnitTests.TestDefinitionVarName }} = {{ .UnitTests.TestContextTypeName }}{
+{{- range .UnitTests.Operations }}
+	{{- $optsType := .OptsType }}
+	{{ .Field }}: newSdkTestCtx[{{ $optsType }}](
+		"{{ $.Name }}", "{{ .Field }}",
+	).
+		withDefaultOpts(func() {{ $optsType }} {
+			return &{{ TypeWithoutPointer $optsType }}{
+				{{- range .DefaultOptsFields }}
+				{{ . }},
+				{{- end }}
+			}
+		}).
+		withValidationCases(
+			{{- template "unitTestsValidationCase" . }}
+		).
+		withSqlCases(
+			{{- template "unitTestsSqlCase" . }}
+		),
+{{- end }}
+}

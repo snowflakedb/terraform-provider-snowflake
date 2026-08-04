@@ -6,6 +6,11 @@ import (
 )
 
 var (
+	_    = randomTableColumnIdentifier()
+	_, _ = emptyAccountIdentifier, emptyTableColumnIdentifier
+)
+
+var (
 	invalidAccountObjectIdentifier = NewAccountObjectIdentifier(random.StringN(256))
 	longSchemaObjectIdentifier     = NewSchemaObjectIdentifier(random.StringN(255), random.StringN(255), random.StringN(255))
 
@@ -15,6 +20,8 @@ var (
 	emptyDatabaseObjectIdentifier            = NewDatabaseObjectIdentifier("", "")
 	emptySchemaObjectIdentifier              = NewSchemaObjectIdentifier("", "", "")
 	emptySchemaObjectIdentifierWithArguments = NewSchemaObjectIdentifierWithArguments("", "", "")
+	emptyAccountIdentifier                   = NewAccountIdentifier("", "")
+	emptyTableColumnIdentifier               = NewTableColumnIdentifier("", "", "", "")
 
 	// TODO [SNOW-1843440]: create using constructors (when we add them)?
 	dataTypeNumber_36_2, _                = datatypes.ParseDataType("NUMBER(36, 2)")

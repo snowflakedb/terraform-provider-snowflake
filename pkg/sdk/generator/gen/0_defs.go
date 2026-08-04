@@ -95,6 +95,9 @@ func preprocessDefinition(definition *Interface) {
 			}
 		}
 	}
+
+	// Built for every object regardless of opt-in; main.go's generation part decides whether to render it.
+	definition.UnitTests = definition.buildUnitTestsModel()
 }
 
 // resolveInterfaceIdentifierKinds walks all fields recursively and replaces sentinel kind values

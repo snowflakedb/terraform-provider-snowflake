@@ -47,13 +47,16 @@ The generator offers filtering by object name and by generation part. To list al
 make generate-sdk SF_TF_GENERATOR_ARGS='--help'
 ```
 
-Available generation parts:
+Available generation parts (enabled by default):
 - default
 - dto
 - dto_builders
 - impl
-- unit_tests
+- unit_tests_scaffold (legacy TODO-scaffold for hand-edited unit tests; skipped for objects that have opted into `unit_tests`)
 - validations
+
+Optional generation parts (disabled by default; opt in per object via `WithEnabledGenerationParts`):
+- unit_tests (fully generated, CI-diff-checked; see [Unit test generation](#unit-test-generation))
 
 Generation parts can be registered as **optional** (disabled by default). Optional parts are only generated for objects that explicitly enable them via `WithEnabledGenerationParts(...)`. Use `WithOptionalGenerationPart(...)` on the generator to register such a part.
 
@@ -84,8 +87,8 @@ make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,i
 make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-object-names=Sequences'
 ```
 ```shell
-# generate all files except the given generation parts
-make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
+# generate all files except the legacy hand-edited unit test scaffolds
+make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests_scaffold'
 ```
 ```shell
 # combine inclusion and exclusion filters
@@ -138,7 +141,7 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-object-names=Sequence
 ```
 ```shell
 # generate all example files except the given generation parts
-make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests_scaffold'
 ```
 ```shell
 # show usage
@@ -153,15 +156,30 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 
 - Generate `ID()` methods for `Request` structs as already done for `Show` result structs.
 - Generate `ID()` methods for `Describe`/`DescribeDetails` structs as already done for `Show` result structs.
-- PoC of unit tests generation without manual changes in the generated files (details soon)
-  - generate each branch of alter in tests (instead of basic and all options)
 - Improve validation handling for nested slices (the path is built incorrectly now)
 - `PlainStruct`-only fields do not currently trigger the additionalConvert creation, as they are filtered out in the iteration
 
 ##### CI guard targets
 
-- `make generate-sdk-no-tests-check` — regenerates all non-test parts (`default`, `dto`, `dto_builders`, `impl`, `validations`) for all objects and verifies no diff. Wired into `pre-push-check`.
+- `make generate-sdk-no-tests-check` — regenerates all parts except `unit_tests_scaffold` (the legacy hand-edited scaffolds) and verifies no diff. Includes `*_gen_test.go` files produced by the `unit_tests` optional part. Wired into `pre-push-check`.
 - `make generate-sdk-examples-check` — regenerates examples and verifies no diff. Wired into `pre-push-check`.
+
+##### Unit test generation
+
+SDK unit tests can be generated for an object by opting it in with `WithEnabledGenerationParts(g.PartUnitTests)` in its definition file. The generated `*_gen_test.go` contains:
+- Package-level id vars and per-operation test contexts (`*TestsContext` struct + var)
+- Generated constants for every case name (compile-time safety: stale references in `*_ext_test.go` break the build)
+- Derived default modifications for mechanically-derivable cases (e.g. zeroing an identifier field, priming a container struct)
+- `Test<Object>_<Op>` functions that delegate to the context's runners
+
+The `*_ext_test.go` file (hand-written, never overwritten) supplies:
+- `withDefaultOpts` — a fully valid default opts provider when the generated minimal one is insufficient
+- `withModify` — overrides for cases whose modification the generator could not derive
+- `withExpectedSqlf` — expected SQL strings for SQL cases that require no modification (e.g. `basic`, `Describe`)
+- `withModifyAndExpectedSqlf` — registers both a modification and an expected SQL in a single call; the standard pattern for non-basic SQL cases
+- `withAdditionalValidationCase` / `withAdditionalSqlCasef` — extra cases not emitted by the generator (e.g. from `additionalValidations()`)
+
+See `pkg/sdk/compute_pools_ext_test.go` and `pkg/sdk/functions_ext_test.go` for examples.
 
 ---
 

@@ -1,0 +1,9 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen.Interface*/ -}}
+
+{{- range .UnitTests.Operations }}
+
+func Test{{ $.Name }}_{{ .Field }}(t *testing.T) {
+	{{ $.UnitTests.TestDefinitionVarName }}.{{ .Field }}.RunValidationCases(t)
+	{{ $.UnitTests.TestDefinitionVarName }}.{{ .Field }}.RunSqlCases(t)
+}
+{{- end }}

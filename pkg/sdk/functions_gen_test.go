@@ -2,1335 +2,796 @@
 
 package sdk
 
-// imports adjusted manually
 import (
-	"fmt"
 	"testing"
 )
 
-// added manually
-func wrapFunctionDefinition(def string) string {
-	return fmt.Sprintf(`$$%s$$`, def)
+var (
+	functionsTestIdSchemaObjectIdentifier              = randomSchemaObjectIdentifier()
+	functionsTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments()
+)
+
+const (
+	case_Functions_validation_CreateForJava_name_ValidIdentifier                                                   testCaseName = "validation_CreateForJava_name_ValidIdentifier"
+	case_Functions_validation_CreateForJava_Handler_ValidateValueSet                                               testCaseName = "validation_CreateForJava_Handler_ValidateValueSet"
+	case_Functions_validation_CreateForJava_opts_ConflictingFields                                                 testCaseName = "validation_CreateForJava_opts_ConflictingFields"
+	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                   testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid       testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_sql_CreateForJava_basic                                                                         testCaseName = "sql_CreateForJava_basic"
+	case_Functions_sql_CreateForJava_all                                                                           testCaseName = "sql_CreateForJava_all"
+	case_Functions_validation_CreateForJavascript_FunctionDefinition_ValidateValueSet                              testCaseName = "validation_CreateForJavascript_FunctionDefinition_ValidateValueSet"
+	case_Functions_validation_CreateForJavascript_name_ValidIdentifier                                             testCaseName = "validation_CreateForJavascript_name_ValidIdentifier"
+	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet                        testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                 testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid             testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet           testCaseName = "validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet            testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_sql_CreateForJavascript_basic                                                                   testCaseName = "sql_CreateForJavascript_basic"
+	case_Functions_sql_CreateForJavascript_all                                                                     testCaseName = "sql_CreateForJavascript_all"
+	case_Functions_validation_CreateForPython_name_ValidIdentifier                                                 testCaseName = "validation_CreateForPython_name_ValidIdentifier"
+	case_Functions_validation_CreateForPython_RuntimeVersion_ValidateValueSet                                      testCaseName = "validation_CreateForPython_RuntimeVersion_ValidateValueSet"
+	case_Functions_validation_CreateForPython_Handler_ValidateValueSet                                             testCaseName = "validation_CreateForPython_Handler_ValidateValueSet"
+	case_Functions_validation_CreateForPython_opts_ConflictingFields                                               testCaseName = "validation_CreateForPython_opts_ConflictingFields"
+	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                 testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet               testCaseName = "validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid     testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_sql_CreateForPython_basic                                                                       testCaseName = "sql_CreateForPython_basic"
+	case_Functions_sql_CreateForPython_all                                                                         testCaseName = "sql_CreateForPython_all"
+	case_Functions_validation_CreateForScala_name_ValidIdentifier                                                  testCaseName = "validation_CreateForScala_name_ValidIdentifier"
+	case_Functions_validation_CreateForScala_Handler_ValidateValueSet                                              testCaseName = "validation_CreateForScala_Handler_ValidateValueSet"
+	case_Functions_validation_CreateForScala_opts_ConflictingFields                                                testCaseName = "validation_CreateForScala_opts_ConflictingFields"
+	case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_NoneSet                                       testCaseName = "validation_CreateForScala_opts_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_MoreThanOneSet                                testCaseName = "validation_CreateForScala_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet                             testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                  testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_sql_CreateForScala_basic                                                                        testCaseName = "sql_CreateForScala_basic"
+	case_Functions_sql_CreateForScala_all                                                                          testCaseName = "sql_CreateForScala_all"
+	case_Functions_validation_CreateForSQL_FunctionDefinition_ValidateValueSet                                     testCaseName = "validation_CreateForSQL_FunctionDefinition_ValidateValueSet"
+	case_Functions_validation_CreateForSQL_name_ValidIdentifier                                                    testCaseName = "validation_CreateForSQL_name_ValidIdentifier"
+	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet                               testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                        testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                    testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                                 testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid        testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Functions_sql_CreateForSQL_basic                                                                          testCaseName = "sql_CreateForSQL_basic"
+	case_Functions_sql_CreateForSQL_all                                                                            testCaseName = "sql_CreateForSQL_all"
+	case_Functions_validation_Alter_name_ValidIdentifier                                                           testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Functions_validation_Alter_RenameTo_ValidIdentifierIfSet                                                  testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Functions_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_Alter_opts_Set_AtLeastOneValueSet                                                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Functions_validation_Alter_opts_Unset_AtLeastOneValueSet                                                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Functions_sql_Alter_RenameTo                                                                              testCaseName = "sql_Alter_RenameTo"
+	case_Functions_sql_Alter_Set                                                                                   testCaseName = "sql_Alter_Set"
+	case_Functions_sql_Alter_Unset                                                                                 testCaseName = "sql_Alter_Unset"
+	case_Functions_sql_Alter_SetSecure                                                                             testCaseName = "sql_Alter_SetSecure"
+	case_Functions_sql_Alter_UnsetSecure                                                                           testCaseName = "sql_Alter_UnsetSecure"
+	case_Functions_sql_Alter_SetTags                                                                               testCaseName = "sql_Alter_SetTags"
+	case_Functions_sql_Alter_UnsetTags                                                                             testCaseName = "sql_Alter_UnsetTags"
+	case_Functions_validation_Drop_name_ValidIdentifier                                                            testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Functions_sql_Drop_basic                                                                                  testCaseName = "sql_Drop_basic"
+	case_Functions_sql_Drop_all                                                                                    testCaseName = "sql_Drop_all"
+	case_Functions_sql_Show_basic                                                                                  testCaseName = "sql_Show_basic"
+	case_Functions_sql_Show_all                                                                                    testCaseName = "sql_Show_all"
+	case_Functions_sql_Show_Like                                                                                   testCaseName = "sql_Show_Like"
+	case_Functions_sql_Show_In                                                                                     testCaseName = "sql_Show_In"
+	case_Functions_validation_Describe_name_ValidIdentifier                                                        testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Functions_sql_Describe_basic                                                                              testCaseName = "sql_Describe_basic"
+)
+
+type FunctionsTestsContext struct {
+	CreateForJava       *sdkTestCtx[*CreateForJavaFunctionOptions]
+	CreateForJavascript *sdkTestCtx[*CreateForJavascriptFunctionOptions]
+	CreateForPython     *sdkTestCtx[*CreateForPythonFunctionOptions]
+	CreateForScala      *sdkTestCtx[*CreateForScalaFunctionOptions]
+	CreateForSQL        *sdkTestCtx[*CreateForSQLFunctionOptions]
+	Alter               *sdkTestCtx[*AlterFunctionOptions]
+	Drop                *sdkTestCtx[*DropFunctionOptions]
+	Show                *sdkTestCtx[*ShowFunctionOptions]
+	Describe            *sdkTestCtx[*DescribeFunctionOptions]
+}
+
+var functionsTests = FunctionsTestsContext{
+	CreateForJava: newSdkTestCtx[*CreateForJavaFunctionOptions](
+		"Functions", "CreateForJava",
+	).
+		withDefaultOpts(func() *CreateForJavaFunctionOptions {
+			return &CreateForJavaFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_Handler_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaFunctionOptions", "Handler"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Handler = ""
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateForJavaFunctionOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}}
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Returns.ResultDataType = nil
+					opts.Returns.Table = nil
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.Table = &FunctionReturnsTable{}
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.ResultDataType.ResultDataTypeOld = ""
+					opts.Returns.ResultDataType.ResultDataType = nil
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}}
+				},
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForJavaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateForJavaFunctionOptions]{
+				Name:           case_Functions_sql_CreateForJava_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateForJavaFunctionOptions]{
+				Name: case_Functions_sql_CreateForJava_all,
+			},
+		),
+	CreateForJavascript: newSdkTestCtx[*CreateForJavascriptFunctionOptions](
+		"Functions", "CreateForJavascript",
+	).
+		withDefaultOpts(func() *CreateForJavascriptFunctionOptions {
+			return &CreateForJavascriptFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_FunctionDefinition_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavascriptFunctionOptions", "FunctionDefinition"),
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.FunctionDefinition = ""
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}}
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.Returns.ResultDataType = nil
+					opts.Returns.Table = nil
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.Table = &FunctionReturnsTable{}
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.ResultDataType.ResultDataTypeOld = ""
+					opts.Returns.ResultDataType.ResultDataType = nil
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}}
+				},
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForJavascriptFunctionOptions]{
+				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateForJavascriptFunctionOptions]{
+				Name:           case_Functions_sql_CreateForJavascript_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateForJavascriptFunctionOptions]{
+				Name: case_Functions_sql_CreateForJavascript_all,
+			},
+		),
+	CreateForPython: newSdkTestCtx[*CreateForPythonFunctionOptions](
+		"Functions", "CreateForPython",
+	).
+		withDefaultOpts(func() *CreateForPythonFunctionOptions {
+			return &CreateForPythonFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_RuntimeVersion_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonFunctionOptions", "RuntimeVersion"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.RuntimeVersion = ""
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_Handler_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonFunctionOptions", "Handler"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Handler = ""
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateForPythonFunctionOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}}
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Returns.ResultDataType = nil
+					opts.Returns.Table = nil
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.Table = &FunctionReturnsTable{}
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.ResultDataType.ResultDataTypeOld = ""
+					opts.Returns.ResultDataType.ResultDataType = nil
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}}
+				},
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForPythonFunctionOptions]{
+				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateForPythonFunctionOptions]{
+				Name:           case_Functions_sql_CreateForPython_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateForPythonFunctionOptions]{
+				Name: case_Functions_sql_CreateForPython_all,
+			},
+		),
+	CreateForScala: newSdkTestCtx[*CreateForScalaFunctionOptions](
+		"Functions", "CreateForScala",
+	).
+		withDefaultOpts(func() *CreateForScalaFunctionOptions {
+			return &CreateForScalaFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_Handler_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForScalaFunctionOptions", "Handler"),
+				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
+					opts.Handler = ""
+				},
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateForScalaFunctionOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"),
+				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
+					opts.ResultDataTypeOld = ""
+					opts.ResultDataType = nil
+				},
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"),
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}}
+				},
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForScalaFunctionOptions]{
+				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateForScalaFunctionOptions]{
+				Name:           case_Functions_sql_CreateForScala_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateForScalaFunctionOptions]{
+				Name: case_Functions_sql_CreateForScala_all,
+			},
+		),
+	CreateForSQL: newSdkTestCtx[*CreateForSQLFunctionOptions](
+		"Functions", "CreateForSQL",
+	).
+		withDefaultOpts(func() *CreateForSQLFunctionOptions {
+			return &CreateForSQLFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_FunctionDefinition_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForSQLFunctionOptions", "FunctionDefinition"),
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.FunctionDefinition = ""
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.Arguments = []FunctionArgument{{}}
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"),
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.Returns.ResultDataType = nil
+					opts.Returns.Table = nil
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns", "ResultDataType", "Table"),
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.Table = &FunctionReturnsTable{}
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
+					opts.Returns.ResultDataType.ResultDataTypeOld = ""
+					opts.Returns.ResultDataType.ResultDataType = nil
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
+					opts.Returns.Table = &FunctionReturnsTable{}
+					opts.Returns.Table.Columns = []FunctionColumn{{}}
+				},
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+			validationCase[*CreateForSQLFunctionOptions]{
+				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateForSQLFunctionOptions]{
+				Name:           case_Functions_sql_CreateForSQL_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateForSQLFunctionOptions]{
+				Name: case_Functions_sql_CreateForSQL_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterFunctionOptions](
+		"Functions", "Alter",
+	).
+		withDefaultOpts(func() *AlterFunctionOptions {
+			return &AlterFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifierWithArguments,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifierWithArguments
+				},
+			},
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterFunctionOptions", "RenameTo", "Set", "Unset", "SetSecure", "UnsetSecure", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetSecure = nil
+					opts.UnsetSecure = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterFunctionOptions", "RenameTo", "Set", "Unset", "SetSecure", "UnsetSecure", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.Set = &FunctionSet{}
+				},
+			},
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterFunctionOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.Set = &FunctionSet{}
+					opts.Set.Comment = nil
+					opts.Set.ExternalAccessIntegrations = nil
+					opts.Set.SecretsList = nil
+					opts.Set.EnableConsoleOutput = nil
+					opts.Set.LogLevel = nil
+					opts.Set.LogEventLevel = nil
+					opts.Set.MetricLevel = nil
+					opts.Set.TraceLevel = nil
+				},
+			},
+			validationCase[*AlterFunctionOptions]{
+				Name:        case_Functions_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"),
+				DefaultModify: func(opts *AlterFunctionOptions) {
+					opts.Unset = &FunctionUnset{}
+					opts.Unset.Comment = nil
+					opts.Unset.ExternalAccessIntegrations = nil
+					opts.Unset.EnableConsoleOutput = nil
+					opts.Unset.LogLevel = nil
+					opts.Unset.LogEventLevel = nil
+					opts.Unset.MetricLevel = nil
+					opts.Unset.TraceLevel = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterFunctionOptions]{
+				Name: case_Functions_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterFunctionOptions]{
+				Name: case_Functions_sql_Alter_Set,
+			},
+			sqlCase[*AlterFunctionOptions]{
+				Name: case_Functions_sql_Alter_Unset,
+			},
+			sqlCase[*AlterFunctionOptions]{
+				Name: case_Functions_sql_Alter_SetSecure,
+			},
+			sqlCase[*AlterFunctionOptions]{
+				Name: case_Functions_sql_Alter_UnsetSecure,
+			},
+			sqlCase[*AlterFunctionOptions]{
+				Name: case_Functions_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterFunctionOptions]{
+				Name: case_Functions_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropFunctionOptions](
+		"Functions", "Drop",
+	).
+		withDefaultOpts(func() *DropFunctionOptions {
+			return &DropFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifierWithArguments,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropFunctionOptions]{
+				Name:        case_Functions_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifierWithArguments
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropFunctionOptions]{
+				Name:           case_Functions_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropFunctionOptions]{
+				Name: case_Functions_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowFunctionOptions](
+		"Functions", "Show",
+	).
+		withDefaultOpts(func() *ShowFunctionOptions {
+			return &ShowFunctionOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowFunctionOptions]{
+				Name:           case_Functions_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowFunctionOptions]{
+				Name: case_Functions_sql_Show_all,
+			},
+			sqlCase[*ShowFunctionOptions]{
+				Name: case_Functions_sql_Show_Like,
+			},
+			sqlCase[*ShowFunctionOptions]{
+				Name: case_Functions_sql_Show_In,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeFunctionOptions](
+		"Functions", "Describe",
+	).
+		withDefaultOpts(func() *DescribeFunctionOptions {
+			return &DescribeFunctionOptions{
+				name: functionsTestIdSchemaObjectIdentifierWithArguments,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeFunctionOptions]{
+				Name:        case_Functions_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifierWithArguments
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeFunctionOptions]{
+				Name:           case_Functions_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
 }
 
 func TestFunctions_CreateForJava(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	secretId := randomSchemaObjectIdentifier()
-	secretId2 := randomSchemaObjectIdentifier()
-
-	// Minimal valid CreateForJavaFunctionOptions
-	defaultOpts := func() *CreateForJavaFunctionOptions {
-		return &CreateForJavaFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateForJavaFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.Handler] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar_100,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForJavaFunctionOptions", "Handler"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateForJavaFunctionOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - one valid, one invalid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat},
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: new(FunctionReturnsResultDataType),
-			Table:          new(FunctionReturnsTable),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataTypeOld: DataTypeFloat,
-				ResultDataType:    dataTypeFloat,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat, ColumnDataType: dataTypeFloat},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat},
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	// below validation added manually
-	t.Run("validation: function definition", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.TargetPath = String("@~/testfunc.jar")
-		opts.Packages = []FunctionPackage{
-			{
-				FunctionPackage: "com.snowflake:snowpark:1.2.0",
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, NewError("TARGET_PATH must be nil when AS is nil"))
-		assertOptsInvalidJoinedErrors(t, opts, NewError("IMPORTS must not be empty when AS is nil"))
-	})
-
-	// all variants added manually
-	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("all options - old data types", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:        "id",
-				ArgDataTypeOld: DataTypeNumber,
-			},
-			{
-				ArgName:        "name",
-				ArgDataTypeOld: DataTypeVARCHAR,
-				DefaultValue:   String("'test'"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{
-						ColumnName:        "country_code",
-						ColumnDataTypeOld: DataTypeVARCHAR,
-					},
-					{
-						ColumnName:        "country_name",
-						ColumnDataTypeOld: DataTypeVARCHAR,
-					},
-				},
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.RuntimeVersion = String("2.0")
-		opts.Comment = String("comment")
-		opts.Imports = []FunctionImport{
-			{
-				FunctionImport: "@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar",
-			},
-		}
-		opts.Packages = []FunctionPackage{
-			{
-				FunctionPackage: "com.snowflake:snowpark:1.2.0",
-			},
-		}
-		opts.Handler = "TestFunc.echoVarchar"
-		opts.ExternalAccessIntegrations = []AccountObjectIdentifier{
-			NewAccountObjectIdentifier("ext_integration"),
-		}
-		opts.Secrets = []SecretReference{
-			{
-				VariableName: "variable1",
-				Name:         secretId,
-			},
-			{
-				VariableName: "variable2",
-				Name:         secretId2,
-			},
-		}
-		opts.TargetPath = String("@~/testfunc.jar")
-		opts.FunctionDefinition = String(wrapFunctionDefinition("return id + name;"))
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("id" NUMBER, "name" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR, "country_name" VARCHAR) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:     "id",
-				ArgDataType: dataTypeNumber_36_2,
-			},
-			{
-				ArgName:      "name",
-				ArgDataType:  dataTypeVarchar_100,
-				DefaultValue: String("'test'"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{
-						ColumnName:     "country_code",
-						ColumnDataType: dataTypeVarchar_100,
-					},
-					{
-						ColumnName:     "country_name",
-						ColumnDataType: dataTypeVarchar_100,
-					},
-				},
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.RuntimeVersion = String("2.0")
-		opts.Comment = String("comment")
-		opts.Imports = []FunctionImport{
-			{
-				FunctionImport: "@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar",
-			},
-		}
-		opts.Packages = []FunctionPackage{
-			{
-				FunctionPackage: "com.snowflake:snowpark:1.2.0",
-			},
-		}
-		opts.Handler = "TestFunc.echoVarchar"
-		opts.ExternalAccessIntegrations = []AccountObjectIdentifier{
-			NewAccountObjectIdentifier("ext_integration"),
-		}
-		opts.Secrets = []SecretReference{
-			{
-				VariableName: "variable1",
-				Name:         secretId,
-			},
-			{
-				VariableName: "variable2",
-				Name:         secretId2,
-			},
-		}
-		opts.TargetPath = String("@~/testfunc.jar")
-		opts.FunctionDefinition = String(wrapFunctionDefinition("return id + name;"))
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("id" NUMBER(36, 2), "name" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR(100), "country_name" VARCHAR(100)) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
-	})
+	functionsTests.CreateForJava.RunValidationCases(t)
+	functionsTests.CreateForJava.RunSqlCases(t)
 }
 
 func TestFunctions_CreateForJavascript(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateForJavascriptFunctionOptions
-	defaultOpts := func() *CreateForJavascriptFunctionOptions {
-		return &CreateForJavascriptFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateForJavascriptFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: [opts.FunctionDefinition] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar_100,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForJavascriptFunctionOptions", "FunctionDefinition"))
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - one valid, one invalid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat},
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{},
-			Table:          &FunctionReturnsTable{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataTypeOld: DataTypeFloat,
-				ResultDataType:    dataTypeFloat,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat, ColumnDataType: dataTypeFloat},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat},
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	// all variants added manually
-	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("all options - old data types", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:        "d",
-				ArgDataTypeOld: DataTypeFloat,
-				DefaultValue:   String("1.0"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataTypeOld: DataTypeFloat,
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.Comment = String("comment")
-		opts.FunctionDefinition = wrapFunctionDefinition("return 1;")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:      "d",
-				ArgDataType:  dataTypeFloat,
-				DefaultValue: String("1.0"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeFloat,
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.Comment = String("comment")
-		opts.FunctionDefinition = wrapFunctionDefinition("return 1;")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`, id.FullyQualifiedName())
-	})
+	functionsTests.CreateForJavascript.RunValidationCases(t)
+	functionsTests.CreateForJavascript.RunSqlCases(t)
 }
 
 func TestFunctions_CreateForPython(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	secretId := randomSchemaObjectIdentifier()
-	secretId2 := randomSchemaObjectIdentifier()
-
-	// Minimal valid CreateForPythonFunctionOptions
-	defaultOpts := func() *CreateForPythonFunctionOptions {
-		return &CreateForPythonFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateForPythonFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.RuntimeVersion] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar_100,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForPythonFunctionOptions", "RuntimeVersion"))
-	})
-
-	t.Run("validation: [opts.Handler] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar_100,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForPythonFunctionOptions", "Handler"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateForPythonFunctionOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - one correct, one incorrect", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat},
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{},
-			Table:          &FunctionReturnsTable{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataTypeOld: DataTypeFloat,
-				ResultDataType:    dataTypeFloat,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat},
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat, ColumnDataType: dataTypeFloat},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	// validation added manually
-	t.Run("validation: function definition", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Packages = []FunctionPackage{
-			{
-				FunctionPackage: "com.snowflake:snowpark:1.2.0",
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, NewError("IMPORTS must not be empty when AS is nil"))
-	})
-
-	// all variants added manually
-	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("all options - old data types", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:        "i",
-				ArgDataTypeOld: DataTypeNumber,
-				DefaultValue:   String("1"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataTypeOld: DataTypeVariant,
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.RuntimeVersion = "3.9"
-		opts.Comment = String("comment")
-		opts.Imports = []FunctionImport{
-			{
-				FunctionImport: "numpy",
-			},
-			{
-				FunctionImport: "pandas",
-			},
-		}
-		opts.Packages = []FunctionPackage{
-			{
-				FunctionPackage: "numpy",
-			},
-			{
-				FunctionPackage: "pandas",
-			},
-		}
-		opts.Handler = "udf"
-		opts.ExternalAccessIntegrations = []AccountObjectIdentifier{
-			NewAccountObjectIdentifier("ext_integration"),
-		}
-		opts.Secrets = []SecretReference{
-			{
-				VariableName: "variable1",
-				Name:         secretId,
-			},
-			{
-				VariableName: "variable2",
-				Name:         secretId2,
-			},
-		}
-		opts.FunctionDefinition = String(wrapFunctionDefinition("import numpy as np"))
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("i" NUMBER DEFAULT 1) COPY GRANTS RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:      "i",
-				ArgDataType:  dataTypeNumber_36_2,
-				DefaultValue: String("1"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVariant,
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.RuntimeVersion = "3.9"
-		opts.Comment = String("comment")
-		opts.Imports = []FunctionImport{
-			{
-				FunctionImport: "numpy",
-			},
-			{
-				FunctionImport: "pandas",
-			},
-		}
-		opts.Packages = []FunctionPackage{
-			{
-				FunctionPackage: "numpy",
-			},
-			{
-				FunctionPackage: "pandas",
-			},
-		}
-		opts.Handler = "udf"
-		opts.ExternalAccessIntegrations = []AccountObjectIdentifier{
-			NewAccountObjectIdentifier("ext_integration"),
-		}
-		opts.Secrets = []SecretReference{
-			{
-				VariableName: "variable1",
-				Name:         secretId,
-			},
-			{
-				VariableName: "variable2",
-				Name:         secretId2,
-			},
-		}
-		opts.FunctionDefinition = String(wrapFunctionDefinition("import numpy as np"))
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("i" NUMBER(36, 2) DEFAULT 1) COPY GRANTS RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`, id.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName())
-	})
+	functionsTests.CreateForPython.RunValidationCases(t)
+	functionsTests.CreateForPython.RunSqlCases(t)
 }
 
 func TestFunctions_CreateForScala(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateForScalaFunctionOptions
-	defaultOpts := func() *CreateForScalaFunctionOptions {
-		return &CreateForScalaFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateForScalaFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.Handler] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ResultDataType = dataTypeVarchar_100
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForScalaFunctionOptions", "Handler"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateForScalaFunctionOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("validation: exactly one field from [opts.ResultDataTypeOld opts.ResultDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.ResultDataTypeOld opts.ResultDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ResultDataTypeOld = DataTypeFloat
-		opts.ResultDataType = dataTypeFloat
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - one valid, one invalid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat},
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForScalaFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	// validation added manually
-	t.Run("validation: function definition", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.TargetPath = String("@~/testfunc.jar")
-		opts.Packages = []FunctionPackage{
-			{
-				FunctionPackage: "com.snowflake:snowpark:1.2.0",
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, NewError("TARGET_PATH must be nil when AS is nil"))
-		assertOptsInvalidJoinedErrors(t, opts, NewError("IMPORTS must not be empty when AS is nil"))
-	})
-
-	// all variants added manually
-	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("all options - old data types", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:        "x",
-				ArgDataTypeOld: DataTypeVARCHAR,
-				DefaultValue:   String("'test'"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.ResultDataTypeOld = DataTypeVARCHAR
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.RuntimeVersion = "2.0"
-		opts.Comment = String("comment")
-		opts.Imports = []FunctionImport{
-			{
-				FunctionImport: "@udf_libs/echohandler.jar",
-			},
-		}
-		opts.Handler = "Echo.echoVarchar"
-		opts.FunctionDefinition = String(wrapFunctionDefinition("return x"))
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("x" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:      "x",
-				ArgDataType:  dataTypeVarchar_100,
-				DefaultValue: String("'test'"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.ResultDataType = dataTypeVarchar_100
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.RuntimeVersion = "2.0"
-		opts.Comment = String("comment")
-		opts.Imports = []FunctionImport{
-			{
-				FunctionImport: "@udf_libs/echohandler.jar",
-			},
-		}
-		opts.Handler = "Echo.echoVarchar"
-		opts.FunctionDefinition = String(wrapFunctionDefinition("return x"))
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("x" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS VARCHAR(100) NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`, id.FullyQualifiedName())
-	})
+	functionsTests.CreateForScala.RunValidationCases(t)
+	functionsTests.CreateForScala.RunSqlCases(t)
 }
 
 func TestFunctions_CreateForSQL(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateForSQLFunctionOptions
-	defaultOpts := func() *CreateForSQLFunctionOptions {
-		return &CreateForSQLFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateForSQLFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: [opts.FunctionDefinition] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeVarchar_100,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateForSQLFunctionOptions", "FunctionDefinition"))
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Arguments.ArgDataTypeOld opts.Arguments.ArgDataType] should be present - one correct, one incorrect", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Arguments = []FunctionArgument{
-			{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat},
-			{ArgName: "arg"},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Arguments", "ArgDataTypeOld", "ArgDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType opts.Returns.Table] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{},
-			Table:          &FunctionReturnsTable{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns", "ResultDataType", "Table"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.ResultDataType.ResultDataTypeOld opts.Returns.ResultDataType.ResultDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataTypeOld: DataTypeFloat,
-				ResultDataType:    dataTypeFloat,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat},
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg", ColumnDataTypeOld: DataTypeFloat, ColumnDataType: dataTypeFloat},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Returns.Table.Columns.ColumnDataTypeOld opts.Returns.Table.Columns.ColumnDataType] should be present - one valid, one invalid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			Table: &FunctionReturnsTable{
-				Columns: []FunctionColumn{
-					{ColumnName: "arg"},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns", "ColumnDataTypeOld", "ColumnDataType"))
-	})
-
-	// all variants added manually
-	t.Run("create with no arguments", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeFloat,
-			},
-		}
-		opts.FunctionDefinition = wrapFunctionDefinition("3.141592654::FLOAT")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FUNCTION %s () RETURNS FLOAT AS $$3.141592654::FLOAT$$`, id.FullyQualifiedName())
-	})
-
-	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("all options - old data types", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:        "message",
-				ArgDataTypeOld: "VARCHAR",
-				DefaultValue:   String("'test'"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataTypeOld: DataTypeFloat,
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.Memoizable = Bool(true)
-		opts.Comment = String("comment")
-		opts.FunctionDefinition = wrapFunctionDefinition("3.141592654::FLOAT")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("message" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Temporary = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []FunctionArgument{
-			{
-				ArgName:      "message",
-				ArgDataType:  dataTypeVarchar_100,
-				DefaultValue: String("'test'"),
-			},
-		}
-		opts.CopyGrants = Bool(true)
-		opts.Returns = FunctionReturns{
-			ResultDataType: &FunctionReturnsResultDataType{
-				ResultDataType: dataTypeFloat,
-			},
-		}
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-		opts.Memoizable = Bool(true)
-		opts.Comment = String("comment")
-		opts.FunctionDefinition = wrapFunctionDefinition("3.141592654::FLOAT")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("message" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`, id.FullyQualifiedName())
-	})
+	functionsTests.CreateForSQL.RunValidationCases(t)
+	functionsTests.CreateForSQL.RunSqlCases(t)
 }
 
 func TestFunctions_Alter(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
-
-	// addded manually
-	secretId := randomSchemaObjectIdentifier()
-
-	// Minimal valid AlterFunctionOptions
-	defaultOpts := func() *AlterFunctionOptions {
-		return &AlterFunctionOptions{
-			// adjusted manually
-			name:     id,
-			IfExists: Bool(true),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifierWithArguments
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		target := emptySchemaObjectIdentifier
-		opts.RenameTo = &target
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset opts.SetSecure opts.UnsetSecure opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterFunctionOptions", "RenameTo", "Set", "Unset", "SetSecure", "UnsetSecure", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset opts.SetSecure opts.UnsetSecure opts.SetTags opts.UnsetTags] should be present - two present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &FunctionSet{}
-		opts.Unset = &FunctionUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterFunctionOptions", "RenameTo", "Set", "Unset", "SetSecure", "UnsetSecure", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Comment opts.Set.ExternalAccessIntegrations opts.Set.SecretsList opts.Set.EnableConsoleOutput opts.Set.LogLevel opts.Set.MetricLevel opts.Set.TraceLevel] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &FunctionSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterFunctionOptions.Set", "Comment", "ExternalAccessIntegrations", "SecretsList", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.ExternalAccessIntegrations opts.Unset.EnableConsoleOutput opts.Unset.LogLevel opts.Unset.MetricLevel opts.Unset.TraceLevel] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &FunctionUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterFunctionOptions.Unset", "Comment", "ExternalAccessIntegrations", "EnableConsoleOutput", "LogLevel", "LogEventLevel", "MetricLevel", "TraceLevel"))
-	})
-
-	// all variants added manually
-	t.Run("alter: rename to", func(t *testing.T) {
-		opts := defaultOpts()
-		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
-		opts.RenameTo = &target
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), opts.RenameTo.FullyQualifiedName())
-	})
-
-	t.Run("alter: set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &FunctionSet{
-			Comment:    String("comment"),
-			TraceLevel: Pointer(TraceLevelOff),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET COMMENT = 'comment', TRACE_LEVEL = 'OFF'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set empty secrets", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &FunctionSet{
-			SecretsList: &SecretsList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET SECRETS = ()`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set non-empty secrets", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &FunctionSet{
-			SecretsList: &SecretsList{
-				[]SecretReference{
-					{VariableName: "abc", Name: secretId},
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET SECRETS = ('abc' = %s)`, id.FullyQualifiedName(), secretId.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &FunctionUnset{
-			Comment:    Bool(true),
-			TraceLevel: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s UNSET COMMENT, TRACE_LEVEL`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set secure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetSecure = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET SECURE`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset secure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetSecure = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s UNSET SECURE`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET TAG "tag1" = 'value1'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	functionsTests.Alter.RunValidationCases(t)
+	functionsTests.Alter.RunSqlCases(t)
 }
 
 func TestFunctions_Drop(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
-
-	// added manually
-	noArgsId := randomSchemaObjectIdentifierWithArguments()
-
-	// Minimal valid DropFunctionOptions
-	defaultOpts := func() *DropFunctionOptions {
-		return &DropFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifierWithArguments
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = noArgsId
-		assertOptsValidAndSQLEquals(t, opts, `DROP FUNCTION %s`, noArgsId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP FUNCTION IF EXISTS %s`, id.FullyQualifiedName())
-	})
+	functionsTests.Drop.RunValidationCases(t)
+	functionsTests.Drop.RunSqlCases(t)
 }
 
 func TestFunctions_Show(t *testing.T) {
-	// Minimal valid ShowFunctionOptions
-	defaultOpts := func() *ShowFunctionOptions {
-		return &ShowFunctionOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW USER FUNCTIONS`)
-	})
-
-	// all variants added manually
-	t.Run("show with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW USER FUNCTIONS LIKE 'pattern'`)
-	})
-
-	t.Run("show with in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &ExtendedIn{
-			In: In{
-				Account: Bool(true),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW USER FUNCTIONS IN ACCOUNT`)
-	})
+	functionsTests.Show.RunValidationCases(t)
+	functionsTests.Show.RunSqlCases(t)
 }
 
 func TestFunctions_Describe(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
-	// Minimal valid DescribeFunctionOptions
-	defaultOpts := func() *DescribeFunctionOptions {
-		return &DescribeFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifierWithArguments
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE FUNCTION %s`, id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	functionsTests.Describe.RunValidationCases(t)
+	functionsTests.Describe.RunSqlCases(t)
 }

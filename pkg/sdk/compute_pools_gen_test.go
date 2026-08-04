@@ -2,402 +2,259 @@
 
 package sdk
 
-// imports ajusted manually
 import (
 	"testing"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/stretchr/testify/require"
 )
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ComputePoolState]{"ComputePoolState", AllComputePoolStates, ToComputePoolState})
 }
 
-func TestComputePools_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateComputePoolOptions
-	defaultOpts := func() *CreateComputePoolOptions {
-		// adjusted manually
-		return &CreateComputePoolOptions{
-			name:           id,
-			MinNodes:       1,
-			MaxNodes:       3,
-			InstanceFamily: ComputePoolInstanceFamilyCpuX64XS,
-		}
-	}
+var computePoolsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateComputePoolOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
+const (
+	case_ComputePools_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ComputePools_sql_Create_basic                                        testCaseName = "sql_Create_basic"
+	case_ComputePools_sql_Create_all                                          testCaseName = "sql_Create_all"
+	case_ComputePools_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_ComputePools_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_ComputePools_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_ComputePools_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_ComputePools_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_ComputePools_sql_Alter_Resume                                        testCaseName = "sql_Alter_Resume"
+	case_ComputePools_sql_Alter_Suspend                                       testCaseName = "sql_Alter_Suspend"
+	case_ComputePools_sql_Alter_StopAll                                       testCaseName = "sql_Alter_StopAll"
+	case_ComputePools_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
+	case_ComputePools_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_ComputePools_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
+	case_ComputePools_sql_Alter_UnsetTags                                     testCaseName = "sql_Alter_UnsetTags"
+	case_ComputePools_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_ComputePools_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
+	case_ComputePools_sql_Drop_all                                            testCaseName = "sql_Drop_all"
+	case_ComputePools_sql_Show_basic                                          testCaseName = "sql_Show_basic"
+	case_ComputePools_sql_Show_all                                            testCaseName = "sql_Show_all"
+	case_ComputePools_sql_Show_Like                                           testCaseName = "sql_Show_Like"
+	case_ComputePools_sql_Show_StartsWith                                     testCaseName = "sql_Show_StartsWith"
+	case_ComputePools_sql_Show_Limit                                          testCaseName = "sql_Show_Limit"
+	case_ComputePools_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_ComputePools_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+)
 
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
+type ComputePoolsTestsContext struct {
+	Create   *sdkTestCtx[*CreateComputePoolOptions]
+	Alter    *sdkTestCtx[*AlterComputePoolOptions]
+	Drop     *sdkTestCtx[*DropComputePoolOptions]
+	Show     *sdkTestCtx[*ShowComputePoolOptions]
+	Describe *sdkTestCtx[*DescribeComputePoolOptions]
+}
 
-	// custom validation tests added manually
-	t.Run("validation: MinNodes must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinNodes = 0
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateComputePoolOptions", "MinNodes", IntErrGreater, 0))
-	})
-
-	t.Run("validation: MaxNodes must be greater than or equal MinNodes", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinNodes = 2
-		opts.MaxNodes = 1
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateComputePoolOptions", "MaxNodes", IntErrGreaterOrEqual, opts.MinNodes))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE COMPUTE POOL %s MIN_NODES = 1 MAX_NODES = 3 INSTANCE_FAMILY = CPU_X64_XS", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		appId := randomAccountObjectIdentifier()
-		comment := random.Comment()
-		tagId := NewAccountObjectIdentifier("tag1")
-		opts := &CreateComputePoolOptions{
-			IfNotExists:        Pointer(true),
-			name:               id,
-			ForApplication:     &appId,
-			MinNodes:           2,
-			MaxNodes:           3,
-			InstanceFamily:     ComputePoolInstanceFamilyCpuX64XS,
-			AutoResume:         Pointer(true),
-			InitiallySuspended: Pointer(true),
-			AutoSuspendSecs:    Pointer(42),
-			Tag: []TagAssociation{
-				{
-					Name:  tagId,
-					Value: "value1",
+var computePoolsTests = ComputePoolsTestsContext{
+	Create: newSdkTestCtx[*CreateComputePoolOptions](
+		"ComputePools", "Create",
+	).
+		withDefaultOpts(func() *CreateComputePoolOptions {
+			return &CreateComputePoolOptions{
+				name: computePoolsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateComputePoolOptions]{
+				Name:        case_ComputePools_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateComputePoolOptions) {
+					opts.name = emptyAccountObjectIdentifier
 				},
 			},
-			Comment: &comment,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE COMPUTE POOL IF NOT EXISTS %s FOR APPLICATION %s MIN_NODES = 2 MAX_NODES = 3`+
-			` INSTANCE_FAMILY = CPU_X64_XS AUTO_RESUME = true INITIALLY_SUSPENDED = true AUTO_SUSPEND_SECS = 42 TAG (%s = 'value1')`+
-			` COMMENT = '%s'`, id.FullyQualifiedName(), appId.FullyQualifiedName(), tagId.FullyQualifiedName(), comment)
-	})
+		).
+		withSqlCases(
+			sqlCase[*CreateComputePoolOptions]{
+				Name:           case_ComputePools_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateComputePoolOptions]{
+				Name: case_ComputePools_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterComputePoolOptions](
+		"ComputePools", "Alter",
+	).
+		withDefaultOpts(func() *AlterComputePoolOptions {
+			return &AlterComputePoolOptions{
+				name: computePoolsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterComputePoolOptions]{
+				Name:        case_ComputePools_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterComputePoolOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterComputePoolOptions]{
+				Name:        case_ComputePools_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterComputePoolOptions) {
+					opts.Resume = nil
+					opts.Suspend = nil
+					opts.StopAll = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterComputePoolOptions]{
+				Name:        case_ComputePools_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterComputePoolOptions) {
+					opts.Resume = new(true)
+					opts.Suspend = new(true)
+				},
+			},
+			validationCase[*AlterComputePoolOptions]{
+				Name:        case_ComputePools_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"),
+				DefaultModify: func(opts *AlterComputePoolOptions) {
+					opts.Set = &ComputePoolSet{}
+					opts.Set.MinNodes = nil
+					opts.Set.MaxNodes = nil
+					opts.Set.AutoResume = nil
+					opts.Set.AutoSuspendSecs = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterComputePoolOptions]{
+				Name:        case_ComputePools_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterComputePoolOptions.Unset", "AutoResume", "AutoSuspendSecs", "Comment"),
+				DefaultModify: func(opts *AlterComputePoolOptions) {
+					opts.Unset = &ComputePoolUnset{}
+					opts.Unset.AutoResume = nil
+					opts.Unset.AutoSuspendSecs = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterComputePoolOptions]{
+				Name: case_ComputePools_sql_Alter_Resume,
+			},
+			sqlCase[*AlterComputePoolOptions]{
+				Name: case_ComputePools_sql_Alter_Suspend,
+			},
+			sqlCase[*AlterComputePoolOptions]{
+				Name: case_ComputePools_sql_Alter_StopAll,
+			},
+			sqlCase[*AlterComputePoolOptions]{
+				Name: case_ComputePools_sql_Alter_Set,
+			},
+			sqlCase[*AlterComputePoolOptions]{
+				Name: case_ComputePools_sql_Alter_Unset,
+			},
+			sqlCase[*AlterComputePoolOptions]{
+				Name: case_ComputePools_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterComputePoolOptions]{
+				Name: case_ComputePools_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropComputePoolOptions](
+		"ComputePools", "Drop",
+	).
+		withDefaultOpts(func() *DropComputePoolOptions {
+			return &DropComputePoolOptions{
+				name: computePoolsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropComputePoolOptions]{
+				Name:        case_ComputePools_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropComputePoolOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropComputePoolOptions]{
+				Name:           case_ComputePools_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropComputePoolOptions]{
+				Name: case_ComputePools_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowComputePoolOptions](
+		"ComputePools", "Show",
+	).
+		withDefaultOpts(func() *ShowComputePoolOptions {
+			return &ShowComputePoolOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowComputePoolOptions]{
+				Name:           case_ComputePools_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowComputePoolOptions]{
+				Name: case_ComputePools_sql_Show_all,
+			},
+			sqlCase[*ShowComputePoolOptions]{
+				Name: case_ComputePools_sql_Show_Like,
+			},
+			sqlCase[*ShowComputePoolOptions]{
+				Name: case_ComputePools_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowComputePoolOptions]{
+				Name: case_ComputePools_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeComputePoolOptions](
+		"ComputePools", "Describe",
+	).
+		withDefaultOpts(func() *DescribeComputePoolOptions {
+			return &DescribeComputePoolOptions{
+				name: computePoolsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeComputePoolOptions]{
+				Name:        case_ComputePools_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeComputePoolOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeComputePoolOptions]{
+				Name:           case_ComputePools_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
+func TestComputePools_Create(t *testing.T) {
+	computePoolsTests.Create.RunValidationCases(t)
+	computePoolsTests.Create.RunSqlCases(t)
 }
 
 func TestComputePools_Alter(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterComputePoolOptions
-	defaultOpts := func() *AlterComputePoolOptions {
-		return &AlterComputePoolOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterComputePoolOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Resume opts.Suspend opts.StopAll opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ComputePoolSet{}
-		opts.Unset = &ComputePoolUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterComputePoolOptions", "Resume", "Suspend", "StopAll", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.MinNodes opts.Set.MaxNodes opts.Set.AutoResume opts.Set.AutoSuspendSecs opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ComputePoolSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.AutoResume opts.Unset.AutoSuspendSecs opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ComputePoolUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterComputePoolOptions.Unset", "AutoResume", "AutoSuspendSecs", "Comment"))
-	})
-
-	// custom validation tests added manually
-	t.Run("validation: MinNodes must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ComputePoolSet{
-			MinNodes: Pointer(0),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterComputePoolOptions", "Set.MinNodes", IntErrGreater, 0))
-	})
-
-	t.Run("validation: MaxNodes must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ComputePoolSet{
-			MaxNodes: Pointer(0),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreater, 0))
-	})
-
-	t.Run("validation: MaxNodes must be greater than or equal to MinNodes", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ComputePoolSet{
-			MinNodes: Pointer(2),
-			MaxNodes: Pointer(1),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreaterOrEqual, *opts.Set.MinNodes))
-	})
-
-	// all variants added manually
-	t.Run("suspend", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Suspend = Pointer(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s SUSPEND`, id.FullyQualifiedName())
-	})
-
-	t.Run("resume", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Resume = Pointer(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s RESUME`, id.FullyQualifiedName())
-	})
-
-	t.Run("stop all", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.StopAll = Pointer(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s STOP ALL`, id.FullyQualifiedName())
-	})
-
-	t.Run("set", func(t *testing.T) {
-		comment := random.Comment()
-		opts := defaultOpts()
-		opts.Set = &ComputePoolSet{
-			MinNodes:        Pointer(2),
-			MaxNodes:        Pointer(3),
-			AutoResume:      Pointer(true),
-			AutoSuspendSecs: Pointer(60),
-			Comment:         &comment,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s SET MIN_NODES = 2 MAX_NODES = 3 AUTO_RESUME = true AUTO_SUSPEND_SECS = 60`+
-			` COMMENT = '%s'`, id.FullyQualifiedName(), comment)
-	})
-
-	t.Run("unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ComputePoolUnset{
-			AutoResume:      Pointer(true),
-			AutoSuspendSecs: Pointer(true),
-			Comment:         Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER COMPUTE POOL %s UNSET AUTO_RESUME, AUTO_SUSPEND_SECS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER COMPUTE POOL %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	computePoolsTests.Alter.RunValidationCases(t)
+	computePoolsTests.Alter.RunSqlCases(t)
 }
 
 func TestComputePools_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropComputePoolOptions
-	defaultOpts := func() *DropComputePoolOptions {
-		return &DropComputePoolOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropComputePoolOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP COMPUTE POOL %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP COMPUTE POOL IF EXISTS %s", id.FullyQualifiedName())
-	})
+	computePoolsTests.Drop.RunValidationCases(t)
+	computePoolsTests.Drop.RunSqlCases(t)
 }
 
 func TestComputePools_Show(t *testing.T) {
-	// Minimal valid ShowComputePoolOptions
-	defaultOpts := func() *ShowComputePoolOptions {
-		return &ShowComputePoolOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowComputePoolOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW COMPUTE POOLS")
-	})
-
-	// all variants added manually
-	t.Run("like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW COMPUTE POOLS LIKE 'pattern'")
-	})
-
-	t.Run("starts with", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.StartsWith = Pointer("prefix")
-		assertOptsValidAndSQLEquals(t, opts, "SHOW COMPUTE POOLS STARTS WITH 'prefix'")
-	})
-
-	t.Run("limit from", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-			From: String("from"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW COMPUTE POOLS LIMIT 10 FROM 'from'")
-	})
+	computePoolsTests.Show.RunValidationCases(t)
+	computePoolsTests.Show.RunSqlCases(t)
 }
 
 func TestComputePools_Describe(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribeComputePoolOptions
-	defaultOpts := func() *DescribeComputePoolOptions {
-		return &DescribeComputePoolOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeComputePoolOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE COMPUTE POOL %s", id.FullyQualifiedName())
-	})
-}
-
-// Added manually
-func Test_ComputePool_ToComputePoolInstanceFamily(t *testing.T) {
-	type test struct {
-		input string
-		want  ComputePoolInstanceFamily
-	}
-
-	valid := []test{
-		// case insensitive.
-		{input: "cpu_x64_xs", want: ComputePoolInstanceFamilyCpuX64XS},
-
-		// Supported Values
-		{input: "CPU_X64_XS", want: ComputePoolInstanceFamilyCpuX64XS},
-		{input: "CPU_X64_S", want: ComputePoolInstanceFamilyCpuX64S},
-		{input: "CPU_X64_M", want: ComputePoolInstanceFamilyCpuX64M},
-		{input: "CPU_X64_L", want: ComputePoolInstanceFamilyCpuX64L},
-		{input: "HIGHMEM_X64_S", want: ComputePoolInstanceFamilyHighMemX64S},
-		{input: "HIGHMEM_X64_M", want: ComputePoolInstanceFamilyHighMemX64M},
-		{input: "HIGHMEM_X64_L", want: ComputePoolInstanceFamilyHighMemX64L},
-		{input: "HIGHMEM_X64_SL", want: ComputePoolInstanceFamilyHighMemX64SL},
-		{input: "GPU_NV_S", want: ComputePoolInstanceFamilyGpuNvS},
-		{input: "GPU_NV_M", want: ComputePoolInstanceFamilyGpuNvM},
-		{input: "GPU_NV_L", want: ComputePoolInstanceFamilyGpuNvL},
-		{input: "GPU_NV_XS", want: ComputePoolInstanceFamilyGpuNvXS},
-		{input: "GPU_NV_SM", want: ComputePoolInstanceFamilyGpuNvSM},
-		{input: "GPU_NV_2M", want: ComputePoolInstanceFamilyGpuNv2M},
-		{input: "GPU_NV_3M", want: ComputePoolInstanceFamilyGpuNv3M},
-		{input: "GPU_NV_SL", want: ComputePoolInstanceFamilyGpuNvSL},
-		{input: "GEN_ARM_G1_2", want: ComputePoolInstanceFamilyGenArmG1_2},
-		{input: "GEN_ARM_G1_4", want: ComputePoolInstanceFamilyGenArmG1_4},
-		{input: "GEN_ARM_G1_8", want: ComputePoolInstanceFamilyGenArmG1_8},
-		{input: "GEN_ARM_G1_16", want: ComputePoolInstanceFamilyGenArmG1_16},
-		{input: "GEN_ARM_G1_32", want: ComputePoolInstanceFamilyGenArmG1_32},
-		{input: "GEN_X64_G2_2", want: ComputePoolInstanceFamilyGenX64G2_2},
-		{input: "GEN_X64_G2_4", want: ComputePoolInstanceFamilyGenX64G2_4},
-		{input: "GEN_X64_G2_8", want: ComputePoolInstanceFamilyGenX64G2_8},
-		{input: "GEN_X64_G2_16", want: ComputePoolInstanceFamilyGenX64G2_16},
-		{input: "GEN_X64_G2_32", want: ComputePoolInstanceFamilyGenX64G2_32},
-		{input: "MEM_X64_G2_8", want: ComputePoolInstanceFamilyMemX64G2_8},
-		{input: "MEM_X64_G2_32", want: ComputePoolInstanceFamilyMemX64G2_32},
-		{input: "MEM_X64_G2_64", want: ComputePoolInstanceFamilyMemX64G2_64},
-		{input: "MEM_X64_G2_96", want: ComputePoolInstanceFamilyMemX64G2_96},
-		{input: "MEM_X64_G2_192", want: ComputePoolInstanceFamilyMemX64G2_192},
-		{input: "GPU_L40S_G1_8", want: ComputePoolInstanceFamilyGpuL40SG1_8},
-		{input: "GPU_L40S_G1_16", want: ComputePoolInstanceFamilyGpuL40SG1_16},
-		{input: "GPU_L40S_G1_48", want: ComputePoolInstanceFamilyGpuL40SG1_48},
-		{input: "GPU_L40S_G1_192", want: ComputePoolInstanceFamilyGpuL40SG1_192},
-		{input: "GPU_R6K_G1_8", want: ComputePoolInstanceFamilyGpuR6KG1_8},
-		{input: "GPU_R6K_G1_16", want: ComputePoolInstanceFamilyGpuR6KG1_16},
-		{input: "GPU_R6K_G1_32", want: ComputePoolInstanceFamilyGpuR6KG1_32},
-		{input: "GPU_R6K_G1_48", want: ComputePoolInstanceFamilyGpuR6KG1_48},
-		{input: "GPU_R6K_G1_96", want: ComputePoolInstanceFamilyGpuR6KG1_96},
-		{input: "GPU_R6K_G1_192", want: ComputePoolInstanceFamilyGpuR6KG1_192},
-		{input: "GPU_A100_G1_12", want: ComputePoolInstanceFamilyGpuA100G1_12},
-		{input: "GPU_A100_G1_48", want: ComputePoolInstanceFamilyGpuA100G1_48},
-	}
-
-	invalid := []test{
-		// bad values
-		{input: ""},
-		{input: "foo"},
-		{input: "cpux64xs"},
-	}
-
-	for _, tc := range valid {
-		t.Run(tc.input, func(t *testing.T) {
-			got, err := ToComputePoolInstanceFamily(tc.input)
-			require.NoError(t, err)
-			require.Equal(t, tc.want, got)
-		})
-	}
-
-	for _, tc := range invalid {
-		t.Run(tc.input, func(t *testing.T) {
-			_, err := ToComputePoolInstanceFamily(tc.input)
-			require.Error(t, err)
-		})
-	}
+	computePoolsTests.Describe.RunValidationCases(t)
+	computePoolsTests.Describe.RunSqlCases(t)
 }
