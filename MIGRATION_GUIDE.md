@@ -26,9 +26,11 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
-### *(new feature)* GRANTS_SHOW_CACHING experiment for snowflake_grant_privileges_to_account_role and snowflake_grant_ownership
+### *(new feature)* GRANTS_SHOW_CACHING experiment
 
-A new experiment `GRANTS_SHOW_CACHING` is now available for the `snowflake_grant_privileges_to_account_role` and `snowflake_grant_ownership` resources. When enabled, the provider caches `SHOW GRANTS` results (both `SHOW GRANTS ON <object>` and `SHOW FUTURE GRANTS IN <container>`) in memory for the duration of a single plan or apply cycle.
+A new `GRANTS_SHOW_CACHING` experiment has been added. When enabled, the provider caches `SHOW GRANTS` results (both `SHOW GRANTS ON <object>` and `SHOW FUTURE GRANTS IN <container>`) in memory for the duration of a single plan or apply cycle, so multiple resource instances resolving to the same underlying SHOW statement share one round-trip instead of each issuing their own.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_ownership`.
 
 Without caching, every resource instance issues an independent SHOW GRANTS call during Read. In configurations where many grant resources resolve to the same underlying SHOW statement (e.g. many privilege grants on the same schema, or many future-grant roles on the same database), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique statement per plan.
 
