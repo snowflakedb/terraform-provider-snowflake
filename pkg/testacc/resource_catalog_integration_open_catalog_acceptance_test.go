@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
@@ -28,23 +30,24 @@ import (
 func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	catalogUri := "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
-	privateCatalogUri := "https://testorg-testacc.privatelink.snowflakecomputing.com/polaris/api/catalog"
-	catalogName := random.AlphanumericN(15)
-	newCatalogName := random.AlphanumericN(15)
+	accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
+	primaryOAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthCredentials)
+	secondaryOAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthCredentials)
+	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
+	privateCatalogUri := fmt.Sprintf("https://%s.privatelink.snowflakecomputing.com/polaris/api/catalog", accountLocator)
+	catalogName := "TEST_CATALOG"
+	newCatalogName := "TEST_CATALOG2"
 
-	catalogNamespace := random.AlphanumericN(15)
-	newCatalogNamespace := random.AlphanumericN(15)
-	externalCatalogNamespace := random.AlphanumericN(15)
+	catalogNamespace := "TEST_NAMESPACE"
+	newCatalogNamespace := "TEST_NAMESPACE2"
+	externalCatalogNamespace := "TEST_NAMESPACE3"
 
-	oAuthTokenUri := privateCatalogUri + "/v2/oauth/tokens"
-	newOAuthTokenUri := catalogUri + "/v3/oauth/tokens"
-	oAuthClientId := random.AlphanumericN(15)
-	newOAuthClientId := random.AlphanumericN(15)
-	oAuthClientSecret := random.AlphanumericN(15)
-	newOAuthClientSecret := random.AlphanumericN(15)
-	oAuthAllowedScope := "PRINCIPAL_ROLE:ALL"
-	additionalOAuthAllowedScope := "DUMMY"
+	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
+	privateOAuthTokenUri := privateCatalogUri + "/v1/oauth/tokens"
+	oAuthClientId, oAuthClientSecret := parseOAuthCredentials(t, primaryOAuthCredentials)
+	newOAuthClientId, newOAuthClientSecret := parseOAuthCredentials(t, secondaryOAuthCredentials)
+	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
+	additionalOAuthAllowedScope := "PRINCIPAL_ROLE:SECONDARY"
 
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -61,7 +64,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	}
 	changedRestAuth := []sdk.OAuthRestAuthenticationRequest{
 		*sdk.NewOAuthRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
-			WithOauthTokenUri(newOAuthTokenUri),
+			WithOauthTokenUri(privateOAuthTokenUri),
 	}
 
 	basicRestConfig := []sdk.OpenCatalogRestConfigRequest{
@@ -94,14 +97,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedRestConfig := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, completeRestAuth, changedRestConfig).
+	withChangedRestConfig := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, basicRestAuth, changedRestConfig).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
 	withChangedOAuthClientSecret := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
-			WithOauthTokenUri(oAuthTokenUri),
+		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
 	}, changedRestConfig).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -330,7 +332,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
 			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
-				OauthTokenUri:      oAuthTokenUri,
+				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
 				OauthAllowedScopes: []string{oAuthAllowedScope},
@@ -354,7 +356,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
 			HasRestConfigCatalogName(newCatalogName).
 			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
-			HasRestAuthenticationOauthTokenUri(oAuthTokenUri).
+			HasRestAuthenticationOauthTokenUri(privateOAuthTokenUri).
 			HasRestAuthenticationOauthClientId(oAuthClientId).
 			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}
@@ -375,7 +377,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 					AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 				}).
 				HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
-					OauthTokenUri:      oAuthTokenUri,
+					OauthTokenUri:      "",
 					OauthClientId:      oAuthClientId,
 					OauthClientSecret:  newOAuthClientSecret,
 					OauthAllowedScopes: []string{oAuthAllowedScope},
@@ -399,7 +401,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
 			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
-				OauthTokenUri:      newOAuthTokenUri,
+				OauthTokenUri:      privateOAuthTokenUri,
 				OauthClientId:      newOAuthClientId,
 				OauthClientSecret:  newOAuthClientSecret,
 				OauthAllowedScopes: []string{oAuthAllowedScope, additionalOAuthAllowedScope},
@@ -423,7 +425,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
 			HasRestConfigCatalogName(newCatalogName).
 			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials).
-			HasRestAuthenticationOauthTokenUri(newOAuthTokenUri).
+			HasRestAuthenticationOauthTokenUri(privateOAuthTokenUri).
 			HasRestAuthenticationOauthClientId(newOAuthClientId).
 			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope),
 	}
@@ -620,14 +622,17 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						WithOrReplace(true).
 						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
 							WithRestConfig(changedRestConfig[0]).
-							WithRestAuthentication(completeRestAuth[0]))
+							WithRestAuthentication(
+								*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+									WithOauthTokenUri(privateOAuthTokenUri),
+							))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
+					// Open Catalog only accepts one OAuth token URI (<account_url>/v1/oauth/tokens),
+					// so we cannot exercise drift detection for rest_authentication.0.oauth_token_uri.
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
-						planchecks.ExpectDrift(ref, "rest_authentication.0.oauth_token_uri", sdk.String(newOAuthTokenUri), sdk.String(oAuthTokenUri)),
-						planchecks.ExpectChange(ref, "rest_authentication.0.oauth_token_uri", tfjson.ActionDelete, sdk.String(oAuthTokenUri), sdk.String(newOAuthTokenUri)),
 						planchecks.ExpectDrift(ref, "rest_authentication.0.oauth_client_id", sdk.String(newOAuthClientId), sdk.String(oAuthClientId)),
 						planchecks.ExpectChange(ref, "rest_authentication.0.oauth_client_id", tfjson.ActionDelete, sdk.String(oAuthClientId), sdk.String(newOAuthClientId)),
 						planchecks.ExpectDrift(ref, "rest_authentication.0.oauth_allowed_scopes", sdk.String(fmt.Sprintf("[%s %s]", oAuthAllowedScope, additionalOAuthAllowedScope)), sdk.String(fmt.Sprintf("[%s]", oAuthAllowedScope))),
@@ -770,7 +775,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 	})
 }
 
-func TestAcc_CatalogIntegrationOpenCatalog_ImportValidation(t *testing.T) {
+func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase_ImportValidation(t *testing.T) {
 	restConfig := []sdk.OpenCatalogRestConfigRequest{
 		*sdk.NewOpenCatalogRestConfigRequest("https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog", "my_catalog_name"),
 	}
@@ -815,14 +820,15 @@ func TestAcc_CatalogIntegrationOpenCatalog_ImportValidation(t *testing.T) {
 func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	catalogUri := "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
-	catalogName := random.AlphanumericN(15)
-	catalogNamespace := random.AlphanumericN(15)
+	accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
+	oAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthCredentials)
+	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
+	catalogName := "TEST_CATALOG"
+	catalogNamespace := "TEST_NAMESPACE"
 
-	oAuthTokenUri := catalogUri + "/v2/oauth/tokens"
-	oAuthClientId := random.AlphanumericN(15)
-	oAuthClientSecret := random.AlphanumericN(15)
-	oAuthAllowedScope := "PRINCIPAL_ROLE:ALL"
+	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
+	oAuthClientId, oAuthClientSecret := parseOAuthCredentials(t, oAuthCredentials)
+	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
@@ -883,4 +889,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 			},
 		},
 	})
+}
+
+func parseOAuthCredentials(t *testing.T, credentials string) (string, string) {
+	parts := strings.Split(credentials, ":")
+	if len(parts) != 2 {
+		t.Fatal("Could not parse OAuth credentials. Expected format: <client_id>:<client_secret>")
+	}
+	return parts[0], parts[1]
 }
