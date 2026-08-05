@@ -61,7 +61,6 @@ func SweepAfterAcceptanceTests(client *sdk.Client, suffix string) error {
 	return sweep(client, suffix)
 }
 
-// TODO [SNOW-867247]: use if exists/use method from helper for dropping
 // TODO [SNOW-867247]: sweep all missing account-level objects (like replication groups, connections, compute pools, external volumes, ...)
 // TODO [SNOW-867247]: extract sweepers to a separate dir
 // TODO [SNOW-867247]: rework the sweepers (funcs -> objects)
@@ -270,6 +269,9 @@ type accountObjectSweeperConfig[T any] struct {
 	id             func(T) sdk.AccountObjectIdentifier
 	dropSafely     func(ctx context.Context, id sdk.AccountObjectIdentifier) error
 
+	// stalePeriodOverride is used instead of the package-level stalePeriod when set.
+	stalePeriodOverride *time.Duration
+
 	// owner and takeOwnership have to be set together. When they are, the ownership is transferred to ACCOUNTADMIN
 	// before dropping the objects owned by any other role.
 	// TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
@@ -283,6 +285,13 @@ type accountObjectSweeperConfig[T any] struct {
 
 func (cfg accountObjectSweeperConfig[T]) ignores(err error) bool {
 	return cfg.ignoreError != nil && cfg.ignoreError(err)
+}
+
+func (cfg accountObjectSweeperConfig[T]) effectiveStalePeriod() time.Duration {
+	if cfg.stalePeriodOverride != nil {
+		return *cfg.stalePeriodOverride
+	}
+	return stalePeriod
 }
 
 // grantOwnershipToAccountadmin builds the takeOwnership function for the objects of the given type.
@@ -322,7 +331,7 @@ func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSw
 		default:
 			log.Printf("[DEBUG] Sweeping stale %ss", cfg.objectTypeName)
 			dropCondition = func(object T) bool {
-				return cfg.createdOn(object).Before(time.Now().Add(stalePeriod))
+				return cfg.createdOn(object).Before(time.Now().Add(cfg.effectiveStalePeriod()))
 			}
 		}
 
@@ -493,97 +502,43 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 }
 
 func nukeUsers(client *sdk.Client, suffix string) func() error {
-	protectedUsers := []string{
-		"ARTUR_SAWICKI",
-		"JAKUB_MICHALAK",
-		"JAN_CIESLAK",
-		"KAMIL_WASILEWSKI",
-		"PIOTR_CICHON",
-		"TEST_CI_SERVICE_USER",
-		"PENTESTING_USER_1",
-		"PENTESTING_USER_2",
-	}
-
-	return func() error {
-		ctx := context.Background()
-
-		var userDropCondition func(u sdk.User) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping users with suffix %s", suffix)
-			userDropCondition = func(u sdk.User) bool {
-				return strings.HasSuffix(u.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale users")
-			userDropCondition = func(u sdk.User) bool {
-				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
-			}
-		}
-
-		urs, err := client.Users.Show(ctx, sdk.NewShowUserRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW USERS ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d users", len(urs))
-
-		var errs []error
-		for idx, user := range urs {
-			log.Printf("[DEBUG] Processing user [%d/%d]: %s...", idx+1, len(urs), user.ID().FullyQualifiedName())
-
-			if !slices.Contains(protectedUsers, user.Name) && userDropCondition(user) {
-				log.Printf("[DEBUG] Dropping user %s", user.ID().FullyQualifiedName())
-				if err := client.Users.Drop(ctx, sdk.NewDropUserRequest(user.ID()).WithIfExists(true)); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping user %s ended with error, err = %w", user.ID().FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping user %s", user.ID().FullyQualifiedName())
-			}
-		}
-
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.User]{
+		objectTypeName: "user",
+		protectedNames: []string{
+			"ARTUR_SAWICKI",
+			"JAKUB_MICHALAK",
+			"JAN_CIESLAK",
+			"KAMIL_WASILEWSKI",
+			"PIOTR_CICHON",
+			"TEST_CI_SERVICE_USER",
+			"PENTESTING_USER_1",
+			"PENTESTING_USER_2",
+		},
+		show: func(ctx context.Context) ([]sdk.User, error) {
+			return client.Users.Show(ctx, sdk.NewShowUserRequest())
+		},
+		name:                func(object sdk.User) string { return object.Name },
+		createdOn:           func(object sdk.User) time.Time { return object.CreatedOn },
+		id:                  func(object sdk.User) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:          client.Users.DropSafely,
+		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
+	})
 }
 
 func nukePostgresInstances(client *sdk.Client, suffix string) func() error {
-	return func() error {
-		ctx := context.Background()
-
-		var postgresInstanceDropCondition func(u sdk.PostgresInstance) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping postgres instances with suffix %s", suffix)
-			postgresInstanceDropCondition = func(u sdk.PostgresInstance) bool {
-				return strings.HasSuffix(u.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale postgres instances")
-			postgresInstanceDropCondition = func(u sdk.PostgresInstance) bool {
-				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
-			}
-		}
-		postgresInstances, err := client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest())
-		if err != nil {
-			return err
-		}
-
-		log.Printf("[DEBUG] Found %d postgres instances", len(postgresInstances))
-
-		var errs []error
-		for idx, postgresInstance := range postgresInstances {
-			log.Printf("[DEBUG] Processing postgres instance [%d/%d]: %s...", idx+1, len(postgresInstances), postgresInstance.Name)
-
-			if postgresInstanceDropCondition(postgresInstance) {
-				log.Printf("[DEBUG] Dropping postgres instance %s", postgresInstance.Name)
-				if err := client.PostgresInstances.DropSafely(ctx, postgresInstance.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping postgres instance %s ended with an error, err = %w", postgresInstance.Name, err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping postgres instance %s", postgresInstance.Name)
-			}
-		}
-
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.PostgresInstance]{
+		objectTypeName: "postgres instance",
+		// no postgres instances are protected for now
+		protectedNames: []string{},
+		show: func(ctx context.Context) ([]sdk.PostgresInstance, error) {
+			return client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest())
+		},
+		name:                func(object sdk.PostgresInstance) string { return object.Name },
+		createdOn:           func(object sdk.PostgresInstance) time.Time { return object.CreatedOn },
+		id:                  func(object sdk.PostgresInstance) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:          client.PostgresInstances.DropSafely,
+		stalePeriodOverride: sdk.Pointer(-60 * time.Minute),
+	})
 }
 
 func nukeSecurityIntegrations(client *sdk.Client, suffix string) func() error {
@@ -807,69 +762,23 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
-	var protectedResourceMonitors []string
-
-	return func() error {
-		ctx := context.Background()
-
-		var rmDropCondition func(rm sdk.ResourceMonitor) bool
-		switch {
-		case suffix != "":
-			log.Printf("[DEBUG] Sweeping resource monitors with suffix %s", suffix)
-			rmDropCondition = func(rm sdk.ResourceMonitor) bool {
-				return strings.HasSuffix(rm.Name, suffix)
-			}
-		default:
-			log.Println("[DEBUG] Sweeping stale resource monitors")
-			rmDropCondition = func(rm sdk.ResourceMonitor) bool {
-				return rm.CreatedOn.Before(time.Now().Add(stalePeriod))
-			}
-		}
-
-		rms, err := client.ResourceMonitors.Show(ctx, sdk.NewShowResourceMonitorRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW RESOURCE MONITORS ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d resource monitors", len(rms))
-
-		var errs []error
-		for idx, rm := range rms {
-			// TODO [SNOW-1569516]: Use the usual constructors instead.
-			id := sdk.NewAccountObjectIdentifierNoTrimTestOnly(rm.Name)
-			log.Printf("[DEBUG] Processing resurce monitor [%d/%d]: %s...", idx+1, len(rms), id.FullyQualifiedName())
-
-			if !slices.Contains(protectedResourceMonitors, rm.Name) && rmDropCondition(rm) {
-				if rm.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on resource monitor %s, to ACCOUNTADMIN", id.FullyQualifiedName())
-					err := client.Grants.GrantOwnership(
-						ctx,
-						sdk.OwnershipGrantOn{Object: &sdk.Object{
-							ObjectType: sdk.ObjectTypeResourceMonitor,
-							Name:       id,
-						}},
-						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
-						},
-						nil,
-					)
-					if err != nil {
-						errs = append(errs, fmt.Errorf("granting ownership on resource monitor %s ended with error, err = %w", id.FullyQualifiedName(), err))
-						continue
-					}
-				}
-
-				log.Printf("[DEBUG] Dropping resource monitor %s, created at: %s", id.FullyQualifiedName(), rm.CreatedOn.String())
-				if err := client.ResourceMonitors.DropSafely(ctx, id); err != nil {
-					log.Printf("[DEBUG] Dropping resource monitor %s, resulted in error %v", id.FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping resource monitor %s ended with error, err = %w", id.FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping resource monitor %s, created at: %s", id.FullyQualifiedName(), rm.CreatedOn.String())
-			}
-		}
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.ResourceMonitor]{
+		objectTypeName: "resource monitor",
+		// no resource monitors are protected for now
+		protectedNames: []string{},
+		show: func(ctx context.Context) ([]sdk.ResourceMonitor, error) {
+			return client.ResourceMonitors.Show(ctx, sdk.NewShowResourceMonitorRequest())
+		},
+		name:      func(object sdk.ResourceMonitor) string { return object.Name },
+		createdOn: func(object sdk.ResourceMonitor) time.Time { return object.CreatedOn },
+		// TODO [SNOW-1569516]: Use the usual constructors instead.
+		id: func(object sdk.ResourceMonitor) sdk.AccountObjectIdentifier {
+			return sdk.NewAccountObjectIdentifierNoTrimTestOnly(object.Name)
+		},
+		dropSafely:    client.ResourceMonitors.DropSafely,
+		owner:         func(object sdk.ResourceMonitor) string { return object.Owner },
+		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeResourceMonitor),
+	})
 }
 
 func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
