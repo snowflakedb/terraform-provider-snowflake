@@ -3,6 +3,9 @@ package sdk
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGrantPrivilegesToAccountRole(t *testing.T) {
@@ -1283,6 +1286,59 @@ func TestGrantShow(t *testing.T) {
 			},
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW GRANTS OF SHARE %s", shareID.FullyQualifiedName())
+	})
+}
+
+// TestShowGrantOptionsToSQL covers the properties ShowGrantOptionsToSQL is relied on for as a
+// cache key (see pkg/internal/provider.Cache and its callers in pkg/resources): it must render
+// exactly what Grants.Show would issue, and it must be deterministic across repeated calls on an
+// equivalent value, since two ShowGrantOptions built independently (e.g. by different resources
+// reading the same object) need to collapse to the same cache key. Coverage of the rendering
+// itself, across every ShowGrantOptions shape, already lives in TestGrantShow above (it exercises
+// the same structToSQL that ShowGrantOptionsToSQL wraps) — this test intentionally does not
+// duplicate that.
+func TestShowGrantOptionsToSQL(t *testing.T) {
+	dbID := randomAccountObjectIdentifier()
+	opts := &ShowGrantOptions{
+		On: &ShowGrantsOn{
+			Object: &Object{
+				ObjectType: ObjectTypeDatabase,
+				Name:       dbID,
+			},
+		},
+	}
+
+	t.Run("matches Grants.Show's own rendering", func(t *testing.T) {
+		expected, err := structToSQL(opts)
+		require.NoError(t, err)
+
+		actual, err := ShowGrantOptionsToSQL(opts)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual)
+	})
+
+	t.Run("deterministic across repeated calls and independently-built equivalent values", func(t *testing.T) {
+		first, err := ShowGrantOptionsToSQL(opts)
+		require.NoError(t, err)
+
+		second, err := ShowGrantOptionsToSQL(opts)
+		require.NoError(t, err)
+		assert.Equal(t, first, second, "repeated calls on the same value must render identically")
+
+		// A second, independently-constructed ShowGrantOptions describing the same SHOW
+		// statement must render to the same string as opts above, so that two different
+		// resource instances (or resource types) reading the same object share one cache entry.
+		equivalent := &ShowGrantOptions{
+			On: &ShowGrantsOn{
+				Object: &Object{
+					ObjectType: ObjectTypeDatabase,
+					Name:       dbID,
+				},
+			},
+		}
+		third, err := ShowGrantOptionsToSQL(equivalent)
+		require.NoError(t, err)
+		assert.Equal(t, first, third, "independently-built equivalent opts must render to the same cache key")
 	})
 }
 

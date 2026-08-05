@@ -661,7 +661,7 @@ func validateGrantPrivilegesToAccountRoleImport(ctx context.Context, m any, id G
 		return nil
 	}
 
-	grants, err := providerCtx.Client.Grants.Show(ctx, opts)
+	grants, err := showGrantsCached(ctx, providerCtx, opts)
 	if err != nil {
 		return fmt.Errorf("show grants: %w", err)
 	}
@@ -680,7 +680,8 @@ func validateGrantPrivilegesToAccountRoleImport(ctx context.Context, m any, id G
 }
 
 func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	diags := diag.Diagnostics{}
 
 	id, err := createGrantPrivilegesToAccountRoleIdFromSchema(d)
@@ -714,11 +715,17 @@ func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(id.String())
 
+	// The grant(s) above may change what a previously cached SHOW GRANTS for this id's target
+	// would return; invalidate after the mutating SQL has executed so the trailing Read below
+	// (and any other Read in this plan/apply cycle) observes the new privileges.
+	invalidateShowGrantsForAccountRoleId(providerCtx, *id)
+
 	return append(diags, ReadGrantPrivilegesToAccountRole(ctx, d, meta)...)
 }
 
 func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	diags := diag.Diagnostics{}
 
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
@@ -945,6 +952,10 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(id.String())
 
+	// See the matching comment in CreateGrantPrivilegesToAccountRole: invalidate after all the
+	// grant/revoke calls above have executed, before the trailing Read re-reads this id's target.
+	invalidateShowGrantsForAccountRoleId(providerCtx, id)
+
 	return append(diags, ReadGrantPrivilegesToAccountRole(ctx, d, meta)...)
 }
 
@@ -976,6 +987,7 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 			},
 		}
 	}
+	invalidateShowGrantsForAccountRoleId(providerCtx, id)
 
 	d.SetId("")
 
@@ -1057,7 +1069,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	grants, err := client.Grants.Show(ctx, opts)
+	grants, err := showGrantsCached(ctx, providerCtx, opts)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			d.SetId("")
@@ -1155,6 +1167,18 @@ func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, gr
 	}
 
 	return actualPrivileges
+}
+
+// invalidateShowGrantsForAccountRoleId invalidates the cached SHOW GRANTS result (if any) for the
+// statement that Read would issue for id, using the same request-building logic as Read
+// (prepareShowGrantsRequestForAccountRole) so the invalidated key always matches the cached key.
+// A no-op for id.Kind values whose Read issues no SHOW at all (opts == nil).
+func invalidateShowGrantsForAccountRoleId(providerCtx *provider.Context, id GrantPrivilegesToAccountRoleId) {
+	opts, _ := prepareShowGrantsRequestForAccountRole(id)
+	if opts == nil {
+		return
+	}
+	invalidateGrantsShowCache(providerCtx, opts)
 }
 
 func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, *sdk.ObjectType) {

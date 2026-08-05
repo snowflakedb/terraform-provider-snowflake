@@ -129,11 +129,25 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 		// computed/server-default fields to populate, so the Read is redundant here. With caching
 		// enabled we skip it to avoid an extra SHOW GRANTS during apply. We still invalidate so any
 		// later Read for this role in the same plan observes the new grant.
-		providerCtx.GrantShowOfRoleCache.Invalidate(roleIdentifier.FullyQualifiedName())
+		if cacheKey, keyErr := showGrantsOfRoleCacheKey(roleIdentifier); keyErr == nil {
+			providerCtx.GrantShowCache.Invalidate(cacheKey)
+		}
 		log.Printf("[DEBUG] skipping trailing SHOW GRANTS read after create (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleShowCaching)
 		return nil
 	}
 	return ReadGrantAccountRole(ctx, d, meta)
+}
+
+// showGrantsOfRoleCacheKey renders the SHOW GRANTS OF ROLE <role> statement for roleIdentifier to
+// the canonical cache key shared with the GrantShowCache. sdk.ShowGrantOptionsToSQL only fails on a
+// struct-rendering error from the reflection-based SQL builder; the literal ShowGrantOptions built
+// here is always well-formed, so an error is not expected in practice. Callers should still treat
+// it as fall back to an uncached SHOW rather than fail the whole Read/Create/Delete over a cache-key
+// rendering problem.
+func showGrantsOfRoleCacheKey(roleIdentifier sdk.AccountObjectIdentifier) (string, error) {
+	return sdk.ShowGrantOptionsToSQL(&sdk.ShowGrantOptions{
+		Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+	})
 }
 
 func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -159,18 +173,17 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 	targetIdentifier := parts[2]
 
+	showOpts := &sdk.ShowGrantOptions{
+		Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+	}
 	var grants []sdk.Grant
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
-		cacheKey := roleIdentifier.FullyQualifiedName()
-		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func(loadCtx context.Context) ([]sdk.Grant, error) {
-			return client.Grants.Show(loadCtx, &sdk.ShowGrantOptions{
-				Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
-			})
+	cacheKey, keyErr := sdk.ShowGrantOptionsToSQL(showOpts)
+	if keyErr == nil && experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		grants, err = providerCtx.GrantShowCache.GetOrLoad(ctx, cacheKey, func(loadCtx context.Context) ([]sdk.Grant, error) {
+			return client.Grants.Show(loadCtx, showOpts)
 		})
 	} else {
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
-		})
+		grants, err = client.Grants.Show(ctx, showOpts)
 	}
 	if err != nil {
 		log.Printf("[DEBUG] role (%s) not found", roleIdentifier.FullyQualifiedName())
@@ -232,7 +245,9 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
-		providerCtx.GrantShowOfRoleCache.Invalidate(id.FullyQualifiedName())
+		if cacheKey, keyErr := showGrantsOfRoleCacheKey(id); keyErr == nil {
+			providerCtx.GrantShowCache.Invalidate(cacheKey)
+		}
 	}
 	d.SetId("")
 	return nil

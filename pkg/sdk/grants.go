@@ -286,6 +286,15 @@ type ShowGrantsOf struct {
 	Share           AccountObjectIdentifier  `ddl:"identifier" sql:"SHARE"`
 }
 
+// ShowGrantOptionsToSQL renders opts to the exact SQL string that Grants.Show would issue for it
+// (Grants.Show itself goes through the same structToSQL call, see validateAndQuery in
+// helpers_proposal.go). Two ShowGrantOptions values are safe to treat as equivalent for caching
+// purposes if and only if they render to the same string, since identical SQL against an
+// unchanged Snowflake account is guaranteed to return an identical result set.
+func ShowGrantOptionsToSQL(opts *ShowGrantOptions) (string, error) {
+	return structToSQL(opts)
+}
+
 type grantRow struct {
 	CreatedOn   time.Time `db:"created_on"`
 	Privilege   string    `db:"privilege"`
