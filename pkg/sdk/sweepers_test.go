@@ -269,20 +269,57 @@ type accountObjectSweeperConfig[T any] struct {
 	createdOn      func(T) time.Time
 	id             func(T) sdk.AccountObjectIdentifier
 	dropSafely     func(ctx context.Context, id sdk.AccountObjectIdentifier) error
+
+	// owner and takeOwnership have to be set together. When they are, the ownership is transferred to ACCOUNTADMIN
+	// before dropping the objects owned by any other role.
+	// TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
+	owner         func(T) string
+	takeOwnership func(ctx context.Context, id sdk.AccountObjectIdentifier) error
+
+	// ignoreError tells the expected errors (e.g. objects of an unexpected type returned by SHOW) from the real ones.
+	// The matching errors are logged and the object is skipped.
+	ignoreError func(error) bool
 }
 
-// nukeAccountObjects drops the objects with the given suffix, or the stale ones when the suffix is empty.
-func nukeAccountObjects[T any](suffix string, cfg accountObjectSweeperConfig[T]) func() error {
+func (cfg accountObjectSweeperConfig[T]) ignores(err error) bool {
+	return cfg.ignoreError != nil && cfg.ignoreError(err)
+}
+
+// grantOwnershipToAccountadmin builds the takeOwnership function for the objects of the given type.
+func grantOwnershipToAccountadmin(client *sdk.Client, objectType sdk.ObjectType) func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
+	return func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
+		return client.Grants.GrantOwnership(
+			ctx,
+			sdk.OwnershipGrantOn{Object: &sdk.Object{
+				ObjectType: objectType,
+				Name:       id,
+			}},
+			sdk.OwnershipGrantTo{
+				AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
+			},
+			nil,
+		)
+	}
+}
+
+// nukeAccountObjects drops the objects matching the given prefix or suffix, or the stale ones when both are empty.
+func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSweeperConfig[T]) func() error {
 	return func() error {
 		ctx := context.Background()
 
 		var dropCondition func(object T) bool
-		if suffix != "" {
+		switch {
+		case prefix != "":
+			log.Printf("[DEBUG] Sweeping %ss with prefix %s", cfg.objectTypeName, prefix)
+			dropCondition = func(object T) bool {
+				return strings.HasPrefix(cfg.name(object), prefix)
+			}
+		case suffix != "":
 			log.Printf("[DEBUG] Sweeping %ss with suffix %s", cfg.objectTypeName, suffix)
 			dropCondition = func(object T) bool {
 				return strings.HasSuffix(cfg.name(object), suffix)
 			}
-		} else {
+		default:
 			log.Printf("[DEBUG] Sweeping stale %ss", cfg.objectTypeName)
 			dropCondition = func(object T) bool {
 				return cfg.createdOn(object).Before(time.Now().Add(stalePeriod))
@@ -301,14 +338,31 @@ func nukeAccountObjects[T any](suffix string, cfg accountObjectSweeperConfig[T])
 			id := cfg.id(object)
 			log.Printf("[DEBUG] Processing %s [%d/%d]: %s...", cfg.objectTypeName, idx+1, len(objects), id.FullyQualifiedName())
 
-			if !slices.Contains(cfg.protectedNames, cfg.name(object)) && dropCondition(object) {
-				log.Printf("[DEBUG] Dropping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
-				if err := cfg.dropSafely(ctx, id); err != nil {
-					log.Printf("[DEBUG] Dropping %s %s, resulted in error %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping %s %s ended with error, err = %w", cfg.objectTypeName, id.FullyQualifiedName(), err))
-				}
-			} else {
+			if slices.Contains(cfg.protectedNames, cfg.name(object)) || !dropCondition(object) {
 				log.Printf("[DEBUG] Skipping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
+				continue
+			}
+
+			if cfg.takeOwnership != nil && cfg.owner(object) != snowflakeroles.Accountadmin.Name() {
+				log.Printf("[DEBUG] Granting ownership on %s %s, to ACCOUNTADMIN", cfg.objectTypeName, id.FullyQualifiedName())
+				if err := cfg.takeOwnership(ctx, id); err != nil {
+					if cfg.ignores(err) {
+						log.Printf("[DEBUG] Skipping %s %s, err: %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
+						continue
+					}
+					errs = append(errs, fmt.Errorf("granting ownership on %s %s ended with error, err = %w", cfg.objectTypeName, id.FullyQualifiedName(), err))
+					continue
+				}
+			}
+
+			log.Printf("[DEBUG] Dropping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
+			if err := cfg.dropSafely(ctx, id); err != nil {
+				if cfg.ignores(err) {
+					log.Printf("[DEBUG] Skipping %s %s, err: %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
+					continue
+				}
+				log.Printf("[DEBUG] Dropping %s %s, resulted in error %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
+				errs = append(errs, fmt.Errorf("sweeping %s %s ended with error, err = %w", cfg.objectTypeName, id.FullyQualifiedName(), err))
 			}
 		}
 
@@ -317,7 +371,7 @@ func nukeAccountObjects[T any](suffix string, cfg accountObjectSweeperConfig[T])
 }
 
 func nukeNotificationIntegrations(client *sdk.Client, suffix string) func() error {
-	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.NotificationIntegration]{
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.NotificationIntegration]{
 		objectTypeName: "notification integration",
 		show: func(ctx context.Context) ([]sdk.NotificationIntegration, error) {
 			return client.NotificationIntegrations.Show(ctx, sdk.NewShowNotificationIntegrationRequest())
@@ -330,7 +384,7 @@ func nukeNotificationIntegrations(client *sdk.Client, suffix string) func() erro
 }
 
 func nukeStorageIntegrations(client *sdk.Client, suffix string) func() error {
-	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.StorageIntegration]{
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.StorageIntegration]{
 		objectTypeName: "storage integration",
 		protectedNames: []string{
 			"S3_STORAGE_INTEGRATION",
@@ -349,7 +403,7 @@ func nukeStorageIntegrations(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeApiIntegrations(client *sdk.Client, suffix string) func() error {
-	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.ApiIntegration]{
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.ApiIntegration]{
 		objectTypeName: "api integration",
 		show: func(ctx context.Context) ([]sdk.ApiIntegration, error) {
 			return client.ApiIntegrations.Show(ctx, sdk.NewShowApiIntegrationRequest())
@@ -362,7 +416,7 @@ func nukeApiIntegrations(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeCatalogIntegrations(client *sdk.Client, suffix string) func() error {
-	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.CatalogIntegration]{
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.CatalogIntegration]{
 		objectTypeName: "catalog integration",
 		show: func(ctx context.Context) ([]sdk.CatalogIntegration, error) {
 			return client.CatalogIntegrations.Show(ctx, sdk.NewShowCatalogIntegrationRequest())
@@ -375,7 +429,7 @@ func nukeCatalogIntegrations(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeExternalAccessIntegrations(client *sdk.Client, suffix string) func() error {
-	return nukeAccountObjects(suffix, accountObjectSweeperConfig[sdk.ExternalAccessIntegration]{
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.ExternalAccessIntegration]{
 		objectTypeName: "external access integration",
 		show: func(ctx context.Context) ([]sdk.ExternalAccessIntegration, error) {
 			return client.ExternalAccessIntegrations.Show(ctx, sdk.NewShowExternalAccessIntegrationRequest())
@@ -388,161 +442,54 @@ func nukeExternalAccessIntegrations(client *sdk.Client, suffix string) func() er
 }
 
 // TODO [SNOW-867247]: generalize nuke methods (sweepers too)
-// TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
 func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() error {
-	protectedWarehouses := []string{
-		"SNOWFLAKE",
-		"SYSTEM$STREAMLIT_NOTEBOOK_WH",
-	}
-
-	return func() error {
-		ctx := context.Background()
-
-		var whDropCondition func(wh sdk.Warehouse) bool
-		switch {
-		case prefix != "":
-			log.Printf("[DEBUG] Sweeping warehouses with prefix %s", prefix)
-			whDropCondition = func(wh sdk.Warehouse) bool {
-				return strings.HasPrefix(wh.Name, prefix)
-			}
-		case suffix != "":
-			log.Printf("[DEBUG] Sweeping warehouses with suffix %s", suffix)
-			whDropCondition = func(wh sdk.Warehouse) bool {
-				return strings.HasSuffix(wh.Name, suffix)
-			}
-		default:
-			log.Println("[DEBUG] Sweeping stale warehouses")
-			whDropCondition = func(wh sdk.Warehouse) bool {
-				return wh.CreatedOn.Before(time.Now().Add(stalePeriod))
-			}
-		}
-
-		whs, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW WAREHOUSES ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d warehouses", len(whs))
-
-		var errs []error
-		for idx, wh := range whs {
-			// TODO [SNOW-1569516]: Use the usual constructors instead.
-			id := sdk.NewAccountObjectIdentifierNoTrimTestOnly(wh.Name)
-			log.Printf("[DEBUG] Processing warehouse [%d/%d]: %s...", idx+1, len(whs), id.FullyQualifiedName())
-			if !slices.Contains(protectedWarehouses, wh.Name) && whDropCondition(wh) {
-				if wh.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on warehouse %s, to ACCOUNTADMIN", id.FullyQualifiedName())
-					err := client.Grants.GrantOwnership(
-						ctx,
-						sdk.OwnershipGrantOn{Object: &sdk.Object{
-							ObjectType: sdk.ObjectTypeWarehouse,
-							Name:       id,
-						}},
-						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
-						},
-						nil,
-					)
-					if err != nil {
-						errs = append(errs, fmt.Errorf("granting ownership on warehouse %s ended with error, err = %w", id.FullyQualifiedName(), err))
-						continue
-					}
-				}
-
-				log.Printf("[DEBUG] Dropping warehouse %s, created at: %s", id.FullyQualifiedName(), wh.CreatedOn.String())
-				if err := client.Warehouses.DropSafely(ctx, id); err != nil {
-					log.Printf("[DEBUG] Dropping warehouse %s, resulted in error %v", id.FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping warehouse %s ended with error, err = %w", id.FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping warehouse %s, created at: %s", id.FullyQualifiedName(), wh.CreatedOn.String())
-			}
-		}
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects(prefix, suffix, accountObjectSweeperConfig[sdk.Warehouse]{
+		objectTypeName: "warehouse",
+		protectedNames: []string{
+			"SNOWFLAKE",
+			"SYSTEM$STREAMLIT_NOTEBOOK_WH",
+		},
+		show: func(ctx context.Context) ([]sdk.Warehouse, error) {
+			return client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest())
+		},
+		name:      func(object sdk.Warehouse) string { return object.Name },
+		createdOn: func(object sdk.Warehouse) time.Time { return object.CreatedOn },
+		// TODO [SNOW-1569516]: Use the usual constructors instead.
+		id: func(object sdk.Warehouse) sdk.AccountObjectIdentifier {
+			return sdk.NewAccountObjectIdentifierNoTrimTestOnly(object.Name)
+		},
+		dropSafely:    client.Warehouses.DropSafely,
+		owner:         func(object sdk.Warehouse) string { return object.Owner },
+		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeWarehouse),
+	})
 }
 
 func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() error {
-	protectedDatabases := []string{
-		"SNOWFLAKE",
-		"MFA_ENFORCEMENT_POLICY",
-		"TERRAFORM_TEST_SETUP_OBJECTS",
-		"TEST_RESULTS_DATABASE",
-	}
-
-	return func() error {
-		ctx := context.Background()
-
-		var dbDropCondition func(db sdk.Database) bool
-		switch {
-		case prefix != "":
-			log.Printf("[DEBUG] Sweeping databases with prefix %s", prefix)
-			dbDropCondition = func(db sdk.Database) bool {
-				return strings.HasPrefix(db.Name, prefix)
-			}
-		case suffix != "":
-			log.Printf("[DEBUG] Sweeping databases with suffix %s", suffix)
-			dbDropCondition = func(db sdk.Database) bool {
-				return strings.HasSuffix(db.Name, suffix)
-			}
-		default:
-			log.Println("[DEBUG] Sweeping stale databases")
-			dbDropCondition = func(db sdk.Database) bool {
-				return db.CreatedOn.Before(time.Now().Add(stalePeriod))
-			}
-		}
-
-		dbs, err := client.Databases.Show(ctx, sdk.NewShowDatabaseRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW DATABASES ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d databases", len(dbs))
-
-		var errs []error
-		for idx, db := range dbs {
-			// TODO [SNOW-1569516]: Use the usual constructors instead.
-			id := sdk.NewAccountObjectIdentifierNoTrimTestOnly(db.Name)
-			log.Printf("[DEBUG] Processing database [%d/%d]: %s...", idx+1, len(dbs), id.FullyQualifiedName())
-			if !slices.Contains(protectedDatabases, db.Name) && dbDropCondition(db) {
-				if db.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on database %s, to ACCOUNTADMIN", id.FullyQualifiedName())
-					err := client.Grants.GrantOwnership(
-						ctx,
-						sdk.OwnershipGrantOn{Object: &sdk.Object{
-							ObjectType: sdk.ObjectTypeDatabase,
-							Name:       id,
-						}},
-						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
-						},
-						nil,
-					)
-					if err != nil {
-						if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
-							log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", id.FullyQualifiedName(), err)
-							continue
-						}
-						errs = append(errs, fmt.Errorf("granting ownership on database %s ended with error, err = %w", id.FullyQualifiedName(), err))
-						continue
-					}
-				}
-
-				log.Printf("[DEBUG] Dropping database %s, created at: %s", id.FullyQualifiedName(), db.CreatedOn.String())
-				if err := client.Databases.DropSafely(ctx, id); err != nil {
-					if strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'") {
-						log.Printf("[DEBUG] Skipping database %s as it's an application, err: %v", id.FullyQualifiedName(), err)
-						continue
-					}
-					log.Printf("[DEBUG] Dropping database %s, resulted in error %v", id.FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping database %s ended with error, err = %w", id.FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping database %s, created at: %s", id.FullyQualifiedName(), db.CreatedOn.String())
-			}
-		}
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects(prefix, suffix, accountObjectSweeperConfig[sdk.Database]{
+		objectTypeName: "database",
+		protectedNames: []string{
+			"SNOWFLAKE",
+			"MFA_ENFORCEMENT_POLICY",
+			"TERRAFORM_TEST_SETUP_OBJECTS",
+			"TEST_RESULTS_DATABASE",
+		},
+		show: func(ctx context.Context) ([]sdk.Database, error) {
+			return client.Databases.Show(ctx, sdk.NewShowDatabaseRequest())
+		},
+		name:      func(object sdk.Database) string { return object.Name },
+		createdOn: func(object sdk.Database) time.Time { return object.CreatedOn },
+		// TODO [SNOW-1569516]: Use the usual constructors instead.
+		id: func(object sdk.Database) sdk.AccountObjectIdentifier {
+			return sdk.NewAccountObjectIdentifierNoTrimTestOnly(object.Name)
+		},
+		dropSafely:    client.Databases.DropSafely,
+		owner:         func(object sdk.Database) string { return object.Owner },
+		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeDatabase),
+		// applications are returned by SHOW DATABASES too, and they can't be handled as databases
+		ignoreError: func(err error) bool {
+			return strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'")
+		},
+	})
 }
 
 func nukeUsers(client *sdk.Client, suffix string) func() error {
