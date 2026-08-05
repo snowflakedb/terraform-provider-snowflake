@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -542,47 +543,20 @@ func nukePostgresInstances(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeSecurityIntegrations(client *sdk.Client, suffix string) func() error {
-	protectedSecurityIntegrations := []sdk.AccountObjectIdentifier{
-		sdk.NewAccountObjectIdentifier("SNOWFLAKE$LOCAL_APPLICATION"),
-	}
-	return func() error {
-		ctx := context.Background()
-
-		var integrationDropCondition func(u sdk.SecurityIntegration) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping security integrations with suffix %s", suffix)
-			integrationDropCondition = func(u sdk.SecurityIntegration) bool {
-				return strings.HasSuffix(u.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale security integrations")
-			integrationDropCondition = func(u sdk.SecurityIntegration) bool {
-				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
-			}
-		}
-		integrations, err := client.SecurityIntegrations.Show(ctx, sdk.NewShowSecurityIntegrationRequest())
-		if err != nil {
-			return err
-		}
-
-		log.Printf("[DEBUG] Found %d security integrations", len(integrations))
-
-		var errs []error
-		for idx, integration := range integrations {
-			log.Printf("[DEBUG] Processing security integration [%d/%d]: %s...", idx+1, len(integrations), integration.Name)
-
-			if !slices.Contains(protectedSecurityIntegrations, integration.ID()) && integrationDropCondition(integration) {
-				log.Printf("[DEBUG] Dropping security integration %s", integration.Name)
-				if err := client.SecurityIntegrations.DropSafely(ctx, integration.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping security integration %s ended with an error, err = %w", integration.Name, err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping security integration %s", integration.Name)
-			}
-		}
-
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.SecurityIntegration]{
+		objectTypeName: "security integration",
+		protectedNames: []string{
+			"SNOWFLAKE$LOCAL_APPLICATION",
+		},
+		show: func(ctx context.Context) ([]sdk.SecurityIntegration, error) {
+			return client.SecurityIntegrations.Show(ctx, sdk.NewShowSecurityIntegrationRequest())
+		},
+		name:                func(object sdk.SecurityIntegration) string { return object.Name },
+		createdOn:           func(object sdk.SecurityIntegration) time.Time { return object.CreatedOn },
+		id:                  func(object sdk.SecurityIntegration) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:          client.SecurityIntegrations.DropSafely,
+		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
+	})
 }
 
 func nukeRoles(client *sdk.Client, suffix string) func() error {
@@ -601,64 +575,20 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 		snowflakeroles.GenericScimProvisioner,
 	}
 
-	return func() error {
-		ctx := context.Background()
-
-		var roleDropCondition func(r sdk.Role) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping roles with suffix %s", suffix)
-			roleDropCondition = func(r sdk.Role) bool {
-				return strings.HasSuffix(r.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale roles")
-			roleDropCondition = func(r sdk.Role) bool {
-				return r.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
-			}
-		}
-
-		rs, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW ROLES ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d roles", len(rs))
-
-		var errs []error
-		for idx, role := range rs {
-			log.Printf("[DEBUG] Processing role [%d/%d]: %s...", idx+1, len(rs), role.ID().FullyQualifiedName())
-
-			if !slices.Contains(protectedRoles, role.ID()) && roleDropCondition(role) {
-				if role.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on role %s, to ACCOUNTADMIN", role.ID().FullyQualifiedName())
-					err := client.Grants.GrantOwnership(
-						ctx,
-						sdk.OwnershipGrantOn{Object: &sdk.Object{
-							ObjectType: sdk.ObjectTypeRole,
-							Name:       role.ID(),
-						}},
-						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
-						},
-						nil,
-					)
-					if err != nil {
-						errs = append(errs, fmt.Errorf("granting ownership on role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
-						continue
-					}
-				}
-
-				log.Printf("[DEBUG] Dropping role %s", role.ID().FullyQualifiedName())
-				if err := client.Roles.DropSafely(ctx, role.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping role %s", role.ID().FullyQualifiedName())
-			}
-		}
-
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.Role]{
+		objectTypeName: "role",
+		protectedNames: collections.Map(protectedRoles, func(id sdk.AccountObjectIdentifier) string { return id.Name() }),
+		show: func(ctx context.Context) ([]sdk.Role, error) {
+			return client.Roles.Show(ctx, sdk.NewShowRoleRequest())
+		},
+		name:                func(object sdk.Role) string { return object.Name },
+		createdOn:           func(object sdk.Role) time.Time { return object.CreatedOn },
+		id:                  func(object sdk.Role) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:          client.Roles.DropSafely,
+		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
+		owner:               func(object sdk.Role) string { return object.Owner },
+		takeOwnership:       grantOwnershipToAccountadmin(client, sdk.ObjectTypeRole),
+	})
 }
 
 func nukeShares(client *sdk.Client, suffix string) func() error {
