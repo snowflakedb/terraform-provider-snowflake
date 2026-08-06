@@ -55,6 +55,28 @@ func (i *IcebergTableDetailsAssert) HasType(expected datatypes.DataType) *Iceber
 	return i
 }
 
+func (i *IcebergTableDetailsAssert) HasDataTypeRaw(expected string) *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.DataTypeRaw != expected {
+			return fmt.Errorf("expected data type raw: %v; got: %v", expected, o.DataTypeRaw)
+		}
+		return nil
+	})
+	return i
+}
+
+func (i *IcebergTableDetailsAssert) HasDataTypeRawNotEmpty() *IcebergTableDetailsAssert {
+	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
+		t.Helper()
+		if o.DataTypeRaw == "" {
+			return fmt.Errorf("expected data type raw to be non-empty")
+		}
+		return nil
+	})
+	return i
+}
+
 func (i *IcebergTableDetailsAssert) HasSourceIcebergType(expected string) *IcebergTableDetailsAssert {
 	i.AddAssertion(func(t *testing.T, o *sdk.IcebergTableDetails) error {
 		t.Helper()
