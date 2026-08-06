@@ -189,7 +189,12 @@ func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifi
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
-			csv.Type = prop.Value
+			val, err := ToFileFormatType(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				csv.Type = val
+			}
 		case "RECORD_DELIMITER":
 			csv.RecordDelimiter = prop.Value
 		case "FIELD_DELIMITER":
@@ -217,7 +222,12 @@ func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifi
 		case "TIMESTAMP_FORMAT":
 			csv.TimestampFormat = prop.Value
 		case "BINARY_FORMAT":
-			csv.BinaryFormat = prop.Value
+			val, err := ToBinaryFormat(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				csv.BinaryFormat = val
+			}
 		case "ESCAPE":
 			csv.Escape = prop.Value
 		case "ESCAPE_UNENCLOSED_FIELD":
@@ -234,7 +244,12 @@ func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifi
 		case "NULL_IF":
 			csv.NullIf = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "COMPRESSION":
-			csv.Compression = prop.Value
+			val, err := ToCsvCompression(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				csv.Compression = val
+			}
 		case "ERROR_ON_COLUMN_COUNT_MISMATCH":
 			val, err := strconv.ParseBool(prop.Value)
 			if err != nil {
@@ -278,7 +293,12 @@ func parseFileFormatCsv(properties []FileFormatProperty, id SchemaObjectIdentifi
 				csv.SkipByteOrderMark = val
 			}
 		case "ENCODING":
-			csv.Encoding = prop.Value
+			val, err := ToCsvEncoding(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				csv.Encoding = val
+			}
 		case "MULTI_LINE":
 			val, err := strconv.ParseBool(prop.Value)
 			if err != nil {
@@ -299,9 +319,19 @@ func parseFileFormatJson(properties []FileFormatProperty, id SchemaObjectIdentif
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
-			json.Type = prop.Value
+			val, err := ToFileFormatType(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				json.Type = val
+			}
 		case "COMPRESSION":
-			json.Compression = prop.Value
+			val, err := ToJsonCompression(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				json.Compression = val
+			}
 		case "DATE_FORMAT":
 			json.DateFormat = prop.Value
 		case "TIME_FORMAT":
@@ -309,7 +339,12 @@ func parseFileFormatJson(properties []FileFormatProperty, id SchemaObjectIdentif
 		case "TIMESTAMP_FORMAT":
 			json.TimestampFormat = prop.Value
 		case "BINARY_FORMAT":
-			json.BinaryFormat = prop.Value
+			val, err := ToBinaryFormat(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				json.BinaryFormat = val
+			}
 		case "TRIM_SPACE":
 			val, err := strconv.ParseBool(prop.Value)
 			if err != nil {
@@ -390,9 +425,19 @@ func parseFileFormatAvro(properties []FileFormatProperty, id SchemaObjectIdentif
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
-			avro.Type = prop.Value
+			val, err := ToFileFormatType(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				avro.Type = val
+			}
 		case "COMPRESSION":
-			avro.Compression = prop.Value
+			val, err := ToAvroCompression(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				avro.Compression = val
+			}
 		case "TRIM_SPACE":
 			val, err := strconv.ParseBool(prop.Value)
 			if err != nil {
@@ -422,7 +467,12 @@ func parseFileFormatOrc(properties []FileFormatProperty, id SchemaObjectIdentifi
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
-			orc.Type = prop.Value
+			val, err := ToFileFormatType(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				orc.Type = val
+			}
 		case "TRIM_SPACE":
 			val, err := strconv.ParseBool(prop.Value)
 			if err != nil {
@@ -452,9 +502,19 @@ func parseFileFormatParquet(properties []FileFormatProperty, id SchemaObjectIden
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
-			parquet.Type = prop.Value
+			val, err := ToFileFormatType(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				parquet.Type = val
+			}
 		case "COMPRESSION":
-			parquet.Compression = prop.Value
+			val, err := ToParquetCompression(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				parquet.Compression = val
+			}
 		case "BINARY_AS_TEXT":
 			val, err := strconv.ParseBool(prop.Value)
 			if err != nil {
@@ -505,9 +565,19 @@ func parseFileFormatXml(properties []FileFormatProperty, id SchemaObjectIdentifi
 	for _, prop := range properties {
 		switch prop.Name {
 		case "TYPE":
-			xml.Type = prop.Value
+			val, err := ToFileFormatType(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				xml.Type = val
+			}
 		case "COMPRESSION":
-			xml.Compression = prop.Value
+			val, err := ToXmlCompression(prop.Value)
+			if err != nil {
+				errs = append(errs, err)
+			} else {
+				xml.Compression = val
+			}
 		case "IGNORE_UTF8_ERRORS":
 			val, err := strconv.ParseBool(prop.Value)
 			if err != nil {

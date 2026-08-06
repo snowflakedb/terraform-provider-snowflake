@@ -152,7 +152,7 @@ func TestAcc_FileFormats_CompleteUseCase(t *testing.T) {
 						HasId(id).
 						HasType(sdk.FileFormatTypeCsv).
 						Csv().
-						HasCompression(string(sdk.CsvCompressionGzip)).
+						HasCompression(sdk.CsvCompressionGzip).
 						HasFieldDelimiter(";"),
 					// the fields that are not applicable to the CSV file format type are not filled
 					resourceshowoutputassert.FileFormatsDatasourceDescribeOutput(t, fileFormatsWithDescribe.DatasourceReference()).

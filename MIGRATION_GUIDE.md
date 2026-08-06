@@ -65,6 +65,18 @@ Using the legacy `terraform import <resource> <id>` command did not show this er
 
 Reference: [#5086](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5086)
 
+### *(bug fix)* Importing typed file format resources no longer fails on a non-uppercase `TYPE`
+
+Importing any of the typed file format resources (`snowflake_file_format_avro`, `snowflake_file_format_csv`, `snowflake_file_format_json`, `snowflake_file_format_orc`, `snowflake_file_format_parquet`, `snowflake_file_format_xml`) failed with `invalid file format type, expected PARQUET, got parquet` when the object's `DESCRIBE FILE FORMAT` `TYPE` property was not all-uppercase. Because `TYPE` is immutable in Snowflake, this permanently blocked importing such objects and migrating them off the deprecated `snowflake_file_format` resource. Fixes [#5085](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5085).
+
+Every enum-valued property returned by `DESCRIBE FILE FORMAT` (`TYPE`, `COMPRESSION`, `BINARY_FORMAT`, and `ENCODING`) is now parsed case-insensitively and normalized to its canonical uppercase form. This also means that these values are always written to `describe_output` (and to the corresponding fields of the `snowflake_stage_*` resources and the `snowflake_file_formats` and `snowflake_stages` data sources) in uppercase, regardless of how Snowflake reports them. If you have such a legacy object, you may see a one-time state change for these fields after upgrading.
+
+Note that an unrecognized value for any of these properties is now reported as an error instead of being passed through verbatim. If you hit this on a value that Snowflake accepts, please report it as a bug — it means the provider's list of allowed values is incomplete.
+
+No changes in configuration are required.
+
+Reference: [#5085](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5085)
+
 ### *(bugfix)* The `SNOWFLAKE_ACCOUNT` environment variable caused errors without `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` experiment being enabled
 
 The [`PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK`](#new-feature-provider_configuration_account_fallback-experiment) experiment added in v2.19.0 re-introduced the `account` field, and using this field without the experiment enabled results in an error. Because the field could also be sourced from the `SNOWFLAKE_ACCOUNT` environment variable, merely having this variable set (e.g. for other Snowflake tooling running in the same pipeline) was enough to fail the provider configuration with:
@@ -94,6 +106,8 @@ References: [#5083](https://github.com/snowflakedb/terraform-provider-snowflake/
 Previously, reading an Iceberg table with the `snowflake_iceberg_table` and other resources failed whenever one of its columns had a structured data type with attributes that the provider does not model, for example `OBJECT`, `ARRAY`, or `MAP`. The underlying `DESC ICEBERG TABLE` output could not be parsed for such columns, which broke `terraform plan`/`refresh` for any table containing them.
 
 Now, a column type that cannot be parsed no longer fails the whole describe call; the provider falls back to the raw type string reported by Snowflake for that column. No changes in configuration are required.
+
+References: [#5090](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5090)
 
 ## v2.18.x ➞ v2.19.0
 

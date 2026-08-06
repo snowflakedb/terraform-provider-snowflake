@@ -482,12 +482,12 @@ func StageDescribeToSchema(properties sdk.StageDetails) (map[string]any, error) 
 
 func StageFileFormatJsonToSchema(json *sdk.FileFormatJson) map[string]any {
 	return map[string]any{
-		"type":                       json.Type,
-		"compression":                json.Compression,
+		"type":                       string(json.Type),
+		"compression":                string(json.Compression),
 		"date_format":                json.DateFormat,
 		"time_format":                json.TimeFormat,
 		"timestamp_format":           json.TimestampFormat,
-		"binary_format":              json.BinaryFormat,
+		"binary_format":              string(json.BinaryFormat),
 		"trim_space":                 json.TrimSpace,
 		"multi_line":                 json.MultiLine,
 		"null_if":                    collections.Map(json.NullIf, func(v string) any { return v }),
@@ -504,7 +504,7 @@ func StageFileFormatJsonToSchema(json *sdk.FileFormatJson) map[string]any {
 
 func StageFileFormatCsvToSchema(csv *sdk.FileFormatCsv) map[string]any {
 	return map[string]any{
-		"type":                           csv.Type,
+		"type":                           string(csv.Type),
 		"record_delimiter":               csv.RecordDelimiter,
 		"field_delimiter":                csv.FieldDelimiter,
 		"file_extension":                 csv.FileExtension,
@@ -513,20 +513,20 @@ func StageFileFormatCsvToSchema(csv *sdk.FileFormatCsv) map[string]any {
 		"date_format":                    csv.DateFormat,
 		"time_format":                    csv.TimeFormat,
 		"timestamp_format":               csv.TimestampFormat,
-		"binary_format":                  csv.BinaryFormat,
+		"binary_format":                  string(csv.BinaryFormat),
 		"escape":                         csv.Escape,
 		"escape_unenclosed_field":        csv.EscapeUnenclosedField,
 		"trim_space":                     csv.TrimSpace,
 		"field_optionally_enclosed_by":   csv.FieldOptionallyEnclosedBy,
 		"null_if":                        collections.Map(csv.NullIf, func(v string) any { return v }),
-		"compression":                    csv.Compression,
+		"compression":                    string(csv.Compression),
 		"error_on_column_count_mismatch": csv.ErrorOnColumnCountMismatch,
 		"validate_utf8":                  csv.ValidateUtf8,
 		"skip_blank_lines":               csv.SkipBlankLines,
 		"replace_invalid_characters":     csv.ReplaceInvalidCharacters,
 		"empty_field_as_null":            csv.EmptyFieldAsNull,
 		"skip_byte_order_mark":           csv.SkipByteOrderMark,
-		"encoding":                       csv.Encoding,
+		"encoding":                       string(csv.Encoding),
 		"multi_line":                     csv.MultiLine,
 	}
 }
@@ -580,8 +580,8 @@ func StageDatasourceToDatasourceSchema(properties sdk.StageDetails) (map[string]
 
 func StageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {
 	return map[string]any{
-		"type":                       avro.Type,
-		"compression":                avro.Compression,
+		"type":                       string(avro.Type),
+		"compression":                string(avro.Compression),
 		"trim_space":                 avro.TrimSpace,
 		"replace_invalid_characters": avro.ReplaceInvalidCharacters,
 		"null_if":                    collections.Map(avro.NullIf, func(v string) any { return v }),
@@ -590,7 +590,7 @@ func StageFileFormatAvroToSchema(avro *sdk.FileFormatAvro) map[string]any {
 
 func StageFileFormatOrcToSchema(orc *sdk.FileFormatOrc) map[string]any {
 	return map[string]any{
-		"type":                       orc.Type,
+		"type":                       string(orc.Type),
 		"trim_space":                 orc.TrimSpace,
 		"replace_invalid_characters": orc.ReplaceInvalidCharacters,
 		"null_if":                    collections.Map(orc.NullIf, func(v string) any { return v }),
@@ -599,8 +599,8 @@ func StageFileFormatOrcToSchema(orc *sdk.FileFormatOrc) map[string]any {
 
 func StageFileFormatParquetToSchema(parquet *sdk.FileFormatParquet) map[string]any {
 	return map[string]any{
-		"type":                       parquet.Type,
-		"compression":                parquet.Compression,
+		"type":                       string(parquet.Type),
+		"compression":                string(parquet.Compression),
 		"binary_as_text":             parquet.BinaryAsText,
 		"use_logical_type":           parquet.UseLogicalType,
 		"trim_space":                 parquet.TrimSpace,
@@ -612,8 +612,8 @@ func StageFileFormatParquetToSchema(parquet *sdk.FileFormatParquet) map[string]a
 
 func StageFileFormatXmlToSchema(xml *sdk.FileFormatXml) map[string]any {
 	return map[string]any{
-		"type":                       xml.Type,
-		"compression":                xml.Compression,
+		"type":                       string(xml.Type),
+		"compression":                string(xml.Compression),
 		"ignore_utf8_errors":         xml.IgnoreUtf8Errors,
 		"preserve_space":             xml.PreserveSpace,
 		"strip_outer_element":        xml.StripOuterElement,

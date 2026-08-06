@@ -44,22 +44,11 @@ func (f *FileFormatOrcAssert) HasId(expected sdk.SchemaObjectIdentifier) *FileFo
 	return f
 }
 
-func (f *FileFormatOrcAssert) HasType(expected string) *FileFormatOrcAssert {
+func (f *FileFormatOrcAssert) HasType(expected sdk.FileFormatType) *FileFormatOrcAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatOrc) error {
 		t.Helper()
 		if o.Type != expected {
 			return fmt.Errorf("expected type: %v; got: %v", expected, o.Type)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatOrcAssert) HasTypeNotEmpty() *FileFormatOrcAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatOrc) error {
-		t.Helper()
-		if o.Type == "" {
-			return fmt.Errorf("expected type to be non-empty")
 		}
 		return nil
 	})

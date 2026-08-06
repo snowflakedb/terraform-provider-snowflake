@@ -47,8 +47,8 @@ var (
 
 var fileFormatCsvDef = g.PlainStruct("FileFormatCsv").
 	SchemaObjectIdentifier().
-	Text("Type").
-	Text("Compression").
+	Enum("Type", FileFormatTypeEnumDef).
+	Enum("Compression", CsvCompressionEnumDef).
 	Text("RecordDelimiter").
 	Text("FieldDelimiter").
 	Text("FileExtension").
@@ -58,7 +58,7 @@ var fileFormatCsvDef = g.PlainStruct("FileFormatCsv").
 	Text("DateFormat").
 	Text("TimeFormat").
 	Text("TimestampFormat").
-	Text("BinaryFormat").
+	Enum("BinaryFormat", BinaryFormatEnumDef).
 	Text("Escape").
 	Text("EscapeUnenclosedField").
 	Bool("TrimSpace").
@@ -69,17 +69,17 @@ var fileFormatCsvDef = g.PlainStruct("FileFormatCsv").
 	Bool("ReplaceInvalidCharacters").
 	Bool("EmptyFieldAsNull").
 	Bool("SkipByteOrderMark").
-	Text("Encoding").
+	Enum("Encoding", CsvEncodingEnumDef).
 	Bool("MultiLine")
 
 var fileFormatJsonDef = g.PlainStruct("FileFormatJson").
 	SchemaObjectIdentifier().
-	Text("Type").
-	Text("Compression").
+	Enum("Type", FileFormatTypeEnumDef).
+	Enum("Compression", JsonCompressionEnumDef).
 	Text("DateFormat").
 	Text("TimeFormat").
 	Text("TimestampFormat").
-	Text("BinaryFormat").
+	Enum("BinaryFormat", BinaryFormatEnumDef).
 	Bool("TrimSpace").
 	Bool("MultiLine").
 	StringList("NullIf").
@@ -94,23 +94,23 @@ var fileFormatJsonDef = g.PlainStruct("FileFormatJson").
 
 var fileFormatAvroDef = g.PlainStruct("FileFormatAvro").
 	SchemaObjectIdentifier().
-	Text("Type").
-	Text("Compression").
+	Enum("Type", FileFormatTypeEnumDef).
+	Enum("Compression", AvroCompressionEnumDef).
 	Bool("TrimSpace").
 	Bool("ReplaceInvalidCharacters").
 	StringList("NullIf")
 
 var fileFormatOrcDef = g.PlainStruct("FileFormatOrc").
 	SchemaObjectIdentifier().
-	Text("Type").
+	Enum("Type", FileFormatTypeEnumDef).
 	Bool("TrimSpace").
 	Bool("ReplaceInvalidCharacters").
 	StringList("NullIf")
 
 var fileFormatParquetDef = g.PlainStruct("FileFormatParquet").
 	SchemaObjectIdentifier().
-	Text("Type").
-	Text("Compression").
+	Enum("Type", FileFormatTypeEnumDef).
+	Enum("Compression", ParquetCompressionEnumDef).
 	Bool("BinaryAsText").
 	Bool("UseLogicalType").
 	Bool("TrimSpace").
@@ -120,8 +120,8 @@ var fileFormatParquetDef = g.PlainStruct("FileFormatParquet").
 
 var fileFormatXmlDef = g.PlainStruct("FileFormatXml").
 	SchemaObjectIdentifier().
-	Text("Type").
-	Text("Compression").
+	Enum("Type", FileFormatTypeEnumDef).
+	Enum("Compression", XmlCompressionEnumDef).
 	Bool("IgnoreUtf8Errors").
 	Bool("PreserveSpace").
 	Bool("StripOuterElement").

@@ -85,7 +85,7 @@ func ImportFileFormatXml(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return nil, err
 	}
-	if details.Type != string(sdk.FileFormatTypeXml) {
+	if details.Type != sdk.FileFormatTypeXml {
 		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeXml, details.Type)
 	}
 
@@ -247,7 +247,7 @@ func UpdateFileFormatXml(ctx context.Context, d *schema.ResourceData, meta any) 
 // xmlFileFormatToSchema converts the SDK details for an XML file format to a Terraform schema.
 func xmlFileFormatToSchema(xml *sdk.FileFormatXml, setDefaults bool) map[string]any {
 	state := map[string]any{
-		"compression": xml.Compression,
+		"compression": string(xml.Compression),
 	}
 	if setDefaults {
 		state["ignore_utf8_errors"] = BooleanDefault
