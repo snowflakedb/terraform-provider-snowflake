@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -30,14 +31,14 @@ func (c *CatalogIntegrationIcebergRestModel) WithRestConfig(restConfig []sdk.Ice
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestModel) WithOauthRestAuthentication(oauth sdk.OAuthRestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
+func (c *CatalogIntegrationIcebergRestModel) WithOauthRestAuthentication(oauth sdk.OAuthRestAuthenticationRequest, oauthClientSecretVariableName string) *CatalogIntegrationIcebergRestModel {
 	scopeVars := make([]tfconfig.Variable, len(oauth.OauthAllowedScopes))
 	for i, s := range oauth.OauthAllowedScopes {
 		scopeVars[i] = tfconfig.StringVariable(s.Value)
 	}
 	m := map[string]tfconfig.Variable{
 		"oauth_client_id":      tfconfig.StringVariable(oauth.OauthClientId),
-		"oauth_client_secret":  tfconfig.StringVariable(oauth.OauthClientSecret),
+		"oauth_client_secret":  config.VariableReference(oauthClientSecretVariableName),
 		"oauth_allowed_scopes": tfconfig.ListVariable(scopeVars...),
 	}
 	if oauth.OauthTokenUri != nil {
@@ -47,9 +48,9 @@ func (c *CatalogIntegrationIcebergRestModel) WithOauthRestAuthentication(oauth s
 	return c
 }
 
-func (c *CatalogIntegrationIcebergRestModel) WithBearerRestAuthentication(bearer sdk.BearerRestAuthenticationRequest) *CatalogIntegrationIcebergRestModel {
+func (c *CatalogIntegrationIcebergRestModel) WithBearerRestAuthentication(bearerTokenVariableName string) *CatalogIntegrationIcebergRestModel {
 	c.BearerRestAuthentication = tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"bearer_token": tfconfig.StringVariable(bearer.BearerToken),
+		"bearer_token": config.VariableReference(bearerTokenVariableName),
 	}))
 	return c
 }
@@ -74,9 +75,10 @@ func CatalogIntegrationIcebergRestOAuth(
 	enabled bool,
 	restConfig sdk.IcebergRestRestConfigRequest,
 	oAuthRestAuthentication sdk.OAuthRestAuthenticationRequest,
+	oauthClientSecretVariableName string,
 ) *CatalogIntegrationIcebergRestModel {
 	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
-		WithOauthRestAuthentication(oAuthRestAuthentication)
+		WithOauthRestAuthentication(oAuthRestAuthentication, oauthClientSecretVariableName)
 }
 
 func CatalogIntegrationIcebergRestBearer(
@@ -84,10 +86,10 @@ func CatalogIntegrationIcebergRestBearer(
 	name string,
 	enabled bool,
 	restConfig sdk.IcebergRestRestConfigRequest,
-	bearerRestAuthentication sdk.BearerRestAuthenticationRequest,
+	bearerTokenVariableName string,
 ) *CatalogIntegrationIcebergRestModel {
 	return CatalogIntegrationIcebergRest(resourceName, name, enabled, []sdk.IcebergRestRestConfigRequest{restConfig}).
-		WithBearerRestAuthentication(bearerRestAuthentication)
+		WithBearerRestAuthentication(bearerTokenVariableName)
 }
 
 func CatalogIntegrationIcebergRestSigV4(
