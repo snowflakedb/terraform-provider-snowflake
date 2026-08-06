@@ -79,7 +79,7 @@ func ImportFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 	if err != nil {
 		return nil, err
 	}
-	if details.Type != string(sdk.FileFormatTypeJson) {
+	if details.Type != sdk.FileFormatTypeJson {
 		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeJson, details.Type)
 	}
 
@@ -255,11 +255,11 @@ func UpdateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 // jsonFileFormatToSchema converts the SDK details for a JSON file format to a Terraform schema.
 func jsonFileFormatToSchema(json *sdk.FileFormatJson, setDefaults bool) map[string]any {
 	state := map[string]any{
-		"compression":      json.Compression,
+		"compression":      string(json.Compression),
 		"date_format":      json.DateFormat,
 		"time_format":      json.TimeFormat,
 		"timestamp_format": json.TimestampFormat,
-		"binary_format":    json.BinaryFormat,
+		"binary_format":    string(json.BinaryFormat),
 		"null_if":          collections.Map(json.NullIf, func(v string) any { return v }),
 		"file_extension":   json.FileExtension,
 	}

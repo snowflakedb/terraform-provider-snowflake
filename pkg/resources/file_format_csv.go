@@ -88,7 +88,7 @@ func ImportFileFormatCsv(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return nil, err
 	}
-	if details.Type != string(sdk.FileFormatTypeCsv) {
+	if details.Type != sdk.FileFormatTypeCsv {
 		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeCsv, details.Type)
 	}
 
@@ -294,13 +294,13 @@ func csvFileFormatToSchema(csv *sdk.FileFormatCsv, setDefaults bool) map[string]
 		"date_format":                  csv.DateFormat,
 		"time_format":                  csv.TimeFormat,
 		"timestamp_format":             csv.TimestampFormat,
-		"binary_format":                csv.BinaryFormat,
+		"binary_format":                string(csv.BinaryFormat),
 		"escape":                       csv.Escape,
 		"escape_unenclosed_field":      csv.EscapeUnenclosedField,
 		"field_optionally_enclosed_by": csv.FieldOptionallyEnclosedBy,
 		"null_if":                      collections.Map(csv.NullIf, func(v string) any { return v }),
-		"compression":                  csv.Compression,
-		"encoding":                     csv.Encoding,
+		"compression":                  string(csv.Compression),
+		"encoding":                     string(csv.Encoding),
 	}
 	if setDefaults {
 		state["parse_header"] = BooleanDefault

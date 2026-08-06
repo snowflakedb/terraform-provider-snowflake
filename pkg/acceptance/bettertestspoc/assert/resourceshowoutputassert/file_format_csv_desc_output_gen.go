@@ -40,13 +40,13 @@ func (f *FileFormatCsvDescribeOutputAssert) HasId(expected sdk.SchemaObjectIdent
 	return f
 }
 
-func (f *FileFormatCsvDescribeOutputAssert) HasType(expected string) *FileFormatCsvDescribeOutputAssert {
-	f.StringValueSet("type", expected)
+func (f *FileFormatCsvDescribeOutputAssert) HasType(expected sdk.FileFormatType) *FileFormatCsvDescribeOutputAssert {
+	f.StringValueSet("type", string(expected))
 	return f
 }
 
-func (f *FileFormatCsvDescribeOutputAssert) HasCompression(expected string) *FileFormatCsvDescribeOutputAssert {
-	f.StringValueSet("compression", expected)
+func (f *FileFormatCsvDescribeOutputAssert) HasCompression(expected sdk.CsvCompression) *FileFormatCsvDescribeOutputAssert {
+	f.StringValueSet("compression", string(expected))
 	return f
 }
 
@@ -95,8 +95,8 @@ func (f *FileFormatCsvDescribeOutputAssert) HasTimestampFormat(expected string) 
 	return f
 }
 
-func (f *FileFormatCsvDescribeOutputAssert) HasBinaryFormat(expected string) *FileFormatCsvDescribeOutputAssert {
-	f.StringValueSet("binary_format", expected)
+func (f *FileFormatCsvDescribeOutputAssert) HasBinaryFormat(expected sdk.BinaryFormat) *FileFormatCsvDescribeOutputAssert {
+	f.StringValueSet("binary_format", string(expected))
 	return f
 }
 
@@ -145,8 +145,8 @@ func (f *FileFormatCsvDescribeOutputAssert) HasSkipByteOrderMark(expected bool) 
 	return f
 }
 
-func (f *FileFormatCsvDescribeOutputAssert) HasEncoding(expected string) *FileFormatCsvDescribeOutputAssert {
-	f.StringValueSet("encoding", expected)
+func (f *FileFormatCsvDescribeOutputAssert) HasEncoding(expected sdk.CsvEncoding) *FileFormatCsvDescribeOutputAssert {
+	f.StringValueSet("encoding", string(expected))
 	return f
 }
 

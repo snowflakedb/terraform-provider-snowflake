@@ -203,6 +203,17 @@ func (f *Field) FindChild(name string) *Field {
 	return el
 }
 
+// FindChildCaseInsensitive returns the direct child field whose name matches case-insensitively, or nil if none exists.
+func (f *Field) FindChildCaseInsensitive(name string) *Field {
+	el, err := collections.FindFirst(f.Fields, func(f Field) bool {
+		return strings.EqualFold(f.Name, name)
+	})
+	if err != nil {
+		return nil
+	}
+	return el
+}
+
 // AncestorsFromRoot returns this field's ancestors ordered from the root down to (but not including) the field itself.
 // Use to derive the priming statements needed before given field can be reached
 // (e.g. opts.Set = &FunctionSet{} before opts.Set.Comment can be checked).

@@ -42,7 +42,7 @@ func (f *FileFormatXmlAssert) HasId(expected sdk.SchemaObjectIdentifier) *FileFo
 	return f
 }
 
-func (f *FileFormatXmlAssert) HasType(expected string) *FileFormatXmlAssert {
+func (f *FileFormatXmlAssert) HasType(expected sdk.FileFormatType) *FileFormatXmlAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatXml) error {
 		t.Helper()
 		if o.Type != expected {
@@ -53,33 +53,11 @@ func (f *FileFormatXmlAssert) HasType(expected string) *FileFormatXmlAssert {
 	return f
 }
 
-func (f *FileFormatXmlAssert) HasTypeNotEmpty() *FileFormatXmlAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatXml) error {
-		t.Helper()
-		if o.Type == "" {
-			return fmt.Errorf("expected type to be non-empty")
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatXmlAssert) HasCompression(expected string) *FileFormatXmlAssert {
+func (f *FileFormatXmlAssert) HasCompression(expected sdk.XmlCompression) *FileFormatXmlAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatXml) error {
 		t.Helper()
 		if o.Compression != expected {
 			return fmt.Errorf("expected compression: %v; got: %v", expected, o.Compression)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatXmlAssert) HasCompressionNotEmpty() *FileFormatXmlAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatXml) error {
-		t.Helper()
-		if o.Compression == "" {
-			return fmt.Errorf("expected compression to be non-empty")
 		}
 		return nil
 	})

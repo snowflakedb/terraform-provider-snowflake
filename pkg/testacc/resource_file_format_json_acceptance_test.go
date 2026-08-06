@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -21,8 +22,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// jsonImportedResourceAssert asserts the state produced by ImportFileFormatJson. Every boolean attribute below
+// always lands on its BooleanDefault sentinel, regardless of the live Snowflake value, to avoid
+// manifesting a config-independent default as a Terraform-managed value - this holds for every scenario.
+// Additional chained assertions cover the remaining, scenario-specific attributes.
+func jsonImportedResourceAssert(t *testing.T, resourceId string) *resourceassert.FileFormatJsonResourceAssert {
+	t.Helper()
+	return resourceassert.ImportedFileFormatJsonResource(t, resourceId).
+		HasIgnoreUtf8Errors(r.BooleanDefault).
+		HasSkipByteOrderMark(r.BooleanDefault).
+		HasTrimSpace(r.BooleanDefault).
+		HasMultiLine(r.BooleanDefault).
+		HasAllowDuplicate(r.BooleanDefault).
+		HasStripOuterArray(r.BooleanDefault).
+		HasStripNullValues(r.BooleanDefault).
+		HasReplaceInvalidCharacters(r.BooleanDefault).
+		HasEnableOctal(r.BooleanDefault)
+}
+
 func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	renamedId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -96,7 +116,7 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.FileFormatJsonDescribeOutput(t, ref).
 			HasId(id).
 			HasCompression("AUTO").
-			HasBinaryFormat(string(sdk.BinaryFormatHex)).
+			HasBinaryFormat(sdk.BinaryFormatHex).
 			HasTrimSpace(false).
 			HasMultiLine(true).
 			HasEnableOctal(false).
@@ -226,10 +246,20 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			},
 			// import
 			{
-				Config:            config.FromModels(t, basicModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, basicModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					jsonImportedResourceAssert(t, resourceId).
+						HasCompression("AUTO").
+						HasDateFormat("AUTO").
+						HasTimeFormat("AUTO").
+						HasTimestampFormat("AUTO").
+						HasBinaryFormat(string(sdk.BinaryFormatHex)).
+						HasFileExtension("").
+						HasNullIfEmpty(),
+				),
 			},
 			// set all optional fields
 			{
@@ -238,10 +268,20 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 			},
 			// import with all attributes
 			{
-				Config:            config.FromModels(t, completeModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					jsonImportedResourceAssert(t, resourceId).
+						HasCompression("GZIP").
+						HasDateFormat("YYYY-MM-DD").
+						HasTimeFormat("HH24:MI:SS").
+						HasTimestampFormat("YYYY-MM-DD HH24:MI:SS.FF3").
+						HasBinaryFormat("BASE64").
+						HasFileExtension(".json").
+						HasNullIf("NULL_A", "NULL_B"),
+				),
 			},
 			// alter all optional fields (non-recreating change)
 			{
@@ -305,6 +345,7 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 
 func TestAcc_FileFormatJson_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	comment := random.Comment()
 
 	completeModel := model.FileFormatJsonWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -387,10 +428,20 @@ func TestAcc_FileFormatJson_CompleteUseCase(t *testing.T) {
 			},
 			// import
 			{
-				Config:            config.FromModels(t, completeModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					jsonImportedResourceAssert(t, resourceId).
+						HasCompression("GZIP").
+						HasDateFormat("YYYY-MM-DD").
+						HasTimeFormat("HH24:MI:SS").
+						HasTimestampFormat("YYYY-MM-DD HH24:MI:SS.FF3").
+						HasBinaryFormat("BASE64").
+						HasFileExtension(".json").
+						HasNullIfEmpty(),
+				),
 			},
 			{
 				Config:  config.FromModels(t, completeModel),

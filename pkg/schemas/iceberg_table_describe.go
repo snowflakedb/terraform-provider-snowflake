@@ -73,7 +73,7 @@ func IcebergTableDetailsToSchema(details []sdk.IcebergTableDetails) []map[string
 	for i, d := range details {
 		row := map[string]any{
 			"name":                d.Name,
-			"type":                d.Type.ToSql(),
+			"type":                d.TypeString(),
 			"source_iceberg_type": d.SourceIcebergType,
 			"kind":                d.Kind,
 			"is_nullable":         d.IsNullable,

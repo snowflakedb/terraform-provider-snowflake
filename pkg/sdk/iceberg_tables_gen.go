@@ -648,6 +648,7 @@ type icebergTableDetailsRow struct {
 type IcebergTableDetails struct {
 	Name              string
 	Type              datatypes.DataType
+	DataTypeRaw       string
 	SourceIcebergType *string
 	Kind              string
 	IsNullable        bool

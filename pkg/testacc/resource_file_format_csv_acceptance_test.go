@@ -4,7 +4,6 @@ package testacc
 
 import (
 	"regexp"
-	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -13,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -22,12 +22,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// escape and escape_unenclosed_field are returned escaped by Snowflake, and skip_header uses a special
-// "-1" default marker instead of Snowflake's 0, so all three are skipped during import verification.
-var fileFormatCsvImportStateVerifyIgnore = []string{"escape", "escape_unenclosed_field", "skip_header"}
+// csvImportedResourceAssert asserts the state produced by ImportFileFormatCsv. Every boolean attribute and
+// skip_header always land on their BooleanDefault/IntDefault sentinel, regardless of the live Snowflake
+// value, to avoid manifesting a config-independent default as a Terraform-managed value - this holds for
+// every scenario. Additional chained assertions cover the remaining, scenario-specific attributes.
+func csvImportedResourceAssert(t *testing.T, resourceId string) *resourceassert.FileFormatCsvResourceAssert {
+	t.Helper()
+	return resourceassert.ImportedFileFormatCsvResource(t, resourceId).
+		HasParseHeader(r.BooleanDefault).
+		HasTrimSpace(r.BooleanDefault).
+		HasErrorOnColumnCountMismatch(r.BooleanDefault).
+		HasSkipBlankLines(r.BooleanDefault).
+		HasReplaceInvalidCharacters(r.BooleanDefault).
+		HasEmptyFieldAsNull(r.BooleanDefault).
+		HasSkipByteOrderMark(r.BooleanDefault).
+		HasMultiLine(r.BooleanDefault).
+		HasSkipHeader(r.IntDefault)
+}
 
 func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	renamedId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -118,7 +133,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionAuto)).
+			HasCompression(sdk.CsvCompressionAuto).
 			HasRecordDelimiter(`\n`).
 			HasFieldDelimiter(",").
 			HasFileExtension("").
@@ -128,7 +143,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasDateFormat("AUTO").
 			HasTimeFormat("AUTO").
 			HasTimestampFormat("AUTO").
-			HasBinaryFormat(string(sdk.BinaryFormatHex)).
+			HasBinaryFormat(sdk.BinaryFormatHex).
 			HasEscape("NONE").
 			HasEscapeUnenclosedField(`\\`).
 			HasTrimSpace(false).
@@ -139,7 +154,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(false).
 			HasEmptyFieldAsNull(true).
 			HasSkipByteOrderMark(true).
-			HasEncoding(string(sdk.CsvEncodingUtf8)).
+			HasEncoding(sdk.CsvEncodingUtf8).
 			HasMultiLine(true),
 	}
 
@@ -180,7 +195,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionGzip)).
+			HasCompression(sdk.CsvCompressionGzip).
 			HasRecordDelimiter(";").
 			HasFieldDelimiter("|").
 			HasFileExtension(".csv").
@@ -190,7 +205,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasDateFormat("YYYY-MM-DD").
 			HasTimeFormat("HH24:MI:SS").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS.FF3").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasEscape("NONE").
 			HasEscapeUnenclosedField("NONE").
 			HasTrimSpace(true).
@@ -200,7 +215,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(true).
 			HasEmptyFieldAsNull(false).
 			HasSkipByteOrderMark(false).
-			HasEncoding(string(sdk.CsvEncodingIso88591)).
+			HasEncoding(sdk.CsvEncodingIso88591).
 			HasMultiLine(false),
 	}
 
@@ -241,7 +256,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasComment(externalComment),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionBz2)).
+			HasCompression(sdk.CsvCompressionBz2).
 			HasRecordDelimiter("#").
 			HasFieldDelimiter(":").
 			HasFileExtension(".tsv").
@@ -251,7 +266,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasDateFormat("MM-DD-YYYY").
 			HasTimeFormat("HH24:MI").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS.FF6").
-			HasBinaryFormat(string(sdk.BinaryFormatUtf8)).
+			HasBinaryFormat(sdk.BinaryFormatUtf8).
 			HasEscape(`\\`).
 			HasEscapeUnenclosedField(`\\`).
 			HasTrimSpace(false).
@@ -261,7 +276,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(false).
 			HasEmptyFieldAsNull(true).
 			HasSkipByteOrderMark(true).
-			HasEncoding(string(sdk.CsvEncodingUtf8)).
+			HasEncoding(sdk.CsvEncodingUtf8).
 			HasMultiLine(true),
 	}
 
@@ -306,11 +321,26 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			},
 			// import
 			{
-				Config:                  config.FromModels(t, basicModel),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: fileFormatCsvImportStateVerifyIgnore,
+				Config:       config.FromModels(t, basicModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					csvImportedResourceAssert(t, resourceId).
+						HasCompression(string(sdk.CsvCompressionAuto)).
+						HasRecordDelimiter(`\n`).
+						HasFieldDelimiter(",").
+						HasFileExtension("").
+						HasDateFormat("AUTO").
+						HasTimeFormat("AUTO").
+						HasTimestampFormat("AUTO").
+						HasBinaryFormat(string(sdk.BinaryFormatHex)).
+						HasEscape("NONE").
+						HasEscapeUnenclosedField(`\\`).
+						HasFieldOptionallyEnclosedBy("NONE").
+						HasEncoding(string(sdk.CsvEncodingUtf8)).
+						HasNullIf(`\\N`),
+				),
 			},
 			// set all optional fields
 			{
@@ -319,11 +349,26 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			},
 			// import with all attributes
 			{
-				Config:                  config.FromModels(t, completeModel),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: fileFormatCsvImportStateVerifyIgnore,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					csvImportedResourceAssert(t, resourceId).
+						HasCompression(string(sdk.CsvCompressionGzip)).
+						HasRecordDelimiter(";").
+						HasFieldDelimiter("|").
+						HasFileExtension(".csv").
+						HasDateFormat("YYYY-MM-DD").
+						HasTimeFormat("HH24:MI:SS").
+						HasTimestampFormat("YYYY-MM-DD HH24:MI:SS.FF3").
+						HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+						HasEscape("NONE").
+						HasEscapeUnenclosedField("NONE").
+						HasFieldOptionallyEnclosedBy(`\"`).
+						HasEncoding(string(sdk.CsvEncodingIso88591)).
+						HasNullIf("NULL_A", "NULL_B"),
+				),
 			},
 			// alter all optional fields (non-recreating change)
 			{
@@ -407,6 +452,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 
 func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	comment := random.Comment()
 
 	completeModel := model.FileFormatCsvWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -471,7 +517,7 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionGzip)).
+			HasCompression(sdk.CsvCompressionGzip).
 			HasRecordDelimiter("NONE").
 			HasFieldDelimiter("NONE").
 			HasFileExtension(".csv").
@@ -481,7 +527,7 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			HasDateFormat("AUTO").
 			HasTimeFormat("AUTO").
 			HasTimestampFormat("AUTO").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasEscape("NONE").
 			HasEscapeUnenclosedField("NONE").
 			HasTrimSpace(true).
@@ -491,7 +537,7 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(true).
 			HasEmptyFieldAsNull(false).
 			HasSkipByteOrderMark(false).
-			HasEncoding(string(sdk.CsvEncodingUtf8)).
+			HasEncoding(sdk.CsvEncodingUtf8).
 			HasMultiLine(false),
 	}
 
@@ -509,11 +555,26 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			},
 			// import
 			{
-				Config:                  config.FromModels(t, completeModel),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: fileFormatCsvImportStateVerifyIgnore,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					csvImportedResourceAssert(t, resourceId).
+						HasCompression(string(sdk.CsvCompressionGzip)).
+						HasRecordDelimiter("NONE").
+						HasFieldDelimiter("NONE").
+						HasFileExtension(".csv").
+						HasDateFormat("AUTO").
+						HasTimeFormat("AUTO").
+						HasTimestampFormat("AUTO").
+						HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+						HasEscape("NONE").
+						HasEscapeUnenclosedField("NONE").
+						HasFieldOptionallyEnclosedBy("NONE").
+						HasEncoding(string(sdk.CsvEncodingUtf8)).
+						HasNullIf("NULL"),
+				),
 			},
 		},
 	})
@@ -574,6 +635,7 @@ func TestAcc_FileFormatCsv_Validations(t *testing.T) {
 // an explicitly empty null_if list results in NULL_IF = () instead of Snowflake's default of (\\N).
 func TestAcc_FileFormatCsv_EmptyNullIf(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 
 	emptyModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithNullIf()
@@ -614,11 +676,26 @@ func TestAcc_FileFormatCsv_EmptyNullIf(t *testing.T) {
 			},
 			// import
 			{
-				Config:                  config.FromModels(t, emptyModel),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: fileFormatCsvImportStateVerifyIgnore,
+				Config:       config.FromModels(t, emptyModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					csvImportedResourceAssert(t, resourceId).
+						HasCompression(string(sdk.CsvCompressionAuto)).
+						HasRecordDelimiter(`\n`).
+						HasFieldDelimiter(",").
+						HasFileExtension("").
+						HasDateFormat("AUTO").
+						HasTimeFormat("AUTO").
+						HasTimestampFormat("AUTO").
+						HasBinaryFormat(string(sdk.BinaryFormatHex)).
+						HasEscape("NONE").
+						HasEscapeUnenclosedField(`\\`).
+						HasFieldOptionallyEnclosedBy("NONE").
+						HasEncoding(string(sdk.CsvEncodingUtf8)).
+						HasNullIfEmpty(),
+				),
 			},
 			// change to a non-empty null_if
 			{
@@ -655,6 +732,7 @@ func TestAcc_FileFormatCsv_EmptyNullIf(t *testing.T) {
 // and for an empty null_if list, so a lone empty string can not be read back from the describe output.
 func TestAcc_FileFormatCsv_NullIfWithEmptyString(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 
 	emptyStringModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithNullIf("")
@@ -693,14 +771,29 @@ func TestAcc_FileFormatCsv_NullIfWithEmptyString(t *testing.T) {
 					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 			},
-			// import; null_if is ignored because it is read from the describe output, which does not contain
-			// the empty string, so the imported value is an empty list
+			// import; null_if is read back from the describe output, which does not contain the empty
+			// string, so the imported value is an empty list rather than the configured [""]
 			{
-				Config:                  config.FromModels(t, emptyStringModel),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: slices.Concat(fileFormatCsvImportStateVerifyIgnore, []string{"null_if.#", "null_if.0"}),
+				Config:       config.FromModels(t, emptyStringModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					csvImportedResourceAssert(t, resourceId).
+						HasCompression(string(sdk.CsvCompressionAuto)).
+						HasRecordDelimiter(`\n`).
+						HasFieldDelimiter(",").
+						HasFileExtension("").
+						HasDateFormat("AUTO").
+						HasTimeFormat("AUTO").
+						HasTimestampFormat("AUTO").
+						HasBinaryFormat(string(sdk.BinaryFormatHex)).
+						HasEscape("NONE").
+						HasEscapeUnenclosedField(`\\`).
+						HasFieldOptionallyEnclosedBy("NONE").
+						HasEncoding(string(sdk.CsvEncodingUtf8)).
+						HasNullIfEmpty(),
+				),
 			},
 			// an empty string mixed with a regular value is visible in the describe output
 			{
