@@ -5,6 +5,7 @@ package testint
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -95,9 +96,8 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		t.Helper()
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		// TODO [SNOW-1007539]: use email of our service user
 		return sdk.NewCreateNotificationIntegrationRequest(id, true).
-			WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: "artur.sawicki@snowflake.com"}}))
+			WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: helpers.VerifiedEmail}}))
 	}
 
 	createNotificationIntegrationWebhookMinimalRequest := func(t *testing.T) *sdk.CreateNotificationIntegrationRequest {
@@ -288,7 +288,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "artur.sawicki@snowflake.com", Default: "[]"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: helpers.VerifiedEmail, Default: "[]"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "", Default: ""})
 	})
 
@@ -417,7 +417,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 			WithSet(
 				*sdk.NewNotificationIntegrationSetRequest().
 					WithEnabled(false).
-					WithSetEmailParams(*sdk.NewSetEmailParamsRequest([]sdk.NotificationIntegrationAllowedRecipient{{Email: "jan.cieslak@snowflake.com"}})).
+					WithSetEmailParams(*sdk.NewSetEmailParamsRequest([]sdk.NotificationIntegrationAllowedRecipient{{Email: helpers.VerifiedEmail}})).
 					WithComment("changed comment"),
 			)
 		err := client.NotificationIntegrations.Alter(ctx, setRequest)
@@ -427,7 +427,7 @@ func TestInt_NotificationIntegrations(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "false", Default: "true"})
-		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: "jan.cieslak@snowflake.com", Default: "[]"})
+		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "ALLOWED_RECIPIENTS", Type: "List", Value: helpers.VerifiedEmail, Default: "[]"})
 		assert.Contains(t, details, sdk.NotificationIntegrationProperty{Name: "COMMENT", Type: "String", Value: "changed comment", Default: ""})
 
 		unsetRequest := sdk.NewAlterNotificationIntegrationRequest(integration.ID()).
