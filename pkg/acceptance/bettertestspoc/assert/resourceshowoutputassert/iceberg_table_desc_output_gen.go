@@ -55,6 +55,11 @@ func (i *IcebergTableDescribeOutputAssert) HasName(expected string) *IcebergTabl
 	return i
 }
 
+func (i *IcebergTableDescribeOutputAssert) HasDataTypeRaw(expected string) *IcebergTableDescribeOutputAssert {
+	i.StringValueSet("data_type_raw", expected)
+	return i
+}
+
 func (i *IcebergTableDescribeOutputAssert) HasSourceIcebergType(expected string) *IcebergTableDescribeOutputAssert {
 	i.StringValueSet("source_iceberg_type", expected)
 	return i
@@ -131,6 +136,11 @@ func (i *IcebergTableDescribeOutputAssert) HasNoName() *IcebergTableDescribeOutp
 
 func (i *IcebergTableDescribeOutputAssert) HasNoType() *IcebergTableDescribeOutputAssert {
 	i.ValueNotSet("type")
+	return i
+}
+
+func (i *IcebergTableDescribeOutputAssert) HasNoDataTypeRaw() *IcebergTableDescribeOutputAssert {
+	i.ValueNotSet("data_type_raw")
 	return i
 }
 

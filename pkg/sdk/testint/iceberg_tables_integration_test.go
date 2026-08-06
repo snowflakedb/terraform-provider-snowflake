@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -1902,6 +1903,40 @@ func TestInt_IcebergTables(t *testing.T) {
 	t.Run("describe iceberg table: non-existing", func(t *testing.T) {
 		_, err := client.IcebergTables.Describe(ctx, NonExistingSchemaObjectIdentifier)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+	})
+
+	t.Run("describe iceberg table: unparseable nested data type does not fail", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		// datatypes.DataType (and therefore the structured CreateIcebergTableRequest builder) has no
+		// representation for structured OBJECT/ARRAY/MAP types, so this table is created via raw SQL.
+		_, err := client.ExecForTests(ctx, fmt.Sprintf(
+			"CREATE OR REPLACE ICEBERG TABLE %s (c1 TEXT, c2 OBJECT(foo TEXT))",
+			id.FullyQualifiedName(),
+		))
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			require.NoError(t, client.IcebergTables.Drop(ctx, sdk.NewDropIcebergTableRequest(id).WithIfExists(true)))
+		})
+
+		details, err := client.IcebergTables.Describe(ctx, id)
+		require.NoError(t, err)
+		require.Len(t, details, 2)
+
+		assertThatObject(
+			t, objectassert.IcebergTableDetailsFromObject(t, &details[0]).
+				HasName("C1").
+				HasType(testdatatypes.DataTypeVarcharIceberg).
+				HasDataTypeRaw(testdatatypes.DataTypeVarcharIceberg.ToSql()),
+		)
+		assert.Equal(t, testdatatypes.DataTypeVarcharIceberg.ToSql(), details[0].TypeString())
+
+		assertThatObject(
+			t, objectassert.IcebergTableDetailsFromObject(t, &details[1]).
+				HasName("C2").
+				HasTypeEmpty().
+				HasDataTypeRaw("OBJECT(foo VARCHAR(134217728))"),
+		)
+		assert.Equal(t, "OBJECT(foo VARCHAR(134217728))", details[1].TypeString())
 	})
 }
 

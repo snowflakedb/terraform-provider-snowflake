@@ -89,6 +89,12 @@ No changes in the configuration are required. To silence the warning, either uns
 
 References: [#5083](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5083)
 
+### *(bug fix)* Fixed parsing DESC results in Iceberg Table resources
+
+Previously, reading an Iceberg table with the `snowflake_iceberg_table` and other resources failed whenever one of its columns had a structured data type with attributes that the provider does not model, for example `OBJECT`, `ARRAY`, or `MAP`. The underlying `DESC ICEBERG TABLE` output could not be parsed for such columns, which broke `terraform plan`/`refresh` for any table containing them.
+
+Now, a column type that cannot be parsed no longer fails the whole describe call; the provider falls back to the raw type string reported by Snowflake for that column. No changes in configuration are required.
+
 ## v2.18.x ➞ v2.19.0
 
 ### *(improvement)* Rework of `snowflake_account_authentication_policy_attachment` and `snowflake_user_authentication_policy_attachment`
