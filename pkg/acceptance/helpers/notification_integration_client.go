@@ -12,6 +12,8 @@ import (
 // TODO [SNOW-1017580]: replace with real value
 const gcpPubsubSubscriptionName = "projects/project-1234/subscriptions/sub2"
 
+const VerifiedEmail = "admin@example.com"
+
 type NotificationIntegrationClient struct {
 	context *TestClientContext
 	ids     *IdsGenerator
@@ -53,9 +55,8 @@ func (c *NotificationIntegrationClient) Create(t *testing.T) (*sdk.NotificationI
 
 	id := c.ids.RandomAccountObjectIdentifier()
 
-	// TODO [SNOW-1007539]: use email of our service user
 	request := sdk.NewCreateNotificationIntegrationRequest(id, true).
-		WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: "artur.sawicki@snowflake.com"}}))
+		WithEmailParams(*sdk.NewEmailParamsRequest().WithAllowedRecipients([]sdk.NotificationIntegrationAllowedRecipient{{Email: VerifiedEmail}}))
 
 	err := c.client().Create(ctx, request)
 	require.NoError(t, err)
