@@ -495,4 +495,4 @@ var icebergTablesDef = g.NewInterface(
 	IcebergTableCatalogEnumDef,
 	StorageSerializationPolicyEnumDef,
 	IcebergTableIcebergMergeOnReadBehaviorEnumDef,
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
