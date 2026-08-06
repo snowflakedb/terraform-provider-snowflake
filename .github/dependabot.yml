@@ -1,0 +1,23 @@
+# Docs: https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    open-pull-requests-limit: 5
+    schedule:
+      interval: daily
+    target-branch: "dev"
+    groups:
+      gomod-root:
+        patterns:
+          - "*"
+  - package-ecosystem: gomod
+    directory: /tools
+    open-pull-requests-limit: 3
+    schedule:
+      interval: weekly
+    target-branch: "dev"
+    groups:
+      gomod-tools:
+        patterns:
+          - "*"
