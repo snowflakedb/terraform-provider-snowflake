@@ -83,7 +83,7 @@ sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 	@echo "Are you sure? [y/n]" >&2
 	@read -r REPLY; \
 		if echo "$$REPLY" | grep -qG "^[yY]$$"; then \
-			TEST_SF_TF_ENABLE_SWEEP=1 go test -timeout=10m -run "^(TestSweepAll|Test_Sweeper_NukeStaleObjects)" ./pkg/sdk -v; \
+			TEST_SF_TF_ENABLE_SWEEP=1 go test -timeout=20m -run "^(TestSweepAll|Test_Sweeper_NukeStaleObjects)" ./pkg/sdk -v; \
 			else echo "Aborting..."; \
 		fi;
 

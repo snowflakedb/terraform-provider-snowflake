@@ -77,7 +77,7 @@ func ImportFileFormatOrc(ctx context.Context, d *schema.ResourceData, meta any) 
 	if err != nil {
 		return nil, err
 	}
-	if details.Type != string(sdk.FileFormatTypeOrc) {
+	if details.Type != sdk.FileFormatTypeOrc {
 		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeOrc, details.Type)
 	}
 

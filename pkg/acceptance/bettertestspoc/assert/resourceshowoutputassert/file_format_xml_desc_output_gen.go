@@ -40,13 +40,13 @@ func (f *FileFormatXmlDescribeOutputAssert) HasId(expected sdk.SchemaObjectIdent
 	return f
 }
 
-func (f *FileFormatXmlDescribeOutputAssert) HasType(expected string) *FileFormatXmlDescribeOutputAssert {
-	f.StringValueSet("type", expected)
+func (f *FileFormatXmlDescribeOutputAssert) HasType(expected sdk.FileFormatType) *FileFormatXmlDescribeOutputAssert {
+	f.StringValueSet("type", string(expected))
 	return f
 }
 
-func (f *FileFormatXmlDescribeOutputAssert) HasCompression(expected string) *FileFormatXmlDescribeOutputAssert {
-	f.StringValueSet("compression", expected)
+func (f *FileFormatXmlDescribeOutputAssert) HasCompression(expected sdk.XmlCompression) *FileFormatXmlDescribeOutputAssert {
+	f.StringValueSet("compression", string(expected))
 	return f
 }
 

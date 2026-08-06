@@ -43,8 +43,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	externalCatalogNamespace := "TEST_NAMESPACE3"
 
 	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
-	oAuthClientId, oAuthClientSecret := parseOAuthCredentials(t, primaryOAuthCredentials)
-	newOAuthClientId, newOAuthClientSecret := parseOAuthCredentials(t, secondaryOAuthCredentials)
+	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, primaryOAuthCredentials)
+	newOAuthClientId, newOAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, secondaryOAuthCredentials)
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 	additionalOAuthAllowedScope := "PRINCIPAL_ROLE:SECONDARY"
 
@@ -674,7 +674,7 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
 	catalogNamespace := "TEST_NAMESPACE"
 
 	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
-	oAuthClientId, oAuthClientSecret := parseOAuthCredentials(t, oAuthCredentials)
+	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, oAuthCredentials)
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 
 	comment := random.Comment()

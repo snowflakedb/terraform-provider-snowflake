@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -21,8 +22,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// avroImportedResourceAssert asserts the state produced by ImportFileFormatAvro. trim_space and
+// replace_invalid_characters always land on their BooleanDefault sentinel, regardless of the live
+// Snowflake value, to avoid manifesting a config-independent default as a Terraform-managed value - this
+// holds for every scenario. Additional chained assertions cover the remaining, scenario-specific attributes.
+func avroImportedResourceAssert(t *testing.T, resourceId string) *resourceassert.FileFormatAvroResourceAssert {
+	t.Helper()
+	return resourceassert.ImportedFileFormatAvroResource(t, resourceId).
+		HasTrimSpace(r.BooleanDefault).
+		HasReplaceInvalidCharacters(r.BooleanDefault)
+}
+
 func TestAcc_FileFormatAvro_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	renamedId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -139,10 +152,15 @@ func TestAcc_FileFormatAvro_BasicUseCase(t *testing.T) {
 			},
 			// import
 			{
-				Config:            config.FromModels(t, basicModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, basicModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					avroImportedResourceAssert(t, resourceId).
+						HasCompression("AUTO").
+						HasNullIfEmpty(),
+				),
 			},
 			// set all optional fields
 			{
@@ -151,10 +169,15 @@ func TestAcc_FileFormatAvro_BasicUseCase(t *testing.T) {
 			},
 			// import with all attributes
 			{
-				Config:            config.FromModels(t, completeModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					avroImportedResourceAssert(t, resourceId).
+						HasCompression("GZIP").
+						HasNullIf("NULL_A", "NULL_B"),
+				),
 			},
 			// alter all optional fields (non-recreating change)
 			{
@@ -218,6 +241,7 @@ func TestAcc_FileFormatAvro_BasicUseCase(t *testing.T) {
 
 func TestAcc_FileFormatAvro_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	comment := random.Comment()
 
 	completeModel := model.FileFormatAvroWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -264,10 +288,15 @@ func TestAcc_FileFormatAvro_CompleteUseCase(t *testing.T) {
 				),
 			},
 			{
-				Config:            config.FromModels(t, completeModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					avroImportedResourceAssert(t, resourceId).
+						HasCompression("GZIP").
+						HasNullIf("NULL_A", "NULL_B"),
+				),
 			},
 		},
 	})

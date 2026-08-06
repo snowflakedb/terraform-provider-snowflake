@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -106,4 +107,13 @@ func (c *CatalogIntegrationClient) DescribeDetails(t *testing.T, id sdk.AccountO
 	t.Helper()
 	ctx := context.Background()
 	return c.client().DescribeDetails(ctx, id)
+}
+
+func (c *CatalogIntegrationClient) ParseOAuthCredentials(t *testing.T, credentials string) (string, string) {
+	t.Helper()
+	parts := strings.Split(credentials, ":")
+	if len(parts) != 2 {
+		t.Fatal("Could not parse OAuth credentials. Expected format: <client_id>:<client_secret>")
+	}
+	return parts[0], parts[1]
 }

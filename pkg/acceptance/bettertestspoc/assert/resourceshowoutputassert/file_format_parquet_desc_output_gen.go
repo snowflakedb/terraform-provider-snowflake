@@ -40,13 +40,13 @@ func (f *FileFormatParquetDescribeOutputAssert) HasId(expected sdk.SchemaObjectI
 	return f
 }
 
-func (f *FileFormatParquetDescribeOutputAssert) HasType(expected string) *FileFormatParquetDescribeOutputAssert {
-	f.StringValueSet("type", expected)
+func (f *FileFormatParquetDescribeOutputAssert) HasType(expected sdk.FileFormatType) *FileFormatParquetDescribeOutputAssert {
+	f.StringValueSet("type", string(expected))
 	return f
 }
 
-func (f *FileFormatParquetDescribeOutputAssert) HasCompression(expected string) *FileFormatParquetDescribeOutputAssert {
-	f.StringValueSet("compression", expected)
+func (f *FileFormatParquetDescribeOutputAssert) HasCompression(expected sdk.ParquetCompression) *FileFormatParquetDescribeOutputAssert {
+	f.StringValueSet("compression", string(expected))
 	return f
 }
 

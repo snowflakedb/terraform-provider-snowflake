@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -44,8 +43,8 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 
 	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
 	privateOAuthTokenUri := privateCatalogUri + "/v1/oauth/tokens"
-	oAuthClientId, oAuthClientSecret := parseOAuthCredentials(t, primaryOAuthCredentials)
-	newOAuthClientId, newOAuthClientSecret := parseOAuthCredentials(t, secondaryOAuthCredentials)
+	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, primaryOAuthCredentials)
+	newOAuthClientId, newOAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, secondaryOAuthCredentials)
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 	additionalOAuthAllowedScope := "PRINCIPAL_ROLE:SECONDARY"
 
@@ -827,7 +826,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 	catalogNamespace := "TEST_NAMESPACE"
 
 	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
-	oAuthClientId, oAuthClientSecret := parseOAuthCredentials(t, oAuthCredentials)
+	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, oAuthCredentials)
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 
 	comment := random.Comment()
@@ -889,12 +888,4 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 			},
 		},
 	})
-}
-
-func parseOAuthCredentials(t *testing.T, credentials string) (string, string) {
-	parts := strings.Split(credentials, ":")
-	if len(parts) != 2 {
-		t.Fatal("Could not parse OAuth credentials. Expected format: <client_id>:<client_secret>")
-	}
-	return parts[0], parts[1]
 }

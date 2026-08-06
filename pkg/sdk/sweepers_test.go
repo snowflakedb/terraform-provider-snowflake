@@ -14,7 +14,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -85,6 +87,8 @@ func sweep(client *sdk.Client, suffix string) error {
 		nukeApiIntegrations(client, suffix),
 		nukeCatalogIntegrations(client, suffix),
 		nukeExternalAccessIntegrations(client, suffix),
+		nukeComputePools(client, suffix),
+		nukeConnections(client, suffix),
 		nukeWarehouses(client, "", suffix),
 		nukeRoles(client, suffix),
 	}
@@ -242,6 +246,20 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
+	t.Run("sweep compute pools", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeComputePools(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep connections", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeConnections(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
 	t.Run("sweep warehouses", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeWarehouses(c, "", "")()
@@ -258,6 +276,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 // TODO [SNOW-867247]: longer time for now; validate the timezone behavior during sweepers rework
 var stalePeriod = -12 * time.Hour
 
+// Dropping a connection keeps failing until the replication settles; these mirror the polling
+// that ConnectionClient.DropFunc does in the tests.
+const (
+	connectionDropAttempts = 10
+	connectionDropInterval = 2 * time.Second
+)
+
 // accountObjectSweeperConfig describes an account-level object that follows the usual show -> drop if matches pattern.
 type accountObjectSweeperConfig[T any] struct {
 	// objectTypeName is a lowercase singular name used in logs and errors, e.g. "notification integration".
@@ -268,6 +293,9 @@ type accountObjectSweeperConfig[T any] struct {
 	createdOn      func(T) time.Time
 	id             func(T) sdk.AccountObjectIdentifier
 	dropSafely     func(ctx context.Context, id sdk.AccountObjectIdentifier) error
+
+	// skip marks the objects that are out of this sweeper's scope for a reason other than their name (e.g. they belong to another account or to a Native App).
+	skip func(T) bool
 
 	// stalePeriodOverride is used instead of the package-level stalePeriod when set.
 	stalePeriodOverride *time.Duration
@@ -285,6 +313,10 @@ type accountObjectSweeperConfig[T any] struct {
 
 func (cfg accountObjectSweeperConfig[T]) ignores(err error) bool {
 	return cfg.ignoreError != nil && cfg.ignoreError(err)
+}
+
+func (cfg accountObjectSweeperConfig[T]) skips(object T) bool {
+	return cfg.skip != nil && cfg.skip(object)
 }
 
 func (cfg accountObjectSweeperConfig[T]) effectiveStalePeriod() time.Duration {
@@ -308,6 +340,30 @@ func grantOwnershipToAccountadmin(client *sdk.Client, objectType sdk.ObjectType)
 			},
 			nil,
 		)
+	}
+}
+
+// retryingDropSafely builds a dropSafely function that retries the drop, which is needed for the objects
+// that cannot be dropped until an asynchronous operation on Snowflake's side settles.
+func retryingDropSafely(
+	dropSafely func(ctx context.Context, id sdk.AccountObjectIdentifier) error,
+	attempts int,
+	interval time.Duration,
+) func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
+	return func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
+		var dropErrs []error
+		retryErr := util.Retry(attempts, interval, func() (error, bool) {
+			if err := dropSafely(ctx, id); err != nil {
+				log.Printf("[DEBUG] Dropping %s failed, err = %v", id.FullyQualifiedName(), err)
+				dropErrs = append(dropErrs, err)
+				return nil, false
+			}
+			return nil, true
+		})
+		if retryErr != nil {
+			return errors.Join(append(dropErrs, retryErr)...)
+		}
+		return nil
 	}
 }
 
@@ -347,7 +403,7 @@ func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSw
 			id := cfg.id(object)
 			log.Printf("[DEBUG] Processing %s [%d/%d]: %s...", cfg.objectTypeName, idx+1, len(objects), id.FullyQualifiedName())
 
-			if slices.Contains(cfg.protectedNames, cfg.name(object)) || !dropCondition(object) {
+			if slices.Contains(cfg.protectedNames, cfg.name(object)) || cfg.skips(object) || !dropCondition(object) {
 				log.Printf("[DEBUG] Skipping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
 				continue
 			}
@@ -450,6 +506,46 @@ func nukeExternalAccessIntegrations(client *sdk.Client, suffix string) func() er
 	})
 }
 
+func nukeConnections(client *sdk.Client, suffix string) func() error {
+	accountLocator := client.GetAccountLocator()
+
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.Connection]{
+		objectTypeName: "connection",
+		// no connections are protected for now
+		protectedNames: []string{},
+		// the connections replicated from the other accounts are not ours to drop
+		skip: func(object sdk.Connection) bool { return object.AccountLocator != accountLocator },
+		show: func(ctx context.Context) ([]sdk.Connection, error) {
+			return client.Connections.Show(ctx, sdk.NewShowConnectionRequest())
+		},
+		name:      func(object sdk.Connection) string { return object.Name },
+		createdOn: func(object sdk.Connection) time.Time { return object.CreatedOn },
+		id:        func(object sdk.Connection) sdk.AccountObjectIdentifier { return object.ID() },
+		// dropping a connection keeps failing until the replication settles, so it's retried the same way
+		// the tests clean it up (see ConnectionClient.DropFunc)
+		dropSafely: retryingDropSafely(client.Connections.DropSafely, connectionDropAttempts, connectionDropInterval),
+	})
+}
+
+func nukeComputePools(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.ComputePool]{
+		objectTypeName: "compute pool",
+		// no compute pools are protected for now
+		protectedNames: []string{},
+		// the compute pools belonging to a Native App are not ours to drop
+		skip: func(object sdk.ComputePool) bool { return object.Application != nil },
+		show: func(ctx context.Context) ([]sdk.ComputePool, error) {
+			return client.ComputePools.Show(ctx, sdk.NewShowComputePoolRequest())
+		},
+		name:          func(object sdk.ComputePool) string { return object.Name },
+		createdOn:     func(object sdk.ComputePool) time.Time { return object.CreatedOn },
+		id:            func(object sdk.ComputePool) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:    client.ComputePools.DropSafely,
+		owner:         func(object sdk.ComputePool) string { return object.Owner },
+		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeComputePool),
+	})
+}
+
 // TODO [SNOW-867247]: generalize nuke methods (sweepers too)
 func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() error {
 	return nukeAccountObjects(prefix, suffix, accountObjectSweeperConfig[sdk.Warehouse]{
@@ -495,6 +591,8 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 		owner:         func(object sdk.Database) string { return object.Owner },
 		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeDatabase),
 		// applications are returned by SHOW DATABASES too, and they can't be handled as databases
+		// TODO [SNOW-867247]: consider skip (based on the Kind field) instead of ignoreError here; it would spare the
+		// failed ownership grant and drop, but the Kind value reported for applications has to be confirmed first.
 		ignoreError: func(err error) bool {
 			return strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'")
 		},
@@ -542,47 +640,20 @@ func nukePostgresInstances(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeSecurityIntegrations(client *sdk.Client, suffix string) func() error {
-	protectedSecurityIntegrations := []sdk.AccountObjectIdentifier{
-		sdk.NewAccountObjectIdentifier("SNOWFLAKE$LOCAL_APPLICATION"),
-	}
-	return func() error {
-		ctx := context.Background()
-
-		var integrationDropCondition func(u sdk.SecurityIntegration) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping security integrations with suffix %s", suffix)
-			integrationDropCondition = func(u sdk.SecurityIntegration) bool {
-				return strings.HasSuffix(u.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale security integrations")
-			integrationDropCondition = func(u sdk.SecurityIntegration) bool {
-				return u.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
-			}
-		}
-		integrations, err := client.SecurityIntegrations.Show(ctx, sdk.NewShowSecurityIntegrationRequest())
-		if err != nil {
-			return err
-		}
-
-		log.Printf("[DEBUG] Found %d security integrations", len(integrations))
-
-		var errs []error
-		for idx, integration := range integrations {
-			log.Printf("[DEBUG] Processing security integration [%d/%d]: %s...", idx+1, len(integrations), integration.Name)
-
-			if !slices.Contains(protectedSecurityIntegrations, integration.ID()) && integrationDropCondition(integration) {
-				log.Printf("[DEBUG] Dropping security integration %s", integration.Name)
-				if err := client.SecurityIntegrations.DropSafely(ctx, integration.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping security integration %s ended with an error, err = %w", integration.Name, err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping security integration %s", integration.Name)
-			}
-		}
-
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.SecurityIntegration]{
+		objectTypeName: "security integration",
+		protectedNames: []string{
+			"SNOWFLAKE$LOCAL_APPLICATION",
+		},
+		show: func(ctx context.Context) ([]sdk.SecurityIntegration, error) {
+			return client.SecurityIntegrations.Show(ctx, sdk.NewShowSecurityIntegrationRequest())
+		},
+		name:                func(object sdk.SecurityIntegration) string { return object.Name },
+		createdOn:           func(object sdk.SecurityIntegration) time.Time { return object.CreatedOn },
+		id:                  func(object sdk.SecurityIntegration) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:          client.SecurityIntegrations.DropSafely,
+		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
+	})
 }
 
 func nukeRoles(client *sdk.Client, suffix string) func() error {
@@ -601,110 +672,39 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 		snowflakeroles.GenericScimProvisioner,
 	}
 
-	return func() error {
-		ctx := context.Background()
-
-		var roleDropCondition func(r sdk.Role) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping roles with suffix %s", suffix)
-			roleDropCondition = func(r sdk.Role) bool {
-				return strings.HasSuffix(r.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale roles")
-			roleDropCondition = func(r sdk.Role) bool {
-				return r.CreatedOn.Before(time.Now().Add(-15 * time.Minute))
-			}
-		}
-
-		rs, err := client.Roles.Show(ctx, sdk.NewShowRoleRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW ROLES ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d roles", len(rs))
-
-		var errs []error
-		for idx, role := range rs {
-			log.Printf("[DEBUG] Processing role [%d/%d]: %s...", idx+1, len(rs), role.ID().FullyQualifiedName())
-
-			if !slices.Contains(protectedRoles, role.ID()) && roleDropCondition(role) {
-				if role.Owner != snowflakeroles.Accountadmin.Name() {
-					log.Printf("[DEBUG] Granting ownership on role %s, to ACCOUNTADMIN", role.ID().FullyQualifiedName())
-					err := client.Grants.GrantOwnership(
-						ctx,
-						sdk.OwnershipGrantOn{Object: &sdk.Object{
-							ObjectType: sdk.ObjectTypeRole,
-							Name:       role.ID(),
-						}},
-						sdk.OwnershipGrantTo{
-							AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
-						},
-						nil,
-					)
-					if err != nil {
-						errs = append(errs, fmt.Errorf("granting ownership on role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
-						continue
-					}
-				}
-
-				log.Printf("[DEBUG] Dropping role %s", role.ID().FullyQualifiedName())
-				if err := client.Roles.DropSafely(ctx, role.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping role %s ended with error, err = %w", role.ID().FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping role %s", role.ID().FullyQualifiedName())
-			}
-		}
-
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.Role]{
+		objectTypeName: "role",
+		protectedNames: collections.Map(protectedRoles, func(id sdk.AccountObjectIdentifier) string { return id.Name() }),
+		show: func(ctx context.Context) ([]sdk.Role, error) {
+			return client.Roles.Show(ctx, sdk.NewShowRoleRequest())
+		},
+		name:                func(object sdk.Role) string { return object.Name },
+		createdOn:           func(object sdk.Role) time.Time { return object.CreatedOn },
+		id:                  func(object sdk.Role) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:          client.Roles.DropSafely,
+		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
+		owner:               func(object sdk.Role) string { return object.Owner },
+		takeOwnership:       grantOwnershipToAccountadmin(client, sdk.ObjectTypeRole),
+	})
 }
 
 func nukeShares(client *sdk.Client, suffix string) func() error {
-	protectedShares := []string{
-		// this one is INBOUND but putting it here either way
-		"ACCOUNT_USAGE",
-	}
-
-	return func() error {
-		ctx := context.Background()
-
-		var shareDropCondition func(s sdk.Share) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping shares with suffix %s", suffix)
-			shareDropCondition = func(s sdk.Share) bool {
-				return strings.HasSuffix(s.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale shares")
-			shareDropCondition = func(s sdk.Share) bool {
-				return s.CreatedOn.Before(time.Now().Add(stalePeriod))
-			}
-		}
-
-		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW SHARES ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d shares", len(shares))
-
-		var errs []error
-		for idx, share := range shares {
-			log.Printf("[DEBUG] Processing share [%d/%d]: %s...", idx+1, len(shares), share.ID().FullyQualifiedName())
-
-			if !slices.Contains(protectedShares, share.Name) && shareDropCondition(share) && share.Kind == sdk.ShareKindOutbound {
-				log.Printf("[DEBUG] Dropping share %s", share.ID().FullyQualifiedName())
-				if err := client.Shares.DropSafely(ctx, share.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping share %s ended with error, err = %w", share.ID().FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping share %s", share.ID().FullyQualifiedName())
-			}
-		}
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.Share]{
+		objectTypeName: "share",
+		protectedNames: []string{
+			// this one is INBOUND but putting it here either way
+			"ACCOUNT_USAGE",
+		},
+		// only the outbound shares are ours to drop
+		skip: func(object sdk.Share) bool { return object.Kind != sdk.ShareKindOutbound },
+		show: func(ctx context.Context) ([]sdk.Share, error) {
+			return client.Shares.Show(ctx, sdk.NewShowShareRequest())
+		},
+		name:       func(object sdk.Share) string { return object.Name },
+		createdOn:  func(object sdk.Share) time.Time { return object.CreatedOn },
+		id:         func(object sdk.Share) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.Shares.DropSafely,
+	})
 }
 
 // nukeNetworkPolicies was introduced to make sure that network policies created during tests are cleaned up.
