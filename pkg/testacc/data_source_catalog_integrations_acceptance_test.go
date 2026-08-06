@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"fmt"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -12,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -62,6 +64,9 @@ func TestAcc_CatalogIntegrations_BasicUseCase_DifferentFiltering(t *testing.T) {
 }
 
 func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
+	accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
+	oAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthCredentials)
+
 	prefix := random.AlphaN(4)
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
@@ -72,11 +77,10 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 
 	objectStorageId := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix + "obj")
 
-	catalogUri := "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
-	catalogName := random.AlphanumericN(15)
-	oAuthClientId := random.AlphanumericN(15)
-	oAuthClientSecret := random.AlphanumericN(15)
-	oAuthAllowedScope := "PRINCIPAL_ROLE:ALL"
+	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
+	catalogName := "TEST_CATALOG"
+	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, oAuthCredentials)
+	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 	basicRestAuth := []sdk.OAuthRestAuthenticationRequest{
 		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
 	}
@@ -85,17 +89,15 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 	}
 	openCatalogId := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix + "oc")
 
-	icebergCatalogUri := "https://api.tabular.io/ws"
-	icebergRestConfig := *sdk.NewIcebergRestRestConfigRequest(icebergCatalogUri).
-		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway)
-	sigV4IamRole := "arn:aws:iam::123456789012:role/sigv4-role"
+	icebergRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithCatalogName(catalogName)
 	icebergId := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix + "ice")
 
 	catalogIntegrationAwsGlue := model.CatalogIntegrationAwsGlue("w", glueId.Name(), false, glueAwsRoleArn, glueCatalogId)
 	catalogIntegrationObjectStorage := model.CatalogIntegrationObjectStorage("w", objectStorageId.Name(), true, string(sdk.CatalogIntegrationTableFormatIceberg))
 	catalogIntegrationOpenCatalog := model.CatalogIntegrationOpenCatalog("w", openCatalogId.Name(), false, basicRestAuth, basicRestConfig).
 		WithComment(comment)
-	catalogIntegrationIcebergRestBearer := model.CatalogIntegrationIcebergRestSigV4("w", icebergId.Name(), false, icebergRestConfig, *sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole)).
+	catalogIntegrationIcebergRestOAuth := model.CatalogIntegrationIcebergRestOAuth("w", icebergId.Name(), false, icebergRestConfig, basicRestAuth[0]).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds)
 
 	glueNoDescribe := datasourcemodel.CatalogIntegrations("test").
@@ -121,7 +123,7 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 	icebergBearerWithDescribe := datasourcemodel.CatalogIntegrations("test").
 		WithLike(icebergId.Name()).
 		WithWithDescribe(true).
-		WithDependsOn(catalogIntegrationIcebergRestBearer.ResourceReference())
+		WithDependsOn(catalogIntegrationIcebergRestOAuth.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -227,9 +229,9 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 				),
 			},
-			// Iceberg REST Bearer with describe
+			// Iceberg REST OAuth with describe
 			{
-				Config: accconfig.FromModels(t, catalogIntegrationIcebergRestBearer, icebergBearerWithDescribe),
+				Config: accconfig.FromModels(t, catalogIntegrationIcebergRestOAuth, icebergBearerWithDescribe),
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(icebergBearerWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
@@ -247,13 +249,14 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).
 						HasComment("").
 						HasCatalogNamespace("").
-						HasRestConfigCatalogUri(icebergCatalogUri).
+						HasRestConfigCatalogUri(catalogUri).
 						HasRestConfigPrefix("").
-						HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
-						HasRestConfigCatalogName("").
+						HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+						HasRestConfigCatalogName(catalogName).
 						HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
-						// Don't check sigv4_signing_region, as its default value depends on the current region name
-						HasSigv4RestAuthenticationSigv4IamRole(sigV4IamRole),
+						HasOAuthRestAuthenticationOauthTokenUri(catalogUri+"/v1/oauth/tokens").
+						HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
+						HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 				),
 			},
 		},
