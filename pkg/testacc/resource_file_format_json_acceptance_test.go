@@ -116,7 +116,7 @@ func TestAcc_FileFormatJson_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.FileFormatJsonDescribeOutput(t, ref).
 			HasId(id).
 			HasCompression("AUTO").
-			HasBinaryFormat(string(sdk.BinaryFormatHex)).
+			HasBinaryFormat(sdk.BinaryFormatHex).
 			HasTrimSpace(false).
 			HasMultiLine(true).
 			HasEnableOctal(false).

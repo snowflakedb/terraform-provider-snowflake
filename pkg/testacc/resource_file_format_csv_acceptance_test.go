@@ -133,7 +133,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionAuto)).
+			HasCompression(sdk.CsvCompressionAuto).
 			HasRecordDelimiter(`\n`).
 			HasFieldDelimiter(",").
 			HasFileExtension("").
@@ -143,7 +143,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasDateFormat("AUTO").
 			HasTimeFormat("AUTO").
 			HasTimestampFormat("AUTO").
-			HasBinaryFormat(string(sdk.BinaryFormatHex)).
+			HasBinaryFormat(sdk.BinaryFormatHex).
 			HasEscape("NONE").
 			HasEscapeUnenclosedField(`\\`).
 			HasTrimSpace(false).
@@ -154,7 +154,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(false).
 			HasEmptyFieldAsNull(true).
 			HasSkipByteOrderMark(true).
-			HasEncoding(string(sdk.CsvEncodingUtf8)).
+			HasEncoding(sdk.CsvEncodingUtf8).
 			HasMultiLine(true),
 	}
 
@@ -195,7 +195,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionGzip)).
+			HasCompression(sdk.CsvCompressionGzip).
 			HasRecordDelimiter(";").
 			HasFieldDelimiter("|").
 			HasFileExtension(".csv").
@@ -205,7 +205,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasDateFormat("YYYY-MM-DD").
 			HasTimeFormat("HH24:MI:SS").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS.FF3").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasEscape("NONE").
 			HasEscapeUnenclosedField("NONE").
 			HasTrimSpace(true).
@@ -215,7 +215,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(true).
 			HasEmptyFieldAsNull(false).
 			HasSkipByteOrderMark(false).
-			HasEncoding(string(sdk.CsvEncodingIso88591)).
+			HasEncoding(sdk.CsvEncodingIso88591).
 			HasMultiLine(false),
 	}
 
@@ -256,7 +256,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasComment(externalComment),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionBz2)).
+			HasCompression(sdk.CsvCompressionBz2).
 			HasRecordDelimiter("#").
 			HasFieldDelimiter(":").
 			HasFileExtension(".tsv").
@@ -266,7 +266,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasDateFormat("MM-DD-YYYY").
 			HasTimeFormat("HH24:MI").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS.FF6").
-			HasBinaryFormat(string(sdk.BinaryFormatUtf8)).
+			HasBinaryFormat(sdk.BinaryFormatUtf8).
 			HasEscape(`\\`).
 			HasEscapeUnenclosedField(`\\`).
 			HasTrimSpace(false).
@@ -276,7 +276,7 @@ func TestAcc_FileFormatCsv_BasicUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(false).
 			HasEmptyFieldAsNull(true).
 			HasSkipByteOrderMark(true).
-			HasEncoding(string(sdk.CsvEncodingUtf8)).
+			HasEncoding(sdk.CsvEncodingUtf8).
 			HasMultiLine(true),
 	}
 
@@ -517,7 +517,7 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.FileFormatCsvDescribeOutput(t, ref).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionGzip)).
+			HasCompression(sdk.CsvCompressionGzip).
 			HasRecordDelimiter("NONE").
 			HasFieldDelimiter("NONE").
 			HasFileExtension(".csv").
@@ -527,7 +527,7 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			HasDateFormat("AUTO").
 			HasTimeFormat("AUTO").
 			HasTimestampFormat("AUTO").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasEscape("NONE").
 			HasEscapeUnenclosedField("NONE").
 			HasTrimSpace(true).
@@ -537,7 +537,7 @@ func TestAcc_FileFormatCsv_CompleteUseCase(t *testing.T) {
 			HasReplaceInvalidCharacters(true).
 			HasEmptyFieldAsNull(false).
 			HasSkipByteOrderMark(false).
-			HasEncoding(string(sdk.CsvEncodingUtf8)).
+			HasEncoding(sdk.CsvEncodingUtf8).
 			HasMultiLine(false),
 	}
 

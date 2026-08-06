@@ -40,13 +40,13 @@ func (f *FileFormatJsonDescribeOutputAssert) HasId(expected sdk.SchemaObjectIden
 	return f
 }
 
-func (f *FileFormatJsonDescribeOutputAssert) HasType(expected string) *FileFormatJsonDescribeOutputAssert {
-	f.StringValueSet("type", expected)
+func (f *FileFormatJsonDescribeOutputAssert) HasType(expected sdk.FileFormatType) *FileFormatJsonDescribeOutputAssert {
+	f.StringValueSet("type", string(expected))
 	return f
 }
 
-func (f *FileFormatJsonDescribeOutputAssert) HasCompression(expected string) *FileFormatJsonDescribeOutputAssert {
-	f.StringValueSet("compression", expected)
+func (f *FileFormatJsonDescribeOutputAssert) HasCompression(expected sdk.JsonCompression) *FileFormatJsonDescribeOutputAssert {
+	f.StringValueSet("compression", string(expected))
 	return f
 }
 
@@ -65,8 +65,8 @@ func (f *FileFormatJsonDescribeOutputAssert) HasTimestampFormat(expected string)
 	return f
 }
 
-func (f *FileFormatJsonDescribeOutputAssert) HasBinaryFormat(expected string) *FileFormatJsonDescribeOutputAssert {
-	f.StringValueSet("binary_format", expected)
+func (f *FileFormatJsonDescribeOutputAssert) HasBinaryFormat(expected sdk.BinaryFormat) *FileFormatJsonDescribeOutputAssert {
+	f.StringValueSet("binary_format", string(expected))
 	return f
 }
 

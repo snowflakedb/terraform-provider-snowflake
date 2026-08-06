@@ -105,7 +105,7 @@ func TestInt_FileFormats(t *testing.T) {
 		assertThatObject(t, objectassert.FileFormatCsv(t, id).
 			HasId(id).
 			HasType("CSV").
-			HasCompression(string(sdk.CsvCompressionGzip)).
+			HasCompression(sdk.CsvCompressionGzip).
 			HasRecordDelimiter("\\n").
 			HasFieldDelimiter(",").
 			HasFileExtension(".csv").
@@ -115,7 +115,7 @@ func TestInt_FileFormats(t *testing.T) {
 			HasDateFormat("YYYY-MM-DD").
 			HasTimeFormat("HH24:MI:SS").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasEscape("!").
 			HasEscapeUnenclosedField("!").
 			HasTrimSpace(true).
@@ -126,7 +126,7 @@ func TestInt_FileFormats(t *testing.T) {
 			HasReplaceInvalidCharacters(true).
 			HasEmptyFieldAsNull(false).
 			HasSkipByteOrderMark(false).
-			HasEncoding(string(sdk.CsvEncodingUtf16)).
+			HasEncoding(sdk.CsvEncodingUtf16).
 			HasMultiLine(false))
 	})
 
@@ -156,7 +156,7 @@ func TestInt_FileFormats(t *testing.T) {
 			HasType("CSV").
 			HasParseHeader(true).
 			HasSkipHeader(0).
-			HasCompression(string(sdk.CsvCompressionBz2)))
+			HasCompression(sdk.CsvCompressionBz2))
 	})
 
 	t.Run("AlterCsv - rename", func(t *testing.T) {
@@ -219,7 +219,7 @@ func TestInt_FileFormats(t *testing.T) {
 
 		assertThatObject(t, objectassert.FileFormatCsv(t, id).
 			HasId(id).
-			HasCompression(string(sdk.CsvCompressionGzip)).
+			HasCompression(sdk.CsvCompressionGzip).
 			HasRecordDelimiter("\\n").
 			HasFieldDelimiter(",").
 			HasFileExtension(".csv").
@@ -229,7 +229,7 @@ func TestInt_FileFormats(t *testing.T) {
 			HasDateFormat("YYYY-MM-DD").
 			HasTimeFormat("HH24:MI:SS").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasEscape("!").
 			HasEscapeUnenclosedField("!").
 			HasTrimSpace(true).
@@ -240,7 +240,7 @@ func TestInt_FileFormats(t *testing.T) {
 			HasReplaceInvalidCharacters(true).
 			HasEmptyFieldAsNull(false).
 			HasSkipByteOrderMark(false).
-			HasEncoding(string(sdk.CsvEncodingUtf16)).
+			HasEncoding(sdk.CsvEncodingUtf16).
 			HasMultiLine(false))
 	})
 
@@ -270,7 +270,7 @@ func TestInt_FileFormats(t *testing.T) {
 			HasId(id).
 			HasParseHeader(true).
 			HasSkipHeader(0).
-			HasCompression(string(sdk.CsvCompressionBz2)))
+			HasCompression(sdk.CsvCompressionBz2))
 	})
 
 	t.Run("CreateJson - minimal", func(t *testing.T) {
@@ -347,11 +347,11 @@ func TestInt_FileFormats(t *testing.T) {
 		assertThatObject(t, objectassert.FileFormatJson(t, id).
 			HasId(id).
 			HasType("JSON").
-			HasCompression(string(sdk.JsonCompressionGzip)).
+			HasCompression(sdk.JsonCompressionGzip).
 			HasDateFormat("YYYY-MM-DD").
 			HasTimeFormat("HH24:MI:SS").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasTrimSpace(true).
 			HasMultiLine(false).
 			HasNullIf("NULL").
@@ -441,11 +441,11 @@ func TestInt_FileFormats(t *testing.T) {
 
 		assertThatObject(t, objectassert.FileFormatJson(t, id).
 			HasId(id).
-			HasCompression(string(sdk.JsonCompressionGzip)).
+			HasCompression(sdk.JsonCompressionGzip).
 			HasDateFormat("YYYY-MM-DD").
 			HasTimeFormat("HH24:MI:SS").
 			HasTimestampFormat("YYYY-MM-DD HH24:MI:SS").
-			HasBinaryFormat(string(sdk.BinaryFormatBase64)).
+			HasBinaryFormat(sdk.BinaryFormatBase64).
 			HasTrimSpace(true).
 			HasMultiLine(false).
 			HasNullIf("NULL").
@@ -535,7 +535,7 @@ func TestInt_FileFormats(t *testing.T) {
 		assertThatObject(t, objectassert.FileFormatAvro(t, id).
 			HasId(id).
 			HasType("AVRO").
-			HasCompression(string(sdk.AvroCompressionGzip)).
+			HasCompression(sdk.AvroCompressionGzip).
 			HasTrimSpace(true).
 			HasReplaceInvalidCharacters(true).
 			HasNullIf("NULL", ""))
@@ -581,7 +581,7 @@ func TestInt_FileFormats(t *testing.T) {
 
 		assertThatObject(t, objectassert.FileFormatAvro(t, id).
 			HasId(id).
-			HasCompression(string(sdk.AvroCompressionGzip)).
+			HasCompression(sdk.AvroCompressionGzip).
 			HasTrimSpace(true).
 			HasReplaceInvalidCharacters(true).
 			HasNullIf("NULL"))
@@ -742,7 +742,7 @@ func TestInt_FileFormats(t *testing.T) {
 		assertThatObject(t, objectassert.FileFormatParquet(t, id).
 			HasId(id).
 			HasType("PARQUET").
-			HasCompression(string(sdk.ParquetCompressionSnappy)).
+			HasCompression(sdk.ParquetCompressionSnappy).
 			HasBinaryAsText(false).
 			HasUseLogicalType(true).
 			HasTrimSpace(true).
@@ -832,7 +832,7 @@ func TestInt_FileFormats(t *testing.T) {
 
 		assertThatObject(t, objectassert.FileFormatParquet(t, id).
 			HasId(id).
-			HasCompression(string(sdk.ParquetCompressionSnappy)).
+			HasCompression(sdk.ParquetCompressionSnappy).
 			HasBinaryAsText(false).
 			HasUseLogicalType(true).
 			HasTrimSpace(true).
@@ -924,7 +924,7 @@ func TestInt_FileFormats(t *testing.T) {
 		assertThatObject(t, objectassert.FileFormatXml(t, id).
 			HasId(id).
 			HasType("XML").
-			HasCompression(string(sdk.XmlCompressionGzip)).
+			HasCompression(sdk.XmlCompressionGzip).
 			HasIgnoreUtf8Errors(true).
 			HasPreserveSpace(true).
 			HasStripOuterElement(true).
@@ -963,7 +963,7 @@ func TestInt_FileFormats(t *testing.T) {
 		assertThatObject(t, objectassert.FileFormatXml(t, id).
 			HasId(id).
 			HasType("XML").
-			HasCompression(string(sdk.XmlCompressionBz2)).
+			HasCompression(sdk.XmlCompressionBz2).
 			HasIgnoreUtf8Errors(false).
 			HasPreserveSpace(true).
 			HasStripOuterElement(true).
@@ -1016,7 +1016,7 @@ func TestInt_FileFormats(t *testing.T) {
 
 		assertThatObject(t, objectassert.FileFormatXml(t, id).
 			HasId(id).
-			HasCompression(string(sdk.XmlCompressionGzip)).
+			HasCompression(sdk.XmlCompressionGzip).
 			HasIgnoreUtf8Errors(true).
 			HasPreserveSpace(true).
 			HasStripOuterElement(true).

@@ -44,7 +44,7 @@ func (f *FileFormatCsvAssert) HasId(expected sdk.SchemaObjectIdentifier) *FileFo
 	return f
 }
 
-func (f *FileFormatCsvAssert) HasType(expected string) *FileFormatCsvAssert {
+func (f *FileFormatCsvAssert) HasType(expected sdk.FileFormatType) *FileFormatCsvAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
 		t.Helper()
 		if o.Type != expected {
@@ -55,33 +55,11 @@ func (f *FileFormatCsvAssert) HasType(expected string) *FileFormatCsvAssert {
 	return f
 }
 
-func (f *FileFormatCsvAssert) HasTypeNotEmpty() *FileFormatCsvAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
-		t.Helper()
-		if o.Type == "" {
-			return fmt.Errorf("expected type to be non-empty")
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatCsvAssert) HasCompression(expected string) *FileFormatCsvAssert {
+func (f *FileFormatCsvAssert) HasCompression(expected sdk.CsvCompression) *FileFormatCsvAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
 		t.Helper()
 		if o.Compression != expected {
 			return fmt.Errorf("expected compression: %v; got: %v", expected, o.Compression)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatCsvAssert) HasCompressionNotEmpty() *FileFormatCsvAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
-		t.Helper()
-		if o.Compression == "" {
-			return fmt.Errorf("expected compression to be non-empty")
 		}
 		return nil
 	})
@@ -253,22 +231,11 @@ func (f *FileFormatCsvAssert) HasTimestampFormatNotEmpty() *FileFormatCsvAssert 
 	return f
 }
 
-func (f *FileFormatCsvAssert) HasBinaryFormat(expected string) *FileFormatCsvAssert {
+func (f *FileFormatCsvAssert) HasBinaryFormat(expected sdk.BinaryFormat) *FileFormatCsvAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
 		t.Helper()
 		if o.BinaryFormat != expected {
 			return fmt.Errorf("expected binary format: %v; got: %v", expected, o.BinaryFormat)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatCsvAssert) HasBinaryFormatNotEmpty() *FileFormatCsvAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
-		t.Helper()
-		if o.BinaryFormat == "" {
-			return fmt.Errorf("expected binary format to be non-empty")
 		}
 		return nil
 	})
@@ -431,22 +398,11 @@ func (f *FileFormatCsvAssert) HasSkipByteOrderMark(expected bool) *FileFormatCsv
 	return f
 }
 
-func (f *FileFormatCsvAssert) HasEncoding(expected string) *FileFormatCsvAssert {
+func (f *FileFormatCsvAssert) HasEncoding(expected sdk.CsvEncoding) *FileFormatCsvAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
 		t.Helper()
 		if o.Encoding != expected {
 			return fmt.Errorf("expected encoding: %v; got: %v", expected, o.Encoding)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatCsvAssert) HasEncodingNotEmpty() *FileFormatCsvAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatCsv) error {
-		t.Helper()
-		if o.Encoding == "" {
-			return fmt.Errorf("expected encoding to be non-empty")
 		}
 		return nil
 	})
