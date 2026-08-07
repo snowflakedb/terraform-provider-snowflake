@@ -65,7 +65,10 @@ func TestAcc_CatalogIntegrations_BasicUseCase_DifferentFiltering(t *testing.T) {
 
 func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 	accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
-	oAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthCredentials)
+	oAuthClientId := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientId)
+	oAuthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientSecret)
+	oauthClientSecretVariableName := "oauth_client_secret"
+	oauthClientSecretVariableModel, oauthClientSecretConfigVariables := accconfig.SecretStringVariableModelWithConfigVariables(oauthClientSecretVariableName, oAuthClientSecret)
 
 	prefix := random.AlphaN(4)
 	comment := random.Comment()
@@ -79,7 +82,6 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 
 	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
 	catalogName := "TEST_CATALOG"
-	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, oAuthCredentials)
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 	basicRestAuth := []sdk.OAuthRestAuthenticationRequest{
 		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
@@ -95,9 +97,9 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 
 	catalogIntegrationAwsGlue := model.CatalogIntegrationAwsGlue("w", glueId.Name(), false, glueAwsRoleArn, glueCatalogId)
 	catalogIntegrationObjectStorage := model.CatalogIntegrationObjectStorage("w", objectStorageId.Name(), true, string(sdk.CatalogIntegrationTableFormatIceberg))
-	catalogIntegrationOpenCatalog := model.CatalogIntegrationOpenCatalog("w", openCatalogId.Name(), false, basicRestAuth, basicRestConfig).
+	catalogIntegrationOpenCatalog := model.CatalogIntegrationOpenCatalogVar("w", openCatalogId.Name(), false, basicRestAuth, basicRestConfig, oauthClientSecretVariableName).
 		WithComment(comment)
-	catalogIntegrationIcebergRestOAuth := model.CatalogIntegrationIcebergRestOAuth("w", icebergId.Name(), false, icebergRestConfig, basicRestAuth[0]).
+	catalogIntegrationIcebergRestOAuth := model.CatalogIntegrationIcebergRestOAuth("w", icebergId.Name(), false, icebergRestConfig, basicRestAuth[0], oauthClientSecretVariableName).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds)
 
 	glueNoDescribe := datasourcemodel.CatalogIntegrations("test").
@@ -202,7 +204,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 			},
 			// Open Catalog with describe
 			{
-				Config: accconfig.FromModels(t, catalogIntegrationOpenCatalog, openCatalogWithDescribe),
+				Config:          accconfig.FromModels(t, catalogIntegrationOpenCatalog, openCatalogWithDescribe, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(openCatalogWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),
@@ -231,7 +234,8 @@ func TestAcc_CatalogIntegrations_CompleteUseCase(t *testing.T) {
 			},
 			// Iceberg REST OAuth with describe
 			{
-				Config: accconfig.FromModels(t, catalogIntegrationIcebergRestOAuth, icebergBearerWithDescribe),
+				Config:          accconfig.FromModels(t, catalogIntegrationIcebergRestOAuth, icebergBearerWithDescribe, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(icebergBearerWithDescribe.DatasourceReference(), "catalog_integrations.#", "1")),

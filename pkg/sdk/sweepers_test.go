@@ -81,6 +81,8 @@ func sweep(client *sdk.Client, suffix string) error {
 		nukeUsers(client, suffix),
 		nukeFailoverGroups(client, suffix),
 		nukeShares(client, suffix),
+		nukeApplications(client, suffix),
+		nukeApplicationPackages(client, suffix),
 		nukeDatabases(client, "", suffix),
 		nukeNotificationIntegrations(client, suffix),
 		nukeStorageIntegrations(client, suffix),
@@ -200,6 +202,20 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep shares", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeShares(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep applications", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeApplications(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep application packages", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeApplicationPackages(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -506,6 +522,43 @@ func nukeExternalAccessIntegrations(client *sdk.Client, suffix string) func() er
 	})
 }
 
+func nukeApplications(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.Application]{
+		objectTypeName: "application",
+		protectedNames: []string{
+			"SNOWFLAKE",
+		},
+		show: func(ctx context.Context) ([]sdk.Application, error) {
+			return client.Applications.Show(ctx, sdk.NewShowApplicationRequest())
+		},
+		name:      func(object sdk.Application) string { return object.Name },
+		createdOn: func(object sdk.Application) time.Time { return object.CreatedOn },
+		id:        func(object sdk.Application) sdk.AccountObjectIdentifier { return object.ID() },
+		// DROP APPLICATION fails when the app owns objects outside itself, and an app can own compute pools,
+		// warehouses, and databases. CASCADE drops those too, so it's used instead of DropSafely, which
+		// does not support it. Note that nukeComputePools skips the app-owned pools, so without CASCADE
+		// neither the app nor its pool would ever be swept.
+		dropSafely: func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
+			return client.Applications.Drop(ctx, sdk.NewDropApplicationRequest(id).WithIfExists(true).WithCascade(true))
+		},
+	})
+}
+
+func nukeApplicationPackages(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.ApplicationPackage]{
+		objectTypeName: "application package",
+		// no application packages are protected for now
+		protectedNames: []string{},
+		show: func(ctx context.Context) ([]sdk.ApplicationPackage, error) {
+			return client.ApplicationPackages.Show(ctx, sdk.NewShowApplicationPackageRequest())
+		},
+		name:       func(object sdk.ApplicationPackage) string { return object.Name },
+		createdOn:  func(object sdk.ApplicationPackage) time.Time { return object.CreatedOn },
+		id:         func(object sdk.ApplicationPackage) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.ApplicationPackages.DropSafely,
+	})
+}
+
 func nukeConnections(client *sdk.Client, suffix string) func() error {
 	accountLocator := client.GetAccountLocator()
 
@@ -782,75 +835,25 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 }
 
 func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
-	var protectedFailoverGroups []string
+	accountLocator := client.GetAccountLocator()
 
-	return func() error {
-		ctx := context.Background()
-
-		var fgDropCondition func(fg sdk.FailoverGroup) bool
-		switch {
-		case suffix != "":
-			log.Printf("[DEBUG] Sweeping failover groups with suffix %s", suffix)
-			fgDropCondition = func(fg sdk.FailoverGroup) bool {
-				return strings.HasSuffix(fg.Name, suffix)
-			}
-		default:
-			log.Println("[DEBUG] Sweeping stale failover groups")
-			fgDropCondition = func(fg sdk.FailoverGroup) bool {
-				return fg.CreatedOn.Before(time.Now().Add(stalePeriod))
-			}
-		}
-
-		accountLocator := client.GetAccountLocator()
-		req := sdk.NewShowFailoverGroupRequest().WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(accountLocator))
-
-		fgs, err := client.FailoverGroups.Show(ctx, req)
-		if err != nil {
-			return fmt.Errorf("SHOW FAILOVER GROUPS ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d failover groups", len(fgs))
-
-		var errs []error
-		for idx, fg := range fgs {
-			log.Printf("[DEBUG] Processing failover group [%d/%d]: %s...", idx+1, len(fgs), fg.ID().FullyQualifiedName())
-
-			if fg.AccountLocator != accountLocator {
-				log.Printf("[DEBUG] Skipping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
-				continue
-			}
-
-			if fg.Owner != snowflakeroles.Accountadmin.Name() {
-				log.Printf("[DEBUG] Granting ownership on failover group %s, to ACCOUNTADMIN", fg.ID().FullyQualifiedName())
-				err := client.Grants.GrantOwnership(
-					ctx,
-					sdk.OwnershipGrantOn{Object: &sdk.Object{
-						ObjectType: sdk.ObjectTypeFailoverGroup,
-						Name:       fg.ID(),
-					}},
-					sdk.OwnershipGrantTo{
-						AccountRoleName: sdk.Pointer(snowflakeroles.Accountadmin),
-					},
-					nil,
-				)
-				if err != nil {
-					errs = append(errs, fmt.Errorf("granting ownership on failover group %s ended with error, err = %w", fg.ID().FullyQualifiedName(), err))
-					continue
-				}
-			}
-
-			if !slices.Contains(protectedFailoverGroups, fg.Name) && fgDropCondition(fg) {
-				log.Printf("[DEBUG] Dropping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
-				if err := client.FailoverGroups.DropSafely(ctx, fg.ID()); err != nil {
-					log.Printf("[DEBUG] Dropping failover group %s, resulted in error %v", fg.ID().FullyQualifiedName(), err)
-					errs = append(errs, fmt.Errorf("sweeping failover group %s ended with error, err = %w", fg.ID().FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping failover group %s, created at: %s", fg.ID().FullyQualifiedName(), fg.CreatedOn.String())
-			}
-		}
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.FailoverGroup]{
+		objectTypeName: "failover group",
+		// no failover groups are protected for now
+		protectedNames: []string{},
+		// the failover groups replicated from the other accounts are not ours to drop
+		skip: func(object sdk.FailoverGroup) bool { return object.AccountLocator != accountLocator },
+		show: func(ctx context.Context) ([]sdk.FailoverGroup, error) {
+			req := sdk.NewShowFailoverGroupRequest().WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(accountLocator))
+			return client.FailoverGroups.Show(ctx, req)
+		},
+		name:          func(object sdk.FailoverGroup) string { return object.Name },
+		createdOn:     func(object sdk.FailoverGroup) time.Time { return object.CreatedOn },
+		id:            func(object sdk.FailoverGroup) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely:    client.FailoverGroups.DropSafely,
+		owner:         func(object sdk.FailoverGroup) string { return object.Owner },
+		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeFailoverGroup),
+	})
 }
 
 func defaultTestClient(t *testing.T) *sdk.Client {
