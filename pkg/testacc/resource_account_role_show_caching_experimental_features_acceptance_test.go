@@ -21,11 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// countShowRolesLikeQueries returns how many `SHOW ROLES LIKE '<name>'` statements were issued
-// (across all sessions of the test user) for the given, test-unique role. Because the role name is
-// randomly generated per test, this count is isolated to the queries produced by the test under
-// inspection. Used to prove the ACCOUNT_ROLE_SHOW_CACHING experiment collapses N identical SHOW
-// calls into one.
 func countShowRolesLikeQueries(t *testing.T, roleId sdk.AccountObjectIdentifier) int {
 	t.Helper()
 	queryHistory := testClient().InformationSchema.GetQueryHistory(t, 1000)
