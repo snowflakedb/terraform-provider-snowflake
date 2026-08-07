@@ -40,8 +40,8 @@ func (f *FileFormatOrcDescribeOutputAssert) HasId(expected sdk.SchemaObjectIdent
 	return f
 }
 
-func (f *FileFormatOrcDescribeOutputAssert) HasType(expected string) *FileFormatOrcDescribeOutputAssert {
-	f.StringValueSet("type", expected)
+func (f *FileFormatOrcDescribeOutputAssert) HasType(expected sdk.FileFormatType) *FileFormatOrcDescribeOutputAssert {
+	f.StringValueSet("type", string(expected))
 	return f
 }
 

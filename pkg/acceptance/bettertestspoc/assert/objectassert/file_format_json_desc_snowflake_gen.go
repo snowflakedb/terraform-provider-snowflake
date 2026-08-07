@@ -44,7 +44,7 @@ func (f *FileFormatJsonAssert) HasId(expected sdk.SchemaObjectIdentifier) *FileF
 	return f
 }
 
-func (f *FileFormatJsonAssert) HasType(expected string) *FileFormatJsonAssert {
+func (f *FileFormatJsonAssert) HasType(expected sdk.FileFormatType) *FileFormatJsonAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
 		t.Helper()
 		if o.Type != expected {
@@ -55,33 +55,11 @@ func (f *FileFormatJsonAssert) HasType(expected string) *FileFormatJsonAssert {
 	return f
 }
 
-func (f *FileFormatJsonAssert) HasTypeNotEmpty() *FileFormatJsonAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
-		t.Helper()
-		if o.Type == "" {
-			return fmt.Errorf("expected type to be non-empty")
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatJsonAssert) HasCompression(expected string) *FileFormatJsonAssert {
+func (f *FileFormatJsonAssert) HasCompression(expected sdk.JsonCompression) *FileFormatJsonAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
 		t.Helper()
 		if o.Compression != expected {
 			return fmt.Errorf("expected compression: %v; got: %v", expected, o.Compression)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatJsonAssert) HasCompressionNotEmpty() *FileFormatJsonAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
-		t.Helper()
-		if o.Compression == "" {
-			return fmt.Errorf("expected compression to be non-empty")
 		}
 		return nil
 	})
@@ -154,22 +132,11 @@ func (f *FileFormatJsonAssert) HasTimestampFormatNotEmpty() *FileFormatJsonAsser
 	return f
 }
 
-func (f *FileFormatJsonAssert) HasBinaryFormat(expected string) *FileFormatJsonAssert {
+func (f *FileFormatJsonAssert) HasBinaryFormat(expected sdk.BinaryFormat) *FileFormatJsonAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
 		t.Helper()
 		if o.BinaryFormat != expected {
 			return fmt.Errorf("expected binary format: %v; got: %v", expected, o.BinaryFormat)
-		}
-		return nil
-	})
-	return f
-}
-
-func (f *FileFormatJsonAssert) HasBinaryFormatNotEmpty() *FileFormatJsonAssert {
-	f.AddAssertion(func(t *testing.T, o *sdk.FileFormatJson) error {
-		t.Helper()
-		if o.BinaryFormat == "" {
-			return fmt.Errorf("expected binary format to be non-empty")
 		}
 		return nil
 	})

@@ -77,7 +77,7 @@ func ImportFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 	if err != nil {
 		return nil, err
 	}
-	if details.Type != string(sdk.FileFormatTypeAvro) {
+	if details.Type != sdk.FileFormatTypeAvro {
 		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeAvro, details.Type)
 	}
 
@@ -228,7 +228,7 @@ func UpdateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 // avroFileFormatToSchema converts the SDK details for an AVRO file format to a Terraform schema.
 func avroFileFormatToSchema(avro *sdk.FileFormatAvro, setDefaults bool) map[string]any {
 	state := map[string]any{
-		"compression": avro.Compression,
+		"compression": string(avro.Compression),
 		"null_if":     collections.Map(avro.NullIf, func(v string) any { return v }),
 	}
 	if setDefaults {

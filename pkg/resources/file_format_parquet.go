@@ -78,7 +78,7 @@ func ImportFileFormatParquet(ctx context.Context, d *schema.ResourceData, meta a
 	if err != nil {
 		return nil, err
 	}
-	if details.Type != string(sdk.FileFormatTypeParquet) {
+	if details.Type != sdk.FileFormatTypeParquet {
 		return nil, fmt.Errorf("invalid file format type, expected %s, got %s", sdk.FileFormatTypeParquet, details.Type)
 	}
 
@@ -229,7 +229,7 @@ func UpdateFileFormatParquet(ctx context.Context, d *schema.ResourceData, meta a
 // parquetFileFormatToSchema converts the SDK details for a Parquet file format to a Terraform schema.
 func parquetFileFormatToSchema(parquet *sdk.FileFormatParquet, setDefaults bool) map[string]any {
 	state := map[string]any{
-		"compression": parquet.Compression,
+		"compression": string(parquet.Compression),
 		"null_if":     collections.Map(parquet.NullIf, func(v string) any { return v }),
 	}
 	if setDefaults {

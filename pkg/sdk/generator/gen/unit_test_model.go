@@ -110,10 +110,10 @@ func (i *Interface) buildUnitTestsModel() *UnitTestsModel {
 		field := op.Name
 
 		var defaultOptsFields []string
-		nameField := op.OptsField.FindChild("name")
+		nameField := op.OptsField.FindChildCaseInsensitive("name")
 		if nameField != nil && nameField.IsIdentifier() {
 			idKind := nameField.KindNoPtr()
-			defaultOptsFields = []string{fmt.Sprintf("name: %s", lookupOrAddIdVar(idKind).Name)}
+			defaultOptsFields = []string{fmt.Sprintf("%s: %s", nameField.Name, lookupOrAddIdVar(idKind).Name)}
 		}
 
 		valCases := buildValidationCases(op)
@@ -146,12 +146,24 @@ func buildValidationCases(op *Operation) []*ValidationTestCase {
 }
 
 func collectValidationCases(f *Field, opName string, out *[]*ValidationTestCase) {
+	// Multi-field validations (ConflictingFields, AtLeastOneValueSet, ExactlyOneValueSet, MoreThanOneValueSet)
+	// are named after the validation type alone. When a single field container has more than one validation of the same type
+	// (e.g. two separate ConflictingFields rules on different field pairs), that name collides.
+	// Only in that case do we disambiguate by appending the field names, so unaffected objects keep their existing case names.
+	sameTypeCount := map[ValidationType]int{}
+	for _, v := range f.Validations {
+		if v.IsMultiField() && !v.IsAdditionalValidations() {
+			sameTypeCount[v.Type]++
+		}
+	}
+
 	for _, v := range f.Validations {
 		if v.IsAdditionalValidations() {
 			continue
 		}
 
-		casesForValidation := buildCasesForValidation(v, f, opName)
+		disambiguate := v.IsMultiField() && sameTypeCount[v.Type] > 1
+		casesForValidation := buildCasesForValidation(v, f, opName, disambiguate)
 		*out = append(*out, casesForValidation...)
 	}
 
@@ -163,12 +175,12 @@ func collectValidationCases(f *Field, opName string, out *[]*ValidationTestCase)
 	}
 }
 
-func buildCasesForValidation(v *Validation, f *Field, opName string) []*ValidationTestCase {
+func buildCasesForValidation(v *Validation, f *Field, opName string, disambiguate bool) []*ValidationTestCase {
 	expectedErrLine := v.ReturnedError(f)
 	if !v.IsMultiField() {
 		return []*ValidationTestCase{buildSingleFieldValidationCase(v, f, opName, expectedErrLine)}
 	}
-	return buildMultiFieldValidationCases(v, f, opName, expectedErrLine)
+	return buildMultiFieldValidationCases(v, f, opName, expectedErrLine, disambiguate)
 }
 
 func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErrLine string) *ValidationTestCase {
@@ -193,8 +205,11 @@ func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErr
 // AtLeastOneValueSet  -> one case (all fields zeroed)
 // ExactlyOneValueSet  -> NoneSet + MoreThanOneSet (+ OneValidOneInvalid for slices)
 // MoreThanOneValueSet -> MoreThanOneSet (+ OneValidOneInvalid for slices)
-func buildMultiFieldValidationCases(v *Validation, f *Field, opName, expectedErrLine string) []*ValidationTestCase {
+func buildMultiFieldValidationCases(v *Validation, f *Field, opName, expectedErrLine string, disambiguate bool) []*ValidationTestCase {
 	baseName := fmt.Sprintf("validation_%s_%s_%s", opName, f.SlugPath(), v.TypeName())
+	if disambiguate {
+		baseName = fmt.Sprintf("%s_%s", baseName, strings.Join(v.FieldNames, "_"))
+	}
 
 	tc := func(name string, lines []string, ok bool) *ValidationTestCase {
 		return &ValidationTestCase{Name: name, ExpectedErrLine: expectedErrLine, ModifyLines: lines, HasModify: ok}
@@ -232,6 +247,9 @@ func buildMultiFieldValidationCases(v *Validation, f *Field, opName, expectedErr
 // deriveConflictingFieldsModify sets ALL listed fields to a non-zero value (all set → conflict).
 func deriveConflictingFieldsModify(v *Validation, f *Field) ([]string, bool) {
 	prime := primeAncestors(f)
+	if f.IsPointer() {
+		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.Path(), f.KindNoPtr()))
+	}
 	stmts := make([]string, 0, len(v.FieldNames))
 	for _, name := range v.FieldNames {
 		child := f.FindChild(name)
@@ -353,7 +371,7 @@ func buildSqlCases(op *Operation) []*SqlTestCase {
 		cases = append(cases, basic(fmt.Sprintf("sql_%s_basic", opName)))
 
 	case OperationTestKindOther:
-		// No SQL cases for Grant/Revoke/etc.
+		cases = append(cases, basic(fmt.Sprintf("sql_%s_basic", opName)))
 	}
 
 	return cases

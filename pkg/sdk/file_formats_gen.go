@@ -493,8 +493,8 @@ type FileFormatXmlOptions struct {
 
 type FileFormatCsv struct {
 	Id                         SchemaObjectIdentifier
-	Type                       string
-	Compression                string
+	Type                       FileFormatType
+	Compression                CsvCompression
 	RecordDelimiter            string
 	FieldDelimiter             string
 	FileExtension              string
@@ -504,7 +504,7 @@ type FileFormatCsv struct {
 	DateFormat                 string
 	TimeFormat                 string
 	TimestampFormat            string
-	BinaryFormat               string
+	BinaryFormat               BinaryFormat
 	Escape                     string
 	EscapeUnenclosedField      string
 	TrimSpace                  bool
@@ -515,18 +515,18 @@ type FileFormatCsv struct {
 	ReplaceInvalidCharacters   bool
 	EmptyFieldAsNull           bool
 	SkipByteOrderMark          bool
-	Encoding                   string
+	Encoding                   CsvEncoding
 	MultiLine                  bool
 }
 
 type FileFormatJson struct {
 	Id                       SchemaObjectIdentifier
-	Type                     string
-	Compression              string
+	Type                     FileFormatType
+	Compression              JsonCompression
 	DateFormat               string
 	TimeFormat               string
 	TimestampFormat          string
-	BinaryFormat             string
+	BinaryFormat             BinaryFormat
 	TrimSpace                bool
 	MultiLine                bool
 	NullIf                   []string
@@ -542,8 +542,8 @@ type FileFormatJson struct {
 
 type FileFormatAvro struct {
 	Id                       SchemaObjectIdentifier
-	Type                     string
-	Compression              string
+	Type                     FileFormatType
+	Compression              AvroCompression
 	TrimSpace                bool
 	ReplaceInvalidCharacters bool
 	NullIf                   []string
@@ -551,7 +551,7 @@ type FileFormatAvro struct {
 
 type FileFormatOrc struct {
 	Id                       SchemaObjectIdentifier
-	Type                     string
+	Type                     FileFormatType
 	TrimSpace                bool
 	ReplaceInvalidCharacters bool
 	NullIf                   []string
@@ -559,8 +559,8 @@ type FileFormatOrc struct {
 
 type FileFormatParquet struct {
 	Id                       SchemaObjectIdentifier
-	Type                     string
-	Compression              string
+	Type                     FileFormatType
+	Compression              ParquetCompression
 	BinaryAsText             bool
 	UseLogicalType           bool
 	TrimSpace                bool
@@ -571,8 +571,8 @@ type FileFormatParquet struct {
 
 type FileFormatXml struct {
 	Id                       SchemaObjectIdentifier
-	Type                     string
-	Compression              string
+	Type                     FileFormatType
+	Compression              XmlCompression
 	IgnoreUtf8Errors         bool
 	PreserveSpace            bool
 	StripOuterElement        bool

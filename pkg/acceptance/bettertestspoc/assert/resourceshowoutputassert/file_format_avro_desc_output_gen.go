@@ -40,13 +40,13 @@ func (f *FileFormatAvroDescribeOutputAssert) HasId(expected sdk.SchemaObjectIden
 	return f
 }
 
-func (f *FileFormatAvroDescribeOutputAssert) HasType(expected string) *FileFormatAvroDescribeOutputAssert {
-	f.StringValueSet("type", expected)
+func (f *FileFormatAvroDescribeOutputAssert) HasType(expected sdk.FileFormatType) *FileFormatAvroDescribeOutputAssert {
+	f.StringValueSet("type", string(expected))
 	return f
 }
 
-func (f *FileFormatAvroDescribeOutputAssert) HasCompression(expected string) *FileFormatAvroDescribeOutputAssert {
-	f.StringValueSet("compression", expected)
+func (f *FileFormatAvroDescribeOutputAssert) HasCompression(expected sdk.AvroCompression) *FileFormatAvroDescribeOutputAssert {
+	f.StringValueSet("compression", string(expected))
 	return f
 }
 

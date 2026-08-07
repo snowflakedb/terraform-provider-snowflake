@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 var (
@@ -724,11 +723,6 @@ func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 		PrimaryKey: r.PrimaryKey == "Y",
 		UniqueKey:  r.UniqueKey == "Y",
 	}
-	if v, err := datatypes.ParseDataType(r.Type); err != nil {
-		return nil, fmt.Errorf("parsing datatypes. data type: %w", err)
-	} else {
-		result.Type = v
-	}
 	mapNullString(&result.SourceIcebergType, r.SourceIcebergType)
 	mapNullString(&result.Default, r.Default)
 	mapNullString(&result.Check, r.Check)
@@ -738,5 +732,8 @@ func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	mapNullString(&result.WriteDefault, r.WriteDefault)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }

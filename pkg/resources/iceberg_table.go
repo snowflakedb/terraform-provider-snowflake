@@ -435,7 +435,7 @@ func handleIcebergTableColumns(columns []sdk.IcebergTableDetails, policyRefs []s
 	return collections.Map(columns, func(column sdk.IcebergTableDetails) map[string]any {
 		columnState := map[string]any{
 			"name":     column.Name,
-			"type":     column.Type.ToSql(),
+			"type":     column.TypeString(),
 			"not_null": booleanStringFromBool(!column.IsNullable),
 		}
 		if column.Comment != nil {

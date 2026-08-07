@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	resourcehelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -21,8 +22,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
+// xmlImportedResourceAssert asserts the state produced by ImportFileFormatXml. Every boolean attribute below
+// always lands on its BooleanDefault sentinel, regardless of the live Snowflake value, to avoid
+// manifesting a config-independent default as a Terraform-managed value - this holds for every scenario.
+// Additional chained assertions cover the remaining, scenario-specific attributes.
+func xmlImportedResourceAssert(t *testing.T, resourceId string) *resourceassert.FileFormatXmlResourceAssert {
+	t.Helper()
+	return resourceassert.ImportedFileFormatXmlResource(t, resourceId).
+		HasIgnoreUtf8Errors(r.BooleanDefault).
+		HasPreserveSpace(r.BooleanDefault).
+		HasStripOuterElement(r.BooleanDefault).
+		HasDisableAutoConvert(r.BooleanDefault).
+		HasReplaceInvalidCharacters(r.BooleanDefault).
+		HasSkipByteOrderMark(r.BooleanDefault)
+}
+
 func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	renamedId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -191,10 +208,14 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			},
 			// import
 			{
-				Config:            config.FromModels(t, basicModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, basicModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					xmlImportedResourceAssert(t, resourceId).
+						HasCompression("AUTO"),
+				),
 			},
 			// set all optional fields
 			{
@@ -203,10 +224,14 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 			},
 			// import with all attributes
 			{
-				Config:            config.FromModels(t, completeModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					xmlImportedResourceAssert(t, resourceId).
+						HasCompression("GZIP"),
+				),
 			},
 			// alter all optional fields (non-recreating change)
 			{
@@ -290,6 +315,7 @@ func TestAcc_FileFormatXml_BasicUseCase(t *testing.T) {
 
 func TestAcc_FileFormatXml_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
 	comment := random.Comment()
 
 	completeModel := model.FileFormatXmlWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name()).
@@ -346,10 +372,14 @@ func TestAcc_FileFormatXml_CompleteUseCase(t *testing.T) {
 			},
 			// import
 			{
-				Config:            config.FromModels(t, completeModel),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       config.FromModels(t, completeModel),
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					xmlImportedResourceAssert(t, resourceId).
+						HasCompression("GZIP"),
+				),
 			},
 		},
 	})
