@@ -16,7 +16,7 @@ import (
 // SHOW GRANTS call during Read. Because one SHOW returns the full result set for whatever it's
 // scoped to (a role, an object, a container), N resource instances that resolve to the same SHOW
 // statement trigger N identical round-trips — only 1 is needed per plan. Callers key the cache by
-// the rendered SQL of the SHOW statement (see sdk.ShowGrantOptionsToSQL), so identical keys are
+// the rendered SQL of the SHOW statement (see sdk.StructToSQL), so identical keys are
 // guaranteed to represent identical queries.
 //
 // The cache is scoped to a single provider instance (= one Terraform plan/apply cycle), so there

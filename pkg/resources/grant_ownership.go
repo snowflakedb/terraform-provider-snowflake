@@ -274,13 +274,10 @@ func CreateGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 
 	d.SetId(id.String())
 
-	// A GrantOwnership call can change more than the OWNERSHIP grant itself: depending on
-	// outbound_privileges (REVOKE|COPY) it can also change other privileges on the same object,
-	// which is exactly the SHOW GRANTS result that snowflake_grant_privileges_to_account_role
-	// (and the other grant resources sharing this object) may have cached. Because the cache key
-	// is the rendered SQL of the SHOW statement, invalidating with our own opts invalidates the
-	// same entry any of those resources would have populated for this object/container.
-	invalidateShowGrantsForOwnershipId(providerCtx, id)
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequestForGrantOwnership(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	return ReadGrantOwnership(ctx, d, meta)
 }
@@ -362,7 +359,8 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 		}
 	}
 
-	invalidateShowGrantsForOwnershipId(providerCtx, id)
+	invalidateOpts, _ := prepareShowGrantsRequestForGrantOwnership(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	d.SetId("")
 
@@ -664,21 +662,6 @@ func prepareShowGrantsRequestForGrantOwnership(id *GrantOwnershipId) (*sdk.ShowG
 	}
 
 	return opts, expectedGrantedOn
-}
-
-// invalidateShowGrantsForOwnershipId invalidates the cached SHOW GRANTS result (if any) for the
-// statement that Read would issue for id, using the same request-building logic as Read
-// (prepareShowGrantsRequestForGrantOwnership) so the invalidated key always matches the cached key.
-// Because that key is shared with other grant resources targeting the same object/container (see
-// the comment at the CreateGrantOwnership call site), this also invalidates their cached view of
-// this object, not just grant_ownership's own. A no-op for id.Kind values whose Read issues no
-// SHOW at all (opts == nil, e.g. OnAllGrantOwnershipKind).
-func invalidateShowGrantsForOwnershipId(providerCtx *provider.Context, id *GrantOwnershipId) {
-	opts, _ := prepareShowGrantsRequestForGrantOwnership(id)
-	if opts == nil {
-		return
-	}
-	invalidateGrantsShowCache(providerCtx, opts)
 }
 
 func createGrantOwnershipIdFromSchema(d *schema.ResourceData) (*GrantOwnershipId, error) {

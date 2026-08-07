@@ -19,26 +19,14 @@ func toPrivileges(privileges []string) ([]string, error) {
 	return collections.MapErr(privileges, sdk.ToPrivilege)
 }
 
-// showGrantsCached issues opts via client.Grants.Show, transparently caching the result in
-// providerCtx.GrantShowCache when the GRANTS_SHOW_CACHING experiment is enabled. It is shared by
-// snowflake_grant_privileges_to_account_role and snowflake_grant_ownership; it is NOT used by
-// snowflake_grant_account_role, which is gated by the separate, longer-standing
-// GRANT_ACCOUNT_ROLE_SHOW_CACHING experiment (see showGrantsOfRoleCacheKey in grant_account_role.go).
-//
-// The cache key is the rendered SQL of opts (sdk.ShowGrantOptionsToSQL), so identical SHOW
-// statements issued from different resource instances/types share one cache entry. Callers that
-// mutate what a given SHOW would return (grant/revoke/ownership-transfer) must invalidate the same
-// key — see grantShowCacheKey — strictly after the mutating SQL executes, not before, so a
-// concurrent Read can't repopulate the cache with pre-mutation data that nothing will invalidate
-// again.
-func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
-	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsShowCaching, providerCtx.EnabledExperiments) {
+// showGrantsCachedFor issues opts via client.Grants.Show, caching the result in
+// providerCtx.GrantShowCache keyed by rendered SQL (sdk.StructToSQL) when experiment is enabled.
+func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
+	if !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
 		return providerCtx.Client.Grants.Show(ctx, opts)
 	}
-	key, err := sdk.ShowGrantOptionsToSQL(opts)
+	key, err := sdk.StructToSQL(opts)
 	if err != nil {
-		// Cache-key rendering should never fail for a well-formed opts value built by this
-		// provider; fall back to an uncached SHOW rather than fail the caller over it.
 		log.Printf("[WARN] failed to render SHOW GRANTS cache key, falling back to uncached SHOW: %s", err)
 		return providerCtx.Client.Grants.Show(ctx, opts)
 	}
@@ -47,19 +35,29 @@ func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *
 	})
 }
 
-// invalidateGrantsShowCache invalidates the GrantShowCache entry for opts, if the GRANTS_SHOW_CACHING
-// experiment is enabled. A no-op (not an error) if opts fails to render or the cache was never
-// populated for it — Invalidate on an absent key is already a documented no-op.
-func invalidateGrantsShowCache(providerCtx *provider.Context, opts *sdk.ShowGrantOptions) {
-	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsShowCaching, providerCtx.EnabledExperiments) {
+// showGrantsCached is showGrantsCachedFor gated on GRANTS_SHOW_CACHING, used by
+// snowflake_grant_privileges_to_account_role and snowflake_grant_ownership.
+func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
+	return showGrantsCachedFor(ctx, providerCtx, experimentalfeatures.GrantsShowCaching, opts)
+}
+
+// invalidateGrantsShowCacheFor invalidates the cached entry for opts under experiment, if enabled.
+// A no-op if opts is nil, rendering fails, or nothing was cached for it.
+func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) {
+	if opts == nil || !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
 		return
 	}
-	key, err := sdk.ShowGrantOptionsToSQL(opts)
+	key, err := sdk.StructToSQL(opts)
 	if err != nil {
 		log.Printf("[WARN] failed to render SHOW GRANTS cache key for invalidation: %s", err)
 		return
 	}
 	providerCtx.GrantShowCache.Invalidate(key)
+}
+
+// invalidateGrantsShowCache is invalidateGrantsShowCacheFor gated on GRANTS_SHOW_CACHING.
+func invalidateGrantsShowCache(providerCtx *provider.Context, opts *sdk.ShowGrantOptions) {
+	invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantsShowCaching, opts)
 }
 
 func isNotOwnershipGrant() func(value any, path cty.Path) diag.Diagnostics {

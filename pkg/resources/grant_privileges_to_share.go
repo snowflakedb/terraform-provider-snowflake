@@ -201,7 +201,10 @@ func CreateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(id.String())
 
-	invalidateShowGrantsForShareId(providerCtx, *id)
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequestForShare(*id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	return ReadGrantPrivilegesToShare(ctx, d, meta)
 }
@@ -284,7 +287,8 @@ func UpdateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 		id.Privileges = privilegesAfterChange
 		d.SetId(id.String())
 
-		invalidateShowGrantsForShareId(providerCtx, id)
+		invalidateOpts, _ := prepareShowGrantsRequestForShare(id)
+		invalidateGrantsShowCache(providerCtx, invalidateOpts)
 	}
 
 	return ReadGrantPrivilegesToShare(ctx, d, meta)
@@ -324,7 +328,8 @@ func DeleteGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 			},
 		}
 	}
-	invalidateShowGrantsForShareId(providerCtx, id)
+	invalidateOpts, _ := prepareShowGrantsRequestForShare(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	d.SetId("")
 
@@ -560,22 +565,6 @@ func getShareGrantOn(d *schema.ResourceData) (*sdk.ShareGrantOn, error) {
 	}
 
 	return grantOn, nil
-}
-
-// invalidateShowGrantsForShareId invalidates the cached SHOW GRANTS result (if any) for the
-// statement that Read would issue for id, using the same request-building logic as Read
-// (prepareShowGrantsRequestForShare) so the invalidated key always matches the cached key. This
-// resource does not itself cache its Read (it is not in scope for the GRANTS_SHOW_CACHING
-// experiment), but it mutates the same SHOW GRANTS ON <object> key space that
-// snowflake_grant_privileges_to_account_role and snowflake_grant_ownership do cache under that
-// experiment — without this, a grant/revoke here could leave a stale cached entry unnoticed for
-// the rest of the plan/apply cycle. A no-op for id.Kind values whose Read issues no SHOW at all.
-func invalidateShowGrantsForShareId(providerCtx *provider.Context, id GrantPrivilegesToShareId) {
-	opts, _ := prepareShowGrantsRequestForShare(id)
-	if opts == nil {
-		return
-	}
-	invalidateGrantsShowCache(providerCtx, opts)
 }
 
 func prepareShowGrantsRequestForShare(id GrantPrivilegesToShareId) (*sdk.ShowGrantOptions, sdk.ObjectType) {

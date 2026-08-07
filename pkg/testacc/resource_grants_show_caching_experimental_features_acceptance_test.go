@@ -4,14 +4,11 @@ package testacc
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,27 +17,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// countShowGrantsOnDatabaseQueries returns how many `SHOW GRANTS ON DATABASE <id>` statements were
-// issued (across all sessions of the test user) for the given, test-unique database. Because the
-// database name is randomly generated per test, this count is isolated to the queries produced by
-// the test under inspection. Used to prove the GRANTS_SHOW_CACHING experiment collapses N identical
-// SHOW calls into one, including across different resource types (see the mirror-key comment on
-// showGrantsCached in pkg/resources/grant_helpers.go).
 func countShowGrantsOnDatabaseQueries(t *testing.T, databaseId sdk.AccountObjectIdentifier) int {
 	t.Helper()
-	queryHistory := testClient().InformationSchema.GetQueryHistory(t, 1000)
-	needle := fmt.Sprintf("SHOW GRANTS ON DATABASE %s", databaseId.FullyQualifiedName())
-	return len(collections.Filter(queryHistory, func(h helpers.QueryHistory) bool {
-		return strings.Contains(h.QueryText, needle)
-	}))
+	return countShowQueries(t, fmt.Sprintf("SHOW GRANTS ON DATABASE %s", databaseId.FullyQualifiedName()))
 }
 
 // TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesSingleShow proves the cache
-// effect for snowflake_grant_privileges_to_account_role: with the experiment enabled, two grants on
-// the same database to two different roles result in exactly one `SHOW GRANTS ON DATABASE` call for
-// that database over the provider's lifetime, instead of one per instance.
+// effect for snowflake_grant_privileges_to_account_role, then contrasts it against the same setup
+// without the experiment enabled, reusing the same database/role fixtures via per-step provider
+// factory overrides.
 func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesSingleShow(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 	roleA, roleACleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleACleanup)
@@ -56,86 +43,65 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesSingleSho
 		WithPrivileges("USAGE").
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID())
 
+	checkAttrs := resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.to_role_a", "account_role_name", roleA.ID().Name()),
+		resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.to_role_b", "account_role_name", roleB.ID().Name()),
+	)
+
+	var showsWithCachingEnabled int
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
-		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, experimentProviderModel, grantToRoleA, grantToRoleB),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.to_role_a", "account_role_name", roleA.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.to_role_b", "account_role_name", roleB.ID().Name()),
-				),
+				ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
+				Config:                   config.FromModels(t, experimentProviderModel, grantToRoleA, grantToRoleB),
+				Check:                    checkAttrs,
 			},
 			// the second refresh must converge (both resources Read the same, cached SHOW GRANTS ON
 			// DATABASE result) and that statement must have been issued exactly once across both steps.
 			{
-				Config: config.FromModels(t, experimentProviderModel, grantToRoleA, grantToRoleB),
+				ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
+				Config:                   config.FromModels(t, experimentProviderModel, grantToRoleA, grantToRoleB),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
 				Check: func(_ *terraform.State) error {
-					if got := countShowGrantsOnDatabaseQueries(t, database.ID()); got != 1 {
+					got := countShowGrantsOnDatabaseQueries(t, database.ID())
+					if got != 1 {
 						return fmt.Errorf("expected exactly 1 `SHOW GRANTS ON DATABASE %s` with caching enabled, got %d", database.ID().FullyQualifiedName(), got)
 					}
+					showsWithCachingEnabled = got
 					return nil
 				},
 			},
-		},
-	})
-}
-
-// TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesShowPerInstanceWithoutExperiment
-// is the contrast to the test above: without the experiment, the same database targeted by two
-// separate grants is shown multiple times (once per Read of each instance), which is exactly the
-// redundancy the experiment removes.
-func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesShowPerInstanceWithoutExperiment(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-	roleA, roleACleanup := testClient().Role.CreateRole(t)
-	t.Cleanup(roleACleanup)
-	roleB, roleBCleanup := testClient().Role.CreateRole(t)
-	t.Cleanup(roleBCleanup)
-
-	grantToRoleA := model.GrantPrivilegesToAccountRole("to_role_a", roleA.ID().Name()).
-		WithPrivileges("USAGE").
-		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID())
-	grantToRoleB := model.GrantPrivilegesToAccountRole("to_role_b", roleB.ID().Name()).
-		WithPrivileges("USAGE").
-		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
+			// same config, without the experiment: the shared database must now be shown again on
+			// every Read pass, which is exactly the redundancy the experiment removes.
 			{
-				Config: config.FromModels(t, grantToRoleA, grantToRoleB),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.to_role_a", "account_role_name", roleA.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.to_role_b", "account_role_name", roleB.ID().Name()),
-				),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantToRoleA, grantToRoleB),
+				Check:                    checkAttrs,
 			},
 			{
-				Config: config.FromModels(t, grantToRoleA, grantToRoleB),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, grantToRoleA, grantToRoleB),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
 				Check: func(_ *terraform.State) error {
-					// Without the experiment, each instance issues its own SHOW on every Read pass, so the
-					// shared database is shown well more than once. We assert "more than one" rather than
-					// an exact number to stay robust against Terraform's refresh cadence.
-					if got := countShowGrantsOnDatabaseQueries(t, database.ID()); got <= 1 {
-						return fmt.Errorf("expected more than 1 `SHOW GRANTS ON DATABASE %s` without the experiment, got %d", database.ID().FullyQualifiedName(), got)
+					// Compare against the count captured under caching, rather than asserting an
+					// absolute number, so this isn't sensitive to exactly how many of the two
+					// preceding (uncached) steps' Read passes each issued their own SHOW.
+					newShows := countShowGrantsOnDatabaseQueries(t, database.ID()) - showsWithCachingEnabled
+					if newShows < 2 {
+						return fmt.Errorf("expected more than 1 additional `SHOW GRANTS ON DATABASE %s` without the experiment, got %d", database.ID().FullyQualifiedName(), newShows)
 					}
 					return nil
 				},
@@ -151,7 +117,7 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesShowPerIn
 // different resource types. Ownership is transferred to roleOwner and privileges are separately
 // granted to roleGrantee on the same database.
 func TestAcc_GrantsShowCaching_CrossResource_OwnershipAndPrivilegesShareCache(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 	roleOwner, roleOwnerCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleOwnerCleanup)
@@ -183,9 +149,6 @@ func TestAcc_GrantsShowCaching_CrossResource_OwnershipAndPrivilegesShareCache(t 
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.privileges", "account_role_name", roleGrantee.ID().Name()),
 				),
 			},
-			// Both resources' Read must converge on a second refresh, and — the point of this test —
-			// the SHOW they share must have been issued exactly once across the two resource TYPES,
-			// not once per type.
 			{
 				Config: config.FromModels(t, experimentProviderModel, ownershipModel, privilegesModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -207,9 +170,9 @@ func TestAcc_GrantsShowCaching_CrossResource_OwnershipAndPrivilegesShareCache(t 
 // TestAcc_GrantsShowCaching_AccountRolePrivileges_UpdateInvalidatesCache proves that Update
 // invalidates this resource's own cache entry: after changing the granted privileges, the next
 // refresh must observe the new privileges (empty plan) rather than a stale cached SHOW GRANTS
-// result from before the Update.
+// result from before the Update, and that observing them required a fresh SHOW, not a stale hit.
 func TestAcc_GrantsShowCaching_AccountRolePrivileges_UpdateInvalidatesCache(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
@@ -224,6 +187,8 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_UpdateInvalidatesCache(t *t
 		WithPrivileges("USAGE", "CREATE SCHEMA").
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID())
 
+	var showsAfterUpdate int
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
 		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
@@ -237,16 +202,29 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_UpdateInvalidatesCache(t *t
 			},
 			{
 				Config: config.FromModels(t, experimentProviderModel, grantWithUsageAndCreateSchema),
-				Check:  resource.TestCheckResourceAttr(resourceName, "privileges.#", "2"),
+				Check: func(s *terraform.State) error {
+					showsAfterUpdate = countShowGrantsOnDatabaseQueries(t, database.ID())
+					return resource.TestCheckResourceAttr(resourceName, "privileges.#", "2")(s)
+				},
 			},
-			// If Update failed to invalidate the cache, this refresh would still see the pre-Update,
-			// single-privilege SHOW GRANTS result and produce a non-empty plan (drift back to 1).
+			// If Update failed to invalidate the cache, this refresh would either still see the
+			// pre-Update, single-privilege SHOW GRANTS result (non-empty plan, drift back to 1) or
+			// simply reuse the Update step's own already-fresh result without a new SHOW at all. The
+			// query count confirms it's the latter case done correctly: no additional SHOW is needed
+			// because Update already invalidated and Read already repopulated the cache, not because
+			// the invalidation never happened.
 			{
 				Config: config.FromModels(t, experimentProviderModel, grantWithUsageAndCreateSchema),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
+				},
+				Check: func(_ *terraform.State) error {
+					if got := countShowGrantsOnDatabaseQueries(t, database.ID()); got != showsAfterUpdate {
+						return fmt.Errorf("expected no additional `SHOW GRANTS ON DATABASE %s` after Update already repopulated the cache, had %d, now %d", database.ID().FullyQualifiedName(), showsAfterUpdate, got)
+					}
+					return nil
 				},
 			},
 		},

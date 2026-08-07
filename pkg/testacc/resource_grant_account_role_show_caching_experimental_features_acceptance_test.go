@@ -20,18 +20,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// countShowGrantsOfRoleQueries returns how many `SHOW GRANTS OF ROLE <id>` statements were issued
-// (across all sessions of the test user) for the given, test-unique role. Because the role name is
-// randomly generated per test, this count is isolated to the queries produced by the test under
-// inspection. Used to prove the GRANT_ACCOUNT_ROLE_SHOW_CACHING experiment collapses N identical
-// SHOW calls into one.
-func countShowGrantsOfRoleQueries(t *testing.T, roleId sdk.AccountObjectIdentifier) int {
+// countShowQueries returns how many queries in the test user's query history contain needle.
+// Callers build a needle unique enough (e.g. including a randomly-generated test identifier) that
+// the count is isolated to the queries the test under inspection actually produced.
+func countShowQueries(t *testing.T, needle string) int {
 	t.Helper()
 	queryHistory := testClient().InformationSchema.GetQueryHistory(t, 1000)
-	needle := fmt.Sprintf("SHOW GRANTS OF ROLE %s", roleId.FullyQualifiedName())
 	return len(collections.Filter(queryHistory, func(h helpers.QueryHistory) bool {
 		return strings.Contains(h.QueryText, needle)
 	}))
+}
+
+// countShowGrantsOfRoleQueries returns how many `SHOW GRANTS OF ROLE <id>` statements were issued
+// for the given, test-unique role.
+func countShowGrantsOfRoleQueries(t *testing.T, roleId sdk.AccountObjectIdentifier) int {
+	t.Helper()
+	return countShowQueries(t, fmt.Sprintf("SHOW GRANTS OF ROLE %s", roleId.FullyQualifiedName()))
 }
 
 // TestAcc_GrantAccountRole_ShowCaching_RoleToRole verifies that granting a role to a parent role

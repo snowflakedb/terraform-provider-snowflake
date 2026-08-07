@@ -459,7 +459,10 @@ func CreateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 
 	d.SetId(id.String())
 
-	invalidateShowGrantsForDatabaseRoleId(providerCtx, *id)
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequest(*id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	return ReadGrantPrivilegesToDatabaseRole(ctx, d, meta)
 }
@@ -668,7 +671,8 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 
 	d.SetId(id.String())
 
-	invalidateShowGrantsForDatabaseRoleId(providerCtx, id)
+	invalidateOpts, _ := prepareShowGrantsRequest(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	return ReadGrantPrivilegesToDatabaseRole(ctx, d, meta)
 }
@@ -699,7 +703,8 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 			},
 		}
 	}
-	invalidateShowGrantsForDatabaseRoleId(providerCtx, id)
+	invalidateOpts, _ := prepareShowGrantsRequest(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	d.SetId("")
 
@@ -840,22 +845,6 @@ func computeDatabaseRolePrivileges(id GrantPrivilegesToDatabaseRoleId, grants []
 	}
 
 	return privileges
-}
-
-// invalidateShowGrantsForDatabaseRoleId invalidates the cached SHOW GRANTS result (if any) for the
-// statement that Read would issue for id, using the same request-building logic as Read
-// (prepareShowGrantsRequest) so the invalidated key always matches the cached key. This resource
-// does not itself cache its Read (it is not in scope for the GRANTS_SHOW_CACHING experiment), but
-// it mutates the same SHOW GRANTS ON <object> / SHOW FUTURE GRANTS IN <container> key space that
-// snowflake_grant_privileges_to_account_role and snowflake_grant_ownership do cache under that
-// experiment — without this, a grant/revoke here could leave a stale cached entry unnoticed for
-// the rest of the plan/apply cycle. A no-op for id.Kind values whose Read issues no SHOW at all.
-func invalidateShowGrantsForDatabaseRoleId(providerCtx *provider.Context, id GrantPrivilegesToDatabaseRoleId) {
-	opts, _ := prepareShowGrantsRequest(id)
-	if opts == nil {
-		return
-	}
-	invalidateGrantsShowCache(providerCtx, opts)
 }
 
 func prepareShowGrantsRequest(id GrantPrivilegesToDatabaseRoleId) (*sdk.ShowGrantOptions, *sdk.ObjectType) {

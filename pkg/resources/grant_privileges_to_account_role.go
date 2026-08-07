@@ -715,10 +715,10 @@ func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(id.String())
 
-	// The grant(s) above may change what a previously cached SHOW GRANTS for this id's target
-	// would return; invalidate after the mutating SQL has executed so the trailing Read below
-	// (and any other Read in this plan/apply cycle) observes the new privileges.
-	invalidateShowGrantsForAccountRoleId(providerCtx, *id)
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequestForAccountRole(*id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	return append(diags, ReadGrantPrivilegesToAccountRole(ctx, d, meta)...)
 }
@@ -952,9 +952,8 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(id.String())
 
-	// See the matching comment in CreateGrantPrivilegesToAccountRole: invalidate after all the
-	// grant/revoke calls above have executed, before the trailing Read re-reads this id's target.
-	invalidateShowGrantsForAccountRoleId(providerCtx, id)
+	invalidateOpts, _ := prepareShowGrantsRequestForAccountRole(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	return append(diags, ReadGrantPrivilegesToAccountRole(ctx, d, meta)...)
 }
@@ -987,7 +986,8 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 			},
 		}
 	}
-	invalidateShowGrantsForAccountRoleId(providerCtx, id)
+	invalidateOpts, _ := prepareShowGrantsRequestForAccountRole(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	d.SetId("")
 
@@ -1167,18 +1167,6 @@ func computePrivileges(id GrantPrivilegesToAccountRoleId, grants []sdk.Grant, gr
 	}
 
 	return actualPrivileges
-}
-
-// invalidateShowGrantsForAccountRoleId invalidates the cached SHOW GRANTS result (if any) for the
-// statement that Read would issue for id, using the same request-building logic as Read
-// (prepareShowGrantsRequestForAccountRole) so the invalidated key always matches the cached key.
-// A no-op for id.Kind values whose Read issues no SHOW at all (opts == nil).
-func invalidateShowGrantsForAccountRoleId(providerCtx *provider.Context, id GrantPrivilegesToAccountRoleId) {
-	opts, _ := prepareShowGrantsRequestForAccountRole(id)
-	if opts == nil {
-		return
-	}
-	invalidateGrantsShowCache(providerCtx, opts)
 }
 
 func prepareShowGrantsRequestForAccountRole(id GrantPrivilegesToAccountRoleId) (*sdk.ShowGrantOptions, *sdk.ObjectType) {
