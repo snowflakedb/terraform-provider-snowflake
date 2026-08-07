@@ -7,4 +7,5 @@ type Context struct {
 	EnabledFeatures      []string
 	EnabledExperiments   []string
 	GrantShowOfRoleCache *Cache[[]sdk.Grant]
+	RoleShowCache        *Cache[*sdk.Role]
 }

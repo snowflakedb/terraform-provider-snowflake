@@ -26,6 +26,39 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(new feature)* ACCOUNT_ROLE_SHOW_CACHING experiment
+
+A new `ACCOUNT_ROLE_SHOW_CACHING` experiment has been added. When enabled, the result of looking up
+an account role by identifier (`SHOW ROLES LIKE '<name>'`, via the underlying `ShowByID`/
+`ShowByIDSafely` calls) is cached in memory for the duration of a single plan or apply cycle, so
+multiple resource instances referencing the same role share one round trip instead of each issuing
+their own.
+
+Currently supported by: `snowflake_account_role`, `snowflake_grant_application_role`,
+`snowflake_grant_privileges_to_account_role`.
+
+Without caching, every lookup of a given role — the role's own `snowflake_account_role` Read, or an
+existence check performed by a grant resource before granting to/from it — issues an independent
+round trip, even when many resource instances reference the same role. The cache is invalidated on
+`snowflake_account_role` Update (rename or comment change) and Delete, since only that resource can
+change what a cached lookup would return.
+
+This is a separate, independent flag from `GRANT_ACCOUNT_ROLE_SHOW_CACHING`: it does **not** affect
+`snowflake_grant_account_role`'s `SHOW GRANTS OF ROLE` caching, and both can be enabled together.
+
+To enable, add `ACCOUNT_ROLE_SHOW_CACHING` to the `experimental_features_enabled` field in the
+provider configuration:
+
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["ACCOUNT_ROLE_SHOW_CACHING"]
+}
+```
+
+No changes to existing configurations are required. The experiment is intended for large
+configurations (thousands of role or grant resources) where plan and apply time is dominated by
+redundant role lookups.
+
 ### *(new feature)* `for_all_person_users` and `for_all_service_users` in account policy attachments
 
 Both `snowflake_account_authentication_policy_attachment` and `snowflake_account_session_policy_attachment` now support attaching a policy to a specific user type via two new mutually-exclusive boolean fields:

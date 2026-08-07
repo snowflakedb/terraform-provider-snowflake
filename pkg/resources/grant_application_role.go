@@ -130,7 +130,8 @@ func CreateContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 }
 
 func ReadContextGrantApplicationRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
 	applicationRoleName := parts[0]
 	applicationRoleIdentifier, err := sdk.ParseDatabaseObjectIdentifier(applicationRoleName)
@@ -154,7 +155,7 @@ func ReadContextGrantApplicationRole(ctx context.Context, d *schema.ResourceData
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if _, err := client.Roles.ShowByID(ctx, roleId); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
+		if _, err := showRoleCached(ctx, providerCtx, roleId); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return diag.Diagnostics{
 				diag.Diagnostic{

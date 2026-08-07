@@ -1046,7 +1046,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	if _, err := client.Roles.ShowByID(ctx, id.RoleName); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
+	if _, err := showRoleCached(ctx, providerCtx, id.RoleName); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
 		d.SetId("")
 		return diag.Diagnostics{
 			diag.Diagnostic{
