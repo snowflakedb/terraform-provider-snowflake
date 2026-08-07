@@ -59,7 +59,7 @@ var _ = ShowApplicationPackageSchema
 
 func ApplicationPackageToSchema(applicationPackage *sdk.ApplicationPackage) map[string]any {
 	applicationPackageSchema := make(map[string]any)
-	applicationPackageSchema["created_on"] = applicationPackage.CreatedOn
+	applicationPackageSchema["created_on"] = applicationPackage.CreatedOn.String()
 	applicationPackageSchema["name"] = applicationPackage.Name
 	applicationPackageSchema["is_default"] = applicationPackage.IsDefault
 	applicationPackageSchema["is_current"] = applicationPackage.IsCurrent
