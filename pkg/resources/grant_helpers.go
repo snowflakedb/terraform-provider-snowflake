@@ -19,8 +19,7 @@ func toPrivileges(privileges []string) ([]string, error) {
 	return collections.MapErr(privileges, sdk.ToPrivilege)
 }
 
-// showGrantsCachedFor issues opts via client.Grants.Show, caching the result in
-// providerCtx.GrantShowCache keyed by rendered SQL (sdk.StructToSQL) when experiment is enabled.
+// showGrantsCachedFor caches client.Grants.Show(opts) under experiment, keyed by sdk.StructToSQL(opts).
 func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
 	if !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
 		return providerCtx.Client.Grants.Show(ctx, opts)
@@ -35,14 +34,10 @@ func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, exp
 	})
 }
 
-// showGrantsCached is showGrantsCachedFor gated on GRANTS_SHOW_CACHING, used by
-// snowflake_grant_privileges_to_account_role and snowflake_grant_ownership.
 func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
 	return showGrantsCachedFor(ctx, providerCtx, experimentalfeatures.GrantsShowCaching, opts)
 }
 
-// invalidateGrantsShowCacheFor invalidates the cached entry for opts under experiment, if enabled.
-// A no-op if opts is nil, rendering fails, or nothing was cached for it.
 func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) {
 	if opts == nil || !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
 		return
@@ -55,7 +50,6 @@ func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment expe
 	providerCtx.GrantShowCache.Invalidate(key)
 }
 
-// invalidateGrantsShowCache is invalidateGrantsShowCacheFor gated on GRANTS_SHOW_CACHING.
 func invalidateGrantsShowCache(providerCtx *provider.Context, opts *sdk.ShowGrantOptions) {
 	invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantsShowCaching, opts)
 }
