@@ -26,6 +26,21 @@ func (c *ExternalAccessIntegrationClient) client() *sdk.Client {
 	return c.context.client
 }
 
+// Create follows the other integration helpers: it creates through the typed client and returns the object.
+func (c *ExternalAccessIntegrationClient) Create(t *testing.T, networkRuleId sdk.SchemaObjectIdentifier) (*sdk.ExternalAccessIntegration, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := c.ids.RandomAccountObjectIdentifier()
+	err := c.client().ExternalAccessIntegrations.Create(ctx, sdk.NewCreateExternalAccessIntegrationRequest(id, []sdk.SchemaObjectIdentifier{networkRuleId}, true))
+	require.NoError(t, err)
+
+	externalAccessIntegration, err := c.client().ExternalAccessIntegrations.ShowByID(ctx, id)
+	require.NoError(t, err)
+
+	return externalAccessIntegration, c.DropExternalAccessIntegrationFunc(t, id)
+}
+
 func (c *ExternalAccessIntegrationClient) CreateExternalAccessIntegration(t *testing.T, networkRuleId sdk.SchemaObjectIdentifier) (sdk.AccountObjectIdentifier, func()) {
 	t.Helper()
 	ctx := context.Background()

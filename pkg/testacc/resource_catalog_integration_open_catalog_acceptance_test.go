@@ -30,8 +30,10 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
-	primaryOAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthCredentials)
-	secondaryOAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthCredentials)
+	oAuthClientId := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientId)
+	oAuthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientSecret)
+	newOAuthClientId := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthClientId)
+	newOAuthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthClientSecret)
 	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
 	privateCatalogUri := fmt.Sprintf("https://%s.privatelink.snowflakecomputing.com/polaris/api/catalog", accountLocator)
 	catalogName := "TEST_CATALOG"
@@ -43,10 +45,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 
 	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
 	privateOAuthTokenUri := privateCatalogUri + "/v1/oauth/tokens"
-	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, primaryOAuthCredentials)
-	newOAuthClientId, newOAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, secondaryOAuthCredentials)
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
 	additionalOAuthAllowedScope := "PRINCIPAL_ROLE:SECONDARY"
+
+	oauthClientSecretVariableName := "oauth_client_secret"
+	oauthClientSecretVariableModel, oauthClientSecretConfigVariables := config.SecretStringVariableModelWithConfigVariables(oauthClientSecretVariableName, oAuthClientSecret)
+	_, oauthClientSecretConfigVariablesSecondary := config.SecretStringVariableModelWithConfigVariables(oauthClientSecretVariableName, newOAuthClientSecret)
 
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -80,35 +84,35 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
 	}
 
-	basic := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, basicRestAuth, basicRestConfig)
+	basic := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, basicRestAuth, basicRestConfig, oauthClientSecretVariableName)
 
-	altered := model.CatalogIntegrationOpenCatalog("t", id.Name(), true, basicRestAuth, basicRestConfig).
+	altered := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), true, basicRestAuth, basicRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds)
 
-	allAttributes := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, completeRestAuth, completeRestConfig).
+	allAttributes := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, completeRestAuth, completeRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(catalogNamespace)
 
-	withChangedCatalogNamespace := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, completeRestAuth, completeRestConfig).
+	withChangedCatalogNamespace := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, completeRestAuth, completeRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedRestConfig := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, basicRestAuth, changedRestConfig).
+	withChangedRestConfig := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, basicRestAuth, changedRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedOAuthClientSecret := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
+	withChangedOAuthClientSecret := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
 		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
-	}, changedRestConfig).
+	}, changedRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedRestAuth := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, changedRestAuth, changedRestConfig).
+	withChangedRestAuth := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, changedRestAuth, changedRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
@@ -443,12 +447,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertions...),
+				Config:          config.FromModels(t, basic, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, basicAssertions...),
 			},
 			// Import
 			{
-				Config:                  config.FromModels(t, basic),
+				Config:                  config.FromModels(t, basic, oauthClientSecretVariableModel),
+				ConfigVariables:         oauthClientSecretConfigVariables,
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -461,8 +467,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, altered),
-				Check:  assertThat(t, alteredProperties...),
+				Config:          config.FromModels(t, altered, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, alteredProperties...),
 			},
 			// Unset
 			{
@@ -471,8 +478,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertionsWithRefreshIntervalZero...),
+				Config:          config.FromModels(t, basic, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, basicAssertionsWithRefreshIntervalZero...),
 			},
 			// Destroy
 			{
@@ -481,8 +489,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
 					},
 				},
-				Config:  config.FromModels(t, basic),
-				Destroy: true,
+				Config:          config.FromModels(t, basic, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Destroy:         true,
 			},
 			// Create with all attributes
 			{
@@ -491,12 +500,14 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
 					},
 				},
-				Config: config.FromModels(t, allAttributes),
-				Check:  assertThat(t, completeAssertions...),
+				Config:          config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, completeAssertions...),
 			},
 			// Import
 			{
-				Config:                  config.FromModels(t, allAttributes),
+				Config:                  config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables:         oauthClientSecretConfigVariables,
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -524,8 +535,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "refresh_interval_seconds", tfjson.ActionUpdate, sdk.String(strconv.Itoa(externalRefreshIntervalSeconds)), sdk.String(strconv.Itoa(refreshIntervalSeconds))),
 					},
 				},
-				Config: config.FromModels(t, allAttributes),
-				Check:  assertThat(t, completeAssertions...),
+				Config:          config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, completeAssertions...),
 			},
 			// Change force new "catalog_namespace" prop
 			{
@@ -534,8 +546,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config: config.FromModels(t, withChangedCatalogNamespace),
-				Check:  assertThat(t, forceNewAssertions...),
+				Config:          config.FromModels(t, withChangedCatalogNamespace, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, forceNewAssertions...),
 			},
 			// Change force new "catalog_namespace" prop externally
 			{
@@ -555,8 +568,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "catalog_namespace", tfjson.ActionDelete, sdk.String(externalCatalogNamespace), sdk.String(newCatalogNamespace)),
 					},
 				},
-				Config: config.FromModels(t, withChangedCatalogNamespace),
-				Check:  assertThat(t, forceNewAssertions...),
+				Config:          config.FromModels(t, withChangedCatalogNamespace, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, forceNewAssertions...),
 			},
 			// Change force new props in "rest_config"
 			{
@@ -565,8 +579,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config: config.FromModels(t, withChangedRestConfig),
-				Check:  assertThat(t, moreForceNewAssertions...),
+				Config:          config.FromModels(t, withChangedRestConfig, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, moreForceNewAssertions...),
 			},
 			// Change force new props in "rest_config" externally
 			{
@@ -591,8 +606,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "rest_config.0.access_delegation_mode", tfjson.ActionDelete, sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)), sdk.String(string(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials))),
 					},
 				},
-				Config: config.FromModels(t, withChangedRestConfig),
-				Check:  assertThat(t, moreForceNewAssertions...),
+				Config:          config.FromModels(t, withChangedRestConfig, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, moreForceNewAssertions...),
 			},
 			// Change alterable "oauth_client_secret" prop in "rest_authentication"
 			{
@@ -601,8 +617,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Config: config.FromModels(t, withChangedOAuthClientSecret),
-				Check:  assertThat(t, moreForceNewAssertionsWithChangedSecret...),
+				Config:          config.FromModels(t, withChangedOAuthClientSecret, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariablesSecondary,
+				Check:           assertThat(t, moreForceNewAssertionsWithChangedSecret...),
 			},
 			// Change force new props in "rest_authentication"
 			{
@@ -611,8 +628,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config: config.FromModels(t, withChangedRestAuth),
-				Check:  assertThat(t, evenMoreForceNewAssertions...),
+				Config:          config.FromModels(t, withChangedRestAuth, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariablesSecondary,
+				Check:           assertThat(t, evenMoreForceNewAssertions...),
 			},
 			// Change force new props in "rest_authentication" externally
 			{
@@ -638,8 +656,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "rest_authentication.0.oauth_allowed_scopes", tfjson.ActionDelete, sdk.String(fmt.Sprintf("[%s]", oAuthAllowedScope)), sdk.String(fmt.Sprintf("[%s %s]", oAuthAllowedScope, additionalOAuthAllowedScope))),
 					},
 				},
-				Config: config.FromModels(t, withChangedRestAuth),
-				Check:  assertThat(t, evenMoreForceNewAssertions...),
+				Config:          config.FromModels(t, withChangedRestAuth, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariablesSecondary,
+				Check:           assertThat(t, evenMoreForceNewAssertions...),
 			},
 			// Change "catalog_source" externally
 			{
@@ -654,8 +673,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
-				Config: config.FromModels(t, withChangedRestAuth),
-				Check:  assertThat(t, evenMoreForceNewAssertions...),
+				Config:          config.FromModels(t, withChangedRestAuth, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariablesSecondary,
+				Check:           assertThat(t, evenMoreForceNewAssertions...),
 			},
 		},
 	})
@@ -820,14 +840,17 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
-	oAuthCredentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthCredentials)
+	oAuthClientId := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientId)
+	oAuthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientSecret)
 	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
 	catalogName := "TEST_CATALOG"
 	catalogNamespace := "TEST_NAMESPACE"
 
 	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
-	oAuthClientId, oAuthClientSecret := testClient().CatalogIntegration.ParseOAuthCredentials(t, oAuthCredentials)
 	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
+
+	oauthClientSecretVariableName := "oauth_client_secret"
+	oauthClientSecretVariableModel, oauthClientSecretConfigVariables := config.SecretStringVariableModelWithConfigVariables(oauthClientSecretVariableName, oAuthClientSecret)
 
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
@@ -843,7 +866,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
 
-	allAttributes := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, completeRestAuth, completeRestConfig).
+	allAttributes := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, completeRestAuth, completeRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(catalogNamespace)
@@ -868,18 +891,19 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 							WithCatalogNamespace(catalogNamespace))
 					testClient().CatalogIntegration.CreateFunc(t, createRequest)
 				},
-				Config:             config.FromModels(t, allAttributes),
+				Config:             config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables:    oauthClientSecretConfigVariables,
 				ResourceName:       ref,
 				ImportState:        true,
 				ImportStateId:      id.FullyQualifiedName(),
 				ImportStatePersist: true,
 			},
 			{
-				Config: config.FromModels(t, allAttributes),
+				Config:          config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(ref, "rest_authentication.0.oauth_client_secret", tfjson.ActionUpdate, sdk.String(""), sdk.String(oAuthClientSecret)),
 					},
 					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),

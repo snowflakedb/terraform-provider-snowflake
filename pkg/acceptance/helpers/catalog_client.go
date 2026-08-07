@@ -2,6 +2,10 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -109,11 +113,35 @@ func (c *CatalogIntegrationClient) DescribeDetails(t *testing.T, id sdk.AccountO
 	return c.client().DescribeDetails(ctx, id)
 }
 
-func (c *CatalogIntegrationClient) ParseOAuthCredentials(t *testing.T, credentials string) (string, string) {
+// RetrieveOpenCatalogBearerToken fetches an OAuth access token from Open Catalog using the
+// client-credentials flow, which can then be used as a bearer token for Iceberg REST catalog integrations.
+// See: https://docs.snowflake.com/en/user-guide/tables-iceberg-configure-catalog-integration-rest-check-config#step-1-retrieve-an-access-token
+func (c *CatalogIntegrationClient) RetrieveOpenCatalogBearerToken(t *testing.T, catalogUri, clientId, clientSecret, scope string) string {
 	t.Helper()
-	parts := strings.Split(credentials, ":")
-	if len(parts) != 2 {
-		t.Fatal("Could not parse OAuth credentials. Expected format: <client_id>:<client_secret>")
+
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+	form.Set("scope", scope)
+	form.Set("client_id", clientId)
+	form.Set("client_secret", clientSecret)
+
+	req, err := http.NewRequest(http.MethodPost, catalogUri+"/v1/oauth/tokens", strings.NewReader(form.Encode()))
+	require.NoError(t, err)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	require.Equal(t, http.StatusOK, resp.StatusCode, "token request failed: %s", body)
+
+	var tokenResponse struct {
+		AccessToken string `json:"access_token"`
 	}
-	return parts[0], parts[1]
+	require.NoError(t, json.Unmarshal(body, &tokenResponse))
+	require.NotEmpty(t, tokenResponse.AccessToken)
+	return tokenResponse.AccessToken
 }

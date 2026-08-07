@@ -535,6 +535,24 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "ExternalAccessIntegration",
+			objectType: sdk.ObjectTypeIntegration,
+			setupObject: func() (IDProvider[sdk.AccountObjectIdentifier], func()) {
+				networkRule, networkRuleCleanup := testClientHelper().NetworkRule.Create(t)
+				eai, eaiCleanup := testClientHelper().ExternalAccessIntegration.Create(t, networkRule.ID())
+				return eai, func() {
+					defer networkRuleCleanup()
+					eaiCleanup()
+				}
+			},
+			setTags: func(id sdk.AccountObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.ExternalAccessIntegrations.Alter(ctx, sdk.NewAlterExternalAccessIntegrationRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.AccountObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.ExternalAccessIntegrations.Alter(ctx, sdk.NewAlterExternalAccessIntegrationRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "ApiAuthenticationWithClientCredentialsFlow",
 			objectType: sdk.ObjectTypeIntegration,
 			setupObject: func() (IDProvider[sdk.AccountObjectIdentifier], func()) {
