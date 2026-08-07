@@ -129,7 +129,9 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 		// computed/server-default fields to populate, so the Read is redundant here. With caching
 		// enabled we skip it to avoid an extra SHOW GRANTS during apply. We still invalidate so any
 		// later Read for this role in the same plan observes the new grant.
-		providerCtx.GrantShowOfRoleCache.Invalidate(roleIdentifier.FullyQualifiedName())
+		invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
+		})
 		log.Printf("[DEBUG] skipping trailing SHOW GRANTS read after create (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleShowCaching)
 		return nil
 	}
@@ -138,7 +140,6 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 
 func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
 	parts := strings.Split(d.Id(), helpers.IDDelimiter)
 	if len(parts) != 3 {
 		return diag.FromErr(fmt.Errorf("invalid ID specified: %v, expected <role_name>|<grantee_object_type>|<grantee_identifier>", d.Id()))
@@ -159,19 +160,10 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 	targetIdentifier := parts[2]
 
-	var grants []sdk.Grant
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
-		cacheKey := roleIdentifier.FullyQualifiedName()
-		grants, err = providerCtx.GrantShowOfRoleCache.GetOrLoad(cacheKey, func(loadCtx context.Context) ([]sdk.Grant, error) {
-			return client.Grants.Show(loadCtx, &sdk.ShowGrantOptions{
-				Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
-			})
-		})
-	} else {
-		grants, err = client.Grants.Show(ctx, &sdk.ShowGrantOptions{
-			Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
-		})
+	showOpts := &sdk.ShowGrantOptions{
+		Of: &sdk.ShowGrantsOf{Role: roleIdentifier},
 	}
+	grants, err := showGrantsCachedFor(ctx, providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, showOpts)
 	if err != nil {
 		log.Printf("[DEBUG] role (%s) not found", roleIdentifier.FullyQualifiedName())
 		d.SetId("")
@@ -231,9 +223,9 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantAccountRoleShowCaching, providerCtx.EnabledExperiments) {
-		providerCtx.GrantShowOfRoleCache.Invalidate(id.FullyQualifiedName())
-	}
+	invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantAccountRoleShowCaching, &sdk.ShowGrantOptions{
+		Of: &sdk.ShowGrantsOf{Role: id},
+	})
 	d.SetId("")
 	return nil
 }

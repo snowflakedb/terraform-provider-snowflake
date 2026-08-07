@@ -1,9 +1,13 @@
 package resources
 
 import (
+	"context"
+	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,6 +17,41 @@ import (
 // It is used when parsing untrusted input (e.g. resource identifiers during import).
 func toPrivileges(privileges []string) ([]string, error) {
 	return collections.MapErr(privileges, sdk.ToPrivilege)
+}
+
+// showGrantsCachedFor caches client.Grants.Show(opts) under experiment, keyed by sdk.StructToSQL(opts).
+func showGrantsCachedFor(ctx context.Context, providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
+	if !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
+		return providerCtx.Client.Grants.Show(ctx, opts)
+	}
+	key, err := sdk.StructToSQL(opts)
+	if err != nil {
+		log.Printf("[WARN] failed to render SHOW GRANTS cache key, falling back to uncached SHOW: %s", err)
+		return providerCtx.Client.Grants.Show(ctx, opts)
+	}
+	return providerCtx.GrantShowCache.GetOrLoad(ctx, key, func(loadCtx context.Context) ([]sdk.Grant, error) {
+		return providerCtx.Client.Grants.Show(loadCtx, opts)
+	})
+}
+
+func showGrantsCached(ctx context.Context, providerCtx *provider.Context, opts *sdk.ShowGrantOptions) ([]sdk.Grant, error) {
+	return showGrantsCachedFor(ctx, providerCtx, experimentalfeatures.GrantsShowCaching, opts)
+}
+
+func invalidateGrantsShowCacheFor(providerCtx *provider.Context, experiment experimentalfeatures.ExperimentalFeature, opts *sdk.ShowGrantOptions) {
+	if opts == nil || !experimentalfeatures.IsExperimentEnabled(experiment, providerCtx.EnabledExperiments) {
+		return
+	}
+	key, err := sdk.StructToSQL(opts)
+	if err != nil {
+		log.Printf("[WARN] failed to render SHOW GRANTS cache key for invalidation: %s", err)
+		return
+	}
+	providerCtx.GrantShowCache.Invalidate(key)
+}
+
+func invalidateGrantsShowCache(providerCtx *provider.Context, opts *sdk.ShowGrantOptions) {
+	invalidateGrantsShowCacheFor(providerCtx, experimentalfeatures.GrantsShowCaching, opts)
 }
 
 func isNotOwnershipGrant() func(value any, path cty.Path) diag.Diagnostics {

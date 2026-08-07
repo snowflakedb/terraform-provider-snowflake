@@ -3,6 +3,9 @@ package sdk
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGrantPrivilegesToAccountRole(t *testing.T) {
@@ -1284,6 +1287,26 @@ func TestGrantShow(t *testing.T) {
 		}
 		assertOptsValidAndSQLEquals(t, opts, "SHOW GRANTS OF SHARE %s", shareID.FullyQualifiedName())
 	})
+}
+
+// TestStructToSQL_MatchesGrantsShow covers the property StructToSQL is relied on for as a cache
+// key: it must render exactly what Grants.Show would issue for the same opts.
+func TestStructToSQL_MatchesGrantsShow(t *testing.T) {
+	opts := &ShowGrantOptions{
+		On: &ShowGrantsOn{
+			Object: &Object{
+				ObjectType: ObjectTypeDatabase,
+				Name:       randomAccountObjectIdentifier(),
+			},
+		},
+	}
+
+	expected, err := structToSQL(opts)
+	require.NoError(t, err)
+
+	actual, err := StructToSQL(opts)
+	require.NoError(t, err)
+	assert.Equal(t, expected, actual)
 }
 
 func TestGrantInheritedPrivilegesToAccountRole(t *testing.T) {

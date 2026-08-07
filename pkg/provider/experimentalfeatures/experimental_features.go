@@ -25,6 +25,7 @@ const (
 	TagAssociationSafeDestroy            ExperimentalFeature = "TAG_ASSOCIATION_SAFE_DESTROY"
 	GrantAccountRoleSafePublicRole       ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE"
 	GrantAccountRoleShowCaching          ExperimentalFeature = "GRANT_ACCOUNT_ROLE_SHOW_CACHING"
+	GrantsShowCaching                    ExperimentalFeature = "GRANTS_SHOW_CACHING"
 	HierarchyRenames                     ExperimentalFeature = "HIERARCHY_RENAMES"
 	InheritedGrants                      ExperimentalFeature = "INHERITED_GRANTS"
 	ObjectParameterUnsetOnDelete         ExperimentalFeature = "OBJECT_PARAMETER_UNSET_ON_DELETE"
@@ -154,6 +155,18 @@ var allExperiments = []Experiment{
 			"When enabled, the first Read for a given role fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create and Delete so mutations within a single apply remain visible to subsequent Reads.",
 			"Additionally, the trailing Read at the end of Create is skipped (this resource has no computed or server-default fields to populate), removing a redundant `SHOW GRANTS OF ROLE` call per grant during apply.",
 			"Intended for large configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.",
+		),
+	},
+	{
+		GrantsShowCaching,
+		ExperimentalFeatureStateActive,
+		joinWithDoubleNewline(
+			"When enabled, `SHOW GRANTS` results are cached in memory for the duration of a single plan or apply cycle, so multiple resource instances resolving to the same underlying SHOW statement share one round-trip instead of each issuing their own.",
+			"Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_ownership`.",
+			"Without caching, every resource instance issues an independent `SHOW GRANTS ON <object>` / `SHOW FUTURE GRANTS IN <container>` call during Read. In configurations with many grants resolving to the same underlying SHOW statement (e.g. many privilege grants on the same schema, or many future-grant roles on the same database), this results in N identical round-trips returning the same full result set — only 1 is needed.",
+			"The first Read for a given SHOW statement fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create, Update, and Delete of the resources listed above so mutations within a single apply remain visible to subsequent Reads.",
+			fmt.Sprintf("This is a separate flag from `%s`: enabling this does not enable caching for `snowflake_grant_account_role`, and vice versa. Both can be enabled together.", GrantAccountRoleShowCaching),
+			"Intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.",
 		),
 	},
 	{

@@ -36,7 +36,7 @@ func TestCache_MissCallsLoadFn(t *testing.T) {
 	calls := 0
 	grants := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 
-	result, err := cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) {
+	result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) {
 		calls++
 		return grants, nil
 	})
@@ -52,7 +52,7 @@ func TestCache_HitSkipsLoadFn(t *testing.T) {
 	grants := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 
 	for range 3 {
-		result, err := cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) {
+		result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) {
 			calls++
 			return grants, nil
 		})
@@ -66,9 +66,9 @@ func TestCache_InvalidateForcesMiss(t *testing.T) {
 	cache := NewCache[[]sdk.Grant]()
 	calls := 0
 
-	_, _ = cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) { calls++; return nil, nil })
+	_, _ = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) { calls++; return nil, nil })
 	cache.Invalidate("ROLE_A")
-	_, _ = cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) { calls++; return nil, nil })
+	_, _ = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) { calls++; return nil, nil })
 
 	assert.Equal(t, 2, calls, "loadFn should be called again after invalidation")
 }
@@ -84,7 +84,7 @@ func TestCache_ErrorNotCached(t *testing.T) {
 	boom := errors.New("snowflake unavailable")
 
 	for range 2 {
-		_, err := cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) {
+		_, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) {
 			calls++
 			return nil, boom
 		})
@@ -98,14 +98,14 @@ func TestCache_KeysAreIndependent(t *testing.T) {
 	grantsA := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 	grantsB := []sdk.Grant{{GrantedTo: sdk.ObjectTypeUser}}
 
-	resultA, _ := cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grantsA, nil })
-	resultB, _ := cache.GetOrLoad("ROLE_B", func(context.Context) ([]sdk.Grant, error) { return grantsB, nil })
+	resultA, _ := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grantsA, nil })
+	resultB, _ := cache.GetOrLoad(context.Background(), "ROLE_B", func(context.Context) ([]sdk.Grant, error) { return grantsB, nil })
 
 	assert.Equal(t, grantsA, resultA)
 	assert.Equal(t, grantsB, resultB)
 
 	// Second load for A must still return A's grants, not B's.
-	resultA2, _ := cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grantsB, nil })
+	resultA2, _ := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grantsB, nil })
 	assert.Equal(t, grantsA, resultA2)
 }
 
@@ -113,12 +113,12 @@ func TestCache_ConcurrentReadsAreSafe(t *testing.T) {
 	cache := NewCache[[]sdk.Grant]()
 	grants := []sdk.Grant{{GrantedTo: sdk.ObjectTypeRole}}
 	// Prime the cache.
-	_, _ = cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grants, nil })
+	_, _ = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grants, nil })
 
 	var wg sync.WaitGroup
 	for range 100 {
 		wg.Go(func() {
-			result, err := cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grants, nil })
+			result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grants, nil })
 			assert.NoError(t, err)
 			assert.Equal(t, grants, result)
 		})
@@ -135,7 +135,7 @@ func TestCache_ConcurrentWritesAreSafe(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			_, _ = cache.GetOrLoad("ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grants, nil })
+			_, _ = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) ([]sdk.Grant, error) { return grants, nil })
 			if i%5 == 0 {
 				cache.Invalidate("ROLE_A")
 			}
@@ -151,7 +151,7 @@ func TestCache_GenericValueType(t *testing.T) {
 	calls := 0
 
 	for range 3 {
-		result, err := cache.GetOrLoad("answer", func(context.Context) (int, error) {
+		result, err := cache.GetOrLoad(context.Background(), "answer", func(context.Context) (int, error) {
 			calls++
 			return 42, nil
 		})
@@ -162,7 +162,7 @@ func TestCache_GenericValueType(t *testing.T) {
 
 	// Error path returns the zero value of the type parameter.
 	boom := errors.New("boom")
-	result, err := cache.GetOrLoad("missing", func(context.Context) (int, error) { return 7, boom })
+	result, err := cache.GetOrLoad(context.Background(), "missing", func(context.Context) (int, error) { return 7, boom })
 	assert.ErrorIs(t, err, boom)
 	assert.Equal(t, 0, result, "error path must return the zero value of T")
 }
@@ -184,7 +184,7 @@ func TestCache_ConcurrentMissesOnDifferentKeysRunInParallel(t *testing.T) {
 	for i := range n {
 		wg.Go(func() {
 			key := fmt.Sprintf("ROLE_%d", i)
-			_, err := cache.GetOrLoad(key, func(context.Context) (int, error) {
+			_, err := cache.GetOrLoad(context.Background(), key, func(context.Context) (int, error) {
 				started <- struct{}{} // I have started running.
 				<-release             // Block until everyone has started.
 				return i, nil
@@ -220,7 +220,7 @@ func TestCache_ConcurrentMissesOnSameKeyCollapseToOneLoad(t *testing.T) {
 	var wg sync.WaitGroup
 	for range n {
 		wg.Go(func() {
-			result, err := cache.GetOrLoad("ROLE_A", func(context.Context) (int, error) {
+			result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
 				calls.Add(1)
 				started <- struct{}{}
 				<-proceed // keep the in-flight call open to widen the dedup window
@@ -238,4 +238,56 @@ func TestCache_ConcurrentMissesOnSameKeyCollapseToOneLoad(t *testing.T) {
 	waitTimeout(t, &wg, 30*time.Second)
 	assert.Equal(t, int64(1), calls.Load(),
 		"concurrent misses on the same key must collapse to exactly one loadFn call")
+}
+
+// TestCache_CallerCtxPropagatesToLoadFn proves that GetOrLoad's ctx parameter (the Terraform
+// resource's ctx, in production) reaches loadFn rather than being silently replaced by
+// context.Background(). This is what makes resource Timeouts and plan cancellation take effect
+// on a cache miss.
+func TestCache_CallerCtxPropagatesToLoadFn(t *testing.T) {
+	cache := NewCache[int]()
+	type ctxKey struct{}
+	ctx := context.WithValue(context.Background(), ctxKey{}, "caller-value")
+
+	var observed any
+	_, err := cache.GetOrLoad(ctx, "ROLE_A", func(loadCtx context.Context) (int, error) {
+		observed = loadCtx.Value(ctxKey{})
+		return 1, nil
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, "caller-value", observed, "loadFn must receive a ctx derived from the caller's ctx")
+}
+
+// TestCache_CancelingCallerCtxCancelsLoad proves that canceling the ctx passed to GetOrLoad
+// cancels the in-flight loadFn (via the ctx.WithCancel derivation), and that the resulting
+// error is surfaced to the caller rather than a stale/partial result being cached.
+func TestCache_CancelingCallerCtxCancelsLoad(t *testing.T) {
+	cache := NewCache[int]()
+	ctx, cancel := context.WithCancel(context.Background())
+
+	started := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(1)
+	var loadErr error
+	go func() {
+		defer wg.Done()
+		_, loadErr = cache.GetOrLoad(ctx, "ROLE_A", func(loadCtx context.Context) (int, error) {
+			close(started)
+			<-loadCtx.Done()
+			return 0, loadCtx.Err()
+		})
+	}()
+
+	<-started
+	cancel()
+	waitTimeout(t, &wg, 5*time.Second)
+
+	assert.ErrorIs(t, loadErr, context.Canceled)
+
+	// The canceled load must not have poisoned the cache: a fresh GetOrLoad with a live ctx
+	// should retry loadFn rather than replaying the canceled error or a cached zero value.
+	result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) { return 42, nil })
+	require.NoError(t, err)
+	assert.Equal(t, 42, result)
 }
