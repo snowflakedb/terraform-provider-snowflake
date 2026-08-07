@@ -5,6 +5,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 type Applications interface {
@@ -95,23 +96,23 @@ type ShowApplicationOptions struct {
 }
 
 type applicationRow struct {
-	CreatedOn     string `db:"created_on"`
-	Name          string `db:"name"`
-	IsDefault     string `db:"is_default"`
-	IsCurrent     string `db:"is_current"`
-	SourceType    string `db:"source_type"`
-	Source        string `db:"source"`
-	Owner         string `db:"owner"`
-	Comment       string `db:"comment"`
-	Version       string `db:"version"`
-	Label         string `db:"label"`
-	Patch         int    `db:"patch"`
-	Options       string `db:"options"`
-	RetentionTime int    `db:"retention_time"`
+	CreatedOn     time.Time `db:"created_on"`
+	Name          string    `db:"name"`
+	IsDefault     string    `db:"is_default"`
+	IsCurrent     string    `db:"is_current"`
+	SourceType    string    `db:"source_type"`
+	Source        string    `db:"source"`
+	Owner         string    `db:"owner"`
+	Comment       string    `db:"comment"`
+	Version       string    `db:"version"`
+	Label         string    `db:"label"`
+	Patch         int       `db:"patch"`
+	Options       string    `db:"options"`
+	RetentionTime int       `db:"retention_time"`
 }
 
 type Application struct {
-	CreatedOn     string
+	CreatedOn     time.Time
 	Name          string
 	IsDefault     bool
 	IsCurrent     bool
