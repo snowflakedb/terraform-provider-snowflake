@@ -6,6 +6,405 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func init() {
+	fileFormatsTests.CreateCsv.
+		withExpectedSqlf(case_FileFormats_sql_CreateCsv_basic,
+			`CREATE FILE FORMAT %s TYPE = CSV`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName()).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_CreateCsv_all,
+			func(opts *CreateCsvFileFormatOptions) {
+				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
+				opts.Compression = new(CsvCompressionGzip)
+				opts.RecordDelimiter = &StageFileFormatStringOrNone{Value: new("\\n")}
+				opts.FieldDelimiter = &StageFileFormatStringOrNone{Value: new(",")}
+				opts.MultiLine = new(true)
+				opts.FileExtension = new(".csv")
+				opts.SkipHeader = new(2)
+				opts.SkipBlankLines = new(true)
+				opts.DateFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")}
+				opts.TimeFormat = &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")}
+				opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")}
+				opts.BinaryFormat = new(BinaryFormatHex)
+				opts.Escape = &StageFileFormatStringOrNone{Value: new("\\")}
+				opts.EscapeUnenclosedField = &StageFileFormatStringOrNone{Value: new("\\")}
+				opts.TrimSpace = new(true)
+				opts.FieldOptionallyEnclosedBy = &StageFileFormatStringOrNone{Value: new("\"")}
+				opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}}
+				opts.ErrorOnColumnCountMismatch = new(true)
+				opts.ReplaceInvalidCharacters = new(true)
+				opts.EmptyFieldAsNull = new(true)
+				opts.SkipByteOrderMark = new(true)
+				opts.Encoding = new(CsvEncodingUtf8)
+				opts.Comment = new("some comment")
+			},
+			`CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = CSV COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8 COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsTests.CreateJson.
+		withExpectedSqlf(case_FileFormats_sql_CreateJson_basic,
+			`CREATE FILE FORMAT %s TYPE = JSON`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName()).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_CreateJson_all,
+			func(opts *CreateJsonFileFormatOptions) {
+				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
+				opts.Compression = new(JsonCompressionGzip)
+				opts.DateFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")}
+				opts.TimeFormat = &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")}
+				opts.TimestampFormat = &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")}
+				opts.BinaryFormat = new(BinaryFormatBase64)
+				opts.TrimSpace = new(true)
+				opts.MultiLine = new(true)
+				opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}}}
+				opts.FileExtension = new(".json")
+				opts.EnableOctal = new(true)
+				opts.AllowDuplicate = new(true)
+				opts.StripOuterArray = new(true)
+				opts.StripNullValues = new(true)
+				opts.IgnoreUtf8Errors = new(true)
+				opts.SkipByteOrderMark = new(true)
+				opts.Comment = new("some comment")
+			},
+			`CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = JSON COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsTests.CreateAvro.
+		withExpectedSqlf(case_FileFormats_sql_CreateAvro_basic,
+			`CREATE FILE FORMAT %s TYPE = AVRO`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName()).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_CreateAvro_all,
+			func(opts *CreateAvroFileFormatOptions) {
+				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
+				opts.Compression = new(AvroCompressionGzip)
+				opts.TrimSpace = new(true)
+				opts.ReplaceInvalidCharacters = new(true)
+				opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}}
+				opts.Comment = new("some comment")
+			},
+			`CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = AVRO COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsTests.CreateOrc.
+		withExpectedSqlf(case_FileFormats_sql_CreateOrc_basic,
+			`CREATE FILE FORMAT %s TYPE = ORC`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName()).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_CreateOrc_all,
+			func(opts *CreateOrcFileFormatOptions) {
+				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
+				opts.TrimSpace = new(true)
+				opts.ReplaceInvalidCharacters = new(true)
+				opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}}}
+				opts.Comment = new("some comment")
+			},
+			`CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsTests.CreateParquet.
+		withModify(case_FileFormats_validation_CreateParquet_opts_ConflictingFields, func(opts *CreateParquetFileFormatOptions) {
+			opts.Compression = new(ParquetCompressionSnappy)
+			opts.SnappyCompression = new(true)
+		}).
+		withExpectedSqlf(case_FileFormats_sql_CreateParquet_basic,
+			`CREATE FILE FORMAT %s TYPE = PARQUET`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName()).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_CreateParquet_all,
+			func(opts *CreateParquetFileFormatOptions) {
+				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
+				opts.Compression = new(ParquetCompressionSnappy)
+				opts.BinaryAsText = new(true)
+				opts.UseLogicalType = new(true)
+				opts.TrimSpace = new(true)
+				opts.UseVectorizedScanner = new(true)
+				opts.ReplaceInvalidCharacters = new(true)
+				opts.NullIf = &NullIfList{NullIf: []NullString{{S: "NULL"}}}
+				opts.Comment = new("some comment")
+			},
+			`CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = PARQUET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsTests.CreateXml.
+		withExpectedSqlf(case_FileFormats_sql_CreateXml_basic,
+			`CREATE FILE FORMAT %s TYPE = XML`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName()).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_CreateXml_all,
+			func(opts *CreateXmlFileFormatOptions) {
+				opts.OrReplace = new(true)
+				opts.IfNotExists = new(true)
+				opts.Compression = new(XmlCompressionGzip)
+				opts.IgnoreUtf8Errors = new(true)
+				opts.PreserveSpace = new(true)
+				opts.StripOuterElement = new(true)
+				opts.DisableSnowflakeData = new(true)
+				opts.DisableAutoConvert = new(true)
+				opts.SkipByteOrderMark = new(true)
+				opts.Comment = new("some comment")
+			},
+			`CREATE OR REPLACE FILE FORMAT IF NOT EXISTS %s TYPE = XML COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsAlterCsvRenameTarget := randomSchemaObjectIdentifierInSchema(fileFormatsTestIdSchemaObjectIdentifier.SchemaId())
+	fileFormatsTests.AlterCsv.
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterCsv_RenameTo,
+			func(opts *AlterCsvFileFormatOptions) { opts.RenameTo = &fileFormatsAlterCsvRenameTarget },
+			`ALTER FILE FORMAT %s RENAME TO %s`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(), fileFormatsAlterCsvRenameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterCsv_Set,
+			func(opts *AlterCsvFileFormatOptions) {
+				opts.IfExists = new(true)
+				opts.Set = &AlterCsvFileFormatSet{
+					Compression:                new(CsvCompressionGzip),
+					RecordDelimiter:            &StageFileFormatStringOrNone{Value: new("\\n")},
+					FieldDelimiter:             &StageFileFormatStringOrNone{Value: new(",")},
+					MultiLine:                  new(true),
+					FileExtension:              new(".csv"),
+					SkipHeader:                 new(2),
+					SkipBlankLines:             new(true),
+					DateFormat:                 &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+					TimeFormat:                 &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+					TimestampFormat:            &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+					BinaryFormat:               new(BinaryFormatHex),
+					Escape:                     &StageFileFormatStringOrNone{Value: new("\\")},
+					EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: new("\\")},
+					TrimSpace:                  new(true),
+					FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: new("\"")},
+					NullIf:                     &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
+					ErrorOnColumnCountMismatch: new(true),
+					ReplaceInvalidCharacters:   new(true),
+					EmptyFieldAsNull:           new(true),
+					SkipByteOrderMark:          new(true),
+					Encoding:                   new(CsvEncodingUtf8),
+					Comment:                    new("some comment"),
+				}
+			},
+			`ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP RECORD_DELIMITER = '\\n' FIELD_DELIMITER = ',' MULTI_LINE = true FILE_EXTENSION = '.csv' SKIP_HEADER = 2 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = HEX ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '\\' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('NULL', '') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = UTF8 COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterCsv_SetNullIfEmptyList",
+			func(opts *AlterCsvFileFormatOptions) {
+				opts.Set = &AlterCsvFileFormatSet{NullIf: &NullIfList{}}
+			},
+			`ALTER FILE FORMAT %s SET NULL_IF = ()`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsAlterJsonRenameTarget := randomSchemaObjectIdentifierInSchema(fileFormatsTestIdSchemaObjectIdentifier.SchemaId())
+	fileFormatsTests.AlterJson.
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterJson_RenameTo,
+			func(opts *AlterJsonFileFormatOptions) { opts.RenameTo = &fileFormatsAlterJsonRenameTarget },
+			`ALTER FILE FORMAT %s RENAME TO %s`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(), fileFormatsAlterJsonRenameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterJson_Set,
+			func(opts *AlterJsonFileFormatOptions) {
+				opts.IfExists = new(true)
+				opts.Set = &AlterJsonFileFormatSet{
+					Compression:       new(JsonCompressionGzip),
+					DateFormat:        &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+					TimeFormat:        &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+					TimestampFormat:   &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+					BinaryFormat:      new(BinaryFormatBase64),
+					TrimSpace:         new(true),
+					MultiLine:         new(true),
+					NullIf:            &NullIfList{NullIf: []NullString{{S: "NULL"}}},
+					FileExtension:     new(".json"),
+					EnableOctal:       new(true),
+					AllowDuplicate:    new(true),
+					StripOuterArray:   new(true),
+					StripNullValues:   new(true),
+					IgnoreUtf8Errors:  new(true),
+					SkipByteOrderMark: new(true),
+					Comment:           new("some comment"),
+				}
+			},
+			`ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH24:MI:SS' TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS' BINARY_FORMAT = BASE64 TRIM_SPACE = true MULTI_LINE = true NULL_IF = ('NULL') FILE_EXTENSION = '.json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true IGNORE_UTF8_ERRORS = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterJson_SetNullIfEmptyList",
+			func(opts *AlterJsonFileFormatOptions) {
+				opts.Set = &AlterJsonFileFormatSet{NullIf: &NullIfList{}}
+			},
+			`ALTER FILE FORMAT %s SET NULL_IF = ()`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsAlterAvroRenameTarget := randomSchemaObjectIdentifierInSchema(fileFormatsTestIdSchemaObjectIdentifier.SchemaId())
+	fileFormatsTests.AlterAvro.
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterAvro_RenameTo,
+			func(opts *AlterAvroFileFormatOptions) { opts.RenameTo = &fileFormatsAlterAvroRenameTarget },
+			`ALTER FILE FORMAT %s RENAME TO %s`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(), fileFormatsAlterAvroRenameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterAvro_Set,
+			func(opts *AlterAvroFileFormatOptions) {
+				opts.IfExists = new(true)
+				opts.Set = &AlterAvroFileFormatSet{
+					Compression:              new(AvroCompressionGzip),
+					TrimSpace:                new(true),
+					ReplaceInvalidCharacters: new(true),
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
+					Comment:                  new("some comment"),
+				}
+			},
+			`ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL', '') COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterAvro_SetNullIfEmptyList",
+			func(opts *AlterAvroFileFormatOptions) {
+				opts.Set = &AlterAvroFileFormatSet{NullIf: &NullIfList{}}
+			},
+			`ALTER FILE FORMAT %s SET NULL_IF = ()`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsAlterOrcRenameTarget := randomSchemaObjectIdentifierInSchema(fileFormatsTestIdSchemaObjectIdentifier.SchemaId())
+	fileFormatsTests.AlterOrc.
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterOrc_RenameTo,
+			func(opts *AlterOrcFileFormatOptions) { opts.RenameTo = &fileFormatsAlterOrcRenameTarget },
+			`ALTER FILE FORMAT %s RENAME TO %s`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(), fileFormatsAlterOrcRenameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterOrc_Set,
+			func(opts *AlterOrcFileFormatOptions) {
+				opts.IfExists = new(true)
+				opts.Set = &AlterOrcFileFormatSet{
+					TrimSpace:                new(true),
+					ReplaceInvalidCharacters: new(true),
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
+					Comment:                  new("some comment"),
+				}
+			},
+			`ALTER FILE FORMAT IF EXISTS %s SET TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterOrc_SetNullIfEmptyList",
+			func(opts *AlterOrcFileFormatOptions) {
+				opts.Set = &AlterOrcFileFormatSet{NullIf: &NullIfList{}}
+			},
+			`ALTER FILE FORMAT %s SET NULL_IF = ()`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsAlterParquetRenameTarget := randomSchemaObjectIdentifierInSchema(fileFormatsTestIdSchemaObjectIdentifier.SchemaId())
+	fileFormatsTests.AlterParquet.
+		withModify(case_FileFormats_validation_AlterParquet_opts_Set_ConflictingFields, func(opts *AlterParquetFileFormatOptions) {
+			opts.Set = &AlterParquetFileFormatSet{
+				Compression:       new(ParquetCompressionSnappy),
+				SnappyCompression: new(true),
+			}
+		}).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterParquet_RenameTo,
+			func(opts *AlterParquetFileFormatOptions) { opts.RenameTo = &fileFormatsAlterParquetRenameTarget },
+			`ALTER FILE FORMAT %s RENAME TO %s`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(), fileFormatsAlterParquetRenameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterParquet_Set,
+			func(opts *AlterParquetFileFormatOptions) {
+				opts.IfExists = new(true)
+				opts.Set = &AlterParquetFileFormatSet{
+					Compression:              new(ParquetCompressionSnappy),
+					BinaryAsText:             new(true),
+					UseLogicalType:           new(true),
+					TrimSpace:                new(true),
+					UseVectorizedScanner:     new(true),
+					ReplaceInvalidCharacters: new(true),
+					NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
+					Comment:                  new("some comment"),
+				}
+			},
+			`ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = SNAPPY BINARY_AS_TEXT = true USE_LOGICAL_TYPE = true TRIM_SPACE = true USE_VECTORIZED_SCANNER = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('NULL') COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterParquet_SetNullIfEmptyList",
+			func(opts *AlterParquetFileFormatOptions) {
+				opts.Set = &AlterParquetFileFormatSet{NullIf: &NullIfList{}}
+			},
+			`ALTER FILE FORMAT %s SET NULL_IF = ()`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsAlterXmlRenameTarget := randomSchemaObjectIdentifierInSchema(fileFormatsTestIdSchemaObjectIdentifier.SchemaId())
+	fileFormatsTests.AlterXml.
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterXml_RenameTo,
+			func(opts *AlterXmlFileFormatOptions) { opts.RenameTo = &fileFormatsAlterXmlRenameTarget },
+			`ALTER FILE FORMAT %s RENAME TO %s`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(), fileFormatsAlterXmlRenameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_AlterXml_Set,
+			func(opts *AlterXmlFileFormatOptions) {
+				opts.IfExists = new(true)
+				opts.Set = &AlterXmlFileFormatSet{
+					Compression:          new(XmlCompressionGzip),
+					IgnoreUtf8Errors:     new(true),
+					PreserveSpace:        new(true),
+					StripOuterElement:    new(true),
+					DisableSnowflakeData: new(true),
+					DisableAutoConvert:   new(true),
+					SkipByteOrderMark:    new(true),
+					Comment:              new("some comment"),
+				}
+			},
+			`ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = GZIP IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'some comment'`,
+			fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsTests.Drop.
+		withExpectedSqlf(case_FileFormats_sql_Drop_basic,
+			`DROP FILE FORMAT %s`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName()).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_Drop_all,
+			func(opts *DropFileFormatOptions) { opts.IfExists = new(true) },
+			`DROP FILE FORMAT IF EXISTS %s`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		)
+
+	fileFormatsTests.Show.
+		withExpectedSql(case_FileFormats_sql_Show_basic, `SHOW FILE FORMATS`).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_Show_all,
+			func(opts *ShowFileFormatOptions) {
+				opts.Like = &Like{Pattern: new("some_pattern")}
+				opts.In = &In{Schema: NewDatabaseObjectIdentifier("db", "schema")}
+			},
+			`SHOW FILE FORMATS LIKE 'some_pattern' IN SCHEMA "db"."schema"`,
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_Show_Like,
+			func(opts *ShowFileFormatOptions) { opts.Like = &Like{Pattern: new("some_pattern")} },
+			`SHOW FILE FORMATS LIKE 'some_pattern'`,
+		).
+		withModifyAndExpectedSqlf(
+			case_FileFormats_sql_Show_In,
+			func(opts *ShowFileFormatOptions) { opts.In = &In{Schema: NewDatabaseObjectIdentifier("db", "schema")} },
+			`SHOW FILE FORMATS IN SCHEMA "db"."schema"`,
+		)
+
+	fileFormatsTests.Describe.
+		withExpectedSqlf(case_FileFormats_sql_Describe_basic,
+			`DESCRIBE FILE FORMAT %s`, fileFormatsTestIdSchemaObjectIdentifier.FullyQualifiedName())
+}
+
 func TestParseFileFormatCsv(t *testing.T) {
 	id := randomSchemaObjectIdentifier()
 	properties := []FileFormatProperty{

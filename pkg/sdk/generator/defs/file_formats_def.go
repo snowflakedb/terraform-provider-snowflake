@@ -495,4 +495,5 @@ var fileFormatsDef = g.NewInterface(
 		AvroCompressionEnumDef,
 		ParquetCompressionEnumDef,
 		XmlCompressionEnumDef,
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)
