@@ -338,28 +338,32 @@ var stagesDef = g.NewInterface(
 	CustomOperation(
 		"AlterInternalStage",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-stage",
-		alterStageOperation("AlterInternalStage", func(qs *g.QueryStruct) *g.QueryStruct { return qs }),
+		alterStageOperation("AlterInternalStage", func(qs *g.QueryStruct) *g.QueryStruct { return qs }).
+			WithValidation(g.AtLeastOneValueSet, "FileFormat", "Comment"),
 	).
 	CustomOperation(
 		"AlterExternalS3Stage",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-stage",
 		alterStageOperation("AlterExternalS3Stage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.OptionalQueryStructField("ExternalStageParams", externalS3StageParamsDef(), nil)
-		}),
+		}).
+			WithValidation(g.AtLeastOneValueSet, "ExternalStageParams", "FileFormat", "Comment"),
 	).
 	CustomOperation(
 		"AlterExternalGCSStage",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-stage",
 		alterStageOperation("AlterExternalGCSStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.OptionalQueryStructField("ExternalStageParams", externalGCSStageParamsDef(), nil)
-		}),
+		}).
+			WithValidation(g.AtLeastOneValueSet, "ExternalStageParams", "FileFormat", "Comment"),
 	).
 	CustomOperation(
 		"AlterExternalAzureStage",
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-stage",
 		alterStageOperation("AlterExternalAzureStage", func(qs *g.QueryStruct) *g.QueryStruct {
 			return qs.OptionalQueryStructField("ExternalStageParams", externalAzureStageParamsDef(), nil)
-		}),
+		}).
+			WithValidation(g.AtLeastOneValueSet, "ExternalStageParams", "FileFormat", "Comment"),
 	).
 	CustomOperation(
 		"AlterDirectoryTable",
@@ -380,7 +384,7 @@ var stagesDef = g.NewInterface(
 				g.KeywordOptions().SQL("REFRESH"),
 			).
 			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "SetDirectory", "Refresh"),
+			WithValidation(g.ExactlyOneValueSet, "SetDirectory", "Refresh"),
 	).
 	DropOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/drop-stage",
@@ -474,4 +478,5 @@ var stagesDef = g.NewInterface(
 		"DescribeDetails returns parsed describe output for stages.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
 		"*StageDetails", "error",
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)

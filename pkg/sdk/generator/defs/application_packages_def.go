@@ -137,7 +137,7 @@ var applicationPackagesDef = g.NewInterface(
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-application-packages",
 	g.StructPair("applicationPackageRow", "ApplicationPackage").
-		Text("created_on").
+		Time("created_on").
 		Text("name").
 		Field("is_default", "string", "bool").
 		Field("is_current", "string", "bool").

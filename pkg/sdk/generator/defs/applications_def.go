@@ -105,7 +105,7 @@ var applicationsDef = g.NewInterface(
 ).ShowOperationWithPairedStructs(
 	"https://docs.snowflake.com/en/sql-reference/sql/show-applications",
 	g.StructPair("applicationRow", "Application").
-		Text("created_on").
+		Time("created_on").
 		Text("name").
 		Field("is_default", "string", "bool").
 		Field("is_current", "string", "bool").

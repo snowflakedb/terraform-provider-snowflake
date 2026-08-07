@@ -686,4 +686,5 @@ var securityIntegrationsDef = g.NewInterface(
 		Saml2SecurityIntegrationSaml2ProviderOptionEnumDef,
 		ScimSecurityIntegrationScimClientOptionEnumDef,
 	).
-	WithShowObjectType("Integration")
+	WithShowObjectType("Integration").
+	WithEnabledGenerationParts(g.PartUnitTests)

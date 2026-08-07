@@ -54,9 +54,11 @@ const (
 	OauthWithClientCredentialsClientSecret env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
 	OauthWithClientCredentialsIssuer       env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_ISSUER"
 
-	OpenCatalogAccountLocator            env = envPrefix + "OPEN_CATALOG_ACCOUNT_LOCATOR"
-	OpenCatalogPrimaryOAuthCredentials   env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CREDENTIALS"
-	OpenCatalogSecondaryOAuthCredentials env = envPrefix + "OPEN_CATALOG_SECONDARY_OAUTH_CREDENTIALS"
+	OpenCatalogAccountLocator             env = envPrefix + "OPEN_CATALOG_ACCOUNT_LOCATOR"
+	OpenCatalogPrimaryOAuthClientId       env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CLIENT_ID"
+	OpenCatalogPrimaryOAuthClientSecret   env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CLIENT_SECRET"
+	OpenCatalogSecondaryOAuthClientId     env = envPrefix + "OPEN_CATALOG_SECONDARY_OAUTH_CLIENT_ID"
+	OpenCatalogSecondaryOAuthClientSecret env = envPrefix + "OPEN_CATALOG_SECONDARY_OAUTH_CLIENT_SECRET"
 )
 
 func GetOrSkipTest(t *testing.T, envName Env) string {

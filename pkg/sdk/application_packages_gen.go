@@ -5,6 +5,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 type ApplicationPackages interface {
@@ -122,7 +123,7 @@ type ShowApplicationPackageOptions struct {
 }
 
 type applicationPackageRow struct {
-	CreatedOn        string         `db:"created_on"`
+	CreatedOn        time.Time      `db:"created_on"`
 	Name             string         `db:"name"`
 	IsDefault        string         `db:"is_default"`
 	IsCurrent        string         `db:"is_current"`
@@ -136,7 +137,7 @@ type applicationPackageRow struct {
 }
 
 type ApplicationPackage struct {
-	CreatedOn        string
+	CreatedOn        time.Time
 	Name             string
 	IsDefault        bool
 	IsCurrent        bool

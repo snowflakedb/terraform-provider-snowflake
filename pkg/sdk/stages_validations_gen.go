@@ -178,6 +178,9 @@ func (opts *AlterInternalStageStageOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !anyValueSet(opts.FileFormat, opts.Comment) {
+		errs = append(errs, errAtLeastOneOf("AlterInternalStageStageOptions", "FileFormat", "Comment"))
+	}
 	if valueSet(opts.FileFormat) {
 		if !exactlyOneValueSet(opts.FileFormat.FormatName, opts.FileFormat.FileFormatOptions) {
 			errs = append(errs, errExactlyOneOf("AlterInternalStageStageOptions.FileFormat", "FormatName", "FileFormatOptions"))
@@ -194,6 +197,9 @@ func (opts *AlterExternalS3StageStageOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !anyValueSet(opts.ExternalStageParams, opts.FileFormat, opts.Comment) {
+		errs = append(errs, errAtLeastOneOf("AlterExternalS3StageStageOptions", "ExternalStageParams", "FileFormat", "Comment"))
 	}
 	if valueSet(opts.ExternalStageParams) {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
@@ -236,6 +242,9 @@ func (opts *AlterExternalGCSStageStageOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if !anyValueSet(opts.ExternalStageParams, opts.FileFormat, opts.Comment) {
+		errs = append(errs, errAtLeastOneOf("AlterExternalGCSStageStageOptions", "ExternalStageParams", "FileFormat", "Comment"))
+	}
 	if valueSet(opts.ExternalStageParams) {
 		if valueSet(opts.ExternalStageParams.Encryption) {
 			if !exactlyOneValueSet(opts.ExternalStageParams.Encryption.GcsSseKms, opts.ExternalStageParams.Encryption.None) {
@@ -259,6 +268,9 @@ func (opts *AlterExternalAzureStageStageOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !anyValueSet(opts.ExternalStageParams, opts.FileFormat, opts.Comment) {
+		errs = append(errs, errAtLeastOneOf("AlterExternalAzureStageStageOptions", "ExternalStageParams", "FileFormat", "Comment"))
 	}
 	if valueSet(opts.ExternalStageParams) {
 		if everyValueSet(opts.ExternalStageParams.StorageIntegration, opts.ExternalStageParams.Credentials) {
@@ -290,8 +302,8 @@ func (opts *AlterDirectoryTableStageOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if everyValueSet(opts.SetDirectory, opts.Refresh) {
-		errs = append(errs, errOneOf("AlterDirectoryTableStageOptions", "SetDirectory", "Refresh"))
+	if !exactlyOneValueSet(opts.SetDirectory, opts.Refresh) {
+		errs = append(errs, errExactlyOneOf("AlterDirectoryTableStageOptions", "SetDirectory", "Refresh"))
 	}
 	return JoinErrors(errs...)
 }

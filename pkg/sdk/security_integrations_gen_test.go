@@ -2,12 +2,8 @@
 
 package sdk
 
-// imports adjusted manually
 import (
-	"errors"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -22,1495 +18,1247 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ScimSecurityIntegrationScimClientOption]{"ScimSecurityIntegrationScimClientOption", AllScimSecurityIntegrationScimClientOptions, ToScimSecurityIntegrationScimClientOption})
 }
 
+var securityIntegrationsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_SecurityIntegrations_validation_CreateApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier                                     testCaseName = "validation_CreateApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateApiAuthenticationWithClientCredentialsFlow_opts_ConflictingFields                                   testCaseName = "validation_CreateApiAuthenticationWithClientCredentialsFlow_opts_ConflictingFields"
+	case_SecurityIntegrations_sql_CreateApiAuthenticationWithClientCredentialsFlow_basic                                                           testCaseName = "sql_CreateApiAuthenticationWithClientCredentialsFlow_basic"
+	case_SecurityIntegrations_sql_CreateApiAuthenticationWithClientCredentialsFlow_all                                                             testCaseName = "sql_CreateApiAuthenticationWithClientCredentialsFlow_all"
+	case_SecurityIntegrations_validation_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier                                testCaseName = "validation_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ConflictingFields                              testCaseName = "validation_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ConflictingFields"
+	case_SecurityIntegrations_sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_basic                                                      testCaseName = "sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_basic"
+	case_SecurityIntegrations_sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_all                                                        testCaseName = "sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_all"
+	case_SecurityIntegrations_validation_CreateApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier                                             testCaseName = "validation_CreateApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateApiAuthenticationWithJwtBearerFlow_opts_ConflictingFields                                           testCaseName = "validation_CreateApiAuthenticationWithJwtBearerFlow_opts_ConflictingFields"
+	case_SecurityIntegrations_sql_CreateApiAuthenticationWithJwtBearerFlow_basic                                                                   testCaseName = "sql_CreateApiAuthenticationWithJwtBearerFlow_basic"
+	case_SecurityIntegrations_sql_CreateApiAuthenticationWithJwtBearerFlow_all                                                                     testCaseName = "sql_CreateApiAuthenticationWithJwtBearerFlow_all"
+	case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList    testCaseName = "validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList"
+	case_SecurityIntegrations_validation_CreateExternalOauth_opts_ExactlyOneValueSet_NoneSet                                                       testCaseName = "validation_CreateExternalOauth_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_CreateExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet                                                testCaseName = "validation_CreateExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2             testCaseName = "validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2"
+	case_SecurityIntegrations_validation_CreateExternalOauth_name_ValidIdentifier                                                                  testCaseName = "validation_CreateExternalOauth_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_OrReplace_IfNotExists                                          testCaseName = "validation_CreateExternalOauth_opts_ConflictingFields_OrReplace_IfNotExists"
+	case_SecurityIntegrations_sql_CreateExternalOauth_basic                                                                                        testCaseName = "sql_CreateExternalOauth_basic"
+	case_SecurityIntegrations_sql_CreateExternalOauth_all                                                                                          testCaseName = "sql_CreateExternalOauth_all"
+	case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_name_ValidIdentifier                                                    testCaseName = "validation_CreateOauthForPartnerApplications_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_opts_ConflictingFields                                                  testCaseName = "validation_CreateOauthForPartnerApplications_opts_ConflictingFields"
+	case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_basic                                                                          testCaseName = "sql_CreateOauthForPartnerApplications_basic"
+	case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_all                                                                            testCaseName = "sql_CreateOauthForPartnerApplications_all"
+	case_SecurityIntegrations_validation_CreateOauthForCustomClients_name_ValidIdentifier                                                          testCaseName = "validation_CreateOauthForCustomClients_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateOauthForCustomClients_opts_ConflictingFields                                                        testCaseName = "validation_CreateOauthForCustomClients_opts_ConflictingFields"
+	case_SecurityIntegrations_sql_CreateOauthForCustomClients_basic                                                                                testCaseName = "sql_CreateOauthForCustomClients_basic"
+	case_SecurityIntegrations_sql_CreateOauthForCustomClients_all                                                                                  testCaseName = "sql_CreateOauthForCustomClients_all"
+	case_SecurityIntegrations_validation_CreateSaml2_name_ValidIdentifier                                                                          testCaseName = "validation_CreateSaml2_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateSaml2_opts_ConflictingFields                                                                        testCaseName = "validation_CreateSaml2_opts_ConflictingFields"
+	case_SecurityIntegrations_sql_CreateSaml2_basic                                                                                                testCaseName = "sql_CreateSaml2_basic"
+	case_SecurityIntegrations_sql_CreateSaml2_all                                                                                                  testCaseName = "sql_CreateSaml2_all"
+	case_SecurityIntegrations_validation_CreateScim_name_ValidIdentifier                                                                           testCaseName = "validation_CreateScim_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_CreateScim_opts_ConflictingFields                                                                         testCaseName = "validation_CreateScim_opts_ConflictingFields"
+	case_SecurityIntegrations_sql_CreateScim_basic                                                                                                 testCaseName = "sql_CreateScim_basic"
+	case_SecurityIntegrations_sql_CreateScim_all                                                                                                   testCaseName = "sql_CreateScim_all"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier                                      testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Set_AtLeastOneValueSet                               testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Unset_AtLeastOneValueSet                             testCaseName = "validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_Set                                                              testCaseName = "sql_AlterApiAuthenticationWithClientCredentialsFlow_Set"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_Unset                                                            testCaseName = "sql_AlterApiAuthenticationWithClientCredentialsFlow_Unset"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_SetTags                                                          testCaseName = "sql_AlterApiAuthenticationWithClientCredentialsFlow_SetTags"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_UnsetTags                                                        testCaseName = "sql_AlterApiAuthenticationWithClientCredentialsFlow_UnsetTags"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier                                 testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_MoreThanOneSet               testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Set_AtLeastOneValueSet                          testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Unset_AtLeastOneValueSet                        testCaseName = "validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Set                                                         testCaseName = "sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Set"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Unset                                                       testCaseName = "sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Unset"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_SetTags                                                     testCaseName = "sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_SetTags"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_UnsetTags                                                   testCaseName = "sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_UnsetTags"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier                                              testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_NoneSet                                   testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_MoreThanOneSet                            testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Set_AtLeastOneValueSet                                       testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Unset_AtLeastOneValueSet                                     testCaseName = "validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_Set                                                                      testCaseName = "sql_AlterApiAuthenticationWithJwtBearerFlow_Set"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_Unset                                                                    testCaseName = "sql_AlterApiAuthenticationWithJwtBearerFlow_Unset"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_SetTags                                                                  testCaseName = "sql_AlterApiAuthenticationWithJwtBearerFlow_SetTags"
+	case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_UnsetTags                                                                testCaseName = "sql_AlterApiAuthenticationWithJwtBearerFlow_UnsetTags"
+	case_SecurityIntegrations_validation_AlterExternalOauth_name_ValidIdentifier                                                                   testCaseName = "validation_AlterExternalOauth_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterExternalOauth_opts_ExactlyOneValueSet_NoneSet                                                        testCaseName = "validation_AlterExternalOauth_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet                                                 testCaseName = "validation_AlterExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList"
+	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey           testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey"
+	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2          testCaseName = "validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2"
+	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_AtLeastOneValueSet                                                            testCaseName = "validation_AlterExternalOauth_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterExternalOauth_opts_Unset_AtLeastOneValueSet                                                          testCaseName = "validation_AlterExternalOauth_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterExternalOauth_Set                                                                                           testCaseName = "sql_AlterExternalOauth_Set"
+	case_SecurityIntegrations_sql_AlterExternalOauth_Unset                                                                                         testCaseName = "sql_AlterExternalOauth_Unset"
+	case_SecurityIntegrations_sql_AlterExternalOauth_SetTags                                                                                       testCaseName = "sql_AlterExternalOauth_SetTags"
+	case_SecurityIntegrations_sql_AlterExternalOauth_UnsetTags                                                                                     testCaseName = "sql_AlterExternalOauth_UnsetTags"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_name_ValidIdentifier                                                     testCaseName = "validation_AlterOauthForPartnerApplications_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_NoneSet                                          testCaseName = "validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_MoreThanOneSet                                   testCaseName = "validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet                                              testCaseName = "validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Unset_AtLeastOneValueSet                                            testCaseName = "validation_AlterOauthForPartnerApplications_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_Set                                                                             testCaseName = "sql_AlterOauthForPartnerApplications_Set"
+	case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_Unset                                                                           testCaseName = "sql_AlterOauthForPartnerApplications_Unset"
+	case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_SetTags                                                                         testCaseName = "sql_AlterOauthForPartnerApplications_SetTags"
+	case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_UnsetTags                                                                       testCaseName = "sql_AlterOauthForPartnerApplications_UnsetTags"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_name_ValidIdentifier                                                           testCaseName = "validation_AlterOauthForCustomClients_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_NoneSet                                                testCaseName = "validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_MoreThanOneSet                                         testCaseName = "validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet                                                    testCaseName = "validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Unset_AtLeastOneValueSet                                                  testCaseName = "validation_AlterOauthForCustomClients_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterOauthForCustomClients_Set                                                                                   testCaseName = "sql_AlterOauthForCustomClients_Set"
+	case_SecurityIntegrations_sql_AlterOauthForCustomClients_Unset                                                                                 testCaseName = "sql_AlterOauthForCustomClients_Unset"
+	case_SecurityIntegrations_sql_AlterOauthForCustomClients_SetTags                                                                               testCaseName = "sql_AlterOauthForCustomClients_SetTags"
+	case_SecurityIntegrations_sql_AlterOauthForCustomClients_UnsetTags                                                                             testCaseName = "sql_AlterOauthForCustomClients_UnsetTags"
+	case_SecurityIntegrations_validation_AlterSaml2_name_ValidIdentifier                                                                           testCaseName = "validation_AlterSaml2_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterSaml2_opts_ExactlyOneValueSet_NoneSet                                                                testCaseName = "validation_AlterSaml2_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterSaml2_opts_ExactlyOneValueSet_MoreThanOneSet                                                         testCaseName = "validation_AlterSaml2_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterSaml2_opts_Set_AtLeastOneValueSet                                                                    testCaseName = "validation_AlterSaml2_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterSaml2_opts_Unset_AtLeastOneValueSet                                                                  testCaseName = "validation_AlterSaml2_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterSaml2_Set                                                                                                   testCaseName = "sql_AlterSaml2_Set"
+	case_SecurityIntegrations_sql_AlterSaml2_Unset                                                                                                 testCaseName = "sql_AlterSaml2_Unset"
+	case_SecurityIntegrations_sql_AlterSaml2_RefreshSaml2SnowflakePrivateKey                                                                       testCaseName = "sql_AlterSaml2_RefreshSaml2SnowflakePrivateKey"
+	case_SecurityIntegrations_sql_AlterSaml2_SetTags                                                                                               testCaseName = "sql_AlterSaml2_SetTags"
+	case_SecurityIntegrations_sql_AlterSaml2_UnsetTags                                                                                             testCaseName = "sql_AlterSaml2_UnsetTags"
+	case_SecurityIntegrations_validation_AlterScim_name_ValidIdentifier                                                                            testCaseName = "validation_AlterScim_name_ValidIdentifier"
+	case_SecurityIntegrations_validation_AlterScim_opts_ExactlyOneValueSet_NoneSet                                                                 testCaseName = "validation_AlterScim_opts_ExactlyOneValueSet_NoneSet"
+	case_SecurityIntegrations_validation_AlterScim_opts_ExactlyOneValueSet_MoreThanOneSet                                                          testCaseName = "validation_AlterScim_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SecurityIntegrations_validation_AlterScim_opts_Set_AtLeastOneValueSet                                                                     testCaseName = "validation_AlterScim_opts_Set_AtLeastOneValueSet"
+	case_SecurityIntegrations_validation_AlterScim_opts_Unset_AtLeastOneValueSet                                                                   testCaseName = "validation_AlterScim_opts_Unset_AtLeastOneValueSet"
+	case_SecurityIntegrations_sql_AlterScim_Set                                                                                                    testCaseName = "sql_AlterScim_Set"
+	case_SecurityIntegrations_sql_AlterScim_Unset                                                                                                  testCaseName = "sql_AlterScim_Unset"
+	case_SecurityIntegrations_sql_AlterScim_SetTags                                                                                                testCaseName = "sql_AlterScim_SetTags"
+	case_SecurityIntegrations_sql_AlterScim_UnsetTags                                                                                              testCaseName = "sql_AlterScim_UnsetTags"
+	case_SecurityIntegrations_validation_Drop_name_ValidIdentifier                                                                                 testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_SecurityIntegrations_sql_Drop_basic                                                                                                       testCaseName = "sql_Drop_basic"
+	case_SecurityIntegrations_sql_Drop_all                                                                                                         testCaseName = "sql_Drop_all"
+	case_SecurityIntegrations_validation_Describe_name_ValidIdentifier                                                                             testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_SecurityIntegrations_sql_Describe_basic                                                                                                   testCaseName = "sql_Describe_basic"
+	case_SecurityIntegrations_sql_Show_basic                                                                                                       testCaseName = "sql_Show_basic"
+	case_SecurityIntegrations_sql_Show_all                                                                                                         testCaseName = "sql_Show_all"
+	case_SecurityIntegrations_sql_Show_Like                                                                                                        testCaseName = "sql_Show_Like"
+)
+
+type SecurityIntegrationsTestsContext struct {
+	CreateApiAuthenticationWithClientCredentialsFlow      *sdkTestCtx[*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]
+	CreateApiAuthenticationWithAuthorizationCodeGrantFlow *sdkTestCtx[*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]
+	CreateApiAuthenticationWithJwtBearerFlow              *sdkTestCtx[*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]
+	CreateExternalOauth                                   *sdkTestCtx[*CreateExternalOauthSecurityIntegrationOptions]
+	CreateOauthForPartnerApplications                     *sdkTestCtx[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]
+	CreateOauthForCustomClients                           *sdkTestCtx[*CreateOauthForCustomClientsSecurityIntegrationOptions]
+	CreateSaml2                                           *sdkTestCtx[*CreateSaml2SecurityIntegrationOptions]
+	CreateScim                                            *sdkTestCtx[*CreateScimSecurityIntegrationOptions]
+	AlterApiAuthenticationWithClientCredentialsFlow       *sdkTestCtx[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]
+	AlterApiAuthenticationWithAuthorizationCodeGrantFlow  *sdkTestCtx[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]
+	AlterApiAuthenticationWithJwtBearerFlow               *sdkTestCtx[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]
+	AlterExternalOauth                                    *sdkTestCtx[*AlterExternalOauthSecurityIntegrationOptions]
+	AlterOauthForPartnerApplications                      *sdkTestCtx[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]
+	AlterOauthForCustomClients                            *sdkTestCtx[*AlterOauthForCustomClientsSecurityIntegrationOptions]
+	AlterSaml2                                            *sdkTestCtx[*AlterSaml2SecurityIntegrationOptions]
+	AlterScim                                             *sdkTestCtx[*AlterScimSecurityIntegrationOptions]
+	Drop                                                  *sdkTestCtx[*DropSecurityIntegrationOptions]
+	Describe                                              *sdkTestCtx[*DescribeSecurityIntegrationOptions]
+	Show                                                  *sdkTestCtx[*ShowSecurityIntegrationOptions]
+}
+
+var securityIntegrationsTests = SecurityIntegrationsTestsContext{
+	CreateApiAuthenticationWithClientCredentialsFlow: newSdkTestCtx[*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateApiAuthenticationWithClientCredentialsFlow",
+	).
+		withDefaultOpts(func() *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions {
+			return &CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithClientCredentialsFlow_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateApiAuthenticationWithClientCredentialsFlow_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateApiAuthenticationWithClientCredentialsFlow_all,
+			},
+		),
+	CreateApiAuthenticationWithAuthorizationCodeGrantFlow: newSdkTestCtx[*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateApiAuthenticationWithAuthorizationCodeGrantFlow",
+	).
+		withDefaultOpts(func() *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions {
+			return &CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_all,
+			},
+		),
+	CreateApiAuthenticationWithJwtBearerFlow: newSdkTestCtx[*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateApiAuthenticationWithJwtBearerFlow",
+	).
+		withDefaultOpts(func() *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions {
+			return &CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateApiAuthenticationWithJwtBearerFlow_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateApiAuthenticationWithJwtBearerFlow_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateApiAuthenticationWithJwtBearerFlow_all,
+			},
+		),
+	CreateExternalOauth: newSdkTestCtx[*CreateExternalOauthSecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateExternalOauth",
+	).
+		withDefaultOpts(func() *CreateExternalOauthSecurityIntegrationOptions {
+			return &CreateExternalOauthSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList,
+				ExpectedErr: errOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList"),
+				DefaultModify: func(opts *CreateExternalOauthSecurityIntegrationOptions) {
+					opts.ExternalOauthBlockedRolesList = &BlockedRolesList{}
+					opts.ExternalOauthAllowedRolesList = &AllowedRolesList{}
+				},
+			},
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey"),
+				DefaultModify: func(opts *CreateExternalOauthSecurityIntegrationOptions) {
+					opts.ExternalOauthJwsKeysUrl = nil
+					opts.ExternalOauthRsaPublicKey = nil
+				},
+			},
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey"),
+			},
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2,
+				ExpectedErr: errOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey2"),
+			},
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateExternalOauthSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_OrReplace_IfNotExists,
+				ExpectedErr: errOneOf("CreateExternalOauthSecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateExternalOauthSecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateExternalOauth_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateExternalOauthSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateExternalOauth_all,
+			},
+		),
+	CreateOauthForPartnerApplications: newSdkTestCtx[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateOauthForPartnerApplications",
+	).
+		withDefaultOpts(func() *CreateOauthForPartnerApplicationsSecurityIntegrationOptions {
+			return &CreateOauthForPartnerApplicationsSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForPartnerApplications_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_all,
+			},
+		),
+	CreateOauthForCustomClients: newSdkTestCtx[*CreateOauthForCustomClientsSecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateOauthForCustomClients",
+	).
+		withDefaultOpts(func() *CreateOauthForCustomClientsSecurityIntegrationOptions {
+			return &CreateOauthForCustomClientsSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForCustomClients_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateOauthForCustomClients_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateOauthForCustomClientsSecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateOauthForCustomClients_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOauthForCustomClientsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateOauthForCustomClients_all,
+			},
+		),
+	CreateSaml2: newSdkTestCtx[*CreateSaml2SecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateSaml2",
+	).
+		withDefaultOpts(func() *CreateSaml2SecurityIntegrationOptions {
+			return &CreateSaml2SecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateSaml2_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateSaml2SecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateSaml2_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateSaml2SecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateSaml2SecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateSaml2SecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateSaml2_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateSaml2SecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateSaml2_all,
+			},
+		),
+	CreateScim: newSdkTestCtx[*CreateScimSecurityIntegrationOptions](
+		"SecurityIntegrations", "CreateScim",
+	).
+		withDefaultOpts(func() *CreateScimSecurityIntegrationOptions {
+			return &CreateScimSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateScim_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateScimSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_CreateScim_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateScimSecurityIntegrationOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateScimSecurityIntegrationOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateScimSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_CreateScim_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateScimSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_CreateScim_all,
+			},
+		),
+	AlterApiAuthenticationWithClientCredentialsFlow: newSdkTestCtx[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterApiAuthenticationWithClientCredentialsFlow",
+	).
+		withDefaultOpts(func() *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions {
+			return &AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.Set = &ApiAuthenticationWithClientCredentialsFlowIntegrationSet{}
+					opts.Unset = &ApiAuthenticationWithClientCredentialsFlowIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.Set", "Enabled", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantClientCredentials", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "OauthAllowedScopes", "Comment"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.Set = &ApiAuthenticationWithClientCredentialsFlowIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.OauthTokenEndpoint = nil
+					opts.Set.OauthClientAuthMethod = nil
+					opts.Set.OauthClientId = nil
+					opts.Set.OauthClientSecret = nil
+					opts.Set.OauthGrantClientCredentials = nil
+					opts.Set.OauthAccessTokenValidity = nil
+					opts.Set.OauthRefreshTokenValidity = nil
+					opts.Set.OauthAllowedScopes = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithClientCredentialsFlow_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.Unset", "Enabled", "Comment"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
+					opts.Unset = &ApiAuthenticationWithClientCredentialsFlowIntegrationUnset{}
+					opts.Unset.Enabled = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_Set,
+			},
+			sqlCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_Unset,
+			},
+			sqlCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_SetTags,
+			},
+			sqlCase[*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_UnsetTags,
+			},
+		),
+	AlterApiAuthenticationWithAuthorizationCodeGrantFlow: newSdkTestCtx[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterApiAuthenticationWithAuthorizationCodeGrantFlow",
+	).
+		withDefaultOpts(func() *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions {
+			return &AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{}
+					opts.Unset = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions.Set", "Enabled", "OauthAuthorizationEndpoint", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantAuthorizationCode", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "OauthAllowedScopes", "Comment"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.OauthAuthorizationEndpoint = nil
+					opts.Set.OauthTokenEndpoint = nil
+					opts.Set.OauthClientAuthMethod = nil
+					opts.Set.OauthClientId = nil
+					opts.Set.OauthClientSecret = nil
+					opts.Set.OauthGrantAuthorizationCode = nil
+					opts.Set.OauthAccessTokenValidity = nil
+					opts.Set.OauthRefreshTokenValidity = nil
+					opts.Set.OauthAllowedScopes = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions.Unset", "Enabled", "Comment"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
+					opts.Unset = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationUnset{}
+					opts.Unset.Enabled = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Set,
+			},
+			sqlCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Unset,
+			},
+			sqlCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_SetTags,
+			},
+			sqlCase[*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_UnsetTags,
+			},
+		),
+	AlterApiAuthenticationWithJwtBearerFlow: newSdkTestCtx[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterApiAuthenticationWithJwtBearerFlow",
+	).
+		withDefaultOpts(func() *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions {
+			return &AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.Set = &ApiAuthenticationWithJwtBearerFlowIntegrationSet{}
+					opts.Unset = &ApiAuthenticationWithJwtBearerFlowIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.Set", "Enabled", "OauthAuthorizationEndpoint", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantJwtBearer", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "Comment"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.Set = &ApiAuthenticationWithJwtBearerFlowIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.OauthAuthorizationEndpoint = nil
+					opts.Set.OauthTokenEndpoint = nil
+					opts.Set.OauthClientAuthMethod = nil
+					opts.Set.OauthClientId = nil
+					opts.Set.OauthClientSecret = nil
+					opts.Set.OauthGrantJwtBearer = nil
+					opts.Set.OauthAccessTokenValidity = nil
+					opts.Set.OauthRefreshTokenValidity = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterApiAuthenticationWithJwtBearerFlow_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.Unset", "Enabled", "Comment"),
+				DefaultModify: func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
+					opts.Unset = &ApiAuthenticationWithJwtBearerFlowIntegrationUnset{}
+					opts.Unset.Enabled = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_Set,
+			},
+			sqlCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_Unset,
+			},
+			sqlCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_SetTags,
+			},
+			sqlCase[*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_UnsetTags,
+			},
+		),
+	AlterExternalOauth: newSdkTestCtx[*AlterExternalOauthSecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterExternalOauth",
+	).
+		withDefaultOpts(func() *AlterExternalOauthSecurityIntegrationOptions {
+			return &AlterExternalOauthSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterExternalOauthSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterExternalOauthSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.Set = &ExternalOauthIntegrationSet{}
+					opts.Unset = &ExternalOauthIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthBlockedRolesList_ExternalOauthAllowedRolesList,
+				ExpectedErr: errOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.Set = &ExternalOauthIntegrationSet{}
+					opts.Set.ExternalOauthBlockedRolesList = &BlockedRolesList{}
+					opts.Set.ExternalOauthAllowedRolesList = &AllowedRolesList{}
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey,
+				ExpectedErr: errOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey"),
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2,
+				ExpectedErr: errOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey2"),
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "Enabled", "ExternalOauthType", "ExternalOauthIssuer", "ExternalOauthTokenUserMappingClaim", "ExternalOauthSnowflakeUserMappingAttribute", "ExternalOauthJwsKeysUrl", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList", "ExternalOauthRsaPublicKey", "ExternalOauthRsaPublicKey2", "ExternalOauthAudienceList", "ExternalOauthAnyRoleMode", "ExternalOauthScopeDelimiter", "ExternalOauthScopeMappingAttribute", "Comment"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.Set = &ExternalOauthIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.ExternalOauthType = nil
+					opts.Set.ExternalOauthIssuer = nil
+					opts.Set.ExternalOauthTokenUserMappingClaim = nil
+					opts.Set.ExternalOauthSnowflakeUserMappingAttribute = nil
+					opts.Set.ExternalOauthJwsKeysUrl = nil
+					opts.Set.ExternalOauthBlockedRolesList = nil
+					opts.Set.ExternalOauthAllowedRolesList = nil
+					opts.Set.ExternalOauthRsaPublicKey = nil
+					opts.Set.ExternalOauthRsaPublicKey2 = nil
+					opts.Set.ExternalOauthAudienceList = nil
+					opts.Set.ExternalOauthAnyRoleMode = nil
+					opts.Set.ExternalOauthScopeDelimiter = nil
+					opts.Set.ExternalOauthScopeMappingAttribute = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Unset", "Enabled", "ExternalOauthAudienceList"),
+				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
+					opts.Unset = &ExternalOauthIntegrationUnset{}
+					opts.Unset.Enabled = nil
+					opts.Unset.ExternalOauthAudienceList = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterExternalOauth_Set,
+			},
+			sqlCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterExternalOauth_Unset,
+			},
+			sqlCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterExternalOauth_SetTags,
+			},
+			sqlCase[*AlterExternalOauthSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterExternalOauth_UnsetTags,
+			},
+		),
+	AlterOauthForPartnerApplications: newSdkTestCtx[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterOauthForPartnerApplications",
+	).
+		withDefaultOpts(func() *AlterOauthForPartnerApplicationsSecurityIntegrationOptions {
+			return &AlterOauthForPartnerApplicationsSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.Set = &OauthForPartnerApplicationsIntegrationSet{}
+					opts.Unset = &OauthForPartnerApplicationsIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set", "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "AllowedRolesList", "BlockedRolesList", "Comment"),
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.Set = &OauthForPartnerApplicationsIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.OauthIssueRefreshTokens = nil
+					opts.Set.OauthRedirectUri = nil
+					opts.Set.OauthRefreshTokenValidity = nil
+					opts.Set.OauthUseSecondaryRoles = nil
+					opts.Set.AllowedRolesList = nil
+					opts.Set.BlockedRolesList = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForPartnerApplications_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Unset", "Enabled", "OauthUseSecondaryRoles"),
+				DefaultModify: func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
+					opts.Unset = &OauthForPartnerApplicationsIntegrationUnset{}
+					opts.Unset.Enabled = nil
+					opts.Unset.OauthUseSecondaryRoles = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_Set,
+			},
+			sqlCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_Unset,
+			},
+			sqlCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_SetTags,
+			},
+			sqlCase[*AlterOauthForPartnerApplicationsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_UnsetTags,
+			},
+		),
+	AlterOauthForCustomClients: newSdkTestCtx[*AlterOauthForCustomClientsSecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterOauthForCustomClients",
+	).
+		withDefaultOpts(func() *AlterOauthForCustomClientsSecurityIntegrationOptions {
+			return &AlterOauthForCustomClientsSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.Set = &OauthForCustomClientsIntegrationSet{}
+					opts.Unset = &OauthForCustomClientsIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set", "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList", "AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "Comment"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.Set = &OauthForCustomClientsIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.OauthRedirectUri = nil
+					opts.Set.OauthAllowNonTlsRedirectUri = nil
+					opts.Set.OauthEnforcePkce = nil
+					opts.Set.PreAuthorizedRolesList = nil
+					opts.Set.AllowedRolesList = nil
+					opts.Set.BlockedRolesList = nil
+					opts.Set.OauthIssueRefreshTokens = nil
+					opts.Set.OauthRefreshTokenValidity = nil
+					opts.Set.OauthUseSecondaryRoles = nil
+					opts.Set.NetworkPolicy = nil
+					opts.Set.OauthClientRsaPublicKey = nil
+					opts.Set.OauthClientRsaPublicKey2 = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Unset", "Enabled", "NetworkPolicy", "OauthUseSecondaryRoles", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2"),
+				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
+					opts.Unset = &OauthForCustomClientsIntegrationUnset{}
+					opts.Unset.Enabled = nil
+					opts.Unset.NetworkPolicy = nil
+					opts.Unset.OauthUseSecondaryRoles = nil
+					opts.Unset.OauthClientRsaPublicKey = nil
+					opts.Unset.OauthClientRsaPublicKey2 = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForCustomClients_Set,
+			},
+			sqlCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForCustomClients_Unset,
+			},
+			sqlCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForCustomClients_SetTags,
+			},
+			sqlCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterOauthForCustomClients_UnsetTags,
+			},
+		),
+	AlterSaml2: newSdkTestCtx[*AlterSaml2SecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterSaml2",
+	).
+		withDefaultOpts(func() *AlterSaml2SecurityIntegrationOptions {
+			return &AlterSaml2SecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterSaml2_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterSaml2_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSaml2SecurityIntegrationOptions", "Set", "Unset", "RefreshSaml2SnowflakePrivateKey", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.RefreshSaml2SnowflakePrivateKey = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterSaml2_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSaml2SecurityIntegrationOptions", "Set", "Unset", "RefreshSaml2SnowflakePrivateKey", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
+					opts.Set = &Saml2IntegrationSet{}
+					opts.Unset = &Saml2IntegrationUnset{}
+				},
+			},
+			validationCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterSaml2_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterSaml2SecurityIntegrationOptions.Set", "Enabled", "Saml2Issuer", "Saml2SsoUrl", "Saml2Provider", "Saml2X509Cert", "AllowedUserDomains", "AllowedEmailPatterns", "Saml2SpInitiatedLoginPageLabel", "Saml2EnableSpInitiated", "Saml2SnowflakeX509Cert", "Saml2SignRequest", "Saml2RequestedNameidFormat", "Saml2PostLogoutRedirectUrl", "Saml2ForceAuthn", "Saml2SnowflakeIssuerUrl", "Saml2SnowflakeAcsUrl", "Comment"),
+				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
+					opts.Set = &Saml2IntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.Saml2Issuer = nil
+					opts.Set.Saml2SsoUrl = nil
+					opts.Set.Saml2Provider = nil
+					opts.Set.Saml2X509Cert = nil
+					opts.Set.AllowedUserDomains = nil
+					opts.Set.AllowedEmailPatterns = nil
+					opts.Set.Saml2SpInitiatedLoginPageLabel = nil
+					opts.Set.Saml2EnableSpInitiated = nil
+					opts.Set.Saml2SnowflakeX509Cert = nil
+					opts.Set.Saml2SignRequest = nil
+					opts.Set.Saml2RequestedNameidFormat = nil
+					opts.Set.Saml2PostLogoutRedirectUrl = nil
+					opts.Set.Saml2ForceAuthn = nil
+					opts.Set.Saml2SnowflakeIssuerUrl = nil
+					opts.Set.Saml2SnowflakeAcsUrl = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterSaml2_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterSaml2SecurityIntegrationOptions.Unset", "Saml2ForceAuthn", "Saml2RequestedNameidFormat", "Saml2PostLogoutRedirectUrl", "Comment"),
+				DefaultModify: func(opts *AlterSaml2SecurityIntegrationOptions) {
+					opts.Unset = &Saml2IntegrationUnset{}
+					opts.Unset.Saml2ForceAuthn = nil
+					opts.Unset.Saml2RequestedNameidFormat = nil
+					opts.Unset.Saml2PostLogoutRedirectUrl = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterSaml2_Set,
+			},
+			sqlCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterSaml2_Unset,
+			},
+			sqlCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterSaml2_RefreshSaml2SnowflakePrivateKey,
+			},
+			sqlCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterSaml2_SetTags,
+			},
+			sqlCase[*AlterSaml2SecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterSaml2_UnsetTags,
+			},
+		),
+	AlterScim: newSdkTestCtx[*AlterScimSecurityIntegrationOptions](
+		"SecurityIntegrations", "AlterScim",
+	).
+		withDefaultOpts(func() *AlterScimSecurityIntegrationOptions {
+			return &AlterScimSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterScim_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterScim_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterScimSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterScim_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterScimSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
+					opts.Set = &ScimIntegrationSet{}
+					opts.Unset = &ScimIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterScim_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterScimSecurityIntegrationOptions.Set", "Enabled", "NetworkPolicy", "SyncPassword", "Comment"),
+				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
+					opts.Set = &ScimIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.NetworkPolicy = nil
+					opts.Set.SyncPassword = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterScimSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_AlterScim_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterScimSecurityIntegrationOptions.Unset", "Enabled", "NetworkPolicy", "SyncPassword"),
+				DefaultModify: func(opts *AlterScimSecurityIntegrationOptions) {
+					opts.Unset = &ScimIntegrationUnset{}
+					opts.Unset.Enabled = nil
+					opts.Unset.NetworkPolicy = nil
+					opts.Unset.SyncPassword = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterScimSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterScim_Set,
+			},
+			sqlCase[*AlterScimSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterScim_Unset,
+			},
+			sqlCase[*AlterScimSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterScim_SetTags,
+			},
+			sqlCase[*AlterScimSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_AlterScim_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropSecurityIntegrationOptions](
+		"SecurityIntegrations", "Drop",
+	).
+		withDefaultOpts(func() *DropSecurityIntegrationOptions {
+			return &DropSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_Drop_all,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeSecurityIntegrationOptions](
+		"SecurityIntegrations", "Describe",
+	).
+		withDefaultOpts(func() *DescribeSecurityIntegrationOptions {
+			return &DescribeSecurityIntegrationOptions{
+				name: securityIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeSecurityIntegrationOptions]{
+				Name:        case_SecurityIntegrations_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeSecurityIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Show: newSdkTestCtx[*ShowSecurityIntegrationOptions](
+		"SecurityIntegrations", "Show",
+	).
+		withDefaultOpts(func() *ShowSecurityIntegrationOptions {
+			return &ShowSecurityIntegrationOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowSecurityIntegrationOptions]{
+				Name:           case_SecurityIntegrations_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_Show_all,
+			},
+			sqlCase[*ShowSecurityIntegrationOptions]{
+				Name: case_SecurityIntegrations_sql_Show_Like,
+			},
+		),
+}
+
 func TestSecurityIntegrations_CreateApiAuthenticationWithClientCredentialsFlow(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions
-	defaultOpts := func() *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions {
-		return &CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions{
-			// adjusted manually
-			name:              id,
-			Enabled:           true,
-			OauthClientId:     "foo",
-			OauthClientSecret: "bar",
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo'"+
-			" OAUTH_CLIENT_SECRET = 'bar'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OauthTokenEndpoint = Pointer("foo")
-		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
-		opts.OauthGrantClientCredentials = Pointer(true)
-		opts.OauthAccessTokenValidity = Pointer(42)
-		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.OauthAllowedScopes = []AllowedScope{{Scope: "bar"}}
-		opts.Comment = Pointer("foo")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_TOKEN_ENDPOINT = 'foo'"+
-			" OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = CLIENT_CREDENTIALS"+
-			" OAUTH_ACCESS_TOKEN_VALIDITY = 42 OAUTH_REFRESH_TOKEN_VALIDITY = 42 OAUTH_ALLOWED_SCOPES = ('bar') COMMENT = 'foo'", id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.CreateApiAuthenticationWithClientCredentialsFlow.RunValidationCases(t)
+	securityIntegrationsTests.CreateApiAuthenticationWithClientCredentialsFlow.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_CreateApiAuthenticationWithAuthorizationCodeGrantFlow(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions
-	defaultOpts := func() *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions {
-		return &CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions{
-			// adjusted manually
-			name:              id,
-			Enabled:           true,
-			OauthClientId:     "foo",
-			OauthClientSecret: "bar",
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo'"+
-			" OAUTH_CLIENT_SECRET = 'bar'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OauthAuthorizationEndpoint = Pointer("foo")
-		opts.OauthTokenEndpoint = Pointer("foo")
-		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
-		opts.OauthGrantAuthorizationCode = Pointer(true)
-		opts.OauthAccessTokenValidity = Pointer(42)
-		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.OauthAllowedScopes = []AllowedScope{{Scope: "bar"}}
-		opts.Comment = Pointer("foo")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_AUTHORIZATION_ENDPOINT = 'foo'"+
-			" OAUTH_TOKEN_ENDPOINT = 'foo' OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = AUTHORIZATION_CODE"+
-			" OAUTH_ACCESS_TOKEN_VALIDITY = 42 OAUTH_REFRESH_TOKEN_VALIDITY = 42 OAUTH_ALLOWED_SCOPES = ('bar') COMMENT = 'foo'", id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.CreateApiAuthenticationWithAuthorizationCodeGrantFlow.RunValidationCases(t)
+	securityIntegrationsTests.CreateApiAuthenticationWithAuthorizationCodeGrantFlow.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_CreateApiAuthenticationWithJwtBearerFlow(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions
-	defaultOpts := func() *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions {
-		return &CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions{
-			// adjusted manually
-			name:                 id,
-			Enabled:              true,
-			OauthClientId:        "foo",
-			OauthClientSecret:    "bar",
-			OauthAssertionIssuer: "foo",
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo' OAUTH_CLIENT_ID = 'foo'"+
-			" OAUTH_CLIENT_SECRET = 'bar'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OauthAuthorizationEndpoint = Pointer("foo")
-		opts.OauthTokenEndpoint = Pointer("foo")
-		opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
-		opts.OauthGrantJwtBearer = Pointer(true)
-		opts.OauthAccessTokenValidity = Pointer(42)
-		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.Comment = Pointer("foo")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo'"+
-			" OAUTH_AUTHORIZATION_ENDPOINT = 'foo' OAUTH_TOKEN_ENDPOINT = 'foo' OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = JWT_BEARER"+
-			" OAUTH_ACCESS_TOKEN_VALIDITY = 42 OAUTH_REFRESH_TOKEN_VALIDITY = 42 COMMENT = 'foo'", id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.CreateApiAuthenticationWithJwtBearerFlow.RunValidationCases(t)
+	securityIntegrationsTests.CreateApiAuthenticationWithJwtBearerFlow.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_CreateExternalOauth(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateExternalOauthSecurityIntegrationOptions
-	defaultOpts := func() *CreateExternalOauthSecurityIntegrationOptions {
-		return &CreateExternalOauthSecurityIntegrationOptions{
-			// adjusted manually
-			name:                               id,
-			Enabled:                            false,
-			ExternalOauthType:                  ExternalOauthSecurityIntegrationTypeOptionCustom,
-			ExternalOauthIssuer:                "foo",
-			ExternalOauthTokenUserMappingClaim: []TokenUserMappingClaim{{Claim: "foo"}},
-			ExternalOauthSnowflakeUserMappingAttribute: ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateExternalOauthSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: conflicting fields for [opts.ExternalOauthBlockedRolesList opts.ExternalOauthAllowedRolesList]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExternalOauthAllowedRolesList = &AllowedRolesList{}
-		opts.ExternalOauthBlockedRolesList = &BlockedRolesList{}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList"))
-	})
-
-	t.Run("validation: exactly one field from [opts.ExternalOauthJwsKeysUrl opts.ExternalOauthRsaPublicKey] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey"))
-	})
-
-	t.Run("validation: exactly one field from [opts.ExternalOauthJwsKeysUrl opts.ExternalOauthRsaPublicKey] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
-		opts.ExternalOauthRsaPublicKey = Pointer("key")
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.ExternalOauthJwsKeysUrl opts.ExternalOauthRsaPublicKey2]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
-		opts.ExternalOauthRsaPublicKey2 = Pointer("key")
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateExternalOauthSecurityIntegrationOptions", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey2"))
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateExternalOauthSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		roleID := randomAccountObjectIdentifier()
-		opts.OrReplace = Bool(true)
-		opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
-		opts.ExternalOauthBlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{roleID}}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = EXTERNAL_OAUTH ENABLED = false EXTERNAL_OAUTH_TYPE = CUSTOM EXTERNAL_OAUTH_ISSUER = 'foo'"+
-			" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo') EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS' EXTERNAL_OAUTH_JWS_KEYS_URL = ('foo')"+
-			" EXTERNAL_OAUTH_BLOCKED_ROLES_LIST = (%s)", id.FullyQualifiedName(), roleID.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		roleID := randomAccountObjectIdentifier()
-		opts.IfNotExists = Bool(true)
-		opts.ExternalOauthAllowedRolesList = &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{roleID}}
-		opts.ExternalOauthRsaPublicKey = Pointer("foo")
-		opts.ExternalOauthRsaPublicKey2 = Pointer("foo")
-		opts.ExternalOauthAudienceList = &AudienceList{AudienceList: []AudienceListItem{{Item: "foo"}}}
-		opts.ExternalOauthAnyRoleMode = Pointer(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)
-		opts.ExternalOauthScopeDelimiter = Pointer(" ")
-		opts.ExternalOauthScopeMappingAttribute = Pointer("foo")
-		opts.Comment = Pointer("foo")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = EXTERNAL_OAUTH ENABLED = false EXTERNAL_OAUTH_TYPE = CUSTOM EXTERNAL_OAUTH_ISSUER = 'foo'"+
-			" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo') EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS' EXTERNAL_OAUTH_ALLOWED_ROLES_LIST = (%s)"+
-			" EXTERNAL_OAUTH_RSA_PUBLIC_KEY = 'foo' EXTERNAL_OAUTH_RSA_PUBLIC_KEY_2 = 'foo' EXTERNAL_OAUTH_AUDIENCE_LIST = ('foo') EXTERNAL_OAUTH_ANY_ROLE_MODE = DISABLE"+
-			" EXTERNAL_OAUTH_SCOPE_DELIMITER = ' ' EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE = 'foo' COMMENT = 'foo'", id.FullyQualifiedName(), roleID.FullyQualifiedName())
-	})
+	securityIntegrationsTests.CreateExternalOauth.RunValidationCases(t)
+	securityIntegrationsTests.CreateExternalOauth.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_CreateOauthForPartnerApplications(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateOauthForPartnerApplicationsSecurityIntegrationOptions
-	defaultOpts := func() *CreateOauthForPartnerApplicationsSecurityIntegrationOptions {
-		return &CreateOauthForPartnerApplicationsSecurityIntegrationOptions{
-			// adjusted manually
-			name:        id,
-			OauthClient: OauthSecurityIntegrationClientOptionTableauDesktop,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateOauthForPartnerApplicationsSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOauthForPartnerApplicationsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = TABLEAU_DESKTOP", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		allowedRoleID, blockedRoleID := randomAccountObjectIdentifier(), randomAccountObjectIdentifier()
-		opts.IfNotExists = Bool(true)
-		opts.OauthClient = OauthSecurityIntegrationClientOptionLooker
-		opts.OauthRedirectUri = Pointer("uri")
-		opts.Enabled = Pointer(true)
-		opts.OauthIssueRefreshTokens = Pointer(true)
-		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
-		opts.AllowedRolesList = &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleID}}
-		opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleID}}
-		opts.Comment = Pointer("a")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = LOOKER OAUTH_REDIRECT_URI = 'uri' ENABLED = true OAUTH_ISSUE_REFRESH_TOKENS = true"+
-			" OAUTH_REFRESH_TOKEN_VALIDITY = 42 OAUTH_USE_SECONDARY_ROLES = NONE ALLOWED_ROLES_LIST = (%s) BLOCKED_ROLES_LIST = (%s) COMMENT = 'a'",
-			id.FullyQualifiedName(), allowedRoleID.FullyQualifiedName(), blockedRoleID.FullyQualifiedName())
-	})
+	securityIntegrationsTests.CreateOauthForPartnerApplications.RunValidationCases(t)
+	securityIntegrationsTests.CreateOauthForPartnerApplications.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_CreateOauthForCustomClients(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateOauthForCustomClientsSecurityIntegrationOptions
-	defaultOpts := func() *CreateOauthForCustomClientsSecurityIntegrationOptions {
-		return &CreateOauthForCustomClientsSecurityIntegrationOptions{
-			// adjusted manually
-			name:             id,
-			OauthClientType:  OauthSecurityIntegrationClientTypeOptionPublic,
-			OauthRedirectUri: "uri",
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateOauthForCustomClientsSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOauthForCustomClientsSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		roleID, allowedRoleID, role2ID, npID := randomAccountObjectIdentifier(), randomAccountObjectIdentifier(), randomAccountObjectIdentifier(), randomAccountObjectIdentifier()
-		opts.IfNotExists = Bool(true)
-		opts.OauthClientType = OauthSecurityIntegrationClientTypeOptionPublic
-		opts.Enabled = Pointer(true)
-		opts.OauthAllowNonTlsRedirectUri = Pointer(true)
-		opts.OauthEnforcePkce = Pointer(true)
-		opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
-		opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{PreAuthorizedRolesList: []AccountObjectIdentifier{roleID}}
-		opts.AllowedRolesList = &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleID}}
-		opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}}
-		opts.OauthIssueRefreshTokens = Pointer(true)
-		opts.OauthRefreshTokenValidity = Pointer(42)
-		opts.NetworkPolicy = &npID
-		opts.OauthClientRsaPublicKey = Pointer("key")
-		opts.OauthClientRsaPublicKey2 = Pointer("key2")
-		opts.Comment = Pointer("a")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri' ENABLED = true"+
-			" OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true OAUTH_ENFORCE_PKCE = true OAUTH_USE_SECONDARY_ROLES = NONE PRE_AUTHORIZED_ROLES_LIST = (%s) ALLOWED_ROLES_LIST = (%s) BLOCKED_ROLES_LIST = (%s)"+
-			" OAUTH_ISSUE_REFRESH_TOKENS = true OAUTH_REFRESH_TOKEN_VALIDITY = 42 NETWORK_POLICY = '\\\"%s\\\"' OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key' OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2' COMMENT = 'a'",
-			id.FullyQualifiedName(), roleID.FullyQualifiedName(), allowedRoleID.FullyQualifiedName(), role2ID.FullyQualifiedName(), npID.Name())
-	})
+	securityIntegrationsTests.CreateOauthForCustomClients.RunValidationCases(t)
+	securityIntegrationsTests.CreateOauthForCustomClients.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_CreateSaml2(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateSaml2SecurityIntegrationOptions
-	defaultOpts := func() *CreateSaml2SecurityIntegrationOptions {
-		return &CreateSaml2SecurityIntegrationOptions{
-			// adjusted manually
-			name:          id,
-			Saml2Issuer:   "issuer",
-			Saml2SsoUrl:   "url",
-			Saml2Provider: "provider",
-			Saml2X509Cert: "cert",
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateSaml2SecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSaml2SecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SAML2 SAML2_ISSUER = 'issuer' SAML2_SSO_URL = 'url' SAML2_PROVIDER = 'provider' SAML2_X509_CERT = 'cert'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.Enabled = Pointer(true)
-		opts.AllowedEmailPatterns = []EmailPattern{{Pattern: "pattern"}}
-		opts.AllowedUserDomains = []UserDomain{{Domain: "domain"}}
-		opts.Comment = Pointer("a")
-		opts.Saml2EnableSpInitiated = Pointer(true)
-		opts.Saml2ForceAuthn = Pointer(true)
-		opts.Saml2PostLogoutRedirectUrl = Pointer("redirect")
-		opts.Saml2RequestedNameidFormat = Pointer(Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos)
-		opts.Saml2SignRequest = Pointer(true)
-		opts.Saml2SnowflakeAcsUrl = Pointer("acs")
-		opts.Saml2SnowflakeIssuerUrl = Pointer("issuer")
-		opts.Saml2SpInitiatedLoginPageLabel = Pointer("label")
-		opts.Saml2SnowflakeX509Cert = Pointer("cert")
-
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SAML2 ENABLED = true SAML2_ISSUER = 'issuer' SAML2_SSO_URL = 'url' SAML2_PROVIDER = 'provider' SAML2_X509_CERT = 'cert'"+
-			" ALLOWED_USER_DOMAINS = ('domain') ALLOWED_EMAIL_PATTERNS = ('pattern') SAML2_SP_INITIATED_LOGIN_PAGE_LABEL = 'label' SAML2_ENABLE_SP_INITIATED = true SAML2_SNOWFLAKE_X509_CERT = 'cert' SAML2_SIGN_REQUEST = true"+
-			" SAML2_REQUESTED_NAMEID_FORMAT = '%s' SAML2_POST_LOGOUT_REDIRECT_URL = 'redirect' SAML2_FORCE_AUTHN = true SAML2_SNOWFLAKE_ISSUER_URL = 'issuer' SAML2_SNOWFLAKE_ACS_URL = 'acs'"+
-			" COMMENT = 'a'", id.FullyQualifiedName(), Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos)
-	})
+	securityIntegrationsTests.CreateSaml2.RunValidationCases(t)
+	securityIntegrationsTests.CreateSaml2.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_CreateScim(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateScimSecurityIntegrationOptions
-	defaultOpts := func() *CreateScimSecurityIntegrationOptions {
-		return &CreateScimSecurityIntegrationOptions{
-			// adjusted manually
-			name:       id,
-			ScimClient: "GENERIC",
-			RunAsRole:  AccountObjectIdentifier{"GENERIC_SCIM_PROVISIONER"},
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateScimSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateScimSecurityIntegrationOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// validation added manually
-	t.Run("validation: conflicting SyncPassword for Azure ScimClient", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ScimClient = ScimSecurityIntegrationScimClientOptionAzure
-		opts.SyncPassword = Pointer(true)
-		assertOptsInvalidJoinedErrors(t, opts, NewError("SyncPassword is not supported for Azure scim client"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Pointer(true)
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SCIM SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		networkPolicyID := randomAccountObjectIdentifier()
-		opts.Enabled = Pointer(true)
-		opts.IfNotExists = Pointer(true)
-		opts.NetworkPolicy = &networkPolicyID
-		opts.SyncPassword = Pointer(true)
-		opts.Comment = Pointer("a")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SCIM ENABLED = true SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`+
-			` NETWORK_POLICY = '\"%s\"' SYNC_PASSWORD = true COMMENT = 'a'`, id.FullyQualifiedName(), networkPolicyID.Name())
-	})
+	securityIntegrationsTests.CreateScim.RunValidationCases(t)
+	securityIntegrationsTests.CreateScim.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterApiAuthenticationWithClientCredentialsFlow(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions
-	defaultOpts := func() *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions {
-		return &AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(ApiAuthenticationWithClientCredentialsFlowIntegrationSet)
-		opts.Unset = new(ApiAuthenticationWithClientCredentialsFlowIntegrationUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.OauthTokenEndpoint opts.Set.OauthClientAuthMethod opts.Set.OauthClientId opts.Set.OauthClientSecret opts.Set.OauthGrantClientCredentials opts.Set.OauthAccessTokenValidity opts.Set.OauthRefreshTokenValidity opts.Set.OauthAllowedScopes opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithClientCredentialsFlowIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.Set", "Enabled", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantClientCredentials", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "OauthAllowedScopes", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Enabled opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApiAuthenticationWithClientCredentialsFlowIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions.Unset", "Enabled", "Comment"))
-	})
-
-	// variants added manually
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithClientCredentialsFlowIntegrationSet{
-			Enabled:                     Pointer(true),
-			OauthTokenEndpoint:          Pointer("foo"),
-			OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
-			OauthClientId:               Pointer("foo"),
-			OauthClientSecret:           Pointer("foo"),
-			OauthGrantClientCredentials: Pointer(true),
-			OauthAccessTokenValidity:    Pointer(42),
-			OauthRefreshTokenValidity:   Pointer(42),
-			OauthAllowedScopes:          []AllowedScope{{Scope: "foo"}},
-			Comment:                     Pointer("foo"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_TOKEN_ENDPOINT = 'foo', OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST,"+
-			" OAUTH_CLIENT_ID = 'foo', OAUTH_CLIENT_SECRET = 'foo', OAUTH_GRANT = CLIENT_CREDENTIALS, OAUTH_ACCESS_TOKEN_VALIDITY = 42,"+
-			" OAUTH_REFRESH_TOKEN_VALIDITY = 42, OAUTH_ALLOWED_SCOPES = ('foo'), COMMENT = 'foo'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApiAuthenticationWithClientCredentialsFlowIntegrationUnset{
-			Enabled: Pointer(true),
-			Comment: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET ENABLED, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterApiAuthenticationWithClientCredentialsFlow.RunValidationCases(t)
+	securityIntegrationsTests.AlterApiAuthenticationWithClientCredentialsFlow.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterApiAuthenticationWithAuthorizationCodeGrantFlow(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions
-	defaultOpts := func() *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions {
-		return &AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{}
-		opts.Unset = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.OauthAuthorizationEndpoint opts.Set.OauthTokenEndpoint opts.Set.OauthClientAuthMethod opts.Set.OauthClientId opts.Set.OauthClientSecret opts.Set.OauthGrantAuthorizationCode opts.Set.OauthAccessTokenValidity opts.Set.OauthRefreshTokenValidity opts.Set.OauthAllowedScopes opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions.Set", "Enabled", "OauthAuthorizationEndpoint", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantAuthorizationCode", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "OauthAllowedScopes", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Enabled opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions.Unset", "Enabled", "Comment"))
-	})
-
-	// variants added manually
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{
-			Enabled:                     Pointer(true),
-			OauthTokenEndpoint:          Pointer("foo"),
-			OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
-			OauthClientId:               Pointer("foo"),
-			OauthClientSecret:           Pointer("foo"),
-			OauthGrantAuthorizationCode: Pointer(true),
-			OauthAccessTokenValidity:    Pointer(42),
-			OauthRefreshTokenValidity:   Pointer(42),
-			OauthAllowedScopes:          []AllowedScope{{Scope: "bar"}},
-			Comment:                     Pointer("foo"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_TOKEN_ENDPOINT = 'foo', OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST,"+
-			" OAUTH_CLIENT_ID = 'foo', OAUTH_CLIENT_SECRET = 'foo', OAUTH_GRANT = AUTHORIZATION_CODE, OAUTH_ACCESS_TOKEN_VALIDITY = 42,"+
-			" OAUTH_REFRESH_TOKEN_VALIDITY = 42, OAUTH_ALLOWED_SCOPES = ('bar'), COMMENT = 'foo'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationUnset{
-			Enabled: Pointer(true),
-			Comment: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET ENABLED, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterApiAuthenticationWithAuthorizationCodeGrantFlow.RunValidationCases(t)
+	securityIntegrationsTests.AlterApiAuthenticationWithAuthorizationCodeGrantFlow.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterApiAuthenticationWithJwtBearerFlow(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions
-	defaultOpts := func() *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions {
-		return &AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithJwtBearerFlowIntegrationSet{}
-		opts.Unset = &ApiAuthenticationWithJwtBearerFlowIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.OauthAuthorizationEndpoint opts.Set.OauthTokenEndpoint opts.Set.OauthClientAuthMethod opts.Set.OauthClientId opts.Set.OauthClientSecret opts.Set.OauthGrantJwtBearer opts.Set.OauthAccessTokenValidity opts.Set.OauthRefreshTokenValidity opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithJwtBearerFlowIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.Set", "Enabled", "OauthAuthorizationEndpoint", "OauthTokenEndpoint", "OauthClientAuthMethod", "OauthClientId", "OauthClientSecret", "OauthGrantJwtBearer", "OauthAccessTokenValidity", "OauthRefreshTokenValidity", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Enabled opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApiAuthenticationWithJwtBearerFlowIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions.Unset", "Enabled", "Comment"))
-	})
-
-	// variants added manually
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApiAuthenticationWithJwtBearerFlowIntegrationSet{
-			Enabled:                   Pointer(true),
-			OauthTokenEndpoint:        Pointer("foo"),
-			OauthClientAuthMethod:     Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
-			OauthClientId:             Pointer("foo"),
-			OauthClientSecret:         Pointer("foo"),
-			OauthGrantJwtBearer:       Pointer(true),
-			OauthAccessTokenValidity:  Pointer(42),
-			OauthRefreshTokenValidity: Pointer(42),
-			Comment:                   Pointer("foo"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_TOKEN_ENDPOINT = 'foo', OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST,"+
-			" OAUTH_CLIENT_ID = 'foo', OAUTH_CLIENT_SECRET = 'foo', OAUTH_GRANT = JWT_BEARER, OAUTH_ACCESS_TOKEN_VALIDITY = 42,"+
-			" OAUTH_REFRESH_TOKEN_VALIDITY = 42, COMMENT = 'foo'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApiAuthenticationWithJwtBearerFlowIntegrationUnset{
-			Enabled: Pointer(true),
-			Comment: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET ENABLED, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterApiAuthenticationWithJwtBearerFlow.RunValidationCases(t)
+	securityIntegrationsTests.AlterApiAuthenticationWithJwtBearerFlow.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterExternalOauth(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterExternalOauthSecurityIntegrationOptions
-	defaultOpts := func() *AlterExternalOauthSecurityIntegrationOptions {
-		return &AlterExternalOauthSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterExternalOauthSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalOauthSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalOauthIntegrationSet{}
-		opts.Unset = &ExternalOauthIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalOauthSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.Set.ExternalOauthBlockedRolesList opts.Set.ExternalOauthAllowedRolesList]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalOauthIntegrationSet{
-			ExternalOauthAllowedRolesList: &AllowedRolesList{},
-			ExternalOauthBlockedRolesList: &BlockedRolesList{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.Set.ExternalOauthJwsKeysUrl opts.Set.ExternalOauthRsaPublicKey]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalOauthIntegrationSet{
-			ExternalOauthJwsKeysUrl:   []JwsKeysUrl{{JwsKeyUrl: "foo"}},
-			ExternalOauthRsaPublicKey: Pointer("key"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.Set.ExternalOauthJwsKeysUrl opts.Set.ExternalOauthRsaPublicKey2]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalOauthIntegrationSet{
-			ExternalOauthJwsKeysUrl:    []JwsKeysUrl{{JwsKeyUrl: "foo"}},
-			ExternalOauthRsaPublicKey2: Pointer("key"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey2"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.ExternalOauthType opts.Set.ExternalOauthIssuer opts.Set.ExternalOauthTokenUserMappingClaim opts.Set.ExternalOauthSnowflakeUserMappingAttribute opts.Set.ExternalOauthJwsKeysUrl opts.Set.ExternalOauthBlockedRolesList opts.Set.ExternalOauthAllowedRolesList opts.Set.ExternalOauthRsaPublicKey opts.Set.ExternalOauthRsaPublicKey2 opts.Set.ExternalOauthAudienceList opts.Set.ExternalOauthAnyRoleMode opts.Set.ExternalOauthScopeDelimiter opts.Set.ExternalOauthScopeMappingAttribute opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalOauthIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "Enabled", "ExternalOauthType", "ExternalOauthIssuer", "ExternalOauthTokenUserMappingClaim", "ExternalOauthSnowflakeUserMappingAttribute", "ExternalOauthJwsKeysUrl", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList", "ExternalOauthRsaPublicKey", "ExternalOauthRsaPublicKey2", "ExternalOauthAudienceList", "ExternalOauthAnyRoleMode", "ExternalOauthScopeDelimiter", "ExternalOauthScopeMappingAttribute", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Enabled opts.Unset.ExternalOauthAudienceList] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ExternalOauthIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Unset", "Enabled", "ExternalOauthAudienceList"))
-	})
-
-	// variants added manually
-	t.Run("empty lists", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalOauthIntegrationSet{
-			ExternalOauthBlockedRolesList: &BlockedRolesList{},
-			ExternalOauthAudienceList:     &AudienceList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET EXTERNAL_OAUTH_BLOCKED_ROLES_LIST = (), EXTERNAL_OAUTH_AUDIENCE_LIST = ()", id.FullyQualifiedName())
-		opts.Set = &ExternalOauthIntegrationSet{
-			ExternalOauthAllowedRolesList: &AllowedRolesList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET EXTERNAL_OAUTH_ALLOWED_ROLES_LIST = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		roleID := randomAccountObjectIdentifier()
-		opts.Set = &ExternalOauthIntegrationSet{
-			Enabled:                            Pointer(true),
-			ExternalOauthType:                  Pointer(ExternalOauthSecurityIntegrationTypeOptionCustom),
-			ExternalOauthIssuer:                Pointer("foo"),
-			ExternalOauthTokenUserMappingClaim: []TokenUserMappingClaim{{Claim: "foo"}},
-			ExternalOauthSnowflakeUserMappingAttribute: Pointer(ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
-			ExternalOauthAllowedRolesList:              &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{roleID}},
-			ExternalOauthRsaPublicKey:                  Pointer("foo"),
-			ExternalOauthRsaPublicKey2:                 Pointer("foo"),
-			ExternalOauthAudienceList:                  &AudienceList{AudienceList: []AudienceListItem{{Item: "foo"}}},
-			ExternalOauthAnyRoleMode:                   Pointer(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable),
-			ExternalOauthScopeDelimiter:                Pointer(" "),
-			ExternalOauthScopeMappingAttribute:         Pointer("foo"),
-			Comment:                                    Pointer(StringAllowEmpty{Value: "foo"}),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, EXTERNAL_OAUTH_TYPE = CUSTOM, EXTERNAL_OAUTH_ISSUER = 'foo',"+
-			" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo'), EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS', EXTERNAL_OAUTH_ALLOWED_ROLES_LIST = (%s),"+
-			" EXTERNAL_OAUTH_RSA_PUBLIC_KEY = 'foo', EXTERNAL_OAUTH_RSA_PUBLIC_KEY_2 = 'foo', EXTERNAL_OAUTH_AUDIENCE_LIST = ('foo'), EXTERNAL_OAUTH_ANY_ROLE_MODE = DISABLE,"+
-			" EXTERNAL_OAUTH_SCOPE_DELIMITER = ' ', EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE = 'foo', COMMENT = 'foo'", id.FullyQualifiedName(), roleID.FullyQualifiedName())
-		opts.Set = &ExternalOauthIntegrationSet{
-			ExternalOauthBlockedRolesList: &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{roleID}},
-			ExternalOauthJwsKeysUrl:       []JwsKeysUrl{{JwsKeyUrl: "foo"}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET EXTERNAL_OAUTH_JWS_KEYS_URL = ('foo'), EXTERNAL_OAUTH_BLOCKED_ROLES_LIST = (%s)", id.FullyQualifiedName(), roleID.FullyQualifiedName())
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ExternalOauthIntegrationUnset{
-			Enabled:                   Pointer(true),
-			ExternalOauthAudienceList: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET ENABLED, EXTERNAL_OAUTH_AUDIENCE_LIST", id.FullyQualifiedName())
-	})
-
-	t.Run("set empty comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalOauthIntegrationSet{
-			Comment: Pointer(StringAllowEmpty{Value: ""}),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET COMMENT = ''", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterExternalOauth.RunValidationCases(t)
+	securityIntegrationsTests.AlterExternalOauth.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterOauthForPartnerApplications(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterOauthForPartnerApplicationsSecurityIntegrationOptions
-	defaultOpts := func() *AlterOauthForPartnerApplicationsSecurityIntegrationOptions {
-		return &AlterOauthForPartnerApplicationsSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterOauthForPartnerApplicationsSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &OauthForPartnerApplicationsIntegrationSet{}
-		opts.Unset = &OauthForPartnerApplicationsIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.OauthIssueRefreshTokens opts.Set.OauthRedirectUri opts.Set.OauthRefreshTokenValidity opts.Set.OauthUseSecondaryRoles opts.Set.AllowedRolesList opts.Set.BlockedRolesList opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &OauthForPartnerApplicationsIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Set", "Enabled", "OauthIssueRefreshTokens", "OauthRedirectUri", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "AllowedRolesList", "BlockedRolesList", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Enabled opts.Unset.OauthUseSecondaryRoles] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &OauthForPartnerApplicationsIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterOauthForPartnerApplicationsSecurityIntegrationOptions.Unset", "Enabled", "OauthUseSecondaryRoles"))
-	})
-
-	// variants set manually
-	t.Run("empty roles lists", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &OauthForPartnerApplicationsIntegrationSet{
-			AllowedRolesList: &AllowedRolesList{},
-			BlockedRolesList: &BlockedRolesList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ALLOWED_ROLES_LIST = (), BLOCKED_ROLES_LIST = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		allowedRoleID, blockedRoleID := randomAccountObjectIdentifier(), randomAccountObjectIdentifier()
-		opts.Set = &OauthForPartnerApplicationsIntegrationSet{
-			Enabled:                   Pointer(true),
-			OauthRedirectUri:          Pointer("uri"),
-			OauthIssueRefreshTokens:   Pointer(true),
-			OauthRefreshTokenValidity: Pointer(42),
-			OauthUseSecondaryRoles:    Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
-			AllowedRolesList:          &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleID}},
-			BlockedRolesList:          &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleID}},
-			Comment:                   Pointer(StringAllowEmpty{""}),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_ISSUE_REFRESH_TOKENS = true, OAUTH_REDIRECT_URI = 'uri', OAUTH_REFRESH_TOKEN_VALIDITY = 42,"+
-			" OAUTH_USE_SECONDARY_ROLES = NONE, ALLOWED_ROLES_LIST = (%s), BLOCKED_ROLES_LIST = (%s), COMMENT = ''",
-			id.FullyQualifiedName(), allowedRoleID.FullyQualifiedName(), blockedRoleID.FullyQualifiedName())
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &OauthForPartnerApplicationsIntegrationUnset{
-			Enabled:                Pointer(true),
-			OauthUseSecondaryRoles: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET ENABLED, OAUTH_USE_SECONDARY_ROLES", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterOauthForPartnerApplications.RunValidationCases(t)
+	securityIntegrationsTests.AlterOauthForPartnerApplications.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterOauthForCustomClients(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterOauthForCustomClientsSecurityIntegrationOptions
-	defaultOpts := func() *AlterOauthForCustomClientsSecurityIntegrationOptions {
-		return &AlterOauthForCustomClientsSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterOauthForCustomClientsSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &OauthForCustomClientsIntegrationSet{}
-		opts.Unset = &OauthForCustomClientsIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.OauthRedirectUri opts.Set.OauthAllowNonTlsRedirectUri opts.Set.OauthEnforcePkce opts.Set.PreAuthorizedRolesList opts.Set.AllowedRolesList opts.Set.BlockedRolesList opts.Set.OauthIssueRefreshTokens opts.Set.OauthRefreshTokenValidity opts.Set.OauthUseSecondaryRoles opts.Set.NetworkPolicy opts.Set.OauthClientRsaPublicKey opts.Set.OauthClientRsaPublicKey2 opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &OauthForCustomClientsIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set", "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList", "AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Enabled opts.Unset.NetworkPolicy opts.Unset.OauthUseSecondaryRoles opts.Unset.OauthClientRsaPublicKey opts.Unset.OauthClientRsaPublicKey2] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &OauthForCustomClientsIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Unset", "Enabled", "NetworkPolicy", "OauthUseSecondaryRoles", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2"))
-	})
-
-	// variants added manually
-	t.Run("empty roles lists", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &OauthForCustomClientsIntegrationSet{
-			PreAuthorizedRolesList: &PreAuthorizedRolesList{},
-			AllowedRolesList:       &AllowedRolesList{},
-			BlockedRolesList:       &BlockedRolesList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET PRE_AUTHORIZED_ROLES_LIST = (), ALLOWED_ROLES_LIST = (), BLOCKED_ROLES_LIST = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		roleID, allowedRoleID, role2ID, npID := randomAccountObjectIdentifier(), randomAccountObjectIdentifier(), randomAccountObjectIdentifier(), randomAccountObjectIdentifier()
-		opts.Set = &OauthForCustomClientsIntegrationSet{
-			Enabled:                     Pointer(true),
-			OauthRedirectUri:            Pointer("uri"),
-			OauthAllowNonTlsRedirectUri: Pointer(true),
-			OauthEnforcePkce:            Pointer(true),
-			OauthUseSecondaryRoles:      Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
-			PreAuthorizedRolesList:      &PreAuthorizedRolesList{PreAuthorizedRolesList: []AccountObjectIdentifier{roleID}},
-			AllowedRolesList:            &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleID}},
-			BlockedRolesList:            &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{role2ID}},
-			OauthIssueRefreshTokens:     Pointer(true),
-			OauthRefreshTokenValidity:   Pointer(42),
-			NetworkPolicy:               &npID,
-			OauthClientRsaPublicKey:     Pointer("key"),
-			OauthClientRsaPublicKey2:    Pointer("key2"),
-			Comment:                     Pointer("a"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_REDIRECT_URI = 'uri', OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true, OAUTH_ENFORCE_PKCE = true,"+
-			" PRE_AUTHORIZED_ROLES_LIST = (%s), ALLOWED_ROLES_LIST = (%s), BLOCKED_ROLES_LIST = (%s), OAUTH_ISSUE_REFRESH_TOKENS = true, OAUTH_REFRESH_TOKEN_VALIDITY = 42, OAUTH_USE_SECONDARY_ROLES = NONE,"+
-			" NETWORK_POLICY = '\\\"%s\\\"', OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key', OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2', COMMENT = 'a'",
-			id.FullyQualifiedName(), roleID.FullyQualifiedName(), allowedRoleID.FullyQualifiedName(), role2ID.FullyQualifiedName(), npID.Name())
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &OauthForCustomClientsIntegrationUnset{
-			Enabled:                  Pointer(true),
-			OauthUseSecondaryRoles:   Pointer(true),
-			NetworkPolicy:            Pointer(true),
-			OauthClientRsaPublicKey:  Pointer(true),
-			OauthClientRsaPublicKey2: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET ENABLED, NETWORK_POLICY, OAUTH_CLIENT_RSA_PUBLIC_KEY, OAUTH_CLIENT_RSA_PUBLIC_KEY_2, OAUTH_USE_SECONDARY_ROLES", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterOauthForCustomClients.RunValidationCases(t)
+	securityIntegrationsTests.AlterOauthForCustomClients.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterSaml2(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterSaml2SecurityIntegrationOptions
-	defaultOpts := func() *AlterSaml2SecurityIntegrationOptions {
-		return &AlterSaml2SecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterSaml2SecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RefreshSaml2SnowflakePrivateKey opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSaml2SecurityIntegrationOptions", "Set", "Unset", "RefreshSaml2SnowflakePrivateKey", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RefreshSaml2SnowflakePrivateKey opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &Saml2IntegrationSet{}
-		opts.Unset = &Saml2IntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSaml2SecurityIntegrationOptions", "Set", "Unset", "RefreshSaml2SnowflakePrivateKey", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.Saml2Issuer opts.Set.Saml2SsoUrl opts.Set.Saml2Provider opts.Set.Saml2X509Cert opts.Set.AllowedUserDomains opts.Set.AllowedEmailPatterns opts.Set.Saml2SpInitiatedLoginPageLabel opts.Set.Saml2EnableSpInitiated opts.Set.Saml2SnowflakeX509Cert opts.Set.Saml2SignRequest opts.Set.Saml2RequestedNameidFormat opts.Set.Saml2PostLogoutRedirectUrl opts.Set.Saml2ForceAuthn opts.Set.Saml2SnowflakeIssuerUrl opts.Set.Saml2SnowflakeAcsUrl opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &Saml2IntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterSaml2SecurityIntegrationOptions.Set", "Enabled", "Saml2Issuer", "Saml2SsoUrl", "Saml2Provider", "Saml2X509Cert", "AllowedUserDomains", "AllowedEmailPatterns", "Saml2SpInitiatedLoginPageLabel", "Saml2EnableSpInitiated", "Saml2SnowflakeX509Cert", "Saml2SignRequest", "Saml2RequestedNameidFormat", "Saml2PostLogoutRedirectUrl", "Saml2ForceAuthn", "Saml2SnowflakeIssuerUrl", "Saml2SnowflakeAcsUrl", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Saml2ForceAuthn opts.Unset.Saml2RequestedNameidFormat opts.Unset.Saml2PostLogoutRedirectUrl opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &Saml2IntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterSaml2SecurityIntegrationOptions.Unset", "Saml2ForceAuthn", "Saml2RequestedNameidFormat", "Saml2PostLogoutRedirectUrl", "Comment"))
-	})
-
-	// variants added manually
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &Saml2IntegrationSet{
-			Enabled:                        Pointer(true),
-			Saml2Issuer:                    Pointer("issuer"),
-			Saml2SsoUrl:                    Pointer("url"),
-			Saml2Provider:                  Pointer(Saml2SecurityIntegrationSaml2ProviderOptionCustom),
-			Saml2X509Cert:                  Pointer("cert"),
-			AllowedUserDomains:             []UserDomain{{Domain: "domain"}},
-			AllowedEmailPatterns:           []EmailPattern{{Pattern: "pattern"}},
-			Saml2SpInitiatedLoginPageLabel: Pointer("label"),
-			Saml2EnableSpInitiated:         Pointer(true),
-			Saml2SnowflakeX509Cert:         Pointer("cert"),
-			Saml2SignRequest:               Pointer(true),
-			Saml2RequestedNameidFormat:     Pointer(Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos),
-			Saml2PostLogoutRedirectUrl:     Pointer("redirect"),
-			Saml2ForceAuthn:                Pointer(true),
-			Saml2SnowflakeIssuerUrl:        Pointer("issuer"),
-			Saml2SnowflakeAcsUrl:           Pointer("acs"),
-			Comment:                        Pointer("a"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, SAML2_ISSUER = 'issuer', SAML2_SSO_URL = 'url', SAML2_PROVIDER = 'CUSTOM', SAML2_X509_CERT = 'cert',"+
-			" ALLOWED_USER_DOMAINS = ('domain'), ALLOWED_EMAIL_PATTERNS = ('pattern'), SAML2_SP_INITIATED_LOGIN_PAGE_LABEL = 'label', SAML2_ENABLE_SP_INITIATED = true, SAML2_SNOWFLAKE_X509_CERT = 'cert', SAML2_SIGN_REQUEST = true,"+
-			" SAML2_REQUESTED_NAMEID_FORMAT = '%s', SAML2_POST_LOGOUT_REDIRECT_URL = 'redirect', SAML2_FORCE_AUTHN = true, SAML2_SNOWFLAKE_ISSUER_URL = 'issuer', SAML2_SNOWFLAKE_ACS_URL = 'acs',"+
-			" COMMENT = 'a'", id.FullyQualifiedName(), Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos)
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &Saml2IntegrationUnset{
-			Saml2ForceAuthn:            Pointer(true),
-			Saml2RequestedNameidFormat: Pointer(true),
-			Saml2PostLogoutRedirectUrl: Pointer(true),
-			Comment:                    Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET SAML2_FORCE_AUTHN, SAML2_REQUESTED_NAMEID_FORMAT, SAML2_POST_LOGOUT_REDIRECT_URL, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("refresh SAML2_SNOWFLAKE_PRIVATE_KEY", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RefreshSaml2SnowflakePrivateKey = Pointer(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s REFRESH SAML2_SNOWFLAKE_PRIVATE_KEY", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterSaml2.RunValidationCases(t)
+	securityIntegrationsTests.AlterSaml2.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_AlterScim(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterScimSecurityIntegrationOptions
-	defaultOpts := func() *AlterScimSecurityIntegrationOptions {
-		return &AlterScimSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterScimSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterScimSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ScimIntegrationSet{}
-		opts.Unset = &ScimIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterScimSecurityIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.NetworkPolicy opts.Set.SyncPassword opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ScimIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterScimSecurityIntegrationOptions.Set", "Enabled", "NetworkPolicy", "SyncPassword", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Enabled opts.Unset.NetworkPolicy opts.Unset.SyncPassword] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ScimIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterScimSecurityIntegrationOptions.Unset", "Enabled", "NetworkPolicy", "SyncPassword"))
-	})
-
-	// variants added manually
-	t.Run("all options - set", func(t *testing.T) {
-		opts := defaultOpts()
-		networkPolicyID := randomAccountObjectIdentifier()
-		opts.Set = &ScimIntegrationSet{
-			Enabled:       Pointer(true),
-			NetworkPolicy: &networkPolicyID,
-			SyncPassword:  Pointer(true),
-			Comment:       Pointer(StringAllowEmpty{Value: "test"}),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET ENABLED = true, NETWORK_POLICY = '\\\"%s\\\"', SYNC_PASSWORD = true, COMMENT = 'test'",
-			id.FullyQualifiedName(), networkPolicyID.Name())
-	})
-
-	t.Run("set empty comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ScimIntegrationSet{
-			Comment: Pointer(StringAllowEmpty{Value: ""}),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s SET COMMENT = ''", id.FullyQualifiedName())
-	})
-
-	t.Run("all options - unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ScimIntegrationUnset{
-			Enabled:       Pointer(true),
-			NetworkPolicy: Pointer(true),
-			SyncPassword:  Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECURITY INTEGRATION %s UNSET ENABLED, NETWORK_POLICY, SYNC_PASSWORD", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SECURITY INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.AlterScim.RunValidationCases(t)
+	securityIntegrationsTests.AlterScim.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropSecurityIntegrationOptions
-	defaultOpts := func() *DropSecurityIntegrationOptions {
-		return &DropSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP SECURITY INTEGRATION %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP SECURITY INTEGRATION IF EXISTS %s", id.FullyQualifiedName())
-	})
+	securityIntegrationsTests.Drop.RunValidationCases(t)
+	securityIntegrationsTests.Drop.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_Describe(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribeSecurityIntegrationOptions
-	defaultOpts := func() *DescribeSecurityIntegrationOptions {
-		return &DescribeSecurityIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SECURITY INTEGRATION %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	securityIntegrationsTests.Describe.RunValidationCases(t)
+	securityIntegrationsTests.Describe.RunSqlCases(t)
 }
 
 func TestSecurityIntegrations_Show(t *testing.T) {
-	// Minimal valid ShowSecurityIntegrationOptions
-	defaultOpts := func() *ShowSecurityIntegrationOptions {
-		return &ShowSecurityIntegrationOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowSecurityIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SECURITY INTEGRATIONS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("some pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SECURITY INTEGRATIONS LIKE 'some pattern'")
-	})
-}
-
-// test added manually
-func TestSecurityIntegration_SubType(t *testing.T) {
-	testCases := map[string]struct {
-		integration SecurityIntegration
-		subType     string
-		err         error
-	}{
-		"subtype for scim integration": {
-			integration: SecurityIntegration{IntegrationType: "SCIM - AZURE"},
-			subType:     "AZURE",
-		},
-		"invalid integration type": {
-			integration: SecurityIntegration{IntegrationType: "invalid"},
-			err:         errors.New("expected \"<type> - <subtype>\", got: invalid"),
-		},
-		"empty integration type": {
-			integration: SecurityIntegration{IntegrationType: ""},
-			err:         errors.New("expected \"<type> - <subtype>\", got: "),
-		},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			subType, err := tc.integration.SubType()
-			if err != nil {
-				require.Equal(t, tc.err, err)
-			} else {
-				require.NoError(t, tc.err)
-				require.Equal(t, tc.subType, subType)
-			}
-		})
-	}
+	securityIntegrationsTests.Show.RunValidationCases(t)
+	securityIntegrationsTests.Show.RunSqlCases(t)
 }

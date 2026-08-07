@@ -67,7 +67,7 @@ var _ = ShowApplicationSchema
 
 func ApplicationToSchema(application *sdk.Application) map[string]any {
 	applicationSchema := make(map[string]any)
-	applicationSchema["created_on"] = application.CreatedOn
+	applicationSchema["created_on"] = application.CreatedOn.String()
 	applicationSchema["name"] = application.Name
 	applicationSchema["is_default"] = application.IsDefault
 	applicationSchema["is_current"] = application.IsCurrent

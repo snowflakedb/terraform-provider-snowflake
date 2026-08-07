@@ -31,10 +31,10 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	loadOpenCatalogConfig := func(t *testing.T) (catalogUri, privateCatalogUri, oAuthClientId, oAuthClientSecret string) {
 		t.Helper()
 		accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
-		credentials := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthCredentials)
+		oAuthClientId = testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientId)
+		oAuthClientSecret = testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientSecret)
 		catalogUri = fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
 		privateCatalogUri = fmt.Sprintf("https://%s.privatelink.snowflakecomputing.com/polaris/api/catalog", accountLocator)
-		oAuthClientId, oAuthClientSecret = testClientHelper().CatalogIntegration.ParseOAuthCredentials(t, credentials)
 		return
 	}
 
@@ -384,15 +384,25 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter catalog integration: bearer token", func(t *testing.T) {
-		t.Skip("SNOW-3888393: no real Iceberg REST catalog with bearer auth available; fake credentials fail when CREATE validates the catalog")
+		catalogUri, _, oAuthClientId, oAuthClientSecret := loadOpenCatalogConfig(t)
+		newOAuthClientId := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthClientId)
+		newOAuthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthClientSecret)
+		bearerToken := testClientHelper().CatalogIntegration.RetrieveOpenCatalogBearerToken(t, catalogUri, oAuthClientId, oAuthClientSecret, oAuthAllowedScope)
+		newBearerToken := testClientHelper().CatalogIntegration.RetrieveOpenCatalogBearerToken(t, catalogUri, newOAuthClientId, newOAuthClientSecret, additionalOAuthAllowedScope)
 
 		integrationAwsGlue := createAwsGlueCatalogIntegration(t)
 		integrationObjectStorage := createObjectStorageCatalogIntegration(t)
 		integrationOpenCatalog := createOpenCatalogCatalogIntegration(t)
-		integrationIcebergRest := createIcebergRestCatalogIntegration(t)
+		integrationIcebergRest := createCatalogIntegrationWithRequest(t, sdk.NewCreateCatalogIntegrationRequest(testClientHelper().Ids.RandomAccountObjectIdentifier(), false).
+			WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
+				WithRestConfig(sdk.IcebergRestRestConfigRequest{
+					CatalogUri:  catalogUri,
+					CatalogName: new(catalogName),
+				}).
+				WithBearerRestAuthentication(sdk.BearerRestAuthenticationRequest{BearerToken: bearerToken})))
 
 		request := *sdk.NewCatalogIntegrationSetRequest().
-			WithSetBearerRestAuthentication(*sdk.NewSetBearerRestAuthenticationRequest("new token"))
+			WithSetBearerRestAuthentication(*sdk.NewSetBearerRestAuthenticationRequest(newBearerToken))
 
 		err := client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(integrationIcebergRest.ID()).WithSet(request))
 		require.NoError(t, err)
@@ -410,7 +420,7 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 	})
 
 	t.Run("alter catalog integration: OAuth client secret", func(t *testing.T) {
-		_, newOAuthClientSecret := testClientHelper().CatalogIntegration.ParseOAuthCredentials(t, testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthCredentials))
+		newOAuthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogSecondaryOAuthClientSecret)
 
 		integrationAwsGlue := createAwsGlueCatalogIntegration(t)
 		integrationObjectStorage := createObjectStorageCatalogIntegration(t)

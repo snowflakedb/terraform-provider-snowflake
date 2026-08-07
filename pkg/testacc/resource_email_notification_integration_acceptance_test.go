@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TODO [SNOW-1007539]: use email of our service user (verified email address is required)
 func TestAcc_EmailNotificationIntegration(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
-	verifiedEmail := "artur.sawicki@snowflake.com"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -24,11 +23,11 @@ func TestAcc_EmailNotificationIntegration(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.EmailNotificationIntegration),
 		Steps: []resource.TestStep{
 			{
-				Config: emailNotificationIntegrationConfig(id.Name(), verifiedEmail),
+				Config: emailNotificationIntegrationConfig(id.Name(), helpers.VerifiedEmail),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_email_notification_integration.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_email_notification_integration.test", "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_email_notification_integration.test", "allowed_recipients.0", verifiedEmail),
+					resource.TestCheckResourceAttr("snowflake_email_notification_integration.test", "allowed_recipients.0", helpers.VerifiedEmail),
 				),
 			},
 			{
@@ -57,7 +56,6 @@ resource "snowflake_email_notification_integration" "test" {
 func TestAcc_EmailNotificationIntegration_issue2223(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	emailIntegrationName := id.Name()
-	verifiedEmail := "artur.sawicki@snowflake.com"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -74,10 +72,10 @@ func TestAcc_EmailNotificationIntegration_issue2223(t *testing.T) {
 				),
 			},
 			{
-				Config: emailNotificationIntegrationConfig(emailIntegrationName, verifiedEmail),
+				Config: emailNotificationIntegrationConfig(emailIntegrationName, helpers.VerifiedEmail),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_email_notification_integration.test", "name", emailIntegrationName),
-					resource.TestCheckResourceAttr("snowflake_email_notification_integration.test", "allowed_recipients.0", verifiedEmail),
+					resource.TestCheckResourceAttr("snowflake_email_notification_integration.test", "allowed_recipients.0", helpers.VerifiedEmail),
 				),
 			},
 			{

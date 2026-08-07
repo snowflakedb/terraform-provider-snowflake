@@ -5,6 +5,7 @@ package testint
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -51,7 +52,7 @@ func TestInt_Budgets(t *testing.T) {
 
 		result, err := client.Budgets.SetEmailNotifications(ctx, sdk.NewSetEmailNotificationsBudgetRequest(
 			budgetId,
-			*sdk.NewBudgetSetEmailNotificationsArgsRequestFromEmails("artur.sawicki@snowflake.com").
+			*sdk.NewBudgetSetEmailNotificationsArgsRequestFromEmails(helpers.VerifiedEmail).
 				WithNotificationIntegration(integration.ID()),
 		))
 		require.NoError(t, err)
@@ -60,7 +61,7 @@ func TestInt_Budgets(t *testing.T) {
 		email, err := client.Budgets.GetNotificationEmail(ctx, sdk.NewGetNotificationEmailBudgetRequest(budgetId))
 		require.NoError(t, err)
 		require.NotNil(t, email)
-		require.Equal(t, *email, "artur.sawicki@snowflake.com")
+		require.Equal(t, *email, helpers.VerifiedEmail)
 
 		integrationName, err := client.Budgets.GetNotificationIntegrationName(ctx, sdk.NewGetNotificationIntegrationNameBudgetRequest(budgetId))
 		require.NoError(t, err)
