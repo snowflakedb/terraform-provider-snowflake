@@ -31,8 +31,6 @@ func countShowQueries(t *testing.T, needle string) int {
 	}))
 }
 
-// countShowGrantsOfRoleQueries returns how many `SHOW GRANTS OF ROLE <id>` statements were issued
-// for the given, test-unique role.
 func countShowGrantsOfRoleQueries(t *testing.T, roleId sdk.AccountObjectIdentifier) int {
 	t.Helper()
 	return countShowQueries(t, fmt.Sprintf("SHOW GRANTS OF ROLE %s", roleId.FullyQualifiedName()))
