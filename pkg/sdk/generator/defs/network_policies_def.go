@@ -107,7 +107,7 @@ var (
 		ShowOperationWithPairedStructs(
 			"https://docs.snowflake.com/en/sql-reference/sql/show-network-policies",
 			g.StructPair("showNetworkPolicyDBRow", "NetworkPolicy").
-				Text("created_on").
+				Time("created_on").
 				Text("name").
 				Text("comment").
 				Number("entries_in_allowed_ip_list").

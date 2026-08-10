@@ -5,6 +5,7 @@ package objectassert
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -144,7 +145,7 @@ func (l *ListingAssert) HasProfileNotEmpty() *ListingAssert {
 	return l
 }
 
-func (l *ListingAssert) HasCreatedOn(expected string) *ListingAssert {
+func (l *ListingAssert) HasCreatedOn(expected time.Time) *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
 		if o.CreatedOn != expected {
@@ -158,8 +159,8 @@ func (l *ListingAssert) HasCreatedOn(expected string) *ListingAssert {
 func (l *ListingAssert) HasCreatedOnNotEmpty() *ListingAssert {
 	l.AddAssertion(func(t *testing.T, o *sdk.Listing) error {
 		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created on to be non-empty")
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

@@ -5,6 +5,7 @@ package objectassert
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -31,7 +32,7 @@ func NetworkPolicyFromObject(t *testing.T, networkPolicy *sdk.NetworkPolicy) *Ne
 	}
 }
 
-func (n *NetworkPolicyAssert) HasCreatedOn(expected string) *NetworkPolicyAssert {
+func (n *NetworkPolicyAssert) HasCreatedOn(expected time.Time) *NetworkPolicyAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NetworkPolicy) error {
 		t.Helper()
 		if o.CreatedOn != expected {
@@ -45,8 +46,8 @@ func (n *NetworkPolicyAssert) HasCreatedOn(expected string) *NetworkPolicyAssert
 func (n *NetworkPolicyAssert) HasCreatedOnNotEmpty() *NetworkPolicyAssert {
 	n.AddAssertion(func(t *testing.T, o *sdk.NetworkPolicy) error {
 		t.Helper()
-		if o.CreatedOn == "" {
-			return fmt.Errorf("expected created on to be non-empty")
+		if o.CreatedOn.IsZero() {
+			return fmt.Errorf("expected created on to be set; got zero value")
 		}
 		return nil
 	})

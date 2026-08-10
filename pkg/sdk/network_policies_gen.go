@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"time"
 )
 
 type NetworkPolicies interface {
@@ -105,17 +106,17 @@ type ShowNetworkPolicyOptions struct {
 }
 
 type showNetworkPolicyDBRow struct {
-	CreatedOn                    string `db:"created_on"`
-	Name                         string `db:"name"`
-	Comment                      string `db:"comment"`
-	EntriesInAllowedIpList       int    `db:"entries_in_allowed_ip_list"`
-	EntriesInBlockedIpList       int    `db:"entries_in_blocked_ip_list"`
-	EntriesInAllowedNetworkRules int    `db:"entries_in_allowed_network_rules"`
-	EntriesInBlockedNetworkRules int    `db:"entries_in_blocked_network_rules"`
+	CreatedOn                    time.Time `db:"created_on"`
+	Name                         string    `db:"name"`
+	Comment                      string    `db:"comment"`
+	EntriesInAllowedIpList       int       `db:"entries_in_allowed_ip_list"`
+	EntriesInBlockedIpList       int       `db:"entries_in_blocked_ip_list"`
+	EntriesInAllowedNetworkRules int       `db:"entries_in_allowed_network_rules"`
+	EntriesInBlockedNetworkRules int       `db:"entries_in_blocked_network_rules"`
 }
 
 type NetworkPolicy struct {
-	CreatedOn                    string
+	CreatedOn                    time.Time
 	Name                         string
 	Comment                      string
 	EntriesInAllowedIpList       int

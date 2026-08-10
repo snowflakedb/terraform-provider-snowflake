@@ -43,7 +43,7 @@ var _ = ShowNetworkPolicySchema
 
 func NetworkPolicyToSchema(networkPolicy *sdk.NetworkPolicy) map[string]any {
 	networkPolicySchema := make(map[string]any)
-	networkPolicySchema["created_on"] = networkPolicy.CreatedOn
+	networkPolicySchema["created_on"] = networkPolicy.CreatedOn.String()
 	networkPolicySchema["name"] = networkPolicy.Name
 	networkPolicySchema["comment"] = networkPolicy.Comment
 	networkPolicySchema["entries_in_allowed_ip_list"] = networkPolicy.EntriesInAllowedIpList

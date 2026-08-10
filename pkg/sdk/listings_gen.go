@@ -5,6 +5,7 @@ package sdk
 import (
 	"context"
 	"database/sql"
+	"time"
 )
 
 type Listings interface {
@@ -99,7 +100,7 @@ type listingDBRow struct {
 	Title                   string         `db:"title"`
 	Subtitle                sql.NullString `db:"subtitle"`
 	Profile                 string         `db:"profile"`
-	CreatedOn               string         `db:"created_on"`
+	CreatedOn               time.Time      `db:"created_on"`
 	UpdatedOn               string         `db:"updated_on"`
 	PublishedOn             sql.NullString `db:"published_on"`
 	State                   string         `db:"state"`
@@ -128,7 +129,7 @@ type Listing struct {
 	Title                   string
 	Subtitle                *string
 	Profile                 string
-	CreatedOn               string
+	CreatedOn               time.Time
 	UpdatedOn               string
 	PublishedOn             *string
 	State                   ListingState
