@@ -256,6 +256,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.EmailNotificationIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.NotificationIntegrations.ShowByID)
 	},
+	resources.ExternalAccessIntegration: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ExternalAccessIntegrations.ShowByID)
+	},
 	resources.ExternalAzureStage: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Stages.ShowByID)
 	},

@@ -41,8 +41,8 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ExternalAccessIntegrationDetails(t, id).
 				HasAllowedNetworkRules(networkRule.ID()).
-				HasNoAllowedApiAuthenticationIntegrationsList().
-				HasNoAllowedAuthenticationSecretsList().
+				HasNoAllowedApiAuthenticationIntegrations().
+				HasNoAllowedAuthenticationSecrets().
 				HasEnabled(true).
 				HasComment(""),
 		)
@@ -100,7 +100,7 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.ExternalAccessIntegrationDetails(t, id).
-				HasNoAllowedApiAuthenticationIntegrationsList(),
+				HasNoAllowedApiAuthenticationIntegrations(),
 		)
 	})
 
@@ -116,7 +116,7 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.ExternalAccessIntegrationDetails(t, id).
-				HasAllowedAuthenticationSecretsAll(true),
+				HasAllowedAuthenticationSecrets("ALL"),
 		)
 	})
 
@@ -132,7 +132,7 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 
 		assertThatObject(
 			t, objectassert.ExternalAccessIntegrationDetails(t, id).
-				HasNoAllowedAuthenticationSecretsList(),
+				HasNoAllowedAuthenticationSecrets(),
 		)
 	})
 
@@ -179,8 +179,8 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ExternalAccessIntegrationDetails(t, id).
 				HasAllowedNetworkRules(networkRule.ID(), networkRule2.ID()).
-				HasAllowedApiAuthenticationIntegrationsList(apiAuth1.ID(), apiAuth2.ID()).
-				HasAllowedAuthenticationSecretsList(secret1.ID(), secret2.ID()).
+				HasAllowedApiAuthenticationIntegrations(apiAuth1.ID().Name(), apiAuth2.ID().Name()).
+				HasAllowedAuthenticationSecrets(secret1.ID().FullyQualifiedName(), secret2.ID().FullyQualifiedName()).
 				HasEnabled(false).
 				HasComment("test comment"),
 		)
@@ -231,8 +231,8 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ExternalAccessIntegrationDetails(t, id).
 				HasAllowedNetworkRules(networkRule.ID(), networkRule2.ID()).
-				HasAllowedApiAuthenticationIntegrationsList(apiAuth1.ID(), apiAuth2.ID()).
-				HasAllowedAuthenticationSecretsList(secret1.ID(), secret2.ID()).
+				HasAllowedApiAuthenticationIntegrations(apiAuth1.ID().Name(), apiAuth2.ID().Name()).
+				HasAllowedAuthenticationSecrets(secret1.ID().FullyQualifiedName(), secret2.ID().FullyQualifiedName()).
 				HasEnabled(false).
 				HasComment("updated comment"),
 		)
@@ -254,9 +254,8 @@ func TestInt_ExternalAccessIntegrations(t *testing.T) {
 		assertThatObject(
 			t, objectassert.ExternalAccessIntegrationDetails(t, id).
 				HasNoAllowedNetworkRules().
-				HasNoAllowedApiAuthenticationIntegrationsList().
-				HasAllowedAuthenticationSecretsAll(false).
-				HasNoAllowedAuthenticationSecretsList().
+				HasNoAllowedApiAuthenticationIntegrations().
+				HasNoAllowedAuthenticationSecrets().
 				HasEnabled(true).
 				HasComment(""),
 		)

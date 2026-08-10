@@ -24,9 +24,8 @@ func allowedAuthenticationSecrets() *g.QueryStruct {
 var externalAccessIntegrationDetailsDef = g.PlainStruct("ExternalAccessIntegrationDetails").
 	AccountObjectIdentifier().
 	Field("AllowedNetworkRules", "[]SchemaObjectIdentifier").
-	Field("AllowedApiAuthenticationIntegrationsList", "[]AccountObjectIdentifier").
-	Bool("AllowedAuthenticationSecretsAll").
-	Field("AllowedAuthenticationSecretsList", "[]SchemaObjectIdentifier").
+	StringList("AllowedApiAuthenticationIntegrations").
+	StringList("AllowedAuthenticationSecrets").
 	Bool("Enabled").
 	Text("Comment")
 

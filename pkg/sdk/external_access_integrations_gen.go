@@ -136,11 +136,10 @@ type ExternalAccessIntegrationProperty struct {
 }
 
 type ExternalAccessIntegrationDetails struct {
-	Id                                       AccountObjectIdentifier
-	AllowedNetworkRules                      []SchemaObjectIdentifier
-	AllowedApiAuthenticationIntegrationsList []AccountObjectIdentifier
-	AllowedAuthenticationSecretsAll          bool
-	AllowedAuthenticationSecretsList         []SchemaObjectIdentifier
-	Enabled                                  bool
-	Comment                                  string
+	Id                                   AccountObjectIdentifier
+	AllowedNetworkRules                  []SchemaObjectIdentifier
+	AllowedApiAuthenticationIntegrations []string
+	AllowedAuthenticationSecrets         []string
+	Enabled                              bool
+	Comment                              string
 }

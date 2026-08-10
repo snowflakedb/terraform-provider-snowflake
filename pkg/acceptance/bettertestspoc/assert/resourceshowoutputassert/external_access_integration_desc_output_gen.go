@@ -40,11 +40,6 @@ func (e *ExternalAccessIntegrationDescribeOutputAssert) HasId(expected sdk.Accou
 	return e
 }
 
-func (e *ExternalAccessIntegrationDescribeOutputAssert) HasAllowedAuthenticationSecretsAll(expected bool) *ExternalAccessIntegrationDescribeOutputAssert {
-	e.BoolValueSet("allowed_authentication_secrets_all", expected)
-	return e
-}
-
 func (e *ExternalAccessIntegrationDescribeOutputAssert) HasEnabled(expected bool) *ExternalAccessIntegrationDescribeOutputAssert {
 	e.BoolValueSet("enabled", expected)
 	return e
@@ -69,18 +64,13 @@ func (e *ExternalAccessIntegrationDescribeOutputAssert) HasNoAllowedNetworkRules
 	return e
 }
 
-func (e *ExternalAccessIntegrationDescribeOutputAssert) HasNoAllowedApiAuthenticationIntegrationsList() *ExternalAccessIntegrationDescribeOutputAssert {
-	e.ValueSet("allowed_api_authentication_integrations_list.#", "0")
+func (e *ExternalAccessIntegrationDescribeOutputAssert) HasNoAllowedApiAuthenticationIntegrations() *ExternalAccessIntegrationDescribeOutputAssert {
+	e.ValueSet("allowed_api_authentication_integrations.#", "0")
 	return e
 }
 
-func (e *ExternalAccessIntegrationDescribeOutputAssert) HasNoAllowedAuthenticationSecretsAll() *ExternalAccessIntegrationDescribeOutputAssert {
-	e.ValueNotSet("allowed_authentication_secrets_all")
-	return e
-}
-
-func (e *ExternalAccessIntegrationDescribeOutputAssert) HasNoAllowedAuthenticationSecretsList() *ExternalAccessIntegrationDescribeOutputAssert {
-	e.ValueSet("allowed_authentication_secrets_list.#", "0")
+func (e *ExternalAccessIntegrationDescribeOutputAssert) HasNoAllowedAuthenticationSecrets() *ExternalAccessIntegrationDescribeOutputAssert {
+	e.ValueSet("allowed_authentication_secrets.#", "0")
 	return e
 }
 
