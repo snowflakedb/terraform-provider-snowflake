@@ -19,8 +19,14 @@ func randomIdentifierCall(kind string) string {
 	return "random" + kind + "()"
 }
 
+// zeroValuesForPredefinedTypes lists zero values for predefined types not defined directly in the generator definition.
+var zeroValuesForPredefinedTypes = map[string]string{
+	"Location": "nil",
+}
+
 // zeroValueFor returns the Go expression that makes f unset in the valueSet() sense.
 func zeroValueFor(f *Field) string {
+	predefinedTypeZeroValue, isPredefinedType := zeroValuesForPredefinedTypes[f.Kind]
 	switch {
 	case f.IsPointer():
 		return "nil"
@@ -36,6 +42,8 @@ func zeroValueFor(f *Field) string {
 		return "0"
 	case f.Kind == "any":
 		return "nil"
+	case isPredefinedType:
+		return predefinedTypeZeroValue
 	case strings.Contains(f.Kind, "."):
 		return "nil"
 	default:
