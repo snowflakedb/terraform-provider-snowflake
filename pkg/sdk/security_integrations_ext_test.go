@@ -29,7 +29,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithClientCredentialsFlow_basic,
 			func(opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
-				opts.OrReplace = Bool(true)
+				opts.OrReplace = new(true)
 			},
 			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
 			id.FullyQualifiedName(),
@@ -37,14 +37,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithClientCredentialsFlow_all,
 			func(opts *CreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
-				opts.IfNotExists = Bool(true)
-				opts.OauthTokenEndpoint = Pointer("foo")
-				opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
-				opts.OauthGrantClientCredentials = Pointer(true)
-				opts.OauthAccessTokenValidity = Pointer(42)
-				opts.OauthRefreshTokenValidity = Pointer(42)
+				opts.IfNotExists = new(true)
+				opts.OauthTokenEndpoint = new("foo")
+				opts.OauthClientAuthMethod = new(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
+				opts.OauthGrantClientCredentials = new(true)
+				opts.OauthAccessTokenValidity = new(42)
+				opts.OauthRefreshTokenValidity = new(42)
 				opts.OauthAllowedScopes = []AllowedScope{{Scope: "bar"}}
-				opts.Comment = Pointer("foo")
+				opts.Comment = new("foo")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_TOKEN_ENDPOINT = 'foo'"+
 				" OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = CLIENT_CREDENTIALS"+
@@ -64,7 +64,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_basic,
 			func(opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
-				opts.OrReplace = Bool(true)
+				opts.OrReplace = new(true)
 			},
 			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar'",
 			id.FullyQualifiedName(),
@@ -72,15 +72,15 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithAuthorizationCodeGrantFlow_all,
 			func(opts *CreateApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
-				opts.IfNotExists = Bool(true)
-				opts.OauthAuthorizationEndpoint = Pointer("foo")
-				opts.OauthTokenEndpoint = Pointer("foo")
-				opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
-				opts.OauthGrantAuthorizationCode = Pointer(true)
-				opts.OauthAccessTokenValidity = Pointer(42)
-				opts.OauthRefreshTokenValidity = Pointer(42)
+				opts.IfNotExists = new(true)
+				opts.OauthAuthorizationEndpoint = new("foo")
+				opts.OauthTokenEndpoint = new("foo")
+				opts.OauthClientAuthMethod = new(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
+				opts.OauthGrantAuthorizationCode = new(true)
+				opts.OauthAccessTokenValidity = new(42)
+				opts.OauthRefreshTokenValidity = new(42)
 				opts.OauthAllowedScopes = []AllowedScope{{Scope: "bar"}}
-				opts.Comment = Pointer("foo")
+				opts.Comment = new("foo")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_AUTHORIZATION_ENDPOINT = 'foo'"+
 				" OAUTH_TOKEN_ENDPOINT = 'foo' OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = AUTHORIZATION_CODE"+
@@ -101,7 +101,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithJwtBearerFlow_basic,
 			func(opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
-				opts.OrReplace = Bool(true)
+				opts.OrReplace = new(true)
 			},
 			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo' OAUTH_CLIENT_ID = 'foo'"+
 				" OAUTH_CLIENT_SECRET = 'bar'",
@@ -110,14 +110,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateApiAuthenticationWithJwtBearerFlow_all,
 			func(opts *CreateApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
-				opts.IfNotExists = Bool(true)
-				opts.OauthAuthorizationEndpoint = Pointer("foo")
-				opts.OauthTokenEndpoint = Pointer("foo")
-				opts.OauthClientAuthMethod = Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
-				opts.OauthGrantJwtBearer = Pointer(true)
-				opts.OauthAccessTokenValidity = Pointer(42)
-				opts.OauthRefreshTokenValidity = Pointer(42)
-				opts.Comment = Pointer("foo")
+				opts.IfNotExists = new(true)
+				opts.OauthAuthorizationEndpoint = new("foo")
+				opts.OauthTokenEndpoint = new("foo")
+				opts.OauthClientAuthMethod = new(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost)
+				opts.OauthGrantJwtBearer = new(true)
+				opts.OauthAccessTokenValidity = new(42)
+				opts.OauthRefreshTokenValidity = new(42)
+				opts.Comment = new("foo")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = API_AUTHENTICATION AUTH_TYPE = OAUTH2 ENABLED = true OAUTH_ASSERTION_ISSUER = 'foo'"+
 				" OAUTH_AUTHORIZATION_ENDPOINT = 'foo' OAUTH_TOKEN_ENDPOINT = 'foo' OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST OAUTH_CLIENT_ID = 'foo' OAUTH_CLIENT_SECRET = 'bar' OAUTH_GRANT = JWT_BEARER"+
@@ -140,20 +140,20 @@ func init() {
 			case_SecurityIntegrations_validation_CreateExternalOauth_opts_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *CreateExternalOauthSecurityIntegrationOptions) {
 				opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
-				opts.ExternalOauthRsaPublicKey = Pointer("key")
+				opts.ExternalOauthRsaPublicKey = new("key")
 			},
 		).
 		withModify(
 			case_SecurityIntegrations_validation_CreateExternalOauth_opts_ConflictingFields_ExternalOauthJwsKeysUrl_ExternalOauthRsaPublicKey2,
 			func(opts *CreateExternalOauthSecurityIntegrationOptions) {
 				opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
-				opts.ExternalOauthRsaPublicKey2 = Pointer("key")
+				opts.ExternalOauthRsaPublicKey2 = new("key")
 			},
 		).
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateExternalOauth_basic,
 			func(opts *CreateExternalOauthSecurityIntegrationOptions) {
-				opts.OrReplace = Bool(true)
+				opts.OrReplace = new(true)
 				opts.ExternalOauthJwsKeysUrl = []JwsKeysUrl{{JwsKeyUrl: "foo"}}
 				opts.ExternalOauthBlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleId}}
 			},
@@ -165,15 +165,15 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateExternalOauth_all,
 			func(opts *CreateExternalOauthSecurityIntegrationOptions) {
-				opts.IfNotExists = Bool(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalOauthAllowedRolesList = &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleId}}
-				opts.ExternalOauthRsaPublicKey = Pointer("foo")
-				opts.ExternalOauthRsaPublicKey2 = Pointer("foo")
+				opts.ExternalOauthRsaPublicKey = new("foo")
+				opts.ExternalOauthRsaPublicKey2 = new("foo")
 				opts.ExternalOauthAudienceList = &AudienceList{AudienceList: []AudienceListItem{{Item: "foo"}}}
-				opts.ExternalOauthAnyRoleMode = Pointer(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)
-				opts.ExternalOauthScopeDelimiter = Pointer(" ")
-				opts.ExternalOauthScopeMappingAttribute = Pointer("foo")
-				opts.Comment = Pointer("foo")
+				opts.ExternalOauthAnyRoleMode = new(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)
+				opts.ExternalOauthScopeDelimiter = new(" ")
+				opts.ExternalOauthScopeMappingAttribute = new("foo")
+				opts.Comment = new("foo")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = EXTERNAL_OAUTH ENABLED = false EXTERNAL_OAUTH_TYPE = CUSTOM EXTERNAL_OAUTH_ISSUER = 'foo'"+
 				" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo') EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS' EXTERNAL_OAUTH_ALLOWED_ROLES_LIST = (%s)"+
@@ -200,7 +200,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_basic,
 			func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
-				opts.OrReplace = Bool(true)
+				opts.OrReplace = new(true)
 			},
 			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = TABLEAU_DESKTOP",
 			id.FullyQualifiedName(),
@@ -208,16 +208,16 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateOauthForPartnerApplications_all,
 			func(opts *CreateOauthForPartnerApplicationsSecurityIntegrationOptions) {
-				opts.IfNotExists = Bool(true)
+				opts.IfNotExists = new(true)
 				opts.OauthClient = OauthSecurityIntegrationClientOptionLooker
-				opts.OauthRedirectUri = Pointer("uri")
-				opts.Enabled = Pointer(true)
-				opts.OauthIssueRefreshTokens = Pointer(true)
-				opts.OauthRefreshTokenValidity = Pointer(42)
-				opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
+				opts.OauthRedirectUri = new("uri")
+				opts.Enabled = new(true)
+				opts.OauthIssueRefreshTokens = new(true)
+				opts.OauthRefreshTokenValidity = new(42)
+				opts.OauthUseSecondaryRoles = new(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
 				opts.AllowedRolesList = &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleId}}
 				opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleId}}
-				opts.Comment = Pointer("a")
+				opts.Comment = new("a")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = LOOKER OAUTH_REDIRECT_URI = 'uri' ENABLED = true OAUTH_ISSUE_REFRESH_TOKENS = true"+
 				" OAUTH_REFRESH_TOKEN_VALIDITY = 42 OAUTH_USE_SECONDARY_ROLES = NONE ALLOWED_ROLES_LIST = (%s) BLOCKED_ROLES_LIST = (%s) COMMENT = 'a'",
@@ -235,7 +235,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateOauthForCustomClients_basic,
 			func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
-				opts.OrReplace = Bool(true)
+				opts.OrReplace = new(true)
 			},
 			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri'",
 			id.FullyQualifiedName(),
@@ -243,20 +243,20 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateOauthForCustomClients_all,
 			func(opts *CreateOauthForCustomClientsSecurityIntegrationOptions) {
-				opts.IfNotExists = Bool(true)
-				opts.Enabled = Pointer(true)
-				opts.OauthAllowNonTlsRedirectUri = Pointer(true)
-				opts.OauthEnforcePkce = Pointer(true)
-				opts.OauthUseSecondaryRoles = Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
+				opts.IfNotExists = new(true)
+				opts.Enabled = new(true)
+				opts.OauthAllowNonTlsRedirectUri = new(true)
+				opts.OauthEnforcePkce = new(true)
+				opts.OauthUseSecondaryRoles = new(OauthSecurityIntegrationUseSecondaryRolesOptionNone)
 				opts.PreAuthorizedRolesList = &PreAuthorizedRolesList{PreAuthorizedRolesList: []AccountObjectIdentifier{preAuthorizedRoleId}}
 				opts.AllowedRolesList = &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleId}}
 				opts.BlockedRolesList = &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleId}}
-				opts.OauthIssueRefreshTokens = Pointer(true)
-				opts.OauthRefreshTokenValidity = Pointer(42)
+				opts.OauthIssueRefreshTokens = new(true)
+				opts.OauthRefreshTokenValidity = new(42)
 				opts.NetworkPolicy = &networkPolicyId
-				opts.OauthClientRsaPublicKey = Pointer("key")
-				opts.OauthClientRsaPublicKey2 = Pointer("key2")
-				opts.Comment = Pointer("a")
+				opts.OauthClientRsaPublicKey = new("key")
+				opts.OauthClientRsaPublicKey2 = new("key2")
+				opts.Comment = new("a")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri' ENABLED = true"+
 				" OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true OAUTH_ENFORCE_PKCE = true OAUTH_USE_SECONDARY_ROLES = NONE PRE_AUTHORIZED_ROLES_LIST = (%s) ALLOWED_ROLES_LIST = (%s) BLOCKED_ROLES_LIST = (%s)"+
@@ -278,7 +278,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateSaml2_basic,
 			func(opts *CreateSaml2SecurityIntegrationOptions) {
-				opts.OrReplace = Bool(true)
+				opts.OrReplace = new(true)
 			},
 			"CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SAML2 SAML2_ISSUER = 'issuer' SAML2_SSO_URL = 'url' SAML2_PROVIDER = 'provider' SAML2_X509_CERT = 'cert'",
 			id.FullyQualifiedName(),
@@ -286,20 +286,20 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateSaml2_all,
 			func(opts *CreateSaml2SecurityIntegrationOptions) {
-				opts.IfNotExists = Bool(true)
-				opts.Enabled = Pointer(true)
+				opts.IfNotExists = new(true)
+				opts.Enabled = new(true)
 				opts.AllowedEmailPatterns = []EmailPattern{{Pattern: "pattern"}}
 				opts.AllowedUserDomains = []UserDomain{{Domain: "domain"}}
-				opts.Comment = Pointer("a")
-				opts.Saml2EnableSpInitiated = Pointer(true)
-				opts.Saml2ForceAuthn = Pointer(true)
-				opts.Saml2PostLogoutRedirectUrl = Pointer("redirect")
-				opts.Saml2RequestedNameidFormat = Pointer(Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos)
-				opts.Saml2SignRequest = Pointer(true)
-				opts.Saml2SnowflakeAcsUrl = Pointer("acs")
-				opts.Saml2SnowflakeIssuerUrl = Pointer("issuer")
-				opts.Saml2SpInitiatedLoginPageLabel = Pointer("label")
-				opts.Saml2SnowflakeX509Cert = Pointer("cert")
+				opts.Comment = new("a")
+				opts.Saml2EnableSpInitiated = new(true)
+				opts.Saml2ForceAuthn = new(true)
+				opts.Saml2PostLogoutRedirectUrl = new("redirect")
+				opts.Saml2RequestedNameidFormat = new(Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos)
+				opts.Saml2SignRequest = new(true)
+				opts.Saml2SnowflakeAcsUrl = new("acs")
+				opts.Saml2SnowflakeIssuerUrl = new("issuer")
+				opts.Saml2SpInitiatedLoginPageLabel = new("label")
+				opts.Saml2SnowflakeX509Cert = new("cert")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SAML2 ENABLED = true SAML2_ISSUER = 'issuer' SAML2_SSO_URL = 'url' SAML2_PROVIDER = 'provider' SAML2_X509_CERT = 'cert'"+
 				" ALLOWED_USER_DOMAINS = ('domain') ALLOWED_EMAIL_PATTERNS = ('pattern') SAML2_SP_INITIATED_LOGIN_PAGE_LABEL = 'label' SAML2_ENABLE_SP_INITIATED = true SAML2_SNOWFLAKE_X509_CERT = 'cert' SAML2_SIGN_REQUEST = true"+
@@ -320,14 +320,14 @@ func init() {
 			"validation_CreateScim_conflictingSyncPasswordForAzureScimClient",
 			func(opts *CreateScimSecurityIntegrationOptions) {
 				opts.ScimClient = ScimSecurityIntegrationScimClientOptionAzure
-				opts.SyncPassword = Pointer(true)
+				opts.SyncPassword = new(true)
 			},
 			NewError("SyncPassword is not supported for Azure scim client"),
 		).
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateScim_basic,
 			func(opts *CreateScimSecurityIntegrationOptions) {
-				opts.OrReplace = Pointer(true)
+				opts.OrReplace = new(true)
 			},
 			`CREATE OR REPLACE SECURITY INTEGRATION %s TYPE = SCIM SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`,
 			id.FullyQualifiedName(),
@@ -335,11 +335,11 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_CreateScim_all,
 			func(opts *CreateScimSecurityIntegrationOptions) {
-				opts.Enabled = Pointer(true)
-				opts.IfNotExists = Pointer(true)
+				opts.Enabled = new(true)
+				opts.IfNotExists = new(true)
 				opts.NetworkPolicy = &networkPolicyId
-				opts.SyncPassword = Pointer(true)
-				opts.Comment = Pointer("a")
+				opts.SyncPassword = new(true)
+				opts.Comment = new("a")
 			},
 			`CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = SCIM ENABLED = true SCIM_CLIENT = 'GENERIC' RUN_AS_ROLE = '\"GENERIC_SCIM_PROVISIONER\"'`+
 				` NETWORK_POLICY = '\"%s\"' SYNC_PASSWORD = true COMMENT = 'a'`,
@@ -351,16 +351,16 @@ func init() {
 			case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_Set,
 			func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
 				opts.Set = &ApiAuthenticationWithClientCredentialsFlowIntegrationSet{
-					Enabled:                     Pointer(true),
-					OauthTokenEndpoint:          Pointer("foo"),
-					OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
-					OauthClientId:               Pointer("foo"),
-					OauthClientSecret:           Pointer("foo"),
-					OauthGrantClientCredentials: Pointer(true),
-					OauthAccessTokenValidity:    Pointer(42),
-					OauthRefreshTokenValidity:   Pointer(42),
+					Enabled:                     new(true),
+					OauthTokenEndpoint:          new("foo"),
+					OauthClientAuthMethod:       new(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
+					OauthClientId:               new("foo"),
+					OauthClientSecret:           new("foo"),
+					OauthGrantClientCredentials: new(true),
+					OauthAccessTokenValidity:    new(42),
+					OauthRefreshTokenValidity:   new(42),
 					OauthAllowedScopes:          []AllowedScope{{Scope: "foo"}},
-					Comment:                     Pointer("foo"),
+					Comment:                     new("foo"),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_TOKEN_ENDPOINT = 'foo', OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST,"+
@@ -372,8 +372,8 @@ func init() {
 			case_SecurityIntegrations_sql_AlterApiAuthenticationWithClientCredentialsFlow_Unset,
 			func(opts *AlterApiAuthenticationWithClientCredentialsFlowSecurityIntegrationOptions) {
 				opts.Unset = &ApiAuthenticationWithClientCredentialsFlowIntegrationUnset{
-					Enabled: Pointer(true),
-					Comment: Pointer(true),
+					Enabled: new(true),
+					Comment: new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, COMMENT",
@@ -407,16 +407,16 @@ func init() {
 			case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Set,
 			func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
 				opts.Set = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationSet{
-					Enabled:                     Pointer(true),
-					OauthTokenEndpoint:          Pointer("foo"),
-					OauthClientAuthMethod:       Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
-					OauthClientId:               Pointer("foo"),
-					OauthClientSecret:           Pointer("foo"),
-					OauthGrantAuthorizationCode: Pointer(true),
-					OauthAccessTokenValidity:    Pointer(42),
-					OauthRefreshTokenValidity:   Pointer(42),
+					Enabled:                     new(true),
+					OauthTokenEndpoint:          new("foo"),
+					OauthClientAuthMethod:       new(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
+					OauthClientId:               new("foo"),
+					OauthClientSecret:           new("foo"),
+					OauthGrantAuthorizationCode: new(true),
+					OauthAccessTokenValidity:    new(42),
+					OauthRefreshTokenValidity:   new(42),
 					OauthAllowedScopes:          []AllowedScope{{Scope: "bar"}},
-					Comment:                     Pointer("foo"),
+					Comment:                     new("foo"),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_TOKEN_ENDPOINT = 'foo', OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST,"+
@@ -428,8 +428,8 @@ func init() {
 			case_SecurityIntegrations_sql_AlterApiAuthenticationWithAuthorizationCodeGrantFlow_Unset,
 			func(opts *AlterApiAuthenticationWithAuthorizationCodeGrantFlowSecurityIntegrationOptions) {
 				opts.Unset = &ApiAuthenticationWithAuthorizationCodeGrantFlowIntegrationUnset{
-					Enabled: Pointer(true),
-					Comment: Pointer(true),
+					Enabled: new(true),
+					Comment: new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, COMMENT",
@@ -463,15 +463,15 @@ func init() {
 			case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_Set,
 			func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
 				opts.Set = &ApiAuthenticationWithJwtBearerFlowIntegrationSet{
-					Enabled:                   Pointer(true),
-					OauthTokenEndpoint:        Pointer("foo"),
-					OauthClientAuthMethod:     Pointer(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
-					OauthClientId:             Pointer("foo"),
-					OauthClientSecret:         Pointer("foo"),
-					OauthGrantJwtBearer:       Pointer(true),
-					OauthAccessTokenValidity:  Pointer(42),
-					OauthRefreshTokenValidity: Pointer(42),
-					Comment:                   Pointer("foo"),
+					Enabled:                   new(true),
+					OauthTokenEndpoint:        new("foo"),
+					OauthClientAuthMethod:     new(ApiAuthenticationSecurityIntegrationOauthClientAuthMethodOptionClientSecretPost),
+					OauthClientId:             new("foo"),
+					OauthClientSecret:         new("foo"),
+					OauthGrantJwtBearer:       new(true),
+					OauthAccessTokenValidity:  new(42),
+					OauthRefreshTokenValidity: new(42),
+					Comment:                   new("foo"),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_TOKEN_ENDPOINT = 'foo', OAUTH_CLIENT_AUTH_METHOD = CLIENT_SECRET_POST,"+
@@ -483,8 +483,8 @@ func init() {
 			case_SecurityIntegrations_sql_AlterApiAuthenticationWithJwtBearerFlow_Unset,
 			func(opts *AlterApiAuthenticationWithJwtBearerFlowSecurityIntegrationOptions) {
 				opts.Unset = &ApiAuthenticationWithJwtBearerFlowIntegrationUnset{
-					Enabled: Pointer(true),
-					Comment: Pointer(true),
+					Enabled: new(true),
+					Comment: new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, COMMENT",
@@ -519,7 +519,7 @@ func init() {
 			func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 				opts.Set = &ExternalOauthIntegrationSet{
 					ExternalOauthJwsKeysUrl:   []JwsKeysUrl{{JwsKeyUrl: "foo"}},
-					ExternalOauthRsaPublicKey: Pointer("key"),
+					ExternalOauthRsaPublicKey: new("key"),
 				}
 			},
 		).
@@ -528,7 +528,7 @@ func init() {
 			func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 				opts.Set = &ExternalOauthIntegrationSet{
 					ExternalOauthJwsKeysUrl:    []JwsKeysUrl{{JwsKeyUrl: "foo"}},
-					ExternalOauthRsaPublicKey2: Pointer("key"),
+					ExternalOauthRsaPublicKey2: new("key"),
 				}
 			},
 		).
@@ -557,19 +557,19 @@ func init() {
 			"sql_AlterExternalOauth_Set_all",
 			func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 				opts.Set = &ExternalOauthIntegrationSet{
-					Enabled:                            Pointer(true),
-					ExternalOauthType:                  Pointer(ExternalOauthSecurityIntegrationTypeOptionCustom),
-					ExternalOauthIssuer:                Pointer("foo"),
+					Enabled:                            new(true),
+					ExternalOauthType:                  new(ExternalOauthSecurityIntegrationTypeOptionCustom),
+					ExternalOauthIssuer:                new("foo"),
 					ExternalOauthTokenUserMappingClaim: []TokenUserMappingClaim{{Claim: "foo"}},
-					ExternalOauthSnowflakeUserMappingAttribute: Pointer(ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+					ExternalOauthSnowflakeUserMappingAttribute: new(ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
 					ExternalOauthAllowedRolesList:              &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleId}},
-					ExternalOauthRsaPublicKey:                  Pointer("foo"),
-					ExternalOauthRsaPublicKey2:                 Pointer("foo"),
+					ExternalOauthRsaPublicKey:                  new("foo"),
+					ExternalOauthRsaPublicKey2:                 new("foo"),
 					ExternalOauthAudienceList:                  &AudienceList{AudienceList: []AudienceListItem{{Item: "foo"}}},
-					ExternalOauthAnyRoleMode:                   Pointer(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable),
-					ExternalOauthScopeDelimiter:                Pointer(" "),
-					ExternalOauthScopeMappingAttribute:         Pointer("foo"),
-					Comment:                                    Pointer(StringAllowEmpty{Value: "foo"}),
+					ExternalOauthAnyRoleMode:                   new(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable),
+					ExternalOauthScopeDelimiter:                new(" "),
+					ExternalOauthScopeMappingAttribute:         new("foo"),
+					Comment:                                    new(StringAllowEmpty{Value: "foo"}),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, EXTERNAL_OAUTH_TYPE = CUSTOM, EXTERNAL_OAUTH_ISSUER = 'foo',"+
@@ -593,8 +593,8 @@ func init() {
 			case_SecurityIntegrations_sql_AlterExternalOauth_Unset,
 			func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 				opts.Unset = &ExternalOauthIntegrationUnset{
-					Enabled:                   Pointer(true),
-					ExternalOauthAudienceList: Pointer(true),
+					Enabled:                   new(true),
+					ExternalOauthAudienceList: new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, EXTERNAL_OAUTH_AUDIENCE_LIST",
@@ -604,7 +604,7 @@ func init() {
 			"sql_AlterExternalOauth_Set_emptyComment",
 			func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 				opts.Set = &ExternalOauthIntegrationSet{
-					Comment: Pointer(StringAllowEmpty{Value: ""}),
+					Comment: new(StringAllowEmpty{Value: ""}),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET COMMENT = ''",
@@ -649,14 +649,14 @@ func init() {
 			"sql_AlterOauthForPartnerApplications_Set_all",
 			func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
 				opts.Set = &OauthForPartnerApplicationsIntegrationSet{
-					Enabled:                   Pointer(true),
-					OauthRedirectUri:          Pointer("uri"),
-					OauthIssueRefreshTokens:   Pointer(true),
-					OauthRefreshTokenValidity: Pointer(42),
-					OauthUseSecondaryRoles:    Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
+					Enabled:                   new(true),
+					OauthRedirectUri:          new("uri"),
+					OauthIssueRefreshTokens:   new(true),
+					OauthRefreshTokenValidity: new(42),
+					OauthUseSecondaryRoles:    new(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
 					AllowedRolesList:          &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleId}},
 					BlockedRolesList:          &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleId}},
-					Comment:                   Pointer(StringAllowEmpty{Value: ""}),
+					Comment:                   new(StringAllowEmpty{Value: ""}),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_ISSUE_REFRESH_TOKENS = true, OAUTH_REDIRECT_URI = 'uri', OAUTH_REFRESH_TOKEN_VALIDITY = 42,"+
@@ -667,8 +667,8 @@ func init() {
 			case_SecurityIntegrations_sql_AlterOauthForPartnerApplications_Unset,
 			func(opts *AlterOauthForPartnerApplicationsSecurityIntegrationOptions) {
 				opts.Unset = &OauthForPartnerApplicationsIntegrationUnset{
-					Enabled:                Pointer(true),
-					OauthUseSecondaryRoles: Pointer(true),
+					Enabled:                new(true),
+					OauthUseSecondaryRoles: new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, OAUTH_USE_SECONDARY_ROLES",
@@ -714,20 +714,20 @@ func init() {
 			"sql_AlterOauthForCustomClients_Set_all",
 			func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
 				opts.Set = &OauthForCustomClientsIntegrationSet{
-					Enabled:                     Pointer(true),
-					OauthRedirectUri:            Pointer("uri"),
-					OauthAllowNonTlsRedirectUri: Pointer(true),
-					OauthEnforcePkce:            Pointer(true),
-					OauthUseSecondaryRoles:      Pointer(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
+					Enabled:                     new(true),
+					OauthRedirectUri:            new("uri"),
+					OauthAllowNonTlsRedirectUri: new(true),
+					OauthEnforcePkce:            new(true),
+					OauthUseSecondaryRoles:      new(OauthSecurityIntegrationUseSecondaryRolesOptionNone),
 					PreAuthorizedRolesList:      &PreAuthorizedRolesList{PreAuthorizedRolesList: []AccountObjectIdentifier{preAuthorizedRoleId}},
 					AllowedRolesList:            &AllowedRolesList{AllowedRolesList: []AccountObjectIdentifier{allowedRoleId}},
 					BlockedRolesList:            &BlockedRolesList{BlockedRolesList: []AccountObjectIdentifier{blockedRoleId}},
-					OauthIssueRefreshTokens:     Pointer(true),
-					OauthRefreshTokenValidity:   Pointer(42),
+					OauthIssueRefreshTokens:     new(true),
+					OauthRefreshTokenValidity:   new(42),
 					NetworkPolicy:               &networkPolicyId,
-					OauthClientRsaPublicKey:     Pointer("key"),
-					OauthClientRsaPublicKey2:    Pointer("key2"),
-					Comment:                     Pointer("a"),
+					OauthClientRsaPublicKey:     new("key"),
+					OauthClientRsaPublicKey2:    new("key2"),
+					Comment:                     new("a"),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_REDIRECT_URI = 'uri', OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true, OAUTH_ENFORCE_PKCE = true,"+
@@ -740,11 +740,11 @@ func init() {
 			case_SecurityIntegrations_sql_AlterOauthForCustomClients_Unset,
 			func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
 				opts.Unset = &OauthForCustomClientsIntegrationUnset{
-					Enabled:                  Pointer(true),
-					OauthUseSecondaryRoles:   Pointer(true),
-					NetworkPolicy:            Pointer(true),
-					OauthClientRsaPublicKey:  Pointer(true),
-					OauthClientRsaPublicKey2: Pointer(true),
+					Enabled:                  new(true),
+					OauthUseSecondaryRoles:   new(true),
+					NetworkPolicy:            new(true),
+					OauthClientRsaPublicKey:  new(true),
+					OauthClientRsaPublicKey2: new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, NETWORK_POLICY, OAUTH_CLIENT_RSA_PUBLIC_KEY, OAUTH_CLIENT_RSA_PUBLIC_KEY_2, OAUTH_USE_SECONDARY_ROLES",
@@ -778,23 +778,23 @@ func init() {
 			case_SecurityIntegrations_sql_AlterSaml2_Set,
 			func(opts *AlterSaml2SecurityIntegrationOptions) {
 				opts.Set = &Saml2IntegrationSet{
-					Enabled:                        Pointer(true),
-					Saml2Issuer:                    Pointer("issuer"),
-					Saml2SsoUrl:                    Pointer("url"),
-					Saml2Provider:                  Pointer(Saml2SecurityIntegrationSaml2ProviderOptionCustom),
-					Saml2X509Cert:                  Pointer("cert"),
+					Enabled:                        new(true),
+					Saml2Issuer:                    new("issuer"),
+					Saml2SsoUrl:                    new("url"),
+					Saml2Provider:                  new(Saml2SecurityIntegrationSaml2ProviderOptionCustom),
+					Saml2X509Cert:                  new("cert"),
 					AllowedUserDomains:             []UserDomain{{Domain: "domain"}},
 					AllowedEmailPatterns:           []EmailPattern{{Pattern: "pattern"}},
-					Saml2SpInitiatedLoginPageLabel: Pointer("label"),
-					Saml2EnableSpInitiated:         Pointer(true),
-					Saml2SnowflakeX509Cert:         Pointer("cert"),
-					Saml2SignRequest:               Pointer(true),
-					Saml2RequestedNameidFormat:     Pointer(Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos),
-					Saml2PostLogoutRedirectUrl:     Pointer("redirect"),
-					Saml2ForceAuthn:                Pointer(true),
-					Saml2SnowflakeIssuerUrl:        Pointer("issuer"),
-					Saml2SnowflakeAcsUrl:           Pointer("acs"),
-					Comment:                        Pointer("a"),
+					Saml2SpInitiatedLoginPageLabel: new("label"),
+					Saml2EnableSpInitiated:         new(true),
+					Saml2SnowflakeX509Cert:         new("cert"),
+					Saml2SignRequest:               new(true),
+					Saml2RequestedNameidFormat:     new(Saml2SecurityIntegrationSaml2RequestedNameidFormatKerberos),
+					Saml2PostLogoutRedirectUrl:     new("redirect"),
+					Saml2ForceAuthn:                new(true),
+					Saml2SnowflakeIssuerUrl:        new("issuer"),
+					Saml2SnowflakeAcsUrl:           new("acs"),
+					Comment:                        new("a"),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, SAML2_ISSUER = 'issuer', SAML2_SSO_URL = 'url', SAML2_PROVIDER = 'CUSTOM', SAML2_X509_CERT = 'cert',"+
@@ -807,10 +807,10 @@ func init() {
 			case_SecurityIntegrations_sql_AlterSaml2_Unset,
 			func(opts *AlterSaml2SecurityIntegrationOptions) {
 				opts.Unset = &Saml2IntegrationUnset{
-					Saml2ForceAuthn:            Pointer(true),
-					Saml2RequestedNameidFormat: Pointer(true),
-					Saml2PostLogoutRedirectUrl: Pointer(true),
-					Comment:                    Pointer(true),
+					Saml2ForceAuthn:            new(true),
+					Saml2RequestedNameidFormat: new(true),
+					Saml2PostLogoutRedirectUrl: new(true),
+					Comment:                    new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET SAML2_FORCE_AUTHN, SAML2_REQUESTED_NAMEID_FORMAT, SAML2_POST_LOGOUT_REDIRECT_URL, COMMENT",
@@ -819,7 +819,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_AlterSaml2_RefreshSaml2SnowflakePrivateKey,
 			func(opts *AlterSaml2SecurityIntegrationOptions) {
-				opts.RefreshSaml2SnowflakePrivateKey = Pointer(true)
+				opts.RefreshSaml2SnowflakePrivateKey = new(true)
 			},
 			"ALTER SECURITY INTEGRATION %s REFRESH SAML2_SNOWFLAKE_PRIVATE_KEY",
 			id.FullyQualifiedName(),
@@ -852,10 +852,10 @@ func init() {
 			case_SecurityIntegrations_sql_AlterScim_Set,
 			func(opts *AlterScimSecurityIntegrationOptions) {
 				opts.Set = &ScimIntegrationSet{
-					Enabled:       Pointer(true),
+					Enabled:       new(true),
 					NetworkPolicy: &networkPolicyId,
-					SyncPassword:  Pointer(true),
-					Comment:       Pointer(StringAllowEmpty{Value: "test"}),
+					SyncPassword:  new(true),
+					Comment:       new(StringAllowEmpty{Value: "test"}),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, NETWORK_POLICY = '\\\"%s\\\"', SYNC_PASSWORD = true, COMMENT = 'test'",
@@ -865,7 +865,7 @@ func init() {
 			"sql_AlterScim_Set_emptyComment",
 			func(opts *AlterScimSecurityIntegrationOptions) {
 				opts.Set = &ScimIntegrationSet{
-					Comment: Pointer(StringAllowEmpty{Value: ""}),
+					Comment: new(StringAllowEmpty{Value: ""}),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET COMMENT = ''",
@@ -875,9 +875,9 @@ func init() {
 			case_SecurityIntegrations_sql_AlterScim_Unset,
 			func(opts *AlterScimSecurityIntegrationOptions) {
 				opts.Unset = &ScimIntegrationUnset{
-					Enabled:       Pointer(true),
-					NetworkPolicy: Pointer(true),
-					SyncPassword:  Pointer(true),
+					Enabled:       new(true),
+					NetworkPolicy: new(true),
+					SyncPassword:  new(true),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, NETWORK_POLICY, SYNC_PASSWORD",
@@ -914,7 +914,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_Drop_all,
-			func(opts *DropSecurityIntegrationOptions) { opts.IfExists = Bool(true) },
+			func(opts *DropSecurityIntegrationOptions) { opts.IfExists = new(true) },
 			"DROP SECURITY INTEGRATION IF EXISTS %s",
 			id.FullyQualifiedName(),
 		)
@@ -931,14 +931,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_Show_all,
 			func(opts *ShowSecurityIntegrationOptions) {
-				opts.Like = &Like{Pattern: String("some pattern")}
+				opts.Like = &Like{Pattern: new("some pattern")}
 			},
 			"SHOW SECURITY INTEGRATIONS LIKE 'some pattern'",
 		).
 		withModifyAndExpectedSqlf(
 			case_SecurityIntegrations_sql_Show_Like,
 			func(opts *ShowSecurityIntegrationOptions) {
-				opts.Like = &Like{Pattern: String("some pattern")}
+				opts.Like = &Like{Pattern: new("some pattern")}
 			},
 			"SHOW SECURITY INTEGRATIONS LIKE 'some pattern'",
 		)

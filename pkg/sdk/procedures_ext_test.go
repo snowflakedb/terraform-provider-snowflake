@@ -1,7 +1,7 @@
 package sdk
 
 func init() {
-	renameTarget := randomSchemaObjectIdentifierInSchema(proceduresTestIdSchemaObjectIdentifierWithArguments.SchemaId())
+	newId := randomSchemaObjectIdentifierInSchema(proceduresTestIdSchemaObjectIdentifierWithArguments.SchemaId())
 	noArgsId := randomSchemaObjectIdentifierWithArguments()
 	secretId := randomSchemaObjectIdentifier()
 	secretId2 := randomSchemaObjectIdentifier()
@@ -36,7 +36,7 @@ func init() {
 		}).
 		withAdditionalValidationCase(
 			"validation_CreateForJava_procedureDefinition",
-			func(opts *CreateForJavaProcedureOptions) { opts.TargetPath = String("@~/testfunc.jar") },
+			func(opts *CreateForJavaProcedureOptions) { opts.TargetPath = new("@~/testfunc.jar") },
 			NewError("TARGET_PATH must be nil when AS is nil"),
 		).
 		withExpectedSqlf(
@@ -47,27 +47,27 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateForJava_all,
 			func(opts *CreateForJavaProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
 				opts.Arguments = []ProcedureArgument{
 					{ArgName: "id", ArgDataType: dataTypeNumber_36_2},
-					{ArgName: "name", ArgDataType: dataTypeVarchar_100, DefaultValue: String("'test'")},
+					{ArgName: "name", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")},
 				}
-				opts.CopyGrants = Bool(true)
+				opts.CopyGrants = new(true)
 				opts.Returns = ProcedureReturns{
 					Table: &ProcedureReturnsTable{
 						Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataType: dataTypeVarchar_100}},
 					},
 				}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.TargetPath = String("@~/testfunc.jar")
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
-				opts.ProcedureDefinition = String("return id + name;")
+				opts.TargetPath = new("@~/testfunc.jar")
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
+				opts.ProcedureDefinition = new("return id + name;")
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("id" NUMBER(36, 2), "name" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR(100)) LANGUAGE JAVA STRICT IMMUTABLE RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return id + name;`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
@@ -76,27 +76,27 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateForJava_allOldDataTypes",
 			func(opts *CreateForJavaProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
 				opts.Arguments = []ProcedureArgument{
 					{ArgName: "id", ArgDataTypeOld: DataTypeNumber},
-					{ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: String("'test'")},
+					{ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: new("'test'")},
 				}
-				opts.CopyGrants = Bool(true)
+				opts.CopyGrants = new(true)
 				opts.Returns = ProcedureReturns{
 					Table: &ProcedureReturnsTable{
 						Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}},
 					},
 				}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.TargetPath = String("@~/testfunc.jar")
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
-				opts.ProcedureDefinition = String("return id + name;")
+				opts.TargetPath = new("@~/testfunc.jar")
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
+				opts.ProcedureDefinition = new("return id + name;")
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("id" NUMBER, "name" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR) LANGUAGE JAVA STRICT IMMUTABLE RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return id + name;`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
@@ -127,15 +127,15 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateForJavaScript_all,
 			func(opts *CreateForJavaScriptProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataType: dataTypeFloat, DefaultValue: String("1.0")}}
-				opts.CopyGrants = Bool(true)
-				opts.NotNull = Bool(true)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataType: dataTypeFloat, DefaultValue: new("1.0")}}
+				opts.CopyGrants = new(true)
+				opts.NotNull = new(true)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
 				opts.ProcedureDefinition = "return 1;"
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS return 1;`,
@@ -145,17 +145,17 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateForJavaScript_allOldDataTypes",
 			func(opts *CreateForJavaScriptProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: "DOUBLE", DefaultValue: String("1.0")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: "DOUBLE", DefaultValue: new("1.0")}}
+				opts.CopyGrants = new(true)
 				opts.ResultDataType = nil
 				opts.ResultDataTypeOld = "DOUBLE"
-				opts.NotNull = Bool(true)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
+				opts.NotNull = new(true)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
 				opts.ProcedureDefinition = "return 1;"
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("d" DOUBLE DEFAULT 1.0) COPY GRANTS RETURNS DOUBLE NOT NULL LANGUAGE JAVASCRIPT STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS return 1;`,
@@ -197,20 +197,20 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateForPython_all,
 			func(opts *CreateForPythonProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataType: dataTypeNumber_36_2, DefaultValue: String("1")}}
-				opts.CopyGrants = Bool(true)
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeVariant, Null: Bool(true)}}
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataType: dataTypeNumber_36_2, DefaultValue: new("1")}}
+				opts.CopyGrants = new(true)
+				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeVariant, Null: new(true)}}
 				opts.Packages = []ProcedurePackage{{ProcedurePackage: "numpy"}, {ProcedurePackage: "pandas"}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "numpy"}, {ProcedureImport: "pandas"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
-				opts.ProcedureDefinition = String("import numpy as np")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
+				opts.ProcedureDefinition = new("import numpy as np")
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("i" NUMBER(36, 2) DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
@@ -219,20 +219,20 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateForPython_allOldDataTypes",
 			func(opts *CreateForPythonProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: "int", DefaultValue: String("1")}}
-				opts.CopyGrants = Bool(true)
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARIANT", Null: Bool(true)}}
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: "int", DefaultValue: new("1")}}
+				opts.CopyGrants = new(true)
+				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARIANT", Null: new(true)}}
 				opts.Packages = []ProcedurePackage{{ProcedurePackage: "numpy"}, {ProcedurePackage: "pandas"}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "numpy"}, {ProcedureImport: "pandas"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
-				opts.ProcedureDefinition = String("import numpy as np")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
+				opts.ProcedureDefinition = new("import numpy as np")
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("i" int DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
@@ -267,7 +267,7 @@ func init() {
 		}).
 		withAdditionalValidationCase(
 			"validation_CreateForScala_procedureDefinition",
-			func(opts *CreateForScalaProcedureOptions) { opts.TargetPath = String("@~/testfunc.jar") },
+			func(opts *CreateForScalaProcedureOptions) { opts.TargetPath = new("@~/testfunc.jar") },
 			NewError("TARGET_PATH must be nil when AS is nil"),
 		).
 		withExpectedSqlf(
@@ -278,18 +278,18 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateForScala_all,
 			func(opts *CreateForScalaProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "x", ArgDataType: dataTypeVarchar_100, DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeVarchar_100, NotNull: Bool(true)}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "x", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
+				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeVarchar_100, NotNull: new(true)}}
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.Imports = []ProcedureImport{{ProcedureImport: "@udf_libs/echohandler.jar"}}
-				opts.TargetPath = String("@~/testfunc.jar")
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
-				opts.ProcedureDefinition = String("return x")
+				opts.TargetPath = new("@~/testfunc.jar")
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
+				opts.ProcedureDefinition = new("return x")
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("x" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS VARCHAR(100) NOT NULL LANGUAGE SCALA STRICT IMMUTABLE RUNTIME_VERSION = '2.0' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return x`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
@@ -298,18 +298,18 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateForScala_allOldDataTypes",
 			func(opts *CreateForScalaProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "x", ArgDataTypeOld: "VARCHAR", DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARCHAR", NotNull: Bool(true)}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "x", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
+				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARCHAR", NotNull: new(true)}}
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.Imports = []ProcedureImport{{ProcedureImport: "@udf_libs/echohandler.jar"}}
-				opts.TargetPath = String("@~/testfunc.jar")
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
-				opts.ProcedureDefinition = String("return x")
+				opts.TargetPath = new("@~/testfunc.jar")
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
+				opts.ProcedureDefinition = new("return x")
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("x" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SCALA STRICT IMMUTABLE RUNTIME_VERSION = '2.0' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return x`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
@@ -348,18 +348,18 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateForSQL_all,
 			func(opts *CreateForSQLProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataType: dataTypeVarchar_100, DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = ProcedureSQLReturns{
 					ResultDataType: &ProcedureSQLReturnsResultDataType{ResultDataType: dataTypeVarchar_100},
-					NotNull:        Bool(true),
+					NotNull:        new(true),
 				}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
 				opts.ProcedureDefinition = "3.141592654::FLOAT"
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("message" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS VARCHAR(100) NOT NULL LANGUAGE SQL STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS 3.141592654::FLOAT`,
@@ -369,18 +369,18 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateForSQL_allOldDataTypes",
 			func(opts *CreateForSQLProcedureOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = ProcedureSQLReturns{
 					ResultDataType: &ProcedureSQLReturnsResultDataType{ResultDataTypeOld: "VARCHAR"},
-					NotNull:        Bool(true),
+					NotNull:        new(true),
 				}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = Pointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("test comment")
-				opts.ExecuteAs = ExecuteAsPointer(ExecuteAsCaller)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("test comment")
+				opts.ExecuteAs = new(ExecuteAsCaller)
 				opts.ProcedureDefinition = "3.141592654::FLOAT"
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("message" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SQL STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS 3.141592654::FLOAT`,
@@ -399,14 +399,14 @@ func init() {
 		withDefaultOpts(func() *AlterProcedureOptions {
 			return &AlterProcedureOptions{
 				name:     proceduresTestIdSchemaObjectIdentifierWithArguments,
-				IfExists: Bool(true),
+				IfExists: new(true),
 			}
 		}).
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Alter_RenameTo,
-			func(opts *AlterProcedureOptions) { opts.RenameTo = &renameTarget },
+			func(opts *AlterProcedureOptions) { opts.RenameTo = &newId },
 			`ALTER PROCEDURE IF EXISTS %s RENAME TO %s`,
-			proceduresTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(), renameTarget.FullyQualifiedName(),
+			proceduresTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(), newId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Alter_ExecuteAs,
@@ -417,7 +417,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Alter_Set,
 			func(opts *AlterProcedureOptions) {
-				opts.Set = &ProcedureSet{Comment: String("comment"), TraceLevel: Pointer(TraceLevelOff)}
+				opts.Set = &ProcedureSet{Comment: new("comment"), TraceLevel: new(TraceLevelOff)}
 			},
 			`ALTER PROCEDURE IF EXISTS %s SET COMMENT = 'comment', TRACE_LEVEL = 'OFF'`,
 			proceduresTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
@@ -425,7 +425,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Alter_Unset,
 			func(opts *AlterProcedureOptions) {
-				opts.Unset = &ProcedureUnset{Comment: Bool(true), TraceLevel: Bool(true)}
+				opts.Unset = &ProcedureUnset{Comment: new(true), TraceLevel: new(true)}
 			},
 			`ALTER PROCEDURE IF EXISTS %s UNSET COMMENT, TRACE_LEVEL`,
 			proceduresTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
@@ -469,7 +469,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Drop_all,
-			func(opts *DropProcedureOptions) { opts.IfExists = Bool(true) },
+			func(opts *DropProcedureOptions) { opts.IfExists = new(true) },
 			`DROP PROCEDURE IF EXISTS %s`,
 			proceduresTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		).
@@ -485,19 +485,19 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Show_all,
 			func(opts *ShowProcedureOptions) {
-				opts.Like = &Like{Pattern: String("pattern")}
-				opts.In = &ExtendedIn{In: In{Account: Bool(true)}}
+				opts.Like = &Like{Pattern: new("pattern")}
+				opts.In = &ExtendedIn{In: In{Account: new(true)}}
 			},
 			"SHOW PROCEDURES LIKE 'pattern' IN ACCOUNT",
 		).
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Show_Like,
-			func(opts *ShowProcedureOptions) { opts.Like = &Like{Pattern: String("pattern")} },
+			func(opts *ShowProcedureOptions) { opts.Like = &Like{Pattern: new("pattern")} },
 			"SHOW PROCEDURES LIKE 'pattern'",
 		).
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Show_In,
-			func(opts *ShowProcedureOptions) { opts.In = &ExtendedIn{In: In{Account: Bool(true)}} },
+			func(opts *ShowProcedureOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
 			"SHOW PROCEDURES IN ACCOUNT",
 		)
 
@@ -518,7 +518,7 @@ func init() {
 			"sql_Call_allOptions_namedArgs",
 			func(opts *CallProcedureOptions) {
 				opts.CallArguments = []string{"province => 'Manitoba'", "amount => 127.4"}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 			},
 			`CALL %s (province => 'Manitoba', amount => 127.4) INTO :ret`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
@@ -527,7 +527,7 @@ func init() {
 			"sql_Call_allOptions_positionalArgs",
 			func(opts *CallProcedureOptions) {
 				opts.CallArguments = []string{"'Manitoba'", "127.4"}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 			},
 			`CALL %s ('Manitoba', 127.4) INTO :ret`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
@@ -572,10 +572,10 @@ func init() {
 				opts.Arguments = []ProcedureArgument{{ArgName: "id", ArgDataType: dataTypeNumber_36_2}, {ArgName: "name", ArgDataType: dataTypeVarchar_100}}
 				opts.Returns = ProcedureReturns{Table: &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataType: dataTypeVarchar_100}}}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = String("return id + name;")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ProcedureDefinition = new("return id + name;")
 				opts.WithClause = &ProcedureWithClause{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1", "rnd"}
 			},
 			`WITH %s AS PROCEDURE ("id" NUMBER(36, 2), "name" VARCHAR(100)) RETURNS TABLE ("country_code" VARCHAR(100)) LANGUAGE JAVA STRICT RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' AS 'return id + name;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1, rnd) INTO :ret`,
@@ -597,10 +597,10 @@ func init() {
 				opts.Arguments = []ProcedureArgument{{ArgName: "id", ArgDataTypeOld: DataTypeNumber}, {ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR}}
 				opts.Returns = ProcedureReturns{Table: &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}}}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = String("return id + name;")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ProcedureDefinition = new("return id + name;")
 				opts.WithClause = &ProcedureWithClause{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1", "rnd"}
 			},
 			`WITH %s AS PROCEDURE ("id" NUMBER, "name" VARCHAR) RETURNS TABLE ("country_code" VARCHAR) LANGUAGE JAVA STRICT RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' AS 'return id + name;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1, rnd) INTO :ret`,
@@ -646,10 +646,10 @@ func init() {
 				opts.Arguments = []ProcedureArgument{{ArgName: "id", ArgDataType: dataTypeNumber_36_2}, {ArgName: "name", ArgDataType: dataTypeVarchar_100}}
 				opts.Returns = ProcedureReturns{Table: &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataType: dataTypeVarchar_100}}}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = String("return id + name;")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ProcedureDefinition = new("return id + name;")
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1", "rnd"}
 			},
 			`WITH %s AS PROCEDURE ("id" NUMBER(36, 2), "name" VARCHAR(100)) RETURNS TABLE ("country_code" VARCHAR(100)) LANGUAGE SCALA STRICT RUNTIME_VERSION = '2.12' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' AS 'return id + name;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1, rnd) INTO :ret`,
@@ -670,10 +670,10 @@ func init() {
 				opts.Arguments = []ProcedureArgument{{ArgName: "id", ArgDataTypeOld: DataTypeNumber}, {ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR}}
 				opts.Returns = ProcedureReturns{Table: &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}}}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = String("return id + name;")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ProcedureDefinition = new("return id + name;")
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1", "rnd"}
 			},
 			`WITH %s AS PROCEDURE ("id" NUMBER, "name" VARCHAR) RETURNS TABLE ("country_code" VARCHAR) LANGUAGE SCALA STRICT RUNTIME_VERSION = '2.12' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' AS 'return id + name;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1, rnd) INTO :ret`,
@@ -706,35 +706,29 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForJavaScript_all,
 			func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataType: dataTypeFloat, DefaultValue: String("1.0")}}
-				opts.NotNull = Bool(true)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
+				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataType: dataTypeFloat, DefaultValue: new("1.0")}}
+				opts.NotNull = new(true)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
 				opts.ProcedureDefinition = "return 1;"
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1"}
 			},
 			`WITH %s AS PROCEDURE ("d" FLOAT DEFAULT 1.0) RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT STRICT AS 'return 1;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
 			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), cteId.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
 		).
-		withAdditionalSqlCasef(
-			"sql_CreateAndCallForJavaScript_noArguments",
-			func(opts *CreateAndCallForJavaScriptProcedureOptions) {},
-			`WITH %s AS PROCEDURE () RETURNS FLOAT LANGUAGE JAVASCRIPT AS 'return 1;' CALL %s ()`,
-			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
-		).
 		// TODO [SNOW-1348106]: remove with old procedure removal for V1
 		withAdditionalSqlCasef(
 			"sql_CreateAndCallForJavaScript_allOldDataTypes",
 			func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: "DOUBLE", DefaultValue: String("1.0")}}
+				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: "DOUBLE", DefaultValue: new("1.0")}}
 				opts.ResultDataType = nil
 				opts.ResultDataTypeOld = "DOUBLE"
-				opts.NotNull = Bool(true)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
+				opts.NotNull = new(true)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
 				opts.ProcedureDefinition = "return 1;"
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1"}
 			},
 			`WITH %s AS PROCEDURE ("d" DOUBLE DEFAULT 1.0) RETURNS DOUBLE NOT NULL LANGUAGE JAVASCRIPT STRICT AS 'return 1;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
@@ -777,14 +771,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForPython_all,
 			func(opts *CreateAndCallForPythonProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataType: dataTypeNumber_36_2, DefaultValue: String("1")}}
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeVariant, Null: Bool(true)}}
+				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataType: dataTypeNumber_36_2, DefaultValue: new("1")}}
+				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeVariant, Null: new(true)}}
 				opts.Packages = []ProcedurePackage{{ProcedurePackage: "numpy"}, {ProcedurePackage: "pandas"}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "numpy"}, {ProcedureImport: "pandas"}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = String("import numpy as np")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ProcedureDefinition = new("import numpy as np")
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1"}
 			},
 			`WITH %s AS PROCEDURE ("i" NUMBER(36, 2) DEFAULT 1) RETURNS VARIANT NULL LANGUAGE PYTHON STRICT RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' AS 'import numpy as np' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
@@ -802,14 +796,14 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateAndCallForPython_allOldDataTypes",
 			func(opts *CreateAndCallForPythonProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: "int", DefaultValue: String("1")}}
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARIANT", Null: Bool(true)}}
+				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: "int", DefaultValue: new("1")}}
+				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARIANT", Null: new(true)}}
 				opts.Packages = []ProcedurePackage{{ProcedurePackage: "numpy"}, {ProcedurePackage: "pandas"}}
 				opts.Imports = []ProcedureImport{{ProcedureImport: "numpy"}, {ProcedureImport: "pandas"}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = String("import numpy as np")
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
+				opts.ProcedureDefinition = new("import numpy as np")
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1"}
 			},
 			`WITH %s AS PROCEDURE ("i" int DEFAULT 1) RETURNS VARIANT NULL LANGUAGE PYTHON STRICT RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' AS 'import numpy as np' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
@@ -850,12 +844,12 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForSQL_all,
 			func(opts *CreateAndCallForSQLProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataType: dataTypeVarchar_100, DefaultValue: String("'test'")}}
+				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
 				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeFloat}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
 				opts.ProcedureDefinition = "3.141592654::FLOAT"
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1"}
 			},
 			`WITH %s AS PROCEDURE ("message" VARCHAR(100) DEFAULT 'test') RETURNS FLOAT LANGUAGE SQL STRICT AS '3.141592654::FLOAT' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
@@ -873,12 +867,12 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateAndCallForSQL_allOldDataTypes",
 			func(opts *CreateAndCallForSQLProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: String("'test'")}}
+				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
 				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat}}
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorStrict)
+				opts.NullInputBehavior = new(NullInputBehaviorStrict)
 				opts.ProcedureDefinition = "3.141592654::FLOAT"
 				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = String(":ret")
+				opts.ScriptingVariable = new(":ret")
 				opts.CallArguments = []string{"1"}
 			},
 			`WITH %s AS PROCEDURE ("message" VARCHAR DEFAULT 'test') RETURNS FLOAT LANGUAGE SQL STRICT AS '3.141592654::FLOAT' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,

@@ -95,7 +95,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 			WithOrReplace(true).
 			WithSecure(true).
 			WithArguments([]sdk.ExternalFunctionArgumentRequest{*argument}).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorCalledOnNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorCalledOnNullInput).
 			WithHeaders(headers).
 			WithContextHeaders(ch).
 			WithMaxBatchRows(10).

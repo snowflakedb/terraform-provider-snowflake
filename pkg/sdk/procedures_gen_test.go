@@ -8,7 +8,7 @@ import (
 
 var (
 	proceduresTestIdSchemaObjectIdentifier              = randomSchemaObjectIdentifier()
-	proceduresTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments()
+	proceduresTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
 	proceduresTestIdAccountObjectIdentifier             = randomAccountObjectIdentifier()
 )
 

@@ -66,9 +66,9 @@ func TestExternalFunctions_Create(t *testing.T) {
 			},
 		}
 		opts.ResultDataType = DataTypeVARCHAR
-		opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
+		opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+		opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+		opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 		opts.Comment = String("comment")
 		integration := NewAccountObjectIdentifier("api_integration")
 		opts.ApiIntegration = &integration
