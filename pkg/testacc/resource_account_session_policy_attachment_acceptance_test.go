@@ -17,8 +17,6 @@ import (
 )
 
 func TestAcc_AccountSessionPolicyAttachment_BasicUseCase(t *testing.T) {
-	testClient().EnsureValidNonProdAccountIsUsed(t)
-
 	sessionPolicy, sessionPolicyCleanup := testClient().SessionPolicy.CreateSessionPolicy(t)
 	t.Cleanup(sessionPolicyCleanup)
 	sessionPolicyName := sessionPolicy.ID().FullyQualifiedName()
