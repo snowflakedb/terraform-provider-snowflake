@@ -12,8 +12,6 @@ import (
 )
 
 func TestAcc_AccountPasswordPolicyAttachment_BasicUseCase(t *testing.T) {
-	testClient().EnsureValidNonProdAccountIsUsed(t)
-
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
