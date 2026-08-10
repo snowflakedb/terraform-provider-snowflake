@@ -68,59 +68,48 @@ func (e *ExternalAccessIntegrationDetailsAssert) HasNoAllowedNetworkRules() *Ext
 	return e
 }
 
-func (e *ExternalAccessIntegrationDetailsAssert) HasAllowedApiAuthenticationIntegrationsList(expected ...sdk.AccountObjectIdentifier) *ExternalAccessIntegrationDetailsAssert {
+func (e *ExternalAccessIntegrationDetailsAssert) HasAllowedApiAuthenticationIntegrations(expected ...string) *ExternalAccessIntegrationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalAccessIntegrationDetails) error {
 		t.Helper()
-		mapped := collections.Map(o.AllowedApiAuthenticationIntegrationsList, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
-		mappedExpected := collections.Map(expected, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
+		mapped := collections.Map(o.AllowedApiAuthenticationIntegrations, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
-			return fmt.Errorf("expected allowed api authentication integrations list: %v; got: %v", expected, o.AllowedApiAuthenticationIntegrationsList)
+			return fmt.Errorf("expected allowed api authentication integrations: %v; got: %v", expected, o.AllowedApiAuthenticationIntegrations)
 		}
 		return nil
 	})
 	return e
 }
 
-func (e *ExternalAccessIntegrationDetailsAssert) HasNoAllowedApiAuthenticationIntegrationsList() *ExternalAccessIntegrationDetailsAssert {
+func (e *ExternalAccessIntegrationDetailsAssert) HasNoAllowedApiAuthenticationIntegrations() *ExternalAccessIntegrationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalAccessIntegrationDetails) error {
 		t.Helper()
-		if len(o.AllowedApiAuthenticationIntegrationsList) > 0 {
-			return fmt.Errorf("expected allowed api authentication integrations list to be empty; got: %v", o.AllowedApiAuthenticationIntegrationsList)
+		if len(o.AllowedApiAuthenticationIntegrations) > 0 {
+			return fmt.Errorf("expected allowed api authentication integrations to be empty; got: %v", o.AllowedApiAuthenticationIntegrations)
 		}
 		return nil
 	})
 	return e
 }
 
-func (e *ExternalAccessIntegrationDetailsAssert) HasAllowedAuthenticationSecretsAll(expected bool) *ExternalAccessIntegrationDetailsAssert {
+func (e *ExternalAccessIntegrationDetailsAssert) HasAllowedAuthenticationSecrets(expected ...string) *ExternalAccessIntegrationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalAccessIntegrationDetails) error {
 		t.Helper()
-		if o.AllowedAuthenticationSecretsAll != expected {
-			return fmt.Errorf("expected allowed authentication secrets all: %v; got: %v", expected, o.AllowedAuthenticationSecretsAll)
-		}
-		return nil
-	})
-	return e
-}
-
-func (e *ExternalAccessIntegrationDetailsAssert) HasAllowedAuthenticationSecretsList(expected ...sdk.SchemaObjectIdentifier) *ExternalAccessIntegrationDetailsAssert {
-	e.AddAssertion(func(t *testing.T, o *sdk.ExternalAccessIntegrationDetails) error {
-		t.Helper()
-		mapped := collections.Map(o.AllowedAuthenticationSecretsList, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
-		mappedExpected := collections.Map(expected, func(item sdk.SchemaObjectIdentifier) any { return item.FullyQualifiedName() })
+		mapped := collections.Map(o.AllowedAuthenticationSecrets, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
-			return fmt.Errorf("expected allowed authentication secrets list: %v; got: %v", expected, o.AllowedAuthenticationSecretsList)
+			return fmt.Errorf("expected allowed authentication secrets: %v; got: %v", expected, o.AllowedAuthenticationSecrets)
 		}
 		return nil
 	})
 	return e
 }
 
-func (e *ExternalAccessIntegrationDetailsAssert) HasNoAllowedAuthenticationSecretsList() *ExternalAccessIntegrationDetailsAssert {
+func (e *ExternalAccessIntegrationDetailsAssert) HasNoAllowedAuthenticationSecrets() *ExternalAccessIntegrationDetailsAssert {
 	e.AddAssertion(func(t *testing.T, o *sdk.ExternalAccessIntegrationDetails) error {
 		t.Helper()
-		if len(o.AllowedAuthenticationSecretsList) > 0 {
-			return fmt.Errorf("expected allowed authentication secrets list to be empty; got: %v", o.AllowedAuthenticationSecretsList)
+		if len(o.AllowedAuthenticationSecrets) > 0 {
+			return fmt.Errorf("expected allowed authentication secrets to be empty; got: %v", o.AllowedAuthenticationSecrets)
 		}
 		return nil
 	})

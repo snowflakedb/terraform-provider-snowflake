@@ -18,6 +18,7 @@ var SdkShowResultStructs = []any{
 	sdk.Database{},
 	sdk.DynamicTable{},
 	sdk.EventTable{},
+	sdk.ExternalAccessIntegration{},
 	sdk.ExternalFunction{},
 	sdk.ExternalTable{},
 	sdk.ExternalVolume{},

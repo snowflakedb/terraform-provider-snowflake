@@ -73,6 +73,13 @@ func (c *ExternalAccessIntegrationClient) DescribeDetails(t *testing.T, id sdk.A
 	return c.client().ExternalAccessIntegrations.DescribeDetails(ctx, id)
 }
 
+func (c *ExternalAccessIntegrationClient) Alter(t *testing.T, req *sdk.AlterExternalAccessIntegrationRequest) {
+	t.Helper()
+	ctx := context.Background()
+	err := c.client().ExternalAccessIntegrations.Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *ExternalAccessIntegrationClient) DropExternalAccessIntegrationFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

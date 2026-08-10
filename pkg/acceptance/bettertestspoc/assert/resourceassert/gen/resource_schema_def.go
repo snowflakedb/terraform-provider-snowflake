@@ -529,4 +529,8 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		name:   "NetworkRule",
 		schema: resources.NetworkRule().Schema,
 	},
+	{
+		name:   "ExternalAccessIntegration",
+		schema: resources.ExternalAccessIntegration().Schema,
+	},
 }

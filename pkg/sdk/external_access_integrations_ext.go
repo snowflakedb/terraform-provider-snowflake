@@ -40,21 +40,18 @@ func parseExternalAccessIntegrationDetails(properties []ExternalAccessIntegratio
 				details.AllowedNetworkRules = ids
 			}
 		case "ALLOWED_API_AUTHENTICATION_INTEGRATIONS":
-			if ids, err := ParseCommaSeparatedAccountObjectIdentifierArray(prop.Value); err != nil {
-				errs = append(errs, err)
-			} else {
-				details.AllowedApiAuthenticationIntegrationsList = ids
-			}
+			details.AllowedApiAuthenticationIntegrations = ParseCommaSeparatedStringArray(prop.Value, false)
 		case "ALLOWED_AUTHENTICATION_SECRETS":
-			if prop.Value == "ALL" {
-				details.AllowedAuthenticationSecretsAll = true
-			} else {
-				if ids, err := ParseCommaSeparatedSchemaObjectIdentifierArray(prop.Value); err != nil {
-					errs = append(errs, err)
+			raw := ParseCommaSeparatedStringArray(prop.Value, false)
+			normalized := make([]string, 0, len(raw))
+			for _, s := range raw {
+				if id, err := ParseSchemaObjectIdentifier(s); err == nil {
+					normalized = append(normalized, id.FullyQualifiedName())
 				} else {
-					details.AllowedAuthenticationSecretsList = ids
+					normalized = append(normalized, s)
 				}
 			}
+			details.AllowedAuthenticationSecrets = normalized
 		case "COMMENT":
 			details.Comment = prop.Value
 		}
