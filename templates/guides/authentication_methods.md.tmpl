@@ -30,6 +30,7 @@ Read more on Snowflake's password protection: https://docs.snowflake.com/en/user
 * [Snowflake authenticator flow (login + password)](#snowflake-authenticator-flow-login--password)
 * [PAT (Personal Access Token)](#pat-personal-access-token)
 * [JWT authenticator flow](#jwt-authenticator-flow)
+  * [Private key format](#private-key-format)
   * [JWT authenticator flow using passphrase](#jwt-authenticator-flow-using-passphrase)
 * [MFA authenticator flow](#mfa-authenticator-flow)
   * [MFA token caching](#mfa-token-caching)
@@ -41,6 +42,7 @@ Read more on Snowflake's password protection: https://docs.snowflake.com/en/user
 * [Common issues](#common-issues)
   * [How can I get my organization name?](#how-can-i-get-my-organization-name)
   * [How can I get my account name?](#how-can-i-get-my-account-name)
+  * [Error: key is not in PEM format](#error-key-is-not-in-pem-format)
   * [Errors similar to (http: 404): open snowflake connection: 261004 (08004): failed to auth for unknown reason.](#errors-similar-to-http-404-open-snowflake-connection-261004-08004-failed-to-auth-for-unknown-reason)
 
 ## Authentication flows
@@ -223,35 +225,65 @@ provider "snowflake" {
   user              = "<user_name>"
   authenticator     = "SNOWFLAKE_JWT"
   private_key       = file("~/.ssh/snowflake_private_key.p8")
-  # Optionally, set it with Terraform variable.
-  private_key       = var.private_key
 }
 
-variable "private_key" {
-  type      = string
-  sensitive = true
-}
+# Or supply the key via a Terraform variable instead of file():
+# private_key = var.private_key
+#
+# variable "private_key" {
+#   type      = string
+#   sensitive = true
+# }
 ```
 
-To load the private key you can utilize the built-in [file](https://developer.hashicorp.com/terraform/language/functions/file) function.
-If you have any issues with this method, one of the possible root causes could be an additional newline at the end of the file that causes error in the underlying Go Snowflake driver.
-If this doesn't help, you can try other methods of supplying this field:
-- Filling the key directly by using [multi-string notation](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) (not recommended).
-- Sourcing it from the environment variable:
+#### Private key format
+
+The `private_key` value (and `SNOWFLAKE_PRIVATE_KEY`) must be a PEM-encoded RSA private key with **literal newlines**.
+The provider does not transform the input; it is passed as-is to the standard library PEM decoder.
+Escaped newline sequences (`\n` as two characters) are **not** converted to real newlines and cause `key is not in PEM format`.
+
+Recommended ways to supply the key:
+
+1. Use the built-in [file](https://developer.hashicorp.com/terraform/language/functions/file) function (preferred):
+```terraform
+private_key = file("~/.ssh/snowflake_private_key.p8")
+```
+If parsing fails when using `file()`, check for an extra blank line at the end of the key file (common with some OpenSSL outputs) and remove it.
+
+2. Source from an environment variable, preserving real newlines:
 ```shell
 export SNOWFLAKE_PRIVATE_KEY=$(cat ~/.ssh/snowflake_private_key.p8)
-# Or inline the value (not recommended).
-export SNOWFLAKE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----..."
 ```
-- Using TOML configuration file:
+Or set a multiline quoted string with literal line breaks (not recommended for production; prefer a file or secret store):
+```shell
+export SNOWFLAKE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDAr1xap9HA6Anx
+...
+qXcroyYiKfMLzlt+WYqk4qs5
+-----END PRIVATE KEY-----"
+```
+
+3. Use a TOML configuration file (literal newlines inside the string value):
 ```toml
 [default]
-private_key = "..."
+private_key = """
+-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----
+"""
+```
+
+4. Fill the key inline with [heredoc / multi-line string notation](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings).
+
+On a local shell, if you already have an escaped single-line key, convert it before exporting:
+```shell
+export SNOWFLAKE_PRIVATE_KEY=$(echo "$SNOWFLAKE_PRIVATE_KEY" | sed 's/\\n/\'$'\n/g')
 ```
 
 In case of any other issues, take a look at related topics:
 - https://github.com/snowflakedb/terraform-provider-snowflake/issues/3332#issuecomment-2618957814
 - https://github.com/snowflakedb/terraform-provider-snowflake/issues/3350#issuecomment-2604851052
+- https://github.com/snowflakedb/terraform-provider-snowflake/issues/3788
 
 #### JWT authenticator flow using passphrase
 
@@ -541,6 +573,18 @@ If you are logged into as a user that is in the same account as Terraform user (
 SELECT CURRENT_ACCOUNT_NAME();
 ```
 The output of this command is your `<account_name>`.
+
+### Error: key is not in PEM format
+
+```text
+Error: could not retrieve private key: could not parse private key, key is not in PEM format
+```
+
+Typical causes:
+
+- The key uses escaped newlines (`\n`) instead of literal line breaks — common when pasting into HCP Terraform environment variables. Use a multiline Terraform variable, `file()`, or a shell export that preserves real newlines. See [Private key format](#private-key-format) and [#3788](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3788).
+- An extra blank line at the end of the key file when using `file()` or `$(cat ...)`.
+- Missing `-----BEGIN ...-----` / `-----END ...-----` headers, or a public key supplied instead of a private key.
 
 ## General recommendations
 

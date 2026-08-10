@@ -306,8 +306,9 @@ func GetProviderSchema() map[string]*schema.Schema {
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.KeepSessionAlive, nil),
 		},
 		"private_key": {
-			Type:          schema.TypeString,
-			Description:   envNameFieldDescription("Private Key for username+private-key auth. Cannot be used with `password`.", snowflakeenvs.PrivateKey),
+			Type: schema.TypeString,
+			Description: envNameFieldDescription("Private Key for username+private-key auth. Must be PEM-encoded with literal newlines (escaped `\\n` sequences are not supported). "+
+				"See the [authentication methods guide](./guides/authentication_methods#jwt-authenticator-flow). Cannot be used with `password`.", snowflakeenvs.PrivateKey),
 			Optional:      true,
 			Sensitive:     true,
 			DefaultFunc:   schema.EnvDefaultFunc(snowflakeenvs.PrivateKey, nil),
