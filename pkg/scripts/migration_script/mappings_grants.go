@@ -249,7 +249,7 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges ...string) (
 		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_database_%s_to_%s_%s_grant_option", grant.Name.Name(), granteeName.FullyQualifiedName(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToDatabaseRole(resourceId, granteeName.FullyQualifiedName()).
-			WithPrivileges(privileges).
+			WithPrivileges(privileges...).
 			WithOnDatabase(grant.Name.Name()).
 			WithWithGrantOption(grant.GrantOption)
 
@@ -268,7 +268,7 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges ...string) (
 		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_schema_%s_to_%s_%s_grant_option", grant.Name.FullyQualifiedName(), granteeName.FullyQualifiedName(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToDatabaseRole(resourceId, granteeName.FullyQualifiedName()).
-			WithPrivileges(privileges).
+			WithPrivileges(privileges...).
 			WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"schema_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
 			})).
@@ -289,7 +289,7 @@ func MapToGrantPrivilegesToDatabaseRole(grant sdk.Grant, privileges ...string) (
 		resourceId := NormalizeResourceId(fmt.Sprintf("grant_on_%s_%s_to_%s_%s_grant_option", grant.GrantedOn, grant.Name.FullyQualifiedName(), granteeName.FullyQualifiedName(), withGrantOption))
 
 		resourceModel = model.GrantPrivilegesToDatabaseRole(resourceId, granteeName.FullyQualifiedName()).
-			WithPrivileges(privileges).
+			WithPrivileges(privileges...).
 			WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 				"object_type": tfconfig.StringVariable(string(grant.GrantedOn)),
 				"object_name": tfconfig.StringVariable(grant.Name.FullyQualifiedName()),
