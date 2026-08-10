@@ -2,6 +2,7 @@ package sdk_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -83,6 +84,7 @@ func sweep(client *sdk.Client, suffix string) error {
 		nukeShares(client, suffix),
 		nukeApplications(client, suffix),
 		nukeApplicationPackages(client, suffix),
+		nukeListings(client, suffix),
 		nukeDatabases(client, "", suffix),
 		nukeNotificationIntegrations(client, suffix),
 		nukeStorageIntegrations(client, suffix),
@@ -91,6 +93,7 @@ func sweep(client *sdk.Client, suffix string) error {
 		nukeExternalAccessIntegrations(client, suffix),
 		nukeComputePools(client, suffix),
 		nukeConnections(client, suffix),
+		nukeExternalVolumes(client, suffix),
 		nukeWarehouses(client, "", suffix),
 		nukeRoles(client, suffix),
 	}
@@ -220,6 +223,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
+	t.Run("sweep listings", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeListings(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
 	t.Run("sweep databases", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeDatabases(c, "", "")()
@@ -276,6 +286,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 		}
 	})
 
+	t.Run("sweep external volumes", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeExternalVolumes(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
 	t.Run("sweep warehouses", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeWarehouses(c, "", "")()
@@ -306,7 +323,7 @@ type accountObjectSweeperConfig[T any] struct {
 	protectedNames []string
 	show           func(ctx context.Context) ([]T, error)
 	name           func(T) string
-	createdOn      func(T) time.Time
+	createdOn      func(T) (time.Time, error)
 	id             func(T) sdk.AccountObjectIdentifier
 	dropSafely     func(ctx context.Context, id sdk.AccountObjectIdentifier) error
 
@@ -383,6 +400,24 @@ func retryingDropSafely(
 	}
 }
 
+// externalVolumeCreatedOn reads the external volume's creation time with the undocumented DESCRIBE AS RESOURCE.
+// TODO [SNOW-867247]: move this to the test client helpers once the sweepers use them
+func externalVolumeCreatedOn(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier) (time.Time, error) {
+	var raw string
+	if err := client.QueryOneForTests(ctx, &raw, fmt.Sprintf(`DESCRIBE AS RESOURCE EXTERNAL VOLUME %s`, id.FullyQualifiedName())); err != nil {
+		return time.Time{}, err
+	}
+
+	// created_on is returned as RFC3339 (e.g. 2024-11-18T13:10:36.721+00:00), so it unmarshals without any custom parsing
+	var described struct {
+		CreatedOn time.Time `json:"created_on"`
+	}
+	if err := json.Unmarshal([]byte(raw), &described); err != nil {
+		return time.Time{}, err
+	}
+	return described.CreatedOn, nil
+}
+
 // nukeAccountObjects drops the objects matching the given prefix or suffix, or the stale ones when both are empty.
 func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSweeperConfig[T]) func() error {
 	return func() error {
@@ -403,7 +438,16 @@ func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSw
 		default:
 			log.Printf("[DEBUG] Sweeping stale %ss", cfg.objectTypeName)
 			dropCondition = func(object T) bool {
-				return cfg.createdOn(object).Before(time.Now().Add(cfg.effectiveStalePeriod()))
+				// this is the only place the creation time is needed, so the objects that have to be queried for it
+				// (see externalVolumeCreatedOn) are not queried at all when sweeping by prefix or suffix
+				createdOn, err := cfg.createdOn(object)
+				if err != nil {
+					// without the creation time the staleness can't be told, so the object is left alone
+					log.Printf("[DEBUG] Could not read the creation time of %s %s, err = %v", cfg.objectTypeName, cfg.id(object).FullyQualifiedName(), err)
+					return false
+				}
+				log.Printf("[DEBUG] %s %s was created at %s", cfg.objectTypeName, cfg.id(object).FullyQualifiedName(), createdOn.String())
+				return createdOn.Before(time.Now().Add(cfg.effectiveStalePeriod()))
 			}
 		}
 
@@ -420,7 +464,7 @@ func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSw
 			log.Printf("[DEBUG] Processing %s [%d/%d]: %s...", cfg.objectTypeName, idx+1, len(objects), id.FullyQualifiedName())
 
 			if slices.Contains(cfg.protectedNames, cfg.name(object)) || cfg.skips(object) || !dropCondition(object) {
-				log.Printf("[DEBUG] Skipping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
+				log.Printf("[DEBUG] Skipping %s %s", cfg.objectTypeName, id.FullyQualifiedName())
 				continue
 			}
 
@@ -436,7 +480,7 @@ func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSw
 				}
 			}
 
-			log.Printf("[DEBUG] Dropping %s %s, created at: %s", cfg.objectTypeName, id.FullyQualifiedName(), cfg.createdOn(object).String())
+			log.Printf("[DEBUG] Dropping %s %s", cfg.objectTypeName, id.FullyQualifiedName())
 			if err := cfg.dropSafely(ctx, id); err != nil {
 				if cfg.ignores(err) {
 					log.Printf("[DEBUG] Skipping %s %s, err: %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
@@ -458,7 +502,7 @@ func nukeNotificationIntegrations(client *sdk.Client, suffix string) func() erro
 			return client.NotificationIntegrations.Show(ctx, sdk.NewShowNotificationIntegrationRequest())
 		},
 		name:       func(object sdk.NotificationIntegration) string { return object.Name },
-		createdOn:  func(object sdk.NotificationIntegration) time.Time { return object.CreatedOn },
+		createdOn:  func(object sdk.NotificationIntegration) (time.Time, error) { return object.CreatedOn, nil },
 		id:         func(object sdk.NotificationIntegration) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.NotificationIntegrations.DropSafely,
 	})
@@ -477,7 +521,7 @@ func nukeStorageIntegrations(client *sdk.Client, suffix string) func() error {
 			return client.StorageIntegrations.Show(ctx, sdk.NewShowStorageIntegrationRequest())
 		},
 		name:       func(object sdk.StorageIntegration) string { return object.Name },
-		createdOn:  func(object sdk.StorageIntegration) time.Time { return object.CreatedOn },
+		createdOn:  func(object sdk.StorageIntegration) (time.Time, error) { return object.CreatedOn, nil },
 		id:         func(object sdk.StorageIntegration) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.StorageIntegrations.DropSafely,
 	})
@@ -490,7 +534,7 @@ func nukeApiIntegrations(client *sdk.Client, suffix string) func() error {
 			return client.ApiIntegrations.Show(ctx, sdk.NewShowApiIntegrationRequest())
 		},
 		name:       func(object sdk.ApiIntegration) string { return object.Name },
-		createdOn:  func(object sdk.ApiIntegration) time.Time { return object.CreatedOn },
+		createdOn:  func(object sdk.ApiIntegration) (time.Time, error) { return object.CreatedOn, nil },
 		id:         func(object sdk.ApiIntegration) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.ApiIntegrations.DropSafely,
 	})
@@ -503,7 +547,7 @@ func nukeCatalogIntegrations(client *sdk.Client, suffix string) func() error {
 			return client.CatalogIntegrations.Show(ctx, sdk.NewShowCatalogIntegrationRequest())
 		},
 		name:       func(object sdk.CatalogIntegration) string { return object.Name },
-		createdOn:  func(object sdk.CatalogIntegration) time.Time { return object.CreatedOn },
+		createdOn:  func(object sdk.CatalogIntegration) (time.Time, error) { return object.CreatedOn, nil },
 		id:         func(object sdk.CatalogIntegration) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.CatalogIntegrations.DropSafely,
 	})
@@ -516,7 +560,7 @@ func nukeExternalAccessIntegrations(client *sdk.Client, suffix string) func() er
 			return client.ExternalAccessIntegrations.Show(ctx, sdk.NewShowExternalAccessIntegrationRequest())
 		},
 		name:       func(object sdk.ExternalAccessIntegration) string { return object.Name },
-		createdOn:  func(object sdk.ExternalAccessIntegration) time.Time { return object.CreatedOn },
+		createdOn:  func(object sdk.ExternalAccessIntegration) (time.Time, error) { return object.CreatedOn, nil },
 		id:         func(object sdk.ExternalAccessIntegration) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.ExternalAccessIntegrations.DropSafely,
 	})
@@ -532,7 +576,7 @@ func nukeApplications(client *sdk.Client, suffix string) func() error {
 			return client.Applications.Show(ctx, sdk.NewShowApplicationRequest())
 		},
 		name:      func(object sdk.Application) string { return object.Name },
-		createdOn: func(object sdk.Application) time.Time { return object.CreatedOn },
+		createdOn: func(object sdk.Application) (time.Time, error) { return object.CreatedOn, nil },
 		id:        func(object sdk.Application) sdk.AccountObjectIdentifier { return object.ID() },
 		// DROP APPLICATION fails when the app owns objects outside itself, and an app can own compute pools,
 		// warehouses, and databases. CASCADE drops those too, so it's used instead of DropSafely, which
@@ -541,6 +585,21 @@ func nukeApplications(client *sdk.Client, suffix string) func() error {
 		dropSafely: func(ctx context.Context, id sdk.AccountObjectIdentifier) error {
 			return client.Applications.Drop(ctx, sdk.NewDropApplicationRequest(id).WithIfExists(true).WithCascade(true))
 		},
+	})
+}
+
+func nukeListings(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.Listing]{
+		objectTypeName: "listing",
+		// no listings are protected for now
+		protectedNames: []string{},
+		show: func(ctx context.Context) ([]sdk.Listing, error) {
+			return client.Listings.Show(ctx, sdk.NewShowListingRequest())
+		},
+		name:       func(object sdk.Listing) string { return object.Name },
+		createdOn:  func(object sdk.Listing) (time.Time, error) { return object.CreatedOn, nil },
+		id:         func(object sdk.Listing) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.Listings.DropSafely,
 	})
 }
 
@@ -553,9 +612,27 @@ func nukeApplicationPackages(client *sdk.Client, suffix string) func() error {
 			return client.ApplicationPackages.Show(ctx, sdk.NewShowApplicationPackageRequest())
 		},
 		name:       func(object sdk.ApplicationPackage) string { return object.Name },
-		createdOn:  func(object sdk.ApplicationPackage) time.Time { return object.CreatedOn },
+		createdOn:  func(object sdk.ApplicationPackage) (time.Time, error) { return object.CreatedOn, nil },
 		id:         func(object sdk.ApplicationPackage) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.ApplicationPackages.DropSafely,
+	})
+}
+
+func nukeExternalVolumes(client *sdk.Client, suffix string) func() error {
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.ExternalVolume]{
+		objectTypeName: "external volume",
+		// no external volumes are protected for now
+		protectedNames: []string{},
+		show: func(ctx context.Context) ([]sdk.ExternalVolume, error) {
+			return client.ExternalVolumes.Show(ctx, sdk.NewShowExternalVolumeRequest())
+		},
+		name: func(object sdk.ExternalVolume) string { return object.Name },
+		id:   func(object sdk.ExternalVolume) sdk.AccountObjectIdentifier { return object.ID() },
+		// the creation time is not in the SHOW output, so it has to be queried for if needed
+		createdOn: func(object sdk.ExternalVolume) (time.Time, error) {
+			return externalVolumeCreatedOn(context.Background(), client, object.ID())
+		},
+		dropSafely: client.ExternalVolumes.DropSafely,
 	})
 }
 
@@ -572,7 +649,7 @@ func nukeConnections(client *sdk.Client, suffix string) func() error {
 			return client.Connections.Show(ctx, sdk.NewShowConnectionRequest())
 		},
 		name:      func(object sdk.Connection) string { return object.Name },
-		createdOn: func(object sdk.Connection) time.Time { return object.CreatedOn },
+		createdOn: func(object sdk.Connection) (time.Time, error) { return object.CreatedOn, nil },
 		id:        func(object sdk.Connection) sdk.AccountObjectIdentifier { return object.ID() },
 		// dropping a connection keeps failing until the replication settles, so it's retried the same way
 		// the tests clean it up (see ConnectionClient.DropFunc)
@@ -591,7 +668,7 @@ func nukeComputePools(client *sdk.Client, suffix string) func() error {
 			return client.ComputePools.Show(ctx, sdk.NewShowComputePoolRequest())
 		},
 		name:          func(object sdk.ComputePool) string { return object.Name },
-		createdOn:     func(object sdk.ComputePool) time.Time { return object.CreatedOn },
+		createdOn:     func(object sdk.ComputePool) (time.Time, error) { return object.CreatedOn, nil },
 		id:            func(object sdk.ComputePool) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely:    client.ComputePools.DropSafely,
 		owner:         func(object sdk.ComputePool) string { return object.Owner },
@@ -611,7 +688,7 @@ func nukeWarehouses(client *sdk.Client, prefix string, suffix string) func() err
 			return client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest())
 		},
 		name:      func(object sdk.Warehouse) string { return object.Name },
-		createdOn: func(object sdk.Warehouse) time.Time { return object.CreatedOn },
+		createdOn: func(object sdk.Warehouse) (time.Time, error) { return object.CreatedOn, nil },
 		// TODO [SNOW-1569516]: Use the usual constructors instead.
 		id: func(object sdk.Warehouse) sdk.AccountObjectIdentifier {
 			return sdk.NewAccountObjectIdentifierNoTrimTestOnly(object.Name)
@@ -635,7 +712,7 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 			return client.Databases.Show(ctx, sdk.NewShowDatabaseRequest())
 		},
 		name:      func(object sdk.Database) string { return object.Name },
-		createdOn: func(object sdk.Database) time.Time { return object.CreatedOn },
+		createdOn: func(object sdk.Database) (time.Time, error) { return object.CreatedOn, nil },
 		// TODO [SNOW-1569516]: Use the usual constructors instead.
 		id: func(object sdk.Database) sdk.AccountObjectIdentifier {
 			return sdk.NewAccountObjectIdentifierNoTrimTestOnly(object.Name)
@@ -669,7 +746,7 @@ func nukeUsers(client *sdk.Client, suffix string) func() error {
 			return client.Users.Show(ctx, sdk.NewShowUserRequest())
 		},
 		name:                func(object sdk.User) string { return object.Name },
-		createdOn:           func(object sdk.User) time.Time { return object.CreatedOn },
+		createdOn:           func(object sdk.User) (time.Time, error) { return object.CreatedOn, nil },
 		id:                  func(object sdk.User) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely:          client.Users.DropSafely,
 		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
@@ -685,7 +762,7 @@ func nukePostgresInstances(client *sdk.Client, suffix string) func() error {
 			return client.PostgresInstances.Show(ctx, sdk.NewShowPostgresInstanceRequest())
 		},
 		name:                func(object sdk.PostgresInstance) string { return object.Name },
-		createdOn:           func(object sdk.PostgresInstance) time.Time { return object.CreatedOn },
+		createdOn:           func(object sdk.PostgresInstance) (time.Time, error) { return object.CreatedOn, nil },
 		id:                  func(object sdk.PostgresInstance) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely:          client.PostgresInstances.DropSafely,
 		stalePeriodOverride: sdk.Pointer(-60 * time.Minute),
@@ -702,7 +779,7 @@ func nukeSecurityIntegrations(client *sdk.Client, suffix string) func() error {
 			return client.SecurityIntegrations.Show(ctx, sdk.NewShowSecurityIntegrationRequest())
 		},
 		name:                func(object sdk.SecurityIntegration) string { return object.Name },
-		createdOn:           func(object sdk.SecurityIntegration) time.Time { return object.CreatedOn },
+		createdOn:           func(object sdk.SecurityIntegration) (time.Time, error) { return object.CreatedOn, nil },
 		id:                  func(object sdk.SecurityIntegration) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely:          client.SecurityIntegrations.DropSafely,
 		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
@@ -732,7 +809,7 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 			return client.Roles.Show(ctx, sdk.NewShowRoleRequest())
 		},
 		name:                func(object sdk.Role) string { return object.Name },
-		createdOn:           func(object sdk.Role) time.Time { return object.CreatedOn },
+		createdOn:           func(object sdk.Role) (time.Time, error) { return object.CreatedOn, nil },
 		id:                  func(object sdk.Role) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely:          client.Roles.DropSafely,
 		stalePeriodOverride: sdk.Pointer(-15 * time.Minute),
@@ -754,7 +831,7 @@ func nukeShares(client *sdk.Client, suffix string) func() error {
 			return client.Shares.Show(ctx, sdk.NewShowShareRequest())
 		},
 		name:       func(object sdk.Share) string { return object.Name },
-		createdOn:  func(object sdk.Share) time.Time { return object.CreatedOn },
+		createdOn:  func(object sdk.Share) (time.Time, error) { return object.CreatedOn, nil },
 		id:         func(object sdk.Share) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely: client.Shares.DropSafely,
 	})
@@ -768,50 +845,20 @@ func nukeNetworkPolicies(client *sdk.Client, suffix string) func() error {
 		"RESTRICTED_ACCESS",
 	}
 
-	return func() error {
-		ctx := context.Background()
-
-		var networkPolicyDropCondition func(n sdk.NetworkPolicy) bool
-		if suffix != "" {
-			log.Printf("[DEBUG] Sweeping network policies with suffix %s", suffix)
-			networkPolicyDropCondition = func(n sdk.NetworkPolicy) bool {
-				return strings.HasSuffix(n.Name, suffix)
-			}
-		} else {
-			log.Println("[DEBUG] Sweeping stale network policies")
-			networkPolicyDropCondition = func(n sdk.NetworkPolicy) bool {
-				// CreatedOn in network policy is string and not time
-				createdOn, err := time.Parse(time.RFC3339, n.CreatedOn)
-				if err != nil {
-					log.Printf("[DEBUG] Could not parse created on: '%s' for network policy %s", n.CreatedOn, n.ID().FullyQualifiedName())
-					return false
-				}
-				return createdOn.Before(time.Now().Add(stalePeriod))
-			}
-		}
-
-		nps, err := client.NetworkPolicies.Show(ctx, sdk.NewShowNetworkPolicyRequest())
-		if err != nil {
-			return fmt.Errorf("SHOW NETWORK POLICIES ended with error, err = %w", err)
-		}
-
-		log.Printf("[DEBUG] Found %d network policies", len(nps))
-
-		var errs []error
-		for idx, np := range nps {
-			log.Printf("[DEBUG] Processing network policy [%d/%d]: %s...", idx+1, len(nps), np.ID().FullyQualifiedName())
-			if !slices.Contains(protectedNetworkPolicies, strings.ToUpper(np.Name)) && networkPolicyDropCondition(np) {
-				log.Printf("[DEBUG] Dropping network policy %s", np.ID().FullyQualifiedName())
-				if err := client.NetworkPolicies.DropSafely(ctx, np.ID()); err != nil {
-					errs = append(errs, fmt.Errorf("sweeping network policy %s ended with error, err = %w", np.ID().FullyQualifiedName(), err))
-				}
-			} else {
-				log.Printf("[DEBUG] Skipping network policy %s", np.ID().FullyQualifiedName())
-			}
-		}
-
-		return errors.Join(errs...)
-	}
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.NetworkPolicy]{
+		objectTypeName: "network policy",
+		// the protected names are compared case-insensitively, so protectedNames can't be used here
+		skip: func(object sdk.NetworkPolicy) bool {
+			return slices.Contains(protectedNetworkPolicies, strings.ToUpper(object.Name))
+		},
+		show: func(ctx context.Context) ([]sdk.NetworkPolicy, error) {
+			return client.NetworkPolicies.Show(ctx, sdk.NewShowNetworkPolicyRequest())
+		},
+		name:       func(object sdk.NetworkPolicy) string { return object.Name },
+		createdOn:  func(object sdk.NetworkPolicy) (time.Time, error) { return object.CreatedOn, nil },
+		id:         func(object sdk.NetworkPolicy) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.NetworkPolicies.DropSafely,
+	})
 }
 
 func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
@@ -823,7 +870,7 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 			return client.ResourceMonitors.Show(ctx, sdk.NewShowResourceMonitorRequest())
 		},
 		name:      func(object sdk.ResourceMonitor) string { return object.Name },
-		createdOn: func(object sdk.ResourceMonitor) time.Time { return object.CreatedOn },
+		createdOn: func(object sdk.ResourceMonitor) (time.Time, error) { return object.CreatedOn, nil },
 		// TODO [SNOW-1569516]: Use the usual constructors instead.
 		id: func(object sdk.ResourceMonitor) sdk.AccountObjectIdentifier {
 			return sdk.NewAccountObjectIdentifierNoTrimTestOnly(object.Name)
@@ -848,7 +895,7 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 			return client.FailoverGroups.Show(ctx, req)
 		},
 		name:          func(object sdk.FailoverGroup) string { return object.Name },
-		createdOn:     func(object sdk.FailoverGroup) time.Time { return object.CreatedOn },
+		createdOn:     func(object sdk.FailoverGroup) (time.Time, error) { return object.CreatedOn, nil },
 		id:            func(object sdk.FailoverGroup) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely:    client.FailoverGroups.DropSafely,
 		owner:         func(object sdk.FailoverGroup) string { return object.Owner },

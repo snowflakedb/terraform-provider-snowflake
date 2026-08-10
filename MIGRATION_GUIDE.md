@@ -26,6 +26,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(improvement)* `created_on` format in network policies' and listings' `show_output`
+
+`created_on` in the internal network policy and listing representations was a raw string; it is now read as a proper timestamp, making both consistent with databases, warehouses, schemas, shares, resource monitors, connections, and compute pools, which all already exposed it that way.
+
+As a result, the value of `show_output.0.created_on` is now rendered in Go's timestamp format (the same format the objects listed above already use) instead of the format returned directly by `SHOW NETWORK POLICIES` / `SHOW LISTINGS`, in:
+
+- `snowflake_network_policy` and `snowflake_network_policies`
+- `snowflake_listing` and `snowflake_listings`
+
+`created_on` in listings' `describe_output` is unaffected and remains in its original format.
+
+No configuration changes are required. Adjust only if you reference `show_output.0.created_on` and depend on its exact textual format.
+
 ### *(new feature)* `for_all_person_users` and `for_all_service_users` in account policy attachments
 
 Both `snowflake_account_authentication_policy_attachment` and `snowflake_account_session_policy_attachment` now support attaching a policy to a specific user type via two new mutually-exclusive boolean fields:

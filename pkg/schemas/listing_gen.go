@@ -126,7 +126,7 @@ func ListingToSchema(listing *sdk.Listing) map[string]any {
 		listingSchema["subtitle"] = listing.Subtitle
 	}
 	listingSchema["profile"] = listing.Profile
-	listingSchema["created_on"] = listing.CreatedOn
+	listingSchema["created_on"] = listing.CreatedOn.String()
 	listingSchema["updated_on"] = listing.UpdatedOn
 	if listing.PublishedOn != nil {
 		listingSchema["published_on"] = listing.PublishedOn

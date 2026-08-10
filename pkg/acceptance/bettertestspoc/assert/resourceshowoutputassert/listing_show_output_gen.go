@@ -4,6 +4,7 @@ package resourceshowoutputassert
 
 import (
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -75,8 +76,8 @@ func (l *ListingShowOutputAssert) HasProfile(expected string) *ListingShowOutput
 	return l
 }
 
-func (l *ListingShowOutputAssert) HasCreatedOn(expected string) *ListingShowOutputAssert {
-	l.StringValueSet("created_on", expected)
+func (l *ListingShowOutputAssert) HasCreatedOn(expected time.Time) *ListingShowOutputAssert {
+	l.StringValueSet("created_on", expected.String())
 	return l
 }
 

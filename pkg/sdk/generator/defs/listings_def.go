@@ -30,7 +30,7 @@ var listingPairs = g.StructPair("listingDBRow", "Listing").
 	Text("title").
 	OptionalText("subtitle").
 	Text("profile").
-	Text("created_on").
+	Time("created_on").
 	Text("updated_on").
 	OptionalText("published_on").
 	Enum("state", ListingStateEnumDef).

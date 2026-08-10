@@ -4,6 +4,7 @@ package resourceshowoutputassert
 
 import (
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
@@ -49,8 +50,8 @@ func NetworkPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int
 // Attribute value checks //
 ////////////////////////////
 
-func (n *NetworkPolicyShowOutputAssert) HasCreatedOn(expected string) *NetworkPolicyShowOutputAssert {
-	n.StringValueSet("created_on", expected)
+func (n *NetworkPolicyShowOutputAssert) HasCreatedOn(expected time.Time) *NetworkPolicyShowOutputAssert {
+	n.StringValueSet("created_on", expected.String())
 	return n
 }
 
