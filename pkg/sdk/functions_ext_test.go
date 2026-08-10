@@ -13,16 +13,14 @@ func wrapFunctionDefinition(def string) string {
 }
 
 func init() {
-	javaId := functionsTestIdSchemaObjectIdentifier
-	alterDescribeId := functionsTestIdSchemaObjectIdentifierWithArguments
-	renameTarget := randomSchemaObjectIdentifier()
+	newId := randomSchemaObjectIdentifier()
 	secretId := randomSchemaObjectIdentifier()
 	secretId2 := randomSchemaObjectIdentifier()
 
 	functionsTests.CreateForJava.
 		withDefaultOpts(func() *CreateForJavaFunctionOptions {
 			return &CreateForJavaFunctionOptions{
-				name:    javaId,
+				name:    functionsTestIdSchemaObjectIdentifier,
 				Returns: FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeVarchar_100}},
 				Handler: "TestFunc.echoVarchar",
 				// additionalValidations() requires Imports to be set when FunctionDefinition is nil.
@@ -47,7 +45,7 @@ func init() {
 		withAdditionalValidationCase(
 			"validation_CreateForJava_targetPath",
 			func(opts *CreateForJavaFunctionOptions) {
-				opts.TargetPath = String("@~/testfunc.jar")
+				opts.TargetPath = new("@~/testfunc.jar")
 			},
 			NewError("TARGET_PATH must be nil when AS is nil"),
 		).
@@ -61,62 +59,62 @@ func init() {
 		withExpectedSqlf(
 			case_Functions_sql_CreateForJava_basic,
 			`CREATE FUNCTION %s () RETURNS VARCHAR(100) LANGUAGE JAVA IMPORTS = ('@~/my_lib.jar') HANDLER = 'TestFunc.echoVarchar'`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForJava_all,
 			func(opts *CreateForJavaFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "id", ArgDataType: dataTypeNumber_36_2}, {ArgName: "name", ArgDataType: dataTypeVarchar_100, DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "id", ArgDataType: dataTypeNumber_36_2}, {ArgName: "name", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{Table: &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "country_code", ColumnDataType: dataTypeVarchar_100}, {ColumnName: "country_name", ColumnDataType: dataTypeVarchar_100}}}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-				opts.RuntimeVersion = String("2.0")
-				opts.Comment = String("comment")
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.RuntimeVersion = new("2.0")
+				opts.Comment = new("comment")
 				opts.Imports = []FunctionImport{{FunctionImport: "@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar"}}
 				opts.Packages = []FunctionPackage{{FunctionPackage: "com.snowflake:snowpark:1.2.0"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.TargetPath = String("@~/testfunc.jar")
-				opts.FunctionDefinition = String(wrapFunctionDefinition("return id + name;"))
+				opts.TargetPath = new("@~/testfunc.jar")
+				opts.FunctionDefinition = new(wrapFunctionDefinition("return id + name;"))
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("id" NUMBER(36, 2), "name" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR(100), "country_name" VARCHAR(100)) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`,
-			javaId.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
 		withAdditionalSqlCasef(
 			"sql_CreateForJava_allOldDataTypes",
 			func(opts *CreateForJavaFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "id", ArgDataTypeOld: DataTypeNumber}, {ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "id", ArgDataTypeOld: DataTypeNumber}, {ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{Table: &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "country_name", ColumnDataTypeOld: DataTypeVARCHAR}}}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-				opts.RuntimeVersion = String("2.0")
-				opts.Comment = String("comment")
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.RuntimeVersion = new("2.0")
+				opts.Comment = new("comment")
 				opts.Imports = []FunctionImport{{FunctionImport: "@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar"}}
 				opts.Packages = []FunctionPackage{{FunctionPackage: "com.snowflake:snowpark:1.2.0"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.TargetPath = String("@~/testfunc.jar")
-				opts.FunctionDefinition = String(wrapFunctionDefinition("return id + name;"))
+				opts.TargetPath = new("@~/testfunc.jar")
+				opts.FunctionDefinition = new(wrapFunctionDefinition("return id + name;"))
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("id" NUMBER, "name" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR, "country_name" VARCHAR) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`,
-			javaId.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		)
 
 	functionsTests.CreateForJavascript.
 		withDefaultOpts(func() *CreateForJavascriptFunctionOptions {
 			return &CreateForJavascriptFunctionOptions{
-				name: javaId,
+				name: functionsTestIdSchemaObjectIdentifier,
 				Returns: FunctionReturns{
 					ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeFloat},
 				},
@@ -141,49 +139,49 @@ func init() {
 		withExpectedSqlf(
 			case_Functions_sql_CreateForJavascript_basic,
 			`CREATE FUNCTION %s () RETURNS FLOAT LANGUAGE JAVASCRIPT AS $$return 1;$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForJavascript_all,
 			func(opts *CreateForJavascriptFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataType: dataTypeFloat, DefaultValue: String("1.0")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataType: dataTypeFloat, DefaultValue: new("1.0")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeFloat}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("comment")
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("comment")
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
 		withAdditionalSqlCasef(
 			"sql_CreateForJavascript_allOldDataTypes",
 			func(opts *CreateForJavascriptFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat, DefaultValue: String("1.0")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat, DefaultValue: new("1.0")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeFloat}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("comment")
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("comment")
 				opts.FunctionDefinition = wrapFunctionDefinition("return 1;")
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	functionsTests.CreateForPython.
 		withDefaultOpts(func() *CreateForPythonFunctionOptions {
 			return &CreateForPythonFunctionOptions{
-				name:           javaId,
+				name:           functionsTestIdSchemaObjectIdentifier,
 				Returns:        FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeVariant}},
 				RuntimeVersion: "3.9",
 				Handler:        "udf",
@@ -217,59 +215,59 @@ func init() {
 		withExpectedSqlf(
 			case_Functions_sql_CreateForPython_basic,
 			`CREATE FUNCTION %s () RETURNS VARIANT LANGUAGE PYTHON RUNTIME_VERSION = '3.9' IMPORTS = ('numpy') HANDLER = 'udf'`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForPython_all,
 			func(opts *CreateForPythonFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataType: dataTypeNumber_36_2, DefaultValue: String("1")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataType: dataTypeNumber_36_2, DefaultValue: new("1")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeVariant}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-				opts.Comment = String("comment")
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Comment = new("comment")
 				opts.Imports = []FunctionImport{{FunctionImport: "numpy"}, {FunctionImport: "pandas"}}
 				opts.Packages = []FunctionPackage{{FunctionPackage: "numpy"}, {FunctionPackage: "pandas"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.FunctionDefinition = String(wrapFunctionDefinition("import numpy as np"))
+				opts.FunctionDefinition = new(wrapFunctionDefinition("import numpy as np"))
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("i" NUMBER(36, 2) DEFAULT 1) COPY GRANTS RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`,
-			javaId.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
 		withAdditionalSqlCasef(
 			"sql_CreateForPython_allOldDataTypes",
 			func(opts *CreateForPythonFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataTypeOld: DataTypeNumber, DefaultValue: String("1")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataTypeOld: DataTypeNumber, DefaultValue: new("1")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeVariant}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.RuntimeVersion = "3.9"
-				opts.Comment = String("comment")
+				opts.Comment = new("comment")
 				opts.Imports = []FunctionImport{{FunctionImport: "numpy"}, {FunctionImport: "pandas"}}
 				opts.Packages = []FunctionPackage{{FunctionPackage: "numpy"}, {FunctionPackage: "pandas"}}
 				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
 				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.FunctionDefinition = String(wrapFunctionDefinition("import numpy as np"))
+				opts.FunctionDefinition = new(wrapFunctionDefinition("import numpy as np"))
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("i" NUMBER DEFAULT 1) COPY GRANTS RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`,
-			javaId.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		)
 
 	functionsTests.CreateForScala.
 		withDefaultOpts(func() *CreateForScalaFunctionOptions {
 			return &CreateForScalaFunctionOptions{
-				name:           javaId,
+				name:           functionsTestIdSchemaObjectIdentifier,
 				ResultDataType: dataTypeVarchar_100,
 				Handler:        "Echo.echoVarchar",
 				// additionalValidations() requires Imports to be set when FunctionDefinition is nil.
@@ -289,7 +287,7 @@ func init() {
 		withAdditionalValidationCase(
 			"validation_CreateForScala_targetPath",
 			func(opts *CreateForScalaFunctionOptions) {
-				opts.TargetPath = String("@~/testfunc.jar")
+				opts.TargetPath = new("@~/testfunc.jar")
 			},
 			NewError("TARGET_PATH must be nil when AS is nil"),
 		).
@@ -304,55 +302,55 @@ func init() {
 		withExpectedSqlf(
 			case_Functions_sql_CreateForScala_basic,
 			`CREATE FUNCTION %s () RETURNS VARCHAR(100) LANGUAGE SCALA RUNTIME_VERSION = '' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar'`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForScala_all,
 			func(opts *CreateForScalaFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataType: dataTypeVarchar_100, DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.ResultDataType = dataTypeVarchar_100
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.RuntimeVersion = "2.0"
-				opts.Comment = String("comment")
+				opts.Comment = new("comment")
 				opts.Imports = []FunctionImport{{FunctionImport: "@udf_libs/echohandler.jar"}}
-				opts.FunctionDefinition = String(wrapFunctionDefinition("return x"))
+				opts.FunctionDefinition = new(wrapFunctionDefinition("return x"))
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("x" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS VARCHAR(100) NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
 		withAdditionalSqlCasef(
 			"sql_CreateForScala_allOldDataTypes",
 			func(opts *CreateForScalaFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.ResultDataType = nil // clear new-style data type set by default opts
 				opts.ResultDataTypeOld = DataTypeVARCHAR
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = NullInputBehaviorPointer(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
 				opts.RuntimeVersion = "2.0"
-				opts.Comment = String("comment")
+				opts.Comment = new("comment")
 				opts.Imports = []FunctionImport{{FunctionImport: "@udf_libs/echohandler.jar"}}
-				opts.FunctionDefinition = String(wrapFunctionDefinition("return x"))
+				opts.FunctionDefinition = new(wrapFunctionDefinition("return x"))
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("x" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	functionsTests.CreateForSQL.
 		withDefaultOpts(func() *CreateForSQLFunctionOptions {
 			return &CreateForSQLFunctionOptions{
-				name:               javaId,
+				name:               functionsTestIdSchemaObjectIdentifier,
 				Returns:            FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeFloat}},
 				FunctionDefinition: wrapFunctionDefinition("3.141592654::FLOAT"),
 			}
@@ -375,116 +373,116 @@ func init() {
 		withExpectedSqlf(
 			case_Functions_sql_CreateForSQL_basic,
 			`CREATE FUNCTION %s () RETURNS FLOAT AS $$3.141592654::FLOAT$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_CreateForSQL_all,
 			func(opts *CreateForSQLFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataType: dataTypeVarchar_100, DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataType: dataTypeVarchar_100, DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeFloat}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-				opts.Memoizable = Bool(true)
-				opts.Comment = String("comment")
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Memoizable = new(true)
+				opts.Comment = new("comment")
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("message" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		// TODO [SNOW-1348103]: remove with old function removal for V1
 		withAdditionalSqlCasef(
 			"sql_CreateForSQL_allOldDataTypes",
 			func(opts *CreateForSQLFunctionOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
-				opts.Secure = Bool(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: String("'test'")}}
-				opts.CopyGrants = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
+				opts.Secure = new(true)
+				opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
+				opts.CopyGrants = new(true)
 				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeFloat}}
-				opts.ReturnNullValues = ReturnNullValuesPointer(ReturnNullValuesNotNull)
-				opts.ReturnResultsBehavior = ReturnResultsBehaviorPointer(ReturnResultsBehaviorImmutable)
-				opts.Memoizable = Bool(true)
-				opts.Comment = String("comment")
+				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
+				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
+				opts.Memoizable = new(true)
+				opts.Comment = new("comment")
 			},
 			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("message" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`,
-			javaId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	functionsTests.Alter.
 		withDefaultOpts(func() *AlterFunctionOptions {
-			return &AlterFunctionOptions{name: alterDescribeId, IfExists: Bool(true)}
+			return &AlterFunctionOptions{name: functionsTestIdSchemaObjectIdentifierWithArguments, IfExists: new(true)}
 		}).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Alter_RenameTo,
-			func(opts *AlterFunctionOptions) { opts.RenameTo = &renameTarget },
+			func(opts *AlterFunctionOptions) { opts.RenameTo = &newId },
 			`ALTER FUNCTION IF EXISTS %s RENAME TO %s`,
-			alterDescribeId.FullyQualifiedName(), renameTarget.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(), newId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Alter_Set,
 			func(opts *AlterFunctionOptions) {
-				opts.Set = &FunctionSet{Comment: String("comment"), TraceLevel: Pointer(TraceLevelOff)}
+				opts.Set = &FunctionSet{Comment: new("comment"), TraceLevel: new(TraceLevelOff)}
 			},
 			`ALTER FUNCTION IF EXISTS %s SET COMMENT = 'comment', TRACE_LEVEL = 'OFF'`,
-			alterDescribeId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_emptySecrets",
 			func(opts *AlterFunctionOptions) {
 				opts.Set = &FunctionSet{SecretsList: &SecretsList{}}
 			},
-			`ALTER FUNCTION IF EXISTS %s SET SECRETS = ()`, alterDescribeId.FullyQualifiedName(),
+			`ALTER FUNCTION IF EXISTS %s SET SECRETS = ()`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_nonEmptySecrets",
 			func(opts *AlterFunctionOptions) {
 				opts.Set = &FunctionSet{SecretsList: &SecretsList{[]SecretReference{{VariableName: "abc", Name: secretId}}}}
 			},
-			`ALTER FUNCTION IF EXISTS %s SET SECRETS = ('abc' = %s)`, alterDescribeId.FullyQualifiedName(), secretId.FullyQualifiedName(),
+			`ALTER FUNCTION IF EXISTS %s SET SECRETS = ('abc' = %s)`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(), secretId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Alter_Unset,
 			func(opts *AlterFunctionOptions) {
-				opts.Unset = &FunctionUnset{Comment: Bool(true), TraceLevel: Bool(true)}
+				opts.Unset = &FunctionUnset{Comment: new(true), TraceLevel: new(true)}
 			},
 			`ALTER FUNCTION IF EXISTS %s UNSET COMMENT, TRACE_LEVEL`,
-			alterDescribeId.FullyQualifiedName(),
+			functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Alter_SetSecure,
 			func(opts *AlterFunctionOptions) { opts.SetSecure = new(true) },
-			`ALTER FUNCTION IF EXISTS %s SET SECURE`, alterDescribeId.FullyQualifiedName(),
+			`ALTER FUNCTION IF EXISTS %s SET SECURE`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Alter_UnsetSecure,
 			func(opts *AlterFunctionOptions) { opts.UnsetSecure = new(true) },
-			`ALTER FUNCTION IF EXISTS %s UNSET SECURE`, alterDescribeId.FullyQualifiedName(),
+			`ALTER FUNCTION IF EXISTS %s UNSET SECURE`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Alter_SetTags,
 			func(opts *AlterFunctionOptions) {
 				opts.SetTags = []TagAssociation{{Name: NewAccountObjectIdentifier("tag1"), Value: "value1"}}
 			},
-			`ALTER FUNCTION IF EXISTS %s SET TAG "tag1" = 'value1'`, alterDescribeId.FullyQualifiedName(),
+			`ALTER FUNCTION IF EXISTS %s SET TAG "tag1" = 'value1'`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Alter_UnsetTags,
 			func(opts *AlterFunctionOptions) {
 				opts.UnsetTags = []ObjectIdentifier{NewAccountObjectIdentifier("tag1"), NewAccountObjectIdentifier("tag2")}
 			},
-			`ALTER FUNCTION IF EXISTS %s UNSET TAG "tag1", "tag2"`, alterDescribeId.FullyQualifiedName(),
+			`ALTER FUNCTION IF EXISTS %s UNSET TAG "tag1", "tag2"`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		)
 
 	functionsTests.Drop.
 		withExpectedSqlf(case_Functions_sql_Drop_basic,
-			`DROP FUNCTION %s`, alterDescribeId.FullyQualifiedName()).
+			`DROP FUNCTION %s`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName()).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Drop_all,
-			func(opts *DropFunctionOptions) { opts.IfExists = Bool(true) },
-			`DROP FUNCTION IF EXISTS %s`, alterDescribeId.FullyQualifiedName(),
+			func(opts *DropFunctionOptions) { opts.IfExists = new(true) },
+			`DROP FUNCTION IF EXISTS %s`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName(),
 		)
 
 	functionsTests.Show.
@@ -492,28 +490,28 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Show_all,
 			func(opts *ShowFunctionOptions) {
-				opts.Like = &Like{Pattern: String("pattern")}
-				opts.In = &ExtendedIn{In: In{Account: Bool(true)}}
+				opts.Like = &Like{Pattern: new("pattern")}
+				opts.In = &ExtendedIn{In: In{Account: new(true)}}
 			},
 			`SHOW USER FUNCTIONS LIKE 'pattern' IN ACCOUNT`,
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Show_Like,
-			func(opts *ShowFunctionOptions) { opts.Like = &Like{Pattern: String("pattern")} },
+			func(opts *ShowFunctionOptions) { opts.Like = &Like{Pattern: new("pattern")} },
 			`SHOW USER FUNCTIONS LIKE 'pattern'`,
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Show_In,
-			func(opts *ShowFunctionOptions) { opts.In = &ExtendedIn{In: In{Account: Bool(true)}} },
+			func(opts *ShowFunctionOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
 			`SHOW USER FUNCTIONS IN ACCOUNT`,
 		)
 
 	functionsTests.Describe.
 		withDefaultOpts(func() *DescribeFunctionOptions {
-			return &DescribeFunctionOptions{name: alterDescribeId}
+			return &DescribeFunctionOptions{name: functionsTestIdSchemaObjectIdentifierWithArguments}
 		}).
 		withExpectedSqlf(case_Functions_sql_Describe_basic,
-			`DESCRIBE FUNCTION %s`, alterDescribeId.FullyQualifiedName())
+			`DESCRIBE FUNCTION %s`, functionsTestIdSchemaObjectIdentifierWithArguments.FullyQualifiedName())
 }
 
 // TODO [SNOW-1850370]: test parsing single

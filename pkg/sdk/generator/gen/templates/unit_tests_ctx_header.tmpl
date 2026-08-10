@@ -14,7 +14,7 @@ func init() {
 
 var (
 {{- range .UnitTests.IdVars }}
-	{{ .Name }} = random{{ .Kind }}()
+	{{ .Name }} = random{{ .Kind }}({{ if eq .Kind "SchemaObjectIdentifierWithArguments" }}DataTypeVARCHAR, DataTypeNumber{{ end }})
 {{- end }}
 )
 {{- end }}

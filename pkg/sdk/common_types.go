@@ -252,10 +252,6 @@ func (row *UserProperty) toFloatProperty() *FloatProperty {
 
 type ExecuteAs string
 
-func ExecuteAsPointer(v ExecuteAs) *ExecuteAs {
-	return &v
-}
-
 // TODO [SNOW-1348103]: fix SDK - constants should have only CALLER and OWNER (not the EXECUTE AS part)
 const (
 	ExecuteAsCaller ExecuteAs = "CALLER"
@@ -279,10 +275,6 @@ var AllAllowedExecuteAs = []ExecuteAs{
 }
 
 type NullInputBehavior string
-
-func NullInputBehaviorPointer(v NullInputBehavior) *NullInputBehavior {
-	return &v
-}
 
 const (
 	NullInputBehaviorCalledOnNullInput NullInputBehavior = "CALLED ON NULL INPUT"
@@ -330,20 +322,12 @@ var AllReturnResultsBehaviors = []ReturnResultsBehavior{
 	ReturnResultsBehaviorImmutable,
 }
 
-func ReturnResultsBehaviorPointer(v ReturnResultsBehavior) *ReturnResultsBehavior {
-	return &v
-}
-
 type ReturnNullValues string
 
 var (
 	ReturnNullValuesNull    ReturnNullValues = "NULL"
 	ReturnNullValuesNotNull ReturnNullValues = "NOT NULL"
 )
-
-func ReturnNullValuesPointer(v ReturnNullValues) *ReturnNullValues {
-	return &v
-}
 
 type SecretReference struct {
 	VariableName string                 `ddl:"keyword,single_quotes"`
@@ -357,10 +341,6 @@ var (
 	ValuesBehaviorOrder   ValuesBehavior = "ORDER"
 	ValuesBehaviorNoOrder ValuesBehavior = "NOORDER"
 )
-
-func ValuesBehaviorPointer(v ValuesBehavior) *ValuesBehavior {
-	return &v
-}
 
 type Distribution string
 

@@ -159,7 +159,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithImports([]sdk.ProcedureImportRequest{*sdk.NewProcedureImportRequest(tmpJavaProcedure.JarLocation())}).
@@ -336,7 +336,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithImports([]sdk.ProcedureImportRequest{*sdk.NewProcedureImportRequest(tmpJavaProcedure.JarLocation())}).
@@ -570,7 +570,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
 			WithNotNull(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithExecuteAs(sdk.ExecuteAsCaller).
 			WithComment("comment")
@@ -734,7 +734,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithImports([]sdk.ProcedureImportRequest{*sdk.NewProcedureImportRequest(tmpPythonFunction.PythonModuleLocation())}).
@@ -905,7 +905,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithExternalAccessIntegrations([]sdk.AccountObjectIdentifier{externalAccessIntegration}).
@@ -1084,7 +1084,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithImports([]sdk.ProcedureImportRequest{*sdk.NewProcedureImportRequest(tmpJavaProcedure.JarLocation())}).
@@ -1260,7 +1260,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithExecuteAs(sdk.ExecuteAsCaller).
@@ -1449,7 +1449,7 @@ func TestInt_Procedures(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithExecuteAs(sdk.ExecuteAsCaller).
 			WithComment("comment")
@@ -1646,8 +1646,8 @@ func TestInt_Procedures(t *testing.T) {
 		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), nil, definition).
 			WithResultDataTypeOld(sdk.DataTypeString).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorStrict)).
-			WithExecuteAs(*sdk.ExecuteAsPointer(sdk.ExecuteAsCaller))
+			WithNullInputBehavior(sdk.NullInputBehaviorStrict).
+			WithExecuteAs(sdk.ExecuteAsCaller)
 		err := client.Procedures.CreateForJavaScript(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Procedure.DropProcedureFunc(t, id))
@@ -1844,7 +1844,7 @@ def filter_by_role(session, table_name, role):
 			// 001003 (42000): SQL compilation error:
 			// syntax error line 1 at position 210 unexpected 'NULL'.
 			// syntax error line 1 at position 215 unexpected 'ON'.
-			// WithNullInputBehavior(sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			// WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument})
 		err := client.Procedures.CreateForSQL(ctx, request)
 		require.NoError(t, err)
@@ -1875,7 +1875,7 @@ def filter_by_role(session, table_name, role):
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
 			WithOrReplace(true).
 			// SNOW-1051627 todo: uncomment once null input behavior working again
-			// WithNullInputBehavior(sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			// WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument})
 		err = client.Procedures.CreateForSQL(ctx, request)
 		require.NoError(t, err)
@@ -2126,7 +2126,7 @@ def filter_by_role(session, table_name, role):
 				HasExecuteAs("OWNER"),
 		)
 
-		err := client.Procedures.Alter(ctx, sdk.NewAlterProcedureRequest(id).WithExecuteAs(*sdk.ExecuteAsPointer(sdk.ExecuteAsCaller)))
+		err := client.Procedures.Alter(ctx, sdk.NewAlterProcedureRequest(id).WithExecuteAs(sdk.ExecuteAsCaller))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -2134,7 +2134,7 @@ def filter_by_role(session, table_name, role):
 				HasExecuteAs("CALLER"),
 		)
 
-		err = client.Procedures.Alter(ctx, sdk.NewAlterProcedureRequest(id).WithExecuteAs(*sdk.ExecuteAsPointer(sdk.ExecuteAsOwner)))
+		err = client.Procedures.Alter(ctx, sdk.NewAlterProcedureRequest(id).WithExecuteAs(sdk.ExecuteAsOwner))
 		require.NoError(t, err)
 
 		assertThatObject(
@@ -2584,7 +2584,7 @@ func TestInt_CallProcedure(t *testing.T) {
 			WithSecure(true).
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
-			WithExecuteAs(*sdk.ExecuteAsPointer(sdk.ExecuteAsCaller))
+			WithExecuteAs(sdk.ExecuteAsCaller)
 		err := client.Procedures.CreateForSQL(ctx, request)
 		require.NoError(t, err)
 		if cleanup {
@@ -2697,8 +2697,8 @@ func TestInt_CallProcedure(t *testing.T) {
 			WithResultDataTypeOld(sdk.DataTypeString).
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg}).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorStrict)).
-			WithExecuteAs(*sdk.ExecuteAsPointer(sdk.ExecuteAsOwner))
+			WithNullInputBehavior(sdk.NullInputBehaviorStrict).
+			WithExecuteAs(sdk.ExecuteAsOwner)
 		err := client.Procedures.CreateForJavaScript(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(cleanupProcedureHandle(id))
@@ -2856,7 +2856,7 @@ func TestInt_CreateAndCallProcedures(t *testing.T) {
 		request := sdk.NewCreateAndCallForJavaScriptProcedureRequest(name, nil, definition, name).
 			WithResultDataTypeOld(sdk.DataTypeString).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg}).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorStrict)).
+			WithNullInputBehavior(sdk.NullInputBehaviorStrict).
 			WithCallArguments([]string{"5.14::FLOAT"})
 		err := client.Procedures.CreateAndCallForJavaScript(ctx, request)
 		require.NoError(t, err)
