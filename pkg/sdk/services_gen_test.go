@@ -2,1070 +2,624 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"testing"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 )
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ServiceStatus]{"ServiceStatus", AllServiceStatuses, ToServiceStatus})
 }
 
+var servicesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Services_validation_Create_name_ValidIdentifier                                                                                                           testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Services_validation_Create_opts_ExactlyOneValueSet_NoneSet                                                                                                testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
+	case_Services_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet                                                                                         testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Services_validation_Create_QueryWarehouse_ValidIdentifierIfSet                                                                                            testCaseName = "validation_Create_QueryWarehouse_ValidIdentifierIfSet"
+	case_Services_validation_Create_opts_FromSpecification_ExactlyOneValueSet_NoneSet                                                                              testCaseName = "validation_Create_opts_FromSpecification_ExactlyOneValueSet_NoneSet"
+	case_Services_validation_Create_opts_FromSpecification_ExactlyOneValueSet_MoreThanOneSet                                                                       testCaseName = "validation_Create_opts_FromSpecification_ExactlyOneValueSet_MoreThanOneSet"
+	case_Services_validation_Create_opts_FromSpecification_ConflictingFields                                                                                       testCaseName = "validation_Create_opts_FromSpecification_ConflictingFields"
+	case_Services_validation_Create_FromSpecification_Specification_NoDoubleDollarQuotesIfSet                                                                      testCaseName = "validation_Create_FromSpecification_Specification_NoDoubleDollarQuotesIfSet"
+	case_Services_validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_NoneSet                                                                      testCaseName = "validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_NoneSet"
+	case_Services_validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet                                                               testCaseName = "validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet"
+	case_Services_validation_Create_opts_FromSpecificationTemplate_ConflictingFields                                                                               testCaseName = "validation_Create_opts_FromSpecificationTemplate_ConflictingFields"
+	case_Services_validation_Create_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet                                                      testCaseName = "validation_Create_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet"
+	case_Services_sql_Create_basic                                                                                                                                 testCaseName = "sql_Create_basic"
+	case_Services_sql_Create_all                                                                                                                                   testCaseName = "sql_Create_all"
+	case_Services_validation_Alter_name_ValidIdentifier                                                                                                            testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Services_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                                                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Services_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                                                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Services_validation_Alter_opts_FromSpecification_ExactlyOneValueSet_NoneSet                                                                               testCaseName = "validation_Alter_opts_FromSpecification_ExactlyOneValueSet_NoneSet"
+	case_Services_validation_Alter_opts_FromSpecification_ExactlyOneValueSet_MoreThanOneSet                                                                        testCaseName = "validation_Alter_opts_FromSpecification_ExactlyOneValueSet_MoreThanOneSet"
+	case_Services_validation_Alter_opts_FromSpecification_ConflictingFields                                                                                        testCaseName = "validation_Alter_opts_FromSpecification_ConflictingFields"
+	case_Services_validation_Alter_FromSpecification_Specification_NoDoubleDollarQuotesIfSet                                                                       testCaseName = "validation_Alter_FromSpecification_Specification_NoDoubleDollarQuotesIfSet"
+	case_Services_validation_Alter_opts_FromSpecificationTemplate_ExactlyOneValueSet_NoneSet                                                                       testCaseName = "validation_Alter_opts_FromSpecificationTemplate_ExactlyOneValueSet_NoneSet"
+	case_Services_validation_Alter_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet                                                                testCaseName = "validation_Alter_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet"
+	case_Services_validation_Alter_opts_FromSpecificationTemplate_ConflictingFields                                                                                testCaseName = "validation_Alter_opts_FromSpecificationTemplate_ConflictingFields"
+	case_Services_validation_Alter_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet                                                       testCaseName = "validation_Alter_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet"
+	case_Services_validation_Alter_Restore_FromSnapshot_ValidIdentifier                                                                                            testCaseName = "validation_Alter_Restore_FromSnapshot_ValidIdentifier"
+	case_Services_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet                                                                                         testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
+	case_Services_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                                     testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Services_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Services_sql_Alter_Resume                                                                                                                                 testCaseName = "sql_Alter_Resume"
+	case_Services_sql_Alter_Suspend                                                                                                                                testCaseName = "sql_Alter_Suspend"
+	case_Services_sql_Alter_FromSpecification                                                                                                                      testCaseName = "sql_Alter_FromSpecification"
+	case_Services_sql_Alter_FromSpecificationTemplate                                                                                                              testCaseName = "sql_Alter_FromSpecificationTemplate"
+	case_Services_sql_Alter_Restore                                                                                                                                testCaseName = "sql_Alter_Restore"
+	case_Services_sql_Alter_Set                                                                                                                                    testCaseName = "sql_Alter_Set"
+	case_Services_sql_Alter_Unset                                                                                                                                  testCaseName = "sql_Alter_Unset"
+	case_Services_sql_Alter_SetTags                                                                                                                                testCaseName = "sql_Alter_SetTags"
+	case_Services_sql_Alter_UnsetTags                                                                                                                              testCaseName = "sql_Alter_UnsetTags"
+	case_Services_validation_Drop_name_ValidIdentifier                                                                                                             testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Services_sql_Drop_basic                                                                                                                                   testCaseName = "sql_Drop_basic"
+	case_Services_sql_Drop_all                                                                                                                                     testCaseName = "sql_Drop_all"
+	case_Services_validation_Show_opts_ConflictingFields                                                                                                           testCaseName = "validation_Show_opts_ConflictingFields"
+	case_Services_sql_Show_basic                                                                                                                                   testCaseName = "sql_Show_basic"
+	case_Services_sql_Show_all                                                                                                                                     testCaseName = "sql_Show_all"
+	case_Services_sql_Show_Like                                                                                                                                    testCaseName = "sql_Show_Like"
+	case_Services_sql_Show_In                                                                                                                                      testCaseName = "sql_Show_In"
+	case_Services_sql_Show_StartsWith                                                                                                                              testCaseName = "sql_Show_StartsWith"
+	case_Services_sql_Show_Limit                                                                                                                                   testCaseName = "sql_Show_Limit"
+	case_Services_validation_Describe_name_ValidIdentifier                                                                                                         testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Services_sql_Describe_basic                                                                                                                               testCaseName = "sql_Describe_basic"
+	case_Services_validation_ExecuteJob_Name_ValidIdentifier                                                                                                       testCaseName = "validation_ExecuteJob_Name_ValidIdentifier"
+	case_Services_validation_ExecuteJob_opts_ExactlyOneValueSet_NoneSet                                                                                            testCaseName = "validation_ExecuteJob_opts_ExactlyOneValueSet_NoneSet"
+	case_Services_validation_ExecuteJob_opts_ExactlyOneValueSet_MoreThanOneSet                                                                                     testCaseName = "validation_ExecuteJob_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Services_validation_ExecuteJob_InComputePool_ValidIdentifier                                                                                              testCaseName = "validation_ExecuteJob_InComputePool_ValidIdentifier"
+	case_Services_validation_ExecuteJob_QueryWarehouse_ValidIdentifierIfSet                                                                                        testCaseName = "validation_ExecuteJob_QueryWarehouse_ValidIdentifierIfSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_NoneSet                                testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_NoneSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_MoreThanOneSet                         testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_MoreThanOneSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_NoneSet                                         testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_NoneSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_MoreThanOneSet                                  testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_MoreThanOneSet"
+	case_Services_validation_ExecuteJob_JobServiceFromSpecification_Specification_NoDoubleDollarQuotesIfSet                                                        testCaseName = "validation_ExecuteJob_JobServiceFromSpecification_Specification_NoDoubleDollarQuotesIfSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_SpecificationTemplateFile_SpecificationTemplate_NoneSet        testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_SpecificationTemplateFile_SpecificationTemplate_NoneSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_SpecificationTemplateFile_SpecificationTemplate_MoreThanOneSet testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_SpecificationTemplateFile_SpecificationTemplate_MoreThanOneSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_NoneSet                         testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_NoneSet"
+	case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_MoreThanOneSet                  testCaseName = "validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_MoreThanOneSet"
+	case_Services_validation_ExecuteJob_JobServiceFromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet                                        testCaseName = "validation_ExecuteJob_JobServiceFromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet"
+	case_Services_sql_ExecuteJob_basic                                                                                                                             testCaseName = "sql_ExecuteJob_basic"
+)
+
+type ServicesTestsContext struct {
+	Create     *sdkTestCtx[*CreateServiceOptions]
+	Alter      *sdkTestCtx[*AlterServiceOptions]
+	Drop       *sdkTestCtx[*DropServiceOptions]
+	Show       *sdkTestCtx[*ShowServiceOptions]
+	Describe   *sdkTestCtx[*DescribeServiceOptions]
+	ExecuteJob *sdkTestCtx[*ExecuteJobServiceOptions]
+}
+
+var servicesTests = ServicesTestsContext{
+	Create: newSdkTestCtx[*CreateServiceOptions](
+		"Services", "Create",
+	).
+		withDefaultOpts(func() *CreateServiceOptions {
+			return &CreateServiceOptions{
+				name: servicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecification = nil
+					opts.FromSpecificationTemplate = nil
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecification = &ServiceFromSpecification{}
+					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_QueryWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_FromSpecification_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecification = &ServiceFromSpecification{}
+					opts.FromSpecification.SpecificationFile = nil
+					opts.FromSpecification.Specification = nil
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_FromSpecification_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecification = &ServiceFromSpecification{}
+					opts.FromSpecification.SpecificationFile = new("foo")
+					opts.FromSpecification.Specification = new("foo")
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_FromSpecification_ConflictingFields,
+				ExpectedErr: errOneOf("CreateServiceOptions.FromSpecification", "Location", "Specification"),
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_FromSpecification_Specification_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecification", "Specification"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecification = &ServiceFromSpecification{}
+					opts.FromSpecification.Specification = String("$$")
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+					opts.FromSpecificationTemplate.SpecificationTemplateFile = nil
+					opts.FromSpecificationTemplate.SpecificationTemplate = nil
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+					opts.FromSpecificationTemplate.SpecificationTemplateFile = new("foo")
+					opts.FromSpecificationTemplate.SpecificationTemplate = new("foo")
+				},
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_opts_FromSpecificationTemplate_ConflictingFields,
+				ExpectedErr: errOneOf("CreateServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"),
+			},
+			validationCase[*CreateServiceOptions]{
+				Name:        case_Services_validation_Create_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplate"),
+				DefaultModify: func(opts *CreateServiceOptions) {
+					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+					opts.FromSpecificationTemplate.SpecificationTemplate = String("$$")
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateServiceOptions]{
+				Name:           case_Services_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateServiceOptions]{
+				Name: case_Services_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterServiceOptions](
+		"Services", "Alter",
+	).
+		withDefaultOpts(func() *AlterServiceOptions {
+			return &AlterServiceOptions{
+				name: servicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.Resume = nil
+					opts.Suspend = nil
+					opts.FromSpecification = nil
+					opts.FromSpecificationTemplate = nil
+					opts.Restore = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.Resume = new(true)
+					opts.Suspend = new(true)
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_FromSpecification_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.FromSpecification = &ServiceFromSpecification{}
+					opts.FromSpecification.SpecificationFile = nil
+					opts.FromSpecification.Specification = nil
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_FromSpecification_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.FromSpecification = &ServiceFromSpecification{}
+					opts.FromSpecification.SpecificationFile = new("foo")
+					opts.FromSpecification.Specification = new("foo")
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_FromSpecification_ConflictingFields,
+				ExpectedErr: errOneOf("AlterServiceOptions.FromSpecification", "Location", "Specification"),
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_FromSpecification_Specification_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("AlterServiceOptions.FromSpecification", "Specification"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.FromSpecification = &ServiceFromSpecification{}
+					opts.FromSpecification.Specification = String("$$")
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_FromSpecificationTemplate_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+					opts.FromSpecificationTemplate.SpecificationTemplateFile = nil
+					opts.FromSpecificationTemplate.SpecificationTemplate = nil
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_FromSpecificationTemplate_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+					opts.FromSpecificationTemplate.SpecificationTemplateFile = new("foo")
+					opts.FromSpecificationTemplate.SpecificationTemplate = new("foo")
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_FromSpecificationTemplate_ConflictingFields,
+				ExpectedErr: errOneOf("AlterServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"),
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_FromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplate"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
+					opts.FromSpecificationTemplate.SpecificationTemplate = String("$$")
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_Restore_FromSnapshot_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.Restore = &Restore{}
+					opts.Restore.FromSnapshot = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.Set = &ServiceSet{}
+					opts.Set.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.Set = &ServiceSet{}
+					opts.Set.MinInstances = nil
+					opts.Set.MaxInstances = nil
+					opts.Set.AutoSuspendSecs = nil
+					opts.Set.MinReadyInstances = nil
+					opts.Set.QueryWarehouse = nil
+					opts.Set.AutoResume = nil
+					opts.Set.ExternalAccessIntegrations = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterServiceOptions]{
+				Name:        case_Services_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"),
+				DefaultModify: func(opts *AlterServiceOptions) {
+					opts.Unset = &ServiceUnset{}
+					opts.Unset.MinInstances = nil
+					opts.Unset.AutoSuspendSecs = nil
+					opts.Unset.MaxInstances = nil
+					opts.Unset.MinReadyInstances = nil
+					opts.Unset.QueryWarehouse = nil
+					opts.Unset.AutoResume = nil
+					opts.Unset.ExternalAccessIntegrations = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_Resume,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_Suspend,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_FromSpecification,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_FromSpecificationTemplate,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_Restore,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_Set,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_Unset,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterServiceOptions]{
+				Name: case_Services_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropServiceOptions](
+		"Services", "Drop",
+	).
+		withDefaultOpts(func() *DropServiceOptions {
+			return &DropServiceOptions{
+				name: servicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropServiceOptions]{
+				Name:        case_Services_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropServiceOptions]{
+				Name:           case_Services_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropServiceOptions]{
+				Name: case_Services_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowServiceOptions](
+		"Services", "Show",
+	).
+		withDefaultOpts(func() *ShowServiceOptions {
+			return &ShowServiceOptions{}
+		}).
+		withValidationCases(
+			validationCase[*ShowServiceOptions]{
+				Name:        case_Services_validation_Show_opts_ConflictingFields,
+				ExpectedErr: errOneOf("ShowServiceOptions", "Job", "ExcludeJobs"),
+				DefaultModify: func(opts *ShowServiceOptions) {
+					opts.Job = new(true)
+					opts.ExcludeJobs = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ShowServiceOptions]{
+				Name:           case_Services_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowServiceOptions]{
+				Name: case_Services_sql_Show_all,
+			},
+			sqlCase[*ShowServiceOptions]{
+				Name: case_Services_sql_Show_Like,
+			},
+			sqlCase[*ShowServiceOptions]{
+				Name: case_Services_sql_Show_In,
+			},
+			sqlCase[*ShowServiceOptions]{
+				Name: case_Services_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowServiceOptions]{
+				Name: case_Services_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeServiceOptions](
+		"Services", "Describe",
+	).
+		withDefaultOpts(func() *DescribeServiceOptions {
+			return &DescribeServiceOptions{
+				name: servicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeServiceOptions]{
+				Name:        case_Services_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeServiceOptions]{
+				Name:           case_Services_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	ExecuteJob: newSdkTestCtx[*ExecuteJobServiceOptions](
+		"Services", "ExecuteJob",
+	).
+		withDefaultOpts(func() *ExecuteJobServiceOptions {
+			return &ExecuteJobServiceOptions{
+				Name: servicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_Name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.Name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecification = nil
+					opts.JobServiceFromSpecificationTemplate = nil
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
+					opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_InComputePool_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.InComputePool = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_QueryWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_NoneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
+					opts.JobServiceFromSpecification.SpecificationFile = nil
+					opts.JobServiceFromSpecification.Specification = nil
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_SpecificationFile_Specification_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
+					opts.JobServiceFromSpecification.SpecificationFile = new("foo")
+					opts.JobServiceFromSpecification.Specification = new("foo")
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_NoneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "Location", "Specification"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
+					opts.JobServiceFromSpecification.Location = nil
+					opts.JobServiceFromSpecification.Specification = nil
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecification_ExactlyOneValueSet_Location_Specification_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "Location", "Specification"),
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_JobServiceFromSpecification_Specification_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecification", "Specification"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
+					opts.JobServiceFromSpecification.Specification = String("$$")
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_SpecificationTemplateFile_SpecificationTemplate_NoneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
+					opts.JobServiceFromSpecificationTemplate.SpecificationTemplateFile = nil
+					opts.JobServiceFromSpecificationTemplate.SpecificationTemplate = nil
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_SpecificationTemplateFile_SpecificationTemplate_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
+					opts.JobServiceFromSpecificationTemplate.SpecificationTemplateFile = new("foo")
+					opts.JobServiceFromSpecificationTemplate.SpecificationTemplate = new("foo")
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_NoneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
+					opts.JobServiceFromSpecificationTemplate.Location = nil
+					opts.JobServiceFromSpecificationTemplate.SpecificationTemplate = nil
+				},
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_opts_JobServiceFromSpecificationTemplate_ExactlyOneValueSet_Location_SpecificationTemplate_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"),
+			},
+			validationCase[*ExecuteJobServiceOptions]{
+				Name:        case_Services_validation_ExecuteJob_JobServiceFromSpecificationTemplate_SpecificationTemplate_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplate"),
+				DefaultModify: func(opts *ExecuteJobServiceOptions) {
+					opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
+					opts.JobServiceFromSpecificationTemplate.SpecificationTemplate = String("$$")
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ExecuteJobServiceOptions]{
+				Name:           case_Services_sql_ExecuteJob_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestServices_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	computePoolId := randomAccountObjectIdentifier()
-	// Minimal valid CreateServiceOptions
-	defaultOpts := func() *CreateServiceOptions {
-		return &CreateServiceOptions{
-			// adjusted manually
-			name:          id,
-			InComputePool: computePoolId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecification opts.FromSpecificationTemplate] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecification opts.FromSpecificationTemplate] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("{}"),
-		}
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("{}"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions", "FromSpecification", "FromSpecificationTemplate"))
-	})
-
-	t.Run("validation: valid identifier for [opts.QueryWarehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.QueryWarehouse = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.FromSpecification.Specification]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("spec$$injected"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecification", "Specification"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("spec$$injected"),
-			Using:                 []ListItem{{Key: "k", Value: "v"}},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecification.SpecificationFile opts.FromSpecification.Specification] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecification.SpecificationFile opts.FromSpecification.Specification] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification:     String("{}"),
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.FromSpecification.Location opts.FromSpecification.Specification]", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("{}"),
-			Location:      &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateServiceOptions.FromSpecification", "Location", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecificationTemplate.SpecificationTemplateFile opts.FromSpecificationTemplate.SpecificationTemplate] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecificationTemplate.SpecificationTemplateFile opts.FromSpecificationTemplate.SpecificationTemplate] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate:     String("{}"),
-			SpecificationTemplateFile: String("spec.yaml"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.FromSpecificationTemplate.Location opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("{}"),
-			Location:              &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"))
-	})
-
-	// below vaidations added manually
-	t.Run("validation: stage present without specification", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecification = &ServiceFromSpecification{
-			Location: &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: stage present without specification template", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Location: &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: min ready instances must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinReadyInstances = Pointer(0)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "MinReadyInstances", IntErrGreater, 0))
-	})
-
-	t.Run("validation: min instances must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinInstances = Pointer(0)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "MinInstances", IntErrGreater, 0))
-	})
-
-	t.Run("validation: max instances must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MaxInstances = Pointer(0)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "MaxInstances", IntErrGreater, 0))
-	})
-
-	t.Run("validation: min instances must be greater than or equal to min ready instances", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinReadyInstances = Pointer(3)
-		opts.MinInstances = Pointer(2)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "MinInstances", IntErrGreaterOrEqual, 3))
-	})
-
-	t.Run("validation: max instances must be greater than or equal to min ready instances", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinReadyInstances = Pointer(3)
-		opts.MaxInstances = Pointer(2)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "MaxInstances", IntErrGreaterOrEqual, 3))
-	})
-
-	t.Run("validation: max instances must be greater than or equal to min instances", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinInstances = Pointer(3)
-		opts.MaxInstances = Pointer(2)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "MaxInstances", IntErrGreaterOrEqual, 3))
-	})
-
-	t.Run("validation: invalid auto suspend secs", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AutoSuspendSecs = Pointer(-1)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("CreateServiceOptions", "AutoSuspendSecs", IntErrGreaterOrEqual, 0))
-	})
-
-	// all variants added manually
-	t.Run("with if not exists", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.FromSpecification = &ServiceFromSpecification{
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
-	})
-
-	t.Run("from specification file", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
-	})
-
-	t.Run("with specification file on stage", func(t *testing.T) {
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Location:          &location,
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_FILE = 'spec.yaml'`,
-			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("from specification", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("SPEC"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION $$SPEC$$", id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
-	})
-
-	t.Run("from specification template file", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplateFile: String("spec.yaml"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-				{
-					Key:   "int",
-					Value: 42,
-				},
-				{
-					Key:   "bool",
-					Value: true,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar", "int" => 42, "bool" => true)`, id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
-	})
-
-	t.Run("from specification template file on stage", func(t *testing.T) {
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Location:                  &location,
-			SpecificationTemplateFile: String("spec.yaml"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("from specification template", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("SPEC"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SERVICE %s IN COMPUTE POOL %s FROM SPECIFICATION_TEMPLATE $$SPEC$$ USING ("string" => "bar")`, id.FullyQualifiedName(), computePoolId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		warehouseId := NewAccountObjectIdentifier("my_warehouse")
-		integration1Id := NewAccountObjectIdentifier("integration1")
-		comment := random.Comment()
-
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("SPEC"),
-		}
-		opts.AutoSuspendSecs = Pointer(600)
-		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
-			ExternalAccessIntegrations: []AccountObjectIdentifier{
-				integration1Id,
-			},
-		}
-		opts.AutoResume = Bool(true)
-		opts.MinInstances = Pointer(1)
-		opts.MinReadyInstances = Pointer(1)
-		opts.MaxInstances = Pointer(3)
-		opts.QueryWarehouse = &warehouseId
-		opts.Tag = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-		}
-		opts.Comment = &comment
-
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SERVICE IF NOT EXISTS %s IN COMPUTE POOL %s FROM SPECIFICATION $$SPEC$$ AUTO_SUSPEND_SECS = 600 "+
-			"EXTERNAL_ACCESS_INTEGRATIONS = (%s) AUTO_RESUME = true MIN_INSTANCES = 1 MIN_READY_INSTANCES = 1 MAX_INSTANCES = 3 "+
-			"QUERY_WAREHOUSE = %s TAG (\"tag1\" = 'value1') COMMENT = '%s'",
-			id.FullyQualifiedName(), computePoolId.FullyQualifiedName(), integration1Id.FullyQualifiedName(),
-			warehouseId.FullyQualifiedName(), comment)
-	})
+	servicesTests.Create.RunValidationCases(t)
+	servicesTests.Create.RunSqlCases(t)
 }
 
 func TestServices_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterServiceOptions
-	defaultOpts := func() *AlterServiceOptions {
-		return &AlterServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Resume opts.Suspend opts.FromSpecification opts.FromSpecificationTemplate opts.Restore opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Resume opts.Suspend opts.FromSpecification opts.FromSpecificationTemplate opts.Restore opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Resume = Bool(true)
-		opts.Suspend = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions", "Resume", "Suspend", "FromSpecification", "FromSpecificationTemplate", "Restore", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecification.SpecificationFile opts.FromSpecification.Specification] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecification.SpecificationFile opts.FromSpecification.Specification] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification:     String("{}"),
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.FromSpecification.Location opts.FromSpecification.Specification]", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("{}"),
-			Location:      &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterServiceOptions.FromSpecification", "Location", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecificationTemplate.SpecificationTemplateFile opts.FromSpecificationTemplate.SpecificationTemplate] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.FromSpecificationTemplate.SpecificationTemplateFile opts.FromSpecificationTemplate.SpecificationTemplate] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate:     String("{}"),
-			SpecificationTemplateFile: String("spec.yaml"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.FromSpecificationTemplate.Location opts.FromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("{}"),
-			Location:              &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterServiceOptions.FromSpecificationTemplate", "Location", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: valid identifier for [opts.Restore.FromSnapshot]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Restore = &Restore{
-			FromSnapshot: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.QueryWarehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			QueryWarehouse: &emptyAccountObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.MinInstances opts.Set.MaxInstances opts.Set.AutoSuspendSecs opts.Set.MinReadyInstances opts.Set.QueryWarehouse opts.Set.AutoResume opts.Set.ExternalAccessIntegrations opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterServiceOptions.Set", "MinInstances", "MaxInstances", "AutoSuspendSecs", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.MinInstances opts.Unset.AutoSuspendSecs opts.Unset.MaxInstances opts.Unset.MinReadyInstances opts.Unset.QueryWarehouse opts.Unset.AutoResume opts.Unset.ExternalAccessIntegrations opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ServiceUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterServiceOptions.Unset", "MinInstances", "AutoSuspendSecs", "MaxInstances", "MinReadyInstances", "QueryWarehouse", "AutoResume", "ExternalAccessIntegrations", "Comment"))
-	})
-
-	// below validations added manually
-	t.Run("validation: stage present without specification", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecification = &ServiceFromSpecification{
-			Location: &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: stage present without specification template", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Location: &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterServiceOptions.FromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: min ready instances must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			MinReadyInstances: Pointer(0),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterServiceOptions.Set", "MinReadyInstances", IntErrGreater, 0))
-	})
-
-	t.Run("validation: min instances must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			MinInstances: Pointer(0),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterServiceOptions.Set", "MinInstances", IntErrGreater, 0))
-	})
-
-	t.Run("validation: max instances must be greater than 0", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			MaxInstances: Pointer(0),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterServiceOptions.Set", "MaxInstances", IntErrGreater, 0))
-	})
-
-	t.Run("validation: min instances must be greater than or equal to min ready instances", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			MinReadyInstances: Pointer(3),
-			MinInstances:      Pointer(2),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterServiceOptions.Set", "MinInstances", IntErrGreaterOrEqual, 3))
-	})
-
-	t.Run("validation: max instances must be greater than or equal to min ready instances", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			MinReadyInstances: Pointer(3),
-			MaxInstances:      Pointer(2),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterServiceOptions.Set", "MaxInstances", IntErrGreaterOrEqual, 3))
-	})
-
-	t.Run("validation: max instances must be greater than or equal to min instances", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			MinInstances: Pointer(3),
-			MaxInstances: Pointer(2),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterServiceOptions.Set", "MaxInstances", IntErrGreaterOrEqual, 3))
-	})
-
-	t.Run("validation: invalid auto suspend secs", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			AutoSuspendSecs: Pointer(-1),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AlterServiceOptions.Set", "AutoSuspendSecs", IntErrGreaterOrEqual, 0))
-	})
-
-	// all variants added manually
-	t.Run("suspend", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Suspend = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s SUSPEND", id.FullyQualifiedName())
-	})
-
-	t.Run("resume", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Resume = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s RESUME", id.FullyQualifiedName())
-	})
-
-	t.Run("with if exists", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Suspend = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE IF EXISTS %s SUSPEND", id.FullyQualifiedName())
-	})
-
-	t.Run("from specification file", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION_FILE = 'spec.yaml'", id.FullyQualifiedName())
-	})
-
-	t.Run("from specification file on stage", func(t *testing.T) {
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Location:          &location,
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_FILE = 'spec.yaml'`,
-			id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("from specification", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = &ServiceFromSpecification{
-			Specification: String("SPEC"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s FROM SPECIFICATION $$SPEC$$", id.FullyQualifiedName())
-	})
-
-	t.Run("from specification template file", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplateFile: String("spec.yaml"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-				{
-					Key:   "int",
-					Value: 42,
-				},
-				{
-					Key:   "bool",
-					Value: true,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar", "int" => 42, "bool" => true)`, id.FullyQualifiedName())
-	})
-
-	t.Run("with specification template file on stage", func(t *testing.T) {
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			Location:                  &location,
-			SpecificationTemplateFile: String("spec.yaml"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("from specification template", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecificationTemplate = &ServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("SPEC"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s FROM SPECIFICATION_TEMPLATE $$SPEC$$ USING ("string" => "bar")`, id.FullyQualifiedName())
-	})
-
-	t.Run("with restore", func(t *testing.T) {
-		opts := defaultOpts()
-		snapshotId := randomSchemaObjectIdentifier()
-		opts.Restore = &Restore{
-			Volume:       "vol1",
-			Instances:    []int{0, 1},
-			FromSnapshot: snapshotId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s RESTORE VOLUME "vol1" INSTANCES 0, 1 FROM SNAPSHOT %s`, id.FullyQualifiedName(), snapshotId.FullyQualifiedName())
-	})
-
-	t.Run("with set", func(t *testing.T) {
-		warehouseId := NewAccountObjectIdentifier("my_warehouse")
-		comment := random.Comment()
-		integration1Id := NewAccountObjectIdentifier("integration1")
-		integration2Id := NewAccountObjectIdentifier("integration2")
-		opts := defaultOpts()
-		opts.Set = &ServiceSet{
-			MinInstances:      Pointer(2),
-			MaxInstances:      Pointer(5),
-			AutoSuspendSecs:   Pointer(600),
-			MinReadyInstances: Pointer(1),
-			QueryWarehouse:    Pointer(warehouseId),
-			AutoResume:        Bool(true),
-			ExternalAccessIntegrations: &ServiceExternalAccessIntegrations{
-				ExternalAccessIntegrations: []AccountObjectIdentifier{
-					integration1Id,
-					integration2Id,
-				},
-			},
-			Comment: &comment,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SERVICE %s SET MIN_INSTANCES = 2 MAX_INSTANCES = 5 AUTO_SUSPEND_SECS = 600 MIN_READY_INSTANCES = 1 QUERY_WAREHOUSE = %v AUTO_RESUME = true`+
-			` EXTERNAL_ACCESS_INTEGRATIONS = (%s, %s) COMMENT = '%v'`, id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), integration1Id.FullyQualifiedName(), integration2Id.FullyQualifiedName(), comment)
-	})
-
-	t.Run("with unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ServiceUnset{
-			MinInstances:               Bool(true),
-			AutoSuspendSecs:            Bool(true),
-			MaxInstances:               Bool(true),
-			MinReadyInstances:          Bool(true),
-			QueryWarehouse:             Bool(true),
-			AutoResume:                 Bool(true),
-			ExternalAccessIntegrations: Bool(true),
-			Comment:                    Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s UNSET MIN_INSTANCES, AUTO_SUSPEND_SECS, MAX_INSTANCES, MIN_READY_INSTANCES, QUERY_WAREHOUSE, AUTO_RESUME, EXTERNAL_ACCESS_INTEGRATIONS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("with set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s SET TAG \"tag1\" = 'value1'", id.FullyQualifiedName())
-	})
-
-	t.Run("with unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SERVICE %s UNSET TAG \"tag1\", \"tag2\"", id.FullyQualifiedName())
-	})
+	servicesTests.Alter.RunValidationCases(t)
+	servicesTests.Alter.RunSqlCases(t)
 }
 
 func TestServices_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropServiceOptions
-	defaultOpts := func() *DropServiceOptions {
-		return &DropServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP SERVICE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Force = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP SERVICE IF EXISTS %s FORCE", id.FullyQualifiedName())
-	})
+	servicesTests.Drop.RunValidationCases(t)
+	servicesTests.Drop.RunSqlCases(t)
 }
 
 func TestServices_Show(t *testing.T) {
-	// Minimal valid ShowServiceOptions
-	defaultOpts := func() *ShowServiceOptions {
-		return &ShowServiceOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: conflicting fields for [opts.Job opts.ExcludeJobs]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Job = Bool(true)
-		opts.ExcludeJobs = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ShowServiceOptions", "Job", "ExcludeJobs"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES")
-	})
-
-	// all variants added manually
-	t.Run("with jobs option", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Job = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "SHOW JOB SERVICES")
-	})
-
-	t.Run("with exclude jobs", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExcludeJobs = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES EXCLUDE JOBS")
-	})
-
-	t.Run("with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("service_*")}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIKE 'service_*'")
-	})
-
-	t.Run("in schema", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &ServiceIn{
-			In: In{
-				Database: NewAccountObjectIdentifier("database"),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SERVICES IN DATABASE "database"`)
-	})
-
-	t.Run("in compute pool", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &ServiceIn{ComputePool: NewAccountObjectIdentifier("compute_pool")}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SERVICES IN COMPUTE POOL "compute_pool"`)
-	})
-
-	t.Run("with starts with", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.StartsWith = String("my_prefix")
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES STARTS WITH 'my_prefix'")
-	})
-
-	t.Run("with limit", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{Rows: Pointer(10)}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIMIT 10")
-	})
-
-	t.Run("with limit and from", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{Rows: Pointer(10), From: String("service1")}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SERVICES LIMIT 10 FROM 'service1'")
-	})
+	servicesTests.Show.RunValidationCases(t)
+	servicesTests.Show.RunSqlCases(t)
 }
 
 func TestServices_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeServiceOptions
-	defaultOpts := func() *DescribeServiceOptions {
-		return &DescribeServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SERVICE %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	servicesTests.Describe.RunValidationCases(t)
+	servicesTests.Describe.RunSqlCases(t)
 }
 
 func TestServices_ExecuteJob(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	computePoolId := randomAccountObjectIdentifier()
-	// Minimal valid ExecuteJobServiceOptions
-	defaultOpts := func() *ExecuteJobServiceOptions {
-		return &ExecuteJobServiceOptions{
-			// adjusted manually
-			Name:          id,
-			InComputePool: computePoolId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ExecuteJobServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.Name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecification opts.JobServiceFromSpecificationTemplate] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecification opts.JobServiceFromSpecificationTemplate] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Specification: String("{}"),
-		}
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("{}"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions", "JobServiceFromSpecification", "JobServiceFromSpecificationTemplate"))
-	})
-
-	t.Run("validation: valid identifier for [opts.InComputePool]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.InComputePool = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.QueryWarehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.QueryWarehouse = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.JobServiceFromSpecification.Specification]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Specification: String("spec$$injected"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecification", "Specification"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.JobServiceFromSpecificationTemplate.SpecificationTemplate]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("spec$$injected"),
-			Using:                 []ListItem{{Key: "k", Value: "v"}},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecification.SpecificationFile opts.JobServiceFromSpecification.Specification] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecification.SpecificationFile opts.JobServiceFromSpecification.Specification] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Specification:     String("{}"),
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecification.Location opts.JobServiceFromSpecification.Specification] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "Location", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecification.Location opts.JobServiceFromSpecification.Specification] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Location:      &location,
-			Specification: String("{}"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "Location", "Specification"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecificationTemplate.SpecificationTemplateFile opts.JobServiceFromSpecificationTemplate.SpecificationTemplate] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecificationTemplate.SpecificationTemplateFile opts.JobServiceFromSpecificationTemplate.SpecificationTemplate] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
-			SpecificationTemplate:     String("{}"),
-			SpecificationTemplateFile: String("spec.yaml"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecificationTemplate.Location opts.JobServiceFromSpecificationTemplate.SpecificationTemplate] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"))
-	})
-
-	t.Run("validation: exactly one field from [opts.JobServiceFromSpecificationTemplate.Location opts.JobServiceFromSpecificationTemplate.SpecificationTemplate] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
-			Location:              &location,
-			SpecificationTemplate: String("{}"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "Location", "SpecificationTemplate"))
-	})
-
-	// below validations added manually
-	t.Run("validation: stage present without specification", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Location: &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecification", "SpecificationFile", "Specification"))
-	})
-
-	t.Run("validation: stage present without specification template", func(t *testing.T) {
-		opts := defaultOpts()
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
-			Location: &location,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ExecuteJobServiceOptions.JobServiceFromSpecificationTemplate", "SpecificationTemplateFile", "SpecificationTemplate"))
-	})
-
-	// all variants added manually
-	t.Run("with specification file on stage", func(t *testing.T) {
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts := defaultOpts()
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Location:          &location,
-			SpecificationFile: String("spec.yaml"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_FILE = 'spec.yaml'`,
-			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("from specification", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Specification: String("SPEC"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM SPECIFICATION $$SPEC$$", computePoolId.FullyQualifiedName(), id.FullyQualifiedName())
-	})
-
-	t.Run("from specification template file on stage", func(t *testing.T) {
-		stageId := NewSchemaObjectIdentifier("db", "schema", "stage")
-		location := NewStageLocation(stageId, "/path/to/spec")
-		opts := defaultOpts()
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
-			Location:                  &location,
-			SpecificationTemplateFile: String("spec.yaml"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM '@\"%s\".\"%s\".\"%s\"//path/to/spec' SPECIFICATION_TEMPLATE_FILE = 'spec.yaml' USING ("string" => "bar")`,
-			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("from specification template", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.JobServiceFromSpecificationTemplate = &JobServiceFromSpecificationTemplate{
-			SpecificationTemplate: String("SPEC"),
-			Using: []ListItem{
-				{
-					Key:   "string",
-					Value: `"bar"`,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s FROM SPECIFICATION_TEMPLATE $$SPEC$$ USING ("string" => "bar")`, computePoolId.FullyQualifiedName(), id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		warehouseId := NewAccountObjectIdentifier("my_warehouse")
-		integration1Id := NewAccountObjectIdentifier("integration1")
-		comment := random.Comment()
-
-		opts := defaultOpts()
-		opts.Async = Bool(true)
-		opts.JobServiceFromSpecification = &JobServiceFromSpecification{
-			Specification: String("SPEC"),
-		}
-		opts.ExternalAccessIntegrations = &ServiceExternalAccessIntegrations{
-			ExternalAccessIntegrations: []AccountObjectIdentifier{
-				integration1Id,
-			},
-		}
-		opts.QueryWarehouse = &warehouseId
-		opts.Tag = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-		}
-		opts.Comment = &comment
-
-		assertOptsValidAndSQLEquals(t, opts, "EXECUTE JOB SERVICE IN COMPUTE POOL %s NAME = %s ASYNC = true QUERY_WAREHOUSE = %s COMMENT = '%s' "+
-			"EXTERNAL_ACCESS_INTEGRATIONS = (%s) FROM SPECIFICATION $$SPEC$$ TAG (\"tag1\" = 'value1')",
-			computePoolId.FullyQualifiedName(), id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), comment, integration1Id.FullyQualifiedName())
-	})
+	servicesTests.ExecuteJob.RunValidationCases(t)
+	servicesTests.ExecuteJob.RunSqlCases(t)
 }
