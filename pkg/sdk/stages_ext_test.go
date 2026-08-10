@@ -13,7 +13,7 @@ func init() {
 		withModify(
 			case_Stages_validation_CreateInternal_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *CreateInternalStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withAdditionalValidationCase(
@@ -41,8 +41,8 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							SkipHeader:  Pointer(1),
-							ParseHeader: Bool(true),
+							SkipHeader:  new(1),
+							ParseHeader: new(true),
 						},
 					},
 				}
@@ -66,7 +66,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							RecordDelimiter: &StageFileFormatStringOrNone{Value: String("\\n"), None: Bool(true)},
+							RecordDelimiter: &StageFileFormatStringOrNone{Value: new("\\n"), None: new(true)},
 						},
 					},
 				}
@@ -90,7 +90,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							FieldDelimiter: &StageFileFormatStringOrNone{Value: String(","), None: Bool(true)},
+							FieldDelimiter: &StageFileFormatStringOrNone{Value: new(","), None: new(true)},
 						},
 					},
 				}
@@ -114,7 +114,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							DateFormat: &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD"), Auto: Bool(true)},
+							DateFormat: &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD"), Auto: new(true)},
 						},
 					},
 				}
@@ -138,7 +138,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							TimeFormat: &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS"), Auto: Bool(true)},
+							TimeFormat: &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS"), Auto: new(true)},
 						},
 					},
 				}
@@ -162,7 +162,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							TimestampFormat: &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS"), Auto: Bool(true)},
+							TimestampFormat: &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS"), Auto: new(true)},
 						},
 					},
 				}
@@ -186,7 +186,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							Escape: &StageFileFormatStringOrNone{Value: String("\\"), None: Bool(true)},
+							Escape: &StageFileFormatStringOrNone{Value: new("\\"), None: new(true)},
 						},
 					},
 				}
@@ -210,7 +210,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							EscapeUnenclosedField: &StageFileFormatStringOrNone{Value: String("\\"), None: Bool(true)},
+							EscapeUnenclosedField: &StageFileFormatStringOrNone{Value: new("\\"), None: new(true)},
 						},
 					},
 				}
@@ -234,7 +234,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{Value: String("\""), None: Bool(true)},
+							FieldOptionallyEnclosedBy: &StageFileFormatStringOrNone{Value: new("\""), None: new(true)},
 						},
 					},
 				}
@@ -246,7 +246,7 @@ func init() {
 			func(opts *CreateInternalStageOptions) {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
-						JsonOptions: &FileFormatJsonOptions{IgnoreUtf8Errors: Bool(true), ReplaceInvalidCharacters: Bool(true)},
+						JsonOptions: &FileFormatJsonOptions{IgnoreUtf8Errors: new(true), ReplaceInvalidCharacters: new(true)},
 					},
 				}
 			},
@@ -269,7 +269,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						JsonOptions: &FileFormatJsonOptions{
-							DateFormat: &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD"), Auto: Bool(true)},
+							DateFormat: &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD"), Auto: new(true)},
 						},
 					},
 				}
@@ -293,7 +293,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						JsonOptions: &FileFormatJsonOptions{
-							TimeFormat: &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS"), Auto: Bool(true)},
+							TimeFormat: &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS"), Auto: new(true)},
 						},
 					},
 				}
@@ -317,7 +317,7 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						JsonOptions: &FileFormatJsonOptions{
-							TimestampFormat: &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS"), Auto: Bool(true)},
+							TimestampFormat: &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS"), Auto: new(true)},
 						},
 					},
 				}
@@ -329,7 +329,7 @@ func init() {
 			func(opts *CreateInternalStageOptions) {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
-						ParquetOptions: &FileFormatParquetOptions{Compression: Pointer(ParquetCompressionSnappy), SnappyCompression: Bool(true)},
+						ParquetOptions: &FileFormatParquetOptions{Compression: new(ParquetCompressionSnappy), SnappyCompression: new(true)},
 					},
 				}
 			},
@@ -340,7 +340,7 @@ func init() {
 			func(opts *CreateInternalStageOptions) {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
-						XmlOptions: &FileFormatXmlOptions{IgnoreUtf8Errors: Bool(true), ReplaceInvalidCharacters: Bool(true)},
+						XmlOptions: &FileFormatXmlOptions{IgnoreUtf8Errors: new(true), ReplaceInvalidCharacters: new(true)},
 					},
 				}
 			},
@@ -353,12 +353,12 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateInternal_all,
 			func(opts *CreateInternalStageOptions) {
-				opts.Temporary = Bool(true)
-				opts.IfNotExists = Bool(true)
+				opts.Temporary = new(true)
+				opts.IfNotExists = new(true)
 				opts.Encryption = &InternalStageEncryption{SnowflakeFull: &InternalStageEncryptionSnowflakeFull{}}
-				opts.DirectoryTableOptions = &InternalDirectoryTableOptions{Enable: true, AutoRefresh: Bool(true)}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
-				opts.Comment = String("some comment")
+				opts.DirectoryTableOptions = &InternalDirectoryTableOptions{Enable: true, AutoRefresh: new(true)}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
+				opts.Comment = new("some comment")
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "tag-value"}}
 			},
 			`CREATE TEMPORARY STAGE IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') DIRECTORY = (ENABLE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment' TAG (%s = 'tag-value')`,
@@ -373,7 +373,7 @@ func init() {
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateInternal_withFormatName",
-			func(opts *CreateInternalStageOptions) { opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)} },
+			func(opts *CreateInternalStageOptions) { opts.FileFormat = &StageFileFormat{FormatName: new(ffId)} },
 			`CREATE STAGE %s FILE_FORMAT = (FORMAT_NAME = %s)`, id.FullyQualifiedName(), ffId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -389,27 +389,27 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							Compression:                Pointer(CsvCompressionGzip),
-							RecordDelimiter:            &StageFileFormatStringOrNone{Value: String("\\n")},
-							FieldDelimiter:             &StageFileFormatStringOrNone{Value: String(",")},
-							MultiLine:                  Bool(true),
-							FileExtension:              String(".csv"),
-							SkipHeader:                 Pointer(2),
-							SkipBlankLines:             Bool(true),
-							DateFormat:                 &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")},
-							TimeFormat:                 &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")},
-							TimestampFormat:            &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")},
-							BinaryFormat:               Pointer(BinaryFormatHex),
-							Escape:                     &StageFileFormatStringOrNone{Value: String("\\")},
-							EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: String("\\")},
-							TrimSpace:                  Bool(true),
-							FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: String("\"")},
+							Compression:                new(CsvCompressionGzip),
+							RecordDelimiter:            &StageFileFormatStringOrNone{Value: new("\\n")},
+							FieldDelimiter:             &StageFileFormatStringOrNone{Value: new(",")},
+							MultiLine:                  new(true),
+							FileExtension:              new(".csv"),
+							SkipHeader:                 new(2),
+							SkipBlankLines:             new(true),
+							DateFormat:                 &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+							TimeFormat:                 &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+							TimestampFormat:            &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+							BinaryFormat:               new(BinaryFormatHex),
+							Escape:                     &StageFileFormatStringOrNone{Value: new("\\")},
+							EscapeUnenclosedField:      &StageFileFormatStringOrNone{Value: new("\\")},
+							TrimSpace:                  new(true),
+							FieldOptionallyEnclosedBy:  &StageFileFormatStringOrNone{Value: new("\"")},
 							NullIf:                     &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
-							ErrorOnColumnCountMismatch: Bool(true),
-							ReplaceInvalidCharacters:   Bool(true),
-							EmptyFieldAsNull:           Bool(true),
-							SkipByteOrderMark:          Bool(true),
-							Encoding:                   Pointer(CsvEncodingUtf8),
+							ErrorOnColumnCountMismatch: new(true),
+							ReplaceInvalidCharacters:   new(true),
+							EmptyFieldAsNull:           new(true),
+							SkipByteOrderMark:          new(true),
+							Encoding:                   new(CsvEncodingUtf8),
 						},
 					},
 				}
@@ -423,9 +423,9 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							SkipHeader:      Pointer(1),
-							RecordDelimiter: &StageFileFormatStringOrNone{None: Bool(true)},
-							FieldDelimiter:  &StageFileFormatStringOrNone{None: Bool(true)},
+							SkipHeader:      new(1),
+							RecordDelimiter: &StageFileFormatStringOrNone{None: new(true)},
+							FieldDelimiter:  &StageFileFormatStringOrNone{None: new(true)},
 						},
 					},
 				}
@@ -439,10 +439,10 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						CsvOptions: &FileFormatCsvOptions{
-							SkipHeader:      Pointer(1),
-							DateFormat:      &StageFileFormatStringOrAuto{Auto: Bool(true)},
-							TimeFormat:      &StageFileFormatStringOrAuto{Auto: Bool(true)},
-							TimestampFormat: &StageFileFormatStringOrAuto{Auto: Bool(true)},
+							SkipHeader:      new(1),
+							DateFormat:      &StageFileFormatStringOrAuto{Auto: new(true)},
+							TimeFormat:      &StageFileFormatStringOrAuto{Auto: new(true)},
+							TimestampFormat: &StageFileFormatStringOrAuto{Auto: new(true)},
 						},
 					},
 				}
@@ -463,21 +463,21 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						JsonOptions: &FileFormatJsonOptions{
-							Compression:       Pointer(JsonCompressionGzip),
-							DateFormat:        &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD")},
-							TimeFormat:        &StageFileFormatStringOrAuto{Value: String("HH24:MI:SS")},
-							TimestampFormat:   &StageFileFormatStringOrAuto{Value: String("YYYY-MM-DD HH24:MI:SS")},
-							BinaryFormat:      Pointer(BinaryFormatBase64),
-							TrimSpace:         Bool(true),
-							MultiLine:         Bool(true),
+							Compression:       new(JsonCompressionGzip),
+							DateFormat:        &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD")},
+							TimeFormat:        &StageFileFormatStringOrAuto{Value: new("HH24:MI:SS")},
+							TimestampFormat:   &StageFileFormatStringOrAuto{Value: new("YYYY-MM-DD HH24:MI:SS")},
+							BinaryFormat:      new(BinaryFormatBase64),
+							TrimSpace:         new(true),
+							MultiLine:         new(true),
 							NullIf:            &NullIfList{NullIf: []NullString{{S: "NULL"}}},
-							FileExtension:     String(".json"),
-							EnableOctal:       Bool(true),
-							AllowDuplicate:    Bool(true),
-							StripOuterArray:   Bool(true),
-							StripNullValues:   Bool(true),
-							IgnoreUtf8Errors:  Bool(true),
-							SkipByteOrderMark: Bool(true),
+							FileExtension:     new(".json"),
+							EnableOctal:       new(true),
+							AllowDuplicate:    new(true),
+							StripOuterArray:   new(true),
+							StripNullValues:   new(true),
+							IgnoreUtf8Errors:  new(true),
+							SkipByteOrderMark: new(true),
 						},
 					},
 				}
@@ -491,21 +491,21 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						JsonOptions: &FileFormatJsonOptions{
-							Compression:              Pointer(JsonCompressionBrotli),
-							DateFormat:               &StageFileFormatStringOrAuto{Auto: Bool(true)},
-							TimeFormat:               &StageFileFormatStringOrAuto{Auto: Bool(true)},
-							TimestampFormat:          &StageFileFormatStringOrAuto{Auto: Bool(true)},
-							BinaryFormat:             Pointer(BinaryFormatUtf8),
-							TrimSpace:                Bool(false),
-							MultiLine:                Bool(false),
+							Compression:              new(JsonCompressionBrotli),
+							DateFormat:               &StageFileFormatStringOrAuto{Auto: new(true)},
+							TimeFormat:               &StageFileFormatStringOrAuto{Auto: new(true)},
+							TimestampFormat:          &StageFileFormatStringOrAuto{Auto: new(true)},
+							BinaryFormat:             new(BinaryFormatUtf8),
+							TrimSpace:                new(false),
+							MultiLine:                new(false),
 							NullIf:                   &NullIfList{NullIf: []NullString{{S: ""}}},
-							FileExtension:            String(".jsonl"),
-							EnableOctal:              Bool(false),
-							AllowDuplicate:           Bool(false),
-							StripOuterArray:          Bool(false),
-							StripNullValues:          Bool(false),
-							ReplaceInvalidCharacters: Bool(true),
-							SkipByteOrderMark:        Bool(false),
+							FileExtension:            new(".jsonl"),
+							EnableOctal:              new(false),
+							AllowDuplicate:           new(false),
+							StripOuterArray:          new(false),
+							StripNullValues:          new(false),
+							ReplaceInvalidCharacters: new(true),
+							SkipByteOrderMark:        new(false),
 						},
 					},
 				}
@@ -526,9 +526,9 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						AvroOptions: &FileFormatAvroOptions{
-							Compression:              Pointer(AvroCompressionGzip),
-							TrimSpace:                Bool(true),
-							ReplaceInvalidCharacters: Bool(true),
+							Compression:              new(AvroCompressionGzip),
+							TrimSpace:                new(true),
+							ReplaceInvalidCharacters: new(true),
 							NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}, {S: ""}}},
 						},
 					},
@@ -550,8 +550,8 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						OrcOptions: &FileFormatOrcOptions{
-							TrimSpace:                Bool(true),
-							ReplaceInvalidCharacters: Bool(true),
+							TrimSpace:                new(true),
+							ReplaceInvalidCharacters: new(true),
 							NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 						},
 					},
@@ -566,12 +566,12 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						ParquetOptions: &FileFormatParquetOptions{
-							Compression:              Pointer(ParquetCompressionSnappy),
-							BinaryAsText:             Bool(true),
-							UseLogicalType:           Bool(true),
-							TrimSpace:                Bool(true),
-							UseVectorizedScanner:     Bool(true),
-							ReplaceInvalidCharacters: Bool(true),
+							Compression:              new(ParquetCompressionSnappy),
+							BinaryAsText:             new(true),
+							UseLogicalType:           new(true),
+							TrimSpace:                new(true),
+							UseVectorizedScanner:     new(true),
+							ReplaceInvalidCharacters: new(true),
 							NullIf:                   &NullIfList{NullIf: []NullString{{S: "NULL"}}},
 						},
 					},
@@ -586,12 +586,12 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						ParquetOptions: &FileFormatParquetOptions{
-							SnappyCompression:        Bool(true),
-							BinaryAsText:             Bool(false),
-							UseLogicalType:           Bool(false),
-							TrimSpace:                Bool(false),
-							UseVectorizedScanner:     Bool(false),
-							ReplaceInvalidCharacters: Bool(false),
+							SnappyCompression:        new(true),
+							BinaryAsText:             new(false),
+							UseLogicalType:           new(false),
+							TrimSpace:                new(false),
+							UseVectorizedScanner:     new(false),
+							ReplaceInvalidCharacters: new(false),
 							NullIf:                   &NullIfList{NullIf: []NullString{{S: ""}}},
 						},
 					},
@@ -613,12 +613,12 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						XmlOptions: &FileFormatXmlOptions{
-							Compression:        Pointer(XmlCompressionGzip),
-							IgnoreUtf8Errors:   Bool(true),
-							PreserveSpace:      Bool(true),
-							StripOuterElement:  Bool(true),
-							DisableAutoConvert: Bool(true),
-							SkipByteOrderMark:  Bool(true),
+							Compression:        new(XmlCompressionGzip),
+							IgnoreUtf8Errors:   new(true),
+							PreserveSpace:      new(true),
+							StripOuterElement:  new(true),
+							DisableAutoConvert: new(true),
+							SkipByteOrderMark:  new(true),
 						},
 					},
 				}
@@ -632,12 +632,12 @@ func init() {
 				opts.FileFormat = &StageFileFormat{
 					FileFormatOptions: &FileFormatOptions{
 						XmlOptions: &FileFormatXmlOptions{
-							Compression:              Pointer(XmlCompressionBz2),
-							PreserveSpace:            Bool(false),
-							StripOuterElement:        Bool(false),
-							DisableAutoConvert:       Bool(false),
-							ReplaceInvalidCharacters: Bool(true),
-							SkipByteOrderMark:        Bool(false),
+							Compression:              new(XmlCompressionBz2),
+							PreserveSpace:            new(false),
+							StripOuterElement:        new(false),
+							DisableAutoConvert:       new(false),
+							ReplaceInvalidCharacters: new(true),
+							SkipByteOrderMark:        new(false),
 						},
 					},
 				}
@@ -656,7 +656,7 @@ func init() {
 		withModify(
 			case_Stages_validation_CreateOnS3_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *CreateOnS3StageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withExpectedSqlf(
@@ -666,18 +666,18 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateOnS3_all,
 			func(opts *CreateOnS3StageOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
 				opts.ExternalStageParams = ExternalS3StageParams{
 					Url:                "some url",
-					AwsAccessPointArn:  String("aws-access-point-arn"),
+					AwsAccessPointArn:  new("aws-access-point-arn"),
 					StorageIntegration: &integrationId,
 					Encryption: &ExternalStageS3Encryption{
 						AwsCse: &ExternalStageS3EncryptionAwsCse{MasterKey: "master-key"},
 					},
 				}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
-				opts.Comment = String("some comment")
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
+				opts.Comment = new("some comment")
 			},
 			`CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'AWS_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), integrationId.FullyQualifiedName(), ffId.FullyQualifiedName(),
@@ -685,26 +685,26 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateOnS3_allOptionsDirectoryTableAndCredentials",
 			func(opts *CreateOnS3StageOptions) {
-				opts.Temporary = Bool(true)
-				opts.IfNotExists = Bool(true)
+				opts.Temporary = new(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalStageParams = ExternalS3StageParams{
 					Url:               "some url",
-					AwsAccessPointArn: String("aws-access-point-arn"),
+					AwsAccessPointArn: new("aws-access-point-arn"),
 					Credentials: &ExternalStageS3Credentials{
-						AwsKeyId:     String("aws-key-id"),
-						AwsSecretKey: String("aws-secret-key"),
-						AwsToken:     String("aws-token"),
+						AwsKeyId:     new("aws-key-id"),
+						AwsSecretKey: new("aws-secret-key"),
+						AwsToken:     new("aws-token"),
 					},
 					Encryption: &ExternalStageS3Encryption{
-						AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{KmsKeyId: String("kms-key-id")},
+						AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{KmsKeyId: new("kms-key-id")},
 					},
-					UsePrivatelinkEndpoint: Bool(true),
+					UsePrivatelinkEndpoint: new(true),
 				}
 				opts.DirectoryTableOptions = &StageS3DirectoryTableOptions{
 					Enable:          true,
-					RefreshOnCreate: Bool(true),
-					AutoRefresh:     Bool(true),
-					AwsSnsTopic:     String("arn:aws:sns:us-west-2:123456789012:my-sns-topic"),
+					RefreshOnCreate: new(true),
+					AutoRefresh:     new(true),
+					AwsSnsTopic:     new("arn:aws:sns:us-west-2:123456789012:my-sns-topic"),
 				}
 			},
 			`CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key' AWS_TOKEN = 'aws-token') ENCRYPTION = (TYPE = 'AWS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true AWS_SNS_TOPIC = 'arn:aws:sns:us-west-2:123456789012:my-sns-topic')`,
@@ -727,7 +727,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateOnS3_credentialsAwsRole",
 			func(opts *CreateOnS3StageOptions) {
-				opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{AwsRole: String("arn:aws:iam::123456789012:role/MyRole")}
+				opts.ExternalStageParams.Credentials = &ExternalStageS3Credentials{AwsRole: new("arn:aws:iam::123456789012:role/MyRole")}
 			},
 			`CREATE STAGE %s URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`, id.FullyQualifiedName(),
 		)
@@ -742,7 +742,7 @@ func init() {
 		withModify(
 			case_Stages_validation_CreateOnGCS_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *CreateOnGCSStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withExpectedSqlf(
@@ -752,23 +752,23 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateOnGCS_all,
 			func(opts *CreateOnGCSStageOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
 				opts.ExternalStageParams = ExternalGCSStageParams{
 					Url:                "some url",
 					StorageIntegration: integrationId,
 					Encryption: &ExternalStageGCSEncryption{
-						GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{KmsKeyId: String("kms-key-id")},
+						GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{KmsKeyId: new("kms-key-id")},
 					},
 				}
 				opts.DirectoryTableOptions = &ExternalGCSDirectoryTableOptions{
 					Enable:                  true,
-					RefreshOnCreate:         Bool(true),
-					AutoRefresh:             Bool(true),
-					NotificationIntegration: String("notification-integration"),
+					RefreshOnCreate:         new(true),
+					AutoRefresh:             new(true),
+					NotificationIntegration: new("notification-integration"),
 				}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
-				opts.Comment = String("some comment")
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
+				opts.Comment = new("some comment")
 			},
 			`CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'GCS_SSE_KMS' KMS_KEY_ID = 'kms-key-id') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), integrationId.FullyQualifiedName(), ffId.FullyQualifiedName(),
@@ -791,7 +791,7 @@ func init() {
 		withModify(
 			case_Stages_validation_CreateOnAzure_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *CreateOnAzureStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withExpectedSqlf(
@@ -801,8 +801,8 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateOnAzure_all,
 			func(opts *CreateOnAzureStageOptions) {
-				opts.OrReplace = Bool(true)
-				opts.Temporary = Bool(true)
+				opts.OrReplace = new(true)
+				opts.Temporary = new(true)
 				opts.ExternalStageParams = ExternalAzureStageParams{
 					Url:                "some url",
 					StorageIntegration: &integrationId,
@@ -810,8 +810,8 @@ func init() {
 						AzureCse: &ExternalStageAzureEncryptionAzureCse{MasterKey: "master-key"},
 					},
 				}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
-				opts.Comment = String("some comment")
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
+				opts.Comment = new("some comment")
 			},
 			`CREATE OR REPLACE TEMPORARY STAGE %s URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
 			id.FullyQualifiedName(), integrationId.FullyQualifiedName(), ffId.FullyQualifiedName(),
@@ -819,12 +819,12 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_CreateOnAzure_allOptionsDirectoryTableAndCredentials",
 			func(opts *CreateOnAzureStageOptions) {
-				opts.IfNotExists = Bool(true)
+				opts.IfNotExists = new(true)
 				opts.DirectoryTableOptions = &ExternalAzureDirectoryTableOptions{
 					Enable:                  true,
-					RefreshOnCreate:         Bool(true),
-					AutoRefresh:             Bool(true),
-					NotificationIntegration: String("notification-integration"),
+					RefreshOnCreate:         new(true),
+					AutoRefresh:             new(true),
+					NotificationIntegration: new("notification-integration"),
 				}
 				opts.ExternalStageParams = ExternalAzureStageParams{
 					Url:         "some url",
@@ -832,7 +832,7 @@ func init() {
 					Encryption: &ExternalStageAzureEncryption{
 						AzureCse: &ExternalStageAzureEncryptionAzureCse{MasterKey: "master-key"},
 					},
-					UsePrivatelinkEndpoint: Bool(true),
+					UsePrivatelinkEndpoint: new(true),
 				}
 			},
 			`CREATE STAGE IF NOT EXISTS %s URL = 'some url' CREDENTIALS = (AZURE_SAS_TOKEN = 'azure-sas-token') ENCRYPTION = (TYPE = 'AZURE_CSE' MASTER_KEY = 'master-key') USE_PRIVATELINK_ENDPOINT = true DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true NOTIFICATION_INTEGRATION = 'notification-integration')`,
@@ -859,7 +859,7 @@ func init() {
 		withModify(
 			case_Stages_validation_CreateOnS3Compatible_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *CreateOnS3CompatibleStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withExpectedSqlf(
@@ -869,8 +869,8 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_CreateOnS3Compatible_all,
 			func(opts *CreateOnS3CompatibleStageOptions) {
-				opts.Temporary = Bool(true)
-				opts.IfNotExists = Bool(true)
+				opts.Temporary = new(true)
+				opts.IfNotExists = new(true)
 				opts.ExternalStageParams = ExternalS3CompatibleStageParams{
 					Url:      "some url",
 					Endpoint: "some endpoint",
@@ -879,12 +879,12 @@ func init() {
 						AwsSecretKey: "aws-secret-key",
 					},
 				}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
-				opts.Comment = String("some comment")
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
+				opts.Comment = new("some comment")
 				opts.DirectoryTableOptions = &StageS3CompatibleDirectoryTableOptions{
 					Enable:          true,
-					RefreshOnCreate: Bool(true),
-					AutoRefresh:     Bool(true),
+					RefreshOnCreate: new(true),
+					AutoRefresh:     new(true),
 				}
 			},
 			`CREATE TEMPORARY STAGE IF NOT EXISTS %s URL = 'some url' ENDPOINT = 'some endpoint' CREDENTIALS = (AWS_KEY_ID = 'aws-key-id' AWS_SECRET_KEY = 'aws-secret-key') DIRECTORY = (ENABLE = true REFRESH_ON_CREATE = true AUTO_REFRESH = true) FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
@@ -902,7 +902,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_Alter_RenameTo,
 			func(opts *AlterStageOptions) {
-				opts.IfExists = Bool(true)
+				opts.IfExists = new(true)
 				opts.RenameTo = &renameTarget
 			},
 			"ALTER STAGE IF EXISTS %s RENAME TO %s", id.FullyQualifiedName(), renameTarget.FullyQualifiedName(),
@@ -910,7 +910,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_Alter_SetTags,
 			func(opts *AlterStageOptions) {
-				opts.IfExists = Bool(true)
+				opts.IfExists = new(true)
 				opts.SetTags = []TagAssociation{
 					{Name: tagId, Value: "tag-value"},
 					{Name: tagId2, Value: "tag-value2"},
@@ -931,7 +931,7 @@ func init() {
 		withModify(
 			case_Stages_validation_AlterInternalStage_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *AlterInternalStageStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withModifyAndExpectedSqlf(
@@ -944,8 +944,8 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_AlterInternalStage_all,
 			func(opts *AlterInternalStageStageOptions) {
-				opts.IfExists = Bool(true)
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
+				opts.IfExists = new(true)
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
 				opts.Comment = &StringAllowEmpty{Value: "some comment"}
 			},
 			"ALTER STAGE IF EXISTS %s SET FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'",
@@ -956,7 +956,7 @@ func init() {
 		withModify(
 			case_Stages_validation_AlterExternalS3Stage_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *AlterExternalS3StageStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withModifyAndExpectedSqlf(
@@ -969,14 +969,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_AlterExternalS3Stage_all,
 			func(opts *AlterExternalS3StageStageOptions) {
-				opts.IfExists = Bool(true)
+				opts.IfExists = new(true)
 				opts.ExternalStageParams = &ExternalS3StageParams{
 					Url:                "some url",
-					AwsAccessPointArn:  String("aws-access-point-arn"),
+					AwsAccessPointArn:  new("aws-access-point-arn"),
 					StorageIntegration: &integrationId,
 					Encryption:         &ExternalStageS3Encryption{None: &ExternalStageS3EncryptionNone{}},
 				}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
 				opts.Comment = &StringAllowEmpty{Value: "some comment"}
 			},
 			`ALTER STAGE IF EXISTS %s SET URL = 'some url' AWS_ACCESS_POINT_ARN = 'aws-access-point-arn' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
@@ -988,8 +988,8 @@ func init() {
 				opts.ExternalStageParams = &ExternalS3StageParams{
 					Url: "s3://example.com",
 					Credentials: &ExternalStageS3Credentials{
-						AwsKeyId:     String("aws-key-id"),
-						AwsSecretKey: String("aws-secret-key"),
+						AwsKeyId:     new("aws-key-id"),
+						AwsSecretKey: new("aws-secret-key"),
 					},
 				}
 			},
@@ -1012,7 +1012,7 @@ func init() {
 				opts.ExternalStageParams = &ExternalS3StageParams{
 					Url: "s3://example.com",
 					Encryption: &ExternalStageS3Encryption{
-						AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{KmsKeyId: String("kms-key-id")},
+						AwsSseKms: &ExternalStageS3EncryptionAwsSseKms{KmsKeyId: new("kms-key-id")},
 					},
 				}
 			},
@@ -1024,7 +1024,7 @@ func init() {
 			func(opts *AlterExternalS3StageStageOptions) {
 				opts.ExternalStageParams = &ExternalS3StageParams{
 					Url:         "s3://example.com",
-					Credentials: &ExternalStageS3Credentials{AwsRole: String("arn:aws:iam::123456789012:role/MyRole")},
+					Credentials: &ExternalStageS3Credentials{AwsRole: new("arn:aws:iam::123456789012:role/MyRole")},
 				}
 			},
 			`ALTER STAGE %s SET URL = 's3://example.com' CREDENTIALS = (AWS_ROLE = 'arn:aws:iam::123456789012:role/MyRole')`,
@@ -1035,7 +1035,7 @@ func init() {
 		withModify(
 			case_Stages_validation_AlterExternalGCSStage_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *AlterExternalGCSStageStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withModifyAndExpectedSqlf(
@@ -1048,13 +1048,13 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_AlterExternalGCSStage_all,
 			func(opts *AlterExternalGCSStageStageOptions) {
-				opts.IfExists = Bool(true)
+				opts.IfExists = new(true)
 				opts.ExternalStageParams = &ExternalGCSStageParams{
 					Url:                "some url",
 					StorageIntegration: integrationId,
 					Encryption:         &ExternalStageGCSEncryption{None: &ExternalStageGCSEncryptionNone{}},
 				}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
 				opts.Comment = &StringAllowEmpty{Value: "some comment"}
 			},
 			`ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
@@ -1067,7 +1067,7 @@ func init() {
 					Url:                "gcs://example.com",
 					StorageIntegration: integrationId,
 					Encryption: &ExternalStageGCSEncryption{
-						GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{KmsKeyId: String("kms-key-id")},
+						GcsSseKms: &ExternalStageGCSEncryptionGcsSseKms{KmsKeyId: new("kms-key-id")},
 					},
 				}
 			},
@@ -1079,7 +1079,7 @@ func init() {
 		withModify(
 			case_Stages_validation_AlterExternalAzureStage_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *AlterExternalAzureStageStageOptions) {
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId), FileFormatOptions: &FileFormatOptions{}}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId), FileFormatOptions: &FileFormatOptions{}}
 			},
 		).
 		withModifyAndExpectedSqlf(
@@ -1092,13 +1092,13 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_AlterExternalAzureStage_all,
 			func(opts *AlterExternalAzureStageStageOptions) {
-				opts.IfExists = Bool(true)
+				opts.IfExists = new(true)
 				opts.ExternalStageParams = &ExternalAzureStageParams{
 					Url:                "some url",
 					StorageIntegration: &integrationId,
 					Encryption:         &ExternalStageAzureEncryption{None: &ExternalStageAzureEncryptionNone{}},
 				}
-				opts.FileFormat = &StageFileFormat{FormatName: Pointer(ffId)}
+				opts.FileFormat = &StageFileFormat{FormatName: new(ffId)}
 				opts.Comment = &StringAllowEmpty{Value: "some comment"}
 			},
 			`ALTER STAGE IF EXISTS %s SET URL = 'some url' STORAGE_INTEGRATION = %s ENCRYPTION = (TYPE = 'NONE') FILE_FORMAT = (FORMAT_NAME = %s) COMMENT = 'some comment'`,
@@ -1133,7 +1133,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_AlterDirectoryTable_SetDirectory,
 			func(opts *AlterDirectoryTableStageOptions) {
-				opts.IfExists = Bool(true)
+				opts.IfExists = new(true)
 				opts.SetDirectory = &DirectoryTableSet{Enable: true}
 			},
 			`ALTER STAGE IF EXISTS %s SET DIRECTORY = (ENABLE = true)`, id.FullyQualifiedName(),
@@ -1141,7 +1141,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_AlterDirectoryTable_Refresh,
 			func(opts *AlterDirectoryTableStageOptions) {
-				opts.IfExists = Bool(true)
+				opts.IfExists = new(true)
 				opts.Refresh = &DirectoryTableRefresh{}
 			},
 			`ALTER STAGE IF EXISTS %s REFRESH`, id.FullyQualifiedName(),
@@ -1149,8 +1149,8 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_AlterDirectoryTable_refreshAllOptions",
 			func(opts *AlterDirectoryTableStageOptions) {
-				opts.IfExists = Bool(true)
-				opts.Refresh = &DirectoryTableRefresh{Subpath: String("subpath")}
+				opts.IfExists = new(true)
+				opts.Refresh = &DirectoryTableRefresh{Subpath: new("subpath")}
 			},
 			`ALTER STAGE IF EXISTS %s REFRESH SUBPATH = 'subpath'`, id.FullyQualifiedName(),
 		)
@@ -1159,7 +1159,7 @@ func init() {
 		withExpectedSqlf(case_Stages_sql_Drop_basic, "DROP STAGE %s", id.FullyQualifiedName()).
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_Drop_all,
-			func(opts *DropStageOptions) { opts.IfExists = Bool(true) },
+			func(opts *DropStageOptions) { opts.IfExists = new(true) },
 			"DROP STAGE IF EXISTS %s", id.FullyQualifiedName(),
 		)
 
@@ -1171,14 +1171,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_Show_all,
 			func(opts *ShowStageOptions) {
-				opts.Like = &Like{Pattern: String("some pattern")}
+				opts.Like = &Like{Pattern: new("some pattern")}
 				opts.In = &ExtendedIn{In: In{Schema: schemaId}}
 			},
 			`SHOW STAGES LIKE 'some pattern' IN SCHEMA %s`, schemaId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_Show_Like,
-			func(opts *ShowStageOptions) { opts.Like = &Like{Pattern: String("stage_pattern")} },
+			func(opts *ShowStageOptions) { opts.Like = &Like{Pattern: new("stage_pattern")} },
 			`SHOW STAGES LIKE 'stage_pattern'`,
 		).
 		withModifyAndExpectedSqlf(

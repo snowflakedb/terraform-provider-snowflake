@@ -166,7 +166,7 @@ func TestInt_Functions(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithRuntimeVersion("11").
@@ -349,7 +349,7 @@ func TestInt_Functions(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithRuntimeVersion("11").
@@ -597,7 +597,7 @@ func TestInt_Functions(t *testing.T) {
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment")
 
@@ -760,7 +760,7 @@ func TestInt_Functions(t *testing.T) {
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithImports([]sdk.FunctionImportRequest{*sdk.NewFunctionImportRequest().WithFunctionImport(tmpPythonFunction.PythonModuleLocation())}).
@@ -932,7 +932,7 @@ func TestInt_Functions(t *testing.T) {
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithComment("comment").
 			WithPackages([]sdk.FunctionPackageRequest{
@@ -1108,7 +1108,7 @@ func TestInt_Functions(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithComment("comment").
@@ -1287,7 +1287,7 @@ func TestInt_Functions(t *testing.T) {
 			WithOrReplace(true).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument}).
 			WithCopyGrants(true).
-			WithNullInputBehavior(*sdk.NullInputBehaviorPointer(sdk.NullInputBehaviorReturnsNullInput)).
+			WithNullInputBehavior(sdk.NullInputBehaviorReturnsNullInput).
 			WithReturnResultsBehavior(sdk.ReturnResultsBehaviorImmutable).
 			WithReturnNullValues(sdk.ReturnNullValuesNotNull).
 			WithComment("comment").

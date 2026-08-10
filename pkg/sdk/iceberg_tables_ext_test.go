@@ -1063,12 +1063,12 @@ func init() {
 		}).
 		withModify(case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterIcebergTableOptions) {
 			opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
-				On: []TableDropSearchOptimizationOn{{ColumnName: String("col1"), ExpressionId: String("expr_1")}},
+				On: []TableDropSearchOptimizationOn{{ColumnName: new("col1"), ExpressionId: new("expr_1")}},
 			}}
 		}).
 		withModify(case_IcebergTables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid, func(opts *AlterIcebergTableOptions) {
 			opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
-				On: []TableDropSearchOptimizationOn{{ColumnName: String("col1")}, {}},
+				On: []TableDropSearchOptimizationOn{{ColumnName: new("col1")}, {}},
 			}}
 		}).
 		withAdditionalValidationCase(
@@ -1369,7 +1369,7 @@ func init() {
 			case_IcebergTables_sql_Alter_DropColumnAction,
 			func(opts *AlterIcebergTableOptions) {
 				opts.DropColumnAction = &TableDropColumnAction{
-					IfExists: Bool(true),
+					IfExists: new(true),
 					Columns:  []Column{{"col1"}, {"col2"}},
 				}
 			},
@@ -1647,7 +1647,7 @@ func init() {
 				opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
 					AggregationPolicy: aggregationPolicyId,
 					EntityKey:         []Column{{"col1"}, {"col2"}},
-					Force:             Bool(true),
+					Force:             new(true),
 				}
 			},
 			`ALTER ICEBERG TABLE %s SET AGGREGATION POLICY %s ENTITY KEY ("col1", "col2") FORCE`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName(),
@@ -1660,7 +1660,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_SetJoinPolicy,
 			func(opts *AlterIcebergTableOptions) {
-				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, Force: Bool(true)}
+				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, Force: new(true)}
 			},
 			`ALTER ICEBERG TABLE %s SET JOIN POLICY %s FORCE`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(), joinPolicyId.FullyQualifiedName(),
 		).
@@ -1677,7 +1677,7 @@ func init() {
 						On: []TableSearchMethodWithTarget{
 							{
 								Method: TableSearchMethodEquality,
-								Args:   TableSearchMethodArgs{Targets: []string{"col1", "col2"}, Analyzer: String("DEFAULT_ANALYZER")},
+								Args:   TableSearchMethodArgs{Targets: []string{"col1", "col2"}, Analyzer: new("DEFAULT_ANALYZER")},
 							},
 							{
 								Method: TableSearchMethodSubstring,
@@ -1710,8 +1710,8 @@ func init() {
 					Drop: &TableDropSearchOptimization{
 						On: []TableDropSearchOptimizationOn{
 							{SearchMethodWithTarget: &TableSearchMethodWithTarget{Method: TableSearchMethodEquality, Args: TableSearchMethodArgs{Targets: []string{"col1"}}}},
-							{ColumnName: String("col2")},
-							{ExpressionId: String("expr_123")},
+							{ColumnName: new("col2")},
+							{ExpressionId: new("expr_123")},
 						},
 					},
 				}

@@ -43,7 +43,7 @@ func TestSequences_Create(t *testing.T) {
 		opts.OrReplace = Bool(true)
 		opts.Start = Int(1)
 		opts.Increment = Int(1)
-		opts.ValuesBehavior = ValuesBehaviorPointer(ValuesBehaviorOrder)
+		opts.ValuesBehavior = new(ValuesBehaviorOrder)
 		opts.Comment = String("comment")
 		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SEQUENCE %s START = 1 INCREMENT = 1 ORDER COMMENT = 'comment'`, id.FullyQualifiedName())
 	})
@@ -99,7 +99,7 @@ func TestSequences_Alter(t *testing.T) {
 		opts := defaultOpts()
 		opts.Set = &SequenceSet{
 			Comment:        String("comment"),
-			ValuesBehavior: ValuesBehaviorPointer(ValuesBehaviorOrder),
+			ValuesBehavior: new(ValuesBehaviorOrder),
 		}
 		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s SET ORDER COMMENT = 'comment'`, id.FullyQualifiedName())
 	})

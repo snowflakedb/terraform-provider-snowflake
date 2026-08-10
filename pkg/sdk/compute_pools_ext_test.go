@@ -40,13 +40,13 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Create_all,
 			func(opts *CreateComputePoolOptions) {
-				opts.IfNotExists = Pointer(true)
+				opts.IfNotExists = new(true)
 				opts.ForApplication = &appId
 				opts.MinNodes = 2
 				opts.MaxNodes = 3
-				opts.AutoResume = Pointer(true)
-				opts.InitiallySuspended = Pointer(true)
-				opts.AutoSuspendSecs = Pointer(42)
+				opts.AutoResume = new(true)
+				opts.InitiallySuspended = new(true)
+				opts.AutoSuspendSecs = new(42)
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "value1"}}
 				opts.Comment = &setComment
 			},
@@ -57,18 +57,18 @@ func init() {
 	computePoolsTests.Alter.
 		withAdditionalValidationCase(
 			"validation_Alter_Set_MinNodes_greaterThan0",
-			func(opts *AlterComputePoolOptions) { opts.Set = &ComputePoolSet{MinNodes: Pointer(0)} },
+			func(opts *AlterComputePoolOptions) { opts.Set = &ComputePoolSet{MinNodes: new(0)} },
 			errIntValue("AlterComputePoolOptions", "Set.MinNodes", IntErrGreater, 0),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Set_MaxNodes_greaterThan0",
-			func(opts *AlterComputePoolOptions) { opts.Set = &ComputePoolSet{MaxNodes: Pointer(0)} },
+			func(opts *AlterComputePoolOptions) { opts.Set = &ComputePoolSet{MaxNodes: new(0)} },
 			errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreater, 0),
 		).
 		withAdditionalValidationCase(
 			"validation_Alter_Set_MaxNodes_greaterOrEqualMinNodes",
 			func(opts *AlterComputePoolOptions) {
-				opts.Set = &ComputePoolSet{MinNodes: Pointer(2), MaxNodes: Pointer(1)}
+				opts.Set = &ComputePoolSet{MinNodes: new(2), MaxNodes: new(1)}
 			},
 			errIntValue("AlterComputePoolOptions", "Set.MaxNodes", IntErrGreaterOrEqual, 2),
 		).
@@ -91,10 +91,10 @@ func init() {
 			case_ComputePools_sql_Alter_Set,
 			func(opts *AlterComputePoolOptions) {
 				opts.Set = &ComputePoolSet{
-					MinNodes:        Pointer(2),
-					MaxNodes:        Pointer(3),
-					AutoResume:      Pointer(true),
-					AutoSuspendSecs: Pointer(60),
+					MinNodes:        new(2),
+					MaxNodes:        new(3),
+					AutoResume:      new(true),
+					AutoSuspendSecs: new(60),
 					Comment:         &setComment,
 				}
 			},
@@ -105,9 +105,9 @@ func init() {
 			case_ComputePools_sql_Alter_Unset,
 			func(opts *AlterComputePoolOptions) {
 				opts.Unset = &ComputePoolUnset{
-					AutoResume:      Pointer(true),
-					AutoSuspendSecs: Pointer(true),
-					Comment:         Pointer(true),
+					AutoResume:      new(true),
+					AutoSuspendSecs: new(true),
+					Comment:         new(true),
 				}
 			},
 			"ALTER COMPUTE POOL %s UNSET AUTO_RESUME, AUTO_SUSPEND_SECS, COMMENT", id.FullyQualifiedName(),
@@ -137,7 +137,7 @@ func init() {
 			"DROP COMPUTE POOL %s", id.FullyQualifiedName()).
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Drop_all,
-			func(opts *DropComputePoolOptions) { opts.IfExists = Bool(true) },
+			func(opts *DropComputePoolOptions) { opts.IfExists = new(true) },
 			"DROP COMPUTE POOL IF EXISTS %s", id.FullyQualifiedName(),
 		)
 
@@ -146,26 +146,26 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Show_all,
 			func(opts *ShowComputePoolOptions) {
-				opts.Like = &Like{Pattern: String("pattern")}
-				opts.StartsWith = Pointer("prefix")
-				opts.Limit = &LimitFrom{Rows: Int(10), From: String("from")}
+				opts.Like = &Like{Pattern: new("pattern")}
+				opts.StartsWith = new("prefix")
+				opts.Limit = &LimitFrom{Rows: new(10), From: new("from")}
 			},
 			"SHOW COMPUTE POOLS LIKE 'pattern' STARTS WITH 'prefix' LIMIT 10 FROM 'from'",
 		).
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Show_Like,
-			func(opts *ShowComputePoolOptions) { opts.Like = &Like{Pattern: String("pattern")} },
+			func(opts *ShowComputePoolOptions) { opts.Like = &Like{Pattern: new("pattern")} },
 			"SHOW COMPUTE POOLS LIKE 'pattern'",
 		).
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Show_StartsWith,
-			func(opts *ShowComputePoolOptions) { opts.StartsWith = Pointer("prefix") },
+			func(opts *ShowComputePoolOptions) { opts.StartsWith = new("prefix") },
 			"SHOW COMPUTE POOLS STARTS WITH 'prefix'",
 		).
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Show_Limit,
 			func(opts *ShowComputePoolOptions) {
-				opts.Limit = &LimitFrom{Rows: Int(10), From: String("from")}
+				opts.Limit = &LimitFrom{Rows: new(10), From: new("from")}
 			},
 			"SHOW COMPUTE POOLS LIMIT 10 FROM 'from'",
 		)
