@@ -342,7 +342,7 @@ func (r databaseRow) convert() (*Database, error) {
 	mapNullStringToNonNullableField(&result.Options, r.Options)
 	mapNullStringToNonNullableField(&result.ResourceGroup, r.ResourceGroup)
 	mapNullTimeToNonNullableField(&result.DroppedOn, r.DroppedOn)
-	mapNullStringToNonNullableField(&result.Kind, r.Kind)
+	mapNullStringWithMapping(&result.Kind, r.Kind, ToDatabaseKind)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	if err := r.additionalConvert(result); err != nil {
 		return nil, err

@@ -241,22 +241,25 @@ func (d *DatabaseAssert) HasTransient(expected bool) *DatabaseAssert {
 	return d
 }
 
-func (d *DatabaseAssert) HasKind(expected string) *DatabaseAssert {
+func (d *DatabaseAssert) HasKind(expected sdk.DatabaseKind) *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
-		if o.Kind != expected {
-			return fmt.Errorf("expected kind: %v; got: %v", expected, o.Kind)
+		if o.Kind == nil {
+			return fmt.Errorf("expected kind to have value; got: nil")
+		}
+		if *o.Kind != expected {
+			return fmt.Errorf("expected kind: %v; got: %v", expected, *o.Kind)
 		}
 		return nil
 	})
 	return d
 }
 
-func (d *DatabaseAssert) HasKindNotEmpty() *DatabaseAssert {
+func (d *DatabaseAssert) HasNoKind() *DatabaseAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.Database) error {
 		t.Helper()
-		if o.Kind == "" {
-			return fmt.Errorf("expected kind to be non-empty")
+		if o.Kind != nil {
+			return fmt.Errorf("expected kind to be nil; got: %v", *o.Kind)
 		}
 		return nil
 	})

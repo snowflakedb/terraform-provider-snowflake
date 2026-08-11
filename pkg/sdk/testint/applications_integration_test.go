@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -153,6 +154,9 @@ func TestInt_Applications(t *testing.T) {
 		require.Equal(t, applicationPackage.Name, e.Source)
 		require.Equal(t, version, e.Version)
 		require.Equal(t, patch, e.Patch)
+
+		// creating an application implicitly creates a database of the same name
+		assertThatObject(t, objectassert.Database(t, id).HasKind(sdk.DatabaseKindApplication))
 	})
 
 	t.Run("create application: version and patch", func(t *testing.T) {

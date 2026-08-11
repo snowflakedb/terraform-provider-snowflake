@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -76,6 +77,9 @@ func TestInt_ApplicationPackages(t *testing.T) {
 		require.Equal(t, sdk.DistributionExternal, sdk.Distribution(e.Distribution))
 		require.Equal(t, "ACCOUNTADMIN", e.Owner)
 		require.Equal(t, comment, e.Comment)
+
+		// creating an application package implicitly creates a database of the same name
+		assertThatObject(t, objectassert.Database(t, id).HasKind(sdk.DatabaseKindApplicationPackage))
 
 		param, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameterDataRetentionTimeInDays)
 		require.NoError(t, err)

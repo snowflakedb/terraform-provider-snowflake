@@ -295,7 +295,7 @@ type Database struct {
 	ResourceGroup string
 	DroppedOn     time.Time
 	Transient     bool
-	Kind          string
+	Kind          *DatabaseKind
 	OwnerRoleType string
 }
 

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type DatabaseShowOutputAssert struct {
@@ -105,8 +106,8 @@ func (d *DatabaseShowOutputAssert) HasTransient(expected bool) *DatabaseShowOutp
 	return d
 }
 
-func (d *DatabaseShowOutputAssert) HasKind(expected string) *DatabaseShowOutputAssert {
-	d.StringValueSet("kind", expected)
+func (d *DatabaseShowOutputAssert) HasKind(expected sdk.DatabaseKind) *DatabaseShowOutputAssert {
+	d.StringValueSet("kind", string(expected))
 	return d
 }
 

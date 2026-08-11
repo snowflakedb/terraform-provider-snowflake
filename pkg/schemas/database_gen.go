@@ -86,7 +86,9 @@ func DatabaseToSchema(database *sdk.Database) map[string]any {
 	databaseSchema["resource_group"] = database.ResourceGroup
 	databaseSchema["dropped_on"] = database.DroppedOn.String()
 	databaseSchema["transient"] = database.Transient
-	databaseSchema["kind"] = database.Kind
+	if database.Kind != nil {
+		databaseSchema["kind"] = string((*database.Kind))
+	}
 	databaseSchema["owner_role_type"] = database.OwnerRoleType
 	return databaseSchema
 }

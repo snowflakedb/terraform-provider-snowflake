@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -28,6 +29,8 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		database, err := client.Databases.ShowByID(ctx, databaseID)
 		require.NoError(t, err)
 		assert.Equal(t, databaseID.Name(), database.Name)
+		assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+			HasKind(sdk.DatabaseKindStandard))
 	})
 
 	t.Run("as clone", func(t *testing.T) {
@@ -231,6 +234,8 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 
 	assert.Equal(t, databaseId.Name(), database.Name)
 	assert.Equal(t, comment, database.Comment)
+	assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+		HasKind(sdk.DatabaseKindImportedDatabase))
 
 	params, err := client.Databases.ShowParameters(ctx, databaseId)
 	require.NoError(t, err)
@@ -308,6 +313,9 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 
 	assert.Equal(t, databaseId.Name(), database.Name)
 	assert.Equal(t, comment, database.Comment)
+	// a secondary database reports the same kind as a regular one
+	assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+		HasKind(sdk.DatabaseKindStandard))
 
 	params, err := client.Databases.ShowParameters(ctx, databaseId)
 	require.NoError(t, err)
@@ -379,7 +387,8 @@ func TestInt_DatabasesCreateFromListing(t *testing.T) {
 		database, err := client.Databases.ShowByID(ctx, databaseID)
 		require.NoError(t, err)
 		assert.Equal(t, databaseID.Name(), database.Name)
-		assert.Equal(t, "IMPORTED DATABASE", database.Kind)
+		assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+			HasKind(sdk.DatabaseKindImportedDatabase))
 	})
 }
 
@@ -406,6 +415,7 @@ func TestInt_DatabasesAlter(t *testing.T) {
 	testCases := []struct {
 		DatabaseType string
 		CreateFn     func(t *testing.T) (*sdk.Database, func())
+		ExpectedKind sdk.DatabaseKind
 	}{
 		{
 			DatabaseType: "Normal",
@@ -413,14 +423,17 @@ func TestInt_DatabasesAlter(t *testing.T) {
 				t.Helper()
 				return testClientHelper().Database.CreateDatabase(t)
 			},
+			ExpectedKind: sdk.DatabaseKindStandard,
 		},
 		{
 			DatabaseType: "From Share",
 			CreateFn:     createDatabaseFromShare,
+			ExpectedKind: sdk.DatabaseKindImportedDatabase,
 		},
 		{
 			DatabaseType: "Replica",
 			CreateFn:     createDatabaseReplica,
+			ExpectedKind: sdk.DatabaseKindStandard,
 		},
 	}
 
@@ -437,6 +450,8 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			database, err := client.Databases.ShowByID(ctx, newName)
 			require.NoError(t, err)
 			assert.Equal(t, newName.Name(), database.Name)
+			assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+				HasKind(testCase.ExpectedKind))
 		})
 
 		t.Run(fmt.Sprintf("Database: %s - setting and unsetting parameters", testCase.DatabaseType), func(t *testing.T) {
@@ -815,6 +830,11 @@ func TestInt_DatabasesShow(t *testing.T) {
 		assert.Contains(t, databaseIDs, databaseTest.ID())
 		assert.Contains(t, databaseIDs, databaseTest2.ID())
 		assert.Equal(t, "ROLE", databases[0].OwnerRoleType)
+
+		database, err := collections.FindFirst(databases, func(database sdk.Database) bool { return database.Name == databaseTest.Name })
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+			HasKind(sdk.DatabaseKindStandard))
 	})
 
 	t.Run("with terse", func(t *testing.T) {
@@ -832,6 +852,9 @@ func TestInt_DatabasesShow(t *testing.T) {
 		assert.NotEmpty(t, database.CreatedOn)
 		assert.Empty(t, database.DroppedOn)
 		assert.Empty(t, database.Owner)
+		// kind is returned for TERSE, even though the docs claim it's always NULL there
+		assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+			HasKind(sdk.DatabaseKindStandard))
 	})
 
 	t.Run("with history", func(t *testing.T) {

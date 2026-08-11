@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -103,7 +104,7 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 					resourceshowoutputassert.DatabasesDatasourceShowOutput(t, databasesModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(databaseName).
-						HasKind("STANDARD").
+						HasKind(sdk.DatabaseKindStandard).
 						HasTransient(false).
 						HasIsDefault(false).
 						HasIsCurrentNotEmpty().
@@ -136,7 +137,7 @@ func TestAcc_Databases_CompleteUseCase(t *testing.T) {
 					resourceshowoutputassert.DatabasesDatasourceShowOutput(t, databasesModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(databaseName).
-						HasKind("STANDARD").
+						HasKind(sdk.DatabaseKindStandard).
 						HasTransient(false).
 						HasIsDefault(false).
 						HasIsCurrentNotEmpty().
