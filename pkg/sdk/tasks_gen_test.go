@@ -2,823 +2,510 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
+var tasksTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Tasks_validation_Create_name_ValidIdentifier                                    testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Tasks_validation_Create_ErrorIntegration_ValidIdentifierIfSet                   testCaseName = "validation_Create_ErrorIntegration_ValidIdentifierIfSet"
+	case_Tasks_validation_Create_opts_ConflictingFields                                  testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Tasks_validation_Create_Config_NoDoubleDollarQuotesIfSet                        testCaseName = "validation_Create_Config_NoDoubleDollarQuotesIfSet"
+	case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_NoneSet               testCaseName = "validation_Create_opts_Warehouse_ExactlyOneValueSet_NoneSet"
+	case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_Create_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tasks_sql_Create_basic                                                          testCaseName = "sql_Create_basic"
+	case_Tasks_sql_Create_all                                                            testCaseName = "sql_Create_all"
+	case_Tasks_validation_CreateOrAlter_name_ValidIdentifier                             testCaseName = "validation_CreateOrAlter_name_ValidIdentifier"
+	case_Tasks_validation_CreateOrAlter_ErrorIntegration_ValidIdentifierIfSet            testCaseName = "validation_CreateOrAlter_ErrorIntegration_ValidIdentifierIfSet"
+	case_Tasks_validation_CreateOrAlter_Config_NoDoubleDollarQuotesIfSet                 testCaseName = "validation_CreateOrAlter_Config_NoDoubleDollarQuotesIfSet"
+	case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_NoneSet"
+	case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tasks_sql_CreateOrAlter_basic                                                   testCaseName = "sql_CreateOrAlter_basic"
+	case_Tasks_sql_CreateOrAlter_all                                                     testCaseName = "sql_CreateOrAlter_all"
+	case_Tasks_validation_Clone_name_ValidIdentifier                                     testCaseName = "validation_Clone_name_ValidIdentifier"
+	case_Tasks_validation_Clone_sourceTask_ValidIdentifier                               testCaseName = "validation_Clone_sourceTask_ValidIdentifier"
+	case_Tasks_sql_Clone_basic                                                           testCaseName = "sql_Clone_basic"
+	case_Tasks_validation_Alter_name_ValidIdentifier                                     testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Tasks_validation_Alter_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Tasks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tasks_validation_Alter_opts_Set_AtLeastOneValueSet                              testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Tasks_validation_Alter_opts_Set_ConflictingFields                               testCaseName = "validation_Alter_opts_Set_ConflictingFields"
+	case_Tasks_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet                testCaseName = "validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet"
+	case_Tasks_validation_Alter_Set_Config_NoDoubleDollarQuotesIfSet                     testCaseName = "validation_Alter_Set_Config_NoDoubleDollarQuotesIfSet"
+	case_Tasks_validation_Alter_opts_Unset_AtLeastOneValueSet                            testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Tasks_sql_Alter_Resume                                                          testCaseName = "sql_Alter_Resume"
+	case_Tasks_sql_Alter_Suspend                                                         testCaseName = "sql_Alter_Suspend"
+	case_Tasks_sql_Alter_RemoveAfter                                                     testCaseName = "sql_Alter_RemoveAfter"
+	case_Tasks_sql_Alter_AddAfter                                                        testCaseName = "sql_Alter_AddAfter"
+	case_Tasks_sql_Alter_Set                                                             testCaseName = "sql_Alter_Set"
+	case_Tasks_sql_Alter_Unset                                                           testCaseName = "sql_Alter_Unset"
+	case_Tasks_sql_Alter_SetTags                                                         testCaseName = "sql_Alter_SetTags"
+	case_Tasks_sql_Alter_UnsetTags                                                       testCaseName = "sql_Alter_UnsetTags"
+	case_Tasks_sql_Alter_SetFinalize                                                     testCaseName = "sql_Alter_SetFinalize"
+	case_Tasks_sql_Alter_UnsetFinalize                                                   testCaseName = "sql_Alter_UnsetFinalize"
+	case_Tasks_sql_Alter_ModifyAs                                                        testCaseName = "sql_Alter_ModifyAs"
+	case_Tasks_sql_Alter_ModifyWhen                                                      testCaseName = "sql_Alter_ModifyWhen"
+	case_Tasks_sql_Alter_RemoveWhen                                                      testCaseName = "sql_Alter_RemoveWhen"
+	case_Tasks_validation_Drop_name_ValidIdentifier                                      testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Tasks_sql_Drop_basic                                                            testCaseName = "sql_Drop_basic"
+	case_Tasks_sql_Drop_all                                                              testCaseName = "sql_Drop_all"
+	case_Tasks_sql_Show_basic                                                            testCaseName = "sql_Show_basic"
+	case_Tasks_sql_Show_all                                                              testCaseName = "sql_Show_all"
+	case_Tasks_sql_Show_Like                                                             testCaseName = "sql_Show_Like"
+	case_Tasks_sql_Show_In                                                               testCaseName = "sql_Show_In"
+	case_Tasks_sql_Show_StartsWith                                                       testCaseName = "sql_Show_StartsWith"
+	case_Tasks_sql_Show_Limit                                                            testCaseName = "sql_Show_Limit"
+	case_Tasks_validation_Describe_name_ValidIdentifier                                  testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Tasks_sql_Describe_basic                                                        testCaseName = "sql_Describe_basic"
+	case_Tasks_validation_Execute_name_ValidIdentifier                                   testCaseName = "validation_Execute_name_ValidIdentifier"
+	case_Tasks_sql_Execute_basic                                                         testCaseName = "sql_Execute_basic"
+)
+
+type TasksTestsContext struct {
+	Create        *sdkTestCtx[*CreateTaskOptions]
+	CreateOrAlter *sdkTestCtx[*CreateOrAlterTaskOptions]
+	Clone         *sdkTestCtx[*CloneTaskOptions]
+	Alter         *sdkTestCtx[*AlterTaskOptions]
+	Drop          *sdkTestCtx[*DropTaskOptions]
+	Show          *sdkTestCtx[*ShowTaskOptions]
+	Describe      *sdkTestCtx[*DescribeTaskOptions]
+	Execute       *sdkTestCtx[*ExecuteTaskOptions]
+}
+
+var tasksTests = TasksTestsContext{
+	Create: newSdkTestCtx[*CreateTaskOptions](
+		"Tasks", "Create",
+	).
+		withDefaultOpts(func() *CreateTaskOptions {
+			return &CreateTaskOptions{
+				name: tasksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateTaskOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_ErrorIntegration_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateTaskOptions) {
+					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateTaskOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateTaskOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_Config_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateTaskOptions", "Config"),
+				DefaultModify: func(opts *CreateTaskOptions) {
+					opts.Config = String("$$")
+				},
+			},
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"),
+				DefaultModify: func(opts *CreateTaskOptions) {
+					opts.Warehouse = &CreateTaskWarehouse{}
+					opts.Warehouse.Warehouse = nil
+					opts.Warehouse.UserTaskManagedInitialWarehouseSize = nil
+				},
+			},
+			validationCase[*CreateTaskOptions]{
+				Name:        case_Tasks_validation_Create_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateTaskOptions]{
+				Name:           case_Tasks_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateTaskOptions]{
+				Name: case_Tasks_sql_Create_all,
+			},
+		),
+	CreateOrAlter: newSdkTestCtx[*CreateOrAlterTaskOptions](
+		"Tasks", "CreateOrAlter",
+	).
+		withDefaultOpts(func() *CreateOrAlterTaskOptions {
+			return &CreateOrAlterTaskOptions{
+				name: tasksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOrAlterTaskOptions]{
+				Name:        case_Tasks_validation_CreateOrAlter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateOrAlterTaskOptions]{
+				Name:        case_Tasks_validation_CreateOrAlter_ErrorIntegration_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
+					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateOrAlterTaskOptions]{
+				Name:        case_Tasks_validation_CreateOrAlter_Config_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateOrAlterTaskOptions", "Config"),
+				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
+					opts.Config = String("$$")
+				},
+			},
+			validationCase[*CreateOrAlterTaskOptions]{
+				Name:        case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"),
+				DefaultModify: func(opts *CreateOrAlterTaskOptions) {
+					opts.Warehouse = &CreateTaskWarehouse{}
+					opts.Warehouse.Warehouse = nil
+					opts.Warehouse.UserTaskManagedInitialWarehouseSize = nil
+				},
+			},
+			validationCase[*CreateOrAlterTaskOptions]{
+				Name:        case_Tasks_validation_CreateOrAlter_opts_Warehouse_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateOrAlterTaskOptions]{
+				Name:           case_Tasks_sql_CreateOrAlter_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOrAlterTaskOptions]{
+				Name: case_Tasks_sql_CreateOrAlter_all,
+			},
+		),
+	Clone: newSdkTestCtx[*CloneTaskOptions](
+		"Tasks", "Clone",
+	).
+		withDefaultOpts(func() *CloneTaskOptions {
+			return &CloneTaskOptions{
+				name: tasksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CloneTaskOptions]{
+				Name:        case_Tasks_validation_Clone_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CloneTaskOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CloneTaskOptions]{
+				Name:        case_Tasks_validation_Clone_sourceTask_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CloneTaskOptions) {
+					opts.sourceTask = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CloneTaskOptions]{
+				Name:           case_Tasks_sql_Clone_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterTaskOptions](
+		"Tasks", "Alter",
+	).
+		withDefaultOpts(func() *AlterTaskOptions {
+			return &AlterTaskOptions{
+				name: tasksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"),
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.Resume = nil
+					opts.Suspend = nil
+					opts.RemoveAfter = nil
+					opts.AddAfter = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.SetFinalize = nil
+					opts.UnsetFinalize = nil
+					opts.ModifyAs = nil
+					opts.ModifyWhen = nil
+					opts.RemoveWhen = nil
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"),
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.Resume = new(true)
+					opts.Suspend = new(true)
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"),
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.Set = &TaskSet{}
+					opts.Set.Warehouse = nil
+					opts.Set.UserTaskManagedInitialWarehouseSize = nil
+					opts.Set.Schedule = nil
+					opts.Set.Config = nil
+					opts.Set.AllowOverlappingExecution = nil
+					opts.Set.UserTaskTimeoutMs = nil
+					opts.Set.SuspendTaskAfterNumFailures = nil
+					opts.Set.ErrorIntegration = nil
+					opts.Set.Comment = nil
+					opts.Set.SessionParameters = nil
+					opts.Set.TaskAutoRetryAttempts = nil
+					opts.Set.UserTaskMinimumTriggerIntervalInSeconds = nil
+					opts.Set.TargetCompletionInterval = nil
+					opts.Set.ServerlessTaskMinStatementSize = nil
+					opts.Set.ServerlessTaskMaxStatementSize = nil
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_opts_Set_ConflictingFields,
+				ExpectedErr: errOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize"),
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.Set = &TaskSet{}
+					opts.Set.ErrorIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_Set_Config_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("AlterTaskOptions.Set", "Config"),
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.Set = &TaskSet{}
+					opts.Set.Config = String("$$")
+				},
+			},
+			validationCase[*AlterTaskOptions]{
+				Name:        case_Tasks_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"),
+				DefaultModify: func(opts *AlterTaskOptions) {
+					opts.Unset = &TaskUnset{}
+					opts.Unset.Warehouse = nil
+					opts.Unset.UserTaskManagedInitialWarehouseSize = nil
+					opts.Unset.Schedule = nil
+					opts.Unset.Config = nil
+					opts.Unset.AllowOverlappingExecution = nil
+					opts.Unset.UserTaskTimeoutMs = nil
+					opts.Unset.SuspendTaskAfterNumFailures = nil
+					opts.Unset.ErrorIntegration = nil
+					opts.Unset.Comment = nil
+					opts.Unset.SessionParametersUnset = nil
+					opts.Unset.TaskAutoRetryAttempts = nil
+					opts.Unset.UserTaskMinimumTriggerIntervalInSeconds = nil
+					opts.Unset.TargetCompletionInterval = nil
+					opts.Unset.ServerlessTaskMinStatementSize = nil
+					opts.Unset.ServerlessTaskMaxStatementSize = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_Resume,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_Suspend,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_RemoveAfter,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_AddAfter,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_Set,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_Unset,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_SetFinalize,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_UnsetFinalize,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_ModifyAs,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_ModifyWhen,
+			},
+			sqlCase[*AlterTaskOptions]{
+				Name: case_Tasks_sql_Alter_RemoveWhen,
+			},
+		),
+	Drop: newSdkTestCtx[*DropTaskOptions](
+		"Tasks", "Drop",
+	).
+		withDefaultOpts(func() *DropTaskOptions {
+			return &DropTaskOptions{
+				name: tasksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropTaskOptions]{
+				Name:        case_Tasks_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropTaskOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropTaskOptions]{
+				Name:           case_Tasks_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropTaskOptions]{
+				Name: case_Tasks_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowTaskOptions](
+		"Tasks", "Show",
+	).
+		withDefaultOpts(func() *ShowTaskOptions {
+			return &ShowTaskOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowTaskOptions]{
+				Name:           case_Tasks_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowTaskOptions]{
+				Name: case_Tasks_sql_Show_all,
+			},
+			sqlCase[*ShowTaskOptions]{
+				Name: case_Tasks_sql_Show_Like,
+			},
+			sqlCase[*ShowTaskOptions]{
+				Name: case_Tasks_sql_Show_In,
+			},
+			sqlCase[*ShowTaskOptions]{
+				Name: case_Tasks_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowTaskOptions]{
+				Name: case_Tasks_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeTaskOptions](
+		"Tasks", "Describe",
+	).
+		withDefaultOpts(func() *DescribeTaskOptions {
+			return &DescribeTaskOptions{
+				name: tasksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeTaskOptions]{
+				Name:        case_Tasks_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeTaskOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeTaskOptions]{
+				Name:           case_Tasks_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Execute: newSdkTestCtx[*ExecuteTaskOptions](
+		"Tasks", "Execute",
+	).
+		withDefaultOpts(func() *ExecuteTaskOptions {
+			return &ExecuteTaskOptions{
+				name: tasksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ExecuteTaskOptions]{
+				Name:        case_Tasks_validation_Execute_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ExecuteTaskOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ExecuteTaskOptions]{
+				Name:           case_Tasks_sql_Execute_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestTasks_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	sql := "SELECT CURRENT_TIMESTAMP"
-
-	// Minimal valid CreateTaskOptions
-	defaultOpts := func() *CreateTaskOptions {
-		return &CreateTaskOptions{
-			// adjusted manually
-			name: id,
-			sql:  sql,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: opts.SessionParameters should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SessionParameters = &SessionParameters{
-			JsonIndent: Int(-1),
-		}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0))
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.ErrorIntegration] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ErrorIntegration = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateTaskOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.Config]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Config = String(`$${"k":1}$$ AS GRANT ROLE ACCOUNTADMIN TO USER ALICE --`)
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateTaskOptions", "Config"))
-	})
-
-	// validation added manually
-	t.Run("opts.Warehouse.Warehouse conflicting with opts.Warehouse.UserTaskManagedInitialWarehouseSize", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Warehouse = &CreateTaskWarehouse{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE TASK %s AS %s", id.FullyQualifiedName(), sql)
-	})
-
-	// variant added manually
-	t.Run("with initial warehouse size", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Warehouse = &CreateTaskWarehouse{
-			UserTaskManagedInitialWarehouseSize: Pointer(WarehouseSizeXSmall),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE TASK %s USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'XSMALL' AS %s", id.FullyQualifiedName(), sql)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		warehouseId := randomAccountObjectIdentifier()
-		otherTaskId := randomSchemaObjectIdentifier()
-		tagId := randomSchemaObjectIdentifier()
-		finalizerId := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-
-		opts.OrReplace = Bool(true)
-		opts.Warehouse = &CreateTaskWarehouse{
-			Warehouse: &warehouseId,
-		}
-		opts.Schedule = String("10 MINUTE")
-		opts.Config = String(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`)
-		opts.AllowOverlappingExecution = Bool(true)
-		opts.SessionParameters = &SessionParameters{
-			JsonIndent:  Int(10),
-			LockTimeout: Int(5),
-		}
-		opts.UserTaskTimeoutMs = Int(5)
-		opts.SuspendTaskAfterNumFailures = Int(6)
-		opts.ErrorIntegration = Pointer(NewAccountObjectIdentifier("some_error_integration"))
-		opts.Comment = String("some comment")
-		opts.Finalize = &finalizerId
-		opts.TaskAutoRetryAttempts = Int(10)
-		opts.Tag = []TagAssociation{{
-			Name:  tagId,
-			Value: "v1",
-		}}
-		opts.UserTaskMinimumTriggerIntervalInSeconds = Int(10)
-		opts.TargetCompletionInterval = String("10 MINUTES")
-		opts.ServerlessTaskMinStatementSize = Pointer(WarehouseSizeSmall)
-		opts.ServerlessTaskMaxStatementSize = Pointer(WarehouseSizeLarge)
-		opts.After = []SchemaObjectIdentifier{otherTaskId}
-		opts.When = String(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
-
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${\"output_dir\": \"/temp/test_directory/\", \"learning_rate\": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true JSON_INDENT = 10, LOCK_TIMEOUT = 5 USER_TASK_TIMEOUT_MS = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = \"some_error_integration\" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 TAG (%s = 'v1') USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 10 TARGET_COMPLETION_INTERVAL = '10 MINUTES' SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'SMALL' SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'LARGE' AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP", id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), tagId.FullyQualifiedName(), otherTaskId.FullyQualifiedName())
-	})
+	tasksTests.Create.RunValidationCases(t)
+	tasksTests.Create.RunSqlCases(t)
 }
 
 func TestTasks_CreateOrAlter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	sql := "SELECT CURRENT_TIMESTAMP"
-
-	// Minimal valid CreateOrAlterTaskOptions
-	defaultOpts := func() *CreateOrAlterTaskOptions {
-		return &CreateOrAlterTaskOptions{
-			// adjusted manually
-			name: id,
-			sql:  sql,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateOrAlterTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: opts.SessionParameters should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SessionParameters = &SessionParameters{
-			JsonIndent: Int(-1),
-		}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0))
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.ErrorIntegration] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ErrorIntegration = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// validation added manually
-	t.Run("opts.Warehouse.Warehouse conflicts with opts.Warehouse.UserTaskManagedInitialWarehouseSize", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Warehouse = &CreateTaskWarehouse{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOrAlterTaskOptions.Warehouse", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.Config]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Config = String(`$${"k":1}$$ AS GRANT ROLE ACCOUNTADMIN TO USER ALICE --`)
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateOrAlterTaskOptions", "Config"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR ALTER TASK %s AS %s", id.FullyQualifiedName(), sql)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		warehouseId := randomAccountObjectIdentifier()
-		otherTaskId := randomSchemaObjectIdentifier()
-		finalizerId := randomSchemaObjectIdentifier()
-		opts.Warehouse = &CreateTaskWarehouse{
-			Warehouse: &warehouseId,
-		}
-		opts.Schedule = String("10 MINUTE")
-		opts.Config = String(`{"output_dir": "/temp/test_directory/", "learning_rate": 0.1}`)
-		opts.AllowOverlappingExecution = Bool(true)
-		opts.UserTaskTimeoutMs = Int(5)
-		opts.SessionParameters = &SessionParameters{
-			JsonIndent:  Int(10),
-			LockTimeout: Int(5),
-		}
-		opts.SuspendTaskAfterNumFailures = Int(6)
-		opts.ErrorIntegration = Pointer(NewAccountObjectIdentifier("some_error_integration"))
-		opts.Comment = String("some comment")
-		opts.Finalize = &finalizerId
-		opts.TaskAutoRetryAttempts = Int(10)
-		opts.After = []SchemaObjectIdentifier{otherTaskId}
-		opts.When = String(`SYSTEM$STREAM_HAS_DATA('MYSTREAM')`)
-
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR ALTER TASK %s WAREHOUSE = %s SCHEDULE = '10 MINUTE' CONFIG = $${\"output_dir\": \"/temp/test_directory/\", \"learning_rate\": 0.1}$$ ALLOW_OVERLAPPING_EXECUTION = true USER_TASK_TIMEOUT_MS = 5 JSON_INDENT = 10, LOCK_TIMEOUT = 5 SUSPEND_TASK_AFTER_NUM_FAILURES = 6 ERROR_INTEGRATION = \"some_error_integration\" COMMENT = 'some comment' FINALIZE = %s TASK_AUTO_RETRY_ATTEMPTS = 10 AFTER %s WHEN SYSTEM$STREAM_HAS_DATA('MYSTREAM') AS SELECT CURRENT_TIMESTAMP", id.FullyQualifiedName(), warehouseId.FullyQualifiedName(), finalizerId.FullyQualifiedName(), otherTaskId.FullyQualifiedName())
-	})
+	tasksTests.CreateOrAlter.RunValidationCases(t)
+	tasksTests.CreateOrAlter.RunSqlCases(t)
 }
 
 func TestTasks_Clone(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	sourceId := randomSchemaObjectIdentifier()
-
-	// Minimal valid CloneTaskOptions
-	defaultOpts := func() *CloneTaskOptions {
-		return &CloneTaskOptions{
-			// adjusted manually
-			name:       id,
-			sourceTask: sourceId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CloneTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.sourceTask]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.sourceTask = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE TASK %s CLONE %s", id.FullyQualifiedName(), sourceId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.CopyGrants = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TASK %s CLONE %s COPY GRANTS", id.FullyQualifiedName(), sourceId.FullyQualifiedName())
-	})
+	tasksTests.Clone.RunValidationCases(t)
+	tasksTests.Clone.RunSqlCases(t)
 }
 
 func TestTasks_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	otherTaskId := randomSchemaObjectIdentifier()
-
-	// Minimal valid AlterTaskOptions
-	defaultOpts := func() *AlterTaskOptions {
-		return &AlterTaskOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Resume opts.Suspend opts.RemoveAfter opts.AddAfter opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.SetFinalize opts.UnsetFinalize opts.ModifyAs opts.ModifyWhen opts.RemoveWhen] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Resume opts.Suspend opts.RemoveAfter opts.AddAfter opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.SetFinalize opts.UnsetFinalize opts.ModifyAs opts.ModifyWhen opts.RemoveWhen] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Resume = Bool(true)
-		opts.Suspend = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterTaskOptions", "Resume", "Suspend", "RemoveAfter", "AddAfter", "Set", "Unset", "SetTags", "UnsetTags", "SetFinalize", "UnsetFinalize", "ModifyAs", "ModifyWhen", "RemoveWhen"))
-	})
-
-	t.Run("validation: opts.Set.SessionParameters should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			SessionParameters: &SessionParameters{
-				JsonIndent: Int(-1),
-			},
-		}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("SessionParameters", "JsonIndent", IntErrGreaterOrEqual, 0))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Warehouse opts.Set.UserTaskManagedInitialWarehouseSize opts.Set.Schedule opts.Set.Config opts.Set.AllowOverlappingExecution opts.Set.UserTaskTimeoutMs opts.Set.SuspendTaskAfterNumFailures opts.Set.ErrorIntegration opts.Set.Comment opts.Set.SessionParameters opts.Set.TaskAutoRetryAttempts opts.Set.UserTaskMinimumTriggerIntervalInSeconds opts.Set.TargetCompletionInterval opts.Set.ServerlessTaskMinStatementSize opts.Set.ServerlessTaskMaxStatementSize] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParameters", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.Set.Warehouse opts.Set.UserTaskManagedInitialWarehouseSize]", func(t *testing.T) {
-		opts := defaultOpts()
-		warehouseId := randomAccountObjectIdentifier()
-		opts.Set = &TaskSet{}
-		opts.Set.Warehouse = &warehouseId
-		opts.Set.UserTaskManagedInitialWarehouseSize = Pointer(WarehouseSizeXSmall)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterTaskOptions.Set", "Warehouse", "UserTaskManagedInitialWarehouseSize"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.Set.Config]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			Config: String(`$${"k":1}$$ AS GRANT ROLE ACCOUNTADMIN TO USER ALICE --`),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("AlterTaskOptions.Set", "Config"))
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.ErrorIntegration] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			ErrorIntegration: &emptyAccountObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: opts.Unset.SessionParametersUnset should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{}
-		opts.Unset.SessionParametersUnset = &SessionParametersUnset{}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableCortexAnalyst", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "LogEventLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Warehouse opts.Unset.UserTaskManagedInitialWarehouseSize opts.Unset.Schedule opts.Unset.Config opts.Unset.AllowOverlappingExecution opts.Unset.UserTaskTimeoutMs opts.Unset.SuspendTaskAfterNumFailures opts.Unset.ErrorIntegration opts.Unset.Comment opts.Unset.SessionParametersUnset opts.Unset.TaskAutoRetryAttempts opts.Unset.UserTaskMinimumTriggerIntervalInSeconds opts.Unset.TargetCompletionInterval opts.Unset.ServerlessTaskMinStatementSize opts.Unset.ServerlessTaskMaxStatementSize] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterTaskOptions.Unset", "Warehouse", "UserTaskManagedInitialWarehouseSize", "Schedule", "Config", "AllowOverlappingExecution", "UserTaskTimeoutMs", "SuspendTaskAfterNumFailures", "ErrorIntegration", "Comment", "SessionParametersUnset", "TaskAutoRetryAttempts", "UserTaskMinimumTriggerIntervalInSeconds", "TargetCompletionInterval", "ServerlessTaskMinStatementSize", "ServerlessTaskMaxStatementSize"))
-	})
-
-	// all variants added manually
-	t.Run("alter resume", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Resume = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s RESUME", id.FullyQualifiedName())
-	})
-
-	t.Run("alter suspend", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Suspend = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SUSPEND", id.FullyQualifiedName())
-	})
-
-	t.Run("alter remove after", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RemoveAfter = []SchemaObjectIdentifier{otherTaskId}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s REMOVE AFTER %s", id.FullyQualifiedName(), otherTaskId.FullyQualifiedName())
-	})
-
-	t.Run("alter add after", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AddAfter = []SchemaObjectIdentifier{otherTaskId}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s ADD AFTER %s", id.FullyQualifiedName(), otherTaskId.FullyQualifiedName())
-	})
-
-	t.Run("alter set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set: multiple", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			UserTaskTimeoutMs:              Int(2000),
-			Comment:                        String("some comment"),
-			TargetCompletionInterval:       String("15 MINUTES"),
-			ServerlessTaskMinStatementSize: Pointer(WarehouseSizeXSmall),
-			ServerlessTaskMaxStatementSize: Pointer(WarehouseSizeXLarge),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET USER_TASK_TIMEOUT_MS = 2000, COMMENT = 'some comment', TARGET_COMPLETION_INTERVAL = '15 MINUTES', SERVERLESS_TASK_MIN_STATEMENT_SIZE = 'XSMALL', SERVERLESS_TASK_MAX_STATEMENT_SIZE = 'XLARGE'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set warehouse", func(t *testing.T) {
-		warehouseId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			Warehouse: &warehouseId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET WAREHOUSE = %s", id.FullyQualifiedName(), warehouseId.FullyQualifiedName())
-	})
-
-	t.Run("alter set session parameter", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &TaskSet{
-			SessionParameters: &SessionParameters{
-				JsonIndent: Int(15),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET JSON_INDENT = 15", id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{
-			Comment: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset: multiple", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &TaskUnset{
-			UserTaskTimeoutMs:              Bool(true),
-			Comment:                        Bool(true),
-			TargetCompletionInterval:       Bool(true),
-			ServerlessTaskMinStatementSize: Bool(true),
-			ServerlessTaskMaxStatementSize: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET USER_TASK_TIMEOUT_MS, COMMENT, TARGET_COMPLETION_INTERVAL, SERVERLESS_TASK_MIN_STATEMENT_SIZE, SERVERLESS_TASK_MAX_STATEMENT_SIZE", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TASK %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TASK %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter modify as", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ModifyAs = String("new as")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s MODIFY AS new as", id.FullyQualifiedName())
-	})
-
-	t.Run("alter modify when", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ModifyWhen = String("new when")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s MODIFY WHEN new when", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set finalize", func(t *testing.T) {
-		opts := defaultOpts()
-		finalizeId := randomSchemaObjectIdentifier()
-		opts.SetFinalize = &finalizeId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s SET FINALIZE = %s", id.FullyQualifiedName(), finalizeId.FullyQualifiedName())
-	})
-
-	t.Run("alter unset finalize", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetFinalize = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s UNSET FINALIZE", id.FullyQualifiedName())
-	})
-
-	t.Run("alter remove when", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RemoveWhen = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TASK %s REMOVE WHEN", id.FullyQualifiedName())
-	})
+	tasksTests.Alter.RunValidationCases(t)
+	tasksTests.Alter.RunSqlCases(t)
 }
 
 func TestTasks_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropTaskOptions
-	defaultOpts := func() *DropTaskOptions {
-		return &DropTaskOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP TASK %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP TASK IF EXISTS %s", id.FullyQualifiedName())
-	})
+	tasksTests.Drop.RunValidationCases(t)
+	tasksTests.Drop.RunSqlCases(t)
 }
 
 func TestTasks_Show(t *testing.T) {
-	// Minimal valid ShowTaskOptions
-	defaultOpts := func() *ShowTaskOptions {
-		return &ShowTaskOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW TASKS")
-	})
-
-	// variants added manually
-	t.Run("in application", func(t *testing.T) {
-		opts := defaultOpts()
-		id := randomAccountObjectIdentifier()
-		opts.In = &ExtendedIn{
-			Application: id,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW TASKS IN APPLICATION %s", id.FullyQualifiedName())
-	})
-
-	t.Run("in application package", func(t *testing.T) {
-		opts := defaultOpts()
-		id := randomAccountObjectIdentifier()
-		opts.In = &ExtendedIn{
-			ApplicationPackage: id,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW TASKS IN APPLICATION PACKAGE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		opts.Like = &Like{
-			Pattern: String("myaccount"),
-		}
-		opts.In = &ExtendedIn{
-			In: In{
-				Account: Bool(true),
-			},
-		}
-		opts.StartsWith = String("abc")
-		opts.RootOnly = Bool(true)
-		opts.Limit = &LimitFrom{Rows: Int(10)}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW TERSE TASKS LIKE 'myaccount' IN ACCOUNT STARTS WITH 'abc' ROOT ONLY LIMIT 10")
-	})
+	tasksTests.Show.RunValidationCases(t)
+	tasksTests.Show.RunSqlCases(t)
 }
 
 func TestTasks_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeTaskOptions
-	defaultOpts := func() *DescribeTaskOptions {
-		return &DescribeTaskOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE TASK %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	tasksTests.Describe.RunValidationCases(t)
+	tasksTests.Describe.RunSqlCases(t)
 }
 
 func TestTasks_Execute(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid ExecuteTaskOptions
-	defaultOpts := func() *ExecuteTaskOptions {
-		return &ExecuteTaskOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ExecuteTaskOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "EXECUTE TASK %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RetryLast = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "EXECUTE TASK %s RETRY LAST", id.FullyQualifiedName())
-	})
-}
-
-// test added manually
-func TestParseTaskSchedule(t *testing.T) {
-	testCases := map[string]struct {
-		Schedule             string
-		ExpectedTaskSchedule *TaskSchedule
-		Error                string
-	}{
-		"valid schedule: m minutes": {
-			Schedule:             "5 m",
-			ExpectedTaskSchedule: &TaskSchedule{Minutes: 5},
-		},
-		"valid schedule: M minutes": {
-			Schedule:             "5 M",
-			ExpectedTaskSchedule: &TaskSchedule{Minutes: 5},
-		},
-		"valid schedule: MINUTE minutes": {
-			Schedule:             "5 MINUTE",
-			ExpectedTaskSchedule: &TaskSchedule{Minutes: 5},
-		},
-		"valid schedule: MINUTES minutes": {
-			Schedule:             "5 MINUTES",
-			ExpectedTaskSchedule: &TaskSchedule{Minutes: 5},
-		},
-		"valid schedule: s seconds": {
-			Schedule:             "30 s",
-			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
-		},
-		"valid schedule: S seconds": {
-			Schedule:             "30 S",
-			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
-		},
-		"valid schedule: SECOND seconds": {
-			Schedule:             "30 SECOND",
-			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
-		},
-		"valid schedule: SECONDS seconds": {
-			Schedule:             "30 SECONDS",
-			ExpectedTaskSchedule: &TaskSchedule{Seconds: 30},
-		},
-		"valid schedule: h hours": {
-			Schedule:             "2 h",
-			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
-		},
-		"valid schedule: H hours": {
-			Schedule:             "2 H",
-			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
-		},
-		"valid schedule: HOUR hours": {
-			Schedule:             "2 HOUR",
-			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
-		},
-		"valid schedule: HOURS hours": {
-			Schedule:             "2 HOURS",
-			ExpectedTaskSchedule: &TaskSchedule{Hours: 2},
-		},
-		"valid schedule: cron": {
-			Schedule:             "USING CRON * * * * * UTC",
-			ExpectedTaskSchedule: &TaskSchedule{Cron: "* * * * * UTC"},
-		},
-		"valid schedule: cron with case sensitive location": {
-			Schedule:             "USING CRON * * * * * America/Loc_Angeles",
-			ExpectedTaskSchedule: &TaskSchedule{Cron: "* * * * * America/Loc_Angeles"},
-		},
-		"invalid schedule: wrong schedule format": {
-			Schedule:             "SOME SCHEDULE",
-			ExpectedTaskSchedule: nil,
-			Error:                `strconv.Atoi: parsing "SOME": invalid syntax`,
-		},
-		"invalid schedule: wrong minutes format": {
-			Schedule:             "a5 MINUTE",
-			ExpectedTaskSchedule: nil,
-			Error:                `strconv.Atoi: parsing "A5": invalid syntax`,
-		},
-		// currently, cron expressions are not validated (they are on Snowflake level)
-		"invalid schedule: wrong cron format": {
-			Schedule:             "USING CRON some_cron",
-			ExpectedTaskSchedule: &TaskSchedule{Cron: "some_cron"},
-		},
-	}
-
-	for name, tc := range testCases {
-		t.Run(name, func(t *testing.T) {
-			taskSchedule, err := ParseTaskSchedule(tc.Schedule)
-			if tc.Error != "" {
-				assert.Nil(t, taskSchedule)
-				assert.ErrorContains(t, err, tc.Error)
-			} else {
-				assert.Equal(t, tc.ExpectedTaskSchedule, taskSchedule)
-				assert.NoError(t, err)
-			}
-		})
-	}
-}
-
-// added manually
-func TestParseTargetCompletionInterval(t *testing.T) {
-	valid := map[string]struct {
-		Input    string
-		Expected *TaskTargetCompletionInterval
-	}{
-		"valid hours singular": {
-			Input:    "1 HOUR",
-			Expected: &TaskTargetCompletionInterval{Hours: Pointer(1)},
-		},
-		"valid hours plural": {
-			Input:    "2 HOURS",
-			Expected: &TaskTargetCompletionInterval{Hours: Pointer(2)},
-		},
-		"valid hours - short form": {
-			Input:    "2 h",
-			Expected: &TaskTargetCompletionInterval{Hours: Pointer(2)},
-		},
-		"valid minutes singular": {
-			Input:    "1 MINUTE",
-			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(1)},
-		},
-		"valid minutes plural": {
-			Input:    "10 MINUTES",
-			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(10)},
-		},
-		"valid minutes - short form": {
-			Input:    "5 m",
-			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(5)},
-		},
-		"valid seconds singular": {
-			Input:    "1 SECOND",
-			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(1)},
-		},
-		"valid seconds plural": {
-			Input:    "30 SECONDS",
-			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(30)},
-		},
-		"valid seconds - short form": {
-			Input:    "30 s",
-			Expected: &TaskTargetCompletionInterval{Seconds: Pointer(30)},
-		},
-		"valid lowercase": {
-			Input:    "5 minutes",
-			Expected: &TaskTargetCompletionInterval{Minutes: Pointer(5)},
-		},
-		"leading/trailing spaces": {
-			Input:    " 7 HOURS ",
-			Expected: &TaskTargetCompletionInterval{Hours: Pointer(7)},
-		},
-	}
-
-	for name, tc := range valid {
-		t.Run(name, func(t *testing.T) {
-			got, err := parseTargetCompletionInterval(tc.Input)
-			require.NoError(t, err)
-			assert.Equal(t, tc.Expected, got)
-		})
-	}
-	invalid := map[string]struct {
-		Input string
-		Error string
-	}{
-		"invalid format: missing value": {
-			Input: "MINUTES",
-			Error: "invalid task target completion interval format",
-		},
-		"invalid format: extra parts": {
-			Input: "1 HOURS EXTRA",
-			Error: "invalid task target completion interval format",
-		},
-		"invalid value: not a number": {
-			Input: "foo HOURS",
-			Error: "invalid task target completion interval value",
-		},
-		"invalid unit: nonsense": {
-			Input: "5 CATS",
-			Error: "invalid task target completion interval unit",
-		},
-		"empty input": {
-			Input: "",
-			Error: "invalid task target completion interval format",
-		},
-	}
-	for name, tc := range invalid {
-		t.Run(name, func(t *testing.T) {
-			got, err := parseTargetCompletionInterval(tc.Input)
-			assert.Empty(t, got)
-			assert.ErrorContains(t, err, tc.Error)
-		})
-	}
+	tasksTests.Execute.RunValidationCases(t)
+	tasksTests.Execute.RunSqlCases(t)
 }
