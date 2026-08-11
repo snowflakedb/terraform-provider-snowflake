@@ -137,4 +137,6 @@ var externalAccessIntegrationsDef = g.NewInterface(
 	"DescribeDetails returns the parsed describe output for an external access integration.",
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 	"*ExternalAccessIntegrationDetails", "error",
-).WithShowObjectType("Integration")
+).
+	WithShowObjectType("Integration").
+	WithEnabledGenerationParts(g.PartUnitTests)
