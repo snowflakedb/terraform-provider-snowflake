@@ -228,15 +228,21 @@ func buildMultiFieldValidationCases(v *Validation, f *Field, opName, expectedErr
 	case ExactlyOneValueSet:
 		noneSetLines, noneSetOk := deriveNoneSetModify(v, f)
 		cases = append(cases, tc(baseName+"_NoneSet", noneSetLines, noneSetOk))
-		moreThanOneSetLines, moreThanOneSetOk := deriveMoreThanOneSetModify(v, f)
-		cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk))
+		// MoreThanOneSet is unreachable by construction with a single field - there is nothing
+		// else to set alongside it - so it is only emitted when there are >= 2 fields to conflict.
+		if len(v.FieldNames) >= 2 {
+			moreThanOneSetLines, moreThanOneSetOk := deriveMoreThanOneSetModify(v, f)
+			cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk))
+		}
 		if f.IsSlice() {
 			cases = append(cases, tc(baseName+"_OneValidOneInvalid", nil, false))
 		}
 
 	case MoreThanOneValueSet:
-		moreThanOneSetLines, moreThanOneSetOk := deriveMoreThanOneSetModify(v, f)
-		cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk))
+		if len(v.FieldNames) >= 2 {
+			moreThanOneSetLines, moreThanOneSetOk := deriveMoreThanOneSetModify(v, f)
+			cases = append(cases, tc(baseName+"_MoreThanOneSet", moreThanOneSetLines, moreThanOneSetOk))
+		}
 		if f.IsSlice() {
 			cases = append(cases, tc(baseName+"_OneValidOneInvalid", nil, false))
 		}

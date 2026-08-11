@@ -114,4 +114,4 @@ var sharesDef = g.NewInterface(
 	"DescribeConsumer returns the share contents for a consumer (inbound) share.",
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.ExternalObjectIdentifier]())},
 	"[]ShareInfo", "error",
-).WithEnums(shareKindEnumDef)
+).WithEnums(shareKindEnumDef).WithEnabledGenerationParts(g.PartUnitTests)

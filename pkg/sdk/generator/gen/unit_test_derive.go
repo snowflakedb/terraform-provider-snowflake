@@ -5,10 +5,17 @@ import (
 	"strings"
 )
 
+// objectIdentifierFallbackKind stands in for the generic ObjectIdentifier interface kind: any
+// concrete kind works, since ValidObjectIdentifier only checks Name() != "".
+const objectIdentifierFallbackKind = "AccountObjectIdentifier"
+
 // emptyIdentifierVar returns the pkg/sdk test-only variable name for an empty (invalid) identifier of the given kind,
 // following the convention empty<Kind> (e.g. "emptySchemaObjectIdentifier").
 // The corresponding vars are declared in pkg/sdk/random_test.go.
 func emptyIdentifierVar(kind string) string {
+	if kind == "ObjectIdentifier" {
+		kind = objectIdentifierFallbackKind
+	}
 	return "empty" + kind
 }
 
