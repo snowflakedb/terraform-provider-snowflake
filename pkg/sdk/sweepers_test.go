@@ -338,14 +338,6 @@ type accountObjectSweeperConfig[T any] struct {
 	// TODO [SNOW-1658402]: handle the ownership problem while handling the better role setup for tests
 	owner         func(T) string
 	takeOwnership func(ctx context.Context, id sdk.AccountObjectIdentifier) error
-
-	// ignoreError tells the expected errors (e.g. objects of an unexpected type returned by SHOW) from the real ones.
-	// The matching errors are logged and the object is skipped.
-	ignoreError func(error) bool
-}
-
-func (cfg accountObjectSweeperConfig[T]) ignores(err error) bool {
-	return cfg.ignoreError != nil && cfg.ignoreError(err)
 }
 
 func (cfg accountObjectSweeperConfig[T]) skips(object T) bool {
@@ -471,10 +463,6 @@ func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSw
 			if cfg.takeOwnership != nil && cfg.owner(object) != snowflakeroles.Accountadmin.Name() {
 				log.Printf("[DEBUG] Granting ownership on %s %s, to ACCOUNTADMIN", cfg.objectTypeName, id.FullyQualifiedName())
 				if err := cfg.takeOwnership(ctx, id); err != nil {
-					if cfg.ignores(err) {
-						log.Printf("[DEBUG] Skipping %s %s, err: %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
-						continue
-					}
 					errs = append(errs, fmt.Errorf("granting ownership on %s %s ended with error, err = %w", cfg.objectTypeName, id.FullyQualifiedName(), err))
 					continue
 				}
@@ -482,10 +470,6 @@ func nukeAccountObjects[T any](prefix string, suffix string, cfg accountObjectSw
 
 			log.Printf("[DEBUG] Dropping %s %s", cfg.objectTypeName, id.FullyQualifiedName())
 			if err := cfg.dropSafely(ctx, id); err != nil {
-				if cfg.ignores(err) {
-					log.Printf("[DEBUG] Skipping %s %s, err: %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
-					continue
-				}
 				log.Printf("[DEBUG] Dropping %s %s, resulted in error %v", cfg.objectTypeName, id.FullyQualifiedName(), err)
 				errs = append(errs, fmt.Errorf("sweeping %s %s ended with error, err = %w", cfg.objectTypeName, id.FullyQualifiedName(), err))
 			}
@@ -708,6 +692,16 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 			"TERRAFORM_TEST_SETUP_OBJECTS",
 			"TEST_RESULTS_DATABASE",
 		},
+		// SHOW DATABASES returns applications, application packages, and personal databases too, and they can't be
+		// handled as databases; applications and application packages have their own sweepers (see nukeApplications
+		// and nukeApplicationPackages). Only the kinds this sweeper can drop are handled here.
+		skip: func(object sdk.Database) bool {
+			if object.Kind == nil {
+				log.Printf("[INFO] Skipping database %s, its kind was not recognized", object.Name)
+				return true
+			}
+			return !slices.Contains([]sdk.DatabaseKind{sdk.DatabaseKindStandard, sdk.DatabaseKindImportedDatabase}, *object.Kind)
+		},
 		show: func(ctx context.Context) ([]sdk.Database, error) {
 			return client.Databases.Show(ctx, sdk.NewShowDatabaseRequest())
 		},
@@ -720,12 +714,6 @@ func nukeDatabases(client *sdk.Client, prefix string, suffix string) func() erro
 		dropSafely:    client.Databases.DropSafely,
 		owner:         func(object sdk.Database) string { return object.Owner },
 		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeDatabase),
-		// applications are returned by SHOW DATABASES too, and they can't be handled as databases
-		// TODO [SNOW-867247]: consider skip (based on the Kind field) instead of ignoreError here; it would spare the
-		// failed ownership grant and drop, but the Kind value reported for applications has to be confirmed first.
-		ignoreError: func(err error) bool {
-			return strings.Contains(err.Error(), "Object found is of type 'APPLICATION', not specified type 'DATABASE'")
-		},
 	})
 }
 
