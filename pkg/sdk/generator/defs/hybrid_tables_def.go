@@ -367,4 +367,5 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
 ).ShowParameters(g.KindOfT[sdkcommons.SchemaObjectIdentifier]()).
-	WithCustomInterfaceMethod("GetConstraints", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "[]HybridTableConstraint", "error")
+	WithCustomInterfaceMethod("GetConstraints", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "[]HybridTableConstraint", "error").
+	WithEnabledGenerationParts(g.PartUnitTests)
