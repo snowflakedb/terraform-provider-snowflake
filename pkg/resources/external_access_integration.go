@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -28,13 +29,13 @@ func eaiAllowedAuthenticationSecretsSchema() map[string]*schema.Schema {
 		"none": {
 			Type:         schema.TypeBool,
 			Optional:     true,
-			Description:  "When true, no secrets are allowed for authentication.",
+			Description:  "When true, no secrets are allowed for authentication. Conflicts with `all` and `secrets`.",
 			ExactlyOneOf: exactlyOneOf,
 		},
 		"all": {
 			Type:         schema.TypeBool,
 			Optional:     true,
-			Description:  "When true, all secrets in the account are allowed for authentication.",
+			Description:  "When true, all secrets in the account are allowed for authentication. Conflicts with `none` and `secrets`.",
 			ExactlyOneOf: exactlyOneOf,
 		},
 		"secrets": {
@@ -45,7 +46,7 @@ func eaiAllowedAuthenticationSecretsSchema() map[string]*schema.Schema {
 				ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 			},
 			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_authentication_secrets.0.secrets"),
-			Description:      "Specifies the fully qualified identifiers of secrets allowed for authentication.",
+			Description:      "Specifies the fully qualified identifiers of secrets allowed for authentication. Conflicts with `none` and `all`.",
 			ExactlyOneOf:     exactlyOneOf,
 		},
 	}
@@ -60,7 +61,7 @@ func eaiAllowedApiAuthIntegrationsSchema() map[string]*schema.Schema {
 		"none": {
 			Type:         schema.TypeBool,
 			Optional:     true,
-			Description:  "When true, no API authentication integrations are allowed.",
+			Description:  "When true, no API authentication integrations are allowed. Conflicts with `integrations`.",
 			ExactlyOneOf: exactlyOneOf,
 		},
 		"integrations": {
@@ -71,7 +72,7 @@ func eaiAllowedApiAuthIntegrationsSchema() map[string]*schema.Schema {
 				ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 			},
 			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_api_authentication_integrations.0.integrations"),
-			Description:      "Specifies the API authentication integrations allowed for authenticating to external locations.",
+			Description:      "Specifies the API authentication integrations allowed for authenticating to external locations. Conflicts with `none`.",
 			ExactlyOneOf:     exactlyOneOf,
 		},
 	}
@@ -84,7 +85,7 @@ var externalAccessIntegrationSchema = map[string]*schema.Schema{
 		ForceNew:         true,
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 		DiffSuppressFunc: suppressIdentifierQuoting,
-		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the external access integration."),
+		Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the external access integration. Changing this value recreates the integration."),
 	},
 	"enabled": {
 		Type:        schema.TypeBool,
@@ -100,7 +101,7 @@ var externalAccessIntegrationSchema = map[string]*schema.Schema{
 			ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 		},
 		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_network_rules"),
-		Description:      relatedResourceDescription("Specifies the network rules for external locations reachable through this integration. At least one is required.", resources.NetworkRule),
+		Description:      relatedResourceDescription("Specifies the network rules for external locations reachable through this integration. At least one is required. Only egress network rules may be specified.", resources.NetworkRule),
 	},
 	"allowed_authentication_secrets": {
 		Type:        schema.TypeList,
@@ -153,13 +154,10 @@ func ExternalAccessIntegration() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		// TODO [SNOW-3895663]: The resource is currently registered only in the test provider. When it is moved to the production
-		// provider, add ExternalAccessIntegrationResource to previewfeatures and wrap the functions below with
-		// PreviewFeature*ContextWrapper.
-		CreateContext: TrackingCreateWrapper(resources.ExternalAccessIntegration, CreateExternalAccessIntegration),
-		ReadContext:   TrackingReadWrapper(resources.ExternalAccessIntegration, ReadExternalAccessIntegrationFunc(true)),
-		UpdateContext: TrackingUpdateWrapper(resources.ExternalAccessIntegration, UpdateExternalAccessIntegration),
-		DeleteContext: TrackingDeleteWrapper(resources.ExternalAccessIntegration, deleteFunc),
+		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalAccessIntegrationResource), TrackingCreateWrapper(resources.ExternalAccessIntegration, CreateExternalAccessIntegration)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalAccessIntegrationResource), TrackingReadWrapper(resources.ExternalAccessIntegration, ReadExternalAccessIntegrationFunc(true))),
+		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalAccessIntegrationResource), TrackingUpdateWrapper(resources.ExternalAccessIntegration, UpdateExternalAccessIntegration)),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ExternalAccessIntegrationResource), TrackingDeleteWrapper(resources.ExternalAccessIntegration, deleteFunc)),
 		Description:   "Resource used to manage external access integration objects. For more information, check [external access integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration).",
 
 		Schema: externalAccessIntegrationSchema,

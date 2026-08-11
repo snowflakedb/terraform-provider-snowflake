@@ -157,6 +157,7 @@ body:
         - resource:dynamic_table
         - resource:email_notification_integration
         - resource:execute
+        - resource:external_access_integration
         - resource:external_function
         - resource:external_oauth_integration
         - resource:external_table
@@ -289,6 +290,7 @@ body:
         - data_source:database_roles
         - data_source:databases
         - data_source:dynamic_tables
+        - data_source:external_access_integrations
         - data_source:external_functions
         - data_source:external_tables
         - data_source:external_volumes

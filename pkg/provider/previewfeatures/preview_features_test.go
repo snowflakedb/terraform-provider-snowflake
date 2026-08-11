@@ -55,6 +55,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_dynamic_table_resource", want: DynamicTableResource},
 		{input: "snowflake_dynamic_tables_datasource", want: DynamicTablesDatasource},
 		{input: "snowflake_email_notification_integration_resource", want: EmailNotificationIntegrationResource},
+		{input: "snowflake_external_access_integration_resource", want: ExternalAccessIntegrationResource},
 		{input: "snowflake_external_access_integrations_datasource", want: ExternalAccessIntegrationsDatasource},
 		{input: "snowflake_stage_external_azure_resource", want: ExternalAzureStageResource},
 		{input: "snowflake_external_function_resource", want: ExternalFunctionResource},

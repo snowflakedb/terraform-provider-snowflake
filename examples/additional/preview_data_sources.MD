@@ -10,6 +10,7 @@
 - [snowflake_database](./docs/data-sources/database)
 - [snowflake_database_role](./docs/data-sources/database_role)
 - [snowflake_dynamic_tables](./docs/data-sources/dynamic_tables)
+- [snowflake_external_access_integrations](./docs/data-sources/external_access_integrations)
 - [snowflake_external_functions](./docs/data-sources/external_functions)
 - [snowflake_external_tables](./docs/data-sources/external_tables)
 - [snowflake_failover_groups](./docs/data-sources/failover_groups)

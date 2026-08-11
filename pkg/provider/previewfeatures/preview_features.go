@@ -48,6 +48,7 @@ const (
 	DynamicTableResource                           feature = "snowflake_dynamic_table_resource"
 	DynamicTablesDatasource                        feature = "snowflake_dynamic_tables_datasource"
 	EmailNotificationIntegrationResource           feature = "snowflake_email_notification_integration_resource"
+	ExternalAccessIntegrationResource              feature = "snowflake_external_access_integration_resource"
 	ExternalAccessIntegrationsDatasource           feature = "snowflake_external_access_integrations_datasource"
 	ExternalAzureStageResource                     feature = "snowflake_stage_external_azure_resource"
 	ExternalFunctionResource                       feature = "snowflake_external_function_resource"
@@ -180,6 +181,7 @@ var allPreviewFeatures = []feature{
 	DatabaseRoleDatasource,
 	DynamicTableResource,
 	DynamicTablesDatasource,
+	ExternalAccessIntegrationResource,
 	ExternalAccessIntegrationsDatasource,
 	ExternalFunctionResource,
 	ExternalFunctionsDatasource,
