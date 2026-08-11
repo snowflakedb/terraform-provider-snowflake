@@ -26,6 +26,22 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(new feature)* New external access integration resource and data source
+
+#### Resource
+
+We have added a new preview resource for managing external access integrations: [snowflake_external_access_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_access_integration).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integration_resource` to the `preview_features_enabled` field in the provider configuration.
+
+#### Data source
+
+We have added a new preview data source for external access integrations: [snowflake_external_access_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/external_access_integrations). It supports filtering with `like`.
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+
 ### *(improvement)* `created_on` format in network policies' and listings' `show_output`
 
 `created_on` in the internal network policy and listing representations was a raw string; it is now read as a proper timestamp, making both consistent with databases, warehouses, schemas, shares, resource monitors, connections, and compute pools, which all already exposed it that way.

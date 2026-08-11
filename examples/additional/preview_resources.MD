@@ -18,6 +18,7 @@
 - [snowflake_cortex_search_service](./docs/resources/cortex_search_service)
 - [snowflake_dynamic_table](./docs/resources/dynamic_table)
 - [snowflake_email_notification_integration](./docs/resources/email_notification_integration)
+- [snowflake_external_access_integration](./docs/resources/external_access_integration)
 - [snowflake_external_function](./docs/resources/external_function)
 - [snowflake_external_table](./docs/resources/external_table)
 - [snowflake_failover_group](./docs/resources/failover_group)
