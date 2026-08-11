@@ -31,6 +31,21 @@ func ImportedExternalAccessIntegrationShowOutput(t *testing.T, id string) *Exter
 	return &externalAccessIntegrationAssert
 }
 
+func ExternalAccessIntegrationsDatasourceShowOutput(t *testing.T, name string) *ExternalAccessIntegrationShowOutputAssert {
+	t.Helper()
+
+	return ExternalAccessIntegrationsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ExternalAccessIntegrationsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ExternalAccessIntegrationShowOutputAssert {
+	t.Helper()
+
+	externalAccessIntegrationAssert := ExternalAccessIntegrationShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "external_access_integrations", idx),
+	}
+	return &externalAccessIntegrationAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
