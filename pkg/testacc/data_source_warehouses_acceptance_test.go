@@ -158,7 +158,8 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 					resourceparametersassert.WarehousesDatasourceParameters(t, warehousesModel.DatasourceReference()).
 						HasDefaultMaxConcurrencyLevel().
 						HasDefaultStatementQueuedTimeoutInSeconds().
-						HasDefaultStatementTimeoutInSeconds().
+						HasStatementTimeoutInSeconds(172800).
+						HasStatementTimeoutInSecondsLevel(testClient().SnowflakeDefaults.DefaultStatementTimeoutInSecondsLevel(t)).
 						HasDefaultFallbackWarehouse(),
 				),
 			},
