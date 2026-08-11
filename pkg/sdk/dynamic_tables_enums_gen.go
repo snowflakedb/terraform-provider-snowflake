@@ -12,12 +12,14 @@ type DynamicTableRefreshMode string
 const (
 	DynamicTableRefreshModeAuto        DynamicTableRefreshMode = "AUTO"
 	DynamicTableRefreshModeIncremental DynamicTableRefreshMode = "INCREMENTAL"
+	DynamicTableRefreshModeAdaptive    DynamicTableRefreshMode = "ADAPTIVE"
 	DynamicTableRefreshModeFull        DynamicTableRefreshMode = "FULL"
 )
 
 var AllDynamicTableRefreshModes = []DynamicTableRefreshMode{
 	DynamicTableRefreshModeAuto,
 	DynamicTableRefreshModeIncremental,
+	DynamicTableRefreshModeAdaptive,
 	DynamicTableRefreshModeFull,
 }
 
@@ -28,6 +30,8 @@ func ToDynamicTableRefreshMode(s string) (DynamicTableRefreshMode, error) {
 		return DynamicTableRefreshModeAuto, nil
 	case string(DynamicTableRefreshModeIncremental):
 		return DynamicTableRefreshModeIncremental, nil
+	case string(DynamicTableRefreshModeAdaptive):
+		return DynamicTableRefreshModeAdaptive, nil
 	case string(DynamicTableRefreshModeFull):
 		return DynamicTableRefreshModeFull, nil
 	default:
