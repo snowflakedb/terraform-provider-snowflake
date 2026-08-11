@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -89,10 +90,18 @@ func (row DatabaseCsvRow) convert() (*DatabaseRepresentation, error) {
 			IsDefault:     row.IsDefault == "Y",
 			Owner:         row.Owner,
 			Comment:       row.Comment,
-			Kind:          row.Kind,
 			OwnerRoleType: row.OwnerRoleType,
 			ResourceGroup: row.ResourceGroup,
 		},
+	}
+	if row.Kind != "" {
+		// An unrecognized kind is logged and left unset, the same way the SDK handles it (see mapNullStringWithMapping),
+		// instead of failing the whole row over a field that is not used in the generated configuration.
+		if kind, err := sdk.ToDatabaseKind(row.Kind); err != nil {
+			log.Printf("[WARN] Failed to map the kind of database %s, err = %s", row.Name, err)
+		} else {
+			databaseRepresentation.Database.Kind = &kind
+		}
 	}
 	if row.Options != "" {
 		databaseRepresentation.Options = row.Options

@@ -10,6 +10,9 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -81,28 +84,32 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 					*accountEnableConsoleOutput = helpers.FindParameter(t, params, sdk.AccountParameterEnableConsoleOutput).Value
 				},
 				Config: accconfig.FromModels(t, sharedDatabaseModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(sharedDatabaseModel.ResourceReference(), "name", id.Name()),
-					resource.TestCheckResourceAttr(sharedDatabaseModel.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(sharedDatabaseModel.ResourceReference(), "from_share", shareExternalId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(sharedDatabaseModel.ResourceReference(), "comment", comment),
-
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "catalog", accountCatalog),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
+				Check: assertThat(
+					t,
+					resourceassert.SharedDatabaseResource(t, sharedDatabaseModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasFromShareString(shareExternalId.FullyQualifiedName()).
+						HasCommentString(comment),
+					objectassert.Database(t, id).
+						HasKind(sdk.DatabaseKindImportedDatabase),
+					// the account-level defaults are only known once PreConfig ran, so they're compared by pointer
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "external_volume", accountExternalVolume)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "catalog", accountCatalog)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "log_level", accountLogLevel)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "trace_level", accountTraceLevel)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModel.ResourceReference(), "enable_console_output", accountEnableConsoleOutput)),
 				),
 			},
 			{
@@ -112,28 +119,31 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 						plancheck.ExpectResourceAction(sharedDatabaseModelRenamed.ResourceReference(), plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(sharedDatabaseModelRenamed.ResourceReference(), "name", newId.Name()),
-					resource.TestCheckResourceAttr(sharedDatabaseModelRenamed.ResourceReference(), "fully_qualified_name", newId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(sharedDatabaseModelRenamed.ResourceReference(), "from_share", shareExternalId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(sharedDatabaseModelRenamed.ResourceReference(), "comment", newComment),
-
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "external_volume", accountExternalVolume),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "catalog", accountCatalog),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "log_level", accountLogLevel),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "trace_level", accountTraceLevel),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase),
-					resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "enable_console_output", accountEnableConsoleOutput),
+				Check: assertThat(
+					t,
+					resourceassert.SharedDatabaseResource(t, sharedDatabaseModelRenamed.ResourceReference()).
+						HasNameString(newId.Name()).
+						HasFullyQualifiedNameString(newId.FullyQualifiedName()).
+						HasFromShareString(shareExternalId.FullyQualifiedName()).
+						HasCommentString(newComment),
+					objectassert.Database(t, newId).
+						HasKind(sdk.DatabaseKindImportedDatabase),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "external_volume", accountExternalVolume)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "catalog", accountCatalog)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "replace_invalid_characters", accountReplaceInvalidCharacters)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_ddl_collation", accountDefaultDdlCollation)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_notebook_compute_pool_cpu", accountDefaultNotebookComputePoolCpu)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "default_notebook_compute_pool_gpu", accountDefaultNotebookComputePoolGpu)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "storage_serialization_policy", accountStorageSerializationPolicy)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "log_level", accountLogLevel)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "trace_level", accountTraceLevel)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "suspend_task_after_num_failures", accountSuspendTaskAfterNumFailures)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "task_auto_retry_attempts", accountTaskAutoRetryAttempts)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "user_task_managed_initial_warehouse_size", accountUserTaskMangedInitialWarehouseSize)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "user_task_timeout_ms", accountUserTaskTimeoutMs)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", accountUserTaskMinimumTriggerIntervalInSeconds)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "quoted_identifiers_ignore_case", accountQuotedIdentifiersIgnoreCase)),
+					assert.Check(resource.TestCheckResourceAttrPtr(sharedDatabaseModelRenamed.ResourceReference(), "enable_console_output", accountEnableConsoleOutput)),
 				),
 			},
 			// Import all values

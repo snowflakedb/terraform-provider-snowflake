@@ -6,6 +6,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
+// The values are not listed in https://docs.snowflake.com/en/sql-reference/sql/show-databases,
+// but they are documented through the DATABASES view and the SHOW DATABASES usage notes.
+var DatabaseKindEnumDef = g.NewEnum(
+	"DatabaseKind", "DatabaseKinds",
+	"STANDARD", "IMPORTED DATABASE", "APPLICATION", "APPLICATION PACKAGE", "PERSONAL DATABASE", "CATALOG-LINKED DATABASE",
+	// SHOW DATABASES returns "APPLICATION PACKAGE", while DATABASES.TYPE reports it as "APPLICATION_PACKAGE".
+).WithAliases("APPLICATION PACKAGE", "APPLICATION_PACKAGE")
+
 var databasePairs = g.StructPair("databaseRow", "Database").
 	Time("created_on").
 	Text("name").
@@ -19,7 +27,7 @@ var databasePairs = g.StructPair("databaseRow", "Database").
 	OptionalText("resource_group", g.WithRequiredInPlain()).
 	OptionalTime("dropped_on", g.WithRequiredInPlain()).
 	PlainOnlyField("Transient", "bool").
-	OptionalText("kind", g.WithRequiredInPlain()).
+	OptionalEnum("kind", DatabaseKindEnumDef).
 	OptionalText("owner_role_type", g.WithRequiredInPlain())
 
 var databaseSetStruct = g.NewQueryStruct("DatabaseSet").
@@ -311,4 +319,6 @@ var databasesDef = g.NewInterface(
 	"Describe", "Describe is based on https://docs.snowflake.com/en/sql-reference/sql/desc-database",
 	[]*g.MethodParameter{g.NewMethodParameter("id", "AccountObjectIdentifier")},
 	"*DatabaseDetails", "error",
+).WithEnums(
+	DatabaseKindEnumDef,
 )

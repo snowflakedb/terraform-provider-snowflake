@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[DatabaseKind]{"DatabaseKind", AllDatabaseKinds, ToDatabaseKind})
+}
+
 func TestDatabasesCreate(t *testing.T) {
 	defaultOpts := func() *CreateDatabaseOptions {
 		return &CreateDatabaseOptions{

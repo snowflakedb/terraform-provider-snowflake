@@ -55,7 +55,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasComment("").
 			HasRetentionTime(1).
 			HasResourceGroup("").
-			HasKind("STANDARD"),
+			HasKind(sdk.DatabaseKindStandard),
 		objectparametersassert.DatabaseParameters(t, id).
 			HasDefaultDataRetentionTimeInDaysValueExplicit().
 			HasDefaultMaxDataExtensionTimeInDaysValueExplicit().
@@ -118,7 +118,7 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRetentionTime(2).
 			HasResourceGroup("").
-			HasKind("STANDARD"),
+			HasKind(sdk.DatabaseKindStandard),
 		objectparametersassert.DatabaseParameters(t, newId).
 			HasDataRetentionTimeInDays(2).
 			HasMaxDataExtensionTimeInDays(15).
