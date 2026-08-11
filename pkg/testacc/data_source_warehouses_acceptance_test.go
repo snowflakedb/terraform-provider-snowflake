@@ -110,7 +110,7 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 			HasOwnerNotEmpty().
 			HasComment(comment).
 			HasEnableQueryAcceleration(true).
-			HasQueryAccelerationMaxScaleFactor(2).
+			HasQueryAccelerationMaxScaleFactor(testClient().SnowflakeDefaults.DefaultQueryAccelerationMaxScaleFactor(t)).
 			HasResourceMonitorEmpty().
 			HasScalingPolicy(sdk.ScalingPolicyStandard).
 			HasOwnerRoleTypeNotEmpty().
