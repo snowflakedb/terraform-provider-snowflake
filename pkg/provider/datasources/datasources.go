@@ -20,6 +20,7 @@ const (
 	DatabaseRoles                  datasource = "snowflake_database_roles"
 	Databases                      datasource = "snowflake_databases"
 	DynamicTables                  datasource = "snowflake_dynamic_tables"
+	ExternalAccessIntegrations     datasource = "snowflake_external_access_integrations"
 	ExternalFunctions              datasource = "snowflake_external_functions"
 	ExternalTables                 datasource = "snowflake_external_tables"
 	ExternalVolumes                datasource = "snowflake_external_volumes"
