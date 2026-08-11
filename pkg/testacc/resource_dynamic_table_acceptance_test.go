@@ -7,9 +7,10 @@ import (
 	"regexp"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
@@ -432,6 +433,42 @@ func TestAcc_DynamicTable_issue2329_with_matching_comment(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "name", dynamicTableName),
 					resource.TestCheckResourceAttr("snowflake_dynamic_table.dt", "query", query),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_DynamicTable_adaptiveRefreshMode proves the `ADAPTIVE` refresh mode is supported.
+func TestAcc_DynamicTable_issue5097_AdaptiveRefreshMode(t *testing.T) {
+	dynamicTableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	query := fmt.Sprintf(`select "id" from %s`, tableId.FullyQualifiedName())
+
+	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
+		{Name: "id", Type: testdatatypes.DataTypeNumber},
+	}).WithChangeTracking(true)
+
+	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
+		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
+		WithRefreshMode(string(sdk.DynamicTableRefreshModeAdaptive)).
+		WithDependsOn(tableModel.ResourceReference())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.DynamicTable),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tableModel, dtModel),
+				Check: assertThat(
+					t,
+					resourceassert.DynamicTableResource(t, dtModel.ResourceReference()).
+						HasName(dynamicTableId.Name()).
+						HasRefreshMode(string(sdk.DynamicTableRefreshModeAdaptive)),
 				),
 			},
 		},

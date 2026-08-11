@@ -7,17 +7,22 @@ import (
 
 var DynamicTableRefreshModeEnumDef = g.NewEnum(
 	"DynamicTableRefreshMode", "DynamicTableRefreshModes",
-	"AUTO", "INCREMENTAL", "FULL",
+	"AUTO",
+	"INCREMENTAL",
+	"ADAPTIVE",
+	"FULL",
 )
 
 var DynamicTableInitializeEnumDef = g.NewEnum(
 	"DynamicTableInitialize", "DynamicTableInitializes",
-	"ON_CREATE", "ON_SCHEDULE",
+	"ON_CREATE",
+	"ON_SCHEDULE",
 )
 
 var DynamicTableSchedulingStateEnumDef = g.NewEnum(
 	"DynamicTableSchedulingState", "DynamicTableSchedulingStates",
-	"ACTIVE", "SUSPENDED",
+	"ACTIVE",
+	"SUSPENDED",
 )
 
 func targetLagDef() *g.QueryStruct {

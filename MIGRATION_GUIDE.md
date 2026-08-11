@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(new feature)* `ADAPTIVE` refresh mode for dynamic tables
+
+The `snowflake_dynamic_table` resource now accepts [`ADAPTIVE`](https://docs.snowflake.com/en/release-notes/2026/other/2026-07-30-dynamic-tables-adaptive-refresh-mode-ga) as a valid value for `refresh_mode` option.
+
+No changes in configuration are required unless you want to start using `refresh_mode = "ADAPTIVE"`.
+
+Reference: [#5097](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5097)
+
 ### *(new feature)* New external access integration resource and data source
 
 #### Resource
