@@ -24,3 +24,13 @@ func (c *SnowflakeDefaultsClient) WarehouseGenerationEmptyByDefault(t *testing.T
 	}
 	return false
 }
+
+// DefaultQueryAccelerationMaxScaleFactor returns the Snowflake default for
+// QUERY_ACCELERATION_MAX_SCALE_FACTOR. Prod accounts default to 2; preprod still defaults to 8.
+func (c *SnowflakeDefaultsClient) DefaultQueryAccelerationMaxScaleFactor(t *testing.T) int {
+	t.Helper()
+	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
+		return 8
+	}
+	return 2
+}
