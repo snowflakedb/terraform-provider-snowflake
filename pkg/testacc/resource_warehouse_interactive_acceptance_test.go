@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -23,6 +24,12 @@ import (
 )
 
 func TestAcc_WarehouseInteractive_BasicUseCase(t *testing.T) {
+	// TODO(SNOW-3925919): Unskip when can be run on the preprod env
+	// Error: error setting interactive warehouse properties: 000630 (57014): Statement reached its statement or warehouse timeout of 5 second(s) and was canceled.
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipping for non-prod Snowflake environments")
+	}
+
 	warehouseId := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
