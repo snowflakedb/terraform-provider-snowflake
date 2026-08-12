@@ -6,7 +6,9 @@
 	{{- $constName := print $constPrefix .Name }}
 	validationCase[{{ $optsType }}]{
 		Name:         {{ $constName }},
+		{{- if .HasExpectedErr }}
 		ExpectedErr: {{ .ExpectedErrLine }},
+		{{- end }}
 		{{- if .HasModify }}
 		DefaultModify: func(opts {{ $optsType }}) {
 		{{- range .ModifyLines }}

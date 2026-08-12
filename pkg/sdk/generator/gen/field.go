@@ -156,6 +156,23 @@ func (f *Field) Path() string {
 	}
 }
 
+// IndexedPath is Path with a [0] inserted after every slice ancestor, so a field reached through
+// a slice addresses its single generated element (e.g. .Arguments[0].ArgDataType).
+func (f *Field) IndexedPath() string {
+	if f.IsRoot() {
+		return ""
+	}
+	return fmt.Sprintf("%s.%s", f.Parent.IndexedElemPath(), f.Name)
+}
+
+// IndexedElemPath is IndexedPath with a trailing [0] appended when f itself is a slice.
+func (f *Field) IndexedElemPath() string {
+	if f.IsSlice() {
+		return f.IndexedPath() + "[0]"
+	}
+	return f.IndexedPath()
+}
+
 // PathWithRoot returns the way through the tree to the top, with dot separator and root included (e.g. Struct.SomeField.SomeChild)
 func (f *Field) PathWithRoot() string {
 	if f.IsRoot() {

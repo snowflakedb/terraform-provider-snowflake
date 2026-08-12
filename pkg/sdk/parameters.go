@@ -1992,6 +1992,9 @@ type SessionParameters struct {
 }
 
 func (v *SessionParameters) validate() error {
+	if v == nil {
+		return nil
+	}
 	var errs []error
 	// Do not validate input and output formats, because there are a lot of them, and may be not supported in Go itself.
 	// See https://docs.snowflake.com/en/sql-reference/date-time-input-output#supported-formats-for-auto-detection.
@@ -2133,6 +2136,9 @@ type SessionParametersUnset struct {
 }
 
 func (v *SessionParametersUnset) validate() error {
+	if v == nil {
+		return nil
+	}
 	if !anyValueSet(v.AbortDetachedQuery, v.ActivePythonProfiler, v.Autocommit, v.BinaryInputFormat, v.BinaryOutputFormat, v.ClientEnableLogInfoStatementParameters, v.ClientMemoryLimit, v.ClientMetadataRequestUseConnectionCtx, v.ClientPrefetchThreads, v.ClientResultChunkSize, v.ClientResultColumnCaseInsensitive, v.ClientMetadataUseSessionDatabase, v.ClientSessionKeepAlive, v.ClientSessionKeepAliveHeartbeatFrequency, v.ClientTimestampTypeMapping, v.CsvTimestampFormat, v.DateInputFormat, v.DateOutputFormat, v.EnableCortexAnalyst, v.EnableGetDdlUseDataTypeAlias, v.EnableUnloadPhysicalTypeOptimization, v.ErrorOnNondeterministicMerge, v.ErrorOnNondeterministicUpdate, v.GeographyOutputFormat, v.GeometryOutputFormat, v.HybridTableLockTimeout, v.JdbcTreatDecimalAsInt, v.JdbcTreatTimestampNtzAsUtc, v.JdbcUseSessionTimezone, v.JsonIndent, v.JsTreatIntegerAsBigInt, v.LockTimeout, v.LogLevel, v.LogEventLevel, v.MultiStatementCount, v.NoorderSequenceAsDefault, v.OdbcTreatDecimalAsInt, v.PythonProfilerModules, v.PythonProfilerTargetStage, v.QueryTag, v.QuotedIdentifiersIgnoreCase, v.RowsPerResultset, v.S3StageVpceDnsName, v.SearchPath, v.SimulatedDataSharingConsumer, v.StatementQueuedTimeoutInSeconds, v.StatementTimeoutInSeconds, v.StrictJsonOutput, v.TimestampDayIsAlways24h, v.TimestampInputFormat, v.TimestampLTZOutputFormat, v.TimestampNTZOutputFormat, v.TimestampOutputFormat, v.TimestampTypeMapping, v.TimestampTZOutputFormat, v.Timezone, v.TimeInputFormat, v.TimeOutputFormat, v.TraceLevel, v.TransactionAbortOnError, v.TransactionDefaultIsolationLevel, v.TwoDigitCenturyStart, v.UnsupportedDDLAction, v.UseCachedResult, v.WeekOfYearPolicy, v.WeekStart) {
 		return errors.Join(errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableCortexAnalyst", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "LogEventLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"))
 	}

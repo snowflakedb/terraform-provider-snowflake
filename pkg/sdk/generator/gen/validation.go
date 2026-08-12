@@ -160,6 +160,17 @@ func (v *Validation) Condition(field *Field) string {
 	panic("condition for validation unknown")
 }
 
+// TestExpectedError returns the Go expression for the error a unit test case should assert, and true if one is derivable.
+// It differs from ReturnedError only for ValidateValue:
+// "err" is a valid expression inside the generated validate() body (where it is in scope)
+// but not inside a unit test case, so ext must supply the concrete error alongside the modification DeriveModify defers.
+func (v *Validation) TestExpectedError(field *Field) (string, bool) {
+	if v.Type == ValidateValue {
+		return "", false
+	}
+	return v.ReturnedError(field), true
+}
+
 func (v *Validation) ReturnedError(field *Field) string {
 	switch v.Type {
 	case ValidIdentifier:

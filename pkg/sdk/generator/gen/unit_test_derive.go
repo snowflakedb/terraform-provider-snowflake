@@ -102,11 +102,10 @@ func primeAncestors(target *Field) []string {
 	for _, ancestor := range target.AncestorsFromRoot() {
 		switch {
 		case ancestor.IsPointer():
-			stmts = append(stmts, fmt.Sprintf("opts%s = &%s{}", ancestor.Path(), ancestor.KindNoPtr()))
+			stmts = append(stmts, fmt.Sprintf("opts%s = &%s{}", ancestor.IndexedPath(), ancestor.KindNoPtr()))
 		case ancestor.IsSlice():
-			// Best-effort single empty element.
-			// No current definition nests a validation two levels inside a slice, so per-element priming beyond this is out of scope.
-			stmts = append(stmts, fmt.Sprintf("opts%s = []%s{{}}", ancestor.Path(), ancestor.KindNoPtr()))
+			// Best-effort single empty element; deeper nesting through indexed path.
+			stmts = append(stmts, fmt.Sprintf("opts%s = []%s{{}}", ancestor.IndexedPath(), ancestor.KindNoPtr()))
 		}
 	}
 	return stmts
