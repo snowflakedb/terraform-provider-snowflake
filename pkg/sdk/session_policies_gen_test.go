@@ -6,393 +6,368 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[SessionPolicyTargetScope]{"SessionPolicyTargetScope", AllSessionPolicyTargetScopes, ToSessionPolicyTargetScope})
+}
+
+var sessionPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_SessionPolicies_validation_Create_name_ValidIdentifier                                            testCaseName = "validation_Create_name_ValidIdentifier"
+	case_SessionPolicies_validation_Create_AllowedSecondaryRoles_ValidateValue                             testCaseName = "validation_Create_AllowedSecondaryRoles_ValidateValue"
+	case_SessionPolicies_validation_Create_BlockedSecondaryRoles_ValidateValue                             testCaseName = "validation_Create_BlockedSecondaryRoles_ValidateValue"
+	case_SessionPolicies_validation_Create_opts_ConflictingFields                                          testCaseName = "validation_Create_opts_ConflictingFields"
+	case_SessionPolicies_validation_Create_opts_AllowedSecondaryRoles_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_AllowedSecondaryRoles_ExactlyOneValueSet_NoneSet"
+	case_SessionPolicies_validation_Create_opts_AllowedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_AllowedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet"
+	case_SessionPolicies_validation_Create_opts_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet"
+	case_SessionPolicies_validation_Create_opts_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet"
+	case_SessionPolicies_sql_Create_basic                                                                  testCaseName = "sql_Create_basic"
+	case_SessionPolicies_sql_Create_all                                                                    testCaseName = "sql_Create_all"
+	case_SessionPolicies_validation_Alter_name_ValidIdentifier                                             testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_SessionPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_SessionPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SessionPolicies_validation_Alter_opts_Set_AtLeastOneValueSet                                      testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_SessionPolicies_validation_Alter_Set_AllowedSecondaryRoles_ValidateValue                          testCaseName = "validation_Alter_Set_AllowedSecondaryRoles_ValidateValue"
+	case_SessionPolicies_validation_Alter_Set_BlockedSecondaryRoles_ValidateValue                          testCaseName = "validation_Alter_Set_BlockedSecondaryRoles_ValidateValue"
+	case_SessionPolicies_validation_Alter_opts_Set_AllowedSecondaryRoles_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_AllowedSecondaryRoles_ExactlyOneValueSet_NoneSet"
+	case_SessionPolicies_validation_Alter_opts_Set_AllowedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_AllowedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet"
+	case_SessionPolicies_validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet"
+	case_SessionPolicies_validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet"
+	case_SessionPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                                    testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_SessionPolicies_sql_Alter_RenameTo                                                                testCaseName = "sql_Alter_RenameTo"
+	case_SessionPolicies_sql_Alter_Set                                                                     testCaseName = "sql_Alter_Set"
+	case_SessionPolicies_sql_Alter_SetTags                                                                 testCaseName = "sql_Alter_SetTags"
+	case_SessionPolicies_sql_Alter_UnsetTags                                                               testCaseName = "sql_Alter_UnsetTags"
+	case_SessionPolicies_sql_Alter_Unset                                                                   testCaseName = "sql_Alter_Unset"
+	case_SessionPolicies_validation_Drop_name_ValidIdentifier                                              testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_SessionPolicies_sql_Drop_basic                                                                    testCaseName = "sql_Drop_basic"
+	case_SessionPolicies_sql_Drop_all                                                                      testCaseName = "sql_Drop_all"
+	case_SessionPolicies_sql_Show_basic                                                                    testCaseName = "sql_Show_basic"
+	case_SessionPolicies_sql_Show_all                                                                      testCaseName = "sql_Show_all"
+	case_SessionPolicies_sql_Show_Like                                                                     testCaseName = "sql_Show_Like"
+	case_SessionPolicies_sql_Show_In                                                                       testCaseName = "sql_Show_In"
+	case_SessionPolicies_sql_Show_On                                                                       testCaseName = "sql_Show_On"
+	case_SessionPolicies_sql_Show_StartsWith                                                               testCaseName = "sql_Show_StartsWith"
+	case_SessionPolicies_sql_Show_Limit                                                                    testCaseName = "sql_Show_Limit"
+	case_SessionPolicies_validation_Describe_name_ValidIdentifier                                          testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_SessionPolicies_sql_Describe_basic                                                                testCaseName = "sql_Describe_basic"
+)
+
+type SessionPoliciesTestsContext struct {
+	Create   *sdkTestCtx[*CreateSessionPolicyOptions]
+	Alter    *sdkTestCtx[*AlterSessionPolicyOptions]
+	Drop     *sdkTestCtx[*DropSessionPolicyOptions]
+	Show     *sdkTestCtx[*ShowSessionPolicyOptions]
+	Describe *sdkTestCtx[*DescribeSessionPolicyOptions]
+}
+
+var sessionPoliciesTests = SessionPoliciesTestsContext{
+	Create: newSdkTestCtx[*CreateSessionPolicyOptions](
+		"SessionPolicies", "Create",
+	).
+		withDefaultOpts(func() *CreateSessionPolicyOptions {
+			return &CreateSessionPolicyOptions{
+				name: sessionPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateSessionPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateSessionPolicyOptions]{
+				Name: case_SessionPolicies_validation_Create_AllowedSecondaryRoles_ValidateValue,
+			},
+			validationCase[*CreateSessionPolicyOptions]{
+				Name: case_SessionPolicies_validation_Create_BlockedSecondaryRoles_ValidateValue,
+			},
+			validationCase[*CreateSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateSessionPolicyOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateSessionPolicyOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Create_opts_AllowedSecondaryRoles_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *CreateSessionPolicyOptions) {
+					opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.AllowedSecondaryRoles.All = nil
+					opts.AllowedSecondaryRoles.None = nil
+					opts.AllowedSecondaryRoles.Roles = nil
+				},
+			},
+			validationCase[*CreateSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Create_opts_AllowedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *CreateSessionPolicyOptions) {
+					opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.AllowedSecondaryRoles.All = new(true)
+					opts.AllowedSecondaryRoles.None = new(true)
+				},
+			},
+			validationCase[*CreateSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Create_opts_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *CreateSessionPolicyOptions) {
+					opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.BlockedSecondaryRoles.All = nil
+					opts.BlockedSecondaryRoles.None = nil
+					opts.BlockedSecondaryRoles.Roles = nil
+				},
+			},
+			validationCase[*CreateSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Create_opts_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *CreateSessionPolicyOptions) {
+					opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.BlockedSecondaryRoles.All = new(true)
+					opts.BlockedSecondaryRoles.None = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateSessionPolicyOptions]{
+				Name:           case_SessionPolicies_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterSessionPolicyOptions](
+		"SessionPolicies", "Alter",
+	).
+		withDefaultOpts(func() *AlterSessionPolicyOptions {
+			return &AlterSessionPolicyOptions{
+				name: sessionPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSessionPolicyOptions", "RenameTo", "Set", "SetTags", "UnsetTags", "Unset"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSessionPolicyOptions", "RenameTo", "Set", "SetTags", "UnsetTags", "Unset"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.Set = &SessionPolicySet{}
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterSessionPolicyOptions.Set", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.Set = &SessionPolicySet{}
+					opts.Set.SessionIdleTimeoutMins = nil
+					opts.Set.SessionUiIdleTimeoutMins = nil
+					opts.Set.AllowedSecondaryRoles = nil
+					opts.Set.BlockedSecondaryRoles = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name: case_SessionPolicies_validation_Alter_Set_AllowedSecondaryRoles_ValidateValue,
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name: case_SessionPolicies_validation_Alter_Set_BlockedSecondaryRoles_ValidateValue,
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_Set_AllowedSecondaryRoles_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.Set = &SessionPolicySet{}
+					opts.Set.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.Set.AllowedSecondaryRoles.All = nil
+					opts.Set.AllowedSecondaryRoles.None = nil
+					opts.Set.AllowedSecondaryRoles.Roles = nil
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_Set_AllowedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.Set = &SessionPolicySet{}
+					opts.Set.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.Set.AllowedSecondaryRoles.All = new(true)
+					opts.Set.AllowedSecondaryRoles.None = new(true)
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.Set = &SessionPolicySet{}
+					opts.Set.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.Set.BlockedSecondaryRoles.All = nil
+					opts.Set.BlockedSecondaryRoles.None = nil
+					opts.Set.BlockedSecondaryRoles.Roles = nil
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_Set_BlockedSecondaryRoles_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.Set = &SessionPolicySet{}
+					opts.Set.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{}
+					opts.Set.BlockedSecondaryRoles.All = new(true)
+					opts.Set.BlockedSecondaryRoles.None = new(true)
+				},
+			},
+			validationCase[*AlterSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterSessionPolicyOptions.Unset", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"),
+				DefaultModify: func(opts *AlterSessionPolicyOptions) {
+					opts.Unset = &SessionPolicyUnset{}
+					opts.Unset.SessionIdleTimeoutMins = nil
+					opts.Unset.SessionUiIdleTimeoutMins = nil
+					opts.Unset.AllowedSecondaryRoles = nil
+					opts.Unset.BlockedSecondaryRoles = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Alter_Set,
+			},
+			sqlCase[*AlterSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Alter_Unset,
+			},
+		),
+	Drop: newSdkTestCtx[*DropSessionPolicyOptions](
+		"SessionPolicies", "Drop",
+	).
+		withDefaultOpts(func() *DropSessionPolicyOptions {
+			return &DropSessionPolicyOptions{
+				name: sessionPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropSessionPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropSessionPolicyOptions]{
+				Name:           case_SessionPolicies_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowSessionPolicyOptions](
+		"SessionPolicies", "Show",
+	).
+		withDefaultOpts(func() *ShowSessionPolicyOptions {
+			return &ShowSessionPolicyOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowSessionPolicyOptions]{
+				Name:           case_SessionPolicies_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Show_all,
+			},
+			sqlCase[*ShowSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Show_Like,
+			},
+			sqlCase[*ShowSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Show_In,
+			},
+			sqlCase[*ShowSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Show_On,
+			},
+			sqlCase[*ShowSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowSessionPolicyOptions]{
+				Name: case_SessionPolicies_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeSessionPolicyOptions](
+		"SessionPolicies", "Describe",
+	).
+		withDefaultOpts(func() *DescribeSessionPolicyOptions {
+			return &DescribeSessionPolicyOptions{
+				name: sessionPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeSessionPolicyOptions]{
+				Name:        case_SessionPolicies_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeSessionPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeSessionPolicyOptions]{
+				Name:           case_SessionPolicies_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestSessionPolicies_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateSessionPolicyOptions
-	defaultOpts := func() *CreateSessionPolicyOptions {
-		return &CreateSessionPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateSessionPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: opts.AllowedSecondaryRoles should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{All: Bool(false)}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
-
-		opts = defaultOpts()
-		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{None: Bool(false)}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
-	})
-
-	t.Run("validation: opts.BlockedSecondaryRoles should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{All: Bool(false)}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
-
-		opts = defaultOpts()
-		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{None: Bool(false)}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSessionPolicyOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("validation: exactly one field from [opts.AllowedSecondaryRoles.All opts.AllowedSecondaryRoles.None opts.AllowedSecondaryRoles.Roles] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("validation: exactly one field from [opts.AllowedSecondaryRoles.All opts.AllowedSecondaryRoles.None opts.AllowedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{
-			All:   Bool(true),
-			Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("R1")},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.AllowedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("validation: exactly one field from [opts.BlockedSecondaryRoles.All opts.BlockedSecondaryRoles.None opts.BlockedSecondaryRoles.Roles] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("validation: exactly one field from [opts.BlockedSecondaryRoles.All opts.BlockedSecondaryRoles.None opts.BlockedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{
-			None:  Bool(true),
-			Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("R1")},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSessionPolicyOptions.BlockedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SESSION POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.SessionIdleTimeoutMins = Int(5)
-		opts.SessionUiIdleTimeoutMins = Int(34)
-		opts.AllowedSecondaryRoles = &SessionPolicySecondaryRoles{Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("ROLE1"), NewAccountObjectIdentifier("ROLE2")}}
-		opts.BlockedSecondaryRoles = &SessionPolicySecondaryRoles{All: Bool(true)}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SESSION POLICY %s SESSION_IDLE_TIMEOUT_MINS = 5 SESSION_UI_IDLE_TIMEOUT_MINS = 34 ALLOWED_SECONDARY_ROLES = (\"ROLE1\", \"ROLE2\") BLOCKED_SECONDARY_ROLES = ('ALL') COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
+	sessionPoliciesTests.Create.RunValidationCases(t)
+	sessionPoliciesTests.Create.RunSqlCases(t)
 }
 
 func TestSessionPolicies_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterSessionPolicyOptions
-	defaultOpts := func() *AlterSessionPolicyOptions {
-		return &AlterSessionPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterSessionPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.SetTags opts.UnsetTags opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions", "RenameTo", "Set", "SetTags", "UnsetTags", "Unset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.SetTags opts.UnsetTags opts.Unset] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			Comment: String("some comment"),
-		}
-		opts.Unset = &SessionPolicyUnset{
-			Comment: Bool(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions", "RenameTo", "Set", "SetTags", "UnsetTags", "Unset"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.SessionIdleTimeoutMins opts.Set.SessionUiIdleTimeoutMins opts.Set.AllowedSecondaryRoles opts.Set.BlockedSecondaryRoles opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterSessionPolicyOptions.Set", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"))
-	})
-
-	t.Run("validation: opts.Set.AllowedSecondaryRoles should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{
-				All: Bool(false),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
-
-		opts = defaultOpts()
-		opts.Set = &SessionPolicySet{
-			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{
-				None: Bool(false),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
-	})
-
-	t.Run("validation: opts.Set.BlockedSecondaryRoles should be valid", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{
-				All: Bool(false),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "All", "false"))
-
-		opts = defaultOpts()
-		opts.Set = &SessionPolicySet{
-			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{
-				None: Bool(false),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidValue("SessionPolicySecondaryRoles", "None", "false"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.AllowedSecondaryRoles.All opts.Set.AllowedSecondaryRoles.None opts.Set.AllowedSecondaryRoles.Roles] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.AllowedSecondaryRoles.All opts.Set.AllowedSecondaryRoles.None opts.Set.AllowedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{
-				All:   Bool(true),
-				Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("R1")},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.AllowedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.BlockedSecondaryRoles.All opts.Set.BlockedSecondaryRoles.None opts.Set.BlockedSecondaryRoles.Roles] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.BlockedSecondaryRoles.All opts.Set.BlockedSecondaryRoles.None opts.Set.BlockedSecondaryRoles.Roles] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{
-				All:  Bool(true),
-				None: Bool(true),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSessionPolicyOptions.Set.BlockedSecondaryRoles", "All", "None", "Roles"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.SessionIdleTimeoutMins opts.Unset.SessionUiIdleTimeoutMins opts.Unset.AllowedSecondaryRoles opts.Unset.BlockedSecondaryRoles opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &SessionPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterSessionPolicyOptions.Unset", "SessionIdleTimeoutMins", "SessionUiIdleTimeoutMins", "AllowedSecondaryRoles", "BlockedSecondaryRoles", "Comment"))
-	})
-
-	// all variants added manually
-	t.Run("alter set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SESSION POLICY %s SET COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter set secondary roles", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SessionPolicySet{
-			AllowedSecondaryRoles: &SessionPolicySecondaryRoles{None: Bool(true)},
-			BlockedSecondaryRoles: &SessionPolicySecondaryRoles{Roles: []AccountObjectIdentifier{NewAccountObjectIdentifier("ROLE1"), NewAccountObjectIdentifier("ROLE2")}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SESSION POLICY %s SET ALLOWED_SECONDARY_ROLES = () BLOCKED_SECONDARY_ROLES = (\"ROLE1\", \"ROLE2\")", id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &SessionPolicyUnset{
-			SessionIdleTimeoutMins:   Bool(true),
-			SessionUiIdleTimeoutMins: Bool(true),
-			Comment:                  Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SESSION POLICY %s UNSET SESSION_IDLE_TIMEOUT_MINS, SESSION_UI_IDLE_TIMEOUT_MINS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("alter rename", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomSchemaObjectIdentifier()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SESSION POLICY %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("alter set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SESSION POLICY %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SESSION POLICY %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	sessionPoliciesTests.Alter.RunValidationCases(t)
+	sessionPoliciesTests.Alter.RunSqlCases(t)
 }
 
 func TestSessionPolicies_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropSessionPolicyOptions
-	defaultOpts := func() *DropSessionPolicyOptions {
-		return &DropSessionPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropSessionPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP SESSION POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP SESSION POLICY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	sessionPoliciesTests.Drop.RunValidationCases(t)
+	sessionPoliciesTests.Drop.RunSqlCases(t)
 }
 
 func TestSessionPolicies_Show(t *testing.T) {
-	// added manually
-	id := randomSchemaObjectIdentifier()
-
-	// Minimal valid ShowSessionPolicyOptions
-	defaultOpts := func() *ShowSessionPolicyOptions {
-		return &ShowSessionPolicyOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowSessionPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SESSION POLICIES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("like-pattern"),
-		}
-		opts.StartsWith = String("starts-with-pattern")
-		opts.In = &ExtendedIn{
-			In: In{
-				Schema: id.SchemaId(),
-			},
-		}
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-			From: String("limit-from"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SESSION POLICIES LIKE 'like-pattern' IN SCHEMA %s STARTS WITH 'starts-with-pattern' LIMIT 10 FROM 'limit-from'", id.SchemaId().FullyQualifiedName())
-	})
-
-	// variants added manually
-	t.Run("show on account", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = &On{
-			Account: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SESSION POLICIES ON ACCOUNT")
-	})
-
-	t.Run("show on user", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = &On{
-			User: NewAccountObjectIdentifier("user_name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SESSION POLICIES ON USER "user_name"`)
-	})
+	sessionPoliciesTests.Show.RunValidationCases(t)
+	sessionPoliciesTests.Show.RunSqlCases(t)
 }
 
 func TestSessionPolicies_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeSessionPolicyOptions
-	defaultOpts := func() *DescribeSessionPolicyOptions {
-		return &DescribeSessionPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeSessionPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SESSION POLICY %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	sessionPoliciesTests.Describe.RunValidationCases(t)
+	sessionPoliciesTests.Describe.RunSqlCases(t)
 }
