@@ -59,7 +59,7 @@ func (h *HybridTableResourceAssert) HasDataRetentionTimeInDays(expected int) *Hy
 	return h
 }
 
-// typed assert for "foreign_key" (type: Set, subtype: Map) is not currently supported
+// typed assert for "foreign_key_constraint" (type: Set, subtype: Map) is not currently supported
 
 func (h *HybridTableResourceAssert) HasFullyQualifiedName(expected string) *HybridTableResourceAssert {
 	h.StringValueSet("fully_qualified_name", expected)
@@ -73,7 +73,7 @@ func (h *HybridTableResourceAssert) HasMaxDataExtensionTimeInDays(expected int) 
 	return h
 }
 
-// typed assert for "primary_key" (type: List, subtype: Map) is not currently supported
+// typed assert for "primary_key_constraint" (type: List, subtype: Map) is not currently supported
 
 // typed assert for "unique_constraint" (type: Set, subtype: Map) is not currently supported
 
@@ -169,8 +169,8 @@ func (h *HybridTableResourceAssert) HasDataRetentionTimeInDaysEmpty() *HybridTab
 	return h
 }
 
-func (h *HybridTableResourceAssert) HasForeignKeyEmpty() *HybridTableResourceAssert {
-	h.ValueSet("foreign_key.#", "0")
+func (h *HybridTableResourceAssert) HasForeignKeyConstraintEmpty() *HybridTableResourceAssert {
+	h.ValueSet("foreign_key_constraint.#", "0")
 	return h
 }
 

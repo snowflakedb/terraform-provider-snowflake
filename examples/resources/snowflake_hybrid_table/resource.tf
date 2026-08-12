@@ -9,8 +9,8 @@ resource "snowflake_hybrid_table" "basic" {
     type = "NUMBER(38,0)"
   }
 
-  primary_key {
-    keys = ["ID"]
+  primary_key_constraint {
+    columns = ["ID"]
   }
 }
 
@@ -47,9 +47,9 @@ resource "snowflake_hybrid_table" "complete" {
     }
   }
 
-  primary_key {
-    name = "pk_hybrid_table"
-    keys = ["ID"]
+  primary_key_constraint {
+    name    = "pk_hybrid_table"
+    columns = ["ID"]
   }
 
   index {

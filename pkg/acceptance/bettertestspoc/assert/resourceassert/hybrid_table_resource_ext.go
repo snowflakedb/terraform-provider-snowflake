@@ -3,9 +3,11 @@ package resourceassert
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignature) *HybridTableResourceAssert {
@@ -20,67 +22,106 @@ func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignatur
 	return h
 }
 
-// HasColumnConfigs asserts all per-column fields (name, type, nullable, comment, collate)
-// in one call. Use this when the model was built with WithColumnConfigs. Zero-valued
-// fields in HybridTableColumnConfig are not asserted.
+// HasColumnConfigs asserts all per-column fields (name, type, nullable, comment,
+// collate, default) in one call. Use this when the model was built with
+// WithColumnConfigs. A nil Nullable is treated as the schema default (true).
 func (h *HybridTableResourceAssert) HasColumnConfigs(columns []model.HybridTableColumnConfig) *HybridTableResourceAssert {
 	h.ValueSet("column.#", strconv.Itoa(len(columns)))
 	for i, col := range columns {
 		h.ValueSet(fmt.Sprintf("column.%d.name", i), col.Name)
 		h.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type)
+		nullable := true
 		if col.Nullable != nil {
-			h.ValueSet(fmt.Sprintf("column.%d.nullable", i), strconv.FormatBool(*col.Nullable))
+			nullable = *col.Nullable
 		}
-		if col.Comment != "" {
-			h.ValueSet(fmt.Sprintf("column.%d.comment", i), col.Comment)
-		}
-		if col.Collate != "" {
-			h.ValueSet(fmt.Sprintf("column.%d.collate", i), col.Collate)
+		h.ValueSet(fmt.Sprintf("column.%d.nullable", i), strconv.FormatBool(nullable))
+		h.ValueSet(fmt.Sprintf("column.%d.comment", i), col.Comment)
+		h.ValueSet(fmt.Sprintf("column.%d.collate", i), col.Collate)
+		if col.Default != nil {
+			h.ValueSet(fmt.Sprintf("column.%d.default.#", i), "1")
+			constant, expression, sequence := "", "", ""
+			if col.Default.Constant != nil {
+				constant = *col.Default.Constant
+			}
+			if col.Default.Expression != nil {
+				expression = *col.Default.Expression
+			}
+			if col.Default.Sequence != nil {
+				sequence = *col.Default.Sequence
+			}
+			h.ValueSet(fmt.Sprintf("column.%d.default.0.constant", i), constant)
+			h.ValueSet(fmt.Sprintf("column.%d.default.0.expression", i), expression)
+			h.ValueSet(fmt.Sprintf("column.%d.default.0.sequence", i), sequence)
+		} else {
+			h.ValueSet(fmt.Sprintf("column.%d.default.#", i), "0")
 		}
 	}
 	return h
 }
 
-func (h *HybridTableResourceAssert) HasColumnNullable(index int, expected bool) *HybridTableResourceAssert {
-	h.ValueSet(fmt.Sprintf("column.%d.nullable", index), strconv.FormatBool(expected))
-	return h
-}
-
-func (h *HybridTableResourceAssert) HasColumnComment(index int, expected string) *HybridTableResourceAssert {
-	h.ValueSet(fmt.Sprintf("column.%d.comment", index), expected)
-	return h
-}
-
-func (h *HybridTableResourceAssert) HasPrimaryKeyKeys(expected ...string) *HybridTableResourceAssert {
-	h.ValueSet("primary_key.0.keys.#", strconv.Itoa(len(expected)))
+func (h *HybridTableResourceAssert) HasPrimaryKeyColumns(expected ...string) *HybridTableResourceAssert {
+	h.ValueSet("primary_key_constraint.0.columns.#", strconv.Itoa(len(expected)))
 	for i, k := range expected {
-		h.ValueSet(fmt.Sprintf("primary_key.0.keys.%d", i), k)
+		h.ValueSet(fmt.Sprintf("primary_key_constraint.0.columns.%d", i), k)
 	}
 	return h
 }
 
-func (h *HybridTableResourceAssert) HasUniqueConstraintCount(expected int) *HybridTableResourceAssert {
-	h.ValueSet("unique_constraint.#", strconv.Itoa(expected))
+func (h *HybridTableResourceAssert) HasUniqueConstraints(constraints ...model.HybridTableUniqueConstraintConfig) *HybridTableResourceAssert {
+	h.ValueSet("unique_constraint.#", strconv.Itoa(len(constraints)))
+	for _, uc := range constraints {
+		attrs := map[string]string{
+			"columns.#": strconv.Itoa(len(uc.Columns)),
+		}
+		if uc.Name != "" {
+			attrs["name"] = uc.Name
+		}
+		for i, col := range uc.Columns {
+			attrs[fmt.Sprintf("columns.%d", i)] = col
+		}
+		h.SetContainsElemNested("unique_constraint", attrs)
+	}
 	return h
 }
 
-func (h *HybridTableResourceAssert) HasForeignKeyCount(expected int) *HybridTableResourceAssert {
-	h.ValueSet("foreign_key.#", strconv.Itoa(expected))
+func (h *HybridTableResourceAssert) HasForeignKeyConstraints(constraints ...model.HybridTableForeignKeyConstraintConfig) *HybridTableResourceAssert {
+	h.ValueSet("foreign_key_constraint.#", strconv.Itoa(len(constraints)))
+	for _, fk := range constraints {
+		attrs := map[string]string{
+			"columns.#":     strconv.Itoa(len(fk.Columns)),
+			"table_name":    fk.TableName,
+			"ref_columns.#": strconv.Itoa(len(fk.RefColumns)),
+		}
+		if fk.Name != "" {
+			attrs["name"] = fk.Name
+		}
+		for i, col := range fk.Columns {
+			attrs[fmt.Sprintf("columns.%d", i)] = col
+		}
+		for i, col := range fk.RefColumns {
+			attrs[fmt.Sprintf("ref_columns.%d", i)] = col
+		}
+		h.SetContainsElemNested("foreign_key_constraint", attrs)
+	}
 	return h
 }
 
-func (h *HybridTableResourceAssert) HasIndexCount(expected int) *HybridTableResourceAssert {
-	h.ValueSet("index.#", strconv.Itoa(expected))
-	return h
-}
-
-func (h *HybridTableResourceAssert) HasColumnDefaultConstant(index int, expected string) *HybridTableResourceAssert {
-	h.ValueSet(fmt.Sprintf("column.%d.default.#", index), "1")
-	h.ValueSet(fmt.Sprintf("column.%d.default.0.constant", index), expected)
-	return h
-}
-
-func (h *HybridTableResourceAssert) HasColumnNoDefault(index int) *HybridTableResourceAssert {
-	h.ValueSet(fmt.Sprintf("column.%d.default.#", index), "0")
+func (h *HybridTableResourceAssert) HasIndexes(indexes ...model.HybridTableIndexConfig) *HybridTableResourceAssert {
+	h.ValueSet("index.#", strconv.Itoa(len(indexes)))
+	for _, idx := range indexes {
+		attrs := map[string]string{
+			"name":              idx.Name,
+			"columns.#":         strconv.Itoa(len(idx.Columns)),
+			"include_columns.#": strconv.Itoa(len(idx.IncludeColumns)),
+		}
+		for i, col := range idx.Columns {
+			attrs[fmt.Sprintf("columns.%d", i)] = col
+		}
+		for _, col := range idx.IncludeColumns {
+			// Nested TypeSet keys are hashes; match the resource's include_columns Set func.
+			attrs[fmt.Sprintf("include_columns.%d", schema.HashString(strings.ToUpper(col)))] = col
+		}
+		h.SetContainsElemNested("index", attrs)
+	}
 	return h
 }
