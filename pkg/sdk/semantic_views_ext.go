@@ -75,11 +75,11 @@ func (opts *CreateSemanticViewOptions) additionalValidations() error {
 	var errs []error
 	if valueSet(opts.SemanticViewRelationships) {
 		for _, v := range opts.SemanticViewRelationships {
-			if !exactlyOneValueSet(v.TableNameOrAlias.RelationshipTableName, v.TableNameOrAlias.RelationshipTableAlias) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
+			if v.TableNameOrAlias != nil && !exactlyOneValueSet(v.TableNameOrAlias.RelationshipTableName, v.TableNameOrAlias.RelationshipTableAlias) {
+				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
 			}
-			if !exactlyOneValueSet(v.RefTableNameOrAlias.RelationshipTableName, v.RefTableNameOrAlias.RelationshipTableAlias) {
-				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
+			if v.RefTableNameOrAlias != nil && !exactlyOneValueSet(v.RefTableNameOrAlias.RelationshipTableName, v.RefTableNameOrAlias.RelationshipTableAlias) {
+				errs = append(errs, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
 			}
 		}
 	}
