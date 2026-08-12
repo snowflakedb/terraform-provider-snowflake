@@ -72,4 +72,5 @@ var sessionsDef = g.NewInterface(
 	"",
 	[]*g.MethodParameter{g.NewMethodParameter("opts", "*ShowParametersOptions")},
 	"[]*Parameter", "error",
-).WithEnums(secondaryRoleOptionEnum)
+).WithEnums(secondaryRoleOptionEnum).
+	WithEnabledGenerationParts(g.PartUnitTests)
