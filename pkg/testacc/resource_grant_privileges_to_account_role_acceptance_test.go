@@ -934,6 +934,54 @@ func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFunctionWithArguments
 	})
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/5087 is fixed
+func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnDMFsWithTableArgument(t *testing.T) {
+	role, roleCleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	function, functionCleanup := testClient().DataMetricFunctionClient.CreateWithArguments(
+		t,
+		[]string{"ARG_T TABLE(ARG_C DATE)"},
+		[]string{"TABLE(DATE)"},
+	)
+	t.Cleanup(functionCleanup)
+
+	roleId := role.ID()
+	privilege := string(sdk.SchemaObjectPrivilegeUsage)
+	resourceModel := model.GrantPrivilegesToAccountRole("test", roleId.FullyQualifiedName()).
+		WithPrivileges(privilege).
+		WithOnSchemaObjectObject(sdk.ObjectTypeFunction, function.FullyQualifiedName()).
+		WithWithGrantOption(false)
+	ref := resourceModel.ResourceReference()
+
+	assertions := resourceassert.GrantPrivilegesToAccountRoleResource(t, ref).
+		HasAccountRoleName(roleId.FullyQualifiedName()).
+		HasPrivileges(privilege).
+		HasWithGrantOption(false).
+		HasOnSchemaObjectObject(sdk.ObjectTypeFunction, function.FullyQualifiedName()).
+		HasResourceId(fmt.Sprintf("%s|false|false|USAGE|OnSchemaObject|OnObject|FUNCTION|%s", roleId.FullyQualifiedName(), function.FullyQualifiedName()))
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, resourceModel),
+				Check:  assertThat(t, assertions),
+			},
+			{
+				Config:            accconfig.FromModels(t, resourceModel),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAcc_GrantPrivilegesToAccountRole_OnSchemaObject_OnFunctionWithoutArguments(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)

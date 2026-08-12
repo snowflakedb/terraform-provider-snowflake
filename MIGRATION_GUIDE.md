@@ -26,6 +26,26 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(bug fix)* Grant resources and grants data source: support `TABLE(<type>)` data metric function arguments
+
+Previously, managing grants on data metric functions whose signature uses the abbreviated `TABLE(<type>)` form (for example, `"SNOWFLAKE"."CORE"."ACCEPTED_VALUES"(TABLE(DATE))`) caused a provider panic like this
+```
+Stack trace from the terraform-provider-snowflake_v2.19.0 plugin:
+
+panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x2 addr=0x0 pc=0x1050294dc]
+
+goroutine 286 [running]:
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes.(*TableDataType).ToLegacyDataTypeSql(0x5454dccfaae0?)
+github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes/table.go:42 +0x1c
+```
+
+This has been fixed: the provider now correctly parses and serializes the abbreviated `TABLE(<type>)` signature in function identifiers.
+
+No changes are required for existing configurations.
+
+References: [#5087](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5087)
+
 ### *(new feature)* `ADAPTIVE` refresh mode for dynamic tables
 
 The `snowflake_dynamic_table` resource now accepts [`ADAPTIVE`](https://docs.snowflake.com/en/release-notes/2026/other/2026-07-30-dynamic-tables-adaptive-refresh-mode-ga) as a valid value for `refresh_mode` option.

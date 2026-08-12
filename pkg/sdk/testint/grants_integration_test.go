@@ -2556,6 +2556,47 @@ func TestInt_ShowGrants(t *testing.T) {
 	})
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/5087 is fixed
+func TestInt_ShowGrants_DMFsWithTableArgument(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	role, roleCleanup := testClientHelper().Role.CreateRole(t)
+	t.Cleanup(roleCleanup)
+
+	functionId, functionCleanup := testClientHelper().DataMetricFunctionClient.CreateWithArguments(
+		t,
+		[]string{"ARG_T TABLE(ARG_C DATE)"},
+		[]string{"TABLE(DATE)"},
+	)
+	t.Cleanup(functionCleanup)
+
+	err := client.Grants.GrantPrivilegesToAccountRole(ctx, &sdk.AccountRoleGrantPrivileges{
+		SchemaObjectPrivileges: []sdk.SchemaObjectPrivilege{sdk.SchemaObjectPrivilegeUsage},
+	}, &sdk.AccountRoleGrantOn{
+		SchemaObject: &sdk.GrantOnSchemaObject{
+			SchemaObject: &sdk.Object{
+				ObjectType: sdk.ObjectTypeFunction,
+				Name:       functionId,
+			},
+		},
+	}, role.ID(), nil)
+	require.NoError(t, err)
+
+	grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+		To: &sdk.ShowGrantsTo{
+			Role: role.ID(),
+		},
+	})
+	require.NoError(t, err)
+
+	functionGrant, err := collections.FindFirst[sdk.Grant](grants, func(g sdk.Grant) bool {
+		return g.Privilege == sdk.SchemaObjectPrivilegeUsage.String() && g.GrantedOn == sdk.ObjectTypeFunction
+	})
+	require.NoError(t, err)
+	assert.Contains(t, functionGrant.Name.FullyQualifiedName(), "TABLE(DATE)")
+}
+
 func TestInt_GrantAndRevokeInheritedPrivilegesToAccountRole(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
