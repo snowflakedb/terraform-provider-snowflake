@@ -69,6 +69,7 @@ type sdkTestCtx[PT validatable] struct {
 	// (check for presence in one map instead of 4); we can iterate on this implementation as we go.
 	modify       map[testCaseName]func(PT)
 	expectedSqls map[testCaseName]string
+	expectedErrs map[testCaseName]error
 
 	extraValidationCases []validationCase[PT]
 	extraSqlCases        []sqlCase[PT]
@@ -86,6 +87,7 @@ func newSdkTestCtx[PT validatable](objectName, operationName string) *sdkTestCtx
 
 		modify:       make(map[testCaseName]func(PT)),
 		expectedSqls: make(map[testCaseName]string),
+		expectedErrs: make(map[testCaseName]error),
 	}
 }
 
@@ -139,6 +141,19 @@ func (c *sdkTestCtx[PT]) withModify(name testCaseName, f func(PT)) *sdkTestCtx[P
 	c.assertCaseExists(name, "withModify")
 	c.modify[name] = f
 	return c
+}
+
+// withExpectedErr registers the error a validation case must fail with, overriding its generated ExpectedErr.
+func (c *sdkTestCtx[PT]) withExpectedErr(name testCaseName, err error) *sdkTestCtx[PT] {
+	c.assertValidationCaseExists(name, "withExpectedErr")
+	c.expectedErrs[name] = err
+	return c
+}
+
+// withModifyAndExpectedErr registers both the modification and the expected error for a generated validation case in a single call.
+func (c *sdkTestCtx[PT]) withModifyAndExpectedErr(name testCaseName, modify func(PT), err error) *sdkTestCtx[PT] {
+	return c.withModify(name, modify).
+		withExpectedErr(name, err)
 }
 
 // withExpectedSql registers the SQL a sql case must render to.
@@ -204,8 +219,27 @@ func (c *sdkTestCtx[PT]) RunValidationCases(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(string(tc.Name), func(t *testing.T) {
 			opts := c.prepareOpts(t, tc)
-			assertOptsInvalidJoinedErrors(t, opts, tc.ExpectedErr)
+			expectedErr := c.expectedErr(t, tc)
+			assertOptsInvalidJoinedErrors(t, opts, expectedErr)
 		})
+	}
+}
+
+// expectedErr resolves the error a validation case must fail with — ext registration first,
+// generated default second, loud failure last (mirrors prepareOpts's resolution order).
+func (c *sdkTestCtx[PT]) expectedErr(t *testing.T, tc validationCase[PT]) error {
+	t.Helper()
+	switch {
+	case c.expectedErrs[tc.Name] != nil:
+		return c.expectedErrs[tc.Name] // ext wins
+	case tc.ExpectedErr != nil:
+		return tc.ExpectedErr // generated default
+	default:
+		t.Fatalf(
+			"no expected error registered for case %[1]q — the generator could not derive one (ValidateValue delegates to a nested struct's own validate()).\nRegister it in %[2]s:\n\n\t%[3]s.\n\t\twithExpectedErr(%[4]s, ...)\n\nOr if a modification also needs to be registered at the same time:\n\n\t%[3]s.\n\t\twithModifyAndExpectedErr(%[4]s, func(opts %[5]s) { ... }, ...)\n",
+			tc.Name, c.extFile(), c.ctxPath(), c.constFor(tc.Name), c.optsTypeName(),
+		)
+		return nil
 	}
 }
 
@@ -284,6 +318,16 @@ func (c *sdkTestCtx[PT]) assertCaseDoesNotExist(name testCaseName, method string
 			method, name, c.ctxPath(),
 		))
 	}
+}
+
+func (c *sdkTestCtx[PT]) assertValidationCaseExists(name testCaseName, method string) {
+	if c.hasValidationCase(name) {
+		return
+	}
+	panic(fmt.Sprintf(
+		"%s(%q) on %s: no such generated validation case. It may have been renamed or removed by regeneration — check %s.",
+		method, name, c.ctxPath(), c.extFile(),
+	))
 }
 
 func (c *sdkTestCtx[PT]) assertSqlCaseExists(name testCaseName, method string) {

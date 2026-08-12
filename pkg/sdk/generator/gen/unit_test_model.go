@@ -57,9 +57,11 @@ type OperationTestModel struct {
 type ValidationTestCase struct {
 	// Name is the case name used as the t.Run string.
 	Name string
-	// ExpectedErrLine is the error expression, pre-rendered from Validation.ReturnedError
-	// so the template and the validation body cannot drift.
+	// ExpectedErrLine is the error expression, pre-rendered from Validation.TestExpectedError
+	// so the template and the validation body cannot drift. Empty when !HasExpectedErr.
 	ExpectedErrLine string
+	// HasExpectedErr is false when the generator could not derive an expected error.
+	HasExpectedErr bool
 	// ModifyLines are the statements of the DefaultModify closure body, or nil when not derivable.
 	ModifyLines []string
 	// HasModify is false when the generator could not derive a modification;
@@ -113,7 +115,7 @@ func (i *Interface) buildUnitTestsModel() *UnitTestsModel {
 		nameField := op.OptsField.FindChildCaseInsensitive("name")
 		if nameField != nil && nameField.IsIdentifier() {
 			idKind := nameField.KindNoPtr()
-			defaultOptsFields = []string{fmt.Sprintf("%s: %s", nameField.Name, lookupOrAddIdVar(idKind).Name)}
+			defaultOptsFields = []string{defaultOptsFieldFor(nameField, lookupOrAddIdVar(idKind).Name)}
 		}
 
 		valCases := buildValidationCases(op)
@@ -136,6 +138,15 @@ func (i *Interface) buildUnitTestsModel() *UnitTestsModel {
 		IdVars:                idVars,
 		Operations:            operationTestModels,
 	}
+}
+
+// defaultOptsFieldFor returns the field-initializer line for an identifier default-opts field,
+// wrapping idVarRef in new(...) when nameField itself is a pointer (e.g. optional Name fields).
+func defaultOptsFieldFor(nameField *Field, idVarRef string) string {
+	if nameField.IsPointer() {
+		idVarRef = fmt.Sprintf("new(%s)", idVarRef)
+	}
+	return fmt.Sprintf("%s: %s", nameField.Name, idVarRef)
 }
 
 // buildValidationCases derives all unit test validation cases for one operation recursively traversing its subtree.
@@ -176,14 +187,14 @@ func collectValidationCases(f *Field, opName string, out *[]*ValidationTestCase)
 }
 
 func buildCasesForValidation(v *Validation, f *Field, opName string, disambiguate bool) []*ValidationTestCase {
-	expectedErrLine := v.ReturnedError(f)
+	expectedErrLine, hasExpectedErr := v.TestExpectedError(f)
 	if !v.IsMultiField() {
-		return []*ValidationTestCase{buildSingleFieldValidationCase(v, f, opName, expectedErrLine)}
+		return []*ValidationTestCase{buildSingleFieldValidationCase(v, f, opName, expectedErrLine, hasExpectedErr)}
 	}
 	return buildMultiFieldValidationCases(v, f, opName, expectedErrLine, disambiguate)
 }
 
-func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErrLine string) *ValidationTestCase {
+func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErrLine string, hasExpectedErr bool) *ValidationTestCase {
 	// Use the field name, not the container slug, so two ValidateValueSet validations on
 	// different fields of the same container produce distinct names
 	// (e.g. Handler_ValidateValueSet vs RuntimeVersion_ValidateValueSet).
@@ -197,7 +208,7 @@ func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErr
 	}
 	caseName := fmt.Sprintf("validation_%s_%s_%s", opName, fieldSlug, v.TypeName())
 	lines, ok := v.DeriveModify(f)
-	return &ValidationTestCase{Name: caseName, ExpectedErrLine: expectedErrLine, ModifyLines: lines, HasModify: ok}
+	return &ValidationTestCase{Name: caseName, ExpectedErrLine: expectedErrLine, HasExpectedErr: hasExpectedErr, ModifyLines: lines, HasModify: ok}
 }
 
 // buildMultiFieldValidationCases generates per-shape cases for multi-field validations:
@@ -212,7 +223,7 @@ func buildMultiFieldValidationCases(v *Validation, f *Field, opName, expectedErr
 	}
 
 	tc := func(name string, lines []string, ok bool) *ValidationTestCase {
-		return &ValidationTestCase{Name: name, ExpectedErrLine: expectedErrLine, ModifyLines: lines, HasModify: ok}
+		return &ValidationTestCase{Name: name, ExpectedErrLine: expectedErrLine, HasExpectedErr: true, ModifyLines: lines, HasModify: ok}
 	}
 
 	var cases []*ValidationTestCase
@@ -254,7 +265,7 @@ func buildMultiFieldValidationCases(v *Validation, f *Field, opName, expectedErr
 func deriveConflictingFieldsModify(v *Validation, f *Field) ([]string, bool) {
 	prime := primeAncestors(f)
 	if f.IsPointer() {
-		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.Path(), f.KindNoPtr()))
+		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.IndexedPath(), f.KindNoPtr()))
 	}
 	stmts := make([]string, 0, len(v.FieldNames))
 	for _, name := range v.FieldNames {
@@ -266,7 +277,7 @@ func deriveConflictingFieldsModify(v *Validation, f *Field) ([]string, bool) {
 		if !ok {
 			return nil, false
 		}
-		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.Path(), name, nz))
+		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), name, nz))
 	}
 	return append(prime, stmts...), true
 }
@@ -277,7 +288,7 @@ func deriveAtLeastOneValueSetModify(v *Validation, f *Field) ([]string, bool) {
 	// handles ancestors up to f's parent; we prime f itself separately.
 	prime := primeAncestors(f)
 	if f.IsPointer() {
-		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.Path(), f.KindNoPtr()))
+		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.IndexedPath(), f.KindNoPtr()))
 	}
 	stmts := make([]string, 0, len(v.FieldNames))
 	for _, name := range v.FieldNames {
@@ -285,7 +296,7 @@ func deriveAtLeastOneValueSetModify(v *Validation, f *Field) ([]string, bool) {
 		if child == nil {
 			return nil, false
 		}
-		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.Path(), name, zeroValueFor(child)))
+		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), name, zeroValueFor(child)))
 	}
 	return append(prime, stmts...), true
 }
@@ -297,10 +308,10 @@ func deriveNoneSetModify(v *Validation, f *Field) ([]string, bool) {
 		// For a slice field the validation runs per-element. A single-element slice whose element
 		// has all listed fields at zero value is the correct "none set" setup.
 		// e.g. opts.Arguments = []FunctionArgument{{}}
-		return append(prime, fmt.Sprintf("opts%s = []%s{{}}", f.Path(), f.KindNoPtr())), true
+		return append(prime, fmt.Sprintf("opts%s = []%s{{}}", f.IndexedPath(), f.KindNoPtr())), true
 	}
 	if f.IsPointer() {
-		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.Path(), f.KindNoPtr()))
+		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.IndexedPath(), f.KindNoPtr()))
 	}
 	stmts := make([]string, 0, len(v.FieldNames))
 	for _, name := range v.FieldNames {
@@ -308,7 +319,7 @@ func deriveNoneSetModify(v *Validation, f *Field) ([]string, bool) {
 		if child == nil {
 			return nil, false
 		}
-		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.Path(), name, zeroValueFor(child)))
+		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), name, zeroValueFor(child)))
 	}
 	return append(prime, stmts...), true
 }
@@ -322,7 +333,7 @@ func deriveMoreThanOneSetModify(v *Validation, f *Field) ([]string, bool) {
 	}
 	prime := primeAncestors(f)
 	if f.IsPointer() {
-		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.Path(), f.KindNoPtr()))
+		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.IndexedPath(), f.KindNoPtr()))
 	}
 	if len(v.FieldNames) < 2 {
 		return nil, false
@@ -337,7 +348,7 @@ func deriveMoreThanOneSetModify(v *Validation, f *Field) ([]string, bool) {
 		if !ok {
 			return nil, false
 		}
-		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.Path(), name, nz))
+		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), name, nz))
 	}
 	return append(prime, stmts...), true
 }
