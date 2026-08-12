@@ -26,6 +26,26 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(new feature)* GRANTS_SHOW_CACHING experiment
+
+A new `GRANTS_SHOW_CACHING` experiment has been added. When enabled, the provider caches `SHOW GRANTS` results (both `SHOW GRANTS ON <object>` and `SHOW FUTURE GRANTS IN <container>`) in memory for the duration of a single plan or apply cycle, so multiple resource instances resolving to the same underlying SHOW statement share one round-trip instead of each issuing their own.
+
+Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_ownership`.
+
+Without caching, every resource instance issues an independent SHOW GRANTS call during Read. In configurations where many grant resources resolve to the same underlying SHOW statement (e.g. many privilege grants on the same schema, or many future-grant roles on the same database), this produces N identical round-trips that each return the same full result set — only 1 is needed per unique statement per plan.
+
+When enabled, the first Read for a given SHOW statement fetches and caches the result; subsequent Reads in the same plan reuse it. The cache is invalidated on Create, Update, and Delete of the resources listed above, and additionally on any grant/revoke/ownership-transfer performed by `snowflake_grant_privileges_to_database_role` and `snowflake_grant_privileges_to_share` that could affect the same object, so mutations within a single apply remain correctly visible to subsequent Reads. As with any cache, a mutation to the same object made *outside* this apply cycle (by another concurrent Terraform run, or a resource type not listed above) is not tracked and cannot invalidate an already-cached entry; this is a pre-existing limitation of the caching model introduced by `GRANT_ACCOUNT_ROLE_SHOW_CACHING` in v2.18.0, not something new to this experiment.
+
+To enable, add `GRANTS_SHOW_CACHING` to the `experimental_features_enabled` field in the provider configuration:
+
+```hcl
+provider "snowflake" {
+  experimental_features_enabled = ["GRANTS_SHOW_CACHING"]
+}
+```
+
+This is a separate, independent flag from `GRANT_ACCOUNT_ROLE_SHOW_CACHING`: it does **not** replace that experiment, does not affect `snowflake_grant_account_role`'s caching behavior, and both can be enabled together. No changes to existing configurations are required. The experiment is intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.
+
 ### *(bug fix)* Grant resources and grants data source: support `TABLE(<type>)` data metric function arguments
 
 Previously, managing grants on data metric functions whose signature uses the abbreviated `TABLE(<type>)` form (for example, `"SNOWFLAKE"."CORE"."ACCEPTED_VALUES"(TABLE(DATE))`) caused a provider panic like this

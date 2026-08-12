@@ -661,7 +661,7 @@ func validateGrantPrivilegesToAccountRoleImport(ctx context.Context, m any, id G
 		return nil
 	}
 
-	grants, err := providerCtx.Client.Grants.Show(ctx, opts)
+	grants, err := showGrantsCached(ctx, providerCtx, opts)
 	if err != nil {
 		return fmt.Errorf("show grants: %w", err)
 	}
@@ -680,7 +680,8 @@ func validateGrantPrivilegesToAccountRoleImport(ctx context.Context, m any, id G
 }
 
 func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	diags := diag.Diagnostics{}
 
 	id, err := createGrantPrivilegesToAccountRoleIdFromSchema(d)
@@ -714,11 +715,17 @@ func CreateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(id.String())
 
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequestForAccountRole(*id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
+
 	return append(diags, ReadGrantPrivilegesToAccountRole(ctx, d, meta)...)
 }
 
 func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	diags := diag.Diagnostics{}
 
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
@@ -945,6 +952,9 @@ func UpdateGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	d.SetId(id.String())
 
+	invalidateOpts, _ := prepareShowGrantsRequestForAccountRole(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
+
 	return append(diags, ReadGrantPrivilegesToAccountRole(ctx, d, meta)...)
 }
 
@@ -976,6 +986,8 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 			},
 		}
 	}
+	invalidateOpts, _ := prepareShowGrantsRequestForAccountRole(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	d.SetId("")
 
@@ -1057,7 +1069,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	grants, err := client.Grants.Show(ctx, opts)
+	grants, err := showGrantsCached(ctx, providerCtx, opts)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			d.SetId("")

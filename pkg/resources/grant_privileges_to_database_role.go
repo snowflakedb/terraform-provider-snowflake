@@ -431,7 +431,8 @@ func ImportGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 }
 
 func CreateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id, err := createGrantPrivilegesToDatabaseRoleIdFromSchema(d)
 	if err != nil {
@@ -458,11 +459,17 @@ func CreateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 
 	d.SetId(id.String())
 
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequest(*id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
+
 	return ReadGrantPrivilegesToDatabaseRole(ctx, d, meta)
 }
 
 func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := ParseGrantPrivilegesToDatabaseRoleId(d.Id())
 	if err != nil {
 		return diag.Diagnostics{
@@ -664,6 +671,9 @@ func UpdateGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 
 	d.SetId(id.String())
 
+	invalidateOpts, _ := prepareShowGrantsRequest(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
+
 	return ReadGrantPrivilegesToDatabaseRole(ctx, d, meta)
 }
 
@@ -693,6 +703,8 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 			},
 		}
 	}
+	invalidateOpts, _ := prepareShowGrantsRequest(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	d.SetId("")
 
