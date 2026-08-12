@@ -11,10 +11,13 @@ import (
 //
 // It is intended for caching expensive, read-only Snowflake lookups whose result is shared
 // by many resource instances within a single Terraform plan/apply cycle. The canonical use is
-// SHOW GRANTS OF ROLE: without caching, every snowflake_grant_account_role instance issues an
-// independent SHOW GRANTS OF ROLE <name> call during Read. Because one SHOW returns all grants
-// for a role, N resources sharing the same role name trigger N identical round-trips that each
-// return the same full result set — only 1 is needed per plan.
+// SHOW GRANTS: without caching, every grant resource instance (snowflake_grant_account_role,
+// snowflake_grant_privileges_to_account_role, snowflake_grant_ownership, ...) issues an independent
+// SHOW GRANTS call during Read. Because one SHOW returns the full result set for whatever it's
+// scoped to (a role, an object, a container), N resource instances that resolve to the same SHOW
+// statement trigger N identical round-trips — only 1 is needed per plan. Callers key the cache by
+// the rendered SQL of the SHOW statement (see sdk.StructToSQL), so identical keys are
+// guaranteed to represent identical queries.
 //
 // The cache is scoped to a single provider instance (= one Terraform plan/apply cycle), so there
 // is no risk of carrying stale data across separate runs. Within a single apply, callers that
@@ -44,7 +47,13 @@ func NewCache[T any]() *Cache[T] {
 // stores the result, and returns it. Concurrent misses on the same key are collapsed
 // into a single loadFn call whose result is shared by all callers. If loadFn returns an
 // error the result is not cached and the error is propagated to the caller.
-func (c *Cache[T]) GetOrLoad(key string, loadFn func(ctx context.Context) (T, error)) (T, error) {
+//
+// ctx is the caller's Terraform-provided context (so resource Timeouts and plan cancellation
+// propagate into the Snowflake call on a cache miss). Because concurrent misses on the same key
+// are collapsed into a single loadFn call via singleflight, only the ctx of whichever caller
+// triggers the load actually governs it; a later caller joining an in-flight load is not able to
+// cancel it via its own ctx, only via Invalidate.
+func (c *Cache[T]) GetOrLoad(ctx context.Context, key string, loadFn func(ctx context.Context) (T, error)) (T, error) {
 	// Fast path: warm cache hit, read lock only. Skips singleflight entirely.
 	c.mu.RLock()
 	if v, ok := c.data[key]; ok {
@@ -66,7 +75,7 @@ func (c *Cache[T]) GetOrLoad(key string, loadFn func(ctx context.Context) (T, er
 		}
 		c.mu.RUnlock()
 
-		ctx, cancel := context.WithCancel(context.Background())
+		loadCtx, cancel := context.WithCancel(ctx)
 		c.mu.Lock()
 		c.cancels[key] = cancel
 		c.mu.Unlock()
@@ -77,14 +86,14 @@ func (c *Cache[T]) GetOrLoad(key string, loadFn func(ctx context.Context) (T, er
 			cancel()
 		}()
 
-		loaded, loadErr := loadFn(ctx)
+		loaded, loadErr := loadFn(loadCtx)
 		if loadErr != nil {
 			return nil, loadErr
 		}
-		if ctx.Err() != nil {
+		if loadCtx.Err() != nil {
 			// Invalidate ran while loadFn was in flight; the result may reflect
 			// pre-mutation state, so don't let it overwrite the invalidation.
-			return nil, ctx.Err()
+			return nil, loadCtx.Err()
 		}
 
 		c.mu.Lock()

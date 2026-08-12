@@ -239,7 +239,8 @@ func ImportGrantOwnership() schema.StateContextFunc {
 }
 
 func CreateGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id, err := createGrantOwnershipIdFromSchema(d)
 	if err != nil {
@@ -272,6 +273,11 @@ func CreateGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	d.SetId(id.String())
+
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequestForGrantOwnership(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	return ReadGrantOwnership(ctx, d, meta)
 }
@@ -353,6 +359,9 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 		}
 	}
 
+	invalidateOpts, _ := prepareShowGrantsRequestForGrantOwnership(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
+
 	d.SetId("")
 
 	return nil
@@ -375,9 +384,9 @@ func ReadGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any) d
 		return nil
 	}
 
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
 
-	grants, err := client.Grants.Show(ctx, opts)
+	grants, err := showGrantsCached(ctx, providerCtx, opts)
 	if err != nil {
 		d.SetId("")
 		return diag.Diagnostics{

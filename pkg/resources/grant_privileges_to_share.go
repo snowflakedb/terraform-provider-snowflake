@@ -175,7 +175,8 @@ func ImportGrantPrivilegesToShare() func(ctx context.Context, d *schema.Resource
 }
 
 func CreateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := createGrantPrivilegesToShareIdFromSchema(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -200,11 +201,17 @@ func CreateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(id.String())
 
+	// May change what a cached SHOW GRANTS for this target returns; invalidate after the
+	// mutating SQL has executed, before any trailing Read.
+	invalidateOpts, _ := prepareShowGrantsRequestForShare(*id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
+
 	return ReadGrantPrivilegesToShare(ctx, d, meta)
 }
 
 func UpdateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id, err := ParseGrantPrivilegesToShareId(d.Id())
 	if err != nil {
@@ -279,6 +286,9 @@ func UpdateGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 
 		id.Privileges = privilegesAfterChange
 		d.SetId(id.String())
+
+		invalidateOpts, _ := prepareShowGrantsRequestForShare(id)
+		invalidateGrantsShowCache(providerCtx, invalidateOpts)
 	}
 
 	return ReadGrantPrivilegesToShare(ctx, d, meta)
@@ -318,6 +328,8 @@ func DeleteGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 			},
 		}
 	}
+	invalidateOpts, _ := prepareShowGrantsRequestForShare(id)
+	invalidateGrantsShowCache(providerCtx, invalidateOpts)
 
 	d.SetId("")
 
