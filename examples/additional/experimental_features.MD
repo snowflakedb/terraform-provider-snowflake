@@ -87,6 +87,17 @@ Additionally, the trailing Read at the end of Create is skipped (this resource h
 
 Intended for large configurations (thousands of `snowflake_grant_account_role` resources) where plan and apply time is dominated by redundant `SHOW GRANTS OF ROLE` calls.
 
+#### ACCOUNT_ROLE_SHOW_CACHING
+When enabled, the result of looking up an account role by identifier (`SHOW ROLES LIKE '<name>'`, via the underlying `ShowByID`/`ShowByIDSafely` calls) is cached in memory for the duration of a single plan or apply cycle.
+
+Currently supported by: `snowflake_account_role`, `snowflake_grant_application_role`, `snowflake_grant_privileges_to_account_role`.
+
+Without caching, every lookup of a given role — whether it's the role's own `snowflake_account_role` Read, or an existence check performed by a grant resource before granting to/from it — issues an independent round trip, even when many resource instances reference the same role. When enabled, the first lookup for a given role fetches and caches the result; subsequent lookups in the same plan reuse it. The cache is invalidated on `snowflake_account_role` Update (rename or comment change) and Delete, since only that resource can change what a cached lookup would return.
+
+This is a separate flag from `GRANT_ACCOUNT_ROLE_SHOW_CACHING`: enabling this does not enable caching for `snowflake_grant_account_role`'s `SHOW GRANTS OF ROLE` calls, and vice versa. Both can be enabled together.
+
+Intended for large configurations (thousands of role or grant resources) where plan and apply time is dominated by redundant role lookups.
+
 #### GRANTS_SHOW_CACHING
 When enabled, `SHOW GRANTS` results are cached in memory for the duration of a single plan or apply cycle, so multiple resource instances resolving to the same underlying SHOW statement share one round-trip instead of each issuing their own.
 

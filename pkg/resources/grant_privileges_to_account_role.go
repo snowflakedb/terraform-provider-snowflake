@@ -996,7 +996,6 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
 
 	strictPrivilegeManagement := d.Get("strict_privilege_management").(bool)
 	if strictPrivilegeManagement && !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement, providerCtx.EnabledExperiments) {
@@ -1058,7 +1057,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 
-	if _, err := client.Roles.ShowByID(ctx, id.RoleName); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
+	if _, err := showRoleCached(ctx, providerCtx, id.RoleName); err != nil && errors.Is(err, sdk.ErrObjectNotFound) {
 		d.SetId("")
 		return diag.Diagnostics{
 			diag.Diagnostic{

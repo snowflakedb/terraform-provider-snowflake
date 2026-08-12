@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -42,17 +43,12 @@ var accountRoleSchema = map[string]*schema.Schema{
 }
 
 func AccountRole() *schema.Resource {
-	deleteFunc := ResourceDeleteContextFunc(
-		sdk.ParseAccountObjectIdentifier,
-		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] { return client.Roles.DropSafely },
-	)
-
 	return &schema.Resource{
 		Schema: accountRoleSchema,
 
 		CreateContext: TrackingCreateWrapper(resources.AccountRole, CreateAccountRole),
 		ReadContext:   TrackingReadWrapper(resources.AccountRole, ReadAccountRole),
-		DeleteContext: TrackingDeleteWrapper(resources.AccountRole, deleteFunc),
+		DeleteContext: TrackingDeleteWrapper(resources.AccountRole, DeleteAccountRole),
 		UpdateContext: TrackingUpdateWrapper(resources.AccountRole, UpdateAccountRole),
 		Description:   "The resource is used for role management, where roles can be assigned privileges and, in turn, granted to users and other roles. When granted to roles they can create hierarchies of privilege structures. For more details, refer to the [official documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview).",
 
@@ -98,13 +94,13 @@ func CreateAccountRole(ctx context.Context, d *schema.ResourceData, meta any) di
 }
 
 func ReadAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	accountRole, err := client.Roles.ShowByIDSafely(ctx, id)
+	accountRole, err := showRoleCached(ctx, providerCtx, id)
 	if err != nil {
 		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
@@ -147,7 +143,8 @@ func ReadAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag
 }
 
 func UpdateAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -168,6 +165,9 @@ func UpdateAccountRole(ctx context.Context, d *schema.ResourceData, meta any) di
 				},
 			}
 		}
+		// The old identifier no longer resolves to anything after a successful rename; clear
+		// any cached lookup for it so nothing in this plan/apply cycle observes a stale hit.
+		invalidateRoleShowCache(providerCtx, id)
 
 		id = newId
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
@@ -198,5 +198,52 @@ func UpdateAccountRole(ctx context.Context, d *schema.ResourceData, meta any) di
 		}
 	}
 
+	// Any Alter above (rename or comment change) can make a previously cached lookup for this
+	// role stale; invalidate after the mutating SQL has executed, before the trailing Read.
+	invalidateRoleShowCache(providerCtx, id)
+
 	return ReadAccountRole(ctx, d, meta)
+}
+
+// DeleteAccountRole mirrors ResourceDeleteContextFunc (pkg/resources/resource.go), which is a
+// generic helper shared by several resources and therefore not the place to add role-cache
+// invalidation. This is a bespoke copy, specific to snowflake_account_role, that additionally
+// invalidates the role's cached lookup after a successful drop.
+func DeleteAccountRole(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	providerCtx := meta.(*provider.Context)
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := providerCtx.Client.Roles.DropSafely(ctx, id); err != nil {
+		return diag.FromErr(err)
+	}
+	invalidateRoleShowCache(providerCtx, id)
+
+	d.SetId("")
+	return nil
+}
+
+// showRoleCached looks up id via Roles.ShowByIDSafely, transparently caching the result in
+// providerCtx.RoleShowCache when the ACCOUNT_ROLE_SHOW_CACHING experiment is enabled. Shared by
+// snowflake_account_role, snowflake_grant_application_role, and
+// snowflake_grant_privileges_to_account_role.
+func showRoleCached(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.Role, error) {
+	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		return providerCtx.Client.Roles.ShowByIDSafely(ctx, id)
+	}
+	return providerCtx.RoleShowCache.GetOrLoad(ctx, id.FullyQualifiedName(), func(loadCtx context.Context) (*sdk.Role, error) {
+		return providerCtx.Client.Roles.ShowByIDSafely(loadCtx, id)
+	})
+}
+
+// invalidateRoleShowCache invalidates the cached lookup for id, if the ACCOUNT_ROLE_SHOW_CACHING
+// experiment is enabled. A no-op (not an error) if the cache was never populated for id — Invalidate
+// on an absent key is already a documented no-op.
+func invalidateRoleShowCache(providerCtx *provider.Context, id sdk.AccountObjectIdentifier) {
+	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AccountRoleShowCaching, providerCtx.EnabledExperiments) {
+		return
+	}
+	providerCtx.RoleShowCache.Invalidate(id.FullyQualifiedName())
 }
