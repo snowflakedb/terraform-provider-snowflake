@@ -291,6 +291,8 @@ func TestNewSchemaObjectIdentifierWithArgumentsFromFullyQualifiedName(t *testing
 		{Input: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, "VECTOR(INT, 20)", DataTypeFloat)},
 		{Input: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeFloat, "VECTOR(INT, 20)", "VECTOR(INT, 10)")},
 		{Input: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeTime, "VECTOR(INT, 20)", "VECTOR(FLOAT, 10)", DataTypeFloat)},
+		{Input: NewSchemaObjectIdentifierWithArguments(`SNOWFLAKE`, `CORE`, `ACCEPTED_VALUES`, "TABLE(DATE)")},
+		{Input: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `my_dmf`, "TABLE(DATE)")},
 		// TODO(SNOW-1571674): Won't work, because of the assumption that identifiers are not containing '(' and ')' parentheses (unfortunately, we're not able to produce meaningful errors for those cases)
 		{Input: NewSchemaObjectIdentifierWithArguments(`ab()c`, `def()`, `()ghi`, DataTypeTime, "VECTOR(INT, 20)", "VECTOR(FLOAT, 10)", DataTypeFloat), Error: `unable to read identifier: "ab`},
 		{Input: NewSchemaObjectIdentifierWithArguments(`ab(,)c`, `,def()`, `()ghi,`, DataTypeTime, "VECTOR(INT, 20)", "VECTOR(FLOAT, 10)", DataTypeFloat), Error: `unable to read identifier: "ab`},
@@ -320,6 +322,8 @@ func TestNewSchemaObjectIdentifierWithArgumentsFromFullyQualifiedName_WithRawInp
 		{RawInput: `abc.def.ghi()`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`)},
 		{RawInput: `abc.def.ghi(FLOAT, VECTOR(INT, 20))`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeFloat, "VECTOR(INT, 20)")},
 		{RawInput: `abc.def.ghi(arg1 FLOAT, arg2 VECTOR(INT, 20))`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeFloat, "VECTOR(INT, 20)")},
+		{RawInput: `SNOWFLAKE.CORE.ACCEPTED_VALUES(TABLE(DATE))`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`SNOWFLAKE`, `CORE`, `ACCEPTED_VALUES`, "TABLE(DATE)")},
+		{RawInput: `abc.def."my_dmf"(TABLE(DATE))`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `my_dmf`, "TABLE(DATE)")},
 		// TODO(SNOW-1571674): Won't work, because of the assumption that identifiers are not containing '(' and ')' parentheses (unfortunately, we're not able to produce meaningful errors for those cases)
 		{RawInput: `abc."(ef".ghi(FLOAT, VECTOR(INT, 20))`, Error: `unable to read identifier: abc."`},
 		{RawInput: `abc.def.ghi`, Error: `unable to parse identifier: '(' not present`},

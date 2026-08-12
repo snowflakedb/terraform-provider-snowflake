@@ -9,8 +9,9 @@ import (
 
 // TableDataType is based on https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-java#returning-tabular-data.
 // It does not have synonyms.
-// It consists of a list of column name + column type; may be empty.
-// For now, we require both name and data type to be present for each column (so there are no unknowns).
+// It consists of a list of columns; may be empty.
+// Each column is either a named column ("arg_name NUMBER") used in return types, or a type-only column ("DATE")
+// used in abbreviated argument signatures (e.g. grants and SHOW output for functions with TABLE arguments).
 type TableDataType struct {
 	columns        []TableDataTypeColumn
 	underlyingType string
@@ -31,30 +32,53 @@ func (c *TableDataTypeColumn) ColumnType() DataType {
 	return c.dataType
 }
 
+func (c *TableDataTypeColumn) format(formatType func(DataType) string) string {
+	if c.name == "" {
+		return formatType(c.dataType)
+	}
+	return fmt.Sprintf("%s %s", c.name, formatType(c.dataType))
+}
+
+func (c *TableDataTypeColumn) ToSql() string {
+	return c.format(func(dt DataType) string { return dt.ToSql() })
+}
+
+func (c *TableDataTypeColumn) ToLegacyDataTypeSql() string {
+	return c.format(func(dt DataType) string { return dt.ToLegacyDataTypeSql() })
+}
+
+func (c *TableDataTypeColumn) Canonical() string {
+	return c.format(func(dt DataType) string { return dt.Canonical() })
+}
+
+func (c *TableDataTypeColumn) ToSqlWithoutUnknowns() string {
+	return c.format(func(dt DataType) string { return dt.ToSqlWithoutUnknowns() })
+}
+
 func (t *TableDataType) ToSql() string {
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
-		return fmt.Sprintf("%s %s", col.name, col.dataType.ToSql())
+		return col.ToSql()
 	}), ", ")
 	return fmt.Sprintf("%s(%s)", t.underlyingType, columns)
 }
 
 func (t *TableDataType) ToLegacyDataTypeSql() string {
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
-		return fmt.Sprintf("%s %s", col.name, col.dataType.ToLegacyDataTypeSql())
+		return col.ToLegacyDataTypeSql()
 	}), ", ")
 	return fmt.Sprintf("%s(%s)", TableLegacyDataType, columns)
 }
 
 func (t *TableDataType) Canonical() string {
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
-		return fmt.Sprintf("%s %s", col.name, col.dataType.Canonical())
+		return col.Canonical()
 	}), ", ")
 	return fmt.Sprintf("%s(%s)", TableLegacyDataType, columns)
 }
 
 func (t *TableDataType) ToSqlWithoutUnknowns() string {
 	columns := strings.Join(collections.Map(t.columns, func(col TableDataTypeColumn) string {
-		return fmt.Sprintf("%s %s", col.name, col.dataType.ToSqlWithoutUnknowns())
+		return col.ToSqlWithoutUnknowns()
 	}), ", ")
 	return fmt.Sprintf("%s(%s)", t.underlyingType, columns)
 }
@@ -99,7 +123,14 @@ func parseTableDataTypeRaw(raw sanitizedDataTypeRaw) (*TableDataType, error) {
 		}, nil
 	}
 	columns, err := collections.MapErr(splitColumnDefs(onlyArgs), func(arg string) (TableDataTypeColumn, error) {
-		argParts := strings.SplitN(strings.TrimSpace(arg), " ", 2)
+		trimmed := strings.TrimSpace(arg)
+		if argDataType, err := ParseDataType(trimmed); err == nil {
+			return TableDataTypeColumn{
+				name:     "",
+				dataType: argDataType,
+			}, nil
+		}
+		argParts := strings.SplitN(trimmed, " ", 2)
 		if len(argParts) != 2 {
 			return TableDataTypeColumn{}, fmt.Errorf("could not parse table column: %s, it should contain the following format `<arg_name> <arg_type>`; parser failure may be connected to the complex argument names", arg)
 		}

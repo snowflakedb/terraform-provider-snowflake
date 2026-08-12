@@ -1157,6 +1157,12 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(A NUMBER(10,2), B NUMBER(38,0), C TEXT)", expectedColumns: []column{{"A", "NUMBER(10,2)"}, {"B", "NUMBER(38,0)"}, {"C", "TEXT"}}},
 		{input: "TABLE(A VARCHAR(100), B NUMBER(5,2))", expectedColumns: []column{{"A", "VARCHAR(100)"}, {"B", "NUMBER(5,2)"}}},
 		{input: "TABLE(A VECTOR(FLOAT, 256), B NUMBER)", expectedColumns: []column{{"A", "VECTOR(FLOAT, 256)"}, {"B", "NUMBER"}}},
+		// type-only columns (abbreviated argument/grant form)
+		{input: "TABLE(DATE)", expectedColumns: []column{{"", "DATE"}}},
+		{input: "TABLE(INT)", expectedColumns: []column{{"", "INT"}}},
+		{input: "TABLE(INT, INT)", expectedColumns: []column{{"", "INT"}, {"", "INT"}}},
+		{input: "TABLE(NUMBER(38,0))", expectedColumns: []column{{"", "NUMBER(38,0)"}}},
+		{input: "TABLE(DATE, NUMBER)", expectedColumns: []column{{"", "DATE"}, {"", "NUMBER"}}},
 		// TODO [SNOW-2054316]: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
 		// TODO [SNOW-2054316]: Support complex argument names (with quotes / spaces / special characters / etc)
 	}
@@ -1164,13 +1170,11 @@ func Test_ParseDataType_Table(t *testing.T) {
 	negativeTestCases := []test{
 		{input: "TABLE())"},
 		{input: "TABLE(1, 2)"},
-		{input: "TABLE(INT, INT)"},
 		{input: "TABLE(a b)"},
 		{input: "TABLE(1)"},
 		{input: "TABLE(2, INT)"},
 		{input: "TABLE"},
 		{input: "TABLE(INT, 2, 3)"},
-		{input: "TABLE(INT)"},
 		{input: "TABLE(x, 2)"},
 		{input: "TABLE("},
 		{input: "TABLE)"},
@@ -1196,6 +1200,9 @@ func Test_ParseDataType_Table(t *testing.T) {
 			legacyColumns := strings.Join(collections.Map(tc.expectedColumns, func(col column) string {
 				parsedType, err := ParseDataType(col.Type)
 				require.NoError(t, err)
+				if col.Name == "" {
+					return parsedType.ToLegacyDataTypeSql()
+				}
 				return fmt.Sprintf("%s %s", col.Name, parsedType.ToLegacyDataTypeSql())
 			}), ", ")
 			assert.Equal(t, fmt.Sprintf("TABLE(%s)", legacyColumns), parsed.ToLegacyDataTypeSql())
@@ -1203,6 +1210,9 @@ func Test_ParseDataType_Table(t *testing.T) {
 			canonicalColumns := strings.Join(collections.Map(tc.expectedColumns, func(col column) string {
 				parsedType, err := ParseDataType(col.Type)
 				require.NoError(t, err)
+				if col.Name == "" {
+					return parsedType.Canonical()
+				}
 				return fmt.Sprintf("%s %s", col.Name, parsedType.Canonical())
 			}), ", ")
 			assert.Equal(t, fmt.Sprintf("TABLE(%s)", canonicalColumns), parsed.Canonical())
@@ -1210,6 +1220,9 @@ func Test_ParseDataType_Table(t *testing.T) {
 			columns := strings.Join(collections.Map(tc.expectedColumns, func(col column) string {
 				parsedType, err := ParseDataType(col.Type)
 				require.NoError(t, err)
+				if col.Name == "" {
+					return parsedType.ToSql()
+				}
 				return fmt.Sprintf("%s %s", col.Name, parsedType.ToSql())
 			}), ", ")
 			assert.Equal(t, fmt.Sprintf("TABLE(%s)", columns), parsed.ToSql())

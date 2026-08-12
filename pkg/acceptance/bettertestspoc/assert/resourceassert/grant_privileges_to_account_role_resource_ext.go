@@ -11,6 +11,13 @@ func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnAccountObject(objectTy
 	return g
 }
 
+func (g *GrantPrivilegesToAccountRoleResourceAssert) HasOnSchemaObjectObject(objectType sdk.ObjectType, objectName string) *GrantPrivilegesToAccountRoleResourceAssert {
+	g.ValueSet("on_schema_object.#", "1")
+	g.ValueSet("on_schema_object.0.object_type", objectType.String())
+	g.ValueSet("on_schema_object.0.object_name", objectName)
+	return g
+}
+
 func (g *GrantPrivilegesToAccountRoleResourceAssert) HasResourceId(expected string) *GrantPrivilegesToAccountRoleResourceAssert {
 	g.ValueSet("id", expected)
 	return g
