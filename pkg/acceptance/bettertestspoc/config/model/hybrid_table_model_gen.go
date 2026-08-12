@@ -18,11 +18,11 @@ type HybridTableModel struct {
 	Column                     tfconfig.Variable `json:"column,omitempty"`
 	Comment                    tfconfig.Variable `json:"comment,omitempty"`
 	DataRetentionTimeInDays    tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
-	ForeignKey                 tfconfig.Variable `json:"foreign_key,omitempty"`
+	ForeignKeyConstraint       tfconfig.Variable `json:"foreign_key_constraint,omitempty"`
 	FullyQualifiedName         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Index                      tfconfig.Variable `json:"index,omitempty"`
 	MaxDataExtensionTimeInDays tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
-	PrimaryKey                 tfconfig.Variable `json:"primary_key,omitempty"`
+	PrimaryKeyConstraint       tfconfig.Variable `json:"primary_key_constraint,omitempty"`
 	UniqueConstraint           tfconfig.Variable `json:"unique_constraint,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
@@ -40,14 +40,14 @@ func HybridTable(
 	schema string,
 	name string,
 	column []sdk.TableColumnSignature,
-	primaryKey []sdk.TableColumnSignature,
+	primaryKeyConstraint []sdk.TableColumnSignature,
 ) *HybridTableModel {
 	h := &HybridTableModel{ResourceModelMeta: config.Meta(resourceName, resources.HybridTable)}
 	h.WithDatabase(database)
 	h.WithSchema(schema)
 	h.WithName(name)
 	h.WithColumn(column)
-	h.WithPrimaryKey(primaryKey)
+	h.WithPrimaryKeyConstraint(primaryKeyConstraint)
 	return h
 }
 
@@ -56,14 +56,14 @@ func HybridTableWithDefaultMeta(
 	schema string,
 	name string,
 	column []sdk.TableColumnSignature,
-	primaryKey []sdk.TableColumnSignature,
+	primaryKeyConstraint []sdk.TableColumnSignature,
 ) *HybridTableModel {
 	h := &HybridTableModel{ResourceModelMeta: config.DefaultMeta(resources.HybridTable)}
 	h.WithDatabase(database)
 	h.WithSchema(schema)
 	h.WithName(name)
 	h.WithColumn(column)
-	h.WithPrimaryKey(primaryKey)
+	h.WithPrimaryKeyConstraint(primaryKeyConstraint)
 	return h
 }
 
@@ -130,7 +130,7 @@ func (h *HybridTableModel) WithDataRetentionTimeInDays(dataRetentionTimeInDays i
 	return h
 }
 
-// foreign_key attribute type is not yet supported, so WithForeignKey can't be generated
+// foreign_key_constraint attribute type is not yet supported, so WithForeignKeyConstraint can't be generated
 
 func (h *HybridTableModel) WithFullyQualifiedName(fullyQualifiedName string) *HybridTableModel {
 	h.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
@@ -144,7 +144,7 @@ func (h *HybridTableModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeIn
 	return h
 }
 
-// primary_key attribute type is not yet supported, so WithPrimaryKey can't be generated
+// primary_key_constraint attribute type is not yet supported, so WithPrimaryKeyConstraint can't be generated
 
 // unique_constraint attribute type is not yet supported, so WithUniqueConstraint can't be generated
 
@@ -182,8 +182,8 @@ func (h *HybridTableModel) WithDataRetentionTimeInDaysValue(value tfconfig.Varia
 	return h
 }
 
-func (h *HybridTableModel) WithForeignKeyValue(value tfconfig.Variable) *HybridTableModel {
-	h.ForeignKey = value
+func (h *HybridTableModel) WithForeignKeyConstraintValue(value tfconfig.Variable) *HybridTableModel {
+	h.ForeignKeyConstraint = value
 	return h
 }
 
@@ -202,8 +202,8 @@ func (h *HybridTableModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Va
 	return h
 }
 
-func (h *HybridTableModel) WithPrimaryKeyValue(value tfconfig.Variable) *HybridTableModel {
-	h.PrimaryKey = value
+func (h *HybridTableModel) WithPrimaryKeyConstraintValue(value tfconfig.Variable) *HybridTableModel {
+	h.PrimaryKeyConstraint = value
 	return h
 }
 

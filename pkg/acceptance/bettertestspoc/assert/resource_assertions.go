@@ -167,15 +167,17 @@ func NewDatasourceParametersAssert(name string, objectsPath string, idx int) *Re
 type resourceAssertionType string
 
 const (
-	resourceAssertionTypeValuePresent = "VALUE_PRESENT"
-	resourceAssertionTypeValueSet     = "VALUE_SET"
-	resourceAssertionTypeValueNotSet  = "VALUE_NOT_SET"
-	resourceAssertionTypeSetElem      = "SET_ELEM"
+	resourceAssertionTypeValuePresent  = "VALUE_PRESENT"
+	resourceAssertionTypeValueSet      = "VALUE_SET"
+	resourceAssertionTypeValueNotSet   = "VALUE_NOT_SET"
+	resourceAssertionTypeSetElem       = "SET_ELEM"
+	resourceAssertionTypeSetElemNested = "SET_ELEM_NESTED"
 )
 
 type ResourceAssertion struct {
 	fieldName             string
 	expectedValue         string
+	nestedAttrs           map[string]string
 	resourceAssertionType resourceAssertionType
 
 	fullPath string
@@ -188,6 +190,10 @@ func (r *ResourceAssert) AddAssertion(assertion ResourceAssertion) {
 
 func SetElem(fieldName string, expected string) ResourceAssertion {
 	return ResourceAssertion{fieldName: fieldName + ".*", expectedValue: expected, resourceAssertionType: resourceAssertionTypeSetElem}
+}
+
+func SetElemNested(fieldName string, attrs map[string]string) ResourceAssertion {
+	return ResourceAssertion{fieldName: fieldName + ".*", nestedAttrs: attrs, resourceAssertionType: resourceAssertionTypeSetElemNested}
 }
 
 func ValuePresent(fieldName string) ResourceAssertion {
@@ -257,6 +263,10 @@ func (r *ResourceAssert) CollectionLength(fieldName string, expected int) {
 
 func (r *ResourceAssert) SetContainsElem(fieldName string, expected string) {
 	r.AddAssertion(SetElem(fieldName, expected))
+}
+
+func (r *ResourceAssert) SetContainsElemNested(fieldName string, attrs map[string]string) {
+	r.AddAssertion(SetElemNested(fieldName, attrs))
 }
 
 func (r *ResourceAssert) ListContainsElem(fieldName string, index int, expected string) {
@@ -358,6 +368,11 @@ func (r *ResourceAssert) ToTerraformTestCheckFunc(t *testing.T, _ *helpers.TestC
 			switch a.resourceAssertionType {
 			case resourceAssertionTypeSetElem:
 				if err := resource.TestCheckTypeSetElemAttr(r.name, a.fullPath, a.expectedValue)(s); err != nil {
+					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
+					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
+				}
+			case resourceAssertionTypeSetElemNested:
+				if err := resource.TestCheckTypeSetElemNestedAttrs(r.name, a.fullPath, a.nestedAttrs)(s); err != nil {
 					errCut, _ := strings.CutPrefix(err.Error(), fmt.Sprintf("%s: ", r.name))
 					result = append(result, fmt.Errorf("%s %s assertion [%d/%d]: failed with error: %s", r.name, a.fullPath, i+1, len(r.assertions), errCut))
 				}

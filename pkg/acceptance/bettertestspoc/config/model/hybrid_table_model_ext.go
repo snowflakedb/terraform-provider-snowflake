@@ -30,10 +30,6 @@ type HybridTableColumnConfig struct {
 
 // WithColumnConfigs sets the column list from richer column definitions.
 // Use instead of WithColumn when tests require comment, nullable, collate, or default.
-//
-// Uses ObjectVariable rather than MapVariable for both column maps and the default
-// block, because terraform-plugin-testing's MapVariable.MarshalJSON requires every
-// value to be the same underlying type, and these blocks mix string + bool + list.
 func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) *HybridTableModel {
 	objs := make([]tfconfig.Variable, len(columns))
 	for i, col := range columns {
@@ -82,55 +78,25 @@ func HybridTableFromId(
 
 // WithColumn satisfies the generated constructor's call for the complex list attribute.
 func (h *HybridTableModel) WithColumn(column []sdk.TableColumnSignature) *HybridTableModel {
-	maps := make([]tfconfig.Variable, len(column))
-	for i, v := range column {
-		maps[i] = tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"name": tfconfig.StringVariable(v.Name),
-			"type": tfconfig.StringVariable(v.Type.ToSql()),
-		})
-	}
-	h.Column = tfconfig.SetVariable(maps...)
-	return h
+	return h.WithColumnConfigs(collections.Map(column, func(v sdk.TableColumnSignature) HybridTableColumnConfig {
+		return HybridTableColumnConfig{Name: v.Name, Type: v.Type.ToSql()}
+	}))
 }
 
-// WithPrimaryKey satisfies the generated constructor's call for the complex list attribute.
-// Only the Name field of each TableColumnSignature is used — the Type field is
-// ignored. Tests that build the PK separately should prefer WithPrimaryKeyNames,
-// which takes plain column names and avoids the misleading Type-less signature.
-func (h *HybridTableModel) WithPrimaryKey(primaryKey []sdk.TableColumnSignature) *HybridTableModel {
-	names := make([]string, len(primaryKey))
-	for i, v := range primaryKey {
-		names[i] = v.Name
-	}
-	return h.WithPrimaryKeyNames(names...)
-}
-
-// WithPrimaryKeyNames sets the primary_key block from a slice of column names.
-// This is the preferred form for tests that compose models incrementally: the
-// resource's primary_key.keys is just a list of column names, not signatures.
-func (h *HybridTableModel) WithPrimaryKeyNames(names ...string) *HybridTableModel {
-	keys := collections.Map(names, func(n string) tfconfig.Variable { return tfconfig.StringVariable(n) })
-	h.PrimaryKey = tfconfig.SetVariable(
+// WithPrimaryKeyConstraint sets the primary_key_constraint block from column
+// signatures. Only Name is used — Type is ignored.
+func (h *HybridTableModel) WithPrimaryKeyConstraint(primaryKey []sdk.TableColumnSignature) *HybridTableModel {
+	cols := collections.Map(primaryKey, func(v sdk.TableColumnSignature) tfconfig.Variable {
+		return tfconfig.StringVariable(v.Name)
+	})
+	h.PrimaryKeyConstraint = tfconfig.SetVariable(
 		tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"keys": tfconfig.ListVariable(keys...),
+			"columns": tfconfig.ListVariable(cols...),
 		}),
 	)
 	return h
 }
 
-// WithUniqueConstraint sets a single unnamed unique constraint on the given columns.
-func (h *HybridTableModel) WithUniqueConstraint(columns []string) *HybridTableModel {
-	colVars := collections.Map(columns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
-	h.UniqueConstraint = tfconfig.SetVariable(
-		tfconfig.MapVariable(map[string]tfconfig.Variable{
-			"columns": tfconfig.ListVariable(colVars...),
-		}),
-	)
-	return h
-}
-
-// HybridTableUniqueConstraintConfig is a unique constraint definition for tests.
-// Name is optional; if empty, Snowflake generates a SYS_CONSTRAINT_-prefixed name.
 type HybridTableUniqueConstraintConfig struct {
 	Name    string
 	Columns []string
@@ -154,8 +120,6 @@ func (h *HybridTableModel) WithUniqueConstraints(constraints ...HybridTableUniqu
 	return h
 }
 
-// HybridTableIndexConfig is a single secondary-index definition for tests.
-// IncludeColumns is optional (the INCLUDE payload).
 type HybridTableIndexConfig struct {
 	Name           string
 	Columns        []string // required; the schema enforces MinItems:1
@@ -163,10 +127,6 @@ type HybridTableIndexConfig struct {
 }
 
 // WithIndex sets the index block from one or more index definitions.
-//
-// Uses ObjectVariable rather than MapVariable because each index block mixes a
-// string (name) with list values (columns, include_columns), which MapVariable's
-// MarshalJSON rejects ("maps must contain the same type").
 func (h *HybridTableModel) WithIndex(indexes ...HybridTableIndexConfig) *HybridTableModel {
 	objs := make([]tfconfig.Variable, len(indexes))
 	for i, idx := range indexes {
@@ -185,45 +145,29 @@ func (h *HybridTableModel) WithIndex(indexes ...HybridTableIndexConfig) *HybridT
 	return h
 }
 
-// WithForeignKey sets a single unnamed foreign key constraint. localColumns are the columns
-// in this table, refTableId is the fully-qualified name of the referenced table,
-// and refColumns are the columns in the referenced table.
-//
-// Uses ObjectVariable instead of MapVariable for both the outer foreign-key block
-// and the inner references block, because each mixes string and list values, which
-// MapVariable's MarshalJSON rejects ("maps must contain the same type").
-func (h *HybridTableModel) WithForeignKey(localColumns []string, refTableId string, refColumns []string) *HybridTableModel {
-	lcVars := collections.Map(localColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
-	rcVars := collections.Map(refColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
-	h.ForeignKey = tfconfig.SetVariable(
-		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"columns": tfconfig.ListVariable(lcVars...),
-			"references": tfconfig.ListVariable(
-				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"table_id": tfconfig.StringVariable(refTableId),
-					"columns":  tfconfig.ListVariable(rcVars...),
-				}),
-			),
-		}),
-	)
-	return h
+type HybridTableForeignKeyConstraintConfig struct {
+	Name       string
+	Columns    []string
+	TableName  string
+	RefColumns []string
 }
 
-// WithNamedForeignKey is like WithForeignKey but includes an explicit constraint name.
-func (h *HybridTableModel) WithNamedForeignKey(name string, localColumns []string, refTableId string, refColumns []string) *HybridTableModel {
-	lcVars := collections.Map(localColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
-	rcVars := collections.Map(refColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
-	h.ForeignKey = tfconfig.SetVariable(
-		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"name":    tfconfig.StringVariable(name),
-			"columns": tfconfig.ListVariable(lcVars...),
-			"references": tfconfig.ListVariable(
-				tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"table_id": tfconfig.StringVariable(refTableId),
-					"columns":  tfconfig.ListVariable(rcVars...),
-				}),
-			),
-		}),
-	)
+// WithForeignKeyConstraints sets the foreign_key_constraint block from one or more definitions.
+func (h *HybridTableModel) WithForeignKeyConstraints(constraints ...HybridTableForeignKeyConstraintConfig) *HybridTableModel {
+	objs := make([]tfconfig.Variable, len(constraints))
+	for i, fk := range constraints {
+		lcVars := collections.Map(fk.Columns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
+		rcVars := collections.Map(fk.RefColumns, func(c string) tfconfig.Variable { return tfconfig.StringVariable(c) })
+		m := map[string]tfconfig.Variable{
+			"columns":     tfconfig.ListVariable(lcVars...),
+			"table_name":  tfconfig.StringVariable(fk.TableName),
+			"ref_columns": tfconfig.ListVariable(rcVars...),
+		}
+		if fk.Name != "" {
+			m["name"] = tfconfig.StringVariable(fk.Name)
+		}
+		objs[i] = tfconfig.ObjectVariable(m)
+	}
+	h.ForeignKeyConstraint = tfconfig.SetVariable(objs...)
 	return h
 }

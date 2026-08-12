@@ -123,32 +123,26 @@ func TestUnit_HybridTable_uniqueConstraintHash_ignoresName(t *testing.T) {
 	require.NotEqual(t, uniqueConstraintHash(a), uniqueConstraintHash(c))
 }
 
-func TestUnit_HybridTable_foreignKeyHash_ignoresName_and_normalizesTableId(t *testing.T) {
+func TestUnit_HybridTable_foreignKeyHash_ignoresName_and_normalizesTableName(t *testing.T) {
 	quoted := map[string]any{
-		"name":    "",
-		"columns": []any{"parent_id"},
-		"references": []any{map[string]any{
-			"table_id": `"DB"."SCH"."PARENT"`,
-			"columns":  []any{"id"},
-		}},
+		"name":        "",
+		"columns":     []any{"parent_id"},
+		"table_name":  `"DB"."SCH"."PARENT"`,
+		"ref_columns": []any{"id"},
 	}
 	unquoted := map[string]any{
-		"name":    "FK_NAMED",
-		"columns": []any{"parent_id"},
-		"references": []any{map[string]any{
-			"table_id": "DB.SCH.PARENT",
-			"columns":  []any{"id"},
-		}},
+		"name":        "FK_NAMED",
+		"columns":     []any{"parent_id"},
+		"table_name":  "DB.SCH.PARENT",
+		"ref_columns": []any{"id"},
 	}
 	require.Equal(t, foreignKeyHash(quoted), foreignKeyHash(unquoted))
 
 	differentTable := map[string]any{
-		"name":    "",
-		"columns": []any{"parent_id"},
-		"references": []any{map[string]any{
-			"table_id": "DB.SCH.OTHER_PARENT",
-			"columns":  []any{"id"},
-		}},
+		"name":        "",
+		"columns":     []any{"parent_id"},
+		"table_name":  "DB.SCH.OTHER_PARENT",
+		"ref_columns": []any{"id"},
 	}
 	require.NotEqual(t, foreignKeyHash(quoted), foreignKeyHash(differentTable))
 }
