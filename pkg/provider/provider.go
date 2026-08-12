@@ -850,7 +850,9 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 	}
 
 	providerCtx := &provider.Context{
-		GrantShowCache: provider.NewCache[[]sdk.Grant](),
+		GrantShowOfRoleCache: provider.NewCache[[]sdk.Grant](),
+		RoleShowCache:        provider.NewCache[*sdk.Role](),
+		GrantShowCache:       provider.NewCache[[]sdk.Grant](),
 	}
 	if client, err := sdk.NewClient(config); err != nil {
 		return nil, append(diags, diag.FromErr(err)...)
