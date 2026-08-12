@@ -79,6 +79,52 @@ provider "snowflake" {
 
 This is a separate, independent flag from `GRANT_ACCOUNT_ROLE_SHOW_CACHING`: it does **not** replace that experiment, does not affect `snowflake_grant_account_role`'s caching behavior, and both can be enabled together. No changes to existing configurations are required. The experiment is intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.
 
+### *(new feature)* New external access integration resource and data source
+
+#### Resource
+
+We have added a new preview resource for managing external access integrations: [snowflake_external_access_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_access_integration).
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integration_resource` to the `preview_features_enabled` field in the provider configuration.
+
+#### Data source
+
+We have added a new preview data source for external access integrations: [snowflake_external_access_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/external_access_integrations). It supports filtering with `like`.
+
+This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+
+### *(new feature)* `for_all_person_users` and `for_all_service_users` in account policy attachments
+
+Both `snowflake_account_authentication_policy_attachment` and `snowflake_account_session_policy_attachment` now support attaching a policy to a specific user type via two new mutually-exclusive boolean fields:
+
+- `for_all_person_users` – attaches the policy with `FOR ALL PERSON USERS`.
+- `for_all_service_users` – attaches the policy with `FOR ALL SERVICE USERS`.
+
+No configuration changes are needed unless you want to attach a policy to a specific user type. When neither field is set (the default), the policy is attached account-wide, exactly as before. A single account can have one attachment per scope (account-wide, person users, and service users) of the same policy kind at the same time, each managed by a separate resource instance.
+
+### *(new feature)* `ADAPTIVE` refresh mode for dynamic tables
+
+The `snowflake_dynamic_table` resource now accepts [`ADAPTIVE`](https://docs.snowflake.com/en/release-notes/2026/other/2026-07-30-dynamic-tables-adaptive-refresh-mode-ga) as a valid value for `refresh_mode` option.
+
+No changes in configuration are required unless you want to start using `refresh_mode = "ADAPTIVE"`.
+
+Reference: [#5097](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5097)
+
+### *(improvement)* `created_on` format in network policies' and listings' `show_output`
+
+`created_on` in the internal network policy and listing representations was a raw string; it is now read as a proper timestamp, making both consistent with databases, warehouses, schemas, shares, resource monitors, connections, and compute pools, which all already exposed it that way.
+
+As a result, the value of `show_output.0.created_on` is now rendered in Go's timestamp format (the same format the objects listed above already use) instead of the format returned directly by `SHOW NETWORK POLICIES` / `SHOW LISTINGS`, in:
+
+- `snowflake_network_policy` and `snowflake_network_policies`
+- `snowflake_listing` and `snowflake_listings`
+
+`created_on` in listings' `describe_output` is unaffected and remains in its original format.
+
+No configuration changes are required. Adjust only if you reference `show_output.0.created_on` and depend on its exact textual format.
+
 ### *(bug fix)* Grant resources and grants data source: support `TABLE(<type>)` data metric function arguments
 
 Previously, managing grants on data metric functions whose signature uses the abbreviated `TABLE(<type>)` form (for example, `"SNOWFLAKE"."CORE"."ACCEPTED_VALUES"(TABLE(DATE))`) caused a provider panic like this
@@ -99,51 +145,6 @@ No changes are required for existing configurations.
 
 References: [#5087](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5087)
 
-### *(new feature)* `ADAPTIVE` refresh mode for dynamic tables
-
-The `snowflake_dynamic_table` resource now accepts [`ADAPTIVE`](https://docs.snowflake.com/en/release-notes/2026/other/2026-07-30-dynamic-tables-adaptive-refresh-mode-ga) as a valid value for `refresh_mode` option.
-
-No changes in configuration are required unless you want to start using `refresh_mode = "ADAPTIVE"`.
-
-Reference: [#5097](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5097)
-
-### *(new feature)* New external access integration resource and data source
-
-#### Resource
-
-We have added a new preview resource for managing external access integrations: [snowflake_external_access_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_access_integration).
-
-This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integration_resource` to the `preview_features_enabled` field in the provider configuration.
-
-#### Data source
-
-We have added a new preview data source for external access integrations: [snowflake_external_access_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/external_access_integrations). It supports filtering with `like`.
-
-This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
-
-No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
-
-### *(improvement)* `created_on` format in network policies' and listings' `show_output`
-
-`created_on` in the internal network policy and listing representations was a raw string; it is now read as a proper timestamp, making both consistent with databases, warehouses, schemas, shares, resource monitors, connections, and compute pools, which all already exposed it that way.
-
-As a result, the value of `show_output.0.created_on` is now rendered in Go's timestamp format (the same format the objects listed above already use) instead of the format returned directly by `SHOW NETWORK POLICIES` / `SHOW LISTINGS`, in:
-
-- `snowflake_network_policy` and `snowflake_network_policies`
-- `snowflake_listing` and `snowflake_listings`
-
-`created_on` in listings' `describe_output` is unaffected and remains in its original format.
-
-No configuration changes are required. Adjust only if you reference `show_output.0.created_on` and depend on its exact textual format.
-
-### *(new feature)* `for_all_person_users` and `for_all_service_users` in account policy attachments
-
-Both `snowflake_account_authentication_policy_attachment` and `snowflake_account_session_policy_attachment` now support attaching a policy to a specific user type via two new mutually-exclusive boolean fields:
-
-- `for_all_person_users` – attaches the policy with `FOR ALL PERSON USERS`.
-- `for_all_service_users` – attaches the policy with `FOR ALL SERVICE USERS`.
-
-No configuration changes are needed unless you want to attach a policy to a specific user type. When neither field is set (the default), the policy is attached account-wide, exactly as before. A single account can have one attachment per scope (account-wide, person users, and service users) of the same policy kind at the same time, each managed by a separate resource instance.
 
 ### *(bug fix)* Deprecation warning raised for `skip_toml_file_permission_verification` that was not set
 
