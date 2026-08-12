@@ -2,446 +2,286 @@
 
 package sdk
 
-// imports adjusted manually
 import (
-	"fmt"
 	"testing"
 )
 
+var semanticViewsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_SemanticViews_validation_Create_name_ValidIdentifier                                                                 testCaseName = "validation_Create_name_ValidIdentifier"
+	case_SemanticViews_validation_Create_opts_ConflictingFields                                                               testCaseName = "validation_Create_opts_ConflictingFields"
+	case_SemanticViews_validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_NoneSet"
+	case_SemanticViews_validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet"
+	case_SemanticViews_validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_NoneSet"
+	case_SemanticViews_validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet"
+	case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_NoneSet"
+	case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_MoreThanOneSet"
+	case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_OneValidOneInvalid                       testCaseName = "validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_OneValidOneInvalid"
+	case_SemanticViews_sql_Create_basic                                                                                       testCaseName = "sql_Create_basic"
+	case_SemanticViews_sql_Create_all                                                                                         testCaseName = "sql_Create_all"
+	case_SemanticViews_validation_Alter_name_ValidIdentifier                                                                  testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_SemanticViews_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_SemanticViews_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_SemanticViews_sql_Alter_SetComment                                                                                   testCaseName = "sql_Alter_SetComment"
+	case_SemanticViews_sql_Alter_UnsetComment                                                                                 testCaseName = "sql_Alter_UnsetComment"
+	case_SemanticViews_sql_Alter_RenameTo                                                                                     testCaseName = "sql_Alter_RenameTo"
+	case_SemanticViews_validation_Drop_name_ValidIdentifier                                                                   testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_SemanticViews_sql_Drop_basic                                                                                         testCaseName = "sql_Drop_basic"
+	case_SemanticViews_sql_Drop_all                                                                                           testCaseName = "sql_Drop_all"
+	case_SemanticViews_validation_Describe_name_ValidIdentifier                                                               testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_SemanticViews_sql_Describe_basic                                                                                     testCaseName = "sql_Describe_basic"
+	case_SemanticViews_sql_Show_basic                                                                                         testCaseName = "sql_Show_basic"
+	case_SemanticViews_sql_Show_all                                                                                           testCaseName = "sql_Show_all"
+	case_SemanticViews_sql_Show_Like                                                                                          testCaseName = "sql_Show_Like"
+	case_SemanticViews_sql_Show_In                                                                                            testCaseName = "sql_Show_In"
+	case_SemanticViews_sql_Show_StartsWith                                                                                    testCaseName = "sql_Show_StartsWith"
+	case_SemanticViews_sql_Show_Limit                                                                                         testCaseName = "sql_Show_Limit"
+)
+
+type SemanticViewsTestsContext struct {
+	Create   *sdkTestCtx[*CreateSemanticViewOptions]
+	Alter    *sdkTestCtx[*AlterSemanticViewOptions]
+	Drop     *sdkTestCtx[*DropSemanticViewOptions]
+	Describe *sdkTestCtx[*DescribeSemanticViewOptions]
+	Show     *sdkTestCtx[*ShowSemanticViewOptions]
+}
+
+var semanticViewsTests = SemanticViewsTestsContext{
+	Create: newSdkTestCtx[*CreateSemanticViewOptions](
+		"SemanticViews", "Create",
+	).
+		withDefaultOpts(func() *CreateSemanticViewOptions {
+			return &CreateSemanticViewOptions{
+				name: semanticViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
+					opts.SemanticViewRelationships[0].TableNameOrAlias = &RelationshipTableAlias{}
+					opts.SemanticViewRelationships[0].TableNameOrAlias.RelationshipTableName = nil
+					opts.SemanticViewRelationships[0].TableNameOrAlias.RelationshipTableAlias = nil
+				},
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_TableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.TableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
+					opts.SemanticViewRelationships[0].TableNameOrAlias = &RelationshipTableAlias{}
+					opts.SemanticViewRelationships[0].TableNameOrAlias.RelationshipTableName = new(randomSchemaObjectIdentifier())
+					opts.SemanticViewRelationships[0].TableNameOrAlias.RelationshipTableAlias = new("foo")
+				},
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
+					opts.SemanticViewRelationships[0].RefTableNameOrAlias = &RelationshipTableAlias{}
+					opts.SemanticViewRelationships[0].RefTableNameOrAlias.RelationshipTableName = nil
+					opts.SemanticViewRelationships[0].RefTableNameOrAlias.RelationshipTableAlias = nil
+				},
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_SemanticViewRelationships_RefTableNameOrAlias_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewRelationships.RefTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"),
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.SemanticViewRelationships = []SemanticViewRelationship{{}}
+					opts.SemanticViewRelationships[0].RefTableNameOrAlias = &RelationshipTableAlias{}
+					opts.SemanticViewRelationships[0].RefTableNameOrAlias.RelationshipTableName = new(randomSchemaObjectIdentifier())
+					opts.SemanticViewRelationships[0].RefTableNameOrAlias.RelationshipTableAlias = new("foo")
+				},
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"),
+				DefaultModify: func(opts *CreateSemanticViewOptions) {
+					opts.SemanticViewMetrics = []MetricDefinition{{}}
+				},
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"),
+			},
+			validationCase[*CreateSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Create_opts_SemanticViewMetrics_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateSemanticViewOptions]{
+				Name:           case_SemanticViews_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterSemanticViewOptions](
+		"SemanticViews", "Alter",
+	).
+		withDefaultOpts(func() *AlterSemanticViewOptions {
+			return &AlterSemanticViewOptions{
+				name: semanticViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterSemanticViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"),
+				DefaultModify: func(opts *AlterSemanticViewOptions) {
+					opts.SetComment = nil
+					opts.UnsetComment = nil
+					opts.RenameTo = nil
+				},
+			},
+			validationCase[*AlterSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"),
+				DefaultModify: func(opts *AlterSemanticViewOptions) {
+					opts.SetComment = new("foo")
+					opts.UnsetComment = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Alter_SetComment,
+			},
+			sqlCase[*AlterSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Alter_UnsetComment,
+			},
+			sqlCase[*AlterSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Alter_RenameTo,
+			},
+		),
+	Drop: newSdkTestCtx[*DropSemanticViewOptions](
+		"SemanticViews", "Drop",
+	).
+		withDefaultOpts(func() *DropSemanticViewOptions {
+			return &DropSemanticViewOptions{
+				name: semanticViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropSemanticViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropSemanticViewOptions]{
+				Name:           case_SemanticViews_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Drop_all,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeSemanticViewOptions](
+		"SemanticViews", "Describe",
+	).
+		withDefaultOpts(func() *DescribeSemanticViewOptions {
+			return &DescribeSemanticViewOptions{
+				name: semanticViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeSemanticViewOptions]{
+				Name:        case_SemanticViews_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeSemanticViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeSemanticViewOptions]{
+				Name:           case_SemanticViews_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Show: newSdkTestCtx[*ShowSemanticViewOptions](
+		"SemanticViews", "Show",
+	).
+		withDefaultOpts(func() *ShowSemanticViewOptions {
+			return &ShowSemanticViewOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowSemanticViewOptions]{
+				Name:           case_SemanticViews_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Show_all,
+			},
+			sqlCase[*ShowSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Show_Like,
+			},
+			sqlCase[*ShowSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Show_In,
+			},
+			sqlCase[*ShowSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowSemanticViewOptions]{
+				Name: case_SemanticViews_sql_Show_Limit,
+			},
+		),
+}
+
 func TestSemanticViews_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	logicalTableId := randomSchemaObjectIdentifier()
-
-	// Minimal valid CreateSemanticViewOptions
-	defaultOpts := func() *CreateSemanticViewOptions {
-		return &CreateSemanticViewOptions{
-			// adjusted manually
-			name: id,
-			LogicalTables: []LogicalTable{
-				{
-					TableName: logicalTableId,
-				},
-			},
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateSemanticViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSemanticViewOptions", "IfNotExists", "OrReplace"))
-	})
-
-	// below validations added manually
-	t.Run("validation: exactly one field for [MetricDefinition.SemanticExpression MetricDefinition.WindowFunctionMetricDefinition] none set", func(t *testing.T) {
-		metricsObj := []MetricDefinition{
-			{},
-		}
-		opts := &CreateSemanticViewOptions{
-			name:                id,
-			Comment:             String("comment"),
-			SemanticViewMetrics: metricsObj,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"))
-	})
-
-	t.Run("validation: exactly one field for [metricDefinition.semanticExpression metricDefinition.windowFunctionMetricDefinition] both set", func(t *testing.T) {
-		metricsObj := []MetricDefinition{
-			{
-				SemanticExpression:             &SemanticExpression{},
-				WindowFunctionMetricDefinition: &WindowFunctionMetricDefinition{},
-			},
-		}
-		opts := &CreateSemanticViewOptions{
-			name:                id,
-			Comment:             String("comment"),
-			SemanticViewMetrics: metricsObj,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.SemanticViewMetrics", "SemanticExpression", "WindowFunctionMetricDefinition"))
-	})
-
-	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias RelationshipTableName or RelationshipTableAlias] none set", func(t *testing.T) {
-		opts := &CreateSemanticViewOptions{
-			name: id,
-			SemanticViewRelationships: []SemanticViewRelationship{
-				{
-					TableNameOrAlias:    &RelationshipTableAlias{},
-					RefTableNameOrAlias: &RelationshipTableAlias{},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-	})
-
-	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias RelationshipTableName or RelationshipTableAlias] both set", func(t *testing.T) {
-		opts := &CreateSemanticViewOptions{
-			name: id,
-			SemanticViewRelationships: []SemanticViewRelationship{
-				{
-					TableNameOrAlias: &RelationshipTableAlias{
-						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
-						RelationshipTableAlias: String("alias"),
-					},
-					RefTableNameOrAlias: &RelationshipTableAlias{
-						RelationshipTableName: Pointer(randomSchemaObjectIdentifier()),
-					},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.tableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-	})
-
-	t.Run("validation: exactly one field for [CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias RelationshipTableName or RelationshipTableAlias] both set", func(t *testing.T) {
-		opts := &CreateSemanticViewOptions{
-			name: id,
-			SemanticViewRelationships: []SemanticViewRelationship{
-				{
-					TableNameOrAlias: &RelationshipTableAlias{
-						RelationshipTableName: Pointer(randomSchemaObjectIdentifier()),
-					},
-					RefTableNameOrAlias: &RelationshipTableAlias{
-						RelationshipTableName:  Pointer(randomSchemaObjectIdentifier()),
-						RelationshipTableAlias: String("alias"),
-					},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateSemanticViewOptions.semanticViewRelationships.refTableNameOrAlias", "RelationshipTableName", "RelationshipTableAlias"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SEMANTIC VIEW %s TABLES (%s)", id.FullyQualifiedName(), logicalTableId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		logicalTableId1 := randomSchemaObjectIdentifier()
-		logicalTableId2 := randomSchemaObjectIdentifier()
-		tableAlias1 := "table1"
-		tableAlias2 := "table2"
-		relationshipAlias1 := "rel1"
-		logicalTableComment1 := String("logical table comment 1")
-		logicalTableComment2 := String("logical table comment 2")
-		factExpression := "fact_sql_expression"
-		factName := "fact_name"
-		dimensionExpression := "dimension_sql_expression"
-		dimensionName := "dimension_name"
-		metricExpression := "metric_sql_expression"
-		metricName := `"table1"."metric_name"`
-		privateAccessModifier := true
-		tablesObj := []LogicalTable{
-			{
-				LogicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias1},
-				TableName:         logicalTableId1,
-				PrimaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
-					{
-						Name: "pk1.1",
-					},
-					{
-						Name: "pk1.2",
-					},
-				}},
-				UniqueKeys: []UniqueKeys{
-					{
-						Unique: []SemanticViewColumn{
-							{
-								Name: "uk1.3",
-							},
-						},
-					},
-					{
-						Unique: []SemanticViewColumn{
-							{
-								Name: "uk1.4",
-							},
-						},
-					},
-				},
-				Synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
-				Comment:  logicalTableComment1,
-			},
-			{
-				LogicalTableAlias: &LogicalTableAlias{LogicalTableAlias: tableAlias2},
-				TableName:         logicalTableId2,
-				PrimaryKeys: &PrimaryKeys{PrimaryKey: []SemanticViewColumn{
-					{
-						Name: "pk2.1",
-					},
-					{
-						Name: "pk2.2",
-					},
-				}},
-				Synonyms: &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
-				Comment:  logicalTableComment2,
-			},
-		}
-		relationshipsObj := []SemanticViewRelationship{
-			{
-				RelationshipAlias: &RelationshipAlias{RelationshipAlias: relationshipAlias1},
-				TableNameOrAlias:  &RelationshipTableAlias{RelationshipTableAlias: &tableAlias1},
-				RelationshipColumnNames: []SemanticViewColumn{
-					{
-						Name: "pk1.1",
-					},
-					{
-						Name: "pk1.2",
-					},
-				},
-				RefTableNameOrAlias: &RelationshipTableAlias{RelationshipTableAlias: &tableAlias2},
-				RelationshipRefColumnNames: []SemanticViewColumn{
-					{
-						Name: "pk2.1",
-					},
-					{
-						Name: "pk2.2",
-					},
-				},
-			},
-		}
-		factsObj := []FactDefinition{
-			{
-				IsPrivate: &privateAccessModifier,
-				SemanticExpression: &SemanticExpression{
-					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, factName)},
-					SqlExpression:           &SemanticSqlExpression{SqlExpression: factExpression},
-					Synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test1"}, {Synonym: "test2"}}},
-					Comment:                 String("fact_comment"),
-				},
-			},
-		}
-		dimensionsObj := []DimensionDefinition{
-			{
-				SemanticExpression: &SemanticExpression{
-					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: fmt.Sprintf(`"%s"`, dimensionName)},
-					SqlExpression:           &SemanticSqlExpression{SqlExpression: dimensionExpression},
-					Synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test3"}, {Synonym: "test4"}}},
-					Comment:                 String("dimension_comment"),
-				},
-			},
-		}
-		metricsObj := []MetricDefinition{
-			{
-				IsPrivate: &privateAccessModifier,
-				SemanticExpression: &SemanticExpression{
-					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: metricName},
-					SqlExpression:           &SemanticSqlExpression{SqlExpression: metricExpression},
-					Synonyms:                &Synonyms{WithSynonyms: []Synonym{{Synonym: "test5"}, {Synonym: "test6"}}},
-					Comment:                 String("metric_comment"),
-				},
-			},
-			{
-				WindowFunctionMetricDefinition: &WindowFunctionMetricDefinition{
-					QualifiedExpressionName: &QualifiedExpressionName{QualifiedExpressionName: `"table1"."metric1"`},
-					as:                      true,
-					SqlExpression:           &SemanticSqlExpression{SqlExpression: fmt.Sprintf(`SUM(%s)`, metricName)},
-					OverClause: &WindowFunctionOverClause{
-						PartitionBy: String("table_1.dimension_2, table_1.dimension_3"),
-						OrderBy:     String("table_1.dimension_2"),
-					},
-				},
-			},
-		}
-
-		opts := &CreateSemanticViewOptions{
-			name:                      id,
-			Comment:                   String("comment"),
-			IfNotExists:               Bool(true),
-			LogicalTables:             tablesObj,
-			SemanticViewRelationships: relationshipsObj,
-			SemanticViewFacts:         factsObj,
-			SemanticViewDimensions:    dimensionsObj,
-			SemanticViewMetrics:       metricsObj,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEMANTIC VIEW IF NOT EXISTS %s TABLES ("%s" AS %s PRIMARY KEY ("pk1.1", "pk1.2") UNIQUE ("uk1.3") UNIQUE ("uk1.4") WITH SYNONYMS ('test1', 'test2') COMMENT = '%s', "%s" AS %s PRIMARY KEY ("pk2.1", "pk2.2") WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') RELATIONSHIPS ("%s" AS "%s" ("pk1.1", "pk1.2") REFERENCES "%s" ("pk2.1", "pk2.2")) FACTS (PRIVATE "%s" AS %s WITH SYNONYMS ('test1', 'test2') COMMENT = '%s') DIMENSIONS ("%s" AS %s WITH SYNONYMS ('test3', 'test4') COMMENT = '%s') METRICS (PRIVATE %s AS %s WITH SYNONYMS ('test5', 'test6') COMMENT = '%s', %s AS %s OVER (PARTITION BY %s ORDER BY %s)) COMMENT = '%s'`,
-			id.FullyQualifiedName(),
-			tableAlias1,
-			logicalTableId1.FullyQualifiedName(),
-			*logicalTableComment1,
-			tableAlias2,
-			logicalTableId2.FullyQualifiedName(),
-			*logicalTableComment2,
-			relationshipAlias1,
-			tableAlias1,
-			tableAlias2,
-			factName,
-			factExpression,
-			*factsObj[0].SemanticExpression.Comment,
-			dimensionName,
-			dimensionExpression,
-			*dimensionsObj[0].SemanticExpression.Comment,
-			metricName,
-			metricExpression,
-			*metricsObj[0].SemanticExpression.Comment,
-			metricsObj[1].WindowFunctionMetricDefinition.QualifiedExpressionName.QualifiedExpressionName,
-			metricsObj[1].WindowFunctionMetricDefinition.SqlExpression.SqlExpression,
-			*metricsObj[1].WindowFunctionMetricDefinition.OverClause.PartitionBy,
-			*metricsObj[1].WindowFunctionMetricDefinition.OverClause.OrderBy,
-			"comment",
-		)
-	})
+	semanticViewsTests.Create.RunValidationCases(t)
+	semanticViewsTests.Create.RunSqlCases(t)
 }
 
 func TestSemanticViews_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterSemanticViewOptions
-	defaultOpts := func() *AlterSemanticViewOptions {
-		return &AlterSemanticViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterSemanticViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.RenameTo] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"))
-	})
-
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.RenameTo] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetComment = String("comment")
-		opts.UnsetComment = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSemanticViewOptions", "SetComment", "UnsetComment", "RenameTo"))
-	})
-
-	// variants added manually
-	t.Run("set comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetComment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s SET COMMENT = 'comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("unset comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetComment = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s UNSET COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("rename", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomSchemaObjectIdentifier()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetComment = String("comment")
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SEMANTIC VIEW IF EXISTS %s SET COMMENT = 'comment'", id.FullyQualifiedName())
-	})
+	semanticViewsTests.Alter.RunValidationCases(t)
+	semanticViewsTests.Alter.RunSqlCases(t)
 }
 
 func TestSemanticViews_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropSemanticViewOptions
-	defaultOpts := func() *DropSemanticViewOptions {
-		return &DropSemanticViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropSemanticViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP SEMANTIC VIEW %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP SEMANTIC VIEW IF EXISTS %s", id.FullyQualifiedName())
-	})
+	semanticViewsTests.Drop.RunValidationCases(t)
+	semanticViewsTests.Drop.RunSqlCases(t)
 }
 
 func TestSemanticViews_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeSemanticViewOptions
-	defaultOpts := func() *DescribeSemanticViewOptions {
-		return &DescribeSemanticViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeSemanticViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SEMANTIC VIEW %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	semanticViewsTests.Describe.RunValidationCases(t)
+	semanticViewsTests.Describe.RunSqlCases(t)
 }
 
 func TestSemanticViews_Show(t *testing.T) {
-	// Minimal valid ShowSemanticViewOptions
-	defaultOpts := func() *ShowSemanticViewOptions {
-		return &ShowSemanticViewOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowSemanticViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SEMANTIC VIEWS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		opts.Like = &Like{
-			Pattern: String("my_account"),
-		}
-		opts.In = &In{
-			Account: Bool(true),
-		}
-		opts.StartsWith = String("sem")
-		opts.Limit = &LimitFrom{Rows: Int(10)}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW TERSE SEMANTIC VIEWS LIKE 'my_account' IN ACCOUNT STARTS WITH 'sem' LIMIT 10")
-	})
+	semanticViewsTests.Show.RunValidationCases(t)
+	semanticViewsTests.Show.RunSqlCases(t)
 }
