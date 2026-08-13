@@ -160,3 +160,49 @@ curl --request POST \
    }
    ```
 5. You can now use WIF authentication in the provider.
+
+## WIF + Terraform Cloud/Enterprise OIDC token test
+
+This test checks the `tfc_workload_identity_token_tag` field, which reads the JWT from the
+`TFC_WORKLOAD_IDENTITY_TOKEN_<TAG>` environment variable that Terraform Cloud/Enterprise injects into a
+run. It cannot be automated by the provider team, because it requires a TFC/TFE organization that issues
+the token - the variable is only present inside a TFC/TFE run. See also the Terraform setup
+[here](./tfc_workload_identity_token/main.tf).
+
+Pre-requisites:
+- A TFC/TFE workspace you can run plans and applies in.
+- A Snowflake account reachable from that workspace.
+
+1. In the TFC/TFE workspace, configure a manually generated workload identity token with the tag
+   `SNOWFLAKE`, following
+   [HashiCorp's guide](https://developer.hashicorp.com/terraform/enterprise/workspaces/dynamic-provider-credentials/manual-generation).
+   The run will then expose the JWT as `TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE`.
+2. Decode the token (e.g. on [jwt.io](https://jwt.io)) and note its `iss`, `sub`, and `aud` claims. To
+   test the plan/apply identity split, note that TFC/TFE issues a different `sub` for each phase, so
+   inspect both a plan and an apply token.
+3. Create a user in Snowflake bound to those claims:
+   ```sql
+   CREATE OR REPLACE USER USER_NAME
+     WORKLOAD_IDENTITY = (
+       TYPE = OIDC
+       ISSUER = '<iss_claim>'
+       SUBJECT = '<sub_claim>'
+       OIDC_AUDIENCE_LIST = ('<aud_claim>')
+     )
+     TYPE = SERVICE;
+   ```
+4. Configure the provider in the workspace, without passing a token at all:
+   ```hcl
+   provider "snowflake" {
+     organization_name               = "ORGANIZATION_NAME"
+     account_name                    = "ACCOUNT_NAME"
+     user                            = "USER_NAME"
+     authenticator                   = "WORKLOAD_IDENTITY"
+     workload_identity_provider      = "OIDC"
+     tfc_workload_identity_token_tag = "SNOWFLAKE"
+   }
+   ```
+5. Run a plan and an apply in the workspace. Both should authenticate without any token being set in the
+   configuration or in `SNOWFLAKE_TOKEN`.
+6. To verify the plan/apply identity split, bind two Snowflake users to the respective `sub` claims and
+   grant them different privileges - the read-only one should be enough for a plan, but not for an apply.

@@ -1529,6 +1529,24 @@ func TestAcc_Provider_invalidConfigurations(t *testing.T) {
 				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled("snowflake_invalid_feature"), datasourceModel()),
 				ExpectError: regexp.MustCompile(`expected .* preview_features_enabled.* to be one of((.|\n)*), got snowflake_invalid_feature`),
 			},
+			// The tag is only valid for the OIDC workload identity flow. The authenticator here comes from the
+			// TOML profile (SNOWFLAKE_JWT), which proves the validation runs against the merged configuration.
+			{
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithTfcWorkloadIdentityTokenTag("SNOWFLAKE"), datasourceModel()),
+				ExpectError: regexp.MustCompile(`"tfc_workload_identity_token_tag" requires "authenticator" to be "WORKLOAD_IDENTITY" and "workload_identity_provider" to be "OIDC"`),
+			},
+			{
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithAuthenticator(string(sdk.AuthenticationTypeWorkloadIdentityFederation)).WithWorkloadIdentityProvider("AWS").WithTfcWorkloadIdentityTokenTag("SNOWFLAKE"), datasourceModel()),
+				ExpectError: regexp.MustCompile(`"tfc_workload_identity_token_tag" requires "authenticator" to be "WORKLOAD_IDENTITY" and "workload_identity_provider" to be "OIDC"`),
+			},
+			// With a valid OIDC workload identity setup, the missing TFE-provided environment variable is reported.
+			{
+				PreConfig: func() {
+					t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE", "")
+				},
+				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithAuthenticator(string(sdk.AuthenticationTypeWorkloadIdentityFederation)).WithWorkloadIdentityProvider("OIDC").WithTfcWorkloadIdentityTokenTag("SNOWFLAKE"), datasourceModel()),
+				ExpectError: regexp.MustCompile(`environment variable TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE is not set or is empty`),
+			},
 		},
 	})
 }
