@@ -68,6 +68,7 @@ type pluginFrameworkPocProviderModelV0 struct {
 	RequestTimeout                     types.Int64  `tfsdk:"request_timeout"`
 	Role                               types.String `tfsdk:"role"`
 	SkipTomlFilePermissionVerification types.Bool   `tfsdk:"skip_toml_file_permission_verification"`
+	TfcWorkloadIdentityTokenTag        types.String `tfsdk:"tfc_workload_identity_token_tag"`
 	TmpDirectoryPath                   types.String `tfsdk:"tmp_directory_path"`
 	Token                              types.String `tfsdk:"token"`
 	TokenAccessor                      types.List   `tfsdk:"token_accessor"`
@@ -383,6 +384,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 		DeprecationMessage: "This field is deprecated. It will be removed in the next major release. Skipping TOML configuration file permission verification will be disallowed in the next major release. Make sure the TOML configuration file permissions are set correctly before removing this flag.", // edited manually
 		Optional:           true,
 		Sensitive:          false,
+	},
+	"tfc_workload_identity_token_tag": schema.StringAttribute{
+		Description: existingSchema["tfc_workload_identity_token_tag"].Description,
+		Optional:    true,
+		Sensitive:   false,
 	},
 	"tmp_directory_path": schema.StringAttribute{
 		Description: existingSchema["tmp_directory_path"].Description,

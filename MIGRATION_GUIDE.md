@@ -26,6 +26,37 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(new feature)* tfc_workload_identity_token_tag provider field
+
+A new optional `tfc_workload_identity_token_tag` provider field has been added for use with the OIDC
+workload identity flow. Terraform Cloud/Enterprise exposes manually generated workload identity tokens
+through environment variables named `TFC_WORKLOAD_IDENTITY_TOKEN_<TAG>`; setting this field to the tag
+makes the provider read the JWT from the matching variable and use it as the workload identity token:
+
+```terraform
+provider "snowflake" {
+  organization_name               = "<organization_name>"
+  account_name                    = "<account_name>"
+  user                            = "<user_name>"
+  authenticator                   = "WORKLOAD_IDENTITY"
+  workload_identity_provider      = "OIDC"
+  tfc_workload_identity_token_tag = "SNOWFLAKE"
+}
+```
+
+This removes the need for an external data source or a wrapper script, and allows backing the plan and
+the apply phase with different Snowflake identities based on the TFC/TFE token claims.
+
+The field requires `authenticator = "WORKLOAD_IDENTITY"` and `workload_identity_provider = "OIDC"`;
+other combinations are rejected with an error. The resolved token takes precedence over every other
+token source, including the `token` field, `SNOWFLAKE_TOKEN`, and a TOML profile. The tag can also be
+sourced from `SNOWFLAKE_TFC_WORKLOAD_IDENTITY_TOKEN_TAG`. The untagged `TFC_WORKLOAD_IDENTITY_TOKEN`
+variable is not read.
+
+Leaving the field unset keeps the existing authentication behavior unchanged. See the
+[authentication methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods)
+for details.
+
 ### *(new feature)* ACCOUNT_ROLE_SHOW_CACHING experiment
 
 A new `ACCOUNT_ROLE_SHOW_CACHING` experiment has been added. When enabled, the result of looking up

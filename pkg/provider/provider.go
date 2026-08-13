@@ -488,6 +488,12 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.WorkloadIdentityEntraResource, nil),
 		},
+		"tfc_workload_identity_token_tag": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription(fmt.Sprintf("Tag suffix used to read the Terraform Cloud/Enterprise workload identity token from the `%s<TAG>` environment variable (the tag is upper-cased). Requires `authenticator` to be `%s` and `workload_identity_provider` to be `%s`. Takes precedence over `token` and every other token source.", tfcWorkloadIdentityTokenEnvPrefix, sdk.AuthenticationTypeWorkloadIdentityFederation, tfcWorkloadIdentityProviderOidc), snowflakeenvs.TfcWorkloadIdentityTokenTag),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.TfcWorkloadIdentityTokenTag, nil),
+		},
 		"log_query_text": {
 			Type:        schema.TypeBool,
 			Description: envNameFieldDescription("When set to true, the full query text will be logged. Be aware that it may include sensitive information. Default value is false.", snowflakeenvs.LogQueryText),
@@ -839,6 +845,13 @@ func ConfigureProvider(_ context.Context, s *schema.ResourceData) (any, diag.Dia
 		}
 		config = sdk.MergeConfig(config, tomlConfig)
 		fixBooleanConfigFields(s, config)
+	}
+
+	// This has to run after the TOML config is merged in, so that the authenticator and the workload
+	// identity provider are validated against the effective configuration, and so that the resulting
+	// token takes precedence over the token from every other source.
+	if err := applyTfcWorkloadIdentityToken(s.Get("tfc_workload_identity_token_tag").(string), config); err != nil {
+		return nil, append(diags, diag.FromErr(err)...)
 	}
 	// If authenticator was not set but the token was, we set to OAuth for backward compatibility. Will be removed in v3.
 	if !experimentalfeatures.IsExperimentEnabled(experimentalfeatures.AuthenticatorExplicitOnly, enabledExperiments) {

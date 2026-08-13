@@ -50,6 +50,7 @@ const (
 	UseLegacyTomlFile                  = "SNOWFLAKE_USE_LEGACY_TOML_FILE"
 	WorkloadIdentityProvider           = "SNOWFLAKE_WORKLOAD_IDENTITY_PROVIDER"
 	WorkloadIdentityEntraResource      = "SNOWFLAKE_WORKLOAD_IDENTITY_ENTRA_RESOURCE"
+	TfcWorkloadIdentityTokenTag        = "SNOWFLAKE_TFC_WORKLOAD_IDENTITY_TOKEN_TAG" //nolint:gosec
 	LogQueryText                       = "SNOWFLAKE_LOG_QUERY_TEXT"
 	LogQueryParameters                 = "SNOWFLAKE_LOG_QUERY_PARAMETERS"
 	ProxyHost                          = "SNOWFLAKE_PROXY_HOST"

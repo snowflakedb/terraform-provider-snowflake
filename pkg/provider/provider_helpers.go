@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -99,6 +100,32 @@ func GetAccessTokenWithRefreshToken(
 
 func envNameFieldDescription(description, envName string) string {
 	return fmt.Sprintf("%s Can also be sourced from the `%s` environment variable.", description, envName)
+}
+
+const (
+	tfcWorkloadIdentityTokenEnvPrefix = "TFC_WORKLOAD_IDENTITY_TOKEN_" //nolint:gosec
+	tfcWorkloadIdentityProviderOidc   = "OIDC"
+)
+
+func tfcWorkloadIdentityTokenEnvName(tag string) string {
+	return tfcWorkloadIdentityTokenEnvPrefix + strings.ToUpper(tag)
+}
+
+// check https://developer.hashicorp.com/terraform/enterprise/workspaces/dynamic-provider-credentials/manual-generation
+func applyTfcWorkloadIdentityToken(tag string, config *gosnowflake.Config) error {
+	if tag == "" {
+		return nil
+	}
+	if config.Authenticator != gosnowflake.AuthTypeWorkloadIdentityFederation || !strings.EqualFold(config.WorkloadIdentityProvider, tfcWorkloadIdentityProviderOidc) {
+		return fmt.Errorf(`"tfc_workload_identity_token_tag" requires "authenticator" to be %q and "workload_identity_provider" to be %q`, sdk.AuthenticationTypeWorkloadIdentityFederation, tfcWorkloadIdentityProviderOidc)
+	}
+	envName := tfcWorkloadIdentityTokenEnvName(tag)
+	token := oswrapper.Getenv(envName)
+	if token == "" {
+		return fmt.Errorf("environment variable %s is not set or is empty; it is provided by Terraform Cloud/Enterprise when a workload identity token with the %q tag is configured for the workspace", envName, tag)
+	}
+	config.Token = token
+	return nil
 }
 
 // TODO(SNOW-1787926): reuse these handlers with the ones in resources

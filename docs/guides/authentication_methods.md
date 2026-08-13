@@ -556,6 +556,42 @@ Alternatively, the token can be provided with the environment variable `SNOWFLAK
 export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
 ```
 
+#### Using a Terraform Cloud/Enterprise workload identity token
+
+Terraform Cloud and Terraform Enterprise can issue OIDC workload identity tokens for a workspace and
+expose them to the run through environment variables named `TFC_WORKLOAD_IDENTITY_TOKEN_<TAG>`, where
+`<TAG>` is the tag you configured for the token. See HashiCorp's guide to
+[manually generating workload identity tokens](https://developer.hashicorp.com/terraform/enterprise/workspaces/dynamic-provider-credentials/manual-generation)
+for how to set this up on the TFC/TFE side.
+
+Set `tfc_workload_identity_token_tag` to that tag and the provider reads the JWT from the matching
+environment variable and uses it for the OIDC workload identity flow. For example, the tag `SNOWFLAKE`
+below makes the provider read `TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE`:
+
+```terraform
+provider "snowflake" {
+  organization_name               = "<organization_name>"
+  account_name                    = "<account_name>"
+  user                            = "<user_name>"
+  authenticator                   = "WORKLOAD_IDENTITY"
+  workload_identity_provider      = "OIDC"
+  tfc_workload_identity_token_tag = "SNOWFLAKE"
+}
+```
+
+Because TFC/TFE can issue tokens with different claims for the plan and the apply phase, this lets you
+back each phase with a different Snowflake user - for example a read-only identity for `terraform plan`
+and a read/write one for `terraform apply` - enforced by Snowflake through
+[workload identity federation](https://docs.snowflake.com/user-guide/workload-identity-federation)
+rather than by the pipeline.
+
+Notes:
+- The tag is upper-cased before the environment variable name is built, so `tfc_workload_identity_token_tag = "snowflake"` also reads `TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE`.
+- The resulting token takes precedence over a token from any other source, including the `token` field, the `SNOWFLAKE_TOKEN` environment variable, and a TOML profile.
+- The field requires `authenticator = "WORKLOAD_IDENTITY"` and `workload_identity_provider = "OIDC"`. Any other combination is an error, so that a misconfiguration is not silently ignored.
+- The untagged `TFC_WORKLOAD_IDENTITY_TOKEN` environment variable is not read. Configure a tagged token instead.
+- The tag itself can also be sourced from the `SNOWFLAKE_TFC_WORKLOAD_IDENTITY_TOKEN_TAG` environment variable. It cannot be set in the TOML configuration file, because TFC/TFE runs configure the provider through the Terraform configuration and the environment.
+
 ## Common issues
 
 ### How can I get my organization name?
