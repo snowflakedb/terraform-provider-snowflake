@@ -36,7 +36,7 @@ func TestAcc_AccountParameter(t *testing.T) {
 		{sdk.AccountParameterDefaultStreamlitComputePool, "SYSTEM_COMPUTE_POOL_GPU", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterDisallowedSpcsWorkloadTypes, "", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterEnableBudgetEventLogging, "true", sdk.ParameterTypeSnowflakeDefault},
-		{sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},
+		// TOOD(SNOW-3953840): Unskip or remove {sdk.AccountParameterCortexModelsAllowlist, "All", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCortexCodeCliDailyEstCreditLimitPerUser, "10", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCortexCodeDesktopDailyEstCreditLimitPerUser, "20", sdk.ParameterTypeSnowflakeDefault},
 		{sdk.AccountParameterCortexCodeSnowsightDailyEstCreditLimitPerUser, "30", sdk.ParameterTypeSnowflakeDefault},

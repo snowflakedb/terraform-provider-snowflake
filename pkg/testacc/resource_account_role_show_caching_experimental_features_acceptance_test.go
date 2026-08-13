@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -24,9 +25,9 @@ import (
 func countShowRolesLikeQueries(t *testing.T, roleId sdk.AccountObjectIdentifier) int {
 	t.Helper()
 	queryHistory := testClient().InformationSchema.GetQueryHistory(t, 1000)
-	needle := fmt.Sprintf("SHOW ROLES LIKE '%s'", roleId.Name())
 	return len(collections.Filter(queryHistory, func(h helpers.QueryHistory) bool {
-		return strings.Contains(h.QueryText, needle)
+		return strings.Contains(h.QueryText, fmt.Sprintf("SHOW ROLES LIKE '%s'", roleId.Name())) &&
+			strings.Contains(h.QueryText, tracking.MetadataPrefix) // has to be query coming from the provider
 	}))
 }
 
