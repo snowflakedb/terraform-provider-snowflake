@@ -220,6 +220,22 @@ Now, a column type that cannot be parsed no longer fails the whole describe call
 
 References: [#5090](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5090)
 
+### *(bug fix)* Fixed handling of unprefixed database role grantee names in `SHOW GRANTS` (2026_06 bundle / BCR-2371)
+
+Previously, when a database role was granted to another database role, the provider expected the `SHOW GRANTS OF DATABASE ROLE` output to return the grantee database role as a fully qualified name (`<database>.<database_role>`). The 2026_06 bundle (BCR-2371) changes this output so that the grantee database role is returned without the database prefix (just `<database_role>`). With the bundle enabled, the provider could not parse the grantee name, so the Read operation of the `snowflake_grant_database_role` resource failed to find the grant and marked the resource as deleted. `terraform plan` then showed a permanent diff recreating the grant, and `terraform apply` returned an error like
+
+```
+│ Error: Provider produced inconsistent result after apply
+│
+│ When applying changes to snowflake_grant_database_role.example, provider "provider[\"registry.terraform.io/snowflakedb/snowflake\"]" produced an unexpected new value: Root object was present, but now absent.
+│
+│ This is a bug in the provider, which should be reported in the provider's own issue tracker.
+```
+
+Importing such a resource failed for the same reason (`Cannot import non-existent remote object`).
+
+In this release, the grantee database role name is normalized to a fully qualified identifier regardless of whether the bundle is enabled: when the database prefix is missing, it is reconstructed from the database of the queried database role (a database role can only be granted to another database role in the same database). The `snowflake_grant_database_role` resource is no longer recreated on every plan and can be imported again.
+
 ## v2.18.x ➞ v2.19.0
 
 ### *(improvement)* Rework of `snowflake_account_authentication_policy_attachment` and `snowflake_user_authentication_policy_attachment`
