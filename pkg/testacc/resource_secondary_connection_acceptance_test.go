@@ -25,7 +25,7 @@ import (
 // Recreation when promoting secondary to primary cannot be tested, because of the Terraform testing framework limitations.
 // For the test that checks behavior for promoting secondary to primary, see `secondary_connection_promotion` manual test.
 
-func TestAcc_SecondaryConnection_Basic(t *testing.T) {
+func TestAcc_SecondaryConnection_BasicUseCase(t *testing.T) {
 	if slices.Contains([]testenvs.SnowflakeEnvironment{
 		testenvs.SnowflakeProdEnvironment,
 		testenvs.SnowflakePreProdGovEnvironment,

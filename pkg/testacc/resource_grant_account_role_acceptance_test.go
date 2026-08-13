@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_GrantAccountRole_accountRole(t *testing.T) {
+func TestAcc_GrantAccountRole_BasicUseCase(t *testing.T) {
 	roleId := testClient().Ids.RandomAccountObjectIdentifier()
 	roleName := roleId.Name()
 	parentRoleId := testClient().Ids.RandomAccountObjectIdentifier()

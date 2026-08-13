@@ -28,7 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_AuthenticationPolicy(t *testing.T) {
+func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	id2 := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
@@ -377,7 +377,7 @@ func TestAcc_AuthenticationPolicy(t *testing.T) {
 	})
 }
 
-func TestAcc_AuthenticationPolicy_complete(t *testing.T) {
+func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	completeModelClientPolicy := []sdk.AuthenticationPolicyClientPolicyEntry{

@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_GrantDatabaseRole_databaseRole(t *testing.T) {
+func TestAcc_GrantDatabaseRole_BasicUseCase_DatabaseRole(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	databaseRoleName := databaseRoleId.Name()
 	parentDatabaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
@@ -56,6 +56,94 @@ func TestAcc_GrantDatabaseRole_databaseRole(t *testing.T) {
 			{
 				ConfigDirectory:   config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/database_role"),
 				ConfigVariables:   m(),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAcc_GrantDatabaseRole_BasicUseCase_AccountRole(t *testing.T) {
+	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
+	databaseRoleName := databaseRoleId.Name()
+	parentRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
+	parentRoleName := parentRoleId.Name()
+
+	m := func() map[string]config.Variable {
+		return map[string]config.Variable{
+			"database":           config.StringVariable(TestDatabaseName),
+			"database_role_name": config.StringVariable(databaseRoleName),
+			"parent_role_name":   config.StringVariable(parentRoleName),
+		}
+	}
+
+	resourceName := "snowflake_grant_database_role.g"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckGrantDatabaseRoleDestroy(t),
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/account_role"),
+				ConfigVariables: m(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "database_role_name", fmt.Sprintf(`"%v"."%v"`, TestDatabaseName, databaseRoleName)),
+					resource.TestCheckResourceAttr(resourceName, "parent_role_name", fmt.Sprintf("%v", parentRoleName)),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`"%v"."%v"|ROLE|"%v"`, TestDatabaseName, databaseRoleName, parentRoleName)),
+				),
+			},
+			// test import
+			{
+				ConfigDirectory:   config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/account_role"),
+				ConfigVariables:   m(),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+// proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2410 is fixed
+func TestAcc_GrantDatabaseRole_BasicUseCase_Share(t *testing.T) {
+	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
+	t.Cleanup(databaseCleanup)
+
+	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(database.ID())
+	shareId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	configVariables := func() config.Variables {
+		return config.Variables{
+			"database":           config.StringVariable(database.ID().Name()),
+			"database_role_name": config.StringVariable(databaseRoleId.Name()),
+			"share_name":         config.StringVariable(shareId.Name()),
+		}
+	}
+
+	resourceName := "snowflake_grant_database_role.test"
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckGrantDatabaseRoleDestroy(t),
+		Steps: []resource.TestStep{
+			{
+				ConfigDirectory: config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/share"),
+				ConfigVariables: configVariables(),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRoleId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(resourceName, "share_name", shareId.Name()),
+					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`%v|%v|%v`, databaseRoleId.FullyQualifiedName(), "SHARE", shareId.FullyQualifiedName())),
+				),
+			},
+			// test import
+			{
+				ConfigDirectory:   config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/share"),
+				ConfigVariables:   configVariables(),
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -141,94 +229,6 @@ func TestAcc_GrantDatabaseRole_issue2402(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "parent_database_role_name", fmt.Sprintf(`"%v"."%v"`, databaseName, parentDatabaseRoleName)),
 					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`"%[1]v"."%[2]v"|DATABASE ROLE|"%[1]v"."%[3]v"`, databaseName, databaseRoleName, parentDatabaseRoleName)),
 				),
-			},
-		},
-	})
-}
-
-func TestAcc_GrantDatabaseRole_accountRole(t *testing.T) {
-	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
-	databaseRoleName := databaseRoleId.Name()
-	parentRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
-	parentRoleName := parentRoleId.Name()
-
-	m := func() map[string]config.Variable {
-		return map[string]config.Variable{
-			"database":           config.StringVariable(TestDatabaseName),
-			"database_role_name": config.StringVariable(databaseRoleName),
-			"parent_role_name":   config.StringVariable(parentRoleName),
-		}
-	}
-
-	resourceName := "snowflake_grant_database_role.g"
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckGrantDatabaseRoleDestroy(t),
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/account_role"),
-				ConfigVariables: m(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "database_role_name", fmt.Sprintf(`"%v"."%v"`, TestDatabaseName, databaseRoleName)),
-					resource.TestCheckResourceAttr(resourceName, "parent_role_name", fmt.Sprintf("%v", parentRoleName)),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`"%v"."%v"|ROLE|"%v"`, TestDatabaseName, databaseRoleName, parentRoleName)),
-				),
-			},
-			// test import
-			{
-				ConfigDirectory:   config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/account_role"),
-				ConfigVariables:   m(),
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-// proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2410 is fixed
-func TestAcc_GrantDatabaseRole_share(t *testing.T) {
-	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
-	t.Cleanup(databaseCleanup)
-
-	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(database.ID())
-	shareId := testClient().Ids.RandomAccountObjectIdentifier()
-
-	configVariables := func() config.Variables {
-		return config.Variables{
-			"database":           config.StringVariable(database.ID().Name()),
-			"database_role_name": config.StringVariable(databaseRoleId.Name()),
-			"share_name":         config.StringVariable(shareId.Name()),
-		}
-	}
-
-	resourceName := "snowflake_grant_database_role.test"
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckGrantDatabaseRoleDestroy(t),
-		Steps: []resource.TestStep{
-			{
-				ConfigDirectory: config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/share"),
-				ConfigVariables: configVariables(),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "database_role_name", databaseRoleId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "share_name", shareId.Name()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf(`%v|%v|%v`, databaseRoleId.FullyQualifiedName(), "SHARE", shareId.FullyQualifiedName())),
-				),
-			},
-			// test import
-			{
-				ConfigDirectory:   config.StaticDirectory("testdata/TestAcc_GrantDatabaseRole/share"),
-				ConfigVariables:   configVariables(),
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})

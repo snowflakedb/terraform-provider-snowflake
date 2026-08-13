@@ -8,12 +8,12 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
+func TestAcc_CreateSharedDatabase_BasicUseCase(t *testing.T) {
 	shareExternalId := createShareableDatabase(t)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -157,7 +157,7 @@ func TestAcc_CreateSharedDatabase_Basic(t *testing.T) {
 	})
 }
 
-func TestAcc_CreateSharedDatabase_complete(t *testing.T) {
+func TestAcc_CreateSharedDatabase_CompleteUseCase(t *testing.T) {
 	externalShareId := createShareableDatabase(t)
 
 	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)

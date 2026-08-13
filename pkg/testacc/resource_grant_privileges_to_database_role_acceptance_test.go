@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnDatabase(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -104,7 +104,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnDatabase_PrivilegesReversed(t *test
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchema(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchema(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -171,7 +171,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchema_ExactlyOneOf(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnAllSchemasInDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnAllSchemasInDatabase(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -211,7 +211,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnAllSchemasInDatabase(t *testing.T) 
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureSchemasInDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnFutureSchemasInDatabase(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -251,7 +251,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureSchemasInDatabase(t *testing.
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnObject(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnObject(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -320,7 +320,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnObject_OwnershipPriv
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnAll_InDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnAll_InDatabase(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -362,7 +362,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnAll_InDatabase(t *te
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnAllPipes(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_OnSchemaObject_OnAllPipes(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -403,7 +403,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnAllPipes(t *testing.
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnFuture_InDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnFuture_InDatabase(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -516,7 +516,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnAll_Streamlits_InDat
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnFunctionWithArguments(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnFunctionWithArguments(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -558,7 +558,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnFunctionWithArgument
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnFunctionWithoutArguments(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnFunctionWithoutArguments(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -618,7 +618,7 @@ func databaseRoleHasInheritedGrant(t *testing.T, roleId sdk.DatabaseObjectIdenti
 	}
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchema_Inherited_InDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchema_Inherited_InDatabase(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -672,7 +672,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchema_Inherited_InDatabase(t *test
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_InDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited_InDatabase(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -753,7 +753,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_InDatabase(t
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_InSchema(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_Inherited_InSchema(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -812,7 +812,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_InSchema(t *
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_Inherited_ContainerChange(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_Inherited_ContainerChange(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -969,7 +969,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation_MissingExperimen
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_UpdatePrivileges(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_UpdatePrivileges(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -1113,7 +1113,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_UpdatePrivileges_SnowflakeChecked(t *
 	})
 }
 
-func TestAcc_GrantPrivilegesToDatabaseRole_AlwaysApply(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_AlwaysApply(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
@@ -1237,7 +1237,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_MLPrivileges(t *testing.T) {
 }
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2459 is fixed
-func TestAcc_GrantPrivilegesToDatabaseRole_ChangeWithGrantOptionsOutsideOfTerraform_WithGrantOptions(t *testing.T) {
+func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_ReconcileExternalWithGrantOption(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 

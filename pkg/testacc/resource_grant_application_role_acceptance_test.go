@@ -45,7 +45,7 @@ func createAppReturnApplicationPackage(t *testing.T) (*sdk.Application, *sdk.App
 	return application, applicationPackage
 }
 
-func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
+func TestAcc_GrantApplicationRole_BasicUseCase_AccountRole(t *testing.T) {
 	parentRole, cleanupParentRole := testClient().Role.CreateRole(t)
 	t.Cleanup(cleanupParentRole)
 
@@ -84,7 +84,7 @@ func TestAcc_GrantApplicationRole_accountRole(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantApplicationRole_application(t *testing.T) {
+func TestAcc_GrantApplicationRole_BasicUseCase_MultipleApplications(t *testing.T) {
 	app := createApp(t)
 	app2 := createApp(t)
 	applicationRoleName := testvars.ApplicationRole1

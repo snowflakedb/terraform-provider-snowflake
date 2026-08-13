@@ -10,16 +10,16 @@ import (
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -27,7 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_TagAssociation(t *testing.T) {
+func TestAcc_TagAssociation_BasicUseCase(t *testing.T) {
 	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
 	tag2Id := testClient().Ids.RandomSchemaObjectIdentifier()
 	tagValue := "foo"
@@ -220,7 +220,7 @@ func TestAcc_TagAssociation_objectIdentifiers(t *testing.T) {
 	})
 }
 
-func TestAcc_TagAssociation_objectType(t *testing.T) {
+func TestAcc_TagAssociation_CompleteUseCase_ObjectType(t *testing.T) {
 	tag, tagCleanup := testClient().Tag.CreateTag(t)
 	t.Cleanup(tagCleanup)
 	role, roleCleanup := testClient().Role.CreateRole(t)
@@ -270,7 +270,7 @@ func TestAcc_TagAssociation_objectType(t *testing.T) {
 	})
 }
 
-func TestAcc_TagAssociationSchema(t *testing.T) {
+func TestAcc_TagAssociation_CompleteUseCase_Schema(t *testing.T) {
 	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
 	schemaId := testClient().Ids.SchemaId()
 	tagValue := "TAG_VALUE"
@@ -334,7 +334,7 @@ func TestAcc_TagAssociation_lowercaseObjectType(t *testing.T) {
 	})
 }
 
-func TestAcc_TagAssociationColumn(t *testing.T) {
+func TestAcc_TagAssociation_CompleteUseCase_Column(t *testing.T) {
 	tag, tagCleanup := testClient().Tag.CreateTag(t)
 	t.Cleanup(tagCleanup)
 
@@ -373,7 +373,7 @@ func TestAcc_TagAssociationColumn(t *testing.T) {
 	})
 }
 
-func TestAcc_TagAssociationIcebergTableColumn(t *testing.T) {
+func TestAcc_TagAssociation_CompleteUseCase_IcebergTableColumn(t *testing.T) {
 	tag, tagCleanup := testClient().Tag.CreateTag(t)
 	t.Cleanup(tagCleanup)
 

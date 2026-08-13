@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Services(t *testing.T) {
+func TestAcc_Services_CompleteUseCase(t *testing.T) {
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
 
@@ -168,7 +168,7 @@ func TestAcc_Services(t *testing.T) {
 	})
 }
 
-func TestAcc_Services_Filtering(t *testing.T) {
+func TestAcc_Services_BasicUseCase_DifferentFiltering(t *testing.T) {
 	computePool1, computePool1Cleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePool1Cleanup)
 

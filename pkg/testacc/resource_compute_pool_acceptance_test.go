@@ -6,10 +6,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
@@ -25,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_ComputePool_basic(t *testing.T) {
+func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 	application := createApp(t)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -97,27 +95,28 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 						HasComment("").
 						HasIsExclusive(false).
 						HasApplicationEmpty(),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.state", string(sdk.ComputePoolStateStarting))),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_nodes", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.max_nodes", "2")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.instance_family", string(sdk.ComputePoolInstanceFamilyCpuX64S))),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.num_services", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.num_jobs", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.auto_suspend_secs", "3600")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.auto_resume", "true")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.active_nodes", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.idle_nodes", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.target_nodes", "1")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.resumed_on")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.updated_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.comment", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.is_exclusive", "false")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.application", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.error_code", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.status_message", "Compute pool is starting for last 0 minutes")),
+					resourceshowoutputassert.ComputePoolDescribeOutput(t, modelBasic.ResourceReference()).
+						HasName(id.Name()).
+						HasState(sdk.ComputePoolStateStarting).
+						HasMinNodes(1).
+						HasMaxNodes(2).
+						HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64S).
+						HasNumServices(0).
+						HasNumJobs(0).
+						HasAutoSuspendSecs(3600).
+						HasAutoResume(true).
+						HasActiveNodes(0).
+						HasIdleNodes(0).
+						HasTargetNodes(1).
+						HasCreatedOnNotEmpty().
+						HasResumedOnNotEmpty().
+						HasUpdatedOnNotEmpty().
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment("").
+						HasIsExclusive(false).
+						HasApplicationEmpty().
+						HasErrorCode("").
+						HasStatusMessage("Compute pool is starting for last 0 minutes"),
 				),
 			},
 			// import - without optionals
@@ -158,27 +157,28 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 						HasComment("").
 						HasIsExclusive(false).
 						HasApplicationEmpty(),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.name", id.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.state", string(sdk.ComputePoolStateStarting))),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_nodes", "1")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.max_nodes", "2")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.instance_family", string(sdk.ComputePoolInstanceFamilyCpuX64S))),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.num_services", "0")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.num_jobs", "0")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.auto_suspend_secs", "3600")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.auto_resume", "true")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.active_nodes", "0")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.idle_nodes", "0")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_nodes", "1")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.created_on")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.resumed_on")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.updated_on")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.comment", "")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.is_exclusive", "false")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.application", "")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.error_code", "")),
-					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.status_message", "Compute pool is starting for last 0 minutes")),
+					resourceshowoutputassert.ImportedComputePoolDescribeOutput(t, helpers.EncodeResourceIdentifier(id)).
+						HasName(id.Name()).
+						HasState(sdk.ComputePoolStateStarting).
+						HasMinNodes(1).
+						HasMaxNodes(2).
+						HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64S).
+						HasNumServices(0).
+						HasNumJobs(0).
+						HasAutoSuspendSecs(3600).
+						HasAutoResume(true).
+						HasActiveNodes(0).
+						HasIdleNodes(0).
+						HasTargetNodes(1).
+						HasCreatedOnNotEmpty().
+						HasResumedOnNotEmpty().
+						HasUpdatedOnNotEmpty().
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment("").
+						HasIsExclusive(false).
+						HasApplicationEmpty().
+						HasErrorCode("").
+						HasStatusMessage("Compute pool is starting for last 0 minutes"),
 				),
 			},
 			// set optionals
@@ -427,7 +427,7 @@ func TestAcc_ComputePool_basic(t *testing.T) {
 	})
 }
 
-func TestAcc_ComputePool_complete(t *testing.T) {
+func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 	application := createApp(t)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -482,27 +482,28 @@ func TestAcc_ComputePool_complete(t *testing.T) {
 						HasComment(comment).
 						HasIsExclusive(true).
 						HasApplication(application.ID()),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.state", string(sdk.ComputePoolStateSuspended))),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_nodes", "1")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.max_nodes", "2")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.instance_family", string(sdk.ComputePoolInstanceFamilyCpuX64S))),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.num_services", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.num_jobs", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_suspend_secs", "6767")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.auto_resume", "true")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.active_nodes", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.idle_nodes", "0")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.target_nodes", "0")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.resumed_on")),
-					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.updated_on")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.comment", comment)),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.is_exclusive", "true")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.application", application.ID().Name())),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.error_code", "")),
-					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.status_message", "")),
+					resourceshowoutputassert.ComputePoolDescribeOutput(t, modelComplete.ResourceReference()).
+						HasName(id.Name()).
+						HasState(sdk.ComputePoolStateSuspended).
+						HasMinNodes(1).
+						HasMaxNodes(2).
+						HasInstanceFamily(sdk.ComputePoolInstanceFamilyCpuX64S).
+						HasNumServices(0).
+						HasNumJobs(0).
+						HasAutoSuspendSecs(6767).
+						HasAutoResume(true).
+						HasActiveNodes(0).
+						HasIdleNodes(0).
+						HasTargetNodes(0).
+						HasCreatedOnNotEmpty().
+						HasResumedOnNotEmpty().
+						HasUpdatedOnNotEmpty().
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment(comment).
+						HasIsExclusive(true).
+						HasApplication(application.ID()).
+						HasErrorCode("").
+						HasStatusMessage(""),
 				),
 			},
 			{

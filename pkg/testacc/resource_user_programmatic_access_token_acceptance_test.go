@@ -7,25 +7,25 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	tfjson "github.com/hashicorp/terraform-json"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
+func TestAcc_UserProgrammaticAccessToken_BasicUseCase(t *testing.T) {
 	currentUser := testClient().Context.CurrentUser(t)
 
 	user, userCleanup := testClient().User.CreateUser(t)
@@ -322,7 +322,7 @@ func TestAcc_UserProgrammaticAccessToken_basic(t *testing.T) {
 	})
 }
 
-func TestAcc_UserProgrammaticAccessToken_rename(t *testing.T) {
+func TestAcc_UserProgrammaticAccessToken_CompleteUseCase_Rename(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
 
@@ -388,7 +388,7 @@ func TestAcc_UserProgrammaticAccessToken_rename(t *testing.T) {
 	})
 }
 
-func TestAcc_UserProgrammaticAccessToken_complete(t *testing.T) {
+func TestAcc_UserProgrammaticAccessToken_CompleteUseCase(t *testing.T) {
 	currentUser := testClient().Context.CurrentUser(t)
 
 	user, userCleanup := testClient().User.CreateUser(t)
@@ -453,7 +453,7 @@ func TestAcc_UserProgrammaticAccessToken_complete(t *testing.T) {
 	})
 }
 
-func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
+func TestAcc_UserProgrammaticAccessToken_CompleteUseCase_Rotating(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
 
@@ -663,7 +663,7 @@ func TestAcc_UserProgrammaticAccessToken_rotating(t *testing.T) {
 	})
 }
 
-func TestAcc_UserProgrammaticAccessToken_RotatingWithExternalProvider(t *testing.T) {
+func TestAcc_UserProgrammaticAccessToken_CompleteUseCase_RotatingWithExternalProvider(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
 

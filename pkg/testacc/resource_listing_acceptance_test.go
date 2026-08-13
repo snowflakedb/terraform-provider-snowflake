@@ -9,27 +9,28 @@ import (
 	"strings"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
+	testifyassert "github.com/stretchr/testify/assert"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	testifyassert "github.com/stretchr/testify/assert"
 )
 
-func TestAcc_Listing_Basic_Inlined(t *testing.T) {
+func TestAcc_Listing_BasicUseCase_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	basicManifest, listingTitle := testClient().Listing.BasicManifestWithUnquotedValues(t)
@@ -236,7 +237,7 @@ func TestAcc_Listing_Basic_Inlined(t *testing.T) {
 	})
 }
 
-func TestAcc_Listing_Basic_FromStage(t *testing.T) {
+func TestAcc_Listing_BasicUseCase_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	basicManifest, listingTitle := testClient().Listing.BasicManifest(t)
@@ -439,7 +440,7 @@ func TestAcc_Listing_Basic_FromStage(t *testing.T) {
 	})
 }
 
-func TestAcc_Listing_Complete_Inlined(t *testing.T) {
+func TestAcc_Listing_BasicUseCase_Inlined_ApplicationPackage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
@@ -516,7 +517,7 @@ func TestAcc_Listing_Complete_Inlined(t *testing.T) {
 	})
 }
 
-func TestAcc_Listing_Complete_FromStage(t *testing.T) {
+func TestAcc_Listing_BasicUseCase_FromStage_ApplicationPackage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 
@@ -594,7 +595,7 @@ func TestAcc_Listing_Complete_FromStage(t *testing.T) {
 	})
 }
 
-func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
+func TestAcc_Listing_CompleteUseCase_NewVersions_Inlined(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
@@ -702,7 +703,7 @@ func TestAcc_Listing_NewVersions_Inlined(t *testing.T) {
 	})
 }
 
-func TestAcc_Listing_NewVersions_FromStage(t *testing.T) {
+func TestAcc_Listing_CompleteUseCase_NewVersions_FromStage(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	manifest1, title1 := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)

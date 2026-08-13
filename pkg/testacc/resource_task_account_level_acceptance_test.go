@@ -146,7 +146,7 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 
 // All below tests in this file are temporarily moved to account level tests due to STATEMENT_TIMEOUT_IN_SECONDS being set on warehouse level and messing with the results.
 
-func TestAcc_Task_Basic(t *testing.T) {
+func TestAcc_Task_BasicUseCase(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -234,7 +234,7 @@ func TestAcc_Task_Basic(t *testing.T) {
 	})
 }
 
-func TestAcc_Task_Complete(t *testing.T) {
+func TestAcc_Task_CompleteUseCase(t *testing.T) {
 	currentRole := testClient().Context.CurrentRole(t)
 
 	errorNotificationIntegration := gcpPubSubNotificationIntegration()
@@ -336,7 +336,7 @@ func TestAcc_Task_Complete(t *testing.T) {
 	})
 }
 
-func TestAcc_Task_AllParameters(t *testing.T) {
+func TestAcc_Task_CompleteUseCase_AllParameters(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
 
@@ -407,7 +407,7 @@ func TestAcc_Task_AllParameters(t *testing.T) {
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
-		CheckDestroy: CheckDestroy(t, resources.User),
+		CheckDestroy: CheckDestroy(t, resources.Task),
 		Steps: []resource.TestStep{
 			// create with default values for all the parameters
 			{

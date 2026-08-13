@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_ResourceMonitor_Basic(t *testing.T) {
+func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	configModel := model.ResourceMonitor("test", id.Name())
 
@@ -89,7 +89,7 @@ func TestAcc_ResourceMonitor_Basic(t *testing.T) {
 	})
 }
 
-func TestAcc_ResourceMonitor_Complete(t *testing.T) {
+func TestAcc_ResourceMonitor_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	configModel := model.ResourceMonitor("test", id.Name()).
 		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
