@@ -18,18 +18,18 @@ type HybridTableColumnDefaultConfig struct {
 }
 
 // HybridTableColumnConfig is a richer column definition used in tests that need
-// column fields beyond name and type (e.g. comment, nullable, collate, default).
+// column fields beyond name and type (e.g. comment, not_null, collate, default).
 type HybridTableColumnConfig struct {
-	Name     string
-	Type     string
-	Comment  string
-	Nullable *bool
-	Collate  string
-	Default  *HybridTableColumnDefaultConfig
+	Name    string
+	Type    string
+	Comment string
+	NotNull *bool
+	Collate string
+	Default *HybridTableColumnDefaultConfig
 }
 
 // WithColumnConfigs sets the column list from richer column definitions.
-// Use instead of WithColumn when tests require comment, nullable, collate, or default.
+// Use instead of WithColumn when tests require comment, not_null, collate, or default.
 func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) *HybridTableModel {
 	objs := make([]tfconfig.Variable, len(columns))
 	for i, col := range columns {
@@ -40,8 +40,8 @@ func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) 
 		if col.Comment != "" {
 			m["comment"] = tfconfig.StringVariable(col.Comment)
 		}
-		if col.Nullable != nil {
-			m["nullable"] = tfconfig.BoolVariable(*col.Nullable)
+		if col.NotNull != nil {
+			m["not_null"] = tfconfig.BoolVariable(*col.NotNull)
 		}
 		if col.Collate != "" {
 			m["collate"] = tfconfig.StringVariable(col.Collate)
@@ -73,7 +73,20 @@ func HybridTableFromId(
 	column []sdk.TableColumnSignature,
 	primaryKey []sdk.TableColumnSignature,
 ) *HybridTableModel {
-	return HybridTable(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), column, primaryKey)
+	// Primary key columns must declare not_null = true
+	pkNames := make(map[string]struct{}, len(primaryKey))
+	for _, k := range primaryKey {
+		pkNames[k.Name] = struct{}{}
+	}
+	columnConfigs := collections.Map(column, func(v sdk.TableColumnSignature) HybridTableColumnConfig {
+		cfg := HybridTableColumnConfig{Name: v.Name, Type: v.Type.ToSql()}
+		if _, isPK := pkNames[v.Name]; isPK {
+			cfg.NotNull = new(true)
+		}
+		return cfg
+	})
+	return HybridTable(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), column, primaryKey).
+		WithColumnConfigs(columnConfigs)
 }
 
 // WithColumn satisfies the generated constructor's call for the complex list attribute.

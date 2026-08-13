@@ -5,8 +5,9 @@ resource "snowflake_hybrid_table" "basic" {
   name     = "HYBRID_TABLE"
 
   column {
-    name = "ID"
-    type = "NUMBER(38,0)"
+    name     = "ID"
+    type     = "NUMBER(38,0)"
+    not_null = true
   }
 
   primary_key_constraint {
@@ -27,13 +28,13 @@ resource "snowflake_hybrid_table" "complete" {
   column {
     name     = "ID"
     type     = "NUMBER(38,0)"
-    nullable = false
+    not_null = true
   }
 
   column {
     name     = "NAME"
     type     = "VARCHAR(256)"
-    nullable = true
+    not_null = false
     collate  = "en-ci"
     comment  = "Name column"
   }
@@ -41,7 +42,7 @@ resource "snowflake_hybrid_table" "complete" {
   column {
     name     = "CREATED_AT"
     type     = "TIMESTAMP_NTZ"
-    nullable = false
+    not_null = true
     default {
       expression = "CURRENT_TIMESTAMP()"
     }

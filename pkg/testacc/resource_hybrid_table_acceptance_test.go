@@ -132,8 +132,6 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 		// DESCRIBE normalizes types (e.g. INTEGER -> NUMBER(38,0)); DiffSuppressDataTypes
 		// handles this at plan time, but the raw state values differ after import.
 		"column.0.type",
-		// PK columns come back from DESCRIBE as NOT NULL.
-		"column.0.nullable",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -372,15 +370,15 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 	defaultConstant := "0"
 
 	columnConfigs := []model.HybridTableColumnConfig{
-		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Comment: "name column"},
-		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar.ToSql(), Nullable: sdk.Bool(false)},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar.ToSql(), NotNull: new(true)},
 		{Name: "SCORE", Type: testdatatypes.DataTypeInteger.ToSql(), Default: &model.HybridTableColumnDefaultConfig{Constant: &defaultConstant}},
 	}
 	columnConfigsChanged := []model.HybridTableColumnConfig{
-		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Comment: "updated name column"},
-		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar.ToSql(), Nullable: sdk.Bool(false)},
+		{Name: "EMAIL", Type: testdatatypes.DataTypeVarchar.ToSql(), NotNull: new(true)},
 		{Name: "SCORE", Type: testdatatypes.DataTypeInteger.ToSql()},
 	}
 	// colSigs extracts the name+type pairs needed for HybridTableFromId constructor.
@@ -435,8 +433,6 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 		// handles this at plan time, but the raw state values differ after import.
 		"column.0.type",
 		"column.3.type",
-		// PK columns come back from DESCRIBE as NOT NULL.
-		"column.0.nullable",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -683,6 +679,61 @@ func TestAcc_HybridTable_InvalidConfig(t *testing.T) {
 	})
 }
 
+// TestAcc_HybridTable_PrimaryKeyRequiresNotNull verifies that the plan-time
+// validation (requireNotNullOnPrimaryKeyColumns) rejects primary key columns
+// that do not set not_null = true.
+func TestAcc_HybridTable_PrimaryKeyRequiresNotNull(t *testing.T) {
+	t.Run("not_null omitted on the primary key column", func(t *testing.T) {
+		id := testClient().Ids.RandomSchemaObjectIdentifier()
+		pk := []sdk.TableColumnSignature{{Name: "ID"}}
+		cols := []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeInteger}}
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			Steps: []resource.TestStep{
+				{
+					Config: accconfig.FromModels(
+						t,
+						model.HybridTableFromId("test", id, cols, pk).WithColumnConfigs([]model.HybridTableColumnConfig{
+							{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+						}),
+					),
+					PlanOnly:    true,
+					ExpectError: regexp.MustCompile(`primary key column "ID" must set not_null = true`),
+				},
+			},
+		})
+	})
+
+	t.Run("not_null explicitly false on the primary key column", func(t *testing.T) {
+		id := testClient().Ids.RandomSchemaObjectIdentifier()
+		pk := []sdk.TableColumnSignature{{Name: "ID"}}
+		cols := []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeInteger}}
+
+		resource.Test(t, resource.TestCase{
+			ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+			TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+				tfversion.RequireAbove(tfversion.Version1_5_0),
+			},
+			Steps: []resource.TestStep{
+				{
+					Config: accconfig.FromModels(
+						t,
+						model.HybridTableFromId("test", id, cols, pk).WithColumnConfigs([]model.HybridTableColumnConfig{
+							{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(false)},
+						}),
+					),
+					PlanOnly:    true,
+					ExpectError: regexp.MustCompile(`primary key column "ID" must set not_null = true`),
+				},
+			},
+		})
+	})
+}
+
 func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	cols := []sdk.TableColumnSignature{
@@ -826,7 +877,7 @@ func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 		}
 		zero := "0"
 		columnConfigs := []model.HybridTableColumnConfig{
-			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 			{Name: "SCORE", Type: testdatatypes.DataTypeInteger.ToSql(), Default: &model.HybridTableColumnDefaultConfig{Constant: &zero}},
 		}
 		m := model.HybridTableFromId("test", id, cols, pk).WithColumnConfigs(columnConfigs)
@@ -859,7 +910,7 @@ func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 		}
 		expr := "CURRENT_TIMESTAMP()"
 		columnConfigs := []model.HybridTableColumnConfig{
-			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 			{Name: "CREATED_AT", Type: testdatatypes.DataTypeTimestampLTZ.ToSql(), Default: &model.HybridTableColumnDefaultConfig{Expression: &expr}},
 		}
 		m := model.HybridTableFromId("test", id, cols, pk).WithColumnConfigs(columnConfigs)
@@ -894,7 +945,7 @@ func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 		t.Cleanup(cleanup)
 		seqFQN := seqId.FullyQualifiedName()
 		columnConfigs := []model.HybridTableColumnConfig{
-			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+			{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 			{Name: "SCORE", Type: testdatatypes.DataTypeInteger.ToSql(), Default: &model.HybridTableColumnDefaultConfig{Sequence: &seqFQN}},
 		}
 		m := model.HybridTableFromId("test", id, cols, pk).WithColumnConfigs(columnConfigs)
@@ -933,7 +984,7 @@ func TestAcc_HybridTable_ColumnDefaultVariants(t *testing.T) {
 		expr := "0"
 		m := model.HybridTableFromId("test", id, cols, pk).
 			WithColumnConfigs([]model.HybridTableColumnConfig{
-				{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+				{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 				{
 					Name: "SCORE",
 					Type: testdatatypes.DataTypeInteger.ToSql(),
@@ -1147,7 +1198,7 @@ func TestAcc_HybridTable_ExternalColumnChanges(t *testing.T) {
 	})
 }
 
-func TestAcc_HybridTable_ColumnNullableForceNew(t *testing.T) {
+func TestAcc_HybridTable_ColumnNotNullForceNew(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	pk := []sdk.TableColumnSignature{{Name: "ID"}}
 	baseCols := []sdk.TableColumnSignature{
@@ -1155,19 +1206,45 @@ func TestAcc_HybridTable_ColumnNullableForceNew(t *testing.T) {
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
 	}
 
-	// NAME is explicitly nullable=true
-	columnConfigs1 := []model.HybridTableColumnConfig{
-		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
-		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Nullable: sdk.Bool(true)},
+	// not_null omitted on NAME -> resolves to the schema default (false, nullable).
+	// ID is the primary key, so it must declare not_null = true.
+	defaultColumnConfigs := []model.HybridTableColumnConfig{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql()},
 	}
-	model1 := model.HybridTableFromId("test", id, baseCols, pk).WithColumnConfigs(columnConfigs1)
+	defaultModel := model.HybridTableFromId("test", id, baseCols, pk).WithColumnConfigs(defaultColumnConfigs)
+	assertDefault := []assert.TestCheckFuncProvider{
+		resourceassert.HybridTableResource(t, defaultModel.ResourceReference()).
+			HasColumnConfigs(defaultColumnConfigs),
+		resourceshowoutputassert.HybridTableDescribeOutputRow(t, defaultModel.ResourceReference(), 1).
+			HasIsNullable(true),
+	}
 
-	// NAME changed to nullable=false — must force recreation
-	columnConfigs2 := []model.HybridTableColumnConfig{
-		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
-		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Nullable: sdk.Bool(false)},
+	// not_null explicitly false on NAME -> same meaning as omitted (nullable).
+	nullableColumnConfigs := []model.HybridTableColumnConfig{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), NotNull: new(false)},
 	}
-	model2 := model.HybridTableFromId("test", id, baseCols, pk).WithColumnConfigs(columnConfigs2)
+	nullableModel := model.HybridTableFromId("test", id, baseCols, pk).WithColumnConfigs(nullableColumnConfigs)
+	assertNullable := []assert.TestCheckFuncProvider{
+		resourceassert.HybridTableResource(t, nullableModel.ResourceReference()).
+			HasColumnConfigs(nullableColumnConfigs),
+		resourceshowoutputassert.HybridTableDescribeOutputRow(t, nullableModel.ResourceReference(), 1).
+			HasIsNullable(true),
+	}
+
+	// not_null explicitly true on NAME -> NOT NULL column.
+	nonNullColumnConfigs := []model.HybridTableColumnConfig{
+		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), NotNull: new(true)},
+	}
+	nonNullModel := model.HybridTableFromId("test", id, baseCols, pk).WithColumnConfigs(nonNullColumnConfigs)
+	assertNonNull := []assert.TestCheckFuncProvider{
+		resourceassert.HybridTableResource(t, nonNullModel.ResourceReference()).
+			HasColumnConfigs(nonNullColumnConfigs),
+		resourceshowoutputassert.HybridTableDescribeOutputRow(t, nonNullModel.ResourceReference(), 1).
+			HasIsNullable(false),
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1176,28 +1253,61 @@ func TestAcc_HybridTable_ColumnNullableForceNew(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.HybridTable),
 		Steps: []resource.TestStep{
-			// Create with NAME nullable=true
+			// Create - not_null omitted (nullable).
 			{
-				Config: accconfig.FromModels(t, model1),
-				Check: assertThat(
-					t,
-					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumnConfigs(columnConfigs1),
-				),
+				Config: accconfig.FromModels(t, defaultModel),
+				Check:  assertThat(t, assertDefault...),
 			},
-			// Change NAME nullable=false — expect DestroyBeforeCreate (ForceNew)
+			// Omitted -> explicit false: same meaning, no diff.
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(model2.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Config: accconfig.FromModels(t, model2),
-				Check: assertThat(
-					t,
-					resourceassert.HybridTableResource(t, model2.ResourceReference()).
-						HasColumnConfigs(columnConfigs2),
-				),
+				Config: accconfig.FromModels(t, nullableModel),
+				Check:  assertThat(t, assertNullable...),
+			},
+			// false -> true: SDK cannot ALTER COLUMN SET NOT NULL, so recreate.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(nonNullModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, nonNullModel),
+				Check:  assertThat(t, assertNonNull...),
+			},
+			// true -> false: not_null change on an existing column always forces recreation.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(nullableModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, nullableModel),
+				Check:  assertThat(t, assertNullable...),
+			},
+			// External change detection.
+			{
+				PreConfig: func() {
+					testClient().HybridTable.DropFunc(t, id)()
+					testClient().HybridTable.CreateWithRequest(t, id, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
+						Columns: []sdk.HybridTableColumnRequest{
+							*sdk.NewHybridTableColumnRequest("ID", sdk.DataType(testdatatypes.DataTypeInteger.ToSql())).
+								WithInlineConstraint(sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}),
+							*sdk.NewHybridTableColumnRequest("NAME", sdk.DataType(testdatatypes.DataTypeVarchar.ToSql())).
+								WithNotNull(true),
+						},
+					})
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(nullableModel.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, nullableModel),
+				Check:  assertThat(t, assertNullable...),
 			},
 		},
 	})
@@ -1213,14 +1323,14 @@ func TestAcc_HybridTable_ColumnCollateForceNew(t *testing.T) {
 
 	// NAME with collate='en'
 	columnConfigs1 := []model.HybridTableColumnConfig{
-		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Collate: "en"},
 	}
 	model1 := model.HybridTableFromId("test", id, baseCols, pk).WithColumnConfigs(columnConfigs1)
 
 	// NAME collate changed to 'FR' — must force recreation
 	columnConfigs2 := []model.HybridTableColumnConfig{
-		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql()},
+		{Name: "ID", Type: testdatatypes.DataTypeInteger.ToSql(), NotNull: new(true)},
 		{Name: "NAME", Type: testdatatypes.DataTypeVarchar.ToSql(), Collate: "FR"},
 	}
 	model2 := model.HybridTableFromId("test", id, baseCols, pk).WithColumnConfigs(columnConfigs2)
@@ -1311,46 +1421,6 @@ func TestAcc_HybridTable_Rename(t *testing.T) {
 						HasFullyQualifiedName(newId.FullyQualifiedName()).
 						HasComment(renamedComment),
 				),
-			},
-		},
-	})
-}
-
-// TestAcc_HybridTable_PKNullableNoSpurious verifies that a primary-key column
-// declared as nullable=true (the schema default) does not produce a spurious
-// diff after Read, even though Snowflake silently enforces NOT NULL on PK
-// columns and DESCRIBE reports null="N". The reconciliation happens via
-// Read-time substitution in buildHybridColumnStateFromDescribe.
-func TestAcc_HybridTable_PKNullableNoSpurious(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	columns := []sdk.TableColumnSignature{
-		{Name: "ID", Type: testdatatypes.DataTypeInteger},
-		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
-	}
-	pk := []sdk.TableColumnSignature{
-		{Name: "ID"},
-	}
-	model := model.HybridTableFromId("test", id, columns, pk)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.HybridTable),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, model),
-			},
-			// A second apply with no config change must produce a no-op plan.
-			{
-				Config: accconfig.FromModels(t, model),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
 			},
 		},
 	})
