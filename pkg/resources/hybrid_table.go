@@ -71,11 +71,11 @@ var hybridTableSchema = map[string]*schema.Schema{
 					// Read-path normalizer — keep it.
 					StateFunc: DataTypeStateFunc,
 				},
-				"nullable": {
-					Type:        schema.TypeBool,
-					Optional:    true,
-					Default:     true,
-					Description: "Whether this column allows NULLs. Changing this on an existing column forces recreation because hybrid tables do not support ALTER SET/DROP NOT NULL.",
+				"not_null": {
+					Type:     schema.TypeBool,
+					Optional: true,
+					Description: joinWithSpace("Whether to restrict the column to NOT NULL values. Changing this on an existing column forces recreation.",
+						"Primary key columns must set this to true because NOT NULL is implied by the primary key."),
 				},
 				"default": {
 					Type:        schema.TypeList,
@@ -287,7 +287,8 @@ func HybridTable() *schema.Resource {
 			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "name", "comment", "column"),
 			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
 			forceNewIfColumnCollateChanged(),
-			forceNewIfColumnNullableChanged(),
+			forceNewIfColumnNotNullChanged(),
+			requireNotNullOnPrimaryKeyColumns(),
 		)),
 
 		Schema: collections.MergeMaps(hybridTableSchema, hybridTableParametersSchema),
@@ -397,7 +398,7 @@ func parseHybridColumn(from any) column {
 	return column{
 		name:     c["name"].(string),
 		dataType: c["type"].(string),
-		nullable: c["nullable"].(bool),
+		nullable: !c["not_null"].(bool),
 		_default: cd,
 		collate:  c["collate"].(string),
 		comment:  c["comment"].(string),
@@ -546,11 +547,7 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 // buildHybridAddColumnAction builds the alter-time add-column action from a
 // parsed column. Delegates the shared parsing/validation work to
 // buildHybridColumnSpec and only maps the spec onto the
-// HybridTableAddColumnActionRequest type-specific fields. Note that this
-// request has no NotNull — non-nullable columns can only be added via an
-// InlineConstraint, but the resource forces recreation on nullable changes
-// (see forceNewIfColumnNullableChanged), so a nullable=false branch here
-// would be unreachable.
+// HybridTableAddColumnActionRequest type-specific fields.
 func buildHybridAddColumnAction(col column) (*sdk.HybridTableAddColumnActionRequest, error) {
 	spec, err := buildHybridColumnSpec(col)
 	if err != nil {
@@ -995,15 +992,12 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 	//   DiffSuppressDataTypes). Real type changes still surface as drift.
 	// - column.<idx>.collate: substitute config spelling when case-equal
 	//   (mirrors ignoreCaseSuppressFunc on the field).
-	// - column.<idx>.nullable: PK columns silently come back as NOT NULL.
-	//   Substitute the config value. Hybrid tables do not support ALTER
-	//   SET/DROP NOT NULL, so external drift on this attribute cannot occur
-	//   — the substitution is safe.
+	// - column.<idx>.not_null: derived directly from DESCRIBE
+	//   (the negation of is_nullable).
 	type configColumnInfo struct {
-		typeStr  string
-		collate  string
-		nullable bool
-		found    bool
+		typeStr string
+		collate string
+		found   bool
 	}
 	configByName := make(map[string]configColumnInfo)
 	if configCols, ok := d.GetOk("column"); ok {
@@ -1016,31 +1010,14 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			if !ok {
 				continue
 			}
-			info := configColumnInfo{nullable: true, found: true}
+			info := configColumnInfo{found: true}
 			if t, ok := colMap["type"].(string); ok {
 				info.typeStr = t
 			}
 			if c, ok := colMap["collate"].(string); ok {
 				info.collate = c
 			}
-			if n, ok := colMap["nullable"].(bool); ok {
-				info.nullable = n
-			}
 			configByName[strings.ToUpper(colName)] = info
-		}
-	}
-	pkKeys := make(map[string]struct{})
-	if pkRaw, ok := d.GetOk("primary_key_constraint"); ok {
-		if pkList, ok := pkRaw.([]any); ok && len(pkList) > 0 {
-			if pkMap, ok := pkList[0].(map[string]any); ok {
-				if colsRaw, ok := pkMap["columns"].([]any); ok {
-					for _, k := range colsRaw {
-						if s, ok := k.(string); ok {
-							pkKeys[strings.ToUpper(s)] = struct{}{}
-						}
-					}
-				}
-			}
 		}
 	}
 
@@ -1068,19 +1045,10 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 			collate = cfg.collate
 		}
 
-		nullable := td.IsNullable
-		if _, isPK := pkKeys[strings.ToUpper(td.Name)]; isPK {
-			if cfg.found {
-				nullable = cfg.nullable
-			} else {
-				// Externally added PK column not in config: schema default is true.
-				nullable = true
-			}
-		}
 		flat := map[string]any{
 			"name":     td.Name,
 			"type":     typeOut,
-			"nullable": nullable,
+			"not_null": !td.IsNullable,
 			"comment":  td.Comment,
 			"collate":  collate,
 		}
@@ -1247,21 +1215,50 @@ func forceNewIfColumnCollateChanged() schema.CustomizeDiffFunc {
 	})
 }
 
-// forceNewIfColumnNullableChanged forces recreation when nullable changes on an
+// forceNewIfColumnNotNullChanged forces recreation when not_null changes on an
 // existing column. Hybrid tables do not support ALTER COLUMN SET/DROP NOT NULL,
-// so toggling nullable requires recreation. Using a custom diff (rather than
+// so toggling it requires recreation. Using a custom diff (rather than
 // ForceNew on the schema field) ensures that adding a brand-new column does not
-// spuriously trigger ForceNew when its nullable field initializes from the
+// spuriously trigger ForceNew when its not_null field initializes from the
 // schema default.
-func forceNewIfColumnNullableChanged() schema.CustomizeDiffFunc {
-	return forceNewIfColumnFieldChanged("nullable", func(o, n column) bool {
+func forceNewIfColumnNotNullChanged() schema.CustomizeDiffFunc {
+	return forceNewIfColumnFieldChanged("not_null", func(o, n column) bool {
 		return o.nullable != n.nullable
 	})
 }
 
+// requireNotNullOnPrimaryKeyColumns rejects configurations where a primary key
+// column does not set not_null = true. A primary key already enforces NOT NULL,
+// and Read derives not_null straight from DESCRIBE, so requiring the explicit
+// value keeps config and state aligned.
+func requireNotNullOnPrimaryKeyColumns() schema.CustomizeDiffFunc {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+		pkKeys := make(map[string]struct{})
+		if pkRaw, ok := diff.GetOk("primary_key_constraint"); ok {
+			if pkList, ok := pkRaw.([]any); ok && len(pkList) > 0 {
+				if pkMap, ok := pkList[0].(map[string]any); ok {
+					if colsRaw, ok := pkMap["columns"].([]any); ok {
+						for _, k := range colsRaw {
+							if s, ok := k.(string); ok {
+								pkKeys[strings.ToUpper(s)] = struct{}{}
+							}
+						}
+					}
+				}
+			}
+		}
+		for _, c := range parseHybridColumns(diff.Get("column")) {
+			if _, isPK := pkKeys[strings.ToUpper(c.name)]; isPK && c.nullable {
+				return fmt.Errorf("primary key column %q must set not_null = true because NOT NULL is implied by the primary key", c.name)
+			}
+		}
+		return nil
+	}
+}
+
 // forceNewIfColumnFieldChanged returns a CustomizeDiffFunc that forces recreation
 // when a nested column field changes. It must call diff.ForceNew on the specific
-// nested path (e.g. "column.0.nullable"), not on the parent "column" list — the
+// nested path (e.g. "column.0.not_null"), not on the parent "column" list — the
 // terraform-plugin-sdk/v2 ForceNew sets RequiresNew on the resolved leaf schema,
 // and a TypeList parent does not propagate that flag down to its diff entries.
 func forceNewIfColumnFieldChanged(fieldName string, changed func(old, new column) bool) schema.CustomizeDiffFunc {

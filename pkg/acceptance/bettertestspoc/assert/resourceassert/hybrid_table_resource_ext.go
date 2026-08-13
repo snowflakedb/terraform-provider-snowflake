@@ -22,19 +22,19 @@ func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignatur
 	return h
 }
 
-// HasColumnConfigs asserts all per-column fields (name, type, nullable, comment,
+// HasColumnConfigs asserts all per-column fields (name, type, not_null, comment,
 // collate, default) in one call. Use this when the model was built with
-// WithColumnConfigs. A nil Nullable is treated as the schema default (true).
+// WithColumnConfigs. A nil NotNull is treated as the schema default (false).
 func (h *HybridTableResourceAssert) HasColumnConfigs(columns []model.HybridTableColumnConfig) *HybridTableResourceAssert {
 	h.ValueSet("column.#", strconv.Itoa(len(columns)))
 	for i, col := range columns {
 		h.ValueSet(fmt.Sprintf("column.%d.name", i), col.Name)
 		h.ValueSet(fmt.Sprintf("column.%d.type", i), col.Type)
-		nullable := true
-		if col.Nullable != nil {
-			nullable = *col.Nullable
+		notNull := false
+		if col.NotNull != nil {
+			notNull = *col.NotNull
 		}
-		h.ValueSet(fmt.Sprintf("column.%d.nullable", i), strconv.FormatBool(nullable))
+		h.ValueSet(fmt.Sprintf("column.%d.not_null", i), strconv.FormatBool(notNull))
 		h.ValueSet(fmt.Sprintf("column.%d.comment", i), col.Comment)
 		h.ValueSet(fmt.Sprintf("column.%d.collate", i), col.Collate)
 		if col.Default != nil {
