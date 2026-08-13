@@ -405,11 +405,20 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 			}
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeName)
 		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser, ObjectTypeApplication}, grant.GrantedTo) {
-			id, err := ParseDatabaseObjectIdentifier(granteeNameRaw)
+			// Before BCR-2371 the grantee (another database role) is fully qualified (<database>.<database_role>); after, only <database_role>.
+			// A database role can only be granted within the same database, so reconstruct the missing prefix from the queried role.
+			granteeNameParts, err := ParseIdentifierString(granteeNameRaw)
 			if err != nil {
 				return nil, err
 			}
-			resultList[i].GranteeName = id
+			switch len(granteeNameParts) {
+			case 1:
+				resultList[i].GranteeName = NewDatabaseObjectIdentifier(opts.Of.DatabaseRole.DatabaseName(), granteeNameParts[0])
+			case 2:
+				resultList[i].GranteeName = NewDatabaseObjectIdentifier(granteeNameParts[0], granteeNameParts[1])
+			default:
+				return nil, fmt.Errorf("unexpected number of parts %d in database role grantee name %s, expected 1 (<database_role>) or 2 (<database>.<database_role>)", len(granteeNameParts), granteeNameRaw)
+			}
 		} else if grant.GrantedTo == ObjectTypeUser {
 			resultList[i].GranteeName = NewAccountObjectIdentifier(strings.TrimPrefix(granteeNameRaw, "USER$"))
 		} else {
