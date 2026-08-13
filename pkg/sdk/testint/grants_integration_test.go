@@ -2514,6 +2514,36 @@ func TestInt_ShowGrants(t *testing.T) {
 		assert.Equal(t, testClientHelper().Ids.SnowflakeApplicationId().Name(), grants[0].GranteeName.Name())
 	})
 
+	t.Run("grantee name of a database role granted to another database role is fully qualified", func(t *testing.T) {
+		// Regression test for the 2026_06 bundle (BCR-2371): SHOW GRANTS OF DATABASE ROLE returns the
+		// grantee database role without the database prefix. The grantee identifier must stay fully
+		// qualified regardless of whether the bundle is enabled, otherwise the grant_database_role
+		// resource cannot match the grant on read/import and is perpetually recreated.
+		// A database role can only be granted to another database role in the same database, so the child
+		// and parent roles are created in the same database (CreateDatabaseRole uses the same one).
+		// Note: on a bundle-off account this passes with or without the fix (the grantee is returned
+		// prefixed); the authoritative regression that toggles the 2026_06 bundle is the account-level
+		// acceptance test TestAcc_GrantDatabaseRole_bcr2026_06_databaseRoleGrantee.
+		childRole, childRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(childRoleCleanup)
+
+		parentRole, parentRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
+		t.Cleanup(parentRoleCleanup)
+
+		err := client.DatabaseRoles.Grant(ctx, sdk.NewGrantDatabaseRoleRequest(childRole.ID()).WithDatabaseRole(parentRole.ID()))
+		require.NoError(t, err)
+
+		grants, err := client.Grants.Show(ctx, &sdk.ShowGrantOptions{
+			Of: &sdk.ShowGrantsOf{
+				DatabaseRole: childRole.ID(),
+			},
+		})
+		require.NoError(t, err)
+		require.Len(t, grants, 1)
+		assert.Equal(t, sdk.ObjectTypeDatabaseRole, grants[0].GrantedTo)
+		assert.Equal(t, parentRole.ID().FullyQualifiedName(), grants[0].GranteeName.FullyQualifiedName())
+	})
+
 	t.Run("show inherited grants in database", func(t *testing.T) {
 		database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(databaseCleanup)

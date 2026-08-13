@@ -405,11 +405,16 @@ func (v *grants) Show(ctx context.Context, opts *ShowGrantOptions) ([]Grant, err
 			}
 			resultList[i].GranteeName = NewAccountObjectIdentifier(granteeName)
 		} else if !slices.Contains([]ObjectType{ObjectTypeRole, ObjectTypeShare, ObjectTypeUser, ObjectTypeApplication}, grant.GrantedTo) {
-			id, err := ParseDatabaseObjectIdentifier(granteeNameRaw)
-			if err != nil {
+			// TODO(SNOW-3954332): cleanup when 2026_06 bundle is GA (enforced and can no longer be disabled).
+			// Before BCR-2371 the grantee (another database role) is fully qualified (<database>.<database_role>); after, only <database_role>.
+			// A database role can only be granted within the same database, so reconstruct the missing prefix from the queried role.
+			if id, err := ParseDatabaseObjectIdentifier(granteeNameRaw); err == nil {
+				resultList[i].GranteeName = id
+			} else if id, err := ParseAccountObjectIdentifier(granteeNameRaw); err == nil {
+				resultList[i].GranteeName = NewDatabaseObjectIdentifier(opts.Of.DatabaseRole.DatabaseName(), id.Name())
+			} else {
 				return nil, err
 			}
-			resultList[i].GranteeName = id
 		} else if grant.GrantedTo == ObjectTypeUser {
 			resultList[i].GranteeName = NewAccountObjectIdentifier(strings.TrimPrefix(granteeNameRaw, "USER$"))
 		} else {
