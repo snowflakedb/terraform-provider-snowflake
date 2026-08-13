@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_GitRepository_basic(t *testing.T) {
+func TestAcc_GitRepository_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
 	origin := testvars.ExampleGitRepositoryOrigin
@@ -335,7 +335,7 @@ func TestAcc_GitRepository_basic(t *testing.T) {
 	})
 }
 
-func TestAcc_GitRepository_complete(t *testing.T) {
+func TestAcc_GitRepository_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 	origin := testvars.ExampleGitRepositoryOrigin

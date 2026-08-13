@@ -28,7 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_MaskingPolicy_basic(t *testing.T) {
+func TestAcc_MaskingPolicy_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
@@ -240,7 +240,7 @@ func TestAcc_MaskingPolicy_basic(t *testing.T) {
 	})
 }
 
-func TestAcc_MaskingPolicy_complete(t *testing.T) {
+func TestAcc_MaskingPolicy_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
@@ -319,7 +319,7 @@ resource "snowflake_masking_policy" "test" {
 `, maskingPolicyId.DatabaseName(), maskingPolicyId.SchemaName(), maskingPolicyId.Name())
 }
 
-func TestAcc_MaskingPolicyMultiColumns(t *testing.T) {
+func TestAcc_MaskingPolicy_CompleteUseCase_MultiColumns(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
@@ -421,7 +421,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 	})
 }
 
-func TestAcc_MaskingPolicy_Rename(t *testing.T) {
+func TestAcc_MaskingPolicy_CompleteUseCase_Rename(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -501,7 +501,7 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 	})
 }
 
-func TestAcc_MaskingPolicy_DataTypeAliases(t *testing.T) {
+func TestAcc_MaskingPolicy_CompleteUseCase_DataTypeAliases(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'ok' else '***' end"

@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_ComputePools(t *testing.T) {
+func TestAcc_ComputePools_CompleteUseCase(t *testing.T) {
 	application := createApp(t)
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -130,7 +130,7 @@ func TestAcc_ComputePools(t *testing.T) {
 	})
 }
 
-func TestAcc_ComputePools_Filtering(t *testing.T) {
+func TestAcc_ComputePools_BasicUseCase_DifferentFiltering(t *testing.T) {
 	prefix := random.AlphaUpperN(4)
 	idOne := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	idTwo := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)

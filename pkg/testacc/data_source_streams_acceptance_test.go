@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Streams(t *testing.T) {
+func TestAcc_Streams_CompleteUseCase(t *testing.T) {
 	table, cleanupTable := testClient().Table.CreateWithChangeTracking(t)
 	t.Cleanup(cleanupTable)
 
@@ -47,12 +47,12 @@ func TestAcc_Streams(t *testing.T) {
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
+			// defaults (with_describe = true) - assert every field
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModel),
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-
 					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -85,13 +85,12 @@ func TestAcc_Streams(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.owner_role_type", "ROLE")),
 				),
 			},
+			// with_describe = false - assert describe_output is empty
 			{
 				Config: accconfig.FromModels(t, streamModel, streamsModelWithoutDescribe),
-
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-
 					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -114,69 +113,7 @@ func TestAcc_Streams(t *testing.T) {
 	})
 }
 
-func TestAcc_StreamOnTable(t *testing.T) {
-	table, cleanupTable := testClient().Table.CreateWithChangeTracking(t)
-	t.Cleanup(cleanupTable)
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	comment := random.Comment()
-
-	streamModel := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName()).
-		WithAppendOnly(datasources.BooleanTrue).
-		WithComment(comment)
-	streamsModel := datasourcemodel.Streams("test").
-		WithLike(id.Name()).
-		WithInDatabase(id.DatabaseId()).
-		WithDependsOn(streamModel.ResourceReference())
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, streamModel, streamsModel),
-				Check: assertThat(
-					t,
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.#", "1")),
-					resourceshowoutputassert.StreamsDatasourceShowOutput(t, streamsModel.DatasourceReference()).
-						HasCreatedOnNotEmpty().
-						HasName(id.Name()).
-						HasDatabaseName(id.DatabaseName()).
-						HasSchemaName(id.SchemaName()).
-						HasOwner(snowflakeroles.Accountadmin.Name()).
-						HasTableName(table.ID()).
-						HasSourceType(sdk.StreamSourceTypeTable).
-						HasBaseTables(table.ID()).
-						HasType("DELTA").
-						HasStale(false).
-						HasMode(sdk.StreamModeAppendOnly).
-						HasStaleAfterNotEmpty().
-						HasInvalidReason("N/A").
-						HasOwnerRoleType("ROLE"),
-					assert.Check(resource.TestCheckResourceAttrSet(streamsModel.DatasourceReference(), "streams.0.describe_output.0.created_on")),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.name", id.Name())),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.database_name", id.DatabaseName())),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.schema_name", id.SchemaName())),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.owner", snowflakeroles.Accountadmin.Name())),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.comment", comment)),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.table_name", table.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.source_type", string(sdk.StreamSourceTypeTable))),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.base_tables.#", "1")),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.base_tables.0", table.ID().FullyQualifiedName())),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.type", "DELTA")),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.stale", "false")),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.mode", string(sdk.StreamModeAppendOnly))),
-					assert.Check(resource.TestCheckResourceAttrSet(streamsModel.DatasourceReference(), "streams.0.describe_output.0.stale_after")),
-					assert.Check(resource.TestCheckResourceAttr(streamsModel.DatasourceReference(), "streams.0.describe_output.0.owner_role_type", "ROLE")),
-				),
-			},
-		},
-	})
-}
-
-func TestAcc_StreamOnExternalTable(t *testing.T) {
+func TestAcc_Streams_CompleteUseCase_OnExternalTable(t *testing.T) {
 	stage, stageCleanup := testClient().Stage.CreateStageWithURL(t)
 	t.Cleanup(stageCleanup)
 
@@ -241,7 +178,7 @@ func TestAcc_StreamOnExternalTable(t *testing.T) {
 	})
 }
 
-func TestAcc_StreamOnDirectoryTable(t *testing.T) {
+func TestAcc_Streams_CompleteUseCase_OnDirectoryTable(t *testing.T) {
 	stage, cleanupStage := testClient().Stage.CreateStageWithDirectory(t)
 	t.Cleanup(cleanupStage)
 
@@ -302,7 +239,7 @@ func TestAcc_StreamOnDirectoryTable(t *testing.T) {
 	})
 }
 
-func TestAcc_StreamOnView(t *testing.T) {
+func TestAcc_Streams_CompleteUseCase_OnView(t *testing.T) {
 	table, cleanupTable := testClient().Table.CreateWithChangeTracking(t)
 	t.Cleanup(cleanupTable)
 
@@ -368,7 +305,7 @@ func TestAcc_StreamOnView(t *testing.T) {
 	})
 }
 
-func TestAcc_Streams_Filtering(t *testing.T) {
+func TestAcc_Streams_BasicUseCase_DifferentFiltering(t *testing.T) {
 	table, cleanupTable := testClient().Table.CreateWithChangeTracking(t)
 	t.Cleanup(cleanupTable)
 

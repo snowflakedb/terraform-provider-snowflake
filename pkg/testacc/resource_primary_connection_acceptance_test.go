@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_PrimaryConnection_Basic(t *testing.T) {
+func TestAcc_PrimaryConnection_BasicUseCase(t *testing.T) {
 	if slices.Contains([]testenvs.SnowflakeEnvironment{
 		testenvs.SnowflakeProdEnvironment,
 		testenvs.SnowflakePreProdGovEnvironment,
@@ -158,7 +158,7 @@ func TestAcc_PrimaryConnection_Basic(t *testing.T) {
 	})
 }
 
-func TestAcc_PrimaryConnection_ExternalChanges(t *testing.T) {
+func TestAcc_PrimaryConnection_CompleteUseCase_ExternalChanges(t *testing.T) {
 	if slices.Contains([]testenvs.SnowflakeEnvironment{
 		testenvs.SnowflakeProdEnvironment,
 		testenvs.SnowflakePreProdGovEnvironment,

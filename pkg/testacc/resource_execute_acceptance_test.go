@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAcc_Execute_basic(t *testing.T) {
+func TestAcc_Execute_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifierWithPrefix("EXECUTE_TEST_DATABASE_")
 	name := id.Name()
 	secondId := testClient().Ids.RandomAccountObjectIdentifierWithPrefix("EXECUTE_TEST_DATABASE_")
@@ -90,7 +90,7 @@ func TestAcc_Execute_basic(t *testing.T) {
 	})
 }
 
-func TestAcc_Execute_withRead(t *testing.T) {
+func TestAcc_Execute_CompleteUseCase_WithRead(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifierWithPrefix("EXECUTE_TEST_DATABASE_")
 	name := id.Name()
 	createDatabaseStatement := func(id string) string { return fmt.Sprintf("create database %s", id) }
@@ -702,7 +702,7 @@ output "query_results_output" {
 `, queryNumber)
 }
 
-func TestAcc_Execute_QueryResultsRecomputedWithoutQueryChanges(t *testing.T) {
+func TestAcc_Execute_CompleteUseCase_QueryResultsRecomputedWithoutQueryChanges(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	resourceName := "snowflake_execute.test"
@@ -768,7 +768,7 @@ func verifyGrantExists(t *testing.T, roleId sdk.AccountObjectIdentifier, privile
 	}
 }
 
-func TestAcc_Execute_ImportWithRandomId(t *testing.T) {
+func TestAcc_Execute_CompleteUseCase_ImportWithRandomId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()
 

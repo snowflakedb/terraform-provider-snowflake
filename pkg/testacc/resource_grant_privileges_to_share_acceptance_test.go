@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_GrantPrivilegesToShare_OnDatabase(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnDatabase(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -57,7 +57,7 @@ func TestAcc_GrantPrivilegesToShare_OnDatabase(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToShare_OnSchema(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnSchema(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -103,7 +103,7 @@ func TestAcc_GrantPrivilegesToShare_OnSchema(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToShare_OnTable(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnTable(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -152,7 +152,7 @@ func TestAcc_GrantPrivilegesToShare_OnTable(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToShare_OnDynamicTable(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnDynamicTable(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -204,7 +204,7 @@ func TestAcc_GrantPrivilegesToShare_OnDynamicTable(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToShare_OnAllTablesInSchema(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnAllTablesInSchema(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -250,7 +250,7 @@ func TestAcc_GrantPrivilegesToShare_OnAllTablesInSchema(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToShare_OnView(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnView(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -305,7 +305,7 @@ func TestAcc_GrantPrivilegesToShare_OnView(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToShare_OnTag(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnTag(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -355,7 +355,7 @@ func TestAcc_GrantPrivilegesToShare_OnTag(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToShare_OnSchemaObject_OnFunctionWithArguments(t *testing.T) {
+func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnFunctionWithArguments(t *testing.T) {
 	share, shareCleanup := testClient().Share.CreateShare(t)
 	t.Cleanup(shareCleanup)
 

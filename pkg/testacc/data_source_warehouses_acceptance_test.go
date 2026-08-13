@@ -22,7 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Warehouses_BaseUseCase_DifferentFiltering(t *testing.T) {
+func TestAcc_Warehouses_BasicUseCase_DifferentFiltering(t *testing.T) {
 	prefix := random.AlphaN(4)
 	idOne := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	idTwo := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)

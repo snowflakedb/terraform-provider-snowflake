@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_ImageRepositories(t *testing.T) {
+func TestAcc_ImageRepositories_CompleteUseCase(t *testing.T) {
 	// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
 	db, dbCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(dbCleanup)
@@ -65,7 +65,7 @@ func TestAcc_ImageRepositories(t *testing.T) {
 	})
 }
 
-func TestAcc_ImageRepositories_Filtering(t *testing.T) {
+func TestAcc_ImageRepositories_BasicUseCase_DifferentFiltering(t *testing.T) {
 	// TODO(SNOW-2070746): We set up a separate database and schema with capitalized ids. Remove this after fix on snowflake side.
 	db, dbCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(dbCleanup)

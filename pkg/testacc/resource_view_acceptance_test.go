@@ -32,7 +32,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_View_basic(t *testing.T) {
+func TestAcc_View_BasicUseCase(t *testing.T) {
 	rowAccessPolicy, rowAccessPolicyCleanup := testClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(rowAccessPolicyCleanup)
 
@@ -468,7 +468,7 @@ func TestAcc_View_temporary(t *testing.T) {
 	})
 }
 
-func TestAcc_View_complete(t *testing.T) {
+func TestAcc_View_CompleteUseCase(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("id", sdk.DataTypeNumber),
 		*sdk.NewTableColumnRequest("foo", sdk.DataTypeNumber),

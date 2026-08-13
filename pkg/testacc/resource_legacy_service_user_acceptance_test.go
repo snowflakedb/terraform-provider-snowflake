@@ -25,7 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
+func TestAcc_LegacyServiceUser_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	id2 := testClient().Ids.RandomAccountObjectIdentifier()
 
@@ -273,7 +273,7 @@ func TestAcc_LegacyServiceUser_BasicFlows(t *testing.T) {
 	})
 }
 
-func TestAcc_LegacyServiceUser_AllParameters(t *testing.T) {
+func TestAcc_LegacyServiceUser_CompleteUseCase_AllParameters(t *testing.T) {
 	networkPolicy, networkPolicyCleanup := testClient().NetworkPolicy.CreateNetworkPolicyNotEmpty(t)
 	t.Cleanup(networkPolicyCleanup)
 

@@ -34,7 +34,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAcc_Warehouse_BasicFlows(t *testing.T) {
+func TestAcc_Warehouse_BasicUseCase(t *testing.T) {
 	resourceMonitor, resourceMonitorCleanup := testClient().ResourceMonitor.CreateResourceMonitor(t)
 	t.Cleanup(resourceMonitorCleanup)
 
