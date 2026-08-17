@@ -2,313 +2,251 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
+var rowAccessPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_RowAccessPolicies_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_RowAccessPolicies_validation_Create_args_ValidateValueSet                 testCaseName = "validation_Create_args_ValidateValueSet"
+	case_RowAccessPolicies_validation_Create_body_ValidateValueSet                 testCaseName = "validation_Create_body_ValidateValueSet"
+	case_RowAccessPolicies_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_RowAccessPolicies_sql_Create_basic                                        testCaseName = "sql_Create_basic"
+	case_RowAccessPolicies_sql_Create_all                                          testCaseName = "sql_Create_all"
+	case_RowAccessPolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_RowAccessPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_RowAccessPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_RowAccessPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
+	case_RowAccessPolicies_sql_Alter_SetBody                                       testCaseName = "sql_Alter_SetBody"
+	case_RowAccessPolicies_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
+	case_RowAccessPolicies_sql_Alter_UnsetTags                                     testCaseName = "sql_Alter_UnsetTags"
+	case_RowAccessPolicies_sql_Alter_SetComment                                    testCaseName = "sql_Alter_SetComment"
+	case_RowAccessPolicies_sql_Alter_UnsetComment                                  testCaseName = "sql_Alter_UnsetComment"
+	case_RowAccessPolicies_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_RowAccessPolicies_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
+	case_RowAccessPolicies_sql_Drop_all                                            testCaseName = "sql_Drop_all"
+	case_RowAccessPolicies_sql_Show_basic                                          testCaseName = "sql_Show_basic"
+	case_RowAccessPolicies_sql_Show_all                                            testCaseName = "sql_Show_all"
+	case_RowAccessPolicies_sql_Show_Like                                           testCaseName = "sql_Show_Like"
+	case_RowAccessPolicies_sql_Show_In                                             testCaseName = "sql_Show_In"
+	case_RowAccessPolicies_sql_Show_Limit                                          testCaseName = "sql_Show_Limit"
+	case_RowAccessPolicies_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_RowAccessPolicies_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+)
+
+type RowAccessPoliciesTestsContext struct {
+	Create   *sdkTestCtx[*CreateRowAccessPolicyOptions]
+	Alter    *sdkTestCtx[*AlterRowAccessPolicyOptions]
+	Drop     *sdkTestCtx[*DropRowAccessPolicyOptions]
+	Show     *sdkTestCtx[*ShowRowAccessPolicyOptions]
+	Describe *sdkTestCtx[*DescribeRowAccessPolicyOptions]
+}
+
+var rowAccessPoliciesTests = RowAccessPoliciesTestsContext{
+	Create: newSdkTestCtx[*CreateRowAccessPolicyOptions](
+		"RowAccessPolicies", "Create",
+	).
+		withDefaultOpts(func() *CreateRowAccessPolicyOptions {
+			return &CreateRowAccessPolicyOptions{
+				name: rowAccessPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateRowAccessPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Create_args_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateRowAccessPolicyOptions", "args"),
+				DefaultModify: func(opts *CreateRowAccessPolicyOptions) {
+					opts.args = nil
+				},
+			},
+			validationCase[*CreateRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Create_body_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateRowAccessPolicyOptions", "body"),
+				DefaultModify: func(opts *CreateRowAccessPolicyOptions) {
+					opts.body = ""
+				},
+			},
+			validationCase[*CreateRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateRowAccessPolicyOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateRowAccessPolicyOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateRowAccessPolicyOptions]{
+				Name:           case_RowAccessPolicies_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterRowAccessPolicyOptions](
+		"RowAccessPolicies", "Alter",
+	).
+		withDefaultOpts(func() *AlterRowAccessPolicyOptions {
+			return &AlterRowAccessPolicyOptions{
+				name: rowAccessPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterRowAccessPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterRowAccessPolicyOptions", "RenameTo", "SetBody", "SetTags", "UnsetTags", "SetComment", "UnsetComment"),
+				DefaultModify: func(opts *AlterRowAccessPolicyOptions) {
+					opts.RenameTo = nil
+					opts.SetBody = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.SetComment = nil
+					opts.UnsetComment = nil
+				},
+			},
+			validationCase[*AlterRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterRowAccessPolicyOptions", "RenameTo", "SetBody", "SetTags", "UnsetTags", "SetComment", "UnsetComment"),
+				DefaultModify: func(opts *AlterRowAccessPolicyOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.SetBody = new("foo")
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Alter_SetBody,
+			},
+			sqlCase[*AlterRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Alter_SetComment,
+			},
+			sqlCase[*AlterRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Alter_UnsetComment,
+			},
+		),
+	Drop: newSdkTestCtx[*DropRowAccessPolicyOptions](
+		"RowAccessPolicies", "Drop",
+	).
+		withDefaultOpts(func() *DropRowAccessPolicyOptions {
+			return &DropRowAccessPolicyOptions{
+				name: rowAccessPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropRowAccessPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropRowAccessPolicyOptions]{
+				Name:           case_RowAccessPolicies_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowRowAccessPolicyOptions](
+		"RowAccessPolicies", "Show",
+	).
+		withDefaultOpts(func() *ShowRowAccessPolicyOptions {
+			return &ShowRowAccessPolicyOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowRowAccessPolicyOptions]{
+				Name:           case_RowAccessPolicies_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Show_all,
+			},
+			sqlCase[*ShowRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Show_Like,
+			},
+			sqlCase[*ShowRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Show_In,
+			},
+			sqlCase[*ShowRowAccessPolicyOptions]{
+				Name: case_RowAccessPolicies_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeRowAccessPolicyOptions](
+		"RowAccessPolicies", "Describe",
+	).
+		withDefaultOpts(func() *DescribeRowAccessPolicyOptions {
+			return &DescribeRowAccessPolicyOptions{
+				name: rowAccessPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeRowAccessPolicyOptions]{
+				Name:        case_RowAccessPolicies_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeRowAccessPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeRowAccessPolicyOptions]{
+				Name:           case_RowAccessPolicies_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestRowAccessPolicies_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateRowAccessPolicyOptions
-	defaultOpts := func() *CreateRowAccessPolicyOptions {
-		return &CreateRowAccessPolicyOptions{
-			// adjusted manually
-			name: id,
-			args: []CreateRowAccessPolicyArgs{{
-				Name:     "n",
-				DataType: dataTypeVarchar,
-			}},
-			body: "true",
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateRowAccessPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.args] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.args = []CreateRowAccessPolicyArgs{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateRowAccessPolicyOptions", "args"))
-	})
-
-	t.Run("validation: [opts.body] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.body = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateRowAccessPolicyOptions", "body"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateRowAccessPolicyOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// all variants added manually
-	t.Run("one parameter", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
-	})
-
-	t.Run("two parameters", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.args = []CreateRowAccessPolicyArgs{{
-			Name:     "n",
-			DataType: dataTypeVarchar,
-		}, {
-			Name:     "h",
-			DataType: dataTypeVarchar,
-		}}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216), "h" VARCHAR(16777216)) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE ROW ACCESS POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
+	rowAccessPoliciesTests.Create.RunValidationCases(t)
+	rowAccessPoliciesTests.Create.RunSqlCases(t)
 }
 
 func TestRowAccessPolicies_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterRowAccessPolicyOptions
-	defaultOpts := func() *AlterRowAccessPolicyOptions {
-		return &AlterRowAccessPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterRowAccessPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetBody opts.SetTags opts.UnsetTags opts.SetComment opts.UnsetComment] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterRowAccessPolicyOptions", "RenameTo", "SetBody", "SetTags", "UnsetTags", "SetComment", "UnsetComment"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetBody opts.SetTags opts.UnsetTags opts.SetComment opts.UnsetComment] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetComment = String("comment")
-		opts.UnsetComment = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterRowAccessPolicyOptions", "RenameTo", "SetBody", "SetTags", "UnsetTags", "SetComment", "UnsetComment"))
-	})
-
-	// all variants added manually
-	t.Run("rename", func(t *testing.T) {
-		newId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ROW ACCESS POLICY %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("set body", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetBody = String("true")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ROW ACCESS POLICY %s SET BODY -> true", id.FullyQualifiedName())
-	})
-
-	t.Run("set comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetComment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ROW ACCESS POLICY %s SET COMMENT = 'comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("unset comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetComment = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ROW ACCESS POLICY %s UNSET COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER ROW ACCESS POLICY %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER ROW ACCESS POLICY %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	rowAccessPoliciesTests.Alter.RunValidationCases(t)
+	rowAccessPoliciesTests.Alter.RunSqlCases(t)
 }
 
 func TestRowAccessPolicies_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropRowAccessPolicyOptions
-	defaultOpts := func() *DropRowAccessPolicyOptions {
-		return &DropRowAccessPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropRowAccessPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP ROW ACCESS POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP ROW ACCESS POLICY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	rowAccessPoliciesTests.Drop.RunValidationCases(t)
+	rowAccessPoliciesTests.Drop.RunSqlCases(t)
 }
 
 func TestRowAccessPolicies_Show(t *testing.T) {
-	// Minimal valid ShowRowAccessPolicyOptions
-	defaultOpts := func() *ShowRowAccessPolicyOptions {
-		return &ShowRowAccessPolicyOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowRowAccessPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW ROW ACCESS POLICIES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("myaccount"),
-		}
-		opts.In = &ExtendedIn{
-			In: In{
-				Account: Bool(true),
-			},
-		}
-		opts.Limit = &LimitFrom{
-			Rows: Pointer(10),
-			From: Pointer("foo"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW ROW ACCESS POLICIES LIKE 'myaccount' IN ACCOUNT LIMIT 10 FROM 'foo'")
-	})
+	rowAccessPoliciesTests.Show.RunValidationCases(t)
+	rowAccessPoliciesTests.Show.RunSqlCases(t)
 }
 
 func TestRowAccessPolicies_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeRowAccessPolicyOptions
-	defaultOpts := func() *DescribeRowAccessPolicyOptions {
-		return &DescribeRowAccessPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeRowAccessPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE ROW ACCESS POLICY %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
-}
-
-// test added manually
-func TestRowAccessPolicyDescription_Signature(t *testing.T) {
-	tests := []struct {
-		name      string
-		signature string
-		want      []TableColumnSignature
-	}{
-		{
-			name:      "signature with 1 arg",
-			signature: "(A VARCHAR)",
-			want: []TableColumnSignature{
-				{
-					Name: "A",
-					Type: dataTypeVarchar,
-				},
-			},
-		},
-		{
-			name:      "signature with multiple args",
-			signature: "(A VARCHAR, B BOOLEAN)",
-			want: []TableColumnSignature{
-				{
-					Name: "A",
-					Type: dataTypeVarchar,
-				},
-				{
-					Name: "B",
-					Type: dataTypeBoolean,
-				},
-			},
-		},
-		{
-			name:      "signature with complex name",
-			signature: "(a B VARCHAR)",
-			want: []TableColumnSignature{
-				{
-					Name: "a B",
-					Type: dataTypeVarchar,
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &describeRowAccessPolicyDBRow{
-				Signature: tt.signature,
-			}
-			got, err := d.convert()
-			assert.NoError(t, err)
-			require.Equal(t, tt.want, got.Signature)
-		})
-	}
+	rowAccessPoliciesTests.Describe.RunValidationCases(t)
+	rowAccessPoliciesTests.Describe.RunSqlCases(t)
 }
