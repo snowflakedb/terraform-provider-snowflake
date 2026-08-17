@@ -12,9 +12,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -1421,6 +1423,111 @@ func TestAcc_HybridTable_Rename(t *testing.T) {
 						HasFullyQualifiedName(newId.FullyQualifiedName()).
 						HasComment(renamedComment),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_HybridTable_HierarchyRenames_MoveToAnotherSchema(t *testing.T) {
+	databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+	schemaXName := testClient().Ids.Alpha()
+	schemaYName := testClient().Ids.Alpha()
+	tableName := testClient().Ids.Alpha()
+
+	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.HierarchyRenames)
+	databaseModel := model.DatabaseWithParametersSet("db", databaseId.Name())
+
+	schemaModelX := model.SchemaWithImplicitDatabaseDependency("schemaX", schemaXName, databaseModel)
+	schemaModelY := model.SchemaWithImplicitDatabaseDependency("schemaY", schemaYName, databaseModel)
+
+	columns := []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeNumber}}
+	pks := []sdk.TableColumnSignature{{Name: "ID"}}
+	tableModelBefore := model.HybridTableWithImplicitDependencies("test", tableName, columns, pks, schemaModelX, databaseModel)
+	tableModelAfter := model.HybridTableWithImplicitDependencies("test", tableName, columns, pks, schemaModelY, databaseModel)
+
+	id := sdk.NewSchemaObjectIdentifier(databaseId.Name(), schemaXName, tableName)
+	expectedNewTableId := sdk.NewSchemaObjectIdentifier(databaseId.Name(), schemaYName, tableName)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: experimentalHierarchyRenamesProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create database, both schemas, and the hybrid table in schema X
+			{
+				Config: accconfig.FromModels(t, providerModel, databaseModel, schemaModelX, schemaModelY, tableModelBefore),
+				Check: assertThat(
+					t,
+					resourceassert.HybridTableResource(t, tableModelBefore.ResourceReference()).
+						HasName(tableName).
+						HasDatabase(databaseId.Name()).
+						HasSchema(schemaXName).
+						HasFullyQualifiedName(id.FullyQualifiedName()),
+				),
+			},
+			// Move the hybrid table to schema Y
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(tableModelAfter.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, databaseModel, schemaModelX, schemaModelY, tableModelAfter),
+				Check: assertThat(
+					t,
+					resourceassert.HybridTableResource(t, tableModelAfter.ResourceReference()).
+						HasName(tableName).
+						HasDatabase(databaseId.Name()).
+						HasSchema(schemaYName).
+						HasFullyQualifiedName(expectedNewTableId.FullyQualifiedName()),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_HybridTable_HierarchyRenames_Disabled_ForceRecreation(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	databaseId := testClient().Ids.RandomAccountObjectIdentifier()
+	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
+	newId := testClient().Ids.NewSchemaObjectIdentifierInSchema(id.Name(), schemaId)
+
+	columns := []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeNumber}}
+	pks := []sdk.TableColumnSignature{{Name: "ID"}}
+	tableModelBefore := model.HybridTableFromId("test", id, columns, pks)
+	tableModelAfter := model.HybridTableFromId("test", newId, columns, pks)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.HybridTable),
+		Steps: []resource.TestStep{
+			// Create
+			{
+				Config: accconfig.FromModels(t, tableModelBefore),
+				Check: assertThat(
+					t,
+					resourceassert.HybridTableResource(t, tableModelBefore.ResourceReference()).
+						HasName(id.Name()).
+						HasDatabase(id.DatabaseName()).
+						HasSchema(id.SchemaName()).
+						HasFullyQualifiedName(id.FullyQualifiedName()),
+				),
+			},
+			// Change database — should force recreation.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(tableModelAfter.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config:             accconfig.FromModels(t, tableModelAfter),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

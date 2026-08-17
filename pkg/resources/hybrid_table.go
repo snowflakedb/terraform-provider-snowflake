@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"sort"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -283,9 +283,11 @@ func HybridTable() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.HybridTable, customdiff.All(
 			hybridTableParametersCustomDiff,
-			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "name", "comment"),
-			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "name", "comment", "column"),
-			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(hybridTableSchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
+			ComputedIfAnyAttributeChanged(hybridTableSchema, DescribeOutputAttributeName, "column"),
+			ComputedIfAnyAttributeChanged(hybridTableSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			forceNewIfColumnCollateChanged(),
 			forceNewIfColumnNotNullChanged(),
 			requireNotNullOnPrimaryKeyColumns(),
@@ -819,9 +821,11 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 			return diag.FromErr(fmt.Errorf("reading hybrid table constraints: %w", err))
 		}
 
-		// Index read-back is best-effort — failure must not fail Read of an otherwise-healthy table.
-		indexes, indexErr := client.HybridTables.ShowIndexes(ctx,
+		indexes, err := client.HybridTables.ShowIndexes(ctx,
 			sdk.NewShowIndexesHybridTableRequest().WithIn(sdk.TableIn{Table: id}))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("reading hybrid table indexes: %w", err))
+		}
 
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.HybridTableToSchema(hybridTable)}),
@@ -832,7 +836,7 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 			d.Set("primary_key_constraint", buildPrimaryKeyStateFromConstraints(constraints)),
 			d.Set("unique_constraint", buildUniqueConstraintsStateFromConstraints(constraints)),
 			d.Set("foreign_key_constraint", buildForeignKeysStateFromConstraints(constraints)),
-			d.Set("index", readIndexState(indexes, indexErr, constraints, id)),
+			d.Set("index", readIndexState(indexes, constraints)),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -842,21 +846,33 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 }
 
 func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Handle rename (name, database, or schema change). RENAME TO accepts a
-	// fully-qualified identifier, so a database or schema change is realized
-	// as a server-side move via the same statement.
-	if d.HasChange("name") || d.HasChange("database") || d.HasChange("schema") {
-		newId := sdk.NewSchemaObjectIdentifier(
-			d.Get("database").(string),
-			d.Get("schema").(string),
-			d.Get("name").(string),
-		)
+	if experimentalfeatures.IsExperimentEnabled(experimentalfeatures.HierarchyRenames, providerCtx.EnabledExperiments) && (d.HasChange("database") || d.HasChange("schema")) {
+		hybridTableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			hybridTableRenameFn,
+			client.HybridTables.ShowByID,
+			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
+			"hybrid table",
+		); diags != nil {
+			return diags
+		}
+	}
+
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
 		if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithRenameTo(newId)); err != nil {
 			d.Partial(true)
@@ -1107,14 +1123,8 @@ func buildForeignKeysStateFromConstraints(constraints []sdk.HybridTableConstrain
 	return result
 }
 
-// readIndexState builds index state from a SHOW INDEXES result, excluding FK-backing
-// indexes. Returns nil on error (best-effort: SHOW INDEXES failure must not fail Read
-// of an otherwise-healthy table).
-func readIndexState(indexes []sdk.HybridTableIndex, indexErr error, constraints []sdk.HybridTableConstraint, id sdk.SchemaObjectIdentifier) []map[string]any {
-	if indexErr != nil {
-		log.Printf("[WARN] SHOW INDEXES failed for %s; skipping index read-back: %v", id.FullyQualifiedName(), indexErr)
-		return nil
-	}
+// readIndexState builds index state from a SHOW INDEXES result, excluding FK-backing indexes.
+func readIndexState(indexes []sdk.HybridTableIndex, constraints []sdk.HybridTableConstraint) []map[string]any {
 	// FK constraints produce a system-managed backing index in SHOW INDEXES that must
 	// be excluded: named FKs share the constraint name; anonymous FKs are named SYS_INDEX_..._FOREIGN_KEY_...
 	var userIndexes []sdk.HybridTableIndex
