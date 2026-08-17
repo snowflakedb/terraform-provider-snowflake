@@ -6,325 +6,320 @@ import (
 	"testing"
 )
 
-// added manually
+var gitRepositoriesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
 const (
-	gitRepositoryOrigin = "https://github.com/user/repo"
+	case_GitRepositories_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
+	case_GitRepositories_validation_Create_ApiIntegration_ValidIdentifier         testCaseName = "validation_Create_ApiIntegration_ValidIdentifier"
+	case_GitRepositories_validation_Create_GitCredentials_ValidIdentifierIfSet    testCaseName = "validation_Create_GitCredentials_ValidIdentifierIfSet"
+	case_GitRepositories_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
+	case_GitRepositories_sql_Create_basic                                         testCaseName = "sql_Create_basic"
+	case_GitRepositories_sql_Create_all                                           testCaseName = "sql_Create_all"
+	case_GitRepositories_validation_Alter_name_ValidIdentifier                    testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_GitRepositories_validation_Alter_opts_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_GitRepositories_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_GitRepositories_validation_Alter_Set_ApiIntegration_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_ApiIntegration_ValidIdentifierIfSet"
+	case_GitRepositories_validation_Alter_Set_GitCredentials_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_GitCredentials_ValidIdentifierIfSet"
+	case_GitRepositories_sql_Alter_Set                                            testCaseName = "sql_Alter_Set"
+	case_GitRepositories_sql_Alter_Unset                                          testCaseName = "sql_Alter_Unset"
+	case_GitRepositories_sql_Alter_SetTags                                        testCaseName = "sql_Alter_SetTags"
+	case_GitRepositories_sql_Alter_UnsetTags                                      testCaseName = "sql_Alter_UnsetTags"
+	case_GitRepositories_sql_Alter_Fetch                                          testCaseName = "sql_Alter_Fetch"
+	case_GitRepositories_validation_Drop_name_ValidIdentifier                     testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_GitRepositories_sql_Drop_basic                                           testCaseName = "sql_Drop_basic"
+	case_GitRepositories_sql_Drop_all                                             testCaseName = "sql_Drop_all"
+	case_GitRepositories_validation_Describe_name_ValidIdentifier                 testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_GitRepositories_sql_Describe_basic                                       testCaseName = "sql_Describe_basic"
+	case_GitRepositories_sql_Show_basic                                           testCaseName = "sql_Show_basic"
+	case_GitRepositories_sql_Show_all                                             testCaseName = "sql_Show_all"
+	case_GitRepositories_sql_Show_Like                                            testCaseName = "sql_Show_Like"
+	case_GitRepositories_sql_Show_In                                              testCaseName = "sql_Show_In"
+	case_GitRepositories_sql_Show_Limit                                           testCaseName = "sql_Show_Limit"
+	case_GitRepositories_sql_ShowGitBranches_basic                                testCaseName = "sql_ShowGitBranches_basic"
+	case_GitRepositories_sql_ShowGitBranches_all                                  testCaseName = "sql_ShowGitBranches_all"
+	case_GitRepositories_sql_ShowGitBranches_Like                                 testCaseName = "sql_ShowGitBranches_Like"
+	case_GitRepositories_sql_ShowGitTags_basic                                    testCaseName = "sql_ShowGitTags_basic"
+	case_GitRepositories_sql_ShowGitTags_all                                      testCaseName = "sql_ShowGitTags_all"
+	case_GitRepositories_sql_ShowGitTags_Like                                     testCaseName = "sql_ShowGitTags_Like"
 )
 
-func TestGitRepositories_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
+type GitRepositoriesTestsContext struct {
+	Create          *sdkTestCtx[*CreateGitRepositoryOptions]
+	Alter           *sdkTestCtx[*AlterGitRepositoryOptions]
+	Drop            *sdkTestCtx[*DropGitRepositoryOptions]
+	Describe        *sdkTestCtx[*DescribeGitRepositoryOptions]
+	Show            *sdkTestCtx[*ShowGitRepositoryOptions]
+	ShowGitBranches *sdkTestCtx[*ShowGitBranchesGitRepositoryOptions]
+	ShowGitTags     *sdkTestCtx[*ShowGitTagsGitRepositoryOptions]
+}
 
-	// added manually
-	apiIntegrationId := randomAccountObjectIdentifier()
-
-	// Minimal valid CreateGitRepositoryOptions
-	defaultOpts := func() *CreateGitRepositoryOptions {
-		return &CreateGitRepositoryOptions{
-			// adjusted manually
-			name:           id,
-			Origin:         gitRepositoryOrigin,
-			ApiIntegration: apiIntegrationId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateGitRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.ApiIntegration]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ApiIntegration = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.GitCredentials] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.GitCredentials = &emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateGitRepositoryOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE GIT REPOSITORY %s ORIGIN = '%s' API_INTEGRATION = %s", id.FullyQualifiedName(), gitRepositoryOrigin, apiIntegrationId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		gitCredentialsId := randomSchemaObjectIdentifier()
-
-		opts.IfNotExists = Bool(true)
-		opts.Origin = gitRepositoryOrigin
-		opts.GitCredentials = &gitCredentialsId
-		opts.Comment = String("comment")
-		opts.Tag = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag-name"),
-				Value: "tag-value",
+var gitRepositoriesTests = GitRepositoriesTestsContext{
+	Create: newSdkTestCtx[*CreateGitRepositoryOptions](
+		"GitRepositories", "Create",
+	).
+		withDefaultOpts(func() *CreateGitRepositoryOptions {
+			return &CreateGitRepositoryOptions{
+				name: gitRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateGitRepositoryOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE GIT REPOSITORY IF NOT EXISTS %s ORIGIN = '%s' API_INTEGRATION = %s GIT_CREDENTIALS = %s COMMENT = '%s' TAG ("tag-name" = 'tag-value')`, id.FullyQualifiedName(), gitRepositoryOrigin, apiIntegrationId.FullyQualifiedName(), gitCredentialsId.FullyQualifiedName(), "comment")
-	})
+			validationCase[*CreateGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Create_ApiIntegration_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateGitRepositoryOptions) {
+					opts.ApiIntegration = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Create_GitCredentials_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateGitRepositoryOptions) {
+					opts.GitCredentials = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*CreateGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateGitRepositoryOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateGitRepositoryOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateGitRepositoryOptions]{
+				Name:           case_GitRepositories_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterGitRepositoryOptions](
+		"GitRepositories", "Alter",
+	).
+		withDefaultOpts(func() *AlterGitRepositoryOptions {
+			return &AlterGitRepositoryOptions{
+				name: gitRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterGitRepositoryOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"),
+				DefaultModify: func(opts *AlterGitRepositoryOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.Fetch = nil
+				},
+			},
+			validationCase[*AlterGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"),
+				DefaultModify: func(opts *AlterGitRepositoryOptions) {
+					opts.Set = &GitRepositorySet{}
+					opts.Unset = &GitRepositoryUnset{}
+				},
+			},
+			validationCase[*AlterGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Alter_Set_ApiIntegration_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterGitRepositoryOptions) {
+					opts.Set = &GitRepositorySet{}
+					opts.Set.ApiIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Alter_Set_GitCredentials_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterGitRepositoryOptions) {
+					opts.Set = &GitRepositorySet{}
+					opts.Set.GitCredentials = new(emptySchemaObjectIdentifier)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Alter_Set,
+			},
+			sqlCase[*AlterGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Alter_Unset,
+			},
+			sqlCase[*AlterGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Alter_Fetch,
+			},
+		),
+	Drop: newSdkTestCtx[*DropGitRepositoryOptions](
+		"GitRepositories", "Drop",
+	).
+		withDefaultOpts(func() *DropGitRepositoryOptions {
+			return &DropGitRepositoryOptions{
+				name: gitRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropGitRepositoryOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropGitRepositoryOptions]{
+				Name:           case_GitRepositories_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Drop_all,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeGitRepositoryOptions](
+		"GitRepositories", "Describe",
+	).
+		withDefaultOpts(func() *DescribeGitRepositoryOptions {
+			return &DescribeGitRepositoryOptions{
+				name: gitRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeGitRepositoryOptions]{
+				Name:        case_GitRepositories_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeGitRepositoryOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeGitRepositoryOptions]{
+				Name:           case_GitRepositories_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Show: newSdkTestCtx[*ShowGitRepositoryOptions](
+		"GitRepositories", "Show",
+	).
+		withDefaultOpts(func() *ShowGitRepositoryOptions {
+			return &ShowGitRepositoryOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowGitRepositoryOptions]{
+				Name:           case_GitRepositories_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Show_all,
+			},
+			sqlCase[*ShowGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Show_Like,
+			},
+			sqlCase[*ShowGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Show_In,
+			},
+			sqlCase[*ShowGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_Show_Limit,
+			},
+		),
+	ShowGitBranches: newSdkTestCtx[*ShowGitBranchesGitRepositoryOptions](
+		"GitRepositories", "ShowGitBranches",
+	).
+		withDefaultOpts(func() *ShowGitBranchesGitRepositoryOptions {
+			return &ShowGitBranchesGitRepositoryOptions{
+				name: gitRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowGitBranchesGitRepositoryOptions]{
+				Name:           case_GitRepositories_sql_ShowGitBranches_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowGitBranchesGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_ShowGitBranches_all,
+			},
+			sqlCase[*ShowGitBranchesGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_ShowGitBranches_Like,
+			},
+		),
+	ShowGitTags: newSdkTestCtx[*ShowGitTagsGitRepositoryOptions](
+		"GitRepositories", "ShowGitTags",
+	).
+		withDefaultOpts(func() *ShowGitTagsGitRepositoryOptions {
+			return &ShowGitTagsGitRepositoryOptions{
+				name: gitRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowGitTagsGitRepositoryOptions]{
+				Name:           case_GitRepositories_sql_ShowGitTags_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowGitTagsGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_ShowGitTags_all,
+			},
+			sqlCase[*ShowGitTagsGitRepositoryOptions]{
+				Name: case_GitRepositories_sql_ShowGitTags_Like,
+			},
+		),
+}
+
+func TestGitRepositories_Create(t *testing.T) {
+	gitRepositoriesTests.Create.RunValidationCases(t)
+	gitRepositoriesTests.Create.RunSqlCases(t)
 }
 
 func TestGitRepositories_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterGitRepositoryOptions
-	defaultOpts := func() *AlterGitRepositoryOptions {
-		return &AlterGitRepositoryOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterGitRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.Fetch] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.Fetch] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(GitRepositorySet)
-		opts.Unset = new(GitRepositoryUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterGitRepositoryOptions", "Set", "Unset", "SetTags", "UnsetTags", "Fetch"))
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.ApiIntegration] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &GitRepositorySet{
-			ApiIntegration: &emptyAccountObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.GitCredentials] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &GitRepositorySet{
-			GitCredentials: &emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// variants added manually
-	t.Run("set", func(t *testing.T) {
-		opts := defaultOpts()
-		apiIntegrationId := randomAccountObjectIdentifier()
-		gitCredentialsId := randomSchemaObjectIdentifier()
-
-		opts.Set = &GitRepositorySet{
-			ApiIntegration: &apiIntegrationId,
-			GitCredentials: &gitCredentialsId,
-			Comment:        String("comment"),
-		}
-
-		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s SET API_INTEGRATION = %s GIT_CREDENTIALS = %s COMMENT = 'comment'", id.FullyQualifiedName(), apiIntegrationId.FullyQualifiedName(), gitCredentialsId.FullyQualifiedName())
-	})
-
-	t.Run("unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &GitRepositoryUnset{
-			GitCredentials: Bool(true),
-			Comment:        Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s UNSET GIT_CREDENTIALS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set tag", func(t *testing.T) {
-		opts := defaultOpts()
-		tag := []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag-name"),
-				Value: "tag-value",
-			},
-		}
-		opts.SetTags = tag
-		assertOptsValidAndSQLEquals(t, opts, `ALTER GIT REPOSITORY %s SET TAG "tag-name" = 'tag-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tag", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER GIT REPOSITORY %s UNSET TAG "tag-name"`, id.FullyQualifiedName())
-	})
-
-	t.Run("fetch", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Fetch = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER GIT REPOSITORY %s FETCH", id.FullyQualifiedName())
-	})
+	gitRepositoriesTests.Alter.RunValidationCases(t)
+	gitRepositoriesTests.Alter.RunSqlCases(t)
 }
 
 func TestGitRepositories_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropGitRepositoryOptions
-	defaultOpts := func() *DropGitRepositoryOptions {
-		return &DropGitRepositoryOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropGitRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP GIT REPOSITORY %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP GIT REPOSITORY IF EXISTS %s`, id.FullyQualifiedName())
-	})
+	gitRepositoriesTests.Drop.RunValidationCases(t)
+	gitRepositoriesTests.Drop.RunSqlCases(t)
 }
 
 func TestGitRepositories_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeGitRepositoryOptions
-	defaultOpts := func() *DescribeGitRepositoryOptions {
-		return &DescribeGitRepositoryOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeGitRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE GIT REPOSITORY %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	gitRepositoriesTests.Describe.RunValidationCases(t)
+	gitRepositoriesTests.Describe.RunSqlCases(t)
 }
 
 func TestGitRepositories_Show(t *testing.T) {
-	// Minimal valid ShowGitRepositoryOptions
-	defaultOpts := func() *ShowGitRepositoryOptions {
-		return &ShowGitRepositoryOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowGitRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT REPOSITORIES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("git-repository-name"),
-		}
-		opts.In = &In{
-			Database: NewAccountObjectIdentifier("database-name"),
-		}
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW GIT REPOSITORIES LIKE 'git-repository-name' IN DATABASE "database-name" LIMIT 10`)
-	})
+	gitRepositoriesTests.Show.RunValidationCases(t)
+	gitRepositoriesTests.Show.RunSqlCases(t)
 }
 
 func TestGitRepositories_ShowGitBranches(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid ShowGitBranchesGitRepositoryOptions
-	defaultOpts := func() *ShowGitBranchesGitRepositoryOptions {
-		return &ShowGitBranchesGitRepositoryOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowGitBranchesGitRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT BRANCHES IN %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("branch-name"),
-		}
-		opts.GitRepository = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT BRANCHES LIKE 'branch-name' IN GIT REPOSITORY %s", id.FullyQualifiedName())
-	})
+	gitRepositoriesTests.ShowGitBranches.RunValidationCases(t)
+	gitRepositoriesTests.ShowGitBranches.RunSqlCases(t)
 }
 
 func TestGitRepositories_ShowGitTags(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid ShowGitTagsGitRepositoryOptions
-	defaultOpts := func() *ShowGitTagsGitRepositoryOptions {
-		return &ShowGitTagsGitRepositoryOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowGitTagsGitRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT TAGS IN %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("tag-name"),
-		}
-		opts.GitRepository = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "SHOW GIT TAGS LIKE 'tag-name' IN GIT REPOSITORY %s", id.FullyQualifiedName())
-	})
+	gitRepositoriesTests.ShowGitTags.RunValidationCases(t)
+	gitRepositoriesTests.ShowGitTags.RunSqlCases(t)
 }
