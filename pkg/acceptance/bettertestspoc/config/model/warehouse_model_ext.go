@@ -3,6 +3,7 @@ package model
 import (
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -17,17 +18,23 @@ func WarehouseSnowflakeDefaultWithoutParameters(
 	id sdk.AccountObjectIdentifier,
 	comment string,
 ) *WarehouseModel {
+	autoSuspend := 600
+	queryAccelMaxScaleFactor := 2
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		autoSuspend = 34
+		queryAccelMaxScaleFactor = 8
+	}
 	return BasicWarehouseModel(id, comment).
 		WithWarehouseTypeEnum(sdk.WarehouseTypeStandard).
 		WithWarehouseSizeEnum(sdk.WarehouseSizeXSmall).
 		WithMinClusterCount(1).
 		WithMaxClusterCount(1).
 		WithScalingPolicyEnum(sdk.ScalingPolicyStandard).
-		WithAutoSuspend(600).
+		WithAutoSuspend(autoSuspend).
 		WithAutoResume(r.BooleanTrue).
 		WithInitiallySuspended(false).
 		WithEnableQueryAcceleration(r.BooleanTrue).
-		WithQueryAccelerationMaxScaleFactor(2)
+		WithQueryAccelerationMaxScaleFactor(queryAccelMaxScaleFactor)
 }
 
 // TODO [SNOW-1501905]: currently config builder are generated from the resource schema, so there is no direct connection to the source enum (like sdk.WarehouseSize)

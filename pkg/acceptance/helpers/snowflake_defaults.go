@@ -26,6 +26,27 @@ func (c *SnowflakeDefaultsClient) WarehouseGenerationEmptyByDefault(t *testing.T
 	return false
 }
 
+// DefaultQuotedIdentifiersIgnoreCaseLevel returns the expected parameter level for
+// QUOTED_IDENTIFIERS_IGNORE_CASE on a newly created object. Prod accounts surface the
+// Snowflake default (empty level); non-prod accounts have it set at ACCOUNT level.
+func (c *SnowflakeDefaultsClient) DefaultQuotedIdentifiersIgnoreCaseLevel(t *testing.T) sdk.ParameterType {
+	t.Helper()
+	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
+		return sdk.ParameterTypeAccount
+	}
+	return sdk.ParameterTypeSnowflakeDefault
+}
+
+// DefaultAutoSuspend returns the Snowflake default for AUTO_SUSPEND.
+// Prod accounts default to 600; preprod still defaults to 34.
+func (c *SnowflakeDefaultsClient) DefaultAutoSuspend(t *testing.T) int {
+	t.Helper()
+	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
+		return 34
+	}
+	return 600
+}
+
 // DefaultQueryAccelerationMaxScaleFactor returns the Snowflake default for
 // QUERY_ACCELERATION_MAX_SCALE_FACTOR. Prod accounts default to 2; preprod still defaults to 8.
 func (c *SnowflakeDefaultsClient) DefaultQueryAccelerationMaxScaleFactor(t *testing.T) int {
@@ -45,4 +66,16 @@ func (c *SnowflakeDefaultsClient) DefaultStatementTimeoutInSecondsLevel(t *testi
 		return sdk.ParameterTypeAccount
 	}
 	return sdk.ParameterTypeSnowflakeDefault
+}
+
+// DefaultMfaEnrollment returns the expected mfa_enrollment value for a newly created
+// authentication policy without an explicit mfa_enrollment setting.
+// Prod accounts still use the legacy OPTIONAL default; non-prod accounts have
+// already moved to the REQUIRED default (Snowflake is deprecating OPTIONAL).
+func (c *SnowflakeDefaultsClient) DefaultMfaEnrollment(t *testing.T) string {
+	t.Helper()
+	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
+		return string(sdk.MfaEnrollmentReadOptionRequired)
+	}
+	return string(sdk.MfaEnrollmentOptionOptional)
 }
