@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -112,21 +113,27 @@ func (c *ContextClient) IsRoleInSession(t *testing.T, id sdk.AccountObjectIdenti
 	return isInSession
 }
 
-// ACSURL returns Snowflake Assertion Consumer Service URL
+// ACSURL returns Snowflake Assertion Consumer Service URL.
+// Uses the org-based URL format which is valid for all deployments (prod and non-prod).
 func (c *ContextClient) ACSURL(t *testing.T) string {
 	t.Helper()
-	return fmt.Sprintf("https://%s.snowflakecomputing.com/fed/login", c.CurrentAccount(t))
+	return fmt.Sprintf("%s/fed/login", c.AccountURL(t))
 }
 
-// IssuerURL returns a URL containing the EntityID / Issuer for the Snowflake service provider
+// IssuerURL returns a URL containing the EntityID / Issuer for the Snowflake service provider.
+// Uses the org-based URL format which is valid for all deployments (prod and non-prod).
 func (c *ContextClient) IssuerURL(t *testing.T) string {
 	t.Helper()
-	return fmt.Sprintf("https://%s.snowflakecomputing.com", c.CurrentAccount(t))
+	return c.AccountURL(t)
 }
 
+// AccountURL returns the org-based account URL in the standard DNS-safe format:
+// https://<org>-<account_name>.snowflakecomputing.com (lowercase, underscores replaced with hyphens).
 func (c *ContextClient) AccountURL(t *testing.T) string {
 	t.Helper()
-	return fmt.Sprintf("https://%s-%s.snowflakecomputing.com", c.CurrentOrganizationName(t), c.CurrentAccountName(t))
+	org := strings.ToLower(c.CurrentOrganizationName(t))
+	accountName := strings.ToLower(strings.ReplaceAll(c.CurrentAccountName(t), "_", "-"))
+	return fmt.Sprintf("https://%s-%s.snowflakecomputing.com", org, accountName)
 }
 
 func (c *ContextClient) LastQueryId(t *testing.T) string {

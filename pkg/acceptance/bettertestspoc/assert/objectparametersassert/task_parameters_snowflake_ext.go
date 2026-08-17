@@ -1,0 +1,77 @@
+package objectparametersassert
+
+import (
+	"testing"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+)
+
+// HasAllDefaultsForEnvironment is an environment-aware variant of HasAllDefaults.
+// It replaces HasAllDefaults() in tests that run on preprod, where QUOTED_IDENTIFIERS_IGNORE_CASE
+// and STATEMENT_TIMEOUT_IN_SECONDS are set at ACCOUNT level rather than the Snowflake default level.
+func (ta *TaskParametersAssert) HasAllDefaultsForEnvironment(t *testing.T, defaults *helpers.SnowflakeDefaultsClient) *TaskParametersAssert {
+	t.Helper()
+	return ta.
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterBinaryInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterBinaryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientMemoryLimit, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientMetadataRequestUseConnectionCtx, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientPrefetchThreads, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientResultChunkSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientResultColumnCaseInsensitive, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientSessionKeepAlive, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterDateInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterDateOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterErrorOnNondeterministicMerge, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterErrorOnNondeterministicUpdate, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterGeographyOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterGeometryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterJdbcUseSessionTimezone, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterMultiStatementCount, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterQueryTag, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterQuotedIdentifiersIgnoreCase, defaults.DefaultQuotedIdentifiersIgnoreCaseLevel(t)).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterRowsPerResultset, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterSearchPath, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMaxStatementSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMinStatementSize, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementTimeoutInSeconds, defaults.DefaultStatementTimeoutInSecondsLevel(t)).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterStrictJsonOutput, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampDayIsAlways24h, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampLtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampNtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampTzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimezone, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeInputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTransactionAbortOnError, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTransactionDefaultIsolationLevel, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterTwoDigitCenturyStart, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUnsupportedDdlAction, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterUseCachedResult, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterWeekOfYearPolicy, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.TaskParameterWeekStart, sdk.ParameterTypeSnowflakeDefault)
+}

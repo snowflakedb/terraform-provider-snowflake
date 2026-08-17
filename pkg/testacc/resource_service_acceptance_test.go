@@ -8,10 +8,9 @@ import (
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	acchelpers "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	tfjson "github.com/hashicorp/terraform-json"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/customassert"
@@ -20,17 +19,24 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfjson "github.com/hashicorp/terraform-json"
-	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAcc_Service_BasicUseCase_FromSpecification(t *testing.T) {
+	// TODO(SNOW-3949220): Unskip when the SPCS example image is available on preprod
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipping: SPCS example image missing in preprod image repository")
+	}
+
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
 
@@ -1157,6 +1163,11 @@ func TestAcc_Service_fromSpecificationTemplateOnStage(t *testing.T) {
 }
 
 func TestAcc_Service_CompleteUseCase(t *testing.T) {
+	// TODO(SNOW-3949220): Unskip when the SPCS example image is available on preprod
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipping: SPCS example image missing in preprod image repository")
+	}
+
 	computePool, computePoolCleanup := testClient().ComputePool.Create(t)
 	t.Cleanup(computePoolCleanup)
 

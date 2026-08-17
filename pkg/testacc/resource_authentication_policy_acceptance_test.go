@@ -175,7 +175,7 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.authentication_methods", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.client_types", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.security_integrations", "[ALL]")),
-					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.mfa_enrollment", string(sdk.MfaEnrollmentOptionOptional))),
+					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.mfa_enrollment", testClient().SnowflakeDefaults.DefaultMfaEnrollment(t))),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
 					assert.Check(resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")),
@@ -195,7 +195,7 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasCommentString("").
 						HasAuthenticationMethodsEnum(sdk.AuthenticationMethodsOptionAll).
-						HasMfaEnrollmentString(string(sdk.MfaEnrollmentOptionOptional)).
+						HasMfaEnrollmentString(testClient().SnowflakeDefaults.DefaultMfaEnrollment(t)).
 						HasClientTypesEnum(sdk.ClientTypesOptionAll).
 						HasSecurityIntegrations("ALL"),
 					resourceshowoutputassert.ImportedAuthenticationPolicyShowOutput(t, helpers.EncodeResourceIdentifier(id)).
@@ -366,7 +366,7 @@ func TestAcc_AuthenticationPolicy_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.authentication_methods", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.client_types", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.security_integrations", "[ALL]")),
-					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.mfa_enrollment", string(sdk.MfaEnrollmentOptionOptional))),
+					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.mfa_enrollment", testClient().SnowflakeDefaults.DefaultMfaEnrollment(t))),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
 					assert.Check(resource.TestCheckResourceAttr(basicModelWithDifferentName.ResourceReference(), "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")),
@@ -641,7 +641,7 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.authentication_methods", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.client_types", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", string(sdk.MfaEnrollmentOptionOptional))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", testClient().SnowflakeDefaults.DefaultMfaEnrollment(t))),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[TOTP, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[111111111111, 222222222222], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/one/v2.0, https://login.microsoftonline.com/two/v2.0], ALLOWED_OIDC_ISSUERS=[https://one.com, https://two.com]}")),
@@ -676,7 +676,7 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.authentication_methods", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.client_types", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", string(sdk.MfaEnrollmentOptionOptional))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", testClient().SnowflakeDefaults.DefaultMfaEnrollment(t))),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")),
@@ -711,7 +711,7 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.authentication_methods", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.client_types", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", string(sdk.MfaEnrollmentOptionOptional))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", testClient().SnowflakeDefaults.DefaultMfaEnrollment(t))),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[TOTP, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[111111111111, 222222222222], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/one/v2.0, https://login.microsoftonline.com/two/v2.0], ALLOWED_OIDC_ISSUERS=[https://one.com, https://two.com]}")),
@@ -751,7 +751,7 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.authentication_methods", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.client_types", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", string(sdk.MfaEnrollmentOptionOptional))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", testClient().SnowflakeDefaults.DefaultMfaEnrollment(t))),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[TOTP, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[111111111111, 222222222222], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/one/v2.0, https://login.microsoftonline.com/two/v2.0], ALLOWED_OIDC_ISSUERS=[https://one.com, https://two.com]}")),

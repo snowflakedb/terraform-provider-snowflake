@@ -92,7 +92,7 @@ func TestAcc_ResourceMonitor_BasicUseCase(t *testing.T) {
 func TestAcc_ResourceMonitor_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	configModel := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"))).
 		WithCreditQuota(10).
 		WithFrequency(string(sdk.FrequencyWeekly)).
 		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:01")).
@@ -119,7 +119,7 @@ func TestAcc_ResourceMonitor_CompleteUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("10").
-						HasNotifyUsers("JAN_CIESLAK").
+						HasNotifyUsers("TEST_CI_SERVICE_USER").
 						HasFrequencyString(string(sdk.FrequencyWeekly)).
 						HasStartTimestampString(time.Now().Add(time.Hour*24*30).Format("2006-01-02 15:01")).
 						HasEndTimestampString(time.Now().Add(time.Hour*24*60).Format("2006-01-02 15:01")).
@@ -152,7 +152,7 @@ func TestAcc_ResourceMonitor_CompleteUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("10").
-						HasNotifyUsers("JAN_CIESLAK").
+						HasNotifyUsers("TEST_CI_SERVICE_USER").
 						HasFrequencyString(string(sdk.FrequencyWeekly)).
 						HasStartTimestampNotEmpty().
 						HasEndTimestampNotEmpty().
@@ -171,7 +171,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 	configModelNothingSet := model.ResourceMonitor("test", id.Name())
 
 	configModelEverythingSet := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"))).
 		WithCreditQuota(10).
 		WithFrequency(string(sdk.FrequencyWeekly)).
 		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 30).Format("2006-01-02 15:01")).
@@ -184,7 +184,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 		WithSuspendImmediateTrigger(150)
 
 	configModelUpdated := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"), configvariable.StringVariable("ARTUR_SAWICKI"))).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"), configvariable.StringVariable("ARTUR_SAWICKI"))).
 		WithCreditQuota(20).
 		WithFrequency(string(sdk.FrequencyMonthly)).
 		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 40).Format("2006-01-02 15:01")).
@@ -246,7 +246,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("10").
-						HasNotifyUsers("JAN_CIESLAK").
+						HasNotifyUsers("TEST_CI_SERVICE_USER").
 						HasFrequencyString(string(sdk.FrequencyWeekly)).
 						HasStartTimestampString(time.Now().Add(time.Hour*24*30).Format("2006-01-02 15:01")).
 						HasEndTimestampString(time.Now().Add(time.Hour*24*60).Format("2006-01-02 15:01")).
@@ -278,7 +278,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("20").
-						HasNotifyUsers("ARTUR_SAWICKI", "JAN_CIESLAK").
+						HasNotifyUsers("ARTUR_SAWICKI", "TEST_CI_SERVICE_USER").
 						HasFrequencyString(string(sdk.FrequencyMonthly)).
 						HasStartTimestampString(time.Now().Add(time.Hour*24*40).Format("2006-01-02 15:01")).
 						HasEndTimestampString(time.Now().Add(time.Hour*24*70).Format("2006-01-02 15:01")).
@@ -341,7 +341,7 @@ func TestAcc_ResourceMonitor_ExternalChanges(t *testing.T) {
 	startTimestamp := time.Now().Add(time.Hour * 24 * 40).Format("2006-01-02 15:01")
 	endTimestamp := time.Now().Add(time.Hour * 24 * 70).Format("2006-01-02 15:01")
 	configModelEverythingSet := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"))).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"))).
 		WithCreditQuota(10).
 		WithFrequency(string(sdk.FrequencyWeekly)).
 		WithStartTimestamp(startTimestamp).
@@ -354,7 +354,7 @@ func TestAcc_ResourceMonitor_ExternalChanges(t *testing.T) {
 		WithSuspendImmediateTrigger(150)
 
 	configModelUpdated := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("JAN_CIESLAK"), configvariable.StringVariable("ARTUR_SAWICKI"))).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"), configvariable.StringVariable("ARTUR_SAWICKI"))).
 		WithCreditQuota(20).
 		WithFrequency(string(sdk.FrequencyMonthly)).
 		WithStartTimestamp(startTimestamp).
@@ -386,7 +386,7 @@ func TestAcc_ResourceMonitor_ExternalChanges(t *testing.T) {
 									WithNotifyUsers(
 										*sdk.NewNotifyUsersRequest().
 											WithUsers([]sdk.NotifiedUserRequest{
-												*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK")),
+												*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("TEST_CI_SERVICE_USER")),
 												*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("ARTUR_SAWICKI")),
 											}),
 									).

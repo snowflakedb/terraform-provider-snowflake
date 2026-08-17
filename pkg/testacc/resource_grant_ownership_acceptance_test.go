@@ -15,6 +15,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -328,6 +329,11 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 }
 
 func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccountRole(t *testing.T) {
+	// TODO(SNOW-3954877): unskip or remove after enabling 2026_07 BCR bundle on preprod
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() != testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipped on preprod until the 2026_07 BCR bundle is enabled (SNOW-3954877)")
+	}
+
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 

@@ -416,7 +416,7 @@ func TestAcc_Task_CompleteUseCase_AllParameters(t *testing.T) {
 				Check: assertThat(
 					t,
 					objectparametersassert.TaskParameters(t, id).
-						HasAllDefaults().
+						HasAllDefaultsForEnvironment(t, testClient().SnowflakeDefaults).
 						HasAllDefaultsExplicit(),
 					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
 						HasAllDefaults(),
@@ -636,7 +636,7 @@ func TestAcc_Task_CompleteUseCase_AllParameters(t *testing.T) {
 				Check: assertThat(
 					t,
 					objectparametersassert.TaskParameters(t, id).
-						HasAllDefaults().
+						HasAllDefaultsForEnvironment(t, testClient().SnowflakeDefaults).
 						HasAllDefaultsExplicit(),
 					resourceparametersassert.TaskResourceParameters(t, configModel.ResourceReference()).
 						HasAllDefaults(),
