@@ -1,8 +1,11 @@
 package model
 
 import (
+	"fmt"
+
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -67,26 +70,42 @@ func (h *HybridTableModel) WithColumnConfigs(columns []HybridTableColumnConfig) 
 	return h
 }
 
-func HybridTableFromId(
-	resourceName string,
-	id sdk.SchemaObjectIdentifier,
-	column []sdk.TableColumnSignature,
-	primaryKey []sdk.TableColumnSignature,
-) *HybridTableModel {
-	// Primary key columns must declare not_null = true
+func buildColumnConfigs(column, primaryKey []sdk.TableColumnSignature) []HybridTableColumnConfig {
 	pkNames := make(map[string]struct{}, len(primaryKey))
 	for _, k := range primaryKey {
 		pkNames[k.Name] = struct{}{}
 	}
-	columnConfigs := collections.Map(column, func(v sdk.TableColumnSignature) HybridTableColumnConfig {
+	return collections.Map(column, func(v sdk.TableColumnSignature) HybridTableColumnConfig {
 		cfg := HybridTableColumnConfig{Name: v.Name, Type: v.Type.ToSql()}
 		if _, isPK := pkNames[v.Name]; isPK {
 			cfg.NotNull = new(true)
 		}
 		return cfg
 	})
+}
+
+func HybridTableFromId(
+	resourceName string,
+	id sdk.SchemaObjectIdentifier,
+	column []sdk.TableColumnSignature,
+	primaryKey []sdk.TableColumnSignature,
+) *HybridTableModel {
 	return HybridTable(resourceName, id.DatabaseName(), id.SchemaName(), id.Name(), column, primaryKey).
-		WithColumnConfigs(columnConfigs)
+		WithColumnConfigs(buildColumnConfigs(column, primaryKey))
+}
+
+func HybridTableWithImplicitDependencies(
+	resourceName string,
+	name string,
+	column []sdk.TableColumnSignature,
+	primaryKey []sdk.TableColumnSignature,
+	schemaModel *SchemaModel,
+	databaseModel *DatabaseModel,
+) *HybridTableModel {
+	return HybridTable(resourceName, "", "", name, column, primaryKey).
+		WithColumnConfigs(buildColumnConfigs(column, primaryKey)).
+		WithDatabaseValue(config.UnquotedWrapperVariable(fmt.Sprintf("%s.name", databaseModel.ResourceReference()))).
+		WithSchemaValue(config.UnquotedWrapperVariable(fmt.Sprintf("%s.name", schemaModel.ResourceReference())))
 }
 
 // WithColumn satisfies the generated constructor's call for the complex list attribute.
