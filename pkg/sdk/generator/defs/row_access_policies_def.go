@@ -93,4 +93,5 @@ var rowAccessPoliciesDef = g.NewInterface(
 			SQL("ROW ACCESS POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)
