@@ -132,4 +132,4 @@ var gitRepositoriesDef = g.NewInterface(
 		SQL("IN").
 		OptionalSQL("GIT REPOSITORY").
 		Name(),
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
