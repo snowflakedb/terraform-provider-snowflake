@@ -240,6 +240,11 @@ func (c *ComputePoolDescribeOutputAssert) HasNoApplication() *ComputePoolDescrib
 	return c
 }
 
+func (c *ComputePoolDescribeOutputAssert) HasNoBackupInstanceFamilies() *ComputePoolDescribeOutputAssert {
+	c.ValueSet("backup_instance_families.#", "0")
+	return c
+}
+
 func (c *ComputePoolDescribeOutputAssert) HasNoErrorCode() *ComputePoolDescribeOutputAssert {
 	c.ValueNotSet("error_code")
 	return c

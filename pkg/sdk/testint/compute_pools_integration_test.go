@@ -48,7 +48,8 @@ func TestInt_ComputePools(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasNoComment().
 				HasIsExclusive(false).
-				HasNoApplication(),
+				HasNoApplication().
+				HasNoBackupInstanceFamilies(),
 		)
 	})
 
@@ -64,7 +65,11 @@ func TestInt_ComputePools(t *testing.T) {
 			WithAutoResume(true).
 			WithInitiallySuspended(true).
 			WithAutoSuspendSecs(6767).
-			WithComment(comment)
+			WithComment(comment).
+			WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+				{Value: sdk.ComputePoolInstanceFamilyCpuX64M},
+				{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
+			})
 
 		err := client.ComputePools.Create(ctx, request)
 		require.NoError(t, err)
@@ -93,7 +98,11 @@ func TestInt_ComputePools(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComment(comment).
 				HasIsExclusive(true).
-				HasApplication(application.ID()),
+				HasApplication(application.ID()).
+				HasBackupInstanceFamilies(
+					string(sdk.ComputePoolInstanceFamilyCpuX64M),
+					string(sdk.ComputePoolInstanceFamilyCpuX64S),
+				),
 		)
 	})
 
@@ -113,6 +122,10 @@ func TestInt_ComputePools(t *testing.T) {
 				WithMaxNodes(5).
 				WithAutoResume(true).
 				WithAutoSuspendSecs(3600).
+				WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+					{Value: sdk.ComputePoolInstanceFamilyCpuX64M},
+					{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
+				}).
 				WithComment(comment),
 		))
 		require.NoError(t, err)
@@ -140,7 +153,11 @@ func TestInt_ComputePools(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComment(comment).
 				HasIsExclusive(false).
-				HasNoApplication(),
+				HasNoApplication().
+				HasBackupInstanceFamilies(
+					string(sdk.ComputePoolInstanceFamilyCpuX64M),
+					string(sdk.ComputePoolInstanceFamilyCpuX64S),
+				),
 		)
 	})
 
@@ -149,6 +166,9 @@ func TestInt_ComputePools(t *testing.T) {
 		request := sdk.NewCreateComputePoolRequest(id, 1, 2, sdk.ComputePoolInstanceFamilyCpuX64XS).
 			WithAutoSuspendSecs(6767).
 			WithAutoResume(false).
+			WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+				{Value: sdk.ComputePoolInstanceFamilyCpuX64S},
+			}).
 			WithComment(random.Comment())
 
 		_, cleanup := testClientHelper().ComputePool.CreateWithRequest(t, request)
@@ -158,6 +178,7 @@ func TestInt_ComputePools(t *testing.T) {
 			*sdk.NewComputePoolUnsetRequest().
 				WithAutoSuspendSecs(true).
 				WithComment(true).
+				WithBackupInstanceFamilies(true).
 				WithAutoResume(true),
 		))
 		require.NoError(t, err)
@@ -185,7 +206,8 @@ func TestInt_ComputePools(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasNoComment().
 				HasIsExclusive(false).
-				HasNoApplication(),
+				HasNoApplication().
+				HasNoBackupInstanceFamilies(),
 		)
 	})
 
@@ -279,6 +301,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasNoComment().
 				HasIsExclusive(false).
 				HasNoApplication().
+				HasNoBackupInstanceFamilies().
 				HasErrorCode("").
 				HasStatusMessage("Compute pool is starting for last 0 minutes"),
 		)
@@ -313,6 +336,7 @@ func TestInt_ComputePools(t *testing.T) {
 				HasNoComment().
 				HasIsExclusive(false).
 				HasNoApplication().
+				HasNoBackupInstanceFamilies().
 				HasErrorCode("").
 				HasStatusMessage("Compute pool is starting for last 0 minutes"),
 		)

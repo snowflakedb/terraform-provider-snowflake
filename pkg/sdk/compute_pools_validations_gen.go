@@ -35,13 +35,13 @@ func (opts *AlterComputePoolOptions) validate() error {
 	}
 	if valueSet(opts.Set) {
 		errs = append(errs, opts.Set.additionalValidations())
-		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.AutoResume, opts.Set.AutoSuspendSecs, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"))
+		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.AutoResume, opts.Set.AutoSuspendSecs, opts.Set.BackupInstanceFamilies, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.AutoResume, opts.Unset.AutoSuspendSecs, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Unset", "AutoResume", "AutoSuspendSecs", "Comment"))
+		if !anyValueSet(opts.Unset.AutoResume, opts.Unset.AutoSuspendSecs, opts.Unset.BackupInstanceFamilies, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterComputePoolOptions.Unset", "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

@@ -4,11 +4,13 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -318,6 +320,30 @@ func (c *ComputePoolAssert) HasNoApplication() *ComputePoolAssert {
 		t.Helper()
 		if o.Application != nil {
 			return fmt.Errorf("expected application to be nil; got: %v", *o.Application)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *ComputePoolAssert) HasBackupInstanceFamilies(expected ...string) *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		mapped := collections.Map(o.BackupInstanceFamilies, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected backup instance families: %v; got: %v", expected, o.BackupInstanceFamilies)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *ComputePoolAssert) HasNoBackupInstanceFamilies() *ComputePoolAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.ComputePool) error {
+		t.Helper()
+		if len(o.BackupInstanceFamilies) > 0 {
+			return fmt.Errorf("expected backup instance families to be empty; got: %v", o.BackupInstanceFamilies)
 		}
 		return nil
 	})

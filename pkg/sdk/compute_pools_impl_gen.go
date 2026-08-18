@@ -77,17 +77,18 @@ func (v *computePools) Describe(ctx context.Context, id AccountObjectIdentifier)
 
 func (r *CreateComputePoolRequest) toOpts() *CreateComputePoolOptions {
 	opts := &CreateComputePoolOptions{
-		IfNotExists:        r.IfNotExists,
-		name:               r.name,
-		ForApplication:     r.ForApplication,
-		MinNodes:           r.MinNodes,
-		MaxNodes:           r.MaxNodes,
-		InstanceFamily:     r.InstanceFamily,
-		AutoResume:         r.AutoResume,
-		InitiallySuspended: r.InitiallySuspended,
-		AutoSuspendSecs:    r.AutoSuspendSecs,
-		Tag:                r.Tag,
-		Comment:            r.Comment,
+		IfNotExists:            r.IfNotExists,
+		name:                   r.name,
+		ForApplication:         r.ForApplication,
+		MinNodes:               r.MinNodes,
+		MaxNodes:               r.MaxNodes,
+		InstanceFamily:         r.InstanceFamily,
+		AutoResume:             r.AutoResume,
+		InitiallySuspended:     r.InitiallySuspended,
+		AutoSuspendSecs:        r.AutoSuspendSecs,
+		Tag:                    r.Tag,
+		Comment:                r.Comment,
+		BackupInstanceFamilies: r.BackupInstanceFamilies,
 	}
 	return opts
 }
@@ -104,18 +105,20 @@ func (r *AlterComputePoolRequest) toOpts() *AlterComputePoolOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &ComputePoolSet{
-			MinNodes:        r.Set.MinNodes,
-			MaxNodes:        r.Set.MaxNodes,
-			AutoResume:      r.Set.AutoResume,
-			AutoSuspendSecs: r.Set.AutoSuspendSecs,
-			Comment:         r.Set.Comment,
+			MinNodes:               r.Set.MinNodes,
+			MaxNodes:               r.Set.MaxNodes,
+			AutoResume:             r.Set.AutoResume,
+			AutoSuspendSecs:        r.Set.AutoSuspendSecs,
+			BackupInstanceFamilies: r.Set.BackupInstanceFamilies,
+			Comment:                r.Set.Comment,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &ComputePoolUnset{
-			AutoResume:      r.Unset.AutoResume,
-			AutoSuspendSecs: r.Unset.AutoSuspendSecs,
-			Comment:         r.Unset.Comment,
+			AutoResume:             r.Unset.AutoResume,
+			AutoSuspendSecs:        r.Unset.AutoSuspendSecs,
+			BackupInstanceFamilies: r.Unset.BackupInstanceFamilies,
+			Comment:                r.Unset.Comment,
 		}
 	}
 	return opts
@@ -164,6 +167,7 @@ func (r computePoolsRow) convert() (*ComputePool, error) {
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
+	result.BackupInstanceFamilies = ParseCommaSeparatedStringArray(r.BackupInstanceFamilies, false)
 	return result, nil
 }
 
@@ -202,5 +206,6 @@ func (r computePoolDescRow) convert() (*ComputePoolDetails, error) {
 	}
 	mapNullString(&result.Comment, r.Comment)
 	mapNullStringWithMapping(&result.Application, r.Application, ParseAccountObjectIdentifier)
+	result.BackupInstanceFamilies = ParseCommaSeparatedStringArray(r.BackupInstanceFamilies, false)
 	return result, nil
 }
