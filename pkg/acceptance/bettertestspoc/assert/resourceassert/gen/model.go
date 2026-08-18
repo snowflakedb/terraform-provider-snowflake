@@ -28,10 +28,17 @@ type ResourceAttributeAssertionModel struct {
 	ShouldGenerateTypedAssertion bool
 }
 
+var excludedAttributeNames = []string{
+	resources.ShowOutputAttributeName,
+	resources.ParametersAttributeName,
+	resources.DescribeOutputAttributeName,
+	resources.ShowKeysOutputAttributeName,
+}
+
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceAssertionsModel {
 	attributes := make([]ResourceAttributeAssertionModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
-		if slices.Contains([]string{resources.ShowOutputAttributeName, resources.ParametersAttributeName, resources.DescribeOutputAttributeName}, attr.Name) {
+		if slices.Contains(excludedAttributeNames, attr.Name) {
 			continue
 		}
 

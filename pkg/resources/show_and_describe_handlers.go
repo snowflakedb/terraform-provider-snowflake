@@ -12,6 +12,7 @@ const (
 	DescribeOutputAttributeName    = "describe_output"
 	ParametersAttributeName        = "parameters"
 	RelatedParametersAttributeName = "related_parameters"
+	ShowKeysOutputAttributeName    = "show_keys_output"
 )
 
 func handleExternalChangesToObject(d *schema.ResourceData, outputAttributeName string, mappings ...outputMapping) error {

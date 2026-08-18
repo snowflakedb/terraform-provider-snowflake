@@ -78,6 +78,10 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasPolicyName("").
 			HasPrivacyDomain("").
 			HasSchemaEvolutionRecord(""),
+		resourceshowoutputassert.HybridTableShowKeysOutputRow(t, modelBasic.ResourceReference(), 0).
+			HasKind("PRIMARY KEY").
+			HasNameNotEmpty().
+			HasColumns("ID"),
 	}
 
 	modelComplete := model.HybridTableFromId("test", id, columns, pk).
@@ -85,7 +89,7 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(2).
 		WithMaxDataExtensionTimeInDays(10)
 
-	assertComplete := []assert.TestCheckFuncProvider{
+	assertComplete := append([]assert.TestCheckFuncProvider{
 		resourceassert.HybridTableResource(t, modelComplete.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabase(id.DatabaseName()).
@@ -113,22 +117,7 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRows(0).
 			HasBytes(0),
-		resourceshowoutputassert.HybridTableDescribeOutputRow(t, modelComplete.ResourceReference(), 0).
-			HasName("ID").
-			HasType("NUMBER(38,0)").
-			HasCollation("").
-			HasKind("COLUMN").
-			HasDefault("").
-			HasIsNullable(false).
-			HasPrimaryKey(true).
-			HasUniqueKey(false).
-			HasCheck("").
-			HasExpression("").
-			HasComment("").
-			HasPolicyName("").
-			HasPrivacyDomain("").
-			HasSchemaEvolutionRecord(""),
-	}
+	}, assertBasic[3:]...)
 
 	importStateVerifyIgnore := []string{
 		// DESCRIBE normalizes types (e.g. INTEGER -> NUMBER(38,0)); DiffSuppressDataTypes
@@ -541,6 +530,24 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 						HasPolicyName("").
 						HasPrivacyDomain("").
 						HasSchemaEvolutionRecord(""),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, modelComplete.ResourceReference(), 0).
+						HasKind("PRIMARY KEY").
+						HasNameNotEmpty().
+						HasColumns("ID"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, modelComplete.ResourceReference(), 1).
+						HasKind("UNIQUE").
+						HasNameNotEmpty().
+						HasColumns("EMAIL"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, modelComplete.ResourceReference(), 2).
+						HasKind("UNIQUE").
+						HasName("my_uq").
+						HasColumns("NAME"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, modelComplete.ResourceReference(), 3).
+						HasKind("FOREIGN KEY").
+						HasName("my_fk").
+						HasColumns("ID").
+						HasReferencedTable(parentId.FullyQualifiedName()).
+						HasReferencedColumns("ID"),
 				),
 			},
 			// Import
@@ -771,6 +778,14 @@ func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 						HasColumns(cols).
 						HasPrimaryKeyColumns("ID").
 						HasUniqueConstraints(uq1),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 0).
+						HasKind("PRIMARY KEY").
+						HasNameNotEmpty().
+						HasColumns("ID"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 1).
+						HasKind("UNIQUE").
+						HasNameNotEmpty().
+						HasColumns("NAME"),
 				),
 			},
 			// Change the unique constraint columns — any diff on unique_constraint forces recreation
@@ -787,6 +802,14 @@ func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 						HasColumns(cols).
 						HasPrimaryKeyColumns("ID").
 						HasUniqueConstraints(uq2),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model2.ResourceReference(), 0).
+						HasKind("PRIMARY KEY").
+						HasNameNotEmpty().
+						HasColumns("ID"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model2.ResourceReference(), 1).
+						HasKind("UNIQUE").
+						HasNameNotEmpty().
+						HasColumns("NAME", "EMAIL"),
 				),
 			},
 		},
@@ -839,6 +862,16 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 						HasColumns(cols).
 						HasPrimaryKeyColumns("ID").
 						HasForeignKeyConstraints(fk),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 0).
+						HasKind("PRIMARY KEY").
+						HasNameNotEmpty().
+						HasColumns("ID"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 1).
+						HasKind("FOREIGN KEY").
+						HasNameNotEmpty().
+						HasColumns("PARENT_ID").
+						HasReferencedTable(parentId.FullyQualifiedName()).
+						HasReferencedColumns("ID"),
 				),
 			},
 			// Remove the foreign key — any diff on foreign_key_constraint forces recreation
@@ -855,6 +888,10 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 						HasColumns(cols).
 						HasPrimaryKeyColumns("ID").
 						HasForeignKeyConstraintEmpty(),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model2.ResourceReference(), 0).
+						HasKind("PRIMARY KEY").
+						HasNameNotEmpty().
+						HasColumns("ID"),
 				),
 			},
 		},
@@ -1040,6 +1077,10 @@ func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
 					resourceassert.HybridTableResource(t, model1.ResourceReference()).
 						HasColumns(cols).
 						HasPrimaryKeyColumns("ID"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 0).
+						HasKind("PRIMARY KEY").
+						HasNameNotEmpty().
+						HasColumns("ID"),
 				),
 			},
 			// Change to composite PK → ForceNew (DestroyBeforeCreate)
@@ -1055,6 +1096,10 @@ func TestAcc_HybridTable_PrimaryKeyForceNew(t *testing.T) {
 					resourceassert.HybridTableResource(t, model2.ResourceReference()).
 						HasColumns(cols).
 						HasPrimaryKeyColumns("ID", "NAME"),
+					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model2.ResourceReference(), 0).
+						HasKind("PRIMARY KEY").
+						HasNameNotEmpty().
+						HasColumns("ID", "NAME"),
 				),
 			},
 		},
