@@ -28,7 +28,7 @@ func connectionsData() string {
     }`
 }
 
-func TestAcc_Connections_Minimal(t *testing.T) {
+func TestAcc_Connections_CompleteUseCase(t *testing.T) {
 	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 
@@ -120,7 +120,7 @@ func TestAcc_Connections_Complete(t *testing.T) {
 	})
 }
 
-func TestAcc_Connections_Filtering(t *testing.T) {
+func TestAcc_Connections_BasicUseCase_DifferentFiltering(t *testing.T) {
 	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
 

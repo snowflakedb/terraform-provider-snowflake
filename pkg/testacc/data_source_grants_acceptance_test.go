@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAcc_Grants_On_Account(t *testing.T) {
+func TestAcc_Grants_On_CompleteUseCase_Account(t *testing.T) {
 	grantsModel := datasourcemodel.GrantsOnAccount("test")
 
 	resource.Test(t, resource.TestCase{
@@ -35,7 +35,7 @@ func TestAcc_Grants_On_Account(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_On_AccountObject(t *testing.T) {
+func TestAcc_Grants_On_CompleteUseCase_AccountObject(t *testing.T) {
 	grantsModel := datasourcemodel.GrantsOnAccountObject("test", testClient().Ids.DatabaseId(), sdk.ObjectTypeDatabase)
 
 	resource.Test(t, resource.TestCase{
@@ -53,7 +53,7 @@ func TestAcc_Grants_On_AccountObject(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_On_DatabaseObject(t *testing.T) {
+func TestAcc_Grants_On_CompleteUseCase_DatabaseObject(t *testing.T) {
 	grantsModel := datasourcemodel.GrantsOnDatabaseObject("test", testClient().Ids.SchemaId(), sdk.ObjectTypeSchema)
 
 	resource.Test(t, resource.TestCase{
@@ -71,7 +71,7 @@ func TestAcc_Grants_On_DatabaseObject(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_On_SchemaObject(t *testing.T) {
+func TestAcc_Grants_On_CompleteUseCase_SchemaObject(t *testing.T) {
 	viewId := testClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT ROLE_NAME FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 	columnNames := []string{"ROLE_NAME"}
@@ -95,7 +95,7 @@ func TestAcc_Grants_On_SchemaObject(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_On_SchemaObject_WithArguments(t *testing.T) {
+func TestAcc_Grants_On_CompleteUseCase_SchemaObjectWithArguments(t *testing.T) {
 	function := testClient().Function.Create(t, sdk.DataTypeVARCHAR)
 	grantsModel := datasourcemodel.GrantsOnSchemaObjectWithArguments("test", function.ID(), sdk.ObjectTypeFunction)
 
@@ -181,7 +181,7 @@ func TestAcc_Grants_To_AccountRole(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_To_DatabaseRole(t *testing.T) {
+func TestAcc_Grants_To_CompleteUseCase_DatabaseRole(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	databaseRoleModel := model.DatabaseRole("test", databaseRoleId.DatabaseName(), databaseRoleId.Name())
 	grantsModel := datasourcemodel.GrantsToDatabaseRole("test", databaseRoleId).
@@ -202,7 +202,7 @@ func TestAcc_Grants_To_DatabaseRole(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_To_User(t *testing.T) {
+func TestAcc_Grants_To_CompleteUseCase_User(t *testing.T) {
 	userId := testClient().Context.CurrentUser(t)
 	grantsModel := datasourcemodel.GrantsToUser("test", userId)
 
@@ -221,7 +221,7 @@ func TestAcc_Grants_To_User(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_To_Share(t *testing.T) {
+func TestAcc_Grants_To_CompleteUseCase_Share(t *testing.T) {
 	shareId := testClient().Ids.RandomAccountObjectIdentifier()
 	configVariables := config.Variables{
 		"database": config.StringVariable(TestDatabaseName),
@@ -317,7 +317,7 @@ func TestAcc_Grants_To_Invalid_ApplicationRoleIdInvalid(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_Of_AccountRole(t *testing.T) {
+func TestAcc_Grants_Of_CompleteUseCase_AccountRole(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -333,7 +333,7 @@ func TestAcc_Grants_Of_AccountRole(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_Of_DatabaseRole(t *testing.T) {
+func TestAcc_Grants_Of_CompleteUseCase_DatabaseRole(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	configVariables := config.Variables{
 		"database":      config.StringVariable(TestDatabaseName),
@@ -446,7 +446,7 @@ func TestAcc_Grants_Of_Invalid_ApplicationRoleIdInvalid(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_FutureIn_Database(t *testing.T) {
+func TestAcc_Grants_FutureIn_CompleteUseCase_Database(t *testing.T) {
 	configVariables := config.Variables{
 		"database": config.StringVariable(TestDatabaseName),
 	}
@@ -467,7 +467,7 @@ func TestAcc_Grants_FutureIn_Database(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_FutureIn_Schema(t *testing.T) {
+func TestAcc_Grants_FutureIn_CompleteUseCase_Schema(t *testing.T) {
 	configVariables := config.Variables{
 		"database": config.StringVariable(TestDatabaseName),
 		"schema":   config.StringVariable(TestSchemaName),
@@ -523,7 +523,7 @@ func TestAcc_Grants_FutureIn_Invalid_SchemaNameNotFullyQualified(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_FutureTo_AccountRole(t *testing.T) {
+func TestAcc_Grants_FutureTo_CompleteUseCase_AccountRole(t *testing.T) {
 	configVariables := config.Variables{
 		"database": config.StringVariable(TestDatabaseName),
 	}
@@ -544,7 +544,7 @@ func TestAcc_Grants_FutureTo_AccountRole(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_FutureTo_DatabaseRole(t *testing.T) {
+func TestAcc_Grants_FutureTo_CompleteUseCase_DatabaseRole(t *testing.T) {
 	databaseRoleId := testClient().Ids.RandomDatabaseObjectIdentifier()
 	configVariables := config.Variables{
 		"database":      config.StringVariable(TestDatabaseName),
@@ -601,7 +601,7 @@ func TestAcc_Grants_FutureTo_Invalid_DatabaseRoleIdInvalid(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_InheritedIn_Account(t *testing.T) {
+func TestAcc_Grants_InheritedIn_CompleteUseCase_Account(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
@@ -630,7 +630,7 @@ func TestAcc_Grants_InheritedIn_Account(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_InheritedIn_Database(t *testing.T) {
+func TestAcc_Grants_InheritedIn_CompleteUseCase_Database(t *testing.T) {
 	databaseId := testClient().Ids.DatabaseId()
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
@@ -660,7 +660,7 @@ func TestAcc_Grants_InheritedIn_Database(t *testing.T) {
 	})
 }
 
-func TestAcc_Grants_InheritedIn_Schema(t *testing.T) {
+func TestAcc_Grants_InheritedIn_CompleteUseCase_Schema(t *testing.T) {
 	schemaId := testClient().Ids.SchemaId()
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)

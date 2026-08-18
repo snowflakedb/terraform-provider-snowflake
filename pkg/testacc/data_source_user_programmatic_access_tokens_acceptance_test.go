@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_UserProgrammaticAccessTokens(t *testing.T) {
+func TestAcc_UserProgrammaticAccessTokens_BasicUseCase_DifferentFiltering(t *testing.T) {
 	currentUser := testClient().Context.CurrentUser(t)
 
 	user, userCleanup := testClient().User.CreateUser(t)

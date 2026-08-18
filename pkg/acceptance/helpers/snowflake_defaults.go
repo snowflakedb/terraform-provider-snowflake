@@ -79,3 +79,25 @@ func (c *SnowflakeDefaultsClient) DefaultMfaEnrollment(t *testing.T) string {
 	}
 	return string(sdk.MfaEnrollmentOptionOptional)
 }
+
+// DefaultEnableCortexAnalystLevel returns the expected parameter level for
+// ENABLE_CORTEX_ANALYST after unset. Prod accounts surface SYSTEM; non-prod
+// accounts inherit the Snowflake default (empty level).
+func (c *SnowflakeDefaultsClient) DefaultEnableCortexAnalystLevel(t *testing.T) sdk.ParameterType {
+	t.Helper()
+	if c.context.snowflakeEnvironment == testenvs.SnowflakeProdEnvironment {
+		return sdk.ParameterTypeSystem
+	}
+	return sdk.ParameterTypeSnowflakeDefault
+}
+
+// DefaultEnableNotebookCreationInPersonalDbLevel returns the expected parameter
+// level for ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB after unset. Prod accounts
+// surface SYSTEM; non-prod accounts inherit the Snowflake default (empty level).
+func (c *SnowflakeDefaultsClient) DefaultEnableNotebookCreationInPersonalDbLevel(t *testing.T) sdk.ParameterType {
+	t.Helper()
+	if c.context.snowflakeEnvironment == testenvs.SnowflakeProdEnvironment {
+		return sdk.ParameterTypeSystem
+	}
+	return sdk.ParameterTypeSnowflakeDefault
+}

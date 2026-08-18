@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-func TestAcc_Accounts_Complete(t *testing.T) {
+func TestAcc_Accounts_BasicUseCase_DifferentFiltering(t *testing.T) {
 	testClient().EnsureValidNonProdAccountIsUsed(t)
 
 	prefix := strings.ToUpper(random.AlphaN(4))
