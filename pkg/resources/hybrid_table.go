@@ -264,6 +264,15 @@ var hybridTableSchema = map[string]*schema.Schema{
 			Schema: schemas.DescribeHybridTableSchema,
 		},
 	},
+	ShowKeysOutputAttributeName: {
+		Type:     schema.TypeList,
+		Computed: true,
+		Description: joinWithSpace("Outputs the result of `SHOW PRIMARY KEYS`, `SHOW UNIQUE KEYS`, and `SHOW IMPORTED KEYS` for the given hybrid table, merged and grouped by constraint name and ordered by kind, then by column names.",
+			"The `referenced_table`, `referenced_columns`, `delete_rule`, and `update_rule` fields are populated for FOREIGN KEY constraints only."),
+		Elem: &schema.Resource{
+			Schema: schemas.ShowHybridTableConstraintSchema,
+		},
+	},
 }
 
 func HybridTable() *schema.Resource {
@@ -830,6 +839,7 @@ func GetReadHybridTableFunc(withExternalChangesMarking bool) schema.ReadContextF
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.HybridTableToSchema(hybridTable)}),
 			d.Set(DescribeOutputAttributeName, schemas.HybridTableDetailsListToSchema(details)),
+			d.Set(ShowKeysOutputAttributeName, collections.Map(constraints, func(c sdk.HybridTableConstraint) map[string]any { return schemas.HybridTableConstraintToSchema(&c) })),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			d.Set("comment", hybridTable.Comment),
 			d.Set("column", columnState),

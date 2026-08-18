@@ -79,6 +79,16 @@ func NewResourceDescribeOutputAssertAtRow(name string, rowIndex int) *ResourceAs
 	}
 }
 
+// NewResourceShowOutputAssertAtRowWithPath creates a ResourceAssert for a custom (non-standard) multi-row
+// SHOW output block, targeting the given top-level attribute name at the given 0-based row index.
+func NewResourceShowOutputAssertAtRowWithPath(name string, attributePath string, rowIndex int) *ResourceAssert {
+	return &ResourceAssert{
+		name:          name,
+		assertions:    make([]ResourceAssertion, 0),
+		assertionPath: fmt.Sprintf("%s.%d.", attributePath, rowIndex),
+	}
+}
+
 // NewResourceParametersAssert creates a ResourceAssert for parameters assertions with the resource name as a key.
 func NewResourceParametersAssert(name string) *ResourceAssert {
 	return &ResourceAssert{

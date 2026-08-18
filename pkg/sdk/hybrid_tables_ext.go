@@ -3,8 +3,8 @@ package sdk
 import (
 	"context"
 	"fmt"
-	"log"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -153,20 +153,26 @@ func (v *hybridTables) GetConstraints(ctx context.Context, id SchemaObjectIdenti
 	if err != nil {
 		return nil, fmt.Errorf("showing primary keys for %s: %w", id.FullyQualifiedName(), err)
 	}
-	result = append(result, mergeKeyRows(primaryKeysToKeyRows(pkRows), ColumnConstraintTypePrimaryKey)...)
+	result = append(result, sortConstraintsByColumns(mergeKeyRows(primaryKeysToKeyRows(pkRows), ColumnConstraintTypePrimaryKey))...)
 
 	ukRows, err := v.ShowUniqueKeys(ctx, NewShowUniqueKeysHybridTableRequest(id))
 	if err != nil {
 		return nil, fmt.Errorf("showing unique keys for %s: %w", id.FullyQualifiedName(), err)
 	}
-	result = append(result, mergeKeyRows(uniqueKeysToKeyRows(ukRows), ColumnConstraintTypeUnique)...)
+	result = append(result, sortConstraintsByColumns(mergeKeyRows(uniqueKeysToKeyRows(ukRows), ColumnConstraintTypeUnique))...)
 
 	fkRows, err := v.ShowImportedKeys(ctx, NewShowImportedKeysHybridTableRequest(id))
 	if err != nil {
-		log.Printf("[WARN] SHOW IMPORTED KEYS failed for %s (undocumented for hybrid tables); skipping FK read-back: %v", id.FullyQualifiedName(), err)
-		return result, nil
+		return nil, fmt.Errorf("showing imported keys for %s: %w", id.FullyQualifiedName(), err)
 	}
-	result = append(result, mergeForeignKeyRows(fkRows)...)
+	result = append(result, sortConstraintsByColumns(mergeForeignKeyRows(fkRows))...)
 
 	return result, nil
+}
+
+func sortConstraintsByColumns(constraints []HybridTableConstraint) []HybridTableConstraint {
+	sort.SliceStable(constraints, func(i, j int) bool {
+		return slices.Compare(constraints[i].Columns, constraints[j].Columns) < 0
+	})
+	return constraints
 }

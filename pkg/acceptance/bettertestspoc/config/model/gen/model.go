@@ -26,10 +26,17 @@ type ResourceConfigBuilderAttributeModel struct {
 	OriginalType   schema.ValueType
 }
 
+var excludedAttributeNames = []string{
+	resources.ShowOutputAttributeName,
+	resources.ParametersAttributeName,
+	resources.DescribeOutputAttributeName,
+	resources.ShowKeysOutputAttributeName,
+}
+
 func ModelFromResourceSchemaDetails(resourceSchemaDetails genhelpers.ResourceSchemaDetails, preamble *genhelpers.PreambleModel) ResourceConfigBuilderModel {
 	attributes := make([]ResourceConfigBuilderAttributeModel, 0)
 	for _, attr := range resourceSchemaDetails.Attributes {
-		if slices.Contains([]string{resources.ShowOutputAttributeName, resources.ParametersAttributeName, resources.DescribeOutputAttributeName}, attr.Name) {
+		if slices.Contains(excludedAttributeNames, attr.Name) {
 			continue
 		}
 		jsonName := attr.Name
