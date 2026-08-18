@@ -6,5 +6,6 @@ const (
 	Third             = "third_test_account"
 	Fourth            = "fourth_test_account"
 	Azure             = "azure_test_account"
+	Gcp               = "gcp_test_account"
 	SnowflakeDefaults = "snowflake_defaults_test_account"
 )

@@ -29,27 +29,18 @@ func TestSweepAll(t *testing.T) {
 	testenvs.AssertEnvSet(t, string(testenvs.TestObjectsSuffix))
 
 	t.Run("sweep after tests", func(t *testing.T) {
-		client := defaultTestClient(t)
-		secondaryClient := secondaryTestClient(t)
+		sweepAfterTests := func(client *sdk.Client) {
+			assert.NoError(t, SweepAfterIntegrationTests(client, integrationtests.ObjectsSuffix))
+			assert.NoError(t, SweepAfterAcceptanceTests(client, acceptancetests.ObjectsSuffix))
+		}
 
-		err := SweepAfterIntegrationTests(client, integrationtests.ObjectsSuffix)
-		assert.NoError(t, err)
-
-		err = SweepAfterIntegrationTests(secondaryClient, integrationtests.ObjectsSuffix)
-		assert.NoError(t, err)
-
-		err = SweepAfterAcceptanceTests(client, acceptancetests.ObjectsSuffix)
-		assert.NoError(t, err)
-
-		err = SweepAfterAcceptanceTests(secondaryClient, acceptancetests.ObjectsSuffix)
-		assert.NoError(t, err)
+		sweepAfterTests(defaultTestClient(t))
+		sweepAfterTests(secondaryTestClient(t))
+		sweepAfterTests(azureTestClient(t))
+		sweepAfterTests(gcpTestClient(t))
 
 		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
-			err = SweepAfterAcceptanceTests(azureTestClient(t), acceptancetests.ObjectsSuffix)
-			assert.NoError(t, err)
-
-			err = SweepAfterAcceptanceTests(snowflakeDefaultsTestClient(t), acceptancetests.ObjectsSuffix)
-			assert.NoError(t, err)
+			sweepAfterTests(snowflakeDefaultsTestClient(t))
 		}
 	})
 
@@ -108,18 +99,19 @@ func sweep(client *sdk.Client, suffix string) error {
 func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableSweep)
 
-	client := defaultTestClient(t)
-	secondaryClient := secondaryTestClient(t)
-	thirdClient := thirdTestClient(t)
-	fourthClient := fourthTestClient(t)
-
-	allClients := []*sdk.Client{client, secondaryClient, thirdClient, fourthClient}
+	allClients := []*sdk.Client{
+		defaultTestClient(t),
+		secondaryTestClient(t),
+		thirdTestClient(t),
+		fourthTestClient(t),
+		azureTestClient(t),
+		gcpTestClient(t),
+	}
 
 	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
 		allClients = append(
 			allClients,
 			snowflakeDefaultsTestClient(t),
-			azureTestClient(t),
 		)
 	}
 
@@ -914,6 +906,11 @@ func fourthTestClient(t *testing.T) *sdk.Client {
 func azureTestClient(t *testing.T) *sdk.Client {
 	t.Helper()
 	return testClient(t, testprofiles.Azure)
+}
+
+func gcpTestClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return testClient(t, testprofiles.Gcp)
 }
 
 func snowflakeDefaultsTestClient(t *testing.T) *sdk.Client {
