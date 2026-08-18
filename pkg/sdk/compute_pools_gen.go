@@ -21,19 +21,24 @@ type ComputePools interface {
 
 // CreateComputePoolOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool.
 type CreateComputePoolOptions struct {
-	create             bool                      `ddl:"static" sql:"CREATE"`
-	computePool        bool                      `ddl:"static" sql:"COMPUTE POOL"`
-	IfNotExists        *bool                     `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name               AccountObjectIdentifier   `ddl:"identifier"`
-	ForApplication     *AccountObjectIdentifier  `ddl:"identifier" sql:"FOR APPLICATION"`
-	MinNodes           int                       `ddl:"parameter" sql:"MIN_NODES"`
-	MaxNodes           int                       `ddl:"parameter" sql:"MAX_NODES"`
-	InstanceFamily     ComputePoolInstanceFamily `ddl:"parameter,no_quotes" sql:"INSTANCE_FAMILY"`
-	AutoResume         *bool                     `ddl:"parameter" sql:"AUTO_RESUME"`
-	InitiallySuspended *bool                     `ddl:"parameter" sql:"INITIALLY_SUSPENDED"`
-	AutoSuspendSecs    *int                      `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
-	Tag                []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment            *string                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                 bool                                      `ddl:"static" sql:"CREATE"`
+	computePool            bool                                      `ddl:"static" sql:"COMPUTE POOL"`
+	IfNotExists            *bool                                     `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                   AccountObjectIdentifier                   `ddl:"identifier"`
+	ForApplication         *AccountObjectIdentifier                  `ddl:"identifier" sql:"FOR APPLICATION"`
+	MinNodes               int                                       `ddl:"parameter" sql:"MIN_NODES"`
+	MaxNodes               int                                       `ddl:"parameter" sql:"MAX_NODES"`
+	InstanceFamily         ComputePoolInstanceFamily                 `ddl:"parameter,no_quotes" sql:"INSTANCE_FAMILY"`
+	AutoResume             *bool                                     `ddl:"parameter" sql:"AUTO_RESUME"`
+	InitiallySuspended     *bool                                     `ddl:"parameter" sql:"INITIALLY_SUSPENDED"`
+	AutoSuspendSecs        *int                                      `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
+	Tag                    []TagAssociation                          `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment                *string                                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem `ddl:"parameter,parentheses" sql:"BACKUP_INSTANCE_FAMILIES"`
+}
+
+type ComputePoolBackupInstanceFamilyListItem struct {
+	Value ComputePoolInstanceFamily `ddl:"keyword,single_quotes"`
 }
 
 // AlterComputePoolOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-compute-pool.
@@ -52,17 +57,19 @@ type AlterComputePoolOptions struct {
 }
 
 type ComputePoolSet struct {
-	MinNodes        *int    `ddl:"parameter" sql:"MIN_NODES"`
-	MaxNodes        *int    `ddl:"parameter" sql:"MAX_NODES"`
-	AutoResume      *bool   `ddl:"parameter" sql:"AUTO_RESUME"`
-	AutoSuspendSecs *int    `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
-	Comment         *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	MinNodes               *int                                      `ddl:"parameter" sql:"MIN_NODES"`
+	MaxNodes               *int                                      `ddl:"parameter" sql:"MAX_NODES"`
+	AutoResume             *bool                                     `ddl:"parameter" sql:"AUTO_RESUME"`
+	AutoSuspendSecs        *int                                      `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
+	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem `ddl:"parameter,parentheses" sql:"BACKUP_INSTANCE_FAMILIES"`
+	Comment                *string                                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type ComputePoolUnset struct {
-	AutoResume      *bool `ddl:"keyword" sql:"AUTO_RESUME"`
-	AutoSuspendSecs *bool `ddl:"keyword" sql:"AUTO_SUSPEND_SECS"`
-	Comment         *bool `ddl:"keyword" sql:"COMMENT"`
+	AutoResume             *bool `ddl:"keyword" sql:"AUTO_RESUME"`
+	AutoSuspendSecs        *bool `ddl:"keyword" sql:"AUTO_SUSPEND_SECS"`
+	BackupInstanceFamilies *bool `ddl:"keyword" sql:"BACKUP_INSTANCE_FAMILIES"`
+	Comment                *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
 // DropComputePoolOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-compute-pool.
@@ -83,47 +90,49 @@ type ShowComputePoolOptions struct {
 }
 
 type computePoolsRow struct {
-	Name            string         `db:"name"`
-	State           string         `db:"state"`
-	MinNodes        int            `db:"min_nodes"`
-	MaxNodes        int            `db:"max_nodes"`
-	InstanceFamily  string         `db:"instance_family"`
-	NumServices     int            `db:"num_services"`
-	NumJobs         int            `db:"num_jobs"`
-	AutoSuspendSecs int            `db:"auto_suspend_secs"`
-	AutoResume      bool           `db:"auto_resume"`
-	ActiveNodes     int            `db:"active_nodes"`
-	IdleNodes       int            `db:"idle_nodes"`
-	TargetNodes     int            `db:"target_nodes"`
-	CreatedOn       time.Time      `db:"created_on"`
-	ResumedOn       time.Time      `db:"resumed_on"`
-	UpdatedOn       time.Time      `db:"updated_on"`
-	Owner           string         `db:"owner"`
-	Comment         sql.NullString `db:"comment"`
-	IsExclusive     bool           `db:"is_exclusive"`
-	Application     sql.NullString `db:"application"`
+	Name                   string         `db:"name"`
+	State                  string         `db:"state"`
+	MinNodes               int            `db:"min_nodes"`
+	MaxNodes               int            `db:"max_nodes"`
+	InstanceFamily         string         `db:"instance_family"`
+	NumServices            int            `db:"num_services"`
+	NumJobs                int            `db:"num_jobs"`
+	AutoSuspendSecs        int            `db:"auto_suspend_secs"`
+	AutoResume             bool           `db:"auto_resume"`
+	ActiveNodes            int            `db:"active_nodes"`
+	IdleNodes              int            `db:"idle_nodes"`
+	TargetNodes            int            `db:"target_nodes"`
+	CreatedOn              time.Time      `db:"created_on"`
+	ResumedOn              time.Time      `db:"resumed_on"`
+	UpdatedOn              time.Time      `db:"updated_on"`
+	Owner                  string         `db:"owner"`
+	Comment                sql.NullString `db:"comment"`
+	IsExclusive            bool           `db:"is_exclusive"`
+	Application            sql.NullString `db:"application"`
+	BackupInstanceFamilies string         `db:"backup_instance_families"`
 }
 
 type ComputePool struct {
-	Name            string
-	State           ComputePoolState
-	MinNodes        int
-	MaxNodes        int
-	InstanceFamily  ComputePoolInstanceFamily
-	NumServices     int
-	NumJobs         int
-	AutoSuspendSecs int
-	AutoResume      bool
-	ActiveNodes     int
-	IdleNodes       int
-	TargetNodes     int
-	CreatedOn       time.Time
-	ResumedOn       time.Time
-	UpdatedOn       time.Time
-	Owner           string
-	Comment         *string
-	IsExclusive     bool
-	Application     *AccountObjectIdentifier
+	Name                   string
+	State                  ComputePoolState
+	MinNodes               int
+	MaxNodes               int
+	InstanceFamily         ComputePoolInstanceFamily
+	NumServices            int
+	NumJobs                int
+	AutoSuspendSecs        int
+	AutoResume             bool
+	ActiveNodes            int
+	IdleNodes              int
+	TargetNodes            int
+	CreatedOn              time.Time
+	ResumedOn              time.Time
+	UpdatedOn              time.Time
+	Owner                  string
+	Comment                *string
+	IsExclusive            bool
+	Application            *AccountObjectIdentifier
+	BackupInstanceFamilies []string
 }
 
 func (v *ComputePool) ID() AccountObjectIdentifier {
@@ -142,49 +151,51 @@ type DescribeComputePoolOptions struct {
 }
 
 type computePoolDescRow struct {
-	Name            string         `db:"name"`
-	State           string         `db:"state"`
-	MinNodes        int            `db:"min_nodes"`
-	MaxNodes        int            `db:"max_nodes"`
-	InstanceFamily  string         `db:"instance_family"`
-	NumServices     int            `db:"num_services"`
-	NumJobs         int            `db:"num_jobs"`
-	AutoSuspendSecs int            `db:"auto_suspend_secs"`
-	AutoResume      bool           `db:"auto_resume"`
-	ActiveNodes     int            `db:"active_nodes"`
-	IdleNodes       int            `db:"idle_nodes"`
-	TargetNodes     int            `db:"target_nodes"`
-	CreatedOn       time.Time      `db:"created_on"`
-	ResumedOn       time.Time      `db:"resumed_on"`
-	UpdatedOn       time.Time      `db:"updated_on"`
-	Owner           string         `db:"owner"`
-	Comment         sql.NullString `db:"comment"`
-	IsExclusive     bool           `db:"is_exclusive"`
-	Application     sql.NullString `db:"application"`
-	ErrorCode       string         `db:"error_code"`
-	StatusMessage   string         `db:"status_message"`
+	Name                   string         `db:"name"`
+	State                  string         `db:"state"`
+	MinNodes               int            `db:"min_nodes"`
+	MaxNodes               int            `db:"max_nodes"`
+	InstanceFamily         string         `db:"instance_family"`
+	NumServices            int            `db:"num_services"`
+	NumJobs                int            `db:"num_jobs"`
+	AutoSuspendSecs        int            `db:"auto_suspend_secs"`
+	AutoResume             bool           `db:"auto_resume"`
+	ActiveNodes            int            `db:"active_nodes"`
+	IdleNodes              int            `db:"idle_nodes"`
+	TargetNodes            int            `db:"target_nodes"`
+	CreatedOn              time.Time      `db:"created_on"`
+	ResumedOn              time.Time      `db:"resumed_on"`
+	UpdatedOn              time.Time      `db:"updated_on"`
+	Owner                  string         `db:"owner"`
+	Comment                sql.NullString `db:"comment"`
+	IsExclusive            bool           `db:"is_exclusive"`
+	Application            sql.NullString `db:"application"`
+	BackupInstanceFamilies string         `db:"backup_instance_families"`
+	ErrorCode              string         `db:"error_code"`
+	StatusMessage          string         `db:"status_message"`
 }
 
 type ComputePoolDetails struct {
-	Name            string
-	State           ComputePoolState
-	MinNodes        int
-	MaxNodes        int
-	InstanceFamily  ComputePoolInstanceFamily
-	NumServices     int
-	NumJobs         int
-	AutoSuspendSecs int
-	AutoResume      bool
-	ActiveNodes     int
-	IdleNodes       int
-	TargetNodes     int
-	CreatedOn       time.Time
-	ResumedOn       time.Time
-	UpdatedOn       time.Time
-	Owner           string
-	Comment         *string
-	IsExclusive     bool
-	Application     *AccountObjectIdentifier
-	ErrorCode       string
-	StatusMessage   string
+	Name                   string
+	State                  ComputePoolState
+	MinNodes               int
+	MaxNodes               int
+	InstanceFamily         ComputePoolInstanceFamily
+	NumServices            int
+	NumJobs                int
+	AutoSuspendSecs        int
+	AutoResume             bool
+	ActiveNodes            int
+	IdleNodes              int
+	TargetNodes            int
+	CreatedOn              time.Time
+	ResumedOn              time.Time
+	UpdatedOn              time.Time
+	Owner                  string
+	Comment                *string
+	IsExclusive            bool
+	Application            *AccountObjectIdentifier
+	BackupInstanceFamilies []string
+	ErrorCode              string
+	StatusMessage          string
 }

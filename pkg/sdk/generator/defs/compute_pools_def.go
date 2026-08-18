@@ -12,6 +12,9 @@ var ComputePoolStateEnumDef = g.NewEnum(
 	"IDLE", "ACTIVE", "SUSPENDED", "STARTING", "STOPPING", "RESIZING",
 )
 
+var ComputePoolBackupInstanceFamilyListItemDef = g.NewQueryStruct("ComputePoolBackupInstanceFamilyListItem").
+	WithField(g.EnumLegacy[sdkcommons.ComputePoolInstanceFamily]("Value", g.KeywordOptions().SingleQuotes().Required()))
+
 var computePoolsDef = g.NewInterface(
 	"ComputePools",
 	"ComputePool",
@@ -37,8 +40,10 @@ var computePoolsDef = g.NewInterface(
 		OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
 		OptionalTags().
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
+		ListAssignment("BACKUP_INSTANCE_FAMILIES", "ComputePoolBackupInstanceFamilyListItem", g.ParameterOptions().Parentheses()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithAdditionalValidations(),
+	ComputePoolBackupInstanceFamilyListItemDef,
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-compute-pool",
 	g.NewQueryStruct("AlterComputePool").
@@ -56,9 +61,10 @@ var computePoolsDef = g.NewInterface(
 				OptionalNumberAssignment("MAX_NODES", g.ParameterOptions()).
 				OptionalBooleanAssignment("AUTO_RESUME", g.ParameterOptions()).
 				OptionalNumberAssignment("AUTO_SUSPEND_SECS", g.ParameterOptions()).
+				ListAssignment("BACKUP_INSTANCE_FAMILIES", "ComputePoolBackupInstanceFamilyListItem", g.ParameterOptions().Parentheses()).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 				WithAdditionalValidations().
-				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -66,8 +72,9 @@ var computePoolsDef = g.NewInterface(
 			g.NewQueryStruct("ComputePoolUnset").
 				OptionalSQL("AUTO_RESUME").
 				OptionalSQL("AUTO_SUSPEND_SECS").
+				OptionalSQL("BACKUP_INSTANCE_FAMILIES").
 				OptionalSQL("COMMENT").
-				WithValidation(g.AtLeastOneValueSet, "AutoResume", "AutoSuspendSecs", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		OptionalSetTags().
@@ -104,7 +111,8 @@ var computePoolsDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		Bool("is_exclusive").
-		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")),
+		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
+		StringList("backup_instance_families"),
 	g.NewQueryStruct("ShowComputePools").
 		Show().
 		SQL("COMPUTE POOLS").
@@ -134,6 +142,7 @@ var computePoolsDef = g.NewInterface(
 		OptionalText("comment").
 		Bool("is_exclusive").
 		Field("application", "sql.NullString", "*AccountObjectIdentifier", g.WithPlainFieldName("Application")).
+		StringList("backup_instance_families").
 		Text("error_code").
 		Text("status_message"),
 	g.NewQueryStruct("DescComputePool").

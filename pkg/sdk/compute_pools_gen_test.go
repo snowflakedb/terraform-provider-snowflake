@@ -114,23 +114,25 @@ var computePoolsTests = ComputePoolsTestsContext{
 			},
 			validationCase[*AlterComputePoolOptions]{
 				Name:        case_ComputePools_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterComputePoolOptions.Set", "MinNodes", "MaxNodes", "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"),
 				DefaultModify: func(opts *AlterComputePoolOptions) {
 					opts.Set = &ComputePoolSet{}
 					opts.Set.MinNodes = nil
 					opts.Set.MaxNodes = nil
 					opts.Set.AutoResume = nil
 					opts.Set.AutoSuspendSecs = nil
+					opts.Set.BackupInstanceFamilies = nil
 					opts.Set.Comment = nil
 				},
 			},
 			validationCase[*AlterComputePoolOptions]{
 				Name:        case_ComputePools_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterComputePoolOptions.Unset", "AutoResume", "AutoSuspendSecs", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterComputePoolOptions.Unset", "AutoResume", "AutoSuspendSecs", "BackupInstanceFamilies", "Comment"),
 				DefaultModify: func(opts *AlterComputePoolOptions) {
 					opts.Unset = &ComputePoolUnset{}
 					opts.Unset.AutoResume = nil
 					opts.Unset.AutoSuspendSecs = nil
+					opts.Unset.BackupInstanceFamilies = nil
 					opts.Unset.Comment = nil
 				},
 			},

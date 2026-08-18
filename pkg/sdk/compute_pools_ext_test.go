@@ -12,6 +12,10 @@ func init() {
 	tagId := NewAccountObjectIdentifier("tag1")
 	tagId2 := NewAccountObjectIdentifier("tag2")
 	setComment := "set-comment"
+	backupInstanceFamilies := []ComputePoolBackupInstanceFamilyListItem{
+		{Value: ComputePoolInstanceFamilyCpuX64M},
+		{Value: ComputePoolInstanceFamilyCpuX64S},
+	}
 
 	computePoolsTests.Create.
 		withDefaultOpts(func() *CreateComputePoolOptions {
@@ -49,9 +53,24 @@ func init() {
 				opts.AutoSuspendSecs = new(42)
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "value1"}}
 				opts.Comment = &setComment
+				opts.BackupInstanceFamilies = backupInstanceFamilies
 			},
-			"CREATE COMPUTE POOL IF NOT EXISTS %s FOR APPLICATION %s MIN_NODES = 2 MAX_NODES = 3 INSTANCE_FAMILY = CPU_X64_XS AUTO_RESUME = true INITIALLY_SUSPENDED = true AUTO_SUSPEND_SECS = 42 TAG (%s = 'value1') COMMENT = '%s'",
+			"CREATE COMPUTE POOL IF NOT EXISTS %s FOR APPLICATION %s MIN_NODES = 2 MAX_NODES = 3 INSTANCE_FAMILY = CPU_X64_XS AUTO_RESUME = true INITIALLY_SUSPENDED = true AUTO_SUSPEND_SECS = 42 TAG (%s = 'value1') COMMENT = '%s' BACKUP_INSTANCE_FAMILIES = ('CPU_X64_M', 'CPU_X64_S')",
 			id.FullyQualifiedName(), appId.FullyQualifiedName(), tagId.FullyQualifiedName(), setComment,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_backupInstanceFamilies",
+			func(opts *CreateComputePoolOptions) { opts.BackupInstanceFamilies = backupInstanceFamilies },
+			"CREATE COMPUTE POOL %s MIN_NODES = 1 MAX_NODES = 3 INSTANCE_FAMILY = CPU_X64_XS BACKUP_INSTANCE_FAMILIES = ('CPU_X64_M', 'CPU_X64_S')",
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_backupInstanceFamilies_singleEntry",
+			func(opts *CreateComputePoolOptions) {
+				opts.BackupInstanceFamilies = []ComputePoolBackupInstanceFamilyListItem{{Value: ComputePoolInstanceFamilyCpuX64S}}
+			},
+			"CREATE COMPUTE POOL %s MIN_NODES = 1 MAX_NODES = 3 INSTANCE_FAMILY = CPU_X64_XS BACKUP_INSTANCE_FAMILIES = ('CPU_X64_S')",
+			id.FullyQualifiedName(),
 		)
 
 	computePoolsTests.Alter.
@@ -91,26 +110,43 @@ func init() {
 			case_ComputePools_sql_Alter_Set,
 			func(opts *AlterComputePoolOptions) {
 				opts.Set = &ComputePoolSet{
-					MinNodes:        new(2),
-					MaxNodes:        new(3),
-					AutoResume:      new(true),
-					AutoSuspendSecs: new(60),
-					Comment:         &setComment,
+					MinNodes:               new(2),
+					MaxNodes:               new(3),
+					AutoResume:             new(true),
+					AutoSuspendSecs:        new(60),
+					BackupInstanceFamilies: backupInstanceFamilies,
+					Comment:                &setComment,
 				}
 			},
-			"ALTER COMPUTE POOL %s SET MIN_NODES = 2 MAX_NODES = 3 AUTO_RESUME = true AUTO_SUSPEND_SECS = 60 COMMENT = '%s'",
+			"ALTER COMPUTE POOL %s SET MIN_NODES = 2 MAX_NODES = 3 AUTO_RESUME = true AUTO_SUSPEND_SECS = 60 BACKUP_INSTANCE_FAMILIES = ('CPU_X64_M', 'CPU_X64_S') COMMENT = '%s'",
 			id.FullyQualifiedName(), setComment,
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Set_backupInstanceFamilies",
+			func(opts *AlterComputePoolOptions) {
+				opts.Set = &ComputePoolSet{BackupInstanceFamilies: backupInstanceFamilies}
+			},
+			"ALTER COMPUTE POOL %s SET BACKUP_INSTANCE_FAMILIES = ('CPU_X64_M', 'CPU_X64_S')",
+			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Alter_Unset,
 			func(opts *AlterComputePoolOptions) {
 				opts.Unset = &ComputePoolUnset{
-					AutoResume:      new(true),
-					AutoSuspendSecs: new(true),
-					Comment:         new(true),
+					AutoResume:             new(true),
+					AutoSuspendSecs:        new(true),
+					BackupInstanceFamilies: new(true),
+					Comment:                new(true),
 				}
 			},
-			"ALTER COMPUTE POOL %s UNSET AUTO_RESUME, AUTO_SUSPEND_SECS, COMMENT", id.FullyQualifiedName(),
+			"ALTER COMPUTE POOL %s UNSET AUTO_RESUME, AUTO_SUSPEND_SECS, BACKUP_INSTANCE_FAMILIES, COMMENT", id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Unset_backupInstanceFamilies",
+			func(opts *AlterComputePoolOptions) {
+				opts.Unset = &ComputePoolUnset{BackupInstanceFamilies: new(true)}
+			},
+			"ALTER COMPUTE POOL %s UNSET BACKUP_INSTANCE_FAMILIES", id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_ComputePools_sql_Alter_SetTags,

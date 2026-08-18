@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -276,12 +277,12 @@ func UpdateComputePool(ctx context.Context, d *schema.ResourceData, meta any) di
 	if errs != nil {
 		return diag.FromErr(errs)
 	}
-	if (*set != sdk.ComputePoolSetRequest{}) {
+	if !reflect.DeepEqual(*set, *sdk.NewComputePoolSetRequest()) {
 		if err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSet(*set)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if (*unset != sdk.ComputePoolUnsetRequest{}) {
+	if !reflect.DeepEqual(*unset, *sdk.NewComputePoolUnsetRequest()) {
 		if err := client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnset(*unset)); err != nil {
 			return diag.FromErr(err)
 		}

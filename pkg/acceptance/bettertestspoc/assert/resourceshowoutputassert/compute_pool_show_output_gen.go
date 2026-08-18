@@ -244,3 +244,8 @@ func (c *ComputePoolShowOutputAssert) HasNoApplication() *ComputePoolShowOutputA
 	c.ValueNotSet("application")
 	return c
 }
+
+func (c *ComputePoolShowOutputAssert) HasNoBackupInstanceFamilies() *ComputePoolShowOutputAssert {
+	c.ValueSet("backup_instance_families.#", "0")
+	return c
+}

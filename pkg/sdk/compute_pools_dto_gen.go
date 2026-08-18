@@ -11,17 +11,18 @@ var (
 )
 
 type CreateComputePoolRequest struct {
-	IfNotExists        *bool
-	name               AccountObjectIdentifier // required
-	ForApplication     *AccountObjectIdentifier
-	MinNodes           int                       // required
-	MaxNodes           int                       // required
-	InstanceFamily     ComputePoolInstanceFamily // required
-	AutoResume         *bool
-	InitiallySuspended *bool
-	AutoSuspendSecs    *int
-	Tag                []TagAssociation
-	Comment            *string
+	IfNotExists            *bool
+	name                   AccountObjectIdentifier // required
+	ForApplication         *AccountObjectIdentifier
+	MinNodes               int                       // required
+	MaxNodes               int                       // required
+	InstanceFamily         ComputePoolInstanceFamily // required
+	AutoResume             *bool
+	InitiallySuspended     *bool
+	AutoSuspendSecs        *int
+	Tag                    []TagAssociation
+	Comment                *string
+	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem
 }
 
 type AlterComputePoolRequest struct {
@@ -37,17 +38,19 @@ type AlterComputePoolRequest struct {
 }
 
 type ComputePoolSetRequest struct {
-	MinNodes        *int
-	MaxNodes        *int
-	AutoResume      *bool
-	AutoSuspendSecs *int
-	Comment         *string
+	MinNodes               *int
+	MaxNodes               *int
+	AutoResume             *bool
+	AutoSuspendSecs        *int
+	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem
+	Comment                *string
 }
 
 type ComputePoolUnsetRequest struct {
-	AutoResume      *bool
-	AutoSuspendSecs *bool
-	Comment         *bool
+	AutoResume             *bool
+	AutoSuspendSecs        *bool
+	BackupInstanceFamilies *bool
+	Comment                *bool
 }
 
 type DropComputePoolRequest struct {
