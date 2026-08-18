@@ -45,6 +45,7 @@ type acceptanceTestContext struct {
 	defaultTestEnv           snowflakeTestEnvironmentContext
 	secondaryTestEnv         snowflakeTestEnvironmentContext
 	azureTestEnv             snowflakeTestEnvironmentContext
+	gcpTestEnv               snowflakeTestEnvironmentContext
 	snowflakeDefaultsTestEnv snowflakeTestEnvironmentContext
 
 	// gcpPubSubNotificationIntegration is shared by all the tests needing one and lives on the default account only,
@@ -121,30 +122,30 @@ func (atc *acceptanceTestContext) initialize() error {
 		}
 
 		if errs := errors.Join(
+			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Azure, &atc.azureTestEnv),
+			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Gcp, &atc.gcpTestEnv),
+		); errs != nil {
+			return errs
+		}
+
+		if errs := errors.Join(
 			testClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
 			testClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
 			testClient().EnsureEssentialRolesExist(ctx),
 			secondaryTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
 			secondaryTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
 			secondaryTestClient().EnsureEssentialRolesExist(ctx),
+			azureTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+			azureTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
+			azureTestClient().EnsureEssentialRolesExist(ctx),
+			gcpTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
+			gcpTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
+			gcpTestClient().EnsureEssentialRolesExist(ctx),
 		); errs != nil {
 			return errs
 		}
 
-		// TODO(SNOW-3198924): For now, tests requiring multiple Snowflake instances on other clouds are done only on non-prod environment
 		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
-			if err := atc.initializeSnowflakeEnvironment(ctx, testprofiles.Azure, &atc.azureTestEnv); err != nil {
-				return err
-			}
-
-			if errs := errors.Join(
-				azureTestClient().EnsureQuotedIdentifiersIgnoreCaseIsSetToFalse(ctx),
-				azureTestClient().EnsureEnableIdentifierFirstLoginIsSetToTrue(ctx),
-				azureTestClient().EnsureEssentialRolesExist(ctx),
-			); errs != nil {
-				return errs
-			}
-
 			if err := atc.initializeSnowflakeEnvironment(ctx, testprofiles.SnowflakeDefaults, &atc.snowflakeDefaultsTestEnv); err != nil {
 				return err
 			}
@@ -227,6 +228,10 @@ func secondaryTestClient() *helpers.TestClient {
 
 func azureTestClient() *helpers.TestClient {
 	return atc.azureTestEnv.testClient
+}
+
+func gcpTestClient() *helpers.TestClient {
+	return atc.gcpTestEnv.testClient
 }
 
 func snowflakeDefaultsTestClient() *helpers.TestClient {
