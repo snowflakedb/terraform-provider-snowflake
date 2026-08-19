@@ -5,6 +5,7 @@ package testint
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -125,8 +126,19 @@ func TestInt_ShowRegions(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
-		assert.Len(t, regions, 1)
-		region := regions[0]
+		var region *sdk.Region
+		// If there are more than one region, we need to find the PUBLIC region.
+		// Otherwise, we just take the first region because RegionGroup is not returned from Snowflake.
+		if len(regions) > 1 {
+			regionPtr, err := collections.FindFirst(regions, func(region *sdk.Region) bool {
+				return region.RegionGroup == "PUBLIC"
+			})
+			require.NoError(t, err)
+			require.NotNil(t, regionPtr)
+			region = *regionPtr
+		} else {
+			region = regions[0]
+		}
 		assert.Equal(t, "AWS_US_WEST_2", region.SnowflakeRegion)
 		assert.Equal(t, sdk.CloudTypeAWS, region.CloudType)
 		assert.Equal(t, "us-west-2", region.Region)
