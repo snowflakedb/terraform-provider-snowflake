@@ -73,8 +73,8 @@ func (h *HybridTableResourceAssert) HasUniqueConstraints(constraints ...model.Hy
 		attrs := map[string]string{
 			"columns.#": strconv.Itoa(len(uc.Columns)),
 		}
-		if uc.Name != "" {
-			attrs["name"] = uc.Name
+		if uc.Name != nil {
+			attrs["name"] = *uc.Name
 		}
 		for i, col := range uc.Columns {
 			attrs[fmt.Sprintf("columns.%d", i)] = col
@@ -92,8 +92,8 @@ func (h *HybridTableResourceAssert) HasForeignKeyConstraints(constraints ...mode
 			"table_name":    fk.TableName,
 			"ref_columns.#": strconv.Itoa(len(fk.RefColumns)),
 		}
-		if fk.Name != "" {
-			attrs["name"] = fk.Name
+		if fk.Name != nil {
+			attrs["name"] = *fk.Name
 		}
 		for i, col := range fk.Columns {
 			attrs[fmt.Sprintf("columns.%d", i)] = col

@@ -3,7 +3,9 @@
 package testacc
 
 import (
+	"fmt"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -19,8 +21,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -123,6 +127,10 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 		// DESCRIBE normalizes types (e.g. INTEGER -> NUMBER(38,0)); DiffSuppressDataTypes
 		// handles this at plan time, but the raw state values differ after import.
 		"column.0.type",
+		// Import records the name Snowflake generated for the primary key, while a created
+		// resource keeps the empty name from the configuration. The name is suppressed at plan
+		// time in both cases, so no changes follow.
+		"primary_key_constraint.0.name",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -384,13 +392,13 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 	// FK and index are create-only; both models share the same values so the Update
 	// step does not trigger ForceNew.
 	uniqueConstraints := []model.HybridTableUniqueConstraintConfig{
-		{Name: "my_uq", Columns: []string{"NAME"}},
+		{Name: new("my_uq"), Columns: []string{"NAME"}},
 		{Columns: []string{"EMAIL"}},
 	}
 
 	fkConstraints := []model.HybridTableForeignKeyConstraintConfig{
 		{
-			Name:       "my_fk",
+			Name:       new("my_fk"),
 			Columns:    []string{"ID"},
 			TableName:  parentId.FullyQualifiedName(),
 			RefColumns: []string{"ID"},
@@ -424,6 +432,10 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 		// handles this at plan time, but the raw state values differ after import.
 		"column.0.type",
 		"column.3.type",
+		// Import records the names Snowflake generated for the constraints the configuration
+		// leaves unnamed, while a created resource keeps the empty names.
+		"primary_key_constraint.0.name",
+		"unique_constraint.0.name",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -684,6 +696,38 @@ func TestAcc_HybridTable_InvalidConfig(t *testing.T) {
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`invalid data type`),
 			},
+			{
+				Config: accconfig.FromModels(
+					t,
+					model.HybridTableFromId("test", id, cols, pk).WithNamedPrimaryKeyConstraint("", pk),
+				),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`primary_key_constraint\.0\.name" to not be an empty string`),
+			},
+			{
+				Config: accconfig.FromModels(
+					t,
+					model.HybridTableFromId("test", id, cols, pk).WithUniqueConstraints(model.HybridTableUniqueConstraintConfig{
+						Name:    new(""),
+						Columns: []string{"ID"},
+					}),
+				),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`unique_constraint\.\d+\.name" to not be an empty string`),
+			},
+			{
+				Config: accconfig.FromModels(
+					t,
+					model.HybridTableFromId("test", id, cols, pk).WithForeignKeyConstraints(model.HybridTableForeignKeyConstraintConfig{
+						Name:       new(""),
+						Columns:    []string{"ID"},
+						TableName:  testClient().Ids.RandomSchemaObjectIdentifier().FullyQualifiedName(),
+						RefColumns: []string{"ID"},
+					}),
+				),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`foreign_key_constraint\.\d+\.name" to not be an empty string`),
+			},
 		},
 	})
 }
@@ -743,6 +787,36 @@ func TestAcc_HybridTable_PrimaryKeyRequiresNotNull(t *testing.T) {
 	})
 }
 
+// captureGeneratedConstraintName copies the name Snowflake generated for the first show_keys_output
+// row of the given kind into configVariables, so that a later step can put it in the configuration
+// and check that adopting it plans no changes. The name is only known at runtime, and the config
+// variables map is read when the step runs, after this check has filled it in.
+func captureGeneratedConstraintName(resourceReference string, kind string, variableName string, configVariables tfconfig.Variables) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		resourceState, ok := s.RootModule().Resources[resourceReference]
+		if !ok {
+			return fmt.Errorf("resource %s not found in state", resourceReference)
+		}
+		attributes := resourceState.Primary.Attributes
+		count, err := strconv.Atoi(attributes["show_keys_output.#"])
+		if err != nil {
+			return fmt.Errorf("reading show_keys_output of %s: %w", resourceReference, err)
+		}
+		for i := range count {
+			if attributes[fmt.Sprintf("show_keys_output.%d.kind", i)] != kind {
+				continue
+			}
+			name := attributes[fmt.Sprintf("show_keys_output.%d.name", i)]
+			if name == "" {
+				return fmt.Errorf("no name reported for the %s constraint of %s", kind, resourceReference)
+			}
+			configVariables[variableName] = tfconfig.StringVariable(name)
+			return nil
+		}
+		return fmt.Errorf("no %s constraint found in show_keys_output of %s", kind, resourceReference)
+	}
+}
+
 func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	cols := []sdk.TableColumnSignature{
@@ -756,6 +830,16 @@ func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 	uq1 := model.HybridTableUniqueConstraintConfig{Columns: []string{"NAME"}}
 	model1 := model.HybridTableFromId("test", id, cols, pk).
 		WithUniqueConstraints(uq1)
+
+	// The same table with both constraint names spelled out in the configuration. The names are
+	// generated by Snowflake, so they are only known once the table exists and are fed in through
+	// variables filled by captureGeneratedConstraintName.
+	primaryKeyNameVariable := "primary_key_constraint_name"
+	uniqueConstraintNameVariable := "unique_constraint_name"
+	generatedNames := tfconfig.Variables{}
+	modelWithGeneratedNames := model.HybridTableFromId("test", id, cols, pk).
+		WithPrimaryKeyConstraintNameVariable(primaryKeyNameVariable, pk).
+		WithUniqueConstraints(model.HybridTableUniqueConstraintConfig{NameVariable: uniqueConstraintNameVariable, Columns: []string{"NAME"}})
 
 	// Change the unique constraint to span two columns — forces recreation
 	uq2 := model.HybridTableUniqueConstraintConfig{Columns: []string{"NAME", "EMAIL"}}
@@ -772,21 +856,40 @@ func TestAcc_HybridTable_UniqueConstraint(t *testing.T) {
 			// Create with a single-column unique constraint
 			{
 				Config: accconfig.FromModels(t, model1),
-				Check: assertThat(
-					t,
-					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumns(cols).
-						HasPrimaryKeyColumns("ID").
-						HasUniqueConstraints(uq1),
-					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 0).
-						HasKind("PRIMARY KEY").
-						HasNameNotEmpty().
-						HasColumns("ID"),
-					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 1).
-						HasKind("UNIQUE").
-						HasNameNotEmpty().
-						HasColumns("NAME"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertThat(
+						t,
+						resourceassert.HybridTableResource(t, model1.ResourceReference()).
+							HasColumns(cols).
+							HasPrimaryKeyColumns("ID").
+							HasUniqueConstraints(uq1),
+						resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 0).
+							HasKind("PRIMARY KEY").
+							HasNameNotEmpty().
+							HasColumns("ID"),
+						resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 1).
+							HasKind("UNIQUE").
+							HasNameNotEmpty().
+							HasColumns("NAME"),
+					),
+					captureGeneratedConstraintName(model1.ResourceReference(), "PRIMARY KEY", primaryKeyNameVariable, generatedNames),
+					captureGeneratedConstraintName(model1.ResourceReference(), "UNIQUE", uniqueConstraintNameVariable, generatedNames),
 				),
+			},
+			// Spell out the generated names in the configuration — nothing is planned
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: accconfig.FromModels(
+					t,
+					modelWithGeneratedNames,
+					accconfig.StringVariable(primaryKeyNameVariable),
+					accconfig.StringVariable(uniqueConstraintNameVariable),
+				),
+				ConfigVariables: generatedNames,
 			},
 			// Change the unique constraint columns — any diff on unique_constraint forces recreation
 			{
@@ -843,6 +946,17 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 	model1 := model.HybridTableFromId("test", id, cols, pk).
 		WithForeignKeyConstraints(fk)
 
+	// The same table with the generated foreign key name spelled out in the configuration
+	foreignKeyNameVariable := "foreign_key_constraint_name"
+	generatedNames := tfconfig.Variables{}
+	modelWithGeneratedName := model.HybridTableFromId("test", id, cols, pk).
+		WithForeignKeyConstraints(model.HybridTableForeignKeyConstraintConfig{
+			NameVariable: foreignKeyNameVariable,
+			Columns:      []string{"PARENT_ID"},
+			TableName:    parentId.FullyQualifiedName(),
+			RefColumns:   []string{"ID"},
+		})
+
 	// Child table without FK
 	model2 := model.HybridTableFromId("test", id, cols, pk)
 
@@ -856,23 +970,36 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 			// Create with a foreign key referencing the parent table
 			{
 				Config: accconfig.FromModels(t, model1),
-				Check: assertThat(
-					t,
-					resourceassert.HybridTableResource(t, model1.ResourceReference()).
-						HasColumns(cols).
-						HasPrimaryKeyColumns("ID").
-						HasForeignKeyConstraints(fk),
-					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 0).
-						HasKind("PRIMARY KEY").
-						HasNameNotEmpty().
-						HasColumns("ID"),
-					resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 1).
-						HasKind("FOREIGN KEY").
-						HasNameNotEmpty().
-						HasColumns("PARENT_ID").
-						HasReferencedTable(parentId.FullyQualifiedName()).
-						HasReferencedColumns("ID"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					assertThat(
+						t,
+						resourceassert.HybridTableResource(t, model1.ResourceReference()).
+							HasColumns(cols).
+							HasPrimaryKeyColumns("ID").
+							HasForeignKeyConstraints(fk),
+						resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 0).
+							HasKind("PRIMARY KEY").
+							HasNameNotEmpty().
+							HasColumns("ID"),
+						resourceshowoutputassert.HybridTableShowKeysOutputRow(t, model1.ResourceReference(), 1).
+							HasKind("FOREIGN KEY").
+							HasNameNotEmpty().
+							HasColumns("PARENT_ID").
+							HasReferencedTable(parentId.FullyQualifiedName()).
+							HasReferencedColumns("ID"),
+					),
+					captureGeneratedConstraintName(model1.ResourceReference(), "FOREIGN KEY", foreignKeyNameVariable, generatedNames),
 				),
+			},
+			// Spell out the generated name in the configuration — nothing is planned
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config:          accconfig.FromModels(t, modelWithGeneratedName, accconfig.StringVariable(foreignKeyNameVariable)),
+				ConfigVariables: generatedNames,
 			},
 			// Remove the foreign key — any diff on foreign_key_constraint forces recreation
 			{
