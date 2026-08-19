@@ -18,6 +18,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -28,6 +29,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
+	firstBackupFamily, secondBackupFamily := sdk.ComputePoolInstanceFamilyCpuX64M, sdk.ComputePoolInstanceFamilyCpuX64L
 
 	modelBasic := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 1)
 
@@ -36,6 +38,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 		WithAutoResume("true").
 		WithInitiallySuspended("true").
 		WithAutoSuspendSecs(6767).
+		WithBackupInstanceFamilies(firstBackupFamily, secondBackupFamily).
 		WithComment(comment)
 
 	modelCompleteWithDifferentValues := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 4, 3).
@@ -43,6 +46,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 		WithAutoResume("true").
 		WithInitiallySuspended("true").
 		WithAutoSuspendSecs(2222).
+		WithBackupInstanceFamilies(secondBackupFamily, firstBackupFamily).
 		WithComment(changedComment)
 
 	modelBasicWithApp := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 4, 3).
@@ -68,6 +72,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAutoResumeString(r.BooleanDefault).
 						HasAutoSuspendSecsString(r.IntDefaultString).
+						HasBackupInstanceFamiliesEmpty().
 						HasCommentString("").
 						HasNoForApplication().
 						HasInitiallySuspendedString(r.BooleanDefault).
@@ -94,7 +99,8 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasIsExclusive(false).
-						HasApplicationEmpty(),
+						HasApplicationEmpty().
+						HasNoBackupInstanceFamilies(),
 					resourceshowoutputassert.ComputePoolDescribeOutput(t, modelBasic.ResourceReference()).
 						HasName(id.Name()).
 						HasState(sdk.ComputePoolStateStarting).
@@ -115,6 +121,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasComment("").
 						HasIsExclusive(false).
 						HasApplicationEmpty().
+						HasNoBackupInstanceFamilies().
 						HasErrorCode("").
 						HasStatusMessage("Compute pool is starting for last 0 minutes"),
 				),
@@ -190,6 +197,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
 						HasAutoSuspendSecsString("6767").
+						HasBackupInstanceFamilies(string(firstBackupFamily), string(secondBackupFamily)).
 						HasCommentString(comment).
 						HasForApplicationString(application.ID().FullyQualifiedName()).
 						HasInitiallySuspendedString("true").
@@ -216,7 +224,8 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasBackupInstanceFamilies(string(firstBackupFamily), string(secondBackupFamily)),
 				),
 			},
 			// import - complete
@@ -241,6 +250,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
 						HasAutoSuspendSecsString("2222").
+						HasBackupInstanceFamilies(string(secondBackupFamily), string(firstBackupFamily)).
 						HasCommentString(changedComment).
 						HasForApplicationString(application.ID().FullyQualifiedName()).
 						HasInitiallySuspendedString("true").
@@ -267,7 +277,8 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(changedComment).
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasBackupInstanceFamilies(string(secondBackupFamily), string(firstBackupFamily)),
 				),
 			},
 			// change externally
@@ -279,6 +290,10 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 							WithMaxNodes(5).
 							WithAutoResume(true).
 							WithAutoSuspendSecs(3600).
+							WithBackupInstanceFamilies([]sdk.ComputePoolBackupInstanceFamilyListItem{
+								{Value: firstBackupFamily},
+								{Value: secondBackupFamily},
+							}).
 							WithComment(comment),
 					))
 				},
@@ -289,6 +304,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
 						HasAutoSuspendSecsString("2222").
+						HasBackupInstanceFamilies(string(secondBackupFamily), string(firstBackupFamily)).
 						HasCommentString(changedComment).
 						HasForApplicationString(application.ID().FullyQualifiedName()).
 						HasInitiallySuspendedString("true").
@@ -315,7 +331,8 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(changedComment).
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasBackupInstanceFamilies(string(secondBackupFamily), string(firstBackupFamily)),
 				),
 			},
 			// ignore_after_creation does not cause plans
@@ -351,6 +368,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAutoResumeString(r.BooleanDefault).
 						HasAutoSuspendSecsString(r.IntDefaultString).
+						HasBackupInstanceFamiliesEmpty().
 						HasCommentString("").
 						HasForApplicationString(application.ID().FullyQualifiedName()).
 						HasInitiallySuspendedString(r.BooleanTrue).
@@ -377,7 +395,8 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasNoBackupInstanceFamilies(),
 				),
 			},
 			// forcenew - instance family
@@ -394,6 +413,7 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAutoResumeString(r.BooleanDefault).
 						HasAutoSuspendSecsString(r.IntDefaultString).
+						HasBackupInstanceFamiliesEmpty().
 						HasCommentString("").
 						HasForApplicationString(application.ID().FullyQualifiedName()).
 						HasInitiallySuspendedString(r.BooleanTrue).
@@ -420,7 +440,8 @@ func TestAcc_ComputePool_BasicUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment("").
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasNoBackupInstanceFamilies(),
 				),
 			},
 		},
@@ -432,12 +453,14 @@ func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
+	firstBackupFamily, secondBackupFamily := sdk.ComputePoolInstanceFamilyCpuX64M, sdk.ComputePoolInstanceFamilyCpuX64L
 
 	modelComplete := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 1).
 		WithForApplication(application.ID().FullyQualifiedName()).
 		WithAutoResume("true").
 		WithInitiallySuspended("true").
 		WithAutoSuspendSecs(6767).
+		WithBackupInstanceFamilies(firstBackupFamily, secondBackupFamily).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -455,6 +478,7 @@ func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 						HasNameString(id.Name()).
 						HasAutoResumeString("true").
 						HasAutoSuspendSecsString("6767").
+						HasBackupInstanceFamilies(string(firstBackupFamily), string(secondBackupFamily)).
 						HasCommentString(comment).
 						HasForApplicationString(application.ID().FullyQualifiedName()).
 						HasInitiallySuspendedString("true").
@@ -481,7 +505,8 @@ func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasBackupInstanceFamilies(string(firstBackupFamily), string(secondBackupFamily)),
 					resourceshowoutputassert.ComputePoolDescribeOutput(t, modelComplete.ResourceReference()).
 						HasName(id.Name()).
 						HasState(sdk.ComputePoolStateSuspended).
@@ -502,6 +527,7 @@ func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 						HasComment(comment).
 						HasIsExclusive(true).
 						HasApplication(application.ID()).
+						HasBackupInstanceFamilies(string(firstBackupFamily), string(secondBackupFamily)).
 						HasErrorCode("").
 						HasStatusMessage(""),
 				),
@@ -529,6 +555,8 @@ func TestAcc_ComputePool_Validations(t *testing.T) {
 		WithInitiallySuspended("invalid")
 	modelInvalidAutoSuspendSecs := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 1, 1).
 		WithAutoSuspendSecs(-1)
+	modelInvalidBackupInstanceFamily := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 1, 1).
+		WithBackupInstanceFamiliesValue(tfconfig.ListVariable(tfconfig.StringVariable("invalid")))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -566,6 +594,11 @@ func TestAcc_ComputePool_Validations(t *testing.T) {
 				Config:      config.FromModels(t, modelInvalidAutoSuspendSecs),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected auto_suspend_secs to be at least \(0\), got -1`),
+			},
+			{
+				Config:      config.FromModels(t, modelInvalidBackupInstanceFamily),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid compute pool instance family: INVALID`),
 			},
 		},
 	})

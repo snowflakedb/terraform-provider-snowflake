@@ -256,6 +256,23 @@ func setValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, un
 	return nil
 }
 
+func listValueUpdate[T any](d *schema.ResourceData, key string, setField *[]T, unsetField **bool, mapper func(any) (T, error)) error {
+	if d.HasChange(key) {
+		v := d.Get(key)
+		mappedValue, err := collections.MapErr(v.([]any), mapper)
+		if err != nil {
+			return err
+		}
+
+		if len(mappedValue) > 0 {
+			*setField = mappedValue
+		} else {
+			*unsetField = sdk.Bool(true)
+		}
+	}
+	return nil
+}
+
 func attributeMappedValueUpdateSetOnly[T, R any](d *schema.ResourceData, key string, setField **R, mapper func(T) (R, error)) error {
 	if d.HasChange(key) {
 		if v, ok := d.GetOk(key); ok {

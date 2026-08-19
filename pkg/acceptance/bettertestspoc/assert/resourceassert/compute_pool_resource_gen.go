@@ -47,6 +47,11 @@ func (c *ComputePoolResourceAssert) HasAutoSuspendSecs(expected int) *ComputePoo
 	return c
 }
 
+func (c *ComputePoolResourceAssert) HasBackupInstanceFamilies(expected ...string) *ComputePoolResourceAssert {
+	c.ListContainsExactlyStringValuesInOrder("backup_instance_families", expected...)
+	return c
+}
+
 func (c *ComputePoolResourceAssert) HasComment(expected string) *ComputePoolResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -201,6 +206,11 @@ func (c *ComputePoolResourceAssert) HasAutoResumeEmpty() *ComputePoolResourceAss
 
 func (c *ComputePoolResourceAssert) HasAutoSuspendSecsEmpty() *ComputePoolResourceAssert {
 	c.ValueSet("auto_suspend_secs", "")
+	return c
+}
+
+func (c *ComputePoolResourceAssert) HasBackupInstanceFamiliesEmpty() *ComputePoolResourceAssert {
+	c.ValueSet("backup_instance_families.#", "0")
 	return c
 }
 

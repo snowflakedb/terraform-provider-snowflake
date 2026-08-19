@@ -9,6 +9,8 @@ description: |-
 
 -> **Note** Managing compute pool state is limited. It is handled by `initially_suspended`, `auto_suspend_secs`, and `auto_resume` fields. The provider does not support managing the state of compute pools in Snowflake with `ALTER ... SUSPEND` and `ALTER ... RESUME`. See [Compute pool lifecycle documentation](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool#compute-pool-lifecycle) for more details.
 
+-> **Note** `backup_instance_families` maps to a Snowflake [preview feature](https://docs.snowflake.com/en/release-notes/preview-features). It is available to all accounts, but its behavior may change before it reaches general availability.
+
 # snowflake_compute_pool (Resource)
 
 Resource used to manage compute pools. For more information, check [compute pools documentation](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool). A compute pool is a collection of one or more virtual machine (VM) nodes on which Snowflake runs your Snowpark Container Services services (including job services). See [Working with compute pools](https://docs.snowflake.com/en/developer-guide/snowpark-container-services/working-with-compute-pool) developer guide for more details.
@@ -29,15 +31,16 @@ resource "snowflake_compute_pool" "basic" {
 
 # complete resource
 resource "snowflake_compute_pool" "complete" {
-  name                = "COMPUTE_POOL"
-  for_application     = "APPLICATION_NAME"
-  min_nodes           = 1
-  max_nodes           = 2
-  instance_family     = "CPU_X64_S"
-  auto_resume         = "true"
-  initially_suspended = "true"
-  auto_suspend_secs   = 1200
-  comment             = "A compute pool."
+  name                     = "COMPUTE_POOL"
+  for_application          = "APPLICATION_NAME"
+  min_nodes                = 1
+  max_nodes                = 2
+  instance_family          = "CPU_X64_S"
+  backup_instance_families = ["CPU_X64_M", "CPU_X64_L"]
+  auto_resume              = "true"
+  initially_suspended      = "true"
+  auto_suspend_secs        = 1200
+  comment                  = "A compute pool."
 }
 ```
 
@@ -57,6 +60,7 @@ resource "snowflake_compute_pool" "complete" {
 
 - `auto_resume` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to automatically resume a compute pool when a service or job is submitted to it. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `auto_suspend_secs` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Number of seconds of inactivity after which you want Snowflake to automatically suspend the compute pool.
+- `backup_instance_families` (List of String) Specifies an ordered list of instance families to fall back on when the primary `instance_family` is unavailable. The order determines the fallback priority. Valid values are (case-insensitive): `CPU_X64_XS` | `CPU_X64_S` | `CPU_X64_M` | `CPU_X64_SL` | `CPU_X64_L` | `HIGHMEM_X64_S` | `HIGHMEM_X64_M` | `HIGHMEM_X64_L` | `HIGHMEM_X64_SL` | `GPU_NV_S` | `GPU_NV_M` | `GPU_NV_L` | `GPU_NV_XS` | `GPU_NV_SM` | `GPU_NV_2M` | `GPU_NV_3M` | `GPU_NV_SL` | `GPU_GCP_NV_L4_1_24G` | `GPU_GCP_NV_L4_4_24G` | `GPU_GCP_NV_A100_8_40G` | `GEN_ARM_G1_2` | `GEN_ARM_G1_4` | `GEN_ARM_G1_8` | `GEN_ARM_G1_16` | `GEN_ARM_G1_32` | `GEN_X64_G2_2` | `GEN_X64_G2_4` | `GEN_X64_G2_8` | `GEN_X64_G2_16` | `GEN_X64_G2_32` | `MEM_X64_G2_8` | `MEM_X64_G2_32` | `MEM_X64_G2_64` | `MEM_X64_G2_96` | `MEM_X64_G2_192` | `GPU_L40S_G1_8` | `GPU_L40S_G1_16` | `GPU_L40S_G1_48` | `GPU_L40S_G1_192` | `GPU_R6K_G1_8` | `GPU_R6K_G1_16` | `GPU_R6K_G1_32` | `GPU_R6K_G1_48` | `GPU_R6K_G1_96` | `GPU_R6K_G1_192` | `GPU_A100_G1_12` | `GPU_A100_G1_48`.
 - `comment` (String) Specifies a comment for the compute pool.
 - `for_application` (String) Specifies the Snowflake Native App name.
 - `initially_suspended` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the compute pool is created initially in the suspended state. This field is used only when creating a compute pool. Changes on this field are ignored after creation.
@@ -89,6 +93,7 @@ Read-Only:
 - `application` (String)
 - `auto_resume` (Boolean)
 - `auto_suspend_secs` (Number)
+- `backup_instance_families` (List of String)
 - `comment` (String)
 - `created_on` (String)
 - `error_code` (String)
@@ -117,6 +122,7 @@ Read-Only:
 - `application` (String)
 - `auto_resume` (Boolean)
 - `auto_suspend_secs` (Number)
+- `backup_instance_families` (List of String)
 - `comment` (String)
 - `created_on` (String)
 - `idle_nodes` (Number)

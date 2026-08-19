@@ -57,6 +57,14 @@ Leaving the field unset keeps the existing authentication behavior unchanged. Se
 [authentication methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods)
 for details.
 
+### *(new feature)* `backup_instance_families` added to `snowflake_compute_pool`
+
+The [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) resource now supports the `backup_instance_families` attribute, which maps to the `BACKUP_INSTANCE_FAMILIES` Snowflake property. This attribute specifies instance families to fall back on when the primary `instance_family` is unavailable. It is a list rather than a set, because the order is the fallback priority; values are case-insensitive, and removing the attribute or setting it to an empty list unsets the property. The property is also exposed in `show_output` and `describe_output` of the resource and of the [`snowflake_compute_pools`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/compute_pools) data source.
+
+`BACKUP_INSTANCE_FAMILIES` is a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. Its behavior may change until it reaches general availability.
+
+In most cases no action is required; this is a non-breaking addition. However, if you set `BACKUP_INSTANCE_FAMILIES` on a compute pool outside of Terraform (e.g. directly in Snowflake) before this release, the provider will now detect it as drift. Because the attribute is not present in your configuration, the next plan will show a change that removes the externally set values. To keep them, add them to the `backup_instance_families` attribute in your configuration.
+
 ### *(new feature)* ACCOUNT_ROLE_SHOW_CACHING experiment
 
 A new `ACCOUNT_ROLE_SHOW_CACHING` experiment has been added. When enabled, the result of looking up

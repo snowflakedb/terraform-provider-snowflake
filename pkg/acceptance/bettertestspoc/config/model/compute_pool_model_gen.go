@@ -11,16 +11,17 @@ import (
 )
 
 type ComputePoolModel struct {
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	AutoResume         tfconfig.Variable `json:"auto_resume,omitempty"`
-	AutoSuspendSecs    tfconfig.Variable `json:"auto_suspend_secs,omitempty"`
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	ForApplication     tfconfig.Variable `json:"for_application,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	InitiallySuspended tfconfig.Variable `json:"initially_suspended,omitempty"`
-	InstanceFamily     tfconfig.Variable `json:"instance_family,omitempty"`
-	MaxNodes           tfconfig.Variable `json:"max_nodes,omitempty"`
-	MinNodes           tfconfig.Variable `json:"min_nodes,omitempty"`
+	Name                   tfconfig.Variable `json:"name,omitempty"`
+	AutoResume             tfconfig.Variable `json:"auto_resume,omitempty"`
+	AutoSuspendSecs        tfconfig.Variable `json:"auto_suspend_secs,omitempty"`
+	BackupInstanceFamilies tfconfig.Variable `json:"backup_instance_families,omitempty"`
+	Comment                tfconfig.Variable `json:"comment,omitempty"`
+	ForApplication         tfconfig.Variable `json:"for_application,omitempty"`
+	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	InitiallySuspended     tfconfig.Variable `json:"initially_suspended,omitempty"`
+	InstanceFamily         tfconfig.Variable `json:"instance_family,omitempty"`
+	MaxNodes               tfconfig.Variable `json:"max_nodes,omitempty"`
+	MinNodes               tfconfig.Variable `json:"min_nodes,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -111,6 +112,8 @@ func (c *ComputePoolModel) WithAutoSuspendSecs(autoSuspendSecs int) *ComputePool
 	return c
 }
 
+// backup_instance_families attribute type is not yet supported, so WithBackupInstanceFamilies can't be generated
+
 func (c *ComputePoolModel) WithComment(comment string) *ComputePoolModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -162,6 +165,11 @@ func (c *ComputePoolModel) WithAutoResumeValue(value tfconfig.Variable) *Compute
 
 func (c *ComputePoolModel) WithAutoSuspendSecsValue(value tfconfig.Variable) *ComputePoolModel {
 	c.AutoSuspendSecs = value
+	return c
+}
+
+func (c *ComputePoolModel) WithBackupInstanceFamiliesValue(value tfconfig.Variable) *ComputePoolModel {
+	c.BackupInstanceFamilies = value
 	return c
 }
 

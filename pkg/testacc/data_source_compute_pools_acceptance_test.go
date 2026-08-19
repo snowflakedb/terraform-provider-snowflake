@@ -25,12 +25,14 @@ func TestAcc_ComputePools_CompleteUseCase(t *testing.T) {
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
+	firstBackupFamily, secondBackupFamily := sdk.ComputePoolInstanceFamilyCpuX64M, sdk.ComputePoolInstanceFamilyCpuX64L
 
 	computePoolModel := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 2, 1).
 		WithForApplication(application.ID().FullyQualifiedName()).
 		WithAutoResume("true").
 		WithInitiallySuspended("true").
 		WithAutoSuspendSecs(6767).
+		WithBackupInstanceFamilies(firstBackupFamily, secondBackupFamily).
 		WithComment(comment)
 
 	dataSourceModel := datasourcemodel.ComputePools("test").
@@ -73,12 +75,16 @@ func TestAcc_ComputePools_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasBackupInstanceFamilies(string(firstBackupFamily), string(secondBackupFamily)),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.name", id.Name())),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.state", string(sdk.ComputePoolStateSuspended))),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.min_nodes", "1")),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.max_nodes", "2")),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.instance_family", string(sdk.ComputePoolInstanceFamilyCpuX64S))),
+					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.backup_instance_families.#", "2")),
+					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.backup_instance_families.0", string(firstBackupFamily))),
+					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.backup_instance_families.1", string(secondBackupFamily))),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.num_services", "0")),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.num_jobs", "0")),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModel.DatasourceReference(), "compute_pools.0.describe_output.0.auto_suspend_secs", "6767")),
@@ -122,7 +128,8 @@ func TestAcc_ComputePools_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComment(comment).
 						HasIsExclusive(true).
-						HasApplication(application.ID()),
+						HasApplication(application.ID()).
+						HasBackupInstanceFamilies(string(firstBackupFamily), string(secondBackupFamily)),
 					assert.Check(resource.TestCheckResourceAttr(dataSourceModelWithoutOptionals.DatasourceReference(), "compute_pools.0.describe_output.#", "0")),
 				),
 			},
