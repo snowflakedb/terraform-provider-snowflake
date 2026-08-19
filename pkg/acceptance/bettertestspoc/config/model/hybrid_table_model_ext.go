@@ -129,9 +129,34 @@ func (h *HybridTableModel) WithPrimaryKeyConstraint(primaryKey []sdk.TableColumn
 	return h
 }
 
+// WithNamedPrimaryKeyConstraint sets the primary_key_constraint block with an explicit name.
+func (h *HybridTableModel) WithNamedPrimaryKeyConstraint(name string, primaryKey []sdk.TableColumnSignature) *HybridTableModel {
+	return h.withNamedPrimaryKeyConstraint(tfconfig.StringVariable(name), primaryKey)
+}
+
+// WithPrimaryKeyConstraintNameVariable sets the primary_key_constraint block with the name taken
+// from a Terraform variable.
+func (h *HybridTableModel) WithPrimaryKeyConstraintNameVariable(variableName string, primaryKey []sdk.TableColumnSignature) *HybridTableModel {
+	return h.withNamedPrimaryKeyConstraint(config.VariableReference(variableName), primaryKey)
+}
+
+func (h *HybridTableModel) withNamedPrimaryKeyConstraint(name tfconfig.Variable, primaryKey []sdk.TableColumnSignature) *HybridTableModel {
+	cols := collections.Map(primaryKey, func(v sdk.TableColumnSignature) tfconfig.Variable {
+		return tfconfig.StringVariable(v.Name)
+	})
+	h.PrimaryKeyConstraint = tfconfig.SetVariable(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"name":    name,
+			"columns": tfconfig.ListVariable(cols...),
+		}),
+	)
+	return h
+}
+
 type HybridTableUniqueConstraintConfig struct {
-	Name    string
-	Columns []string
+	Name         *string
+	NameVariable string
+	Columns      []string
 }
 
 // WithUniqueConstraints sets the unique_constraint block from one or more definitions.
@@ -143,8 +168,11 @@ func (h *HybridTableModel) WithUniqueConstraints(constraints ...HybridTableUniqu
 		m := map[string]tfconfig.Variable{
 			"columns": tfconfig.ListVariable(colVars...),
 		}
-		if uc.Name != "" {
-			m["name"] = tfconfig.StringVariable(uc.Name)
+		switch {
+		case uc.NameVariable != "":
+			m["name"] = config.VariableReference(uc.NameVariable)
+		case uc.Name != nil:
+			m["name"] = tfconfig.StringVariable(*uc.Name)
 		}
 		objs[i] = tfconfig.ObjectVariable(m)
 	}
@@ -178,10 +206,11 @@ func (h *HybridTableModel) WithIndex(indexes ...HybridTableIndexConfig) *HybridT
 }
 
 type HybridTableForeignKeyConstraintConfig struct {
-	Name       string
-	Columns    []string
-	TableName  string
-	RefColumns []string
+	Name         *string
+	NameVariable string
+	Columns      []string
+	TableName    string
+	RefColumns   []string
 }
 
 // WithForeignKeyConstraints sets the foreign_key_constraint block from one or more definitions.
@@ -195,8 +224,11 @@ func (h *HybridTableModel) WithForeignKeyConstraints(constraints ...HybridTableF
 			"table_name":  tfconfig.StringVariable(fk.TableName),
 			"ref_columns": tfconfig.ListVariable(rcVars...),
 		}
-		if fk.Name != "" {
-			m["name"] = tfconfig.StringVariable(fk.Name)
+		switch {
+		case fk.NameVariable != "":
+			m["name"] = config.VariableReference(fk.NameVariable)
+		case fk.Name != nil:
+			m["name"] = tfconfig.StringVariable(*fk.Name)
 		}
 		objs[i] = tfconfig.ObjectVariable(m)
 	}
