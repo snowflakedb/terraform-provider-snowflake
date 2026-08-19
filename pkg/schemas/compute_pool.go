@@ -26,6 +26,11 @@ var DescribeComputePoolSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"backup_instance_families": {
+		Type:     schema.TypeList,
+		Elem:     &schema.Schema{Type: schema.TypeString},
+		Computed: true,
+	},
 	"num_services": {
 		Type:     schema.TypeInt,
 		Computed: true,
@@ -99,6 +104,7 @@ func ComputePoolDetailsToSchema(computePool sdk.ComputePoolDetails) map[string]a
 	computePoolSchema["min_nodes"] = computePool.MinNodes
 	computePoolSchema["max_nodes"] = computePool.MaxNodes
 	computePoolSchema["instance_family"] = string(computePool.InstanceFamily)
+	computePoolSchema["backup_instance_families"] = computePool.BackupInstanceFamilies
 	computePoolSchema["num_services"] = computePool.NumServices
 	computePoolSchema["num_jobs"] = computePool.NumJobs
 	computePoolSchema["auto_suspend_secs"] = computePool.AutoSuspendSecs

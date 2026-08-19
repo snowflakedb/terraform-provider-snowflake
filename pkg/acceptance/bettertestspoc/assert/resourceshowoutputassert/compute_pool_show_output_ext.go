@@ -19,3 +19,13 @@ func (c *ComputePoolShowOutputAssert) HasApplicationEmpty() *ComputePoolShowOutp
 	c.StringValueSet("application", "")
 	return c
 }
+
+func (c *ComputePoolShowOutputAssert) HasBackupInstanceFamilies(expected ...string) *ComputePoolShowOutputAssert {
+	c.ListContainsExactlyStringValuesInOrder("backup_instance_families", expected...)
+	return c
+}
+
+func (c *ComputePoolDescribeOutputAssert) HasBackupInstanceFamilies(expected ...string) *ComputePoolDescribeOutputAssert {
+	c.ListContainsExactlyStringValuesInOrder("backup_instance_families", expected...)
+	return c
+}

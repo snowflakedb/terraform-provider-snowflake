@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -52,6 +53,17 @@ var computePoolSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToComputePoolInstanceFamily)),
 		Description: fmt.Sprintf("Identifies the type of machine you want to provision for the nodes in the compute pool. Valid values are (case-insensitive): %s."+
 			" Not all instance families are supported in all regions. Run `SHOW COMPUTE POOL INSTANCE FAMILIES` to see the list of supported instance families in your region.", possibleValuesListed(sdk.AllComputePoolInstanceFamilies)),
+	},
+	"backup_instance_families": {
+		Type:     schema.TypeList,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: sdkValidation(sdk.ToComputePoolInstanceFamily),
+		},
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToComputePoolInstanceFamily),
+		Description: fmt.Sprintf("Specifies an ordered list of instance families to fall back on when the primary `instance_family` is unavailable. The order determines the fallback priority."+
+			" Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllComputePoolInstanceFamilies)),
 	},
 	"auto_resume": {
 		Type:             schema.TypeString,
@@ -122,6 +134,8 @@ func ComputePool() *schema.Resource {
 		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ComputePool, customdiff.All(
+			// For now, the list fields have to be excluded.
+			// TODO [SNOW-1648997]: address the above comment
 			ComputedIfAnyAttributeChanged(computePoolSchema, ShowOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_nodes", "max_nodes", "comment"),
 			ComputedIfAnyAttributeChanged(computePoolSchema, DescribeOutputAttributeName, "auto_suspend_secs", "auto_resume", "min_nodes", "max_nodes", "comment"),
 		)),
@@ -164,6 +178,18 @@ func ImportComputePool(ctx context.Context, d *schema.ResourceData, meta any) ([
 	return []*schema.ResourceData{d}, nil
 }
 
+func toComputePoolBackupInstanceFamily(value any) (sdk.ComputePoolBackupInstanceFamilyListItem, error) {
+	instanceFamily, err := sdk.ToComputePoolInstanceFamily(value.(string))
+	if err != nil {
+		return sdk.ComputePoolBackupInstanceFamilyListItem{}, err
+	}
+	return sdk.ComputePoolBackupInstanceFamilyListItem{Value: instanceFamily}, nil
+}
+
+func toComputePoolBackupInstanceFamilies(values []any) ([]sdk.ComputePoolBackupInstanceFamilyListItem, error) {
+	return collections.MapErr(values, toComputePoolBackupInstanceFamily)
+}
+
 func CreateComputePool(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	name := d.Get("name").(string)
@@ -182,6 +208,7 @@ func CreateComputePool(ctx context.Context, d *schema.ResourceData, meta any) di
 		booleanStringAttributeCreateBuilder(d, "auto_resume", request.WithAutoResume),
 		booleanStringAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
 		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
+		attributeMappedValueCreateBuilder(d, "backup_instance_families", request.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
 	if errs != nil {
@@ -249,6 +276,7 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) schema.ReadContextFunc
 			d.Set("min_nodes", computePool.MinNodes),
 			d.Set("max_nodes", computePool.MaxNodes),
 			d.Set("instance_family", computePool.InstanceFamily),
+			d.Set("backup_instance_families", computePool.BackupInstanceFamilies),
 			d.Set("comment", computePool.Comment),
 		)
 		if errs != nil {
@@ -272,6 +300,7 @@ func UpdateComputePool(ctx context.Context, d *schema.ResourceData, meta any) di
 		intAttributeUpdateSetOnly(d, "max_nodes", &set.MaxNodes),
 		intAttributeWithSpecialDefaultUpdate(d, "auto_suspend_secs", &set.AutoSuspendSecs, &unset.AutoSuspendSecs),
 		booleanStringAttributeUpdate(d, "auto_resume", &set.AutoResume, &unset.AutoResume),
+		listValueUpdate(d, "backup_instance_families", &set.BackupInstanceFamilies, &unset.BackupInstanceFamilies, toComputePoolBackupInstanceFamily),
 		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
 	)
 	if errs != nil {
