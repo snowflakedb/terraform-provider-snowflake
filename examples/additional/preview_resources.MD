@@ -34,6 +34,7 @@
 - [snowflake_function_python](./docs/resources/function_python)
 - [snowflake_function_scala](./docs/resources/function_scala)
 - [snowflake_function_sql](./docs/resources/function_sql)
+- [snowflake_hybrid_table](./docs/resources/hybrid_table)
 - [snowflake_iceberg_table](./docs/resources/iceberg_table)
 - [snowflake_iceberg_table_from_aws_glue](./docs/resources/iceberg_table_from_aws_glue)
 - [snowflake_iceberg_table_from_delta_files](./docs/resources/iceberg_table_from_delta_files)

@@ -41,6 +41,25 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 
 	modelBasic := model.HybridTableFromId("test", id, columns, pk)
 
+	assertDescribeOutput := resourceshowoutputassert.HybridTableDescribeOutputRow(t, modelBasic.ResourceReference(), 0).
+		HasName("ID").
+		HasType("NUMBER(38,0)").
+		HasCollation("").
+		HasKind("COLUMN").
+		HasDefault("").
+		HasIsNullable(false).
+		HasPrimaryKey(true).
+		HasUniqueKey(false).
+		HasCheck("").
+		HasExpression("").
+		HasComment("").
+		HasPolicyName("").
+		HasPrivacyDomain("").
+		HasSchemaEvolutionRecord("")
+	assertShowKeysOutput := resourceshowoutputassert.HybridTableShowKeysOutputRow(t, modelBasic.ResourceReference(), 0).
+		HasKind("PRIMARY KEY").
+		HasNameNotEmpty().
+		HasColumns("ID")
 	assertBasic := []assert.TestCheckFuncProvider{
 		resourceassert.HybridTableResource(t, modelBasic.ResourceReference()).
 			HasName(id.Name()).
@@ -67,25 +86,8 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasComment("").
 			HasRows(0).
 			HasBytes(0),
-		resourceshowoutputassert.HybridTableDescribeOutputRow(t, modelBasic.ResourceReference(), 0).
-			HasName("ID").
-			HasType("NUMBER(38,0)").
-			HasCollation("").
-			HasKind("COLUMN").
-			HasDefault("").
-			HasIsNullable(false).
-			HasPrimaryKey(true).
-			HasUniqueKey(false).
-			HasCheck("").
-			HasExpression("").
-			HasComment("").
-			HasPolicyName("").
-			HasPrivacyDomain("").
-			HasSchemaEvolutionRecord(""),
-		resourceshowoutputassert.HybridTableShowKeysOutputRow(t, modelBasic.ResourceReference(), 0).
-			HasKind("PRIMARY KEY").
-			HasNameNotEmpty().
-			HasColumns("ID"),
+		assertDescribeOutput,
+		assertShowKeysOutput,
 	}
 
 	modelComplete := model.HybridTableFromId("test", id, columns, pk).
@@ -93,7 +95,7 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 		WithDataRetentionTimeInDays(2).
 		WithMaxDataExtensionTimeInDays(10)
 
-	assertComplete := append([]assert.TestCheckFuncProvider{
+	assertComplete := []assert.TestCheckFuncProvider{
 		resourceassert.HybridTableResource(t, modelComplete.ResourceReference()).
 			HasName(id.Name()).
 			HasDatabase(id.DatabaseName()).
@@ -121,7 +123,9 @@ func TestAcc_HybridTable_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRows(0).
 			HasBytes(0),
-	}, assertBasic[3:]...)
+		assertDescribeOutput,
+		assertShowKeysOutput,
+	}
 
 	importStateVerifyIgnore := []string{
 		// DESCRIBE normalizes types (e.g. INTEGER -> NUMBER(38,0)); DiffSuppressDataTypes
