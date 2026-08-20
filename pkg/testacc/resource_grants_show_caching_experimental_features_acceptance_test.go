@@ -48,6 +48,11 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesSingleSho
 		resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.to_role_b", "account_role_name", roleB.ID().Name()),
 	)
 
+	// Distinct provider-cache key so this refresh starts with an empty GrantShowCache.
+	// Create invalidates the shared key after each GRANT, so Create-time SHOW counts are
+	// racy; a cold-cache refresh has no mutations and must issue exactly one SHOW for both Reads.
+	coldCacheProviderFactory := providerFactoryUsingCache("GrantsShowCachingAccountRolePrivilegesColdCache")
+	var showsAfterCreate int
 	var showsWithCachingEnabled int
 
 	resource.Test(t, resource.TestCase{
@@ -59,12 +64,16 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesSingleSho
 			{
 				ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
 				Config:                   config.FromModels(t, experimentProviderModel, grantToRoleA, grantToRoleB),
-				Check:                    checkAttrs,
+				Check: resource.ComposeTestCheckFunc(
+					checkAttrs,
+					func(_ *terraform.State) error {
+						showsAfterCreate = countShowGrantsOnDatabaseQueries(t, database.ID())
+						return nil
+					},
+				),
 			},
-			// the second refresh must converge (both resources Read the same, cached SHOW GRANTS ON
-			// DATABASE result) and that statement must have been issued exactly once across both steps.
 			{
-				ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
+				ProtoV6ProviderFactories: coldCacheProviderFactory,
 				Config:                   config.FromModels(t, experimentProviderModel, grantToRoleA, grantToRoleB),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -73,8 +82,8 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesSingleSho
 				},
 				Check: func(_ *terraform.State) error {
 					got := countShowGrantsOnDatabaseQueries(t, database.ID())
-					if got != 1 {
-						return fmt.Errorf("expected exactly 1 `SHOW GRANTS ON DATABASE %s` with caching enabled, got %d", database.ID().FullyQualifiedName(), got)
+					if additional := got - showsAfterCreate; additional != 1 {
+						return fmt.Errorf("expected exactly 1 additional `SHOW GRANTS ON DATABASE %s` on a cold-cache refresh with caching enabled, got %d", database.ID().FullyQualifiedName(), additional)
 					}
 					showsWithCachingEnabled = got
 					return nil
@@ -116,6 +125,11 @@ func TestAcc_GrantsShowCaching_AccountRolePrivileges_SharedObjectIssuesSingleSho
 // targeting the SAME object share one cached `SHOW GRANTS ON DATABASE` entry, even though they are
 // different resource types. Ownership is transferred to roleOwner and privileges are separately
 // granted to roleGrantee on the same database.
+//
+// outbound_privileges = COPY is required: Terraform applies the two resources in parallel, so
+// GRANT USAGE often lands before GRANT OWNERSHIP. Snowflake then rejects the ownership transfer
+// (error 003036) unless current grants are copied (or revoked). COPY also keeps USAGE visible to
+// both Reads, which is what the shared-cache assertion needs.
 func TestAcc_GrantsShowCaching_CrossResource_OwnershipAndPrivilegesShareCache(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
@@ -131,34 +145,49 @@ func TestAcc_GrantsShowCaching_CrossResource_OwnershipAndPrivilegesShareCache(t 
 			ObjectType: sdk.ObjectTypeDatabase,
 			Name:       database.ID(),
 		},
-	}}).WithAccountRoleName(roleOwner.ID().Name())
+	}}).
+		WithAccountRoleName(roleOwner.ID().Name()).
+		WithOutboundPrivileges("COPY")
 	privilegesModel := model.GrantPrivilegesToAccountRole("privileges", roleGrantee.ID().Name()).
 		WithPrivileges("USAGE").
 		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID())
 
+	// Distinct provider-cache key so the proving refresh starts with an empty GrantShowCache.
+	// Create-time trailing Reads (and Create invalidations) cannot be used to count SHOWs: the
+	// two resources race, and each mutation invalidates the shared key. A cold-cache refresh has
+	// no mutations, so two Reads and one SHOW is exactly the shared-key claim.
+	coldCacheProviderFactory := providerFactoryUsingCache("GrantsShowCachingCrossResourceColdCache")
+	var showsAfterCreate int
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, experimentProviderModel, ownershipModel, privilegesModel),
+				ProtoV6ProviderFactories: grantsShowCachingProviderFactory,
+				Config:                   config.FromModels(t, experimentProviderModel, ownershipModel, privilegesModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_grant_ownership.ownership", "account_role_name", roleOwner.ID().Name()),
 					resource.TestCheckResourceAttr("snowflake_grant_privileges_to_account_role.privileges", "account_role_name", roleGrantee.ID().Name()),
+					func(_ *terraform.State) error {
+						showsAfterCreate = countShowGrantsOnDatabaseQueries(t, database.ID())
+						return nil
+					},
 				),
 			},
 			{
-				Config: config.FromModels(t, experimentProviderModel, ownershipModel, privilegesModel),
+				ProtoV6ProviderFactories: coldCacheProviderFactory,
+				Config:                   config.FromModels(t, experimentProviderModel, ownershipModel, privilegesModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
 				Check: func(_ *terraform.State) error {
-					if got := countShowGrantsOnDatabaseQueries(t, database.ID()); got != 1 {
-						return fmt.Errorf("expected exactly 1 `SHOW GRANTS ON DATABASE %s` shared across snowflake_grant_ownership and snowflake_grant_privileges_to_account_role, got %d", database.ID().FullyQualifiedName(), got)
+					got := countShowGrantsOnDatabaseQueries(t, database.ID()) - showsAfterCreate
+					if got != 1 {
+						return fmt.Errorf("expected exactly 1 additional `SHOW GRANTS ON DATABASE %s` on a cold-cache refresh shared across snowflake_grant_ownership and snowflake_grant_privileges_to_account_role, got %d", database.ID().FullyQualifiedName(), got)
 					}
 					return nil
 				},

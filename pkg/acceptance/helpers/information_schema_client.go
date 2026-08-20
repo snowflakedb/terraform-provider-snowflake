@@ -35,7 +35,10 @@ type QueryHistory struct {
 func (c *InformationSchemaClient) GetQueryHistory(t *testing.T, limit int) []QueryHistory {
 	t.Helper()
 
-	result, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf("SELECT * FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(RESULT_LIMIT => %d))", limit))
+	// Fully qualified: INFORMATION_SCHEMA.QUERY_HISTORY is resolved against the
+	// current database and fails with 002004 when the session has none (e.g. after
+	// GRANT OWNERSHIP of the session's current database).
+	result, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf("SELECT * FROM TABLE(SNOWFLAKE.INFORMATION_SCHEMA.QUERY_HISTORY(RESULT_LIMIT => %d))", limit))
 	require.NoError(t, err)
 
 	return collections.Map(result, func(queryResult map[string]*any) QueryHistory {
@@ -46,7 +49,7 @@ func (c *InformationSchemaClient) GetQueryHistory(t *testing.T, limit int) []Que
 func (c *InformationSchemaClient) GetQueryHistoryByQueryId(t *testing.T, limit int, queryId string) QueryHistory {
 	t.Helper()
 
-	result, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf("SELECT * FROM TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(RESULT_LIMIT => %d)) WHERE QUERY_ID = '%s'", limit, queryId))
+	result, err := c.client().QueryUnsafe(context.Background(), fmt.Sprintf("SELECT * FROM TABLE(SNOWFLAKE.INFORMATION_SCHEMA.QUERY_HISTORY(RESULT_LIMIT => %d)) WHERE QUERY_ID = '%s'", limit, queryId))
 	require.NoError(t, err)
 	require.Len(t, result, 1)
 
