@@ -275,6 +275,25 @@ Importing such a resource failed for the same reason (`Cannot import non-existen
 
 In this release, the grantee database role name is normalized to a fully qualified identifier regardless of whether the bundle is enabled: when the database prefix is missing, it is reconstructed from the database of the queried database role (a database role can only be granted to another database role in the same database). The `snowflake_grant_database_role` resource is no longer recreated on every plan and can be imported again.
 
+### *(bug fix)* `snowflake_warehouse`: perpetual `min_cluster_count` / `max_cluster_count` `0 → 1` drift on Standard edition
+
+On Standard edition (when multi-cluster warehouses are not enabled), `SHOW WAREHOUSES` omits the `min_cluster_count` and `max_cluster_count` columns. Starting in v2.18.0, those omitted columns were scanned as unset and then treated as an external change, so every plan reported an in-place update even when the configuration already set both values to `1` (the Snowflake minimum and the provider's validation minimum):
+
+```
+  # snowflake_warehouse.example will be updated in-place
+  ~ resource "snowflake_warehouse" "example" {
+      ~ max_cluster_count = 0 -> 1
+      ~ min_cluster_count = 0 -> 1
+      ~ show_output       = [ ... ] -> (known after apply)
+    }
+```
+
+`terraform apply` succeeded but did not converge: the next plan showed the same `0 → 1` diff.
+
+The provider now treats an omitted `SHOW` integer as `0`, matching the zero already stored in `show_output`, so a config value of `1` is no longer overwritten. After upgrading, `terraform plan` should be empty for Standard-edition warehouses that set `min_cluster_count` and `max_cluster_count` to `1`. If you added `lifecycle { ignore_changes = [min_cluster_count, max_cluster_count] }` as a workaround, you can remove it.
+
+The same mapping is used by `snowflake_warehouse_interactive`. No other configuration changes are required.
+
 ## v2.18.x ➞ v2.19.0
 
 ### *(improvement)* Rework of `snowflake_account_authentication_policy_attachment` and `snowflake_user_authentication_policy_attachment`
