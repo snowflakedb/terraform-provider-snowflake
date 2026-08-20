@@ -6,392 +6,365 @@ import (
 	"testing"
 )
 
+var secretsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Secrets_validation_CreateWithOAuthClientCredentialsFlow_name_ValidIdentifier   testCaseName = "validation_CreateWithOAuthClientCredentialsFlow_name_ValidIdentifier"
+	case_Secrets_validation_CreateWithOAuthClientCredentialsFlow_opts_ConflictingFields testCaseName = "validation_CreateWithOAuthClientCredentialsFlow_opts_ConflictingFields"
+	case_Secrets_sql_CreateWithOAuthClientCredentialsFlow_basic                         testCaseName = "sql_CreateWithOAuthClientCredentialsFlow_basic"
+	case_Secrets_sql_CreateWithOAuthClientCredentialsFlow_all                           testCaseName = "sql_CreateWithOAuthClientCredentialsFlow_all"
+	case_Secrets_validation_CreateWithOAuthAuthorizationCodeFlow_name_ValidIdentifier   testCaseName = "validation_CreateWithOAuthAuthorizationCodeFlow_name_ValidIdentifier"
+	case_Secrets_validation_CreateWithOAuthAuthorizationCodeFlow_opts_ConflictingFields testCaseName = "validation_CreateWithOAuthAuthorizationCodeFlow_opts_ConflictingFields"
+	case_Secrets_sql_CreateWithOAuthAuthorizationCodeFlow_basic                         testCaseName = "sql_CreateWithOAuthAuthorizationCodeFlow_basic"
+	case_Secrets_sql_CreateWithOAuthAuthorizationCodeFlow_all                           testCaseName = "sql_CreateWithOAuthAuthorizationCodeFlow_all"
+	case_Secrets_validation_CreateWithBasicAuthentication_name_ValidIdentifier          testCaseName = "validation_CreateWithBasicAuthentication_name_ValidIdentifier"
+	case_Secrets_validation_CreateWithBasicAuthentication_opts_ConflictingFields        testCaseName = "validation_CreateWithBasicAuthentication_opts_ConflictingFields"
+	case_Secrets_sql_CreateWithBasicAuthentication_basic                                testCaseName = "sql_CreateWithBasicAuthentication_basic"
+	case_Secrets_sql_CreateWithBasicAuthentication_all                                  testCaseName = "sql_CreateWithBasicAuthentication_all"
+	case_Secrets_validation_CreateWithGenericString_name_ValidIdentifier                testCaseName = "validation_CreateWithGenericString_name_ValidIdentifier"
+	case_Secrets_validation_CreateWithGenericString_opts_ConflictingFields              testCaseName = "validation_CreateWithGenericString_opts_ConflictingFields"
+	case_Secrets_sql_CreateWithGenericString_basic                                      testCaseName = "sql_CreateWithGenericString_basic"
+	case_Secrets_sql_CreateWithGenericString_all                                        testCaseName = "sql_CreateWithGenericString_all"
+	case_Secrets_validation_Alter_opts_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Secrets_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Secrets_validation_Alter_opts_Set_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Secrets_validation_Alter_opts_Set_SetForFlow_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_SetForFlow_ExactlyOneValueSet_NoneSet"
+	case_Secrets_validation_Alter_opts_Set_SetForFlow_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_SetForFlow_ExactlyOneValueSet_MoreThanOneSet"
+	case_Secrets_sql_Alter_Set                                                          testCaseName = "sql_Alter_Set"
+	case_Secrets_sql_Alter_Unset                                                        testCaseName = "sql_Alter_Unset"
+	case_Secrets_validation_Drop_name_ValidIdentifier                                   testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Secrets_sql_Drop_basic                                                         testCaseName = "sql_Drop_basic"
+	case_Secrets_sql_Drop_all                                                           testCaseName = "sql_Drop_all"
+	case_Secrets_sql_Show_basic                                                         testCaseName = "sql_Show_basic"
+	case_Secrets_sql_Show_all                                                           testCaseName = "sql_Show_all"
+	case_Secrets_sql_Show_Like                                                          testCaseName = "sql_Show_Like"
+	case_Secrets_sql_Show_In                                                            testCaseName = "sql_Show_In"
+	case_Secrets_validation_Describe_name_ValidIdentifier                               testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Secrets_sql_Describe_basic                                                     testCaseName = "sql_Describe_basic"
+)
+
+type SecretsTestsContext struct {
+	CreateWithOAuthClientCredentialsFlow *sdkTestCtx[*CreateWithOAuthClientCredentialsFlowSecretOptions]
+	CreateWithOAuthAuthorizationCodeFlow *sdkTestCtx[*CreateWithOAuthAuthorizationCodeFlowSecretOptions]
+	CreateWithBasicAuthentication        *sdkTestCtx[*CreateWithBasicAuthenticationSecretOptions]
+	CreateWithGenericString              *sdkTestCtx[*CreateWithGenericStringSecretOptions]
+	Alter                                *sdkTestCtx[*AlterSecretOptions]
+	Drop                                 *sdkTestCtx[*DropSecretOptions]
+	Show                                 *sdkTestCtx[*ShowSecretOptions]
+	Describe                             *sdkTestCtx[*DescribeSecretOptions]
+}
+
+var secretsTests = SecretsTestsContext{
+	CreateWithOAuthClientCredentialsFlow: newSdkTestCtx[*CreateWithOAuthClientCredentialsFlowSecretOptions](
+		"Secrets", "CreateWithOAuthClientCredentialsFlow",
+	).
+		withDefaultOpts(func() *CreateWithOAuthClientCredentialsFlowSecretOptions {
+			return &CreateWithOAuthClientCredentialsFlowSecretOptions{
+				name: secretsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateWithOAuthClientCredentialsFlowSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithOAuthClientCredentialsFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateWithOAuthClientCredentialsFlowSecretOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateWithOAuthClientCredentialsFlowSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithOAuthClientCredentialsFlow_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateWithOAuthClientCredentialsFlowSecretOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateWithOAuthClientCredentialsFlowSecretOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateWithOAuthClientCredentialsFlowSecretOptions]{
+				Name:           case_Secrets_sql_CreateWithOAuthClientCredentialsFlow_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateWithOAuthClientCredentialsFlowSecretOptions]{
+				Name: case_Secrets_sql_CreateWithOAuthClientCredentialsFlow_all,
+			},
+		),
+	CreateWithOAuthAuthorizationCodeFlow: newSdkTestCtx[*CreateWithOAuthAuthorizationCodeFlowSecretOptions](
+		"Secrets", "CreateWithOAuthAuthorizationCodeFlow",
+	).
+		withDefaultOpts(func() *CreateWithOAuthAuthorizationCodeFlowSecretOptions {
+			return &CreateWithOAuthAuthorizationCodeFlowSecretOptions{
+				name: secretsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateWithOAuthAuthorizationCodeFlowSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithOAuthAuthorizationCodeFlow_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateWithOAuthAuthorizationCodeFlowSecretOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateWithOAuthAuthorizationCodeFlowSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithOAuthAuthorizationCodeFlow_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateWithOAuthAuthorizationCodeFlowSecretOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateWithOAuthAuthorizationCodeFlowSecretOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateWithOAuthAuthorizationCodeFlowSecretOptions]{
+				Name:           case_Secrets_sql_CreateWithOAuthAuthorizationCodeFlow_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateWithOAuthAuthorizationCodeFlowSecretOptions]{
+				Name: case_Secrets_sql_CreateWithOAuthAuthorizationCodeFlow_all,
+			},
+		),
+	CreateWithBasicAuthentication: newSdkTestCtx[*CreateWithBasicAuthenticationSecretOptions](
+		"Secrets", "CreateWithBasicAuthentication",
+	).
+		withDefaultOpts(func() *CreateWithBasicAuthenticationSecretOptions {
+			return &CreateWithBasicAuthenticationSecretOptions{
+				name: secretsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateWithBasicAuthenticationSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithBasicAuthentication_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateWithBasicAuthenticationSecretOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateWithBasicAuthenticationSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithBasicAuthentication_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateWithBasicAuthenticationSecretOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateWithBasicAuthenticationSecretOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateWithBasicAuthenticationSecretOptions]{
+				Name:           case_Secrets_sql_CreateWithBasicAuthentication_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateWithBasicAuthenticationSecretOptions]{
+				Name: case_Secrets_sql_CreateWithBasicAuthentication_all,
+			},
+		),
+	CreateWithGenericString: newSdkTestCtx[*CreateWithGenericStringSecretOptions](
+		"Secrets", "CreateWithGenericString",
+	).
+		withDefaultOpts(func() *CreateWithGenericStringSecretOptions {
+			return &CreateWithGenericStringSecretOptions{
+				name: secretsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateWithGenericStringSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithGenericString_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateWithGenericStringSecretOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateWithGenericStringSecretOptions]{
+				Name:        case_Secrets_validation_CreateWithGenericString_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateWithGenericStringSecretOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateWithGenericStringSecretOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateWithGenericStringSecretOptions]{
+				Name:           case_Secrets_sql_CreateWithGenericString_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateWithGenericStringSecretOptions]{
+				Name: case_Secrets_sql_CreateWithGenericString_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterSecretOptions](
+		"Secrets", "Alter",
+	).
+		withDefaultOpts(func() *AlterSecretOptions {
+			return &AlterSecretOptions{
+				name: secretsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterSecretOptions]{
+				Name:        case_Secrets_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecretOptions", "Set", "Unset"),
+				DefaultModify: func(opts *AlterSecretOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterSecretOptions]{
+				Name:        case_Secrets_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecretOptions", "Set", "Unset"),
+				DefaultModify: func(opts *AlterSecretOptions) {
+					opts.Set = &SecretSet{}
+					opts.Unset = &SecretUnset{}
+				},
+			},
+			validationCase[*AlterSecretOptions]{
+				Name:        case_Secrets_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterSecretOptions.Set", "SetForFlow", "Comment"),
+				DefaultModify: func(opts *AlterSecretOptions) {
+					opts.Set = &SecretSet{}
+					opts.Set.SetForFlow = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterSecretOptions]{
+				Name:        case_Secrets_validation_Alter_opts_Set_SetForFlow_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecretOptions.Set.SetForFlow", "SetForOAuthClientCredentials", "SetForOAuthAuthorization", "SetForBasicAuthentication", "SetForGenericString"),
+				DefaultModify: func(opts *AlterSecretOptions) {
+					opts.Set = &SecretSet{}
+					opts.Set.SetForFlow = &SetForFlow{}
+					opts.Set.SetForFlow.SetForOAuthClientCredentials = nil
+					opts.Set.SetForFlow.SetForOAuthAuthorization = nil
+					opts.Set.SetForFlow.SetForBasicAuthentication = nil
+					opts.Set.SetForFlow.SetForGenericString = nil
+				},
+			},
+			validationCase[*AlterSecretOptions]{
+				Name:        case_Secrets_validation_Alter_opts_Set_SetForFlow_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecretOptions.Set.SetForFlow", "SetForOAuthClientCredentials", "SetForOAuthAuthorization", "SetForBasicAuthentication", "SetForGenericString"),
+				DefaultModify: func(opts *AlterSecretOptions) {
+					opts.Set = &SecretSet{}
+					opts.Set.SetForFlow = &SetForFlow{}
+					opts.Set.SetForFlow.SetForOAuthClientCredentials = &SetForOAuthClientCredentials{}
+					opts.Set.SetForFlow.SetForOAuthAuthorization = &SetForOAuthAuthorization{}
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterSecretOptions]{
+				Name: case_Secrets_sql_Alter_Set,
+			},
+			sqlCase[*AlterSecretOptions]{
+				Name: case_Secrets_sql_Alter_Unset,
+			},
+		),
+	Drop: newSdkTestCtx[*DropSecretOptions](
+		"Secrets", "Drop",
+	).
+		withDefaultOpts(func() *DropSecretOptions {
+			return &DropSecretOptions{
+				name: secretsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropSecretOptions]{
+				Name:        case_Secrets_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropSecretOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropSecretOptions]{
+				Name:           case_Secrets_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropSecretOptions]{
+				Name: case_Secrets_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowSecretOptions](
+		"Secrets", "Show",
+	).
+		withDefaultOpts(func() *ShowSecretOptions {
+			return &ShowSecretOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowSecretOptions]{
+				Name:           case_Secrets_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowSecretOptions]{
+				Name: case_Secrets_sql_Show_all,
+			},
+			sqlCase[*ShowSecretOptions]{
+				Name: case_Secrets_sql_Show_Like,
+			},
+			sqlCase[*ShowSecretOptions]{
+				Name: case_Secrets_sql_Show_In,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeSecretOptions](
+		"Secrets", "Describe",
+	).
+		withDefaultOpts(func() *DescribeSecretOptions {
+			return &DescribeSecretOptions{
+				name: secretsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeSecretOptions]{
+				Name:        case_Secrets_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeSecretOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeSecretOptions]{
+				Name:           case_Secrets_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestSecrets_CreateWithOAuthClientCredentialsFlow(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateWithOAuthClientCredentialsFlowSecretOptions
-	defaultOpts := func() *CreateWithOAuthClientCredentialsFlowSecretOptions {
-		return &CreateWithOAuthClientCredentialsFlowSecretOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateWithOAuthClientCredentialsFlowSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateWithOAuthClientCredentialsFlowSecretOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// basic removed manually
-
-	t.Run("all options", func(t *testing.T) {
-		integration := randomAccountObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.ApiIntegration = integration
-		opts.OauthScopes = &OauthScopesList{[]ApiIntegrationScope{{"test"}}}
-		opts.Comment = String("foo")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECRET IF NOT EXISTS %s TYPE = OAUTH2 API_AUTHENTICATION = %s OAUTH_SCOPES = ('test') COMMENT = 'foo'", id.FullyQualifiedName(), integration.FullyQualifiedName())
-	})
-
-	t.Run("empty oauth scopes list", func(t *testing.T) {
-		integration := randomAccountObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.ApiIntegration = integration
-		opts.OauthScopes = &OauthScopesList{[]ApiIntegrationScope{}}
-		opts.Comment = String("foo")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECRET IF NOT EXISTS %s TYPE = OAUTH2 API_AUTHENTICATION = %s OAUTH_SCOPES = () COMMENT = 'foo'", id.FullyQualifiedName(), integration.FullyQualifiedName())
-	})
+	secretsTests.CreateWithOAuthClientCredentialsFlow.RunValidationCases(t)
+	secretsTests.CreateWithOAuthClientCredentialsFlow.RunSqlCases(t)
 }
 
 func TestSecrets_CreateWithOAuthAuthorizationCodeFlow(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateWithOAuthAuthorizationCodeFlowSecretOptions
-	defaultOpts := func() *CreateWithOAuthAuthorizationCodeFlowSecretOptions {
-		return &CreateWithOAuthAuthorizationCodeFlowSecretOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateWithOAuthAuthorizationCodeFlowSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateWithOAuthAuthorizationCodeFlowSecretOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// basic removed manually
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		integration := randomAccountObjectIdentifier()
-		opts.IfNotExists = Bool(true)
-		opts.OauthRefreshToken = "foo"
-		opts.OauthRefreshTokenExpiryTime = "bar"
-		opts.ApiIntegration = integration
-		opts.Comment = String("test")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECRET IF NOT EXISTS %s TYPE = OAUTH2 OAUTH_REFRESH_TOKEN = 'foo' OAUTH_REFRESH_TOKEN_EXPIRY_TIME = 'bar' API_AUTHENTICATION = %s COMMENT = 'test'", id.FullyQualifiedName(), integration.FullyQualifiedName())
-	})
+	secretsTests.CreateWithOAuthAuthorizationCodeFlow.RunValidationCases(t)
+	secretsTests.CreateWithOAuthAuthorizationCodeFlow.RunSqlCases(t)
 }
 
 func TestSecrets_CreateWithBasicAuthentication(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateWithBasicAuthenticationSecretOptions
-	defaultOpts := func() *CreateWithBasicAuthenticationSecretOptions {
-		return &CreateWithBasicAuthenticationSecretOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateWithBasicAuthenticationSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateWithBasicAuthenticationSecretOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// basic removed manually
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.Username = "foo"
-		opts.Password = "bar"
-		opts.Comment = String("test")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECRET IF NOT EXISTS %s TYPE = PASSWORD USERNAME = 'foo' PASSWORD = 'bar' COMMENT = 'test'", id.FullyQualifiedName())
-	})
+	secretsTests.CreateWithBasicAuthentication.RunValidationCases(t)
+	secretsTests.CreateWithBasicAuthentication.RunSqlCases(t)
 }
 
 func TestSecrets_CreateWithGenericString(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateWithGenericStringSecretOptions
-	defaultOpts := func() *CreateWithGenericStringSecretOptions {
-		return &CreateWithGenericStringSecretOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateWithGenericStringSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateWithGenericStringSecretOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// basic removed manually
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Comment = String("test")
-		opts.IfNotExists = Bool(true)
-		opts.SecretString = "test"
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SECRET IF NOT EXISTS %s TYPE = GENERIC_STRING SECRET_STRING = 'test' COMMENT = 'test'", id.FullyQualifiedName())
-	})
+	secretsTests.CreateWithGenericString.RunValidationCases(t)
+	secretsTests.CreateWithGenericString.RunSqlCases(t)
 }
 
 func TestSecrets_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterSecretOptions
-	defaultOpts := func() *AlterSecretOptions {
-		return &AlterSecretOptions{
-			name: id,
-		}
-	}
-
-	// added manually
-	setOpts := func() *AlterSecretOptions {
-		return &AlterSecretOptions{
-			name:     id,
-			Set:      &SecretSet{},
-			IfExists: Bool(true),
-		}
-	}
-
-	// added manually
-	unsetOpts := func() *AlterSecretOptions {
-		return &AlterSecretOptions{
-			name:     id,
-			Unset:    &SecretUnset{},
-			IfExists: Bool(true),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSecretOptions", "Set", "Unset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(SecretSet)
-		opts.Unset = new(SecretUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSecretOptions", "Set", "Unset"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.SetForFlow opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := setOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterSecretOptions.Set", "SetForFlow", "Comment"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.SetForFlow.SetForOAuthClientCredentials opts.Set.SetForFlow.SetForOAuthAuthorization opts.Set.SetForFlow.SetForBasicAuthentication opts.Set.SetForFlow.SetForGenericString] should be present", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.SetForFlow = &SetForFlow{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSecretOptions.Set.SetForFlow", "SetForOAuthClientCredentials", "SetForOAuthAuthorization", "SetForBasicAuthentication", "SetForGenericString"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.SetForFlow.SetForOAuthClientCredentials opts.Set.SetForFlow.SetForOAuthAuthorization opts.Set.SetForFlow.SetForBasicAuthentication opts.Set.SetForFlow.SetForGenericString] should be present - more present", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.SetForFlow = &SetForFlow{}
-		opts.Set.SetForFlow.SetForOAuthClientCredentials = &SetForOAuthClientCredentials{OauthScopes: &OauthScopesList{[]ApiIntegrationScope{{Scope: "foo"}}}}
-		opts.Set.SetForFlow.SetForOAuthAuthorization = &SetForOAuthAuthorization{OauthRefreshToken: String("foo"), OauthRefreshTokenExpiryTime: String("bar")}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSecretOptions.Set.SetForFlow", "SetForOAuthClientCredentials", "SetForOAuthAuthorization", "SetForBasicAuthentication", "SetForGenericString"))
-	})
-
-	// all variants added manually
-	t.Run("alter: set options for Oauth Client Credentials Flow", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.Comment = String("test")
-		opts.Set.SetForFlow = &SetForFlow{SetForOAuthClientCredentials: &SetForOAuthClientCredentials{OauthScopes: &OauthScopesList{[]ApiIntegrationScope{{"sample_scope"}}}}}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = 'test' OAUTH_SCOPES = ('sample_scope')", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set options for Oauth Client Credentials Flow - empty oauth scopes list", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.Comment = String("test")
-		opts.Set.SetForFlow = &SetForFlow{SetForOAuthClientCredentials: &SetForOAuthClientCredentials{OauthScopes: &OauthScopesList{}}}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = 'test' OAUTH_SCOPES = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set options for Oauth Client Credentials Flow - without oauth scopes provided", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.Comment = String("test")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = 'test'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set options for Oauth Authorization Flow", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.Comment = String("test")
-		opts.Set.SetForFlow = &SetForFlow{SetForOAuthAuthorization: &SetForOAuthAuthorization{
-			OauthRefreshToken:           String("test_token"),
-			OauthRefreshTokenExpiryTime: String("2024-11-11"),
-		}}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = 'test' OAUTH_REFRESH_TOKEN = 'test_token' OAUTH_REFRESH_TOKEN_EXPIRY_TIME = '2024-11-11'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set options for Basic Authentication", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.Comment = String("test")
-		opts.Set.SetForFlow = &SetForFlow{SetForBasicAuthentication: &SetForBasicAuthentication{
-			Username: String("foo"),
-			Password: String("bar"),
-		}}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = 'test' USERNAME = 'foo' PASSWORD = 'bar'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set comment only", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.Comment = String("test")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = 'test'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set options for Generic string", func(t *testing.T) {
-		opts := setOpts()
-		opts.Set.Comment = String("test")
-		opts.Set.SetForFlow = &SetForFlow{SetForGenericString: &SetForGenericString{String("test")}}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = 'test' SECRET_STRING = 'test'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset options", func(t *testing.T) {
-		opts := unsetOpts()
-		opts.Unset.Comment = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SECRET IF EXISTS %s SET COMMENT = NULL", id.FullyQualifiedName())
-	})
+	secretsTests.Alter.RunValidationCases(t)
+	secretsTests.Alter.RunSqlCases(t)
 }
 
 func TestSecrets_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropSecretOptions
-	defaultOpts := func() *DropSecretOptions {
-		return &DropSecretOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP SECRET %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP SECRET IF EXISTS %s", id.FullyQualifiedName())
-	})
+	secretsTests.Drop.RunValidationCases(t)
+	secretsTests.Drop.RunSqlCases(t)
 }
 
 func TestSecrets_Show(t *testing.T) {
-	// Minimal valid ShowSecretOptions
-	defaultOpts := func() *ShowSecretOptions {
-		return &ShowSecretOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SECRETS")
-	})
-
-	// all variants added manually
-	t.Run("show with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SECRETS LIKE 'pattern'")
-	})
-
-	t.Run("show with in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &ExtendedIn{
-			In: In{
-				Account: Bool(true),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW SECRETS IN ACCOUNT")
-	})
+	secretsTests.Show.RunValidationCases(t)
+	secretsTests.Show.RunSqlCases(t)
 }
 
 func TestSecrets_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeSecretOptions
-	defaultOpts := func() *DescribeSecretOptions {
-		return &DescribeSecretOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeSecretOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SECRET %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	secretsTests.Describe.RunValidationCases(t)
+	secretsTests.Describe.RunSqlCases(t)
 }
