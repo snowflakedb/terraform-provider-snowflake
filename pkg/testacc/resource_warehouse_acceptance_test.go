@@ -26,6 +26,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -3380,6 +3381,78 @@ func TestAcc_Warehouse_ExternalTypeChange(t *testing.T) {
 						HasWarehouseTypeString(string(sdk.WarehouseTypeStandard)),
 					resourceshowoutputassert.WarehouseShowOutput(t, ref).
 						HasType(sdk.WarehouseTypeStandard),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_Warehouse_migrateFromVersion_2_19_clusterCountDriftWhenShowOmitsColumns
+// reproduces a Standard-edition warehouse drift: SHOW WAREHOUSES omits
+// min_cluster_count / max_cluster_count. Provider 2.19.0 then plans a perpetual
+// 0 → 1 in-place update. The current provider must produce an empty plan for the
+// same config.
+//
+// Skipped: this requires a Standard-edition account. The CI secondary account
+// is not Standard, so SHOW WAREHOUSES still returns the cluster count columns.
+func TestAcc_Warehouse_migrateFromVersion_2_19_clusterCountDriftWhenShowOmitsColumns(t *testing.T) {
+	t.Skip("Requires a Standard-edition account; CI secondary account is not Standard")
+
+	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
+	id := secondaryTestClient().Ids.RandomAccountObjectIdentifier()
+	warehouseModel := model.Warehouse("test", id.Name()).
+		WithMaxClusterCount(1).
+		WithMinClusterCount(1)
+	ref := warehouseModel.ResourceReference()
+	cfg := accconfig.FromModels(t, providerModel, warehouseModel)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		// TODO [SNOW-1653619]: check destroy for secondary account
+		CheckDestroy: nil,
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.19.0"),
+				Config:            cfg,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "max_cluster_count", tfjson.ActionUpdate, sdk.String("0"), sdk.String("1")),
+						planchecks.ExpectChange(ref, "min_cluster_count", tfjson.ActionUpdate, sdk.String("0"), sdk.String("1")),
+					},
+				},
+				ExpectNonEmptyPlan: true,
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseResource(t, ref).
+						HasName(id.Name()).
+						HasMaxClusterCount(1).
+						HasMinClusterCount(1),
+					resourceshowoutputassert.WarehouseShowOutput(t, ref).
+						HasMaxClusterCount(0).
+						HasMinClusterCount(0),
+				),
+			},
+			// current provider: omitted SHOW integers compare as 0 == 0, so config 1 is kept.
+			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
+				Config:                   cfg,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.WarehouseResource(t, ref).
+						HasName(id.Name()).
+						HasMaxClusterCount(1).
+						HasMinClusterCount(1),
 				),
 			},
 		},

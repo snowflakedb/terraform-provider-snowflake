@@ -121,7 +121,7 @@ func optionalIntOutputMapping[T ~int](value *T) any {
 	if value != nil {
 		return int(*value)
 	}
-	return nil
+	return 0
 }
 
 func optionalIntOutputMappingIntDefault[T ~int](value *T) any {
