@@ -198,5 +198,5 @@ var (
 		WithEnums(
 			StreamSourceTypeEnumDef,
 			StreamModeEnumDef,
-		)
+		).WithEnabledGenerationParts(g.PartUnitTests)
 )

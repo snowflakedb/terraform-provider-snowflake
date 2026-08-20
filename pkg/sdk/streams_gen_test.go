@@ -2,624 +2,560 @@
 
 package sdk
 
-import "testing"
+import (
+	"testing"
+)
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StreamSourceType]{"StreamSourceType", AllStreamSourceTypes, ToStreamSourceType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StreamMode]{"StreamMode", AllStreamModes, ToStreamMode})
 }
 
-func TestStreams_CreateOnTable(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
+var streamsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
-	// added manually
-	tableId := randomSchemaObjectIdentifier()
+const (
+	case_Streams_validation_CreateOnTable_name_ValidIdentifier                                        testCaseName = "validation_CreateOnTable_name_ValidIdentifier"
+	case_Streams_validation_CreateOnTable_TableId_ValidIdentifier                                     testCaseName = "validation_CreateOnTable_TableId_ValidIdentifier"
+	case_Streams_validation_CreateOnTable_opts_ConflictingFields                                      testCaseName = "validation_CreateOnTable_opts_ConflictingFields"
+	case_Streams_validation_CreateOnTable_opts_On_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateOnTable_opts_On_ExactlyOneValueSet_NoneSet"
+	case_Streams_validation_CreateOnTable_opts_On_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateOnTable_opts_On_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_NoneSet                testCaseName = "validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_NoneSet"
+	case_Streams_validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_sql_CreateOnTable_basic                                                              testCaseName = "sql_CreateOnTable_basic"
+	case_Streams_sql_CreateOnTable_all                                                                testCaseName = "sql_CreateOnTable_all"
+	case_Streams_validation_CreateOnExternalTable_name_ValidIdentifier                                testCaseName = "validation_CreateOnExternalTable_name_ValidIdentifier"
+	case_Streams_validation_CreateOnExternalTable_ExternalTableId_ValidIdentifier                     testCaseName = "validation_CreateOnExternalTable_ExternalTableId_ValidIdentifier"
+	case_Streams_validation_CreateOnExternalTable_opts_ConflictingFields                              testCaseName = "validation_CreateOnExternalTable_opts_ConflictingFields"
+	case_Streams_validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_NoneSet"
+	case_Streams_validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_NoneSet"
+	case_Streams_validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_sql_CreateOnExternalTable_basic                                                      testCaseName = "sql_CreateOnExternalTable_basic"
+	case_Streams_sql_CreateOnExternalTable_all                                                        testCaseName = "sql_CreateOnExternalTable_all"
+	case_Streams_validation_CreateOnDirectoryTable_name_ValidIdentifier                               testCaseName = "validation_CreateOnDirectoryTable_name_ValidIdentifier"
+	case_Streams_validation_CreateOnDirectoryTable_StageId_ValidIdentifier                            testCaseName = "validation_CreateOnDirectoryTable_StageId_ValidIdentifier"
+	case_Streams_validation_CreateOnDirectoryTable_opts_ConflictingFields                             testCaseName = "validation_CreateOnDirectoryTable_opts_ConflictingFields"
+	case_Streams_sql_CreateOnDirectoryTable_basic                                                     testCaseName = "sql_CreateOnDirectoryTable_basic"
+	case_Streams_sql_CreateOnDirectoryTable_all                                                       testCaseName = "sql_CreateOnDirectoryTable_all"
+	case_Streams_validation_CreateOnView_name_ValidIdentifier                                         testCaseName = "validation_CreateOnView_name_ValidIdentifier"
+	case_Streams_validation_CreateOnView_ViewId_ValidIdentifier                                       testCaseName = "validation_CreateOnView_ViewId_ValidIdentifier"
+	case_Streams_validation_CreateOnView_opts_ConflictingFields                                       testCaseName = "validation_CreateOnView_opts_ConflictingFields"
+	case_Streams_validation_CreateOnView_opts_On_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_CreateOnView_opts_On_ExactlyOneValueSet_NoneSet"
+	case_Streams_validation_CreateOnView_opts_On_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_CreateOnView_opts_On_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_NoneSet"
+	case_Streams_validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_sql_CreateOnView_basic                                                               testCaseName = "sql_CreateOnView_basic"
+	case_Streams_sql_CreateOnView_all                                                                 testCaseName = "sql_CreateOnView_all"
+	case_Streams_validation_Clone_name_ValidIdentifier                                                testCaseName = "validation_Clone_name_ValidIdentifier"
+	case_Streams_sql_Clone_basic                                                                      testCaseName = "sql_Clone_basic"
+	case_Streams_validation_Alter_name_ValidIdentifier                                                testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Streams_validation_Alter_opts_ConflictingFields                                              testCaseName = "validation_Alter_opts_ConflictingFields"
+	case_Streams_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                     testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Streams_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                              testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streams_sql_Alter_SetComment                                                                 testCaseName = "sql_Alter_SetComment"
+	case_Streams_sql_Alter_UnsetComment                                                               testCaseName = "sql_Alter_UnsetComment"
+	case_Streams_sql_Alter_SetTags                                                                    testCaseName = "sql_Alter_SetTags"
+	case_Streams_sql_Alter_UnsetTags                                                                  testCaseName = "sql_Alter_UnsetTags"
+	case_Streams_validation_Drop_name_ValidIdentifier                                                 testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Streams_sql_Drop_basic                                                                       testCaseName = "sql_Drop_basic"
+	case_Streams_sql_Drop_all                                                                         testCaseName = "sql_Drop_all"
+	case_Streams_sql_Show_basic                                                                       testCaseName = "sql_Show_basic"
+	case_Streams_sql_Show_all                                                                         testCaseName = "sql_Show_all"
+	case_Streams_sql_Show_Like                                                                        testCaseName = "sql_Show_Like"
+	case_Streams_sql_Show_In                                                                          testCaseName = "sql_Show_In"
+	case_Streams_sql_Show_StartsWith                                                                  testCaseName = "sql_Show_StartsWith"
+	case_Streams_sql_Show_Limit                                                                       testCaseName = "sql_Show_Limit"
+	case_Streams_validation_Describe_name_ValidIdentifier                                             testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Streams_sql_Describe_basic                                                                   testCaseName = "sql_Describe_basic"
+)
 
-	// Minimal valid CreateOnTableStreamOptions
-	defaultOpts := func() *CreateOnTableStreamOptions {
-		return &CreateOnTableStreamOptions{
-			// adjusted manually
-			name:    id,
-			TableId: tableId,
-			On: &OnStream{
-				At: Bool(true),
-				Statement: OnStreamStatement{
-					Stream: String("123"),
+type StreamsTestsContext struct {
+	CreateOnTable          *sdkTestCtx[*CreateOnTableStreamOptions]
+	CreateOnExternalTable  *sdkTestCtx[*CreateOnExternalTableStreamOptions]
+	CreateOnDirectoryTable *sdkTestCtx[*CreateOnDirectoryTableStreamOptions]
+	CreateOnView           *sdkTestCtx[*CreateOnViewStreamOptions]
+	Clone                  *sdkTestCtx[*CloneStreamOptions]
+	Alter                  *sdkTestCtx[*AlterStreamOptions]
+	Drop                   *sdkTestCtx[*DropStreamOptions]
+	Show                   *sdkTestCtx[*ShowStreamOptions]
+	Describe               *sdkTestCtx[*DescribeStreamOptions]
+}
+
+var streamsTests = StreamsTestsContext{
+	CreateOnTable: newSdkTestCtx[*CreateOnTableStreamOptions](
+		"Streams", "CreateOnTable",
+	).
+		withDefaultOpts(func() *CreateOnTableStreamOptions {
+			return &CreateOnTableStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
 				},
 			},
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateOnTableStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.TableId]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.TableId = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnTableStreamOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.At opts.On.Before] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = new(OnStream)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnTableStreamOptions.On", "At", "Before"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.At opts.On.Before] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On.At = Bool(true)
-		opts.On.Before = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnTableStreamOptions.On", "At", "Before"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.Statement.Timestamp opts.On.Statement.Offset opts.On.Statement.Statement opts.On.Statement.Stream] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = &OnStream{
-			Statement: OnStreamStatement{},
-		}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.Statement.Timestamp opts.On.Statement.Offset opts.On.Statement.Statement opts.On.Statement.Stream] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		timestamp := "2024-09-25 06:16:10.359 -0700"
-		opts.On.Statement = OnStreamStatement{
-			Timestamp: String(timestamp),
-			Offset:    String("-10"),
-		}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = nil
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON TABLE %s", id.FullyQualifiedName(), tableId.FullyQualifiedName())
-	})
-
-	// all variants added manually
-	t.Run("at timestamp", func(t *testing.T) {
-		timestamp := "2024-09-25 06:16:10.359 -0700"
-		opts := defaultOpts()
-		opts.On = &OnStream{
-			At: Bool(true),
-			Statement: OnStreamStatement{
-				Timestamp: String(timestamp),
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_TableId_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.TableId = emptySchemaObjectIdentifier
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON TABLE %s AT (TIMESTAMP => '%s')", id.FullyQualifiedName(), tableId.FullyQualifiedName(), timestamp)
-	})
-
-	t.Run("at offset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = &OnStream{
-			At: Bool(true),
-			Statement: OnStreamStatement{
-				Offset: String("-10"),
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateOnTableStreamOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON TABLE %s AT (OFFSET => -10)", id.FullyQualifiedName(), tableId.FullyQualifiedName())
-	})
-
-	t.Run("at statement", func(t *testing.T) {
-		queryId := "0111447d-0905-8a5c-0062-f3820281547a"
-		opts := defaultOpts()
-		opts.On = &OnStream{
-			At: Bool(true),
-			Statement: OnStreamStatement{
-				Statement: String(queryId),
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_opts_On_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnTableStreamOptions.On", "At", "Before"),
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.At = nil
+					opts.On.Before = nil
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON TABLE %s AT (STATEMENT => '%s')", id.FullyQualifiedName(), tableId.FullyQualifiedName(), queryId)
-	})
-
-	t.Run("at stream", func(t *testing.T) {
-		streamId := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.On = &OnStream{
-			At: Bool(true),
-			Statement: OnStreamStatement{
-				Stream: String(streamId.FullyQualifiedName()),
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_opts_On_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnTableStreamOptions.On", "At", "Before"),
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.At = new(true)
+					opts.On.Before = new(true)
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON TABLE %s AT (STREAM => '%s')", id.FullyQualifiedName(), tableId.FullyQualifiedName(), temporaryReplace(streamId))
-	})
-
-	t.Run("before timestamp", func(t *testing.T) {
-		timestamp := "2024-09-25 06:16:10.359 -0700"
-		opts := defaultOpts()
-		opts.On = &OnStream{
-			Before: Bool(true),
-			Statement: OnStreamStatement{
-				Timestamp: String(timestamp),
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"),
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.Statement.Timestamp = nil
+					opts.On.Statement.Offset = nil
+					opts.On.Statement.Statement = nil
+					opts.On.Statement.Stream = nil
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON TABLE %s BEFORE (TIMESTAMP => '%s')", id.FullyQualifiedName(), tableId.FullyQualifiedName(), timestamp)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.On = &OnStream{
-			At: Bool(true),
-			Statement: OnStreamStatement{
-				Stream: String("123"),
+			validationCase[*CreateOnTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnTable_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"),
+				DefaultModify: func(opts *CreateOnTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.Statement.Timestamp = new("foo")
+					opts.On.Statement.Offset = new("foo")
+				},
 			},
-		}
-		opts.AppendOnly = Bool(true)
-		opts.ShowInitialRows = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE STREAM %s ON TABLE %s AT (STREAM => '123') APPEND_ONLY = true SHOW_INITIAL_ROWS = true COMMENT = 'some comment'", id.FullyQualifiedName(), tableId.FullyQualifiedName())
-	})
+		).
+		withSqlCases(
+			sqlCase[*CreateOnTableStreamOptions]{
+				Name:           case_Streams_sql_CreateOnTable_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOnTableStreamOptions]{
+				Name: case_Streams_sql_CreateOnTable_all,
+			},
+		),
+	CreateOnExternalTable: newSdkTestCtx[*CreateOnExternalTableStreamOptions](
+		"Streams", "CreateOnExternalTable",
+	).
+		withDefaultOpts(func() *CreateOnExternalTableStreamOptions {
+			return &CreateOnExternalTableStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_ExternalTableId_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.ExternalTableId = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateOnExternalTableStreamOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnExternalTableStreamOptions.On", "At", "Before"),
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.At = nil
+					opts.On.Before = nil
+				},
+			},
+			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_opts_On_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnExternalTableStreamOptions.On", "At", "Before"),
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.At = new(true)
+					opts.On.Before = new(true)
+				},
+			},
+			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnExternalTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"),
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.Statement.Timestamp = nil
+					opts.On.Statement.Offset = nil
+					opts.On.Statement.Statement = nil
+					opts.On.Statement.Stream = nil
+				},
+			},
+			validationCase[*CreateOnExternalTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnExternalTable_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnExternalTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"),
+				DefaultModify: func(opts *CreateOnExternalTableStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.Statement.Timestamp = new("foo")
+					opts.On.Statement.Offset = new("foo")
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateOnExternalTableStreamOptions]{
+				Name:           case_Streams_sql_CreateOnExternalTable_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOnExternalTableStreamOptions]{
+				Name: case_Streams_sql_CreateOnExternalTable_all,
+			},
+		),
+	CreateOnDirectoryTable: newSdkTestCtx[*CreateOnDirectoryTableStreamOptions](
+		"Streams", "CreateOnDirectoryTable",
+	).
+		withDefaultOpts(func() *CreateOnDirectoryTableStreamOptions {
+			return &CreateOnDirectoryTableStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOnDirectoryTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnDirectoryTable_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnDirectoryTableStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateOnDirectoryTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnDirectoryTable_StageId_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnDirectoryTableStreamOptions) {
+					opts.StageId = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateOnDirectoryTableStreamOptions]{
+				Name:        case_Streams_validation_CreateOnDirectoryTable_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateOnDirectoryTableStreamOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateOnDirectoryTableStreamOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateOnDirectoryTableStreamOptions]{
+				Name:           case_Streams_sql_CreateOnDirectoryTable_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOnDirectoryTableStreamOptions]{
+				Name: case_Streams_sql_CreateOnDirectoryTable_all,
+			},
+		),
+	CreateOnView: newSdkTestCtx[*CreateOnViewStreamOptions](
+		"Streams", "CreateOnView",
+	).
+		withDefaultOpts(func() *CreateOnViewStreamOptions {
+			return &CreateOnViewStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_ViewId_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.ViewId = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateOnViewStreamOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_opts_On_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnViewStreamOptions.On", "At", "Before"),
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.At = nil
+					opts.On.Before = nil
+				},
+			},
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_opts_On_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnViewStreamOptions.On", "At", "Before"),
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.At = new(true)
+					opts.On.Before = new(true)
+				},
+			},
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnViewStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"),
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.Statement.Timestamp = nil
+					opts.On.Statement.Offset = nil
+					opts.On.Statement.Statement = nil
+					opts.On.Statement.Stream = nil
+				},
+			},
+			validationCase[*CreateOnViewStreamOptions]{
+				Name:        case_Streams_validation_CreateOnView_opts_On_Statement_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOnViewStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"),
+				DefaultModify: func(opts *CreateOnViewStreamOptions) {
+					opts.On = &OnStream{}
+					opts.On.Statement.Timestamp = new("foo")
+					opts.On.Statement.Offset = new("foo")
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateOnViewStreamOptions]{
+				Name:           case_Streams_sql_CreateOnView_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOnViewStreamOptions]{
+				Name: case_Streams_sql_CreateOnView_all,
+			},
+		),
+	Clone: newSdkTestCtx[*CloneStreamOptions](
+		"Streams", "Clone",
+	).
+		withDefaultOpts(func() *CloneStreamOptions {
+			return &CloneStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CloneStreamOptions]{
+				Name:        case_Streams_validation_Clone_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CloneStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CloneStreamOptions]{
+				Name:           case_Streams_sql_Clone_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterStreamOptions](
+		"Streams", "Alter",
+	).
+		withDefaultOpts(func() *AlterStreamOptions {
+			return &AlterStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterStreamOptions]{
+				Name:        case_Streams_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterStreamOptions]{
+				Name:        case_Streams_validation_Alter_opts_ConflictingFields,
+				ExpectedErr: errOneOf("AlterStreamOptions", "IfExists", "UnsetTags"),
+			},
+			validationCase[*AlterStreamOptions]{
+				Name:        case_Streams_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterStreamOptions", "SetComment", "UnsetComment", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterStreamOptions) {
+					opts.SetComment = nil
+					opts.UnsetComment = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterStreamOptions]{
+				Name:        case_Streams_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterStreamOptions", "SetComment", "UnsetComment", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterStreamOptions) {
+					opts.SetComment = new("foo")
+					opts.UnsetComment = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterStreamOptions]{
+				Name: case_Streams_sql_Alter_SetComment,
+			},
+			sqlCase[*AlterStreamOptions]{
+				Name: case_Streams_sql_Alter_UnsetComment,
+			},
+			sqlCase[*AlterStreamOptions]{
+				Name: case_Streams_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterStreamOptions]{
+				Name: case_Streams_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropStreamOptions](
+		"Streams", "Drop",
+	).
+		withDefaultOpts(func() *DropStreamOptions {
+			return &DropStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropStreamOptions]{
+				Name:        case_Streams_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropStreamOptions]{
+				Name:           case_Streams_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropStreamOptions]{
+				Name: case_Streams_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowStreamOptions](
+		"Streams", "Show",
+	).
+		withDefaultOpts(func() *ShowStreamOptions {
+			return &ShowStreamOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowStreamOptions]{
+				Name:           case_Streams_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowStreamOptions]{
+				Name: case_Streams_sql_Show_all,
+			},
+			sqlCase[*ShowStreamOptions]{
+				Name: case_Streams_sql_Show_Like,
+			},
+			sqlCase[*ShowStreamOptions]{
+				Name: case_Streams_sql_Show_In,
+			},
+			sqlCase[*ShowStreamOptions]{
+				Name: case_Streams_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowStreamOptions]{
+				Name: case_Streams_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeStreamOptions](
+		"Streams", "Describe",
+	).
+		withDefaultOpts(func() *DescribeStreamOptions {
+			return &DescribeStreamOptions{
+				name: streamsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeStreamOptions]{
+				Name:        case_Streams_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeStreamOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeStreamOptions]{
+				Name:           case_Streams_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
+func TestStreams_CreateOnTable(t *testing.T) {
+	streamsTests.CreateOnTable.RunValidationCases(t)
+	streamsTests.CreateOnTable.RunSqlCases(t)
 }
 
 func TestStreams_CreateOnExternalTable(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	externalTableId := randomSchemaObjectIdentifier()
-
-	// Minimal valid CreateOnExternalTableStreamOptions
-	defaultOpts := func() *CreateOnExternalTableStreamOptions {
-		return &CreateOnExternalTableStreamOptions{
-			// adjusted manually
-			name:            id,
-			ExternalTableId: externalTableId,
-			On: &OnStream{
-				At: Bool(true),
-				Statement: OnStreamStatement{
-					Stream: String("123"),
-				},
-			},
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateOnExternalTableStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.ExternalTableId]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExternalTableId = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnExternalTableStreamOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.At opts.On.Before] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = new(OnStream)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnExternalTableStreamOptions.On", "At", "Before"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.At opts.On.Before] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On.At = Bool(true)
-		opts.On.Before = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnExternalTableStreamOptions.On", "At", "Before"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.Statement.Timestamp opts.On.Statement.Offset opts.On.Statement.Statement opts.On.Statement.Stream] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On.Statement = OnStreamStatement{}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnExternalTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.Statement.Timestamp opts.On.Statement.Offset opts.On.Statement.Statement opts.On.Statement.Stream] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		timestamp := "2024-09-25 06:16:10.359 -0700"
-		opts.On.Statement = OnStreamStatement{
-			Timestamp: String(timestamp),
-			Offset:    String("-10"),
-		}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnExternalTableStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = nil
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON EXTERNAL TABLE %s", id.FullyQualifiedName(), externalTableId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.CopyGrants = Bool(true)
-		opts.On = &OnStream{
-			At: Bool(true),
-			Statement: OnStreamStatement{
-				Statement: String("123"),
-			},
-		}
-		opts.InsertOnly = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STREAM IF NOT EXISTS %s COPY GRANTS ON EXTERNAL TABLE %s AT (STATEMENT => '123') INSERT_ONLY = true COMMENT = 'some comment'`, id.FullyQualifiedName(), externalTableId.FullyQualifiedName())
-	})
+	streamsTests.CreateOnExternalTable.RunValidationCases(t)
+	streamsTests.CreateOnExternalTable.RunSqlCases(t)
 }
 
 func TestStreams_CreateOnDirectoryTable(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	stageId := randomSchemaObjectIdentifier()
-
-	// Minimal valid CreateOnDirectoryTableStreamOptions
-	defaultOpts := func() *CreateOnDirectoryTableStreamOptions {
-		return &CreateOnDirectoryTableStreamOptions{
-			// adjusted manually
-			name:    id,
-			StageId: stageId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateOnDirectoryTableStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.StageId]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.StageId = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnDirectoryTableStreamOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON STAGE %s", id.FullyQualifiedName(), stageId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.CopyGrants = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STREAM IF NOT EXISTS %s COPY GRANTS ON STAGE %s COMMENT = 'some comment'`, id.FullyQualifiedName(), stageId.FullyQualifiedName())
-	})
+	streamsTests.CreateOnDirectoryTable.RunValidationCases(t)
+	streamsTests.CreateOnDirectoryTable.RunSqlCases(t)
 }
 
 func TestStreams_CreateOnView(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	viewId := randomSchemaObjectIdentifier()
-
-	// Minimal valid CreateOnViewStreamOptions
-	defaultOpts := func() *CreateOnViewStreamOptions {
-		return &CreateOnViewStreamOptions{
-			// adjusted manually
-			name:   id,
-			ViewId: viewId,
-			On: &OnStream{
-				At: Bool(true),
-				Statement: OnStreamStatement{
-					Stream: String("123"),
-				},
-			},
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateOnViewStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.ViewId]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ViewId = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateOnViewStreamOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.At opts.On.Before] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = new(OnStream)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnViewStreamOptions.On", "At", "Before"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.At opts.On.Before] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On.At = Bool(true)
-		opts.On.Before = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnViewStreamOptions.On", "At", "Before"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.Statement.Timestamp opts.On.Statement.Offset opts.On.Statement.Statement opts.On.Statement.Stream] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On.Statement = OnStreamStatement{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnViewStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
-	})
-
-	t.Run("validation: exactly one field from [opts.On.Statement.Timestamp opts.On.Statement.Offset opts.On.Statement.Statement opts.On.Statement.Stream] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		timestamp := "2024-09-25 06:16:10.359 -0700"
-		opts.On.Statement = OnStreamStatement{
-			Timestamp: String(timestamp),
-			Offset:    String("-10"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateOnViewStreamOptions.On.Statement", "Timestamp", "Offset", "Statement", "Stream"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = nil
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s ON VIEW %s", id.FullyQualifiedName(), viewId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.CopyGrants = Bool(true)
-		opts.On = &OnStream{
-			Before: Bool(true),
-			Statement: OnStreamStatement{
-				Stream: String("123"),
-			},
-		}
-		opts.AppendOnly = Bool(true)
-		opts.ShowInitialRows = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE STREAM %s COPY GRANTS ON VIEW %s BEFORE (STREAM => '123') APPEND_ONLY = true SHOW_INITIAL_ROWS = true COMMENT = 'some comment'`, id.FullyQualifiedName(), viewId.FullyQualifiedName())
-	})
+	streamsTests.CreateOnView.RunValidationCases(t)
+	streamsTests.CreateOnView.RunSqlCases(t)
 }
 
 func TestStreams_Clone(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	sourceId := randomSchemaObjectIdentifier()
-
-	// Minimal valid CloneStreamOptions
-	defaultOpts := func() *CloneStreamOptions {
-		return &CloneStreamOptions{
-			// adjusted manually
-			name:         id,
-			sourceStream: sourceId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CloneStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE STREAM %s CLONE %s", id.FullyQualifiedName(), sourceId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.CopyGrants = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE STREAM %s CLONE %s COPY GRANTS", id.FullyQualifiedName(), sourceId.FullyQualifiedName())
-	})
+	streamsTests.Clone.RunValidationCases(t)
+	streamsTests.Clone.RunSqlCases(t)
 }
 
 func TestStreams_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterStreamOptions
-	defaultOpts := func() *AlterStreamOptions {
-		return &AlterStreamOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetTags]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.UnsetTags = []ObjectIdentifier{randomAccountObjectIdentifier()}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStreamOptions", "IfExists", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStreamOptions", "SetComment", "UnsetComment", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.SetComment opts.UnsetComment opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetComment = String("new comment")
-		opts.UnsetComment = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStreamOptions", "SetComment", "UnsetComment", "SetTags", "UnsetTags"))
-	})
-
-	// all variants added manually
-	t.Run("set comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.SetComment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAM IF EXISTS %s SET COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.UnsetComment = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAM IF EXISTS %s UNSET COMMENT`, id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAM IF EXISTS %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAM %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	streamsTests.Alter.RunValidationCases(t)
+	streamsTests.Alter.RunSqlCases(t)
 }
 
 func TestStreams_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropStreamOptions
-	defaultOpts := func() *DropStreamOptions {
-		return &DropStreamOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP STREAM %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP STREAM IF EXISTS %s`, id.FullyQualifiedName())
-	})
+	streamsTests.Drop.RunValidationCases(t)
+	streamsTests.Drop.RunSqlCases(t)
 }
 
 func TestStreams_Show(t *testing.T) {
-	// Minimal valid ShowStreamOptions
-	defaultOpts := func() *ShowStreamOptions {
-		return &ShowStreamOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW STREAMS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		opts.Like = &Like{Pattern: String("pattern")}
-		schemaId := randomDatabaseObjectIdentifier()
-		opts.In = &ExtendedIn{In: In{Schema: schemaId}}
-		opts.StartsWith = String("starts with pattern")
-		opts.Limit = &LimitFrom{Rows: Int(123), From: String("from pattern")}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE STREAMS LIKE 'pattern' IN SCHEMA %s STARTS WITH 'starts with pattern' LIMIT 123 FROM 'from pattern'`, schemaId.FullyQualifiedName())
-	})
+	streamsTests.Show.RunValidationCases(t)
+	streamsTests.Show.RunSqlCases(t)
 }
 
 func TestStreams_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeStreamOptions
-	defaultOpts := func() *DescribeStreamOptions {
-		return &DescribeStreamOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeStreamOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE STREAM %s`, id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	streamsTests.Describe.RunValidationCases(t)
+	streamsTests.Describe.RunSqlCases(t)
 }
