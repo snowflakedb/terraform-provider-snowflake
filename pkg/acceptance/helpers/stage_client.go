@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testfiles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -321,10 +323,22 @@ func (c *StageClient) CopyIntoTableFromFile(t *testing.T, table, stage sdk.Schem
 	t.Helper()
 	ctx := context.Background()
 
-	_, err := c.context.client.ExecForTests(ctx, fmt.Sprintf(`COPY INTO %s
+	query := fmt.Sprintf(`COPY INTO %s
 	FROM @%s/%s
 	FILE_FORMAT = (type=json)
-	MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE`, table.FullyQualifiedName(), stage.FullyQualifiedName(), filename))
+	MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE`, table.FullyQualifiedName(), stage.FullyQualifiedName(), filename)
+
+	// Retry because on testing accounts the ingestion is not retried after adding the column.
+	err := util.Retry(2, 0, func() (error, bool) {
+		_, err := c.context.client.ExecForTests(ctx, query)
+		if err != nil {
+			if strings.Contains(err.Error(), "000695 (22000): Schema evolution is incomplete") {
+				return nil, false
+			}
+			return err, true
+		}
+		return nil, true
+	})
 	require.NoError(t, err)
 }
 
