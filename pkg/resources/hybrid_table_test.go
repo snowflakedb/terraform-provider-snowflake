@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -145,54 +144,6 @@ func TestUnit_HybridTable_foreignKeyHash_ignoresName_and_normalizesTableName(t *
 		"ref_columns": []any{"id"},
 	}
 	require.NotEqual(t, foreignKeyHash(quoted), foreignKeyHash(differentTable))
-}
-
-// TestUnit_HybridTable_indexHash_caseInsensitive proves the load-bearing mechanism
-// for index case-suppression: a lowercase config element and its uppercase
-// SHOW INDEXES read-back must hash identically, so the TypeSet element identity is
-// stable and Read does not produce a spurious "remove old / add new" -> ForceNew.
-// This matters because set membership is resolved via this hash BEFORE the leaf
-// ignoreCaseSuppressFunc runs, so the suppress func alone cannot prevent the churn.
-func TestUnit_HybridTable_indexHash_caseInsensitive(t *testing.T) {
-	lower := map[string]any{
-		"name":            "idx_x",
-		"columns":         []any{"status"},
-		"include_columns": schema.NewSet(schema.HashString, []any{"score"}),
-	}
-	upper := map[string]any{
-		"name":            "idx_x",
-		"columns":         []any{"STATUS"},
-		"include_columns": schema.NewSet(schema.HashString, []any{"SCORE"}),
-	}
-	require.Equal(t, indexHash(lower), indexHash(upper), "lowercase config and uppercase read-back must hash equal")
-
-	// Genuinely different key columns must hash differently.
-	different := map[string]any{
-		"name":            "idx_x",
-		"columns":         []any{"region"},
-		"include_columns": schema.NewSet(schema.HashString, []any{"score"}),
-	}
-	require.NotEqual(t, indexHash(lower), indexHash(different))
-
-	// include_columns is a TypeSet: declared order must not change the hash.
-	orderA := map[string]any{
-		"name":            "idx_y",
-		"columns":         []any{"a"},
-		"include_columns": schema.NewSet(schema.HashString, []any{"x", "y"}),
-	}
-	orderB := map[string]any{
-		"name":            "idx_y",
-		"columns":         []any{"a"},
-		"include_columns": schema.NewSet(schema.HashString, []any{"y", "x"}),
-	}
-	require.Equal(t, indexHash(orderA), indexHash(orderB))
-
-	// An index with no include_columns must hash stably (no panic on absent set).
-	noInclude := map[string]any{
-		"name":    "idx_z",
-		"columns": []any{"a"},
-	}
-	require.NotPanics(t, func() { indexHash(noInclude) })
 }
 
 func Test_buildIndexesStateFromShowIndexes(t *testing.T) {

@@ -45,14 +45,21 @@ type HybridTableColumnRequest struct {
 type HybridTableOutOfLineConstraintRequest struct {
 	Name                 *string
 	ColumnConstraintType ColumnConstraintType // required
-	Columns              []string
-	ForeignKey           *OutOfLineForeignKey
+	Columns              []Column
+	ForeignKey           *HybridTableOutOfLineForeignKeyRequest
+}
+
+type HybridTableOutOfLineForeignKeyRequest struct {
+	TableName   SchemaObjectIdentifier // required
+	ColumnNames []Column
+	Match       *MatchType
+	On          *ForeignKeyOnAction
 }
 
 type HybridTableOutOfLineIndexRequest struct {
 	Name           string   // required
-	Columns        []string // required
-	IncludeColumns []string
+	Columns        []Column // required
+	IncludeColumns []Column
 }
 
 type AlterHybridTableRequest struct {
@@ -93,7 +100,7 @@ type HybridTableConstraintActionDropRequest struct {
 	ConstraintName *string
 	Unique         *bool
 	ForeignKey     *bool
-	Columns        []string
+	Columns        []Column
 	Cascade        *bool
 	Restrict       *bool
 }
@@ -109,7 +116,7 @@ type HybridTableAlterColumnActionRequest struct {
 
 type HybridTableDropColumnActionRequest struct {
 	IfExists *bool
-	Columns  []string // required
+	Columns  []Column // required
 }
 
 type HybridTableDropIndexActionRequest struct {
@@ -169,8 +176,8 @@ type CreateIndexHybridTableRequest struct {
 	IfNotExists    *bool
 	name           SchemaObjectIdentifier // required
 	TableName      SchemaObjectIdentifier // required
-	Columns        []string               // required
-	IncludeColumns []string
+	Columns        []Column               // required
+	IncludeColumns []Column
 }
 
 type DropIndexHybridTableRequest struct {

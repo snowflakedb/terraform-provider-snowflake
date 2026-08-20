@@ -154,7 +154,14 @@ func (r *CreateHybridTableRequest) toOpts() *CreateHybridTableOptions {
 				Name:                 v.Name,
 				ColumnConstraintType: v.ColumnConstraintType,
 				Columns:              v.Columns,
-				ForeignKey:           v.ForeignKey,
+			}
+			if v.ForeignKey != nil {
+				outOfLineConstraint[i].ForeignKey = &HybridTableOutOfLineForeignKey{
+					TableName:   v.ForeignKey.TableName,
+					ColumnNames: v.ForeignKey.ColumnNames,
+					Match:       v.ForeignKey.Match,
+					On:          v.ForeignKey.On,
+				}
 			}
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
