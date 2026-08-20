@@ -83,7 +83,6 @@ func acceptanceTestsProvider() *schema.Provider {
 	p := provider.Provider()
 	// add resources and data sources that are not ready here like:
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
-	p.ResourcesMap["snowflake_hybrid_table"] = resources.HybridTable()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
 	return p

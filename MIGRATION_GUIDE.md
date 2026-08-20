@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.19.x ➞ v2.20.0
 
+### *(new feature)* New hybrid table resource
+
+We have added a new preview resource for managing hybrid tables: [snowflake_hybrid_table](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/hybrid_table). Check the [official Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-hybrid-table) to know more.
+
+This feature will be marked as stable in a future release. Breaking changes are expected, even without bumping the major version. To use it, add `snowflake_hybrid_table_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* tfc_workload_identity_token_tag provider field
 
 A new optional `tfc_workload_identity_token_tag` provider field has been added for use with the OIDC

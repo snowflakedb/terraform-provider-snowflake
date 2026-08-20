@@ -48,9 +48,43 @@ resource "snowflake_hybrid_table" "complete" {
     }
   }
 
+  column {
+    name = "STATUS"
+    type = "VARCHAR(256)"
+    default {
+      constant = "ACTIVE"
+    }
+  }
+
+  column {
+    name = "SEQ_ID"
+    type = "NUMBER(38,0)"
+    default {
+      sequence = "DATABASE.SCHEMA.MY_SEQUENCE"
+    }
+  }
+
+  column {
+    name     = "PARENT_ID"
+    type     = "NUMBER(38,0)"
+    not_null = true
+  }
+
   primary_key_constraint {
     name    = "pk_hybrid_table"
     columns = ["ID"]
+  }
+
+  unique_constraint {
+    name    = "uq_name"
+    columns = ["NAME"]
+  }
+
+  foreign_key_constraint {
+    name        = "fk_parent"
+    columns     = ["PARENT_ID"]
+    table_name  = "DATABASE.SCHEMA.PARENT_HYBRID_TABLE"
+    ref_columns = ["ID"]
   }
 
   index {
