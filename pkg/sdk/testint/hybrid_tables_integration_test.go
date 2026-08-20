@@ -86,16 +86,16 @@ func TestInt_HybridTables(t *testing.T) {
 					{
 						Name:                 sdk.String("uq_name"),
 						ColumnConstraintType: sdk.ColumnConstraintTypeUnique,
-						Columns:              []string{"NAME"},
+						Columns:              []sdk.Column{{Value: "NAME"}},
 					},
 					{
 						ColumnConstraintType: sdk.ColumnConstraintTypeForeignKey,
-						Columns:              []string{"REF_FK_COL"},
-						ForeignKey:           &sdk.OutOfLineForeignKey{TableName: refId, ColumnNames: []string{"REF_ID"}},
+						Columns:              []sdk.Column{{Value: "REF_FK_COL"}},
+						ForeignKey:           &sdk.HybridTableOutOfLineForeignKeyRequest{TableName: refId, ColumnNames: []sdk.Column{{Value: "REF_ID"}}},
 					},
 				},
 				OutOfLineIndex: []sdk.HybridTableOutOfLineIndexRequest{
-					{Name: "idx_status", Columns: []string{"STATUS"}, IncludeColumns: []string{"NAME"}},
+					{Name: "idx_status", Columns: []sdk.Column{{Value: "STATUS"}}, IncludeColumns: []sdk.Column{{Value: "NAME"}}},
 				},
 			}
 
@@ -194,7 +194,7 @@ func TestInt_HybridTables(t *testing.T) {
 					{Name: "DATA", DataType: sdk.DataType("VARCHAR(100)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{ColumnConstraintType: sdk.ColumnConstraintTypePrimaryKey, Columns: []string{"PART_A", "PART_B"}},
+					{ColumnConstraintType: sdk.ColumnConstraintTypePrimaryKey, Columns: []sdk.Column{{Value: "PART_A"}, {Value: "PART_B"}}},
 				},
 			}
 			err := client.HybridTables.Create(ctx, sdk.NewCreateHybridTableRequest(id, columns))
@@ -312,7 +312,7 @@ func TestInt_HybridTables(t *testing.T) {
 			require.Equal(t, colComment, details[2].Comment)
 
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
-				WithDropColumnAction(*sdk.NewHybridTableDropColumnActionRequest([]string{"NAME"}).WithIfExists(true)))
+				WithDropColumnAction(*sdk.NewHybridTableDropColumnActionRequest([]sdk.Column{{Value: "NAME"}}).WithIfExists(true)))
 			require.NoError(t, err)
 
 			details, err = client.HybridTables.Describe(ctx, id)
@@ -552,7 +552,7 @@ func TestInt_HybridTables(t *testing.T) {
 					{Name: "CODE", DataType: sdk.DataType("VARCHAR(50)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{Name: sdk.String("uq_code"), ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []string{"CODE"}},
+					{Name: sdk.String("uq_code"), ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []sdk.Column{{Value: "CODE"}}},
 				},
 			}
 			_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
@@ -612,7 +612,7 @@ func TestInt_HybridTables(t *testing.T) {
 					{Name: "EMAIL", DataType: sdk.DataType("VARCHAR(255)")},
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-					{ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []string{"EMAIL"}},
+					{ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []sdk.Column{{Value: "EMAIL"}}},
 				},
 			}
 			_, cleanup := testClientHelper().HybridTable.CreateWithRequest(t, id, columns)
@@ -620,7 +620,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
 				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
-					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithUnique(true).WithColumns([]string{"EMAIL"}).WithCascade(true))))
+					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithUnique(true).WithColumns([]sdk.Column{{Value: "EMAIL"}}).WithCascade(true))))
 			require.NoError(t, err)
 
 			details, err := client.HybridTables.Describe(ctx, id)
@@ -641,8 +641,8 @@ func TestInt_HybridTables(t *testing.T) {
 				},
 				OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
 					{
-						ColumnConstraintType: sdk.ColumnConstraintTypeForeignKey, Columns: []string{"PARENT_REF"},
-						ForeignKey: &sdk.OutOfLineForeignKey{TableName: parentId, ColumnNames: []string{"PID"}},
+						ColumnConstraintType: sdk.ColumnConstraintTypeForeignKey, Columns: []sdk.Column{{Value: "PARENT_REF"}},
+						ForeignKey: &sdk.HybridTableOutOfLineForeignKeyRequest{TableName: parentId, ColumnNames: []sdk.Column{{Value: "PID"}}},
 					},
 				},
 			})
@@ -650,7 +650,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			err = client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(childId).
 				WithConstraintAction(*sdk.NewHybridTableConstraintActionRequest().
-					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithForeignKey(true).WithColumns([]string{"PARENT_REF"}).WithRestrict(true))))
+					WithDrop(*sdk.NewHybridTableConstraintActionDropRequest().WithForeignKey(true).WithColumns([]sdk.Column{{Value: "PARENT_REF"}}).WithRestrict(true))))
 			require.NoError(t, err)
 		})
 
@@ -814,7 +814,7 @@ func TestInt_HybridTables(t *testing.T) {
 						{Name: "EMAIL", DataType: sdk.DataType("VARCHAR(255)"), NotNull: &notNull},
 					},
 					OutOfLineConstraint: []sdk.HybridTableOutOfLineConstraintRequest{
-						{ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []string{"EMAIL"}},
+						{ColumnConstraintType: sdk.ColumnConstraintTypeUnique, Columns: []sdk.Column{{Value: "EMAIL"}}},
 					},
 				})
 			t.Cleanup(cleanup)
@@ -965,23 +965,23 @@ func TestInt_HybridTableConstraints(t *testing.T) {
 				{
 					Name:                 sdk.String("pk_child"),
 					ColumnConstraintType: sdk.ColumnConstraintTypePrimaryKey,
-					Columns:              []string{"ID"},
+					Columns:              []sdk.Column{{Value: "ID"}},
 				},
 				{
 					Name:                 sdk.String("uq_named"),
 					ColumnConstraintType: sdk.ColumnConstraintTypeUnique,
-					Columns:              []string{"COL_A"},
+					Columns:              []sdk.Column{{Value: "COL_A"}},
 				},
 				{
 					// No Name → Snowflake assigns a SYS_CONSTRAINT_* name.
 					ColumnConstraintType: sdk.ColumnConstraintTypeUnique,
-					Columns:              []string{"COL_B"},
+					Columns:              []sdk.Column{{Value: "COL_B"}},
 				},
 				{
 					Name:                 sdk.String("fk_named"),
 					ColumnConstraintType: sdk.ColumnConstraintTypeForeignKey,
-					Columns:              []string{"PARENT_ID"},
-					ForeignKey:           &sdk.OutOfLineForeignKey{TableName: parentId, ColumnNames: []string{"ID"}},
+					Columns:              []sdk.Column{{Value: "PARENT_ID"}},
+					ForeignKey:           &sdk.HybridTableOutOfLineForeignKeyRequest{TableName: parentId, ColumnNames: []sdk.Column{{Value: "ID"}}},
 				},
 			},
 		},
@@ -1077,9 +1077,9 @@ func TestInt_HybridTableShowIndexes(t *testing.T) {
 				},
 			},
 			OutOfLineIndex: []sdk.HybridTableOutOfLineIndexRequest{
-				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_STATUS", []string{"STATUS"}),
-				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_REGION_INC", []string{"REGION"}).
-					WithIncludeColumns([]string{"SCORE"}),
+				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_STATUS", []sdk.Column{{Value: "STATUS"}}),
+				*sdk.NewHybridTableOutOfLineIndexRequest("IDX_REGION_INC", []sdk.Column{{Value: "REGION"}}).
+					WithIncludeColumns([]sdk.Column{{Value: "SCORE"}}),
 			},
 		},
 	)

@@ -105,19 +105,42 @@ func (s *HybridTableOutOfLineConstraintRequest) WithName(name string) *HybridTab
 	return s
 }
 
-func (s *HybridTableOutOfLineConstraintRequest) WithColumns(columns []string) *HybridTableOutOfLineConstraintRequest {
+func (s *HybridTableOutOfLineConstraintRequest) WithColumns(columns []Column) *HybridTableOutOfLineConstraintRequest {
 	s.Columns = columns
 	return s
 }
 
-func (s *HybridTableOutOfLineConstraintRequest) WithForeignKey(foreignKey OutOfLineForeignKey) *HybridTableOutOfLineConstraintRequest {
+func (s *HybridTableOutOfLineConstraintRequest) WithForeignKey(foreignKey HybridTableOutOfLineForeignKeyRequest) *HybridTableOutOfLineConstraintRequest {
 	s.ForeignKey = &foreignKey
+	return s
+}
+
+func NewHybridTableOutOfLineForeignKeyRequest(
+	tableName SchemaObjectIdentifier,
+) *HybridTableOutOfLineForeignKeyRequest {
+	s := HybridTableOutOfLineForeignKeyRequest{}
+	s.TableName = tableName
+	return &s
+}
+
+func (s *HybridTableOutOfLineForeignKeyRequest) WithColumnNames(columnNames []Column) *HybridTableOutOfLineForeignKeyRequest {
+	s.ColumnNames = columnNames
+	return s
+}
+
+func (s *HybridTableOutOfLineForeignKeyRequest) WithMatch(match MatchType) *HybridTableOutOfLineForeignKeyRequest {
+	s.Match = &match
+	return s
+}
+
+func (s *HybridTableOutOfLineForeignKeyRequest) WithOn(on ForeignKeyOnAction) *HybridTableOutOfLineForeignKeyRequest {
+	s.On = &on
 	return s
 }
 
 func NewHybridTableOutOfLineIndexRequest(
 	name string,
-	columns []string,
+	columns []Column,
 ) *HybridTableOutOfLineIndexRequest {
 	s := HybridTableOutOfLineIndexRequest{}
 	s.Name = name
@@ -125,7 +148,7 @@ func NewHybridTableOutOfLineIndexRequest(
 	return &s
 }
 
-func (s *HybridTableOutOfLineIndexRequest) WithIncludeColumns(includeColumns []string) *HybridTableOutOfLineIndexRequest {
+func (s *HybridTableOutOfLineIndexRequest) WithIncludeColumns(includeColumns []Column) *HybridTableOutOfLineIndexRequest {
 	s.IncludeColumns = includeColumns
 	return s
 }
@@ -268,7 +291,7 @@ func (s *HybridTableConstraintActionDropRequest) WithForeignKey(foreignKey bool)
 	return s
 }
 
-func (s *HybridTableConstraintActionDropRequest) WithColumns(columns []string) *HybridTableConstraintActionDropRequest {
+func (s *HybridTableConstraintActionDropRequest) WithColumns(columns []Column) *HybridTableConstraintActionDropRequest {
 	s.Columns = columns
 	return s
 }
@@ -317,7 +340,7 @@ func (s *HybridTableAlterColumnActionRequest) WithUnsetComment(unsetComment bool
 }
 
 func NewHybridTableDropColumnActionRequest(
-	columns []string,
+	columns []Column,
 ) *HybridTableDropColumnActionRequest {
 	s := HybridTableDropColumnActionRequest{}
 	s.Columns = columns
@@ -496,7 +519,7 @@ func NewDescribeHybridTableRequest(
 func NewCreateIndexHybridTableRequest(
 	name SchemaObjectIdentifier,
 	tableName SchemaObjectIdentifier,
-	columns []string,
+	columns []Column,
 ) *CreateIndexHybridTableRequest {
 	s := CreateIndexHybridTableRequest{}
 	s.name = name
@@ -515,7 +538,7 @@ func (s *CreateIndexHybridTableRequest) WithIfNotExists(ifNotExists bool) *Creat
 	return s
 }
 
-func (s *CreateIndexHybridTableRequest) WithIncludeColumns(includeColumns []string) *CreateIndexHybridTableRequest {
+func (s *CreateIndexHybridTableRequest) WithIncludeColumns(includeColumns []Column) *CreateIndexHybridTableRequest {
 	s.IncludeColumns = includeColumns
 	return s
 }

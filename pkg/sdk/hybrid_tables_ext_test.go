@@ -50,20 +50,20 @@ func init() {
 					OutOfLineConstraint: []HybridTableOutOfLineConstraint{
 						{
 							ColumnConstraintType: ColumnConstraintTypeUnique,
-							Columns:              []string{"NAME"},
+							Columns:              []Column{{Value: "NAME"}},
 						},
 					},
 					OutOfLineIndex: []HybridTableOutOfLineIndex{
 						{
 							Name:           "idx_name",
-							Columns:        []string{"NAME"},
-							IncludeColumns: []string{"ID"},
+							Columns:        []Column{{Value: "NAME"}},
+							IncludeColumns: []Column{{Value: "ID"}},
 						},
 					},
 				}
 				opts.Comment = new("test comment")
 			},
-			`CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE (NAME), INDEX "idx_name" (NAME) INCLUDE (ID)) COMMENT = 'test comment'`,
+			`CREATE OR REPLACE HYBRID TABLE %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -88,18 +88,18 @@ func init() {
 					OutOfLineConstraint: []HybridTableOutOfLineConstraint{
 						{
 							ColumnConstraintType: ColumnConstraintTypeUnique,
-							Columns:              []string{"NAME"},
+							Columns:              []Column{{Value: "NAME"}},
 						},
 					},
 					OutOfLineIndex: []HybridTableOutOfLineIndex{
 						{
 							Name:    "idx_name",
-							Columns: []string{"NAME"},
+							Columns: []Column{{Value: "NAME"}},
 						},
 					},
 				}
 			},
-			`CREATE HYBRID TABLE %s ("ID" NUMBER PRIMARY KEY, "NAME" VARCHAR NOT NULL COMMENT 'the name', UNIQUE (NAME), INDEX "idx_name" (NAME))`,
+			`CREATE HYBRID TABLE %s ("ID" NUMBER PRIMARY KEY, "NAME" VARCHAR NOT NULL COMMENT 'the name', UNIQUE ("NAME"), INDEX "idx_name" ("NAME"))`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -145,21 +145,54 @@ func init() {
 					OutOfLineConstraint: []HybridTableOutOfLineConstraint{
 						{
 							ColumnConstraintType: ColumnConstraintTypeUnique,
-							Columns:              []string{"email"},
+							Columns:              []Column{{Value: "email"}},
 						},
 					},
 					OutOfLineIndex: []HybridTableOutOfLineIndex{
 						{
 							Name:           "idx_email",
-							Columns:        []string{"email"},
-							IncludeColumns: []string{"id"},
+							Columns:        []Column{{Value: "email"}},
+							IncludeColumns: []Column{{Value: "id"}},
 						},
 					},
 				}
 				opts.Comment = new("test table")
 			},
-			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "email" VARCHAR(200), UNIQUE (email), INDEX "idx_email" (email) INCLUDE (id)) COMMENT = 'test table'`,
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "email" VARCHAR(200), UNIQUE ("email"), INDEX "idx_email" ("email") INCLUDE ("id")) COMMENT = 'test table'`,
 			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_withOutOfLineForeignKey",
+			func(opts *CreateHybridTableOptions) {
+				opts.ColumnsAndConstraints = HybridTableColumnsConstraintsAndIndexes{
+					Columns: []HybridTableColumn{
+						{
+							Name:     "id",
+							DataType: DataType("NUMBER(38,0)"),
+							InlineConstraint: &ColumnInlineConstraint{
+								Type: ColumnConstraintTypePrimaryKey,
+							},
+						},
+						{
+							Name:     "parent_id",
+							DataType: DataType("NUMBER(38,0)"),
+						},
+					},
+					OutOfLineConstraint: []HybridTableOutOfLineConstraint{
+						{
+							Name:                 new("fk_parent"),
+							ColumnConstraintType: ColumnConstraintTypeForeignKey,
+							Columns:              []Column{{Value: "parent_id"}},
+							ForeignKey: &HybridTableOutOfLineForeignKey{
+								TableName:   hybridTablesTestIdSchemaObjectIdentifier,
+								ColumnNames: []Column{{Value: "id"}},
+							},
+						},
+					},
+				}
+			},
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "parent_id" NUMBER(38,0), CONSTRAINT "fk_parent" FOREIGN KEY ("parent_id") REFERENCES %s ("id"))`,
+			id.FullyQualifiedName(), hybridTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_withNamedInlineConstraint",
@@ -320,11 +353,11 @@ func init() {
 				opts.ConstraintAction = &HybridTableConstraintAction{
 					Drop: &HybridTableConstraintActionDrop{
 						Unique:  new(true),
-						Columns: []string{"col1"},
+						Columns: []Column{{Value: "col1"}},
 					},
 				}
 			},
-			`ALTER TABLE IF EXISTS %s DROP UNIQUE (col1)`, id.FullyQualifiedName(),
+			`ALTER TABLE IF EXISTS %s DROP UNIQUE ("col1")`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_ConstraintAction_dropForeignKeyWithCascade",
@@ -333,12 +366,12 @@ func init() {
 				opts.ConstraintAction = &HybridTableConstraintAction{
 					Drop: &HybridTableConstraintActionDrop{
 						ForeignKey: new(true),
-						Columns:    []string{"col1", "col2"},
+						Columns:    []Column{{Value: "col1"}, {Value: "col2"}},
 						Cascade:    new(true),
 					},
 				}
 			},
-			`ALTER TABLE IF EXISTS %s DROP FOREIGN KEY (col1, col2) CASCADE`, id.FullyQualifiedName(),
+			`ALTER TABLE IF EXISTS %s DROP FOREIGN KEY ("col1", "col2") CASCADE`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_ConstraintAction_renameConstraint",
@@ -408,30 +441,30 @@ func init() {
 			func(opts *AlterHybridTableOptions) {
 				opts.IfExists = new(true)
 				opts.DropColumnAction = &HybridTableDropColumnAction{
-					Columns: []string{"column_to_drop"},
+					Columns: []Column{{Value: "column_to_drop"}},
 				}
 			},
-			`ALTER TABLE IF EXISTS %s DROP COLUMN column_to_drop`, id.FullyQualifiedName(),
+			`ALTER TABLE IF EXISTS %s DROP COLUMN "column_to_drop"`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_DropColumnAction_multipleColumns",
 			func(opts *AlterHybridTableOptions) {
 				opts.IfExists = new(true)
 				opts.DropColumnAction = &HybridTableDropColumnAction{
-					Columns: []string{"col1", "col2", "col3"},
+					Columns: []Column{{Value: "col1"}, {Value: "col2"}, {Value: "col3"}},
 				}
 			},
-			`ALTER TABLE IF EXISTS %s DROP COLUMN col1, col2, col3`, id.FullyQualifiedName(),
+			`ALTER TABLE IF EXISTS %s DROP COLUMN "col1", "col2", "col3"`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_DropColumnAction_ifExistsOnColumn",
 			func(opts *AlterHybridTableOptions) {
 				opts.DropColumnAction = &HybridTableDropColumnAction{
 					IfExists: new(true),
-					Columns:  []string{"col1"},
+					Columns:  []Column{{Value: "col1"}},
 				}
 			},
-			`ALTER TABLE %s DROP COLUMN IF EXISTS col1`, id.FullyQualifiedName(),
+			`ALTER TABLE %s DROP COLUMN IF EXISTS "col1"`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_HybridTables_sql_Alter_DropIndexAction,
@@ -624,26 +657,26 @@ func init() {
 			return &CreateIndexHybridTableOptions{
 				name:      indexId,
 				TableName: tableId,
-				Columns:   []string{"col1"},
+				Columns:   []Column{{Value: "col1"}},
 			}
 		}).
 		withExpectedSqlf(
 			case_HybridTables_sql_CreateIndex_basic,
-			`CREATE INDEX %s ON %s (col1)`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
+			`CREATE INDEX %s ON %s ("col1")`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_HybridTables_sql_CreateIndex_all,
 			func(opts *CreateIndexHybridTableOptions) {
 				opts.OrReplace = new(true)
-				opts.Columns = []string{"col1", "col2"}
-				opts.IncludeColumns = []string{"col3"}
+				opts.Columns = []Column{{Value: "col1"}, {Value: "col2"}}
+				opts.IncludeColumns = []Column{{Value: "col3"}}
 			},
-			`CREATE OR REPLACE INDEX %s ON %s (col1, col2) INCLUDE (col3)`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
+			`CREATE OR REPLACE INDEX %s ON %s ("col1", "col2") INCLUDE ("col3")`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_CreateIndex_ifNotExists",
 			func(opts *CreateIndexHybridTableOptions) { opts.IfNotExists = new(true) },
-			`CREATE INDEX IF NOT EXISTS %s ON %s (col1)`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
+			`CREATE INDEX IF NOT EXISTS %s ON %s ("col1")`, indexId.FullyQualifiedName(), tableId.FullyQualifiedName(),
 		)
 
 	hybridTablesTests.DropIndex.

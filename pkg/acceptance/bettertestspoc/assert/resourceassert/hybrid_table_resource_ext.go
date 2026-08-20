@@ -3,11 +3,9 @@ package resourceassert
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func (h *HybridTableResourceAssert) HasColumns(columns []sdk.TableColumnSignature) *HybridTableResourceAssert {
@@ -117,11 +115,10 @@ func (h *HybridTableResourceAssert) HasIndexes(indexes ...model.HybridTableIndex
 		for i, col := range idx.Columns {
 			attrs[fmt.Sprintf("columns.%d", i)] = col
 		}
-		for _, col := range idx.IncludeColumns {
-			// Nested TypeSet keys are hashes; match the resource's include_columns Set func.
-			attrs[fmt.Sprintf("include_columns.%d", schema.HashString(strings.ToUpper(col)))] = col
-		}
 		h.SetContainsElemNested("index", attrs)
+		for _, col := range idx.IncludeColumns {
+			h.SetContainsElem("index.*.include_columns", col)
+		}
 	}
 	return h
 }

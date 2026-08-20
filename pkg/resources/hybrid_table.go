@@ -7,7 +7,6 @@ import (
 	"log"
 	"reflect"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -224,7 +223,6 @@ var hybridTableSchema = map[string]*schema.Schema{
 		Type:        schema.TypeSet,
 		Optional:    true,
 		ForceNew:    true,
-		Set:         indexHash,
 		Description: "Defines secondary indexes on the hybrid table.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
@@ -239,15 +237,14 @@ var hybridTableSchema = map[string]*schema.Schema{
 					Required:    true,
 					ForceNew:    true,
 					MinItems:    1,
-					Elem:        &schema.Schema{Type: schema.TypeString, DiffSuppressFunc: ignoreCaseSuppressFunc},
+					Elem:        &schema.Schema{Type: schema.TypeString},
 					Description: "Index key columns, in order. Order is semantically meaningful.",
 				},
 				"include_columns": {
 					Type:        schema.TypeSet,
 					Optional:    true,
 					ForceNew:    true,
-					Set:         indexIncludeColumnsHash,
-					Elem:        &schema.Schema{Type: schema.TypeString, DiffSuppressFunc: ignoreCaseSuppressFunc},
+					Elem:        &schema.Schema{Type: schema.TypeString},
 					Description: "Columns included in the index payload via INCLUDE (...). Order carries no meaning.",
 				},
 			},
@@ -376,48 +373,6 @@ func foreignKeyHash(v any) int {
 	for _, col := range m["ref_columns"].([]any) {
 		b.WriteString(col.(string))
 		b.WriteByte(',')
-	}
-	return schema.HashString(b.String())
-}
-
-// indexIncludeColumnsHash hashes a single include_columns string (uppercased) so
-// that a lowercase config value and its uppercase SHOW INDEXES read-back land in
-// the same set bucket. Used as the Set function for the include_columns TypeSet.
-func indexIncludeColumnsHash(v any) int {
-	return schema.HashString(strings.ToUpper(v.(string)))
-}
-
-// indexHash hashes an index set element on its stable identity: the user-supplied
-// name plus the index columns and include columns, with column names uppercased.
-// Uppercasing is required because SHOW INDEXES returns uppercase column names while
-// a config may use any case; the TypeSet element identity is resolved via this hash
-// before DiffSuppressFunc runs, so without normalization a lowercase config element
-// and its uppercase read-back would hash differently and churn the set (spurious
-// ForceNew). name is included verbatim — it is user-supplied and round-trips exactly
-// (no server auto-naming, unlike the constraint blocks).
-func indexHash(v any) int {
-	m := v.(map[string]any)
-	var b strings.Builder
-	b.WriteString(m["name"].(string))
-	b.WriteByte('|')
-	for _, col := range m["columns"].([]any) {
-		b.WriteString(strings.ToUpper(col.(string)))
-		b.WriteByte(',')
-	}
-	b.WriteByte('|')
-	if inc, ok := m["include_columns"]; ok && inc != nil {
-		incSet, ok := inc.(*schema.Set)
-		if ok {
-			incCols := make([]string, 0, incSet.Len())
-			for _, c := range incSet.List() {
-				incCols = append(incCols, strings.ToUpper(c.(string)))
-			}
-			sort.Strings(incCols)
-			for _, c := range incCols {
-				b.WriteString(c)
-				b.WriteByte(',')
-			}
-		}
 	}
 	return schema.HashString(b.String())
 }
@@ -767,6 +722,12 @@ func buildHybridColumnDefaultValue(defMap map[string]any, dataType datatypes.Dat
 	return nil, fmt.Errorf("unreachable: default block passed validation but no type matched")
 }
 
+func toColumns(columns []string) []sdk.Column {
+	return collections.Map(columns, func(column string) sdk.Column {
+		return sdk.Column{Value: column}
+	})
+}
+
 func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLineConstraintRequest, error) {
 	constraints := make([]sdk.HybridTableOutOfLineConstraintRequest, 0)
 
@@ -774,7 +735,7 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 	pkList := d.Get("primary_key_constraint").([]any)
 	pkMap := pkList[0].(map[string]any)
 	pkConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).
-		WithColumns(expandStringList(pkMap["columns"].([]any)))
+		WithColumns(toColumns(expandStringList(pkMap["columns"].([]any))))
 	if pkName, ok := pkMap["name"].(string); ok && pkName != "" {
 		pkConstraint.WithName(pkName)
 	}
@@ -785,7 +746,7 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 		for _, ucRaw := range v.(*schema.Set).List() {
 			ucMap := ucRaw.(map[string]any)
 			ucConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypeUnique).
-				WithColumns(expandStringList(ucMap["columns"].([]any)))
+				WithColumns(toColumns(expandStringList(ucMap["columns"].([]any))))
 			if ucName, ok := ucMap["name"].(string); ok && ucName != "" {
 				ucConstraint.WithName(ucName)
 			}
@@ -798,7 +759,7 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 		for _, fkRaw := range v.(*schema.Set).List() {
 			fkMap := fkRaw.(map[string]any)
 			fkConstraint := sdk.NewHybridTableOutOfLineConstraintRequest(sdk.ColumnConstraintTypeForeignKey).
-				WithColumns(expandStringList(fkMap["columns"].([]any)))
+				WithColumns(toColumns(expandStringList(fkMap["columns"].([]any))))
 			if fkName, ok := fkMap["name"].(string); ok && fkName != "" {
 				fkConstraint.WithName(fkName)
 			}
@@ -806,9 +767,9 @@ func buildOutOfLineConstraints(d *schema.ResourceData) ([]sdk.HybridTableOutOfLi
 			if err != nil {
 				return nil, fmt.Errorf("invalid table_name identifier: %w", err)
 			}
-			fkConstraint.WithForeignKey(sdk.OutOfLineForeignKey{
+			fkConstraint.WithForeignKey(sdk.HybridTableOutOfLineForeignKeyRequest{
 				TableName:   refTableId,
-				ColumnNames: expandStringList(fkMap["ref_columns"].([]any)),
+				ColumnNames: toColumns(expandStringList(fkMap["ref_columns"].([]any))),
 			})
 			constraints = append(constraints, *fkConstraint)
 		}
@@ -827,10 +788,10 @@ func buildOutOfLineIndexes(d *schema.ResourceData) []sdk.HybridTableOutOfLineInd
 			idxMap := idxRaw.(map[string]any)
 			req := sdk.NewHybridTableOutOfLineIndexRequest(
 				idxMap["name"].(string),
-				expandStringList(idxMap["columns"].([]any)),
+				toColumns(expandStringList(idxMap["columns"].([]any))),
 			)
 			if incRaw, ok := idxMap["include_columns"].(*schema.Set); ok && incRaw.Len() > 0 {
-				req.WithIncludeColumns(expandStringList(incRaw.List()))
+				req.WithIncludeColumns(toColumns(expandStringList(incRaw.List())))
 			}
 			indexes = append(indexes, *req)
 		}
@@ -1032,7 +993,7 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			for i, col := range removed {
 				dropNames[i] = col.name
 			}
-			dropReq := sdk.NewHybridTableDropColumnActionRequest(dropNames).WithIfExists(true)
+			dropReq := sdk.NewHybridTableDropColumnActionRequest(toColumns(dropNames)).WithIfExists(true)
 			if err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).WithDropColumnAction(*dropReq)); err != nil {
 				d.Partial(true)
 				return diag.FromErr(fmt.Errorf("error dropping columns from hybrid table %v: %w", id.FullyQualifiedName(), err))

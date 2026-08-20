@@ -15,20 +15,27 @@ var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
+var hybridTableOutOfLineForeignKey = g.NewQueryStruct("HybridTableOutOfLineForeignKey").
+	SQL("REFERENCES").
+	Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
+	PredefinedQueryStructField("ColumnNames", "[]Column", g.ParameterOptions().NoEquals().Parentheses()).
+	PredefinedQueryStructField("Match", g.KindOfTPointer[sdkcommons.MatchType](), g.ParameterOptions().NoEquals().SQL("MATCH")).
+	PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
+
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
 	OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 	WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("ColumnConstraintType", g.KeywordOptions().Required())).
-	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
+	PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses()).
 	// NOTE: Constraint modifier flags (Enforced, NotEnforced, Deferrable, NotDeferrable,
 	// InitiallyDeferred, InitiallyImmediate, Enable, Disable, Validate, Novalidate, Rely, Norely)
 	// are not supported on hybrid tables — Snowflake returns "invalid constraint property".
-	PredefinedQueryStructField("ForeignKey", g.KindOfTPointer[sdkcommons.OutOfLineForeignKey](), g.KeywordOptions())
+	OptionalQueryStructField("ForeignKey", hybridTableOutOfLineForeignKey, g.KeywordOptions())
 
 var hybridTableOutOfLineIndex = g.NewQueryStruct("HybridTableOutOfLineIndex").
 	SQL("INDEX").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required()).
-	PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().SQL("INCLUDE"))
+	PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses().Required()).
+	PredefinedQueryStructField("IncludeColumns", "[]Column", g.KeywordOptions().Parentheses().SQL("INCLUDE"))
 
 var hybridTableColumnsConstraintsAndIndexes = g.NewQueryStruct("HybridTableColumnsConstraintsAndIndexes").
 	ListQueryStructField("Columns", hybridTableColumn, g.KeywordOptions()).
@@ -67,7 +74,7 @@ var hybridTableConstraintAction = g.NewQueryStruct("HybridTableConstraintAction"
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "ConstraintName").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("FOREIGN KEY").
-			PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
+			PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses()).
 			OptionalSQL("CASCADE").
 			OptionalSQL("RESTRICT").
 			WithValidation(g.ExactlyOneValueSet, "ConstraintName", "Unique", "ForeignKey").
@@ -91,7 +98,7 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 var hybridTableDropColumnAction = g.NewQueryStruct("HybridTableDropColumnAction").
 	SQL("DROP COLUMN").
 	OptionalSQL("IF EXISTS").
-	PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Required())
+	PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Required())
 
 var hybridTableDropIndexAction = g.NewQueryStruct("HybridTableDropIndexAction").
 	SQL("DROP INDEX").
@@ -288,8 +295,8 @@ var hybridTablesDef = g.NewInterface(
 		Name().
 		SQL("ON").
 		Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses().Required()).
-		PredefinedQueryStructField("IncludeColumns", "[]string", g.KeywordOptions().Parentheses().SQL("INCLUDE")).
+		PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses().Required()).
+		PredefinedQueryStructField("IncludeColumns", "[]Column", g.KeywordOptions().Parentheses().SQL("INCLUDE")).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "TableName").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
