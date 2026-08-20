@@ -2,207 +2,227 @@
 
 package sdk
 
-import "testing"
+import (
+	"testing"
+)
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkRuleType]{"NetworkRuleType", AllNetworkRuleTypes, ToNetworkRuleType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkRuleMode]{"NetworkRuleMode", AllNetworkRuleModes, ToNetworkRuleMode})
 }
 
-func TestNetworkRules_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateNetworkRuleOptions
-	defaultOpts := func() *CreateNetworkRuleOptions {
-		return &CreateNetworkRuleOptions{
-			// adjusted manually
-			name:            id,
-			NetworkRuleType: NetworkRuleTypeIpv4,
-			ValueList: []NetworkRuleValue{
-				{Value: "0.0.0.0"},
-				{Value: "1.1.1.1"},
+var networkRulesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_NetworkRules_validation_Create_name_ValidIdentifier         testCaseName = "validation_Create_name_ValidIdentifier"
+	case_NetworkRules_sql_Create_basic                               testCaseName = "sql_Create_basic"
+	case_NetworkRules_sql_Create_all                                 testCaseName = "sql_Create_all"
+	case_NetworkRules_validation_Alter_name_ValidIdentifier          testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_NetworkRules_validation_Alter_opts_AtLeastOneValueSet       testCaseName = "validation_Alter_opts_AtLeastOneValueSet"
+	case_NetworkRules_validation_Alter_opts_Set_AtLeastOneValueSet   testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_NetworkRules_validation_Alter_opts_Unset_AtLeastOneValueSet testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_NetworkRules_sql_Alter_basic                                testCaseName = "sql_Alter_basic"
+	case_NetworkRules_sql_Alter_all                                  testCaseName = "sql_Alter_all"
+	case_NetworkRules_validation_Drop_name_ValidIdentifier           testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_NetworkRules_sql_Drop_basic                                 testCaseName = "sql_Drop_basic"
+	case_NetworkRules_sql_Drop_all                                   testCaseName = "sql_Drop_all"
+	case_NetworkRules_sql_Show_basic                                 testCaseName = "sql_Show_basic"
+	case_NetworkRules_sql_Show_all                                   testCaseName = "sql_Show_all"
+	case_NetworkRules_sql_Show_Like                                  testCaseName = "sql_Show_Like"
+	case_NetworkRules_sql_Show_In                                    testCaseName = "sql_Show_In"
+	case_NetworkRules_sql_Show_StartsWith                            testCaseName = "sql_Show_StartsWith"
+	case_NetworkRules_sql_Show_Limit                                 testCaseName = "sql_Show_Limit"
+	case_NetworkRules_validation_Describe_name_ValidIdentifier       testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_NetworkRules_sql_Describe_basic                             testCaseName = "sql_Describe_basic"
+)
+
+type NetworkRulesTestsContext struct {
+	Create   *sdkTestCtx[*CreateNetworkRuleOptions]
+	Alter    *sdkTestCtx[*AlterNetworkRuleOptions]
+	Drop     *sdkTestCtx[*DropNetworkRuleOptions]
+	Show     *sdkTestCtx[*ShowNetworkRuleOptions]
+	Describe *sdkTestCtx[*DescribeNetworkRuleOptions]
+}
+
+var networkRulesTests = NetworkRulesTestsContext{
+	Create: newSdkTestCtx[*CreateNetworkRuleOptions](
+		"NetworkRules", "Create",
+	).
+		withDefaultOpts(func() *CreateNetworkRuleOptions {
+			return &CreateNetworkRuleOptions{
+				name: networkRulesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateNetworkRuleOptions]{
+				Name:        case_NetworkRules_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateNetworkRuleOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
 			},
-			Mode: NetworkRuleModeIngress,
-		}
-	}
+		).
+		withSqlCases(
+			sqlCase[*CreateNetworkRuleOptions]{
+				Name:           case_NetworkRules_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterNetworkRuleOptions](
+		"NetworkRules", "Alter",
+	).
+		withDefaultOpts(func() *AlterNetworkRuleOptions {
+			return &AlterNetworkRuleOptions{
+				name: networkRulesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterNetworkRuleOptions]{
+				Name:        case_NetworkRules_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNetworkRuleOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterNetworkRuleOptions]{
+				Name:        case_NetworkRules_validation_Alter_opts_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNetworkRuleOptions", "Set", "Unset"),
+				DefaultModify: func(opts *AlterNetworkRuleOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterNetworkRuleOptions]{
+				Name:        case_NetworkRules_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNetworkRuleOptions.Set", "ValueList", "Comment"),
+				DefaultModify: func(opts *AlterNetworkRuleOptions) {
+					opts.Set = &NetworkRuleSet{}
+					opts.Set.ValueList = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterNetworkRuleOptions]{
+				Name:        case_NetworkRules_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNetworkRuleOptions.Unset", "ValueList", "Comment"),
+				DefaultModify: func(opts *AlterNetworkRuleOptions) {
+					opts.Unset = &NetworkRuleUnset{}
+					opts.Unset.ValueList = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterNetworkRuleOptions]{
+				Name:           case_NetworkRules_sql_Alter_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*AlterNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Alter_all,
+			},
+		),
+	Drop: newSdkTestCtx[*DropNetworkRuleOptions](
+		"NetworkRules", "Drop",
+	).
+		withDefaultOpts(func() *DropNetworkRuleOptions {
+			return &DropNetworkRuleOptions{
+				name: networkRulesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropNetworkRuleOptions]{
+				Name:        case_NetworkRules_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropNetworkRuleOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropNetworkRuleOptions]{
+				Name:           case_NetworkRules_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowNetworkRuleOptions](
+		"NetworkRules", "Show",
+	).
+		withDefaultOpts(func() *ShowNetworkRuleOptions {
+			return &ShowNetworkRuleOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowNetworkRuleOptions]{
+				Name:           case_NetworkRules_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Show_all,
+			},
+			sqlCase[*ShowNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Show_Like,
+			},
+			sqlCase[*ShowNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Show_In,
+			},
+			sqlCase[*ShowNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowNetworkRuleOptions]{
+				Name: case_NetworkRules_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeNetworkRuleOptions](
+		"NetworkRules", "Describe",
+	).
+		withDefaultOpts(func() *DescribeNetworkRuleOptions {
+			return &DescribeNetworkRuleOptions{
+				name: networkRulesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeNetworkRuleOptions]{
+				Name:        case_NetworkRules_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeNetworkRuleOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeNetworkRuleOptions]{
+				Name:           case_NetworkRules_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateNetworkRuleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE NETWORK RULE %s TYPE = IPV4 VALUE_LIST = ('0.0.0.0', '1.1.1.1') MODE = INGRESS`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE NETWORK RULE %s TYPE = IPV4 VALUE_LIST = ('0.0.0.0', '1.1.1.1') MODE = INGRESS COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("create with empty value list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ValueList = []NetworkRuleValue{}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE NETWORK RULE %s TYPE = IPV4 MODE = INGRESS`, id.FullyQualifiedName())
-	})
+func TestNetworkRules_Create(t *testing.T) {
+	networkRulesTests.Create.RunValidationCases(t)
+	networkRulesTests.Create.RunSqlCases(t)
 }
 
 func TestNetworkRules_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterNetworkRuleOptions
-	defaultOpts := func() *AlterNetworkRuleOptions {
-		return &AlterNetworkRuleOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterNetworkRuleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set opts.Unset] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNetworkRuleOptions", "Set", "Unset"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.ValueList opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkRuleSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNetworkRuleOptions.Set", "ValueList", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.ValueList opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &NetworkRuleUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNetworkRuleOptions.Unset", "ValueList", "Comment"))
-	})
-
-	// all variants added manually
-	t.Run("all options set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkRuleSet{
-			ValueList: []NetworkRuleValue{
-				{Value: "0.0.0.0"},
-				{Value: "1.1.1.1"},
-			},
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER NETWORK RULE %s SET VALUE_LIST = ('0.0.0.0', '1.1.1.1'), COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &NetworkRuleUnset{
-			ValueList: Bool(true),
-			Comment:   Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER NETWORK RULE %s UNSET VALUE_LIST, COMMENT`, id.FullyQualifiedName())
-	})
+	networkRulesTests.Alter.RunValidationCases(t)
+	networkRulesTests.Alter.RunSqlCases(t)
 }
 
 func TestNetworkRules_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropNetworkRuleOptions
-	defaultOpts := func() *DropNetworkRuleOptions {
-		return &DropNetworkRuleOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropNetworkRuleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP NETWORK RULE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP NETWORK RULE IF EXISTS %s`, id.FullyQualifiedName())
-	})
+	networkRulesTests.Drop.RunValidationCases(t)
+	networkRulesTests.Drop.RunSqlCases(t)
 }
 
 func TestNetworkRules_Show(t *testing.T) {
-	// Minimal valid ShowNetworkRuleOptions
-	defaultOpts := func() *ShowNetworkRuleOptions {
-		return &ShowNetworkRuleOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowNetworkRuleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW NETWORK RULES`)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("name"),
-		}
-		opts.In = &In{
-			Database: NewAccountObjectIdentifier("database-name"),
-		}
-		opts.StartsWith = String("abc")
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW NETWORK RULES LIKE 'name' IN DATABASE "database-name" STARTS WITH 'abc' LIMIT 10`)
-	})
+	networkRulesTests.Show.RunValidationCases(t)
+	networkRulesTests.Show.RunSqlCases(t)
 }
 
 func TestNetworkRules_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeNetworkRuleOptions
-	defaultOpts := func() *DescribeNetworkRuleOptions {
-		return &DescribeNetworkRuleOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeNetworkRuleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE NETWORK RULE %s`, id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	networkRulesTests.Describe.RunValidationCases(t)
+	networkRulesTests.Describe.RunSqlCases(t)
 }
