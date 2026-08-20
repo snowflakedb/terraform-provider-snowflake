@@ -114,26 +114,22 @@ func (c *ContextClient) IsRoleInSession(t *testing.T, id sdk.AccountObjectIdenti
 }
 
 // ACSURL returns Snowflake Assertion Consumer Service URL.
-// Uses the org-based URL format which is valid for all deployments (prod and non-prod).
 func (c *ContextClient) ACSURL(t *testing.T) string {
 	t.Helper()
 	return fmt.Sprintf("%s/fed/login", c.AccountURL(t))
 }
 
 // IssuerURL returns a URL containing the EntityID / Issuer for the Snowflake service provider.
-// Uses the org-based URL format which is valid for all deployments (prod and non-prod).
 func (c *ContextClient) IssuerURL(t *testing.T) string {
 	t.Helper()
 	return c.AccountURL(t)
 }
 
-// AccountURL returns the org-based account URL in the standard DNS-safe format:
-// https://<org>-<account_name>.snowflakecomputing.com (lowercase, underscores replaced with hyphens).
+// AccountURL returns the account locator URL:
+// https://<locator>.snowflakecomputing.com (lowercase).
 func (c *ContextClient) AccountURL(t *testing.T) string {
 	t.Helper()
-	org := strings.ToLower(c.CurrentOrganizationName(t))
-	accountName := strings.ToLower(strings.ReplaceAll(c.CurrentAccountName(t), "_", "-"))
-	return fmt.Sprintf("https://%s-%s.snowflakecomputing.com", org, accountName)
+	return fmt.Sprintf("https://%s.snowflakecomputing.com", strings.ToLower(c.CurrentAccount(t)))
 }
 
 func (c *ContextClient) LastQueryId(t *testing.T) string {
