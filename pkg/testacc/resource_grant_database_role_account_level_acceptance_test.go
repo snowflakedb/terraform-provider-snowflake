@@ -113,8 +113,10 @@ func TestAcc_GrantDatabaseRole_bcr2026_06_databaseRoleGrantee(t *testing.T) {
 			},
 			// Fixed provider, bundle still enabled: the grantee is normalized back to a fully qualified
 			// identifier, the grant matches on Read, and the resource is stable.
+			// secondaryAccountProviderFactory is required because TestAccProtoV6ProviderFactories is
+			// cached against the primary account.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
 				Config:                   config.FromModels(t, providerModel, grantModel),
 				Check: assertThat(
 					t,
