@@ -34,21 +34,44 @@ This feature will be marked as stable in a future release. Breaking changes are 
 
 No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
 
-### *(new feature)* New external access integration resource and data source
+### *(new feature)* tfc_workload_identity_token_tag provider field
 
-#### Resource
+A new optional `tfc_workload_identity_token_tag` provider field has been added for use with the OIDC
+workload identity flow. Terraform Cloud/Enterprise exposes manually generated workload identity tokens
+through environment variables named `TFC_WORKLOAD_IDENTITY_TOKEN_<TAG>`; setting this field to the tag
+makes the provider read the JWT from the matching variable and use it as the workload identity token:
 
-We have added a new preview resource for managing external access integrations: [snowflake_external_access_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_access_integration).
+```terraform
+provider "snowflake" {
+  organization_name               = "<organization_name>"
+  account_name                    = "<account_name>"
+  user                            = "<user_name>"
+  authenticator                   = "WORKLOAD_IDENTITY"
+  workload_identity_provider      = "OIDC"
+  tfc_workload_identity_token_tag = "SNOWFLAKE"
+}
+```
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integration_resource` to the `preview_features_enabled` field in the provider configuration.
+This removes the need for an external data source or a wrapper script, and allows backing the plan and
+the apply phase with different Snowflake identities based on the TFC/TFE token claims.
 
-#### Data source
+The field requires `authenticator = "WORKLOAD_IDENTITY"` and `workload_identity_provider = "OIDC"`;
+other combinations are rejected with an error. The resolved token takes precedence over every other
+token source, including the `token` field, `SNOWFLAKE_TOKEN`, and a TOML profile. The tag can also be
+sourced from `SNOWFLAKE_TFC_WORKLOAD_IDENTITY_TOKEN_TAG`. The untagged `TFC_WORKLOAD_IDENTITY_TOKEN`
+variable is not read.
 
-We have added a new preview data source for external access integrations: [snowflake_external_access_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/external_access_integrations). It supports filtering with `like`.
+Leaving the field unset keeps the existing authentication behavior unchanged. See the
+[authentication methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods)
+for details.
 
-This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
+### *(new feature)* `backup_instance_families` added to `snowflake_compute_pool`
 
-No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
+The [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) resource now supports the `backup_instance_families` attribute, which maps to the `BACKUP_INSTANCE_FAMILIES` Snowflake property. This attribute specifies instance families to fall back on when the primary `instance_family` is unavailable. It is a list rather than a set, because the order is the fallback priority; values are case-insensitive, and removing the attribute or setting it to an empty list unsets the property. The property is also exposed in `show_output` and `describe_output` of the resource and of the [`snowflake_compute_pools`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/compute_pools) data source.
+
+`BACKUP_INSTANCE_FAMILIES` is a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. Its behavior may change until it reaches general availability.
+
+In most cases no action is required; this is a non-breaking addition. However, if you set `BACKUP_INSTANCE_FAMILIES` on a compute pool outside of Terraform (e.g. directly in Snowflake) before this release, the provider will now detect it as drift. Because the attribute is not present in your configuration, the next plan will show a change that removes the externally set values. To keep them, add them to the `backup_instance_families` attribute in your configuration.
 
 ### *(new feature)* ACCOUNT_ROLE_SHOW_CACHING experiment
 
@@ -103,44 +126,21 @@ provider "snowflake" {
 
 This is a separate, independent flag from `GRANT_ACCOUNT_ROLE_SHOW_CACHING`: it does **not** replace that experiment, does not affect `snowflake_grant_account_role`'s caching behavior, and both can be enabled together. No changes to existing configurations are required. The experiment is intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.
 
-### *(new feature)* tfc_workload_identity_token_tag provider field
+### *(new feature)* New external access integration resource and data source
 
-A new optional `tfc_workload_identity_token_tag` provider field has been added for use with the OIDC
-workload identity flow. Terraform Cloud/Enterprise exposes manually generated workload identity tokens
-through environment variables named `TFC_WORKLOAD_IDENTITY_TOKEN_<TAG>`; setting this field to the tag
-makes the provider read the JWT from the matching variable and use it as the workload identity token:
+#### Resource
 
-```terraform
-provider "snowflake" {
-  organization_name               = "<organization_name>"
-  account_name                    = "<account_name>"
-  user                            = "<user_name>"
-  authenticator                   = "WORKLOAD_IDENTITY"
-  workload_identity_provider      = "OIDC"
-  tfc_workload_identity_token_tag = "SNOWFLAKE"
-}
-```
+We have added a new preview resource for managing external access integrations: [snowflake_external_access_integration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_access_integration).
 
-This removes the need for an external data source or a wrapper script, and allows backing the plan and
-the apply phase with different Snowflake identities based on the TFC/TFE token claims.
+This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integration_resource` to the `preview_features_enabled` field in the provider configuration.
 
-The field requires `authenticator = "WORKLOAD_IDENTITY"` and `workload_identity_provider = "OIDC"`;
-other combinations are rejected with an error. The resolved token takes precedence over every other
-token source, including the `token` field, `SNOWFLAKE_TOKEN`, and a TOML profile. The tag can also be
-sourced from `SNOWFLAKE_TFC_WORKLOAD_IDENTITY_TOKEN_TAG`. The untagged `TFC_WORKLOAD_IDENTITY_TOKEN`
-variable is not read.
+#### Data source
 
-Leaving the field unset keeps the existing authentication behavior unchanged. See the
-[authentication methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods)
-for details.
+We have added a new preview data source for external access integrations: [snowflake_external_access_integrations](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/external_access_integrations). It supports filtering with `like`.
 
-### *(new feature)* `backup_instance_families` added to `snowflake_compute_pool`
+This feature will be marked as stable in future releases. To use it, add `snowflake_external_access_integrations_datasource` to the `preview_features_enabled` field in the provider configuration.
 
-The [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) resource now supports the `backup_instance_families` attribute, which maps to the `BACKUP_INSTANCE_FAMILIES` Snowflake property. This attribute specifies instance families to fall back on when the primary `instance_family` is unavailable. It is a list rather than a set, because the order is the fallback priority; values are case-insensitive, and removing the attribute or setting it to an empty list unsets the property. The property is also exposed in `show_output` and `describe_output` of the resource and of the [`snowflake_compute_pools`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/compute_pools) data source.
-
-`BACKUP_INSTANCE_FAMILIES` is a [preview feature](https://docs.snowflake.com/en/release-notes/preview-features) on the Snowflake side. Its behavior may change until it reaches general availability.
-
-In most cases no action is required; this is a non-breaking addition. However, if you set `BACKUP_INSTANCE_FAMILIES` on a compute pool outside of Terraform (e.g. directly in Snowflake) before this release, the provider will now detect it as drift. Because the attribute is not present in your configuration, the next plan will show a change that removes the externally set values. To keep them, add them to the `backup_instance_families` attribute in your configuration.
+No changes are required for existing configurations unless you want to adopt any of these preview features with Terraform.
 
 ### *(new feature)* `for_all_person_users` and `for_all_service_users` in account policy attachments
 
@@ -158,6 +158,19 @@ The `snowflake_dynamic_table` resource now accepts [`ADAPTIVE`](https://docs.sno
 No changes in configuration are required unless you want to start using `refresh_mode = "ADAPTIVE"`.
 
 Reference: [#5097](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5097)
+
+### *(improvement)* `created_on` format in network policies' and listings' `show_output`
+
+`created_on` in the internal network policy and listing representations was a raw string; it is now read as a proper timestamp, making both consistent with databases, warehouses, schemas, shares, resource monitors, connections, and compute pools, which all already exposed it that way.
+
+As a result, the value of `show_output.0.created_on` is now rendered in Go's timestamp format (the same format the objects listed above already use) instead of the format returned directly by `SHOW NETWORK POLICIES` / `SHOW LISTINGS`, in:
+
+- `snowflake_network_policy` and `snowflake_network_policies`
+- `snowflake_listing` and `snowflake_listings`
+
+`created_on` in listings' `describe_output` is unaffected and remains in its original format.
+
+No configuration changes are required. Adjust only if you reference `show_output.0.created_on` and depend on its exact textual format.
 
 ### *(bug fix)* Grant resources and grants data source: support `TABLE(<type>)` data metric function arguments
 
@@ -288,19 +301,6 @@ On Standard edition (when multi-cluster warehouses are not enabled), `SHOW WAREH
 The provider now treats an omitted `SHOW` integer as `0`, matching the zero already stored in `show_output`, so a config value of `1` is no longer overwritten. After upgrading, `terraform plan` should be empty for Standard-edition warehouses that set `min_cluster_count` and `max_cluster_count` to `1`. If you added `lifecycle { ignore_changes = [min_cluster_count, max_cluster_count] }` as a workaround, you can remove it.
 
 The same mapping is used by `snowflake_warehouse_interactive`. No other configuration changes are required.
-
-### *(improvement)* `created_on` format in network policies' and listings' `show_output`
-
-`created_on` in the internal network policy and listing representations was a raw string; it is now read as a proper timestamp, making both consistent with databases, warehouses, schemas, shares, resource monitors, connections, and compute pools, which all already exposed it that way.
-
-As a result, the value of `show_output.0.created_on` is now rendered in Go's timestamp format (the same format the objects listed above already use) instead of the format returned directly by `SHOW NETWORK POLICIES` / `SHOW LISTINGS`, in:
-
-- `snowflake_network_policy` and `snowflake_network_policies`
-- `snowflake_listing` and `snowflake_listings`
-
-`created_on` in listings' `describe_output` is unaffected and remains in its original format.
-
-No configuration changes are required. Adjust only if you reference `show_output.0.created_on` and depend on its exact textual format.
 
 ## v2.18.x ➞ v2.19.0
 
