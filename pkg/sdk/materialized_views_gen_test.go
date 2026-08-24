@@ -6,321 +6,318 @@ import (
 	"testing"
 )
 
+var materializedViewsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_MaterializedViews_validation_Create_name_ValidIdentifier                            testCaseName = "validation_Create_name_ValidIdentifier"
+	case_MaterializedViews_validation_Create_opts_ConflictingFields                          testCaseName = "validation_Create_opts_ConflictingFields"
+	case_MaterializedViews_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier testCaseName = "validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_MaterializedViews_validation_Create_RowAccessPolicy_On_ValidateValueSet             testCaseName = "validation_Create_RowAccessPolicy_On_ValidateValueSet"
+	case_MaterializedViews_validation_Create_ClusterBy_Expressions_ValidateValueSet          testCaseName = "validation_Create_ClusterBy_Expressions_ValidateValueSet"
+	case_MaterializedViews_sql_Create_basic                                                  testCaseName = "sql_Create_basic"
+	case_MaterializedViews_sql_Create_all                                                    testCaseName = "sql_Create_all"
+	case_MaterializedViews_validation_Alter_name_ValidIdentifier                             testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_MaterializedViews_validation_Alter_opts_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_MaterializedViews_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_MaterializedViews_validation_Alter_ClusterBy_Expressions_ValidateValueSet           testCaseName = "validation_Alter_ClusterBy_Expressions_ValidateValueSet"
+	case_MaterializedViews_validation_Alter_opts_Set_ExactlyOneValueSet_NoneSet              testCaseName = "validation_Alter_opts_Set_ExactlyOneValueSet_NoneSet"
+	case_MaterializedViews_validation_Alter_opts_Set_ExactlyOneValueSet_MoreThanOneSet       testCaseName = "validation_Alter_opts_Set_ExactlyOneValueSet_MoreThanOneSet"
+	case_MaterializedViews_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet"
+	case_MaterializedViews_validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet"
+	case_MaterializedViews_sql_Alter_RenameTo                                                testCaseName = "sql_Alter_RenameTo"
+	case_MaterializedViews_sql_Alter_ClusterBy                                               testCaseName = "sql_Alter_ClusterBy"
+	case_MaterializedViews_sql_Alter_DropClusteringKey                                       testCaseName = "sql_Alter_DropClusteringKey"
+	case_MaterializedViews_sql_Alter_SuspendRecluster                                        testCaseName = "sql_Alter_SuspendRecluster"
+	case_MaterializedViews_sql_Alter_ResumeRecluster                                         testCaseName = "sql_Alter_ResumeRecluster"
+	case_MaterializedViews_sql_Alter_Suspend                                                 testCaseName = "sql_Alter_Suspend"
+	case_MaterializedViews_sql_Alter_Resume                                                  testCaseName = "sql_Alter_Resume"
+	case_MaterializedViews_sql_Alter_Set                                                     testCaseName = "sql_Alter_Set"
+	case_MaterializedViews_sql_Alter_Unset                                                   testCaseName = "sql_Alter_Unset"
+	case_MaterializedViews_validation_Drop_name_ValidIdentifier                              testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_MaterializedViews_sql_Drop_basic                                                    testCaseName = "sql_Drop_basic"
+	case_MaterializedViews_sql_Drop_all                                                      testCaseName = "sql_Drop_all"
+	case_MaterializedViews_sql_Show_basic                                                    testCaseName = "sql_Show_basic"
+	case_MaterializedViews_sql_Show_all                                                      testCaseName = "sql_Show_all"
+	case_MaterializedViews_sql_Show_Like                                                     testCaseName = "sql_Show_Like"
+	case_MaterializedViews_sql_Show_In                                                       testCaseName = "sql_Show_In"
+	case_MaterializedViews_validation_Describe_name_ValidIdentifier                          testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_MaterializedViews_sql_Describe_basic                                                testCaseName = "sql_Describe_basic"
+)
+
+type MaterializedViewsTestsContext struct {
+	Create   *sdkTestCtx[*CreateMaterializedViewOptions]
+	Alter    *sdkTestCtx[*AlterMaterializedViewOptions]
+	Drop     *sdkTestCtx[*DropMaterializedViewOptions]
+	Show     *sdkTestCtx[*ShowMaterializedViewOptions]
+	Describe *sdkTestCtx[*DescribeMaterializedViewOptions]
+}
+
+var materializedViewsTests = MaterializedViewsTestsContext{
+	Create: newSdkTestCtx[*CreateMaterializedViewOptions](
+		"MaterializedViews", "Create",
+	).
+		withDefaultOpts(func() *CreateMaterializedViewOptions {
+			return &CreateMaterializedViewOptions{
+				name: materializedViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateMaterializedViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateMaterializedViewOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateMaterializedViewOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateMaterializedViewOptions) {
+					opts.RowAccessPolicy = &MaterializedViewRowAccessPolicy{}
+					opts.RowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Create_RowAccessPolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateMaterializedViewOptions.RowAccessPolicy", "On"),
+				DefaultModify: func(opts *CreateMaterializedViewOptions) {
+					opts.RowAccessPolicy = &MaterializedViewRowAccessPolicy{}
+					opts.RowAccessPolicy.On = nil
+				},
+			},
+			validationCase[*CreateMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Create_ClusterBy_Expressions_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateMaterializedViewOptions.ClusterBy", "Expressions"),
+				DefaultModify: func(opts *CreateMaterializedViewOptions) {
+					opts.ClusterBy = &MaterializedViewClusterBy{}
+					opts.ClusterBy.Expressions = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateMaterializedViewOptions]{
+				Name:           case_MaterializedViews_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterMaterializedViewOptions](
+		"MaterializedViews", "Alter",
+	).
+		withDefaultOpts(func() *AlterMaterializedViewOptions {
+			return &AlterMaterializedViewOptions{
+				name: materializedViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterMaterializedViewOptions", "RenameTo", "ClusterBy", "DropClusteringKey", "SuspendRecluster", "ResumeRecluster", "Suspend", "Resume", "Set", "Unset"),
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.RenameTo = nil
+					opts.ClusterBy = nil
+					opts.DropClusteringKey = nil
+					opts.SuspendRecluster = nil
+					opts.ResumeRecluster = nil
+					opts.Suspend = nil
+					opts.Resume = nil
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterMaterializedViewOptions", "RenameTo", "ClusterBy", "DropClusteringKey", "SuspendRecluster", "ResumeRecluster", "Suspend", "Resume", "Set", "Unset"),
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.ClusterBy = &MaterializedViewClusterBy{}
+				},
+			},
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_ClusterBy_Expressions_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterMaterializedViewOptions.ClusterBy", "Expressions"),
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.ClusterBy = &MaterializedViewClusterBy{}
+					opts.ClusterBy.Expressions = nil
+				},
+			},
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_opts_Set_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterMaterializedViewOptions.Set", "Secure", "Comment"),
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.Set = &MaterializedViewSet{}
+					opts.Set.Secure = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_opts_Set_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterMaterializedViewOptions.Set", "Secure", "Comment"),
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.Set = &MaterializedViewSet{}
+					opts.Set.Secure = new(true)
+					opts.Set.Comment = new("foo")
+				},
+			},
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_opts_Unset_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterMaterializedViewOptions.Unset", "Secure", "Comment"),
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.Unset = &MaterializedViewUnset{}
+					opts.Unset.Secure = nil
+					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Alter_opts_Unset_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterMaterializedViewOptions.Unset", "Secure", "Comment"),
+				DefaultModify: func(opts *AlterMaterializedViewOptions) {
+					opts.Unset = &MaterializedViewUnset{}
+					opts.Unset.Secure = new(true)
+					opts.Unset.Comment = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_ClusterBy,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_DropClusteringKey,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_SuspendRecluster,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_ResumeRecluster,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_Suspend,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_Resume,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_Set,
+			},
+			sqlCase[*AlterMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Alter_Unset,
+			},
+		),
+	Drop: newSdkTestCtx[*DropMaterializedViewOptions](
+		"MaterializedViews", "Drop",
+	).
+		withDefaultOpts(func() *DropMaterializedViewOptions {
+			return &DropMaterializedViewOptions{
+				name: materializedViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropMaterializedViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropMaterializedViewOptions]{
+				Name:           case_MaterializedViews_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowMaterializedViewOptions](
+		"MaterializedViews", "Show",
+	).
+		withDefaultOpts(func() *ShowMaterializedViewOptions {
+			return &ShowMaterializedViewOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowMaterializedViewOptions]{
+				Name:           case_MaterializedViews_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Show_all,
+			},
+			sqlCase[*ShowMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Show_Like,
+			},
+			sqlCase[*ShowMaterializedViewOptions]{
+				Name: case_MaterializedViews_sql_Show_In,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeMaterializedViewOptions](
+		"MaterializedViews", "Describe",
+	).
+		withDefaultOpts(func() *DescribeMaterializedViewOptions {
+			return &DescribeMaterializedViewOptions{
+				name: materializedViewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeMaterializedViewOptions]{
+				Name:        case_MaterializedViews_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeMaterializedViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeMaterializedViewOptions]{
+				Name:           case_MaterializedViews_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestMaterializedViews_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// added manually
-	sql := "SELECT id FROM t"
-	// Minimal valid CreateMaterializedViewOptions
-	defaultOpts := func() *CreateMaterializedViewOptions {
-		return &CreateMaterializedViewOptions{
-			// adjusted manually
-			name: id,
-			sql:  sql,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateMaterializedViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateMaterializedViewOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("validation: valid identifier for [opts.RowAccessPolicy.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RowAccessPolicy = &MaterializedViewRowAccessPolicy{
-			RowAccessPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.RowAccessPolicy.On] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RowAccessPolicy = &MaterializedViewRowAccessPolicy{
-			RowAccessPolicy: randomSchemaObjectIdentifier(),
-			On:              []string{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateMaterializedViewOptions.RowAccessPolicy", "On"))
-	})
-
-	t.Run("validation: [opts.ClusterBy.Expressions] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ClusterBy = &MaterializedViewClusterBy{
-			Expressions: []MaterializedViewClusterByExpression{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateMaterializedViewOptions.ClusterBy", "Expressions"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE MATERIALIZED VIEW %s AS %s", id.FullyQualifiedName(), sql)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		rowAccessPolicyId := randomSchemaObjectIdentifier()
-		tag1Id := randomSchemaObjectIdentifier()
-		tag2Id := randomSchemaObjectIdentifier()
-		maskingPolicy1Id := randomSchemaObjectIdentifier()
-		maskingPolicy2Id := randomSchemaObjectIdentifier()
-
-		req := NewCreateMaterializedViewRequest(id, sql).
-			WithOrReplace(true).
-			WithSecure(true).
-			WithColumns([]MaterializedViewColumnRequest{
-				*NewMaterializedViewColumnRequest("column_without_comment"),
-				*NewMaterializedViewColumnRequest("column_with_comment").WithComment("column 2 comment"),
-			}).
-			WithColumnsMaskingPolicies([]MaterializedViewColumnMaskingPolicyRequest{
-				*NewMaterializedViewColumnMaskingPolicyRequest("column", maskingPolicy1Id).
-					WithUsing([]string{"a", "b"}).
-					WithTag([]TagAssociation{{
-						Name:  tag1Id,
-						Value: "v1",
-					}}),
-				*NewMaterializedViewColumnMaskingPolicyRequest("column 2", maskingPolicy2Id),
-			}).
-			WithCopyGrants(true).
-			WithComment("comment").
-			WithRowAccessPolicy(*NewMaterializedViewRowAccessPolicyRequest(rowAccessPolicyId, []string{"c", "d"})).
-			WithTag([]TagAssociation{{
-				Name:  tag2Id,
-				Value: "v2",
-			}}).
-			WithClusterBy(*NewMaterializedViewClusterByRequest().WithExpressions([]MaterializedViewClusterByExpressionRequest{{"column_without_comment"}, {"column_with_comment"}}))
-
-		assertOptsValidAndSQLEquals(t, req.toOpts(), `CREATE OR REPLACE SECURE MATERIALIZED VIEW %s COPY GRANTS ("column_without_comment", "column_with_comment" COMMENT 'column 2 comment') column MASKING POLICY %s USING (a, b) TAG (%s = 'v1'), column 2 MASKING POLICY %s COMMENT = 'comment' ROW ACCESS POLICY %s ON (c, d) TAG (%s = 'v2') CLUSTER BY ("column_without_comment", "column_with_comment") AS %s`, id.FullyQualifiedName(), maskingPolicy1Id.FullyQualifiedName(), tag1Id.FullyQualifiedName(), maskingPolicy2Id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), tag2Id.FullyQualifiedName(), sql)
-	})
+	materializedViewsTests.Create.RunValidationCases(t)
+	materializedViewsTests.Create.RunSqlCases(t)
 }
 
 func TestMaterializedViews_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterMaterializedViewOptions
-	defaultOpts := func() *AlterMaterializedViewOptions {
-		return &AlterMaterializedViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterMaterializedViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.ClusterBy opts.DropClusteringKey opts.SuspendRecluster opts.ResumeRecluster opts.Suspend opts.Resume opts.Set opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaterializedViewOptions", "RenameTo", "ClusterBy", "DropClusteringKey", "SuspendRecluster", "ResumeRecluster", "Suspend", "Resume", "Set", "Unset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.ClusterBy opts.DropClusteringKey opts.SuspendRecluster opts.ResumeRecluster opts.Suspend opts.Resume opts.Set opts.Unset] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SuspendRecluster = Bool(true)
-		opts.Suspend = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaterializedViewOptions", "RenameTo", "ClusterBy", "DropClusteringKey", "SuspendRecluster", "ResumeRecluster", "Suspend", "Resume", "Set", "Unset"))
-	})
-
-	t.Run("validation: [opts.ClusterBy.Expressions] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ClusterBy = &MaterializedViewClusterBy{
-			Expressions: []MaterializedViewClusterByExpression{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("AlterMaterializedViewOptions.ClusterBy", "Expressions"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.Secure opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &MaterializedViewSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaterializedViewOptions.Set", "Secure", "Comment"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.Secure opts.Set.Comment] should be set - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &MaterializedViewSet{
-			Secure:  Bool(true),
-			Comment: String("comment"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaterializedViewOptions.Set", "Secure", "Comment"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Unset.Secure opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &MaterializedViewUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaterializedViewOptions.Unset", "Secure", "Comment"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Unset.Secure opts.Unset.Comment] should be set - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &MaterializedViewUnset{
-			Secure:  Bool(true),
-			Comment: Bool(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterMaterializedViewOptions.Unset", "Secure", "Comment"))
-	})
-
-	// all variants added manually
-	t.Run("rename", func(t *testing.T) {
-		newId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("cluster by", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ClusterBy = &MaterializedViewClusterBy{
-			Expressions: []MaterializedViewClusterByExpression{{"column"}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER MATERIALIZED VIEW %s CLUSTER BY ("column")`, id.FullyQualifiedName())
-	})
-
-	t.Run("drop clustering key", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropClusteringKey = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s DROP CLUSTERING KEY", id.FullyQualifiedName())
-	})
-
-	t.Run("suspend recluster", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SuspendRecluster = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s SUSPEND RECLUSTER", id.FullyQualifiedName())
-	})
-
-	t.Run("resume recluster", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ResumeRecluster = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s RESUME RECLUSTER", id.FullyQualifiedName())
-	})
-
-	t.Run("suspend ", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Suspend = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s SUSPEND", id.FullyQualifiedName())
-	})
-
-	t.Run("resume", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Resume = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s RESUME", id.FullyQualifiedName())
-	})
-
-	t.Run("set single", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &MaterializedViewSet{
-			Secure: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s SET SECURE", id.FullyQualifiedName())
-	})
-
-	t.Run("unset single", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &MaterializedViewUnset{
-			Secure: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER MATERIALIZED VIEW %s UNSET SECURE", id.FullyQualifiedName())
-	})
+	materializedViewsTests.Alter.RunValidationCases(t)
+	materializedViewsTests.Alter.RunSqlCases(t)
 }
 
 func TestMaterializedViews_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropMaterializedViewOptions
-	defaultOpts := func() *DropMaterializedViewOptions {
-		return &DropMaterializedViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropMaterializedViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP MATERIALIZED VIEW %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP MATERIALIZED VIEW IF EXISTS %s", id.FullyQualifiedName())
-	})
+	materializedViewsTests.Drop.RunValidationCases(t)
+	materializedViewsTests.Drop.RunSqlCases(t)
 }
 
 func TestMaterializedViews_Show(t *testing.T) {
-	// Minimal valid ShowMaterializedViewOptions
-	defaultOpts := func() *ShowMaterializedViewOptions {
-		return &ShowMaterializedViewOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowMaterializedViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW MATERIALIZED VIEWS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("myaccount"),
-		}
-		opts.In = &In{
-			Account: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW MATERIALIZED VIEWS LIKE 'myaccount' IN ACCOUNT")
-	})
+	materializedViewsTests.Show.RunValidationCases(t)
+	materializedViewsTests.Show.RunSqlCases(t)
 }
 
 func TestMaterializedViews_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeMaterializedViewOptions
-	defaultOpts := func() *DescribeMaterializedViewOptions {
-		return &DescribeMaterializedViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeMaterializedViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE MATERIALIZED VIEW %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	materializedViewsTests.Describe.RunValidationCases(t)
+	materializedViewsTests.Describe.RunSqlCases(t)
 }

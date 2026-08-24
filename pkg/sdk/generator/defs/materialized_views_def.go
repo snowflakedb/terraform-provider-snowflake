@@ -152,4 +152,5 @@ var materializedViewsDef = g.NewInterface(
 			SQL("MATERIALIZED VIEW").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)
