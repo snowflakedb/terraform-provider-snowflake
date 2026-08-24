@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -26,6 +27,12 @@ type SystemFunctions interface {
 	// clustering key is used; otherwise the given expressions are used as the clustering key for the calculation.
 	// See more in https://docs.snowflake.com/en/sql-reference/functions/system_clustering_information.
 	GetClusteringInformation(ctx context.Context, id SchemaObjectIdentifier, columns ...string) (*ClusteringInformation, error)
+	// GetCatalogLinkedDatabaseConfig returns the configuration of a catalog-linked database.
+	// See more in https://docs.snowflake.com/en/sql-reference/functions/system_get_catalog_linked_database_config.
+	GetCatalogLinkedDatabaseConfig(ctx context.Context, id AccountObjectIdentifier) (*CatalogLinkedDatabaseConfig, error)
+	// GetCatalogLinkStatus returns the current state of the link between a catalog-linked database and its remote catalog.
+	// See more in https://docs.snowflake.com/en/sql-reference/functions/system_catalog_link_status.
+	GetCatalogLinkStatus(ctx context.Context, id AccountObjectIdentifier) (*CatalogLinkStatus, error)
 }
 
 var _ SystemFunctions = (*systemFunctions)(nil)
@@ -328,6 +335,192 @@ func parseClusteringInformation(raw string) (*ClusteringInformation, error) {
 			return ClusteringError{
 				Timestamp: entry.Timestamp,
 				Error:     entry.Error,
+			}
+		}),
+	}, nil
+}
+
+type catalogLinkedDatabaseConfigDbStruct struct {
+	CatalogIntegration        string   `json:"catalog_integration"`
+	CatalogName               *string  `json:"catalog_name"`
+	ExternalVolume            *string  `json:"external_volume"`
+	SyncIntervalSeconds       *int     `json:"sync_interval_seconds"`
+	NamespaceMode             *string  `json:"namespace_mode"`
+	NamespaceFlattenDelimiter *string  `json:"namespace_flatten_delimiter"`
+	AllowedWriteOperations    *string  `json:"allowed_write_operations"`
+	CatalogCaseSensitivity    *string  `json:"catalog_case_sensitivity"`
+	IsSuspended               *bool    `json:"is_suspended"`
+	AllowedNamespaces         []string `json:"allowed_namespaces"`
+	BlockedNamespaces         []string `json:"blocked_namespaces"`
+}
+
+type CatalogLinkedDatabaseConfig struct {
+	CatalogIntegration        AccountObjectIdentifier
+	CatalogName               *string
+	ExternalVolume            *AccountObjectIdentifier
+	SyncIntervalSeconds       *int
+	NamespaceMode             *CatalogLinkedDatabaseNamespaceMode
+	NamespaceFlattenDelimiter *string
+	AllowedWriteOperations    *CatalogLinkedDatabaseAllowedWriteOperations
+	CatalogCaseSensitivity    *DatabaseCatalogCaseSensitivity
+	IsSuspended               *bool
+	AllowedNamespaces         []string
+	BlockedNamespaces         []string
+}
+
+// GetCatalogLinkedDatabaseConfig is an implementation of SYSTEM$GET_CATALOG_LINKED_DATABASE_CONFIG - see https://docs.snowflake.com/en/sql-reference/functions/system_get_catalog_linked_database_config.
+// The LINKED_CATALOG parameters are not returned by SHOW/DESCRIBE for databases, so this is the way to read them back.
+func (c *systemFunctions) GetCatalogLinkedDatabaseConfig(ctx context.Context, id AccountObjectIdentifier) (*CatalogLinkedDatabaseConfig, error) {
+	row := &struct {
+		Config string `db:"CONFIG"`
+	}{}
+	opts := &getCatalogLinkedDatabaseConfigOptions{
+		arguments: &catalogLinkedDatabaseArgs{
+			Name: id,
+		},
+	}
+	sql, err := structToSQL(opts)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.client.queryOne(ctx, row, sql); err != nil {
+		return nil, err
+	}
+	return parseCatalogLinkedDatabaseConfig(row.Config)
+}
+
+type getCatalogLinkedDatabaseConfigOptions struct {
+	selectSystemGetCatalogLinkedDatabaseConfig bool                       `ddl:"static" sql:"SELECT SYSTEM$GET_CATALOG_LINKED_DATABASE_CONFIG"`
+	arguments                                  *catalogLinkedDatabaseArgs `ddl:"list,parentheses,must_parentheses"`
+	as                                         bool                       `ddl:"static" sql:"AS \"CONFIG\""`
+}
+
+type catalogLinkedDatabaseArgs struct {
+	Name AccountObjectIdentifier `ddl:"identifier,single_quotes"`
+}
+
+func parseCatalogLinkedDatabaseConfig(raw string) (*CatalogLinkedDatabaseConfig, error) {
+	var config catalogLinkedDatabaseConfigDbStruct
+	if err := json.Unmarshal([]byte(raw), &config); err != nil {
+		return nil, err
+	}
+
+	result := &CatalogLinkedDatabaseConfig{
+		CatalogName:               config.CatalogName,
+		SyncIntervalSeconds:       config.SyncIntervalSeconds,
+		NamespaceFlattenDelimiter: config.NamespaceFlattenDelimiter,
+		IsSuspended:               config.IsSuspended,
+		AllowedNamespaces:         config.AllowedNamespaces,
+		BlockedNamespaces:         config.BlockedNamespaces,
+	}
+	mapStringWithMapping(&result.CatalogIntegration, config.CatalogIntegration, ParseAccountObjectIdentifier)
+	if config.ExternalVolume != nil {
+		externalVolume, err := ParseAccountObjectIdentifier(*config.ExternalVolume)
+		if err != nil {
+			return nil, err
+		}
+		result.ExternalVolume = new(externalVolume)
+	}
+	if config.NamespaceMode != nil {
+		namespaceMode, err := ToCatalogLinkedDatabaseNamespaceMode(*config.NamespaceMode)
+		if err != nil {
+			return nil, err
+		}
+		result.NamespaceMode = new(namespaceMode)
+	}
+	if config.AllowedWriteOperations != nil {
+		allowedWriteOperations, err := ToCatalogLinkedDatabaseAllowedWriteOperations(*config.AllowedWriteOperations)
+		if err != nil {
+			return nil, err
+		}
+		result.AllowedWriteOperations = new(allowedWriteOperations)
+	}
+	if config.CatalogCaseSensitivity != nil {
+		catalogCaseSensitivity, err := ToDatabaseCatalogCaseSensitivity(*config.CatalogCaseSensitivity)
+		if err != nil {
+			return nil, err
+		}
+		result.CatalogCaseSensitivity = new(catalogCaseSensitivity)
+	}
+	return result, nil
+}
+
+type catalogLinkFailureDetailDbStruct struct {
+	QualifiedEntityName string `json:"qualifiedEntityName"`
+	EntityDomain        string `json:"entityDomain"`
+	Operation           string `json:"operation"`
+	ErrorCode           string `json:"errorCode"`
+	ErrorMessage        string `json:"errorMessage"`
+}
+
+type catalogLinkStatusDbStruct struct {
+	ExecutionState                string                             `json:"executionState"`
+	FailedExecutionStateReason    *string                            `json:"failedExecutionStateReason"`
+	FailedExecutionStateErrorCode *string                            `json:"failedExecutionStateErrorCode"`
+	LastLinkAttemptStartTime      *time.Time                         `json:"lastLinkAttemptStartTime"`
+	FailureDetails                []catalogLinkFailureDetailDbStruct `json:"failureDetails"`
+}
+
+type CatalogLinkStatus struct {
+	ExecutionState                string
+	FailedExecutionStateReason    *string
+	FailedExecutionStateErrorCode *string
+	LastLinkAttemptStartTime      *time.Time
+	FailureDetails                []CatalogLinkFailureDetail
+}
+
+type CatalogLinkFailureDetail struct {
+	QualifiedEntityName string
+	EntityDomain        string
+	Operation           string
+	ErrorCode           string
+	ErrorMessage        string
+}
+
+// GetCatalogLinkStatus is an implementation of SYSTEM$CATALOG_LINK_STATUS - see https://docs.snowflake.com/en/sql-reference/functions/system_catalog_link_status.
+func (c *systemFunctions) GetCatalogLinkStatus(ctx context.Context, id AccountObjectIdentifier) (*CatalogLinkStatus, error) {
+	row := &struct {
+		Status string `db:"STATUS"`
+	}{}
+	opts := &getCatalogLinkStatusOptions{
+		arguments: &catalogLinkedDatabaseArgs{
+			Name: id,
+		},
+	}
+	sql, err := structToSQL(opts)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.client.queryOne(ctx, row, sql); err != nil {
+		return nil, err
+	}
+	return parseCatalogLinkStatus(row.Status)
+}
+
+type getCatalogLinkStatusOptions struct {
+	selectSystemCatalogLinkStatus bool                       `ddl:"static" sql:"SELECT SYSTEM$CATALOG_LINK_STATUS"`
+	arguments                     *catalogLinkedDatabaseArgs `ddl:"list,parentheses,must_parentheses"`
+	as                            bool                       `ddl:"static" sql:"AS \"STATUS\""`
+}
+
+func parseCatalogLinkStatus(raw string) (*CatalogLinkStatus, error) {
+	var status catalogLinkStatusDbStruct
+	if err := json.Unmarshal([]byte(raw), &status); err != nil {
+		return nil, err
+	}
+
+	return &CatalogLinkStatus{
+		ExecutionState:                status.ExecutionState,
+		FailedExecutionStateReason:    status.FailedExecutionStateReason,
+		FailedExecutionStateErrorCode: status.FailedExecutionStateErrorCode,
+		LastLinkAttemptStartTime:      status.LastLinkAttemptStartTime,
+		FailureDetails: collections.Map(status.FailureDetails, func(entry catalogLinkFailureDetailDbStruct) CatalogLinkFailureDetail {
+			return CatalogLinkFailureDetail{
+				QualifiedEntityName: entry.QualifiedEntityName,
+				EntityDomain:        entry.EntityDomain,
+				Operation:           entry.Operation,
+				ErrorCode:           entry.ErrorCode,
+				ErrorMessage:        entry.ErrorMessage,
 			}
 		}),
 	}, nil

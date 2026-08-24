@@ -92,6 +92,50 @@ var databaseUnsetStruct = g.NewQueryStruct("DatabaseUnset").
 		"UserTaskTimeoutMs", "UserTaskMinimumTriggerIntervalInSeconds",
 		"QuotedIdentifiersIgnoreCase", "EnableConsoleOutput", "Comment")
 
+var (
+	CatalogLinkedDatabaseNamespaceModeEnumDef = g.NewEnum(
+		"CatalogLinkedDatabaseNamespaceMode", "CatalogLinkedDatabaseNamespaceModes",
+		"IGNORE_NESTED_NAMESPACE", "FLATTEN_NESTED_NAMESPACE",
+	)
+	CatalogLinkedDatabaseAllowedWriteOperationsEnumDef = g.NewEnum(
+		"CatalogLinkedDatabaseAllowedWriteOperations", "CatalogLinkedDatabaseAllowedWriteOperations",
+		"NONE", "ALL",
+	)
+	DatabaseCatalogCaseSensitivityEnumDef = g.NewEnum(
+		"DatabaseCatalogCaseSensitivity", "DatabaseCatalogCaseSensitivities",
+		"CASE_SENSITIVE", "CASE_INSENSITIVE",
+	)
+)
+
+var linkedCatalogStruct = g.NewQueryStruct("LinkedCatalog").
+	Identifier("Catalog", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("CATALOG").Equals().SingleQuotes()).
+	ListAssignment("ALLOWED_NAMESPACES", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
+	ListAssignment("BLOCKED_NAMESPACES", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
+	OptionalEnumAssignment("ALLOWED_WRITE_OPERATIONS", CatalogLinkedDatabaseAllowedWriteOperationsEnumDef, g.ParameterOptions()).
+	OptionalEnumAssignment("NAMESPACE_MODE", CatalogLinkedDatabaseNamespaceModeEnumDef, g.ParameterOptions()).
+	OptionalTextAssignment("NAMESPACE_FLATTEN_DELIMITER", g.ParameterOptions().SingleQuotes()).
+	OptionalNumberAssignment("SYNC_INTERVAL_SECONDS", g.ParameterOptions()).
+	WithValidation(g.ValidIdentifier, "Catalog")
+
+func catalogLinkedDatabaseNamespacesStruct(structName, sqlPrefix, sqlSuffix string) *g.QueryStruct {
+	return g.NewQueryStruct(structName).
+		SQL(sqlPrefix).
+		List("Namespaces", "StringListItemWrapper", g.ListOptions().MustParentheses().Required()).
+		SQL(sqlSuffix)
+}
+
+var (
+	addToAllowedNamespacesStruct      = catalogLinkedDatabaseNamespacesStruct("AddToAllowedNamespaces", "ADD", "TO ALLOWED_NAMESPACES")
+	removeFromAllowedNamespacesStruct = catalogLinkedDatabaseNamespacesStruct("RemoveFromAllowedNamespaces", "REMOVE", "FROM ALLOWED_NAMESPACES")
+	addToBlockedNamespacesStruct      = catalogLinkedDatabaseNamespacesStruct("AddToBlockedNamespaces", "ADD", "TO BLOCKED_NAMESPACES")
+	removeFromBlockedNamespacesStruct = catalogLinkedDatabaseNamespacesStruct("RemoveFromBlockedNamespaces", "REMOVE", "FROM BLOCKED_NAMESPACES")
+)
+
+var catalogLinkedDatabaseSetStruct = g.NewQueryStruct("CatalogLinkedDatabaseSet").
+	OptionalNumberAssignment("SYNC_INTERVAL_SECONDS", g.ParameterOptions()).
+	OptionalEnumAssignment("ALLOWED_WRITE_OPERATIONS", CatalogLinkedDatabaseAllowedWriteOperationsEnumDef, g.ParameterOptions()).
+	WithValidation(g.AtLeastOneValueSet, "SyncIntervalSeconds", "AllowedWriteOperations")
+
 var databasesDef = g.NewInterface(
 	"Databases",
 	"Database",
@@ -225,6 +269,20 @@ var databasesDef = g.NewInterface(
 		TextAssignment("FROM LISTING", g.ParameterOptions().SingleQuotes().NoEquals()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithAdditionalValidations(),
+).CustomOperation(
+	"CreateCatalogLinked",
+	"https://docs.snowflake.com/en/sql-reference/sql/create-database-catalog-linked",
+	g.NewQueryStruct("CreateCatalogLinkedDatabase").
+		Create().
+		SQL("DATABASE").
+		Name().
+		QueryStructField("LinkedCatalog", linkedCatalogStruct, g.ListOptions().Parentheses().SQL("LINKED_CATALOG =")).
+		OptionalIdentifier("ExternalVolume", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXTERNAL_VOLUME").Equals().SingleQuotes()).
+		OptionalComment().
+		OptionalTags().
+		OptionalEnumAssignment("CATALOG_CASE_SENSITIVITY", DatabaseCatalogCaseSensitivityEnumDef, g.ParameterOptions()).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ValidIdentifierIfSet, "ExternalVolume"),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-database",
 	g.NewQueryStruct("AlterDatabase").
@@ -279,6 +337,24 @@ var databasesDef = g.NewInterface(
 		OptionalSQL("PRIMARY").
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "EnableFailover", "DisableFailover", "Primary"),
+).CustomOperation(
+	"AlterCatalogLinked",
+	"https://docs.snowflake.com/en/sql-reference/sql/alter-database-catalog-linked",
+	g.NewQueryStruct("AlterCatalogLinkedDatabase").
+		Alter().
+		SQL("DATABASE").
+		IfExists().
+		Name().
+		SQL("UPDATE LINKED_CATALOG").
+		OptionalQueryStructField("AddToAllowedNamespaces", addToAllowedNamespacesStruct, g.KeywordOptions()).
+		OptionalQueryStructField("RemoveFromAllowedNamespaces", removeFromAllowedNamespacesStruct, g.KeywordOptions()).
+		OptionalSQL("UNSET ALLOWED_NAMESPACES").
+		OptionalQueryStructField("AddToBlockedNamespaces", addToBlockedNamespacesStruct, g.KeywordOptions()).
+		OptionalQueryStructField("RemoveFromBlockedNamespaces", removeFromBlockedNamespacesStruct, g.KeywordOptions()).
+		OptionalSQL("UNSET BLOCKED_NAMESPACES").
+		OptionalQueryStructField("Set", catalogLinkedDatabaseSetStruct, g.ListOptions().NoParentheses().SQL("SET")).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ExactlyOneValueSet, "AddToAllowedNamespaces", "RemoveFromAllowedNamespaces", "UnsetAllowedNamespaces", "AddToBlockedNamespaces", "RemoveFromBlockedNamespaces", "UnsetBlockedNamespaces", "Set"),
 ).DropOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/drop-database",
 	g.NewQueryStruct("DropDatabase").
@@ -321,4 +397,7 @@ var databasesDef = g.NewInterface(
 	"*DatabaseDetails", "error",
 ).WithEnums(
 	DatabaseKindEnumDef,
+	CatalogLinkedDatabaseNamespaceModeEnumDef,
+	CatalogLinkedDatabaseAllowedWriteOperationsEnumDef,
+	DatabaseCatalogCaseSensitivityEnumDef,
 )
