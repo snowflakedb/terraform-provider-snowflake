@@ -127,4 +127,4 @@ var openflowDeploymentsDef = g.NewInterface(
 	OpenflowDeploymentTypeEnumDef,
 	OpenflowVpcTypeEnumDef,
 	OpenflowDeploymentStatusEnumDef,
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
