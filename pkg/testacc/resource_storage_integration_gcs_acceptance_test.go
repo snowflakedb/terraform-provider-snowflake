@@ -218,6 +218,71 @@ func TestAcc_StorageIntegrationGcs_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_StorageIntegrationGcs_CompleteUseCase(t *testing.T) {
+	gcsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.GcsExternalBucketUrl)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	allowedLocations := []sdk.StorageLocation{
+		{Path: gcsBucketUrl + "allowed-location/"},
+	}
+	blockedLocations := []sdk.StorageLocation{
+		{Path: gcsBucketUrl + "blocked-location/"},
+	}
+
+	comment := random.Comment()
+
+	complete := model.StorageIntegrationGcs("w", id.Name(), false, allowedLocations).
+		WithStorageBlockedLocations(blockedLocations).
+		WithComment(comment)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationGcs),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
+			{
+				Config: config.FromModels(t, complete),
+				Check: assertThat(
+					t,
+					resourceassert.StorageIntegrationGcsResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasEnabledString(r.BooleanFalse).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations...).
+						HasCommentString(comment),
+					resourceshowoutputassert.StorageIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasEnabled(false).
+						HasComment(comment).
+						HasStorageType("EXTERNAL_STAGE").
+						HasCategory("STORAGE"),
+					resourceshowoutputassert.StorageIntegrationGcsDescribeOutput(t, complete.ResourceReference()).
+						HasId(id).
+						HasEnabled(false).
+						HasAllowedLocations(allowedLocations...).
+						HasBlockedLocations(blockedLocations...).
+						HasProvider("GCS").
+						HasComment(comment).
+						HasUsePrivatelinkEndpoint(false).
+						HasServiceAccountSet(),
+				),
+			},
+			// Import - with all optionals
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// No ImportStateVerifyIgnore: BasicUseCase import steps verify all attributes.
+			},
+		},
+	})
+}
+
 func TestAcc_StorageIntegrationGcs_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	storageIntegrationGcsModelNoAllowedLocations := model.StorageIntegrationGcs("w", id.Name(), false, []sdk.StorageLocation{})

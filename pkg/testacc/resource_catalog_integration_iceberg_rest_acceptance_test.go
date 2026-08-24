@@ -13,6 +13,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -1305,6 +1306,152 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Config:          config.FromModels(t, withBearerToken, bearerTokenVariableModel),
 				ConfigVariables: bearerTokenConfigVariables,
 				Check:           assertThat(t, withBearerTokenAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	accountLocator := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogAccountLocator)
+	oAuthClientId := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientId)
+	oAuthClientSecret := testenvs.GetOrSkipTest(t, testenvs.OpenCatalogPrimaryOAuthClientSecret)
+	catalogUri := fmt.Sprintf("https://%s.snowflakecomputing.com/polaris/api/catalog", accountLocator)
+	catalogName := "TEST_CATALOG"
+	prefix := "prefix"
+	catalogNamespace := "TEST_NAMESPACE"
+
+	oAuthTokenUri := catalogUri + "/v1/oauth/tokens"
+	oAuthAllowedScope := "PRINCIPAL_ROLE:PRINCIPAL"
+
+	oauthClientSecretVariableName := "oauth_client_secret"
+	oauthClientSecretVariableModel, oauthClientSecretConfigVariables := config.SecretStringVariableModelWithConfigVariables(oauthClientSecretVariableName, oAuthClientSecret)
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+
+	completeRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+		WithOauthTokenUri(oAuthTokenUri)
+
+	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+		WithPrefix(prefix).
+		WithCatalogName(catalogName).
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)
+
+	complete := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, completeRestConfig, completeRestAuth, oauthClientSecretVariableName).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithCatalogNamespace(catalogNamespace)
+
+	ref := complete.ResourceReference()
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
+			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest)).
+			HasEnabledString(r.BooleanFalse).
+			HasComment(comment).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasCatalogNamespace(catalogNamespace).
+			HasFullyQualifiedName(id.FullyQualifiedName()).
+			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+				CatalogUri:           catalogUri,
+				Prefix:               prefix,
+				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
+				CatalogName:          catalogName,
+				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
+			}).
+			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+				OauthTokenUri:      oAuthTokenUri,
+				OauthClientId:      oAuthClientId,
+				OauthClientSecret:  oAuthClientSecret,
+				OauthAllowedScopes: []string{oAuthAllowedScope},
+			}).
+			HasBearerRestAuthenticationEmpty().
+			HasSigv4RestAuthenticationEmpty(),
+		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
+			HasName(id.Name()).
+			HasType("CATALOG").
+			HasCategory("CATALOG").
+			HasEnabled(false).
+			HasComment(comment),
+		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
+			HasId(id).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasComment(comment).
+			HasCatalogNamespace(catalogNamespace),
+		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
+			HasRestConfigCatalogUri(catalogUri).
+			HasRestConfigPrefix(prefix).
+			HasRestConfigCatalogName(catalogName).
+			HasRestConfigCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+			HasRestConfigAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials).
+			HasOAuthRestAuthenticationOauthTokenUri(oAuthTokenUri).
+			HasOAuthRestAuthenticationOauthClientId(oAuthClientId).
+			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
+		objectassert.CatalogIntegration(t, id).
+			HasName(id.Name()).
+			HasType("CATALOG").
+			HasCategory("CATALOG").
+			HasEnabled(false).
+			HasComment(comment).
+			HasCreatedOnNotEmpty(),
+		objectassert.CatalogIntegrationIcebergRestDetails(t, id).
+			HasId(id).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasComment(comment).
+			HasCatalogNamespace(catalogNamespace).
+			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
+				HasCatalogUri(catalogUri).
+				HasPrefix(prefix).
+				HasCatalogName(catalogName).
+				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
+				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
+			HasOAuthRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+				HasOauthTokenUri(oAuthTokenUri).
+				HasOauthClientId(oAuthClientId).
+				HasOauthAllowedScopes(oAuthAllowedScope)),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationIcebergRest),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including optional force-new fields)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config:          config.FromModels(t, complete, oauthClientSecretVariableModel),
+				ConfigVariables: oauthClientSecretConfigVariables,
+				Check:           assertThat(t, completeAssertions...),
+			},
+			// Import - with all optionals.
+			// ImportOAuth has no ImportStateVerifyIgnore list (it uses ImportStatePersist instead).
+			// These fields cannot round-trip through import:
+			{
+				Config:            config.FromModels(t, complete, oauthClientSecretVariableModel),
+				ConfigVariables:   oauthClientSecretConfigVariables,
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"refresh_interval_seconds",                        // unreadable: Read skips this attribute; value is only compared via describe_output
+					"oauth_rest_authentication.0.oauth_client_secret", // write-only: Snowflake never returns oauth_client_secret (see ImportOAuth)
+				},
 			},
 		},
 	})

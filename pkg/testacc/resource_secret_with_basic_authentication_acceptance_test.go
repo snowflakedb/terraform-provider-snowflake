@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
@@ -190,25 +189,83 @@ func TestAcc_SecretWithBasicAuthentication_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Destroy
+		},
+	})
+}
+
+func TestAcc_SecretWithBasicAuthentication_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+	username := random.String()
+	password := random.String()
+	currentRole := testClient().Context.CurrentRole(t).Name()
+
+	complete := model.SecretWithBasicAuthentication("test", id.DatabaseName(), id.SchemaName(), id.Name(), password, username).
+		WithComment(comment)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Secret(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypePassword)).
+			HasOwner(currentRole).
+			HasComment(comment),
+
+		resourceassert.SecretWithBasicAuthenticationResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasSecretTypeString("PASSWORD").
+			HasUsernameString(username).
+			HasPasswordString(password).
+			HasCommentString(comment),
+
+		resourceshowoutputassert.SecretShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypePassword)).
+			HasOwner(currentRole).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.secret_type", string(sdk.SecretTypePassword))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.username", username)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment", comment)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.integration_name", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.SecretWithBasicAuthentication),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
 			{
-				Destroy: true,
-				Config:  config.FromModels(t, basic),
-			},
-			// Create - with optionals
-			{
-				PreConfig: func() {
-					// ensure secret is destroyed before the moving forward
-					_, err := testClient().Secret.Show(t, id)
-					require.ErrorIs(t, err, sdk.ErrObjectNotFound)
-				},
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with all optionals.
+			// password is not returned by SHOW/DESCRIBE SECRET, so import cannot populate it.
+			// username is populated from DESCRIBE and is verified.
+			{
+				Config:                  config.FromModels(t, complete),
+				ResourceName:            complete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"},
 			},
 		},
 	})

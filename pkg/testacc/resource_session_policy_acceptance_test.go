@@ -11,6 +11,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -273,38 +274,15 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, basicAssertionsWithZeros...),
 			},
-			// Destroy
+			// Set all attributes
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
-					},
-				},
-				Config:  config.FromModels(t, basic),
-				Destroy: true,
-			},
-			// Create with all attributes
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
 				Config: config.FromModels(t, allAttributes),
 				Check:  assertThat(t, completeAssertions...),
-			},
-			// Import
-			{
-				Config:            config.FromModels(t, allAttributes),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"session_idle_timeout_mins",
-					"session_ui_idle_timeout_mins",
-					"allowed_secondary_roles",
-					"blocked_secondary_roles",
-				},
 			},
 			// Change all props externally
 			{
@@ -348,6 +326,110 @@ func TestAcc_SessionPolicy_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, allAttributes),
 				Check:  assertThat(t, completeAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_SessionPolicy_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+
+	sessionIdleTimeoutMins := random.IntRange(5, 1440)
+	sessionUiIdleTimeoutMins := random.IntRange(5, 1440)
+
+	role1, role1Cleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(role1Cleanup)
+	role2, role2Cleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(role2Cleanup)
+	role3, role3Cleanup := testClient().Role.CreateRole(t)
+	t.Cleanup(role3Cleanup)
+
+	complete := model.SessionPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithSessionIdleTimeoutMins(sessionIdleTimeoutMins).
+		WithSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins).
+		WithAllowedSecondaryRoles(role1.Name, role2.Name).
+		WithBlockedSecondaryRoles(role3.Name).
+		WithComment(comment)
+	ref := complete.ResourceReference()
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.SessionPolicyResource(t, ref).
+			HasName(id.Name()).
+			HasSchema(id.SchemaName()).
+			HasDatabase(id.DatabaseName()).
+			HasSessionIdleTimeoutMins(sessionIdleTimeoutMins).
+			HasSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins).
+			HasAllowedSecondaryRoles(role1.Name, role2.Name).
+			HasBlockedSecondaryRoles(role3.Name).
+			HasComment(comment),
+		resourceshowoutputassert.SessionPolicyShowOutput(t, ref).
+			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasKind(string(sdk.PolicyKindSessionPolicy)).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE").
+			HasOptions(""),
+		resourceshowoutputassert.SessionPolicyDescribeOutput(t, ref).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComment(comment).
+			HasSessionIdleTimeoutMins(sessionIdleTimeoutMins).
+			HasSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins).
+			HasAllowedSecondaryRoles(role1.Name, role2.Name).
+			HasBlockedSecondaryRoles(role3.Name),
+		objectassert.SessionPolicy(t, id).
+			HasName(id.Name()).
+			HasCreatedOnNotEmpty().
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasKind(string(sdk.PolicyKindSessionPolicy)).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE").
+			HasOptions(""),
+		objectassert.SessionPolicyDetails(t, id).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComment(comment).
+			HasSessionIdleTimeoutMins(sessionIdleTimeoutMins).
+			HasSessionUiIdleTimeoutMins(sessionUiIdleTimeoutMins).
+			HasAllowedSecondaryRolesUnordered(role1.Name, role2.Name).
+			HasBlockedSecondaryRoles(role3.Name),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.SessionPolicy),
+		Steps: []resource.TestStep{
+			// Create with all attributes
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, completeAssertions...),
+			},
+			// Import
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"session_idle_timeout_mins",
+					"session_ui_idle_timeout_mins",
+					"allowed_secondary_roles",
+					"blocked_secondary_roles",
+				},
 			},
 		},
 	})

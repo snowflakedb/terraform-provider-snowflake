@@ -408,6 +408,90 @@ func TestAcc_CatalogIntegrationAwsGlue_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_CatalogIntegrationAwsGlue_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	glueAwsRoleArn := "arn:aws:iam::123456789012:role/sqsAccess"
+	glueCatalogId := random.NumericN(15)
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+	glueRegion := "us-east-1"
+	catalogNamespace := random.AlphanumericN(15)
+
+	catalogIntegrationAwsGlueAllAttributes := model.CatalogIntegrationAwsGlue("t", id.Name(), false, glueAwsRoleArn, glueCatalogId).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds).
+		WithGlueRegion(glueRegion).
+		WithCatalogNamespace(catalogNamespace)
+
+	ref := catalogIntegrationAwsGlueAllAttributes.ResourceReference()
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.CatalogIntegrationAwsGlueResource(t, ref).
+			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeGlue)).
+			HasEnabledString(r.BooleanFalse).
+			HasComment(comment).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasGlueAwsRoleArn(glueAwsRoleArn).
+			HasGlueCatalogId(glueCatalogId).
+			HasGlueRegion(glueRegion).
+			HasCatalogNamespace(catalogNamespace),
+		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
+			HasName(id.Name()).
+			HasType("CATALOG").
+			HasCategory("CATALOG").
+			HasEnabled(false).
+			HasComment(comment),
+		resourceshowoutputassert.CatalogIntegrationAwsGlueDescribeOutput(t, ref).
+			HasId(id).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeGlue).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasComment(comment).
+			HasGlueAwsRoleArn(glueAwsRoleArn).
+			HasGlueCatalogId(glueCatalogId).
+			HasGlueRegion(glueRegion).
+			HasCatalogNamespace(catalogNamespace).
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty(),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationAwsGlue),
+		Steps: []resource.TestStep{
+			// Create with all attributes
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
+				Check:  assertThat(t, completeAssertions...),
+			},
+			// Import with all attributes.
+			// refresh_interval_seconds and glue_region are not written into resource state on read
+			// (they are detected via describe_output external-change handling), so import cannot verify them.
+			{
+				Config:            config.FromModels(t, catalogIntegrationAwsGlueAllAttributes),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"refresh_interval_seconds", // unreadable: Read skips this attribute; value is only compared via describe_output
+					"glue_region",              // unreadable: Read skips this attribute; value is only compared via describe_output
+				},
+			},
+		},
+	})
+}
+
 func TestAcc_CatalogIntegrationAwsGlue_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 

@@ -263,6 +263,86 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_StorageIntegrationAzure_CompleteUseCase(t *testing.T) {
+	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
+	azureTenantId := testenvs.GetOrSkipTest(t, testenvs.AzureExternalTenantId)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	// TODO [next PRs]: extract allowed location logic and use throughout integration and acceptance tests
+	allowedLocations := []sdk.StorageLocation{
+		{Path: azureBucketUrl + "allowed-location/"},
+	}
+	blockedLocations := []sdk.StorageLocation{
+		{Path: azureBucketUrl + "blocked-location/"},
+	}
+
+	comment := random.Comment()
+
+	storageIntegrationAzureAllAttributes := model.StorageIntegrationAzure("w", id.Name(), azureTenantId, false, allowedLocations).
+		WithStorageBlockedLocations(blockedLocations).
+		WithComment(comment).
+		WithUsePrivatelinkEndpoint(r.BooleanFalse)
+
+	ref := storageIntegrationAzureAllAttributes.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationAzure),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, storageIntegrationAzureAllAttributes),
+				Check: assertThat(
+					t,
+					resourceassert.StorageIntegrationAzureResource(t, ref).
+						HasNameString(id.Name()).
+						HasEnabledString(r.BooleanFalse).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations...).
+						HasCommentString(comment).
+						HasUsePrivatelinkEndpointString(r.BooleanFalse).
+						HasAzureTenantIdString(azureTenantId),
+					resourceshowoutputassert.StorageIntegrationShowOutput(t, ref).
+						HasName(id.Name()).
+						HasEnabled(false).
+						HasComment(comment).
+						HasStorageType("EXTERNAL_STAGE").
+						HasCategory("STORAGE"),
+					resourceshowoutputassert.StorageIntegrationAzureDescribeOutput(t, ref).
+						HasId(id).
+						HasEnabled(false).
+						HasAllowedLocations(allowedLocations...).
+						HasBlockedLocations(blockedLocations...).
+						HasComment(comment).
+						HasUsePrivatelinkEndpoint(false).
+						HasTenantId(azureTenantId).
+						HasConsentUrlSet().
+						HasMultiTenantAppNameSet(),
+				),
+			},
+			// Import - with all optionals.
+			// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
+			// in this test
+			{
+				Config:                  config.FromModels(t, storageIntegrationAzureAllAttributes),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint"},
+			},
+		},
+	})
+}
+
 func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 	basicId := testClient().Ids.RandomAccountObjectIdentifier()
 	completeId := testClient().Ids.RandomAccountObjectIdentifier()

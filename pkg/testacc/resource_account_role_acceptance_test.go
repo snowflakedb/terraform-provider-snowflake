@@ -175,6 +175,67 @@ func TestAcc_AccountRole_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_AccountRole_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+	currentRole := testClient().Context.CurrentRole(t)
+
+	complete := model.AccountRole("test", id.Name()).
+		WithComment(comment)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Role(t, id).
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasAssignedToUsers(0).
+			HasGrantedToRoles(0).
+			HasGrantedRoles(0).
+			HasOwner(currentRole.Name()).
+			HasComment(comment),
+
+		resourceassert.AccountRoleResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasCommentString(comment),
+
+		resourceshowoutputassert.RoleShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasAssignedToUsers(0).
+			HasGrantedToRoles(0).
+			HasGrantedRoles(0).
+			HasOwner(currentRole.Name()).
+			HasComment(comment),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.AccountRole),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAcc_AccountRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()

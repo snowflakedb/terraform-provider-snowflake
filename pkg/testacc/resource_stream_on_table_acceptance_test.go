@@ -15,7 +15,6 @@ import (
 	pluginconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -200,24 +199,88 @@ func TestAcc_StreamOnTable_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Destroy - ensure stream is destroyed before the next step
+		},
+	})
+}
+
+func TestAcc_StreamOnTable_CompleteUseCase(t *testing.T) {
+	table, tableCleanup := testClient().Table.CreateWithChangeTracking(t)
+	t.Cleanup(tableCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+
+	complete := model.StreamOnTable("test", id.DatabaseName(), id.SchemaName(), id.Name(), table.ID().FullyQualifiedName()).
+		WithAppendOnly(r.BooleanTrue).
+		WithShowInitialRows(r.BooleanTrue).
+		WithComment(comment).
+		WithCopyGrants(true)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		resourceassert.StreamOnTableResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasTableString(table.ID().FullyQualifiedName()).
+			HasAppendOnlyString(r.BooleanTrue).
+			HasShowInitialRowsString(r.BooleanTrue).
+			HasCommentString(comment).
+			HasCopyGrants(true),
+
+		resourceshowoutputassert.StreamShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasTableName(table.ID()).
+			HasMode(sdk.StreamModeAppendOnly).
+			HasComment(comment).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasSourceType(sdk.StreamSourceTypeTable).
+			HasBaseTables(table.ID()).
+			HasType("DELTA").
+			HasStale(false).
+			HasStaleAfterNotEmpty().
+			HasInvalidReason("N/A").
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.created_on")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.owner", testClient().Context.CurrentRole(t).Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment", comment)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.table_name", table.ID().FullyQualifiedName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.source_type", string(sdk.StreamSourceTypeTable))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.base_tables.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.base_tables.0", table.ID().FullyQualifiedName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.type", "DELTA")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.stale", "false")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.mode", string(sdk.StreamModeAppendOnly))),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.stale_after")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.owner_role_type", "ROLE")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StreamOnTable),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
 			{
-				Destroy: true,
-				Config:  config.FromModels(t, basic),
-				Check: assertThat(
-					t,
-					invokeactionassert.StreamDoesNotExist(t, id),
-				),
-			},
-			// Create - with optionals
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with all optionals
+			{
+				Config:                  config.FromModels(t, complete),
+				ResourceName:            complete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"append_only", "copy_grants", "show_initial_rows"},
 			},
 		},
 	})

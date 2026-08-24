@@ -203,6 +203,73 @@ func TestAcc_DatabaseRole_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_DatabaseRole_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomDatabaseObjectIdentifier()
+	comment := random.Comment()
+	currentRole := testClient().Context.CurrentRole(t)
+
+	complete := model.DatabaseRole("test", id.DatabaseName(), id.Name()).
+		WithComment(comment)
+
+	assertComplete := assertThat(
+		t,
+		objectassert.DatabaseRole(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasGrantedToRoles(0).
+			HasGrantedToDatabaseRoles(0).
+			HasGrantedDatabaseRoles(0).
+			HasOwner(currentRole.Name()).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE"),
+
+		resourceassert.DatabaseRoleResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasDatabaseString(id.DatabaseName()).
+			HasCommentString(comment).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+
+		resourceshowoutputassert.DatabaseRoleShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasIsDefault(false).
+			HasIsCurrent(false).
+			HasIsInherited(false).
+			HasGrantedToRoles(0).
+			HasGrantedToDatabaseRoles(0).
+			HasGrantedDatabaseRoles(0).
+			HasOwnerNotEmpty().
+			HasComment(comment).
+			HasOwnerRoleTypeNotEmpty(),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.DatabaseRole),
+		Steps: []resource.TestStep{
+			// Create - with all settable fields
+			{
+				Config: config.FromModels(t, complete),
+				Check:  assertComplete,
+			},
+			// Import
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAcc_DatabaseRole_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
 	id := testClient().Ids.RandomDatabaseObjectIdentifier()
 	comment := random.Comment()

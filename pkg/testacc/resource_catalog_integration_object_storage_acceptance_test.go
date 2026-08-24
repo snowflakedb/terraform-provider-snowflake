@@ -12,6 +12,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -296,6 +297,90 @@ func TestAcc_CatalogIntegrationObjectStorage_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, withChangedTableFormat),
 				Check:  assertThat(t, forceNewAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationObjectStorage_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	comment := random.Comment()
+	refreshIntervalSeconds := random.IntRange(30, 86400)
+	tableFormat := string(sdk.CatalogIntegrationTableFormatDelta)
+
+	complete := model.CatalogIntegrationObjectStorage("t", id.Name(), false, tableFormat).
+		WithComment(comment).
+		WithRefreshIntervalSeconds(refreshIntervalSeconds)
+
+	ref := complete.ResourceReference()
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.CatalogIntegrationObjectStorageResource(t, ref).
+			HasName(id.Name()).
+			HasCatalogSource(string(sdk.CatalogIntegrationCatalogSourceTypeObjectStore)).
+			HasEnabledString(r.BooleanFalse).
+			HasComment(comment).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasTableFormat(tableFormat).
+			HasFullyQualifiedName(id.FullyQualifiedName()),
+		resourceshowoutputassert.CatalogIntegrationShowOutput(t, ref).
+			HasName(id.Name()).
+			HasType("CATALOG").
+			HasCategory("CATALOG").
+			HasEnabled(false).
+			HasComment(comment),
+		resourceshowoutputassert.CatalogIntegrationObjectStorageDescribeOutput(t, ref).
+			HasId(id).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasComment(comment),
+		objectassert.CatalogIntegration(t, id).
+			HasName(id.Name()).
+			HasType("CATALOG").
+			HasCategory("CATALOG").
+			HasEnabled(false).
+			HasComment(comment).
+			HasCreatedOnNotEmpty(),
+		objectassert.CatalogIntegrationObjectStorageDetails(t, id).
+			HasId(id).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeObjectStore).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatDelta).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(refreshIntervalSeconds).
+			HasComment(comment),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationObjectStorage),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including optional force-new fields)
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, completeAssertions...),
+			},
+			// Import - with all optionals.
+			// refresh_interval_seconds is not read back into state on purpose (handled as an external
+			// change against DESCRIBE output), so import cannot round-trip the configured value.
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"refresh_interval_seconds",
+				},
 			},
 		},
 	})

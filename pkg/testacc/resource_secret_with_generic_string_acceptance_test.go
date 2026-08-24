@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -176,24 +175,80 @@ func TestAcc_SecretWithGenericString_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Destroy - ensure secret is destroyed before the next step
+		},
+	})
+}
+
+func TestAcc_SecretWithGenericString_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+	secretString := random.String()
+	currentRole := testClient().Context.CurrentRole(t).Name()
+
+	complete := model.SecretWithGenericString("test", id.DatabaseName(), id.SchemaName(), id.Name(), secretString).
+		WithComment(comment)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Secret(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeGenericString)).
+			HasOwner(currentRole).
+			HasComment(comment),
+
+		resourceassert.SecretWithGenericStringResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasSecretTypeString("GENERIC_STRING").
+			HasSecretStringString(secretString).
+			HasCommentString(comment),
+
+		resourceshowoutputassert.SecretShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeGenericString)).
+			HasOwner(currentRole).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.secret_type", string(sdk.SecretTypeGenericString))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.username", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment", comment)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.integration_name", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.#", "0")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.SecretWithGenericString),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
 			{
-				Destroy: true,
-				Config:  config.FromModels(t, basic),
-				Check: assertThat(
-					t,
-					invokeactionassert.SecretDoesNotExist(t, id),
-				),
-			},
-			// Create - with optionals
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with all optionals.
+			// secret_string is sensitive and is not read back from Snowflake on import.
+			{
+				Config:                  config.FromModels(t, complete),
+				ResourceName:            complete.ResourceReference(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret_string"},
 			},
 		},
 	})

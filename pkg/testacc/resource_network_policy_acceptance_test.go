@@ -213,6 +213,94 @@ func TestAcc_NetworkPolicy_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_NetworkPolicy_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+
+	allowedNetworkRule1, allowedNetworkRule1Cleanup := testClient().NetworkRule.CreateIngress(t)
+	t.Cleanup(allowedNetworkRule1Cleanup)
+
+	allowedNetworkRule2, allowedNetworkRule2Cleanup := testClient().NetworkRule.CreateIngress(t)
+	t.Cleanup(allowedNetworkRule2Cleanup)
+
+	blockedNetworkRule1, blockedNetworkRule1Cleanup := testClient().NetworkRule.CreateIngress(t)
+	t.Cleanup(blockedNetworkRule1Cleanup)
+
+	blockedNetworkRule2, blockedNetworkRule2Cleanup := testClient().NetworkRule.CreateIngress(t)
+	t.Cleanup(blockedNetworkRule2Cleanup)
+
+	allowedNetworkRuleId1 := allowedNetworkRule1.ID()
+	allowedNetworkRuleId2 := allowedNetworkRule2.ID()
+	blockedNetworkRuleId1 := blockedNetworkRule1.ID()
+	blockedNetworkRuleId2 := blockedNetworkRule2.ID()
+
+	complete := model.NetworkPolicy("test", id.Name()).
+		WithComment(comment).
+		WithAllowedNetworkRules(allowedNetworkRuleId1, allowedNetworkRuleId2).
+		WithBlockedNetworkRules(blockedNetworkRuleId1, blockedNetworkRuleId2).
+		WithAllowedIps("1.1.1.1", "2.2.2.2").
+		WithBlockedIps("3.3.3.3", "4.4.4.4")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.NetworkPolicy),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(
+					t,
+					objectassert.NetworkPolicy(t, id).
+						HasName(id.Name()).
+						HasComment(comment).
+						HasEntriesInAllowedIpList(2).
+						HasEntriesInBlockedIpList(2).
+						HasEntriesInAllowedNetworkRules(2).
+						HasEntriesInBlockedNetworkRules(2),
+
+					resourceassert.NetworkPolicyResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentString(comment).
+						HasAllowedIpList("1.1.1.1", "2.2.2.2").
+						HasBlockedIpList("3.3.3.3", "4.4.4.4").
+						HasAllowedNetworkRuleList(allowedNetworkRuleId1.FullyQualifiedName(), allowedNetworkRuleId2.FullyQualifiedName()).
+						HasBlockedNetworkRuleList(blockedNetworkRuleId1.FullyQualifiedName(), blockedNetworkRuleId2.FullyQualifiedName()),
+
+					resourceshowoutputassert.NetworkPolicyShowOutput(t, complete.ResourceReference()).
+						HasCreatedOnNotEmpty().
+						HasName(id.Name()).
+						HasComment(comment).
+						HasEntriesInAllowedIpList(2).
+						HasEntriesInBlockedIpList(2).
+						HasEntriesInAllowedNetworkRules(2).
+						HasEntriesInBlockedNetworkRules(2),
+
+					assert.Check(resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1"),
+						resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_network_rule_list"),
+						resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_network_rule_list"),
+						resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.allowed_ip_list"),
+						resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.blocked_ip_list"),
+					)),
+				),
+			},
+			// Import - with all optionals.
+			// All settable fields are readable from SHOW/DESCRIBE, and show_output has no volatile
+			// runtime counters, so ImportStateVerify needs no ignore list.
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAcc_NetworkPolicy_Rename(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	newId := testClient().Ids.RandomAccountObjectIdentifier()

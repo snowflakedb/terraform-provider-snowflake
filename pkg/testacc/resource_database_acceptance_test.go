@@ -276,6 +276,129 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_Database_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	comment := random.Comment()
+	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
+	t.Cleanup(externalVolumeCleanup)
+
+	catalogId, catalogCleanup := testClient().CatalogIntegration.Create(t)
+	t.Cleanup(catalogCleanup)
+
+	// is_transient is ForceNew, so BasicUseCase cannot set it on the update-to-complete path.
+	// Transient databases cap DATA_RETENTION_TIME_IN_DAYS at 1 (Basic's complete model uses 2).
+	complete := model.Database("test", id.Name()).
+		WithIsTransient(true).
+		WithDropPublicSchemaOnCreation(true).
+		WithReplication(secondaryAccountId, true, true).
+		WithComment(comment).
+		WithDataRetentionTimeInDays(1).
+		WithMaxDataExtensionTimeInDays(15).
+		WithExternalVolume(externalVolumeId.Name()).
+		WithCatalog(catalogId.Name()).
+		WithReplaceInvalidCharacters(true).
+		WithDefaultDdlCollation("en_US").
+		WithDefaultNotebookComputePoolCpu("CPU_X64_S").
+		WithDefaultNotebookComputePoolGpu("GPU_NV_S").
+		WithStorageSerializationPolicy(string(sdk.StorageSerializationPolicyCompatible)).
+		WithLogLevel(string(sdk.LogLevelInfo)).
+		WithLogEventLevel(string(sdk.LogLevelInfo)).
+		WithTraceLevel(string(sdk.TraceLevelAlways)).
+		WithSuspendTaskAfterNumFailures(11).
+		WithTaskAutoRetryAttempts(1).
+		WithUserTaskManagedInitialWarehouseSize(string(sdk.WarehouseSizeSmall)).
+		WithUserTaskTimeoutMs(3600001).
+		WithUserTaskMinimumTriggerIntervalInSeconds(31).
+		WithQuotedIdentifiersIgnoreCase(false).
+		WithEnableConsoleOutput(true)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Database),
+		Steps: []resource.TestStep{
+			// Create - with all optionals (including optional force-new fields)
+			{
+				Config: accconfig.FromModels(t, complete),
+				Check: assertThat(
+					t,
+					objectassert.Database(t, id).
+						HasName(id.Name()).
+						HasTransient(true).
+						HasIsDefault(false).
+						HasIsCurrent(false).
+						HasOptions("TRANSIENT").
+						HasComment(comment).
+						HasRetentionTime(1).
+						HasResourceGroup("").
+						HasKind(sdk.DatabaseKindStandard),
+					objectparametersassert.DatabaseParameters(t, id).
+						HasDataRetentionTimeInDays(1).
+						HasMaxDataExtensionTimeInDays(15).
+						HasExternalVolume(externalVolumeId.Name()).
+						HasCatalog(catalogId.Name()).
+						HasReplaceInvalidCharacters(true).
+						HasDefaultDdlCollation("en_US").
+						HasDefaultNotebookComputePoolCpu("CPU_X64_S").
+						HasDefaultNotebookComputePoolGpu("GPU_NV_S").
+						HasStorageSerializationPolicy(sdk.StorageSerializationPolicyCompatible).
+						HasLogLevel(sdk.LogLevelInfo).
+						HasLogEventLevel(sdk.LogLevelInfo).
+						HasTraceLevel(sdk.TraceLevelAlways).
+						HasSuspendTaskAfterNumFailures(11).
+						HasTaskAutoRetryAttempts(1).
+						HasUserTaskManagedInitialWarehouseSize(sdk.WarehouseSizeSmall).
+						HasUserTaskTimeoutMs(3600001).
+						HasUserTaskMinimumTriggerIntervalInSeconds(31).
+						HasQuotedIdentifiersIgnoreCase(false).
+						HasEnableConsoleOutput(true),
+					resourceassert.DatabaseResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasIsTransientString("true").
+						HasDropPublicSchemaOnCreationString("true").
+						HasReplication(secondaryAccountId, true, true).
+						HasCommentString(comment).
+						HasDataRetentionTimeInDaysString("1").
+						HasMaxDataExtensionTimeInDaysString("15").
+						HasExternalVolumeString(externalVolumeId.Name()).
+						HasCatalogString(catalogId.Name()).
+						HasReplaceInvalidCharactersString("true").
+						HasDefaultDdlCollationString("en_US").
+						HasDefaultNotebookComputePoolCpuString("CPU_X64_S").
+						HasDefaultNotebookComputePoolGpuString("GPU_NV_S").
+						HasStorageSerializationPolicyString(string(sdk.StorageSerializationPolicyCompatible)).
+						HasLogLevelString(string(sdk.LogLevelInfo)).
+						HasLogEventLevelString(string(sdk.LogLevelInfo)).
+						HasTraceLevelString(string(sdk.TraceLevelAlways)).
+						HasSuspendTaskAfterNumFailuresString("11").
+						HasTaskAutoRetryAttemptsString("1").
+						HasUserTaskManagedInitialWarehouseSizeString(string(sdk.WarehouseSizeSmall)).
+						HasUserTaskTimeoutMsString("3600001").
+						HasUserTaskMinimumTriggerIntervalInSecondsString("31").
+						HasQuotedIdentifiersIgnoreCaseString("false").
+						HasEnableConsoleOutputString("true"),
+				),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"drop_public_schema_on_creation",     // create-only; not returned by Snowflake
+					"replication.0.ignore_edition_check", // not returned by SHOW REPLICATION DATABASES
+				},
+			},
+		},
+	})
+}
+
 // For now, this test can sometimes fail (if account parameters are changed in the meantime).
 // We could set the known parameters here, however, we need to test behavior for the database when they are not set.
 // We could try ignoring the changes to parameters too.

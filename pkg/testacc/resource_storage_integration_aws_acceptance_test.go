@@ -326,6 +326,88 @@ func TestAcc_StorageIntegrationAws_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_StorageIntegrationAws_CompleteUseCase(t *testing.T) {
+	awsBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsRoleArn := testenvs.GetOrSkipTest(t, testenvs.AwsExternalRoleArn)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	allowedLocations := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "allowed-location/"},
+	}
+	blockedLocations := []sdk.StorageLocation{
+		{Path: awsBucketUrl + "blocked-location/"},
+	}
+
+	comment := random.Comment()
+	externalId := "some_external_id"
+
+	complete := model.StorageIntegrationAws("w", id.Name(), true, allowedLocations, awsRoleArn, string(sdk.RegularS3Protocol)).
+		WithStorageBlockedLocations(blockedLocations).
+		WithComment(comment).
+		WithUsePrivatelinkEndpoint(r.BooleanTrue).
+		WithStorageAwsExternalId(externalId).
+		WithStorageAwsObjectAcl("bucket-owner-full-control")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.StorageIntegrationAws),
+		Steps: []resource.TestStep{
+			// Create - with all attributes
+			{
+				Config: config.FromModels(t, complete),
+				Check: assertThat(
+					t,
+					resourceassert.StorageIntegrationAwsResource(t, complete.ResourceReference()).
+						HasNameString(id.Name()).
+						HasEnabledString(r.BooleanTrue).
+						HasStorageProviderString(string(sdk.RegularS3Protocol)).
+						HasStorageAllowedLocationsStorageLocation(allowedLocations...).
+						HasStorageBlockedLocationsStorageLocation(blockedLocations...).
+						HasCommentString(comment).
+						HasUsePrivatelinkEndpointString(r.BooleanTrue).
+						HasStorageAwsRoleArnString(awsRoleArn).
+						HasStorageAwsExternalIdString(externalId).
+						HasStorageAwsObjectAclString("bucket-owner-full-control").
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.StorageIntegrationShowOutput(t, complete.ResourceReference()).
+						HasName(id.Name()).
+						HasEnabled(true).
+						HasComment(comment).
+						HasStorageType("EXTERNAL_STAGE").
+						HasCategory("STORAGE"),
+					resourceshowoutputassert.StorageIntegrationAwsDescribeOutput(t, complete.ResourceReference()).
+						HasId(id).
+						HasEnabled(true).
+						HasAllowedLocations(allowedLocations...).
+						HasBlockedLocations(blockedLocations...).
+						HasProvider(string(sdk.RegularS3Protocol)).
+						HasComment(comment).
+						HasUsePrivatelinkEndpoint(true).
+						HasIamUserArnSet().
+						HasRoleArn(awsRoleArn).
+						HasExternalId(externalId).
+						HasObjectAcl("bucket-owner-full-control"),
+				),
+			},
+			// Import - with all attributes
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// use_privatelink_endpoint is ignored because IMPORT_BOOLEAN_DEFAULT experiment is not enabled
+				// in this test
+				// storage_aws_external_id is not read into state (only handled as an external DESCRIBE change)
+				ImportStateVerifyIgnore: []string{"use_privatelink_endpoint", "storage_aws_external_id"},
+			},
+		},
+	})
+}
+
 func TestAcc_StorageIntegrationAws_Import(t *testing.T) {
 	basicId := testClient().Ids.RandomAccountObjectIdentifier()
 	completeId := testClient().Ids.RandomAccountObjectIdentifier()

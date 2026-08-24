@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -224,24 +223,108 @@ func TestAcc_Streamlit_BasicUseCase(t *testing.T) {
 				Config: accconfig.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Destroy - ensure streamlit is destroyed before the next step
+		},
+	})
+}
+
+func TestAcc_Streamlit_CompleteUseCase(t *testing.T) {
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	// warehouse is needed because default warehouse uses lowercase, and it fails in snowflake.
+	// TODO(SNOW-1541938): use a default warehouse after fix on snowflake side
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+
+	networkRule, networkRuleCleanup := testClient().NetworkRule.Create(t)
+	t.Cleanup(networkRuleCleanup)
+
+	externalAccessIntegrationId, externalAccessIntegrationCleanup := testClient().ExternalAccessIntegration.CreateExternalAccessIntegration(t, networkRule.ID())
+	t.Cleanup(externalAccessIntegrationCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+	title := random.AlphaN(4)
+	directoryLocation := "abc"
+	rootLocationWithCatalog := fmt.Sprintf("%s/%s", stage.Location(), directoryLocation)
+	mainFile := "foo"
+
+	complete := model.StreamlitWithIds("test", id, mainFile, stage.ID()).
+		WithComment(comment).
+		WithTitle(title).
+		WithDirectoryLocation(directoryLocation).
+		WithQueryWarehouse(warehouse.ID().Name()).
+		WithExternalAccessIntegrations(externalAccessIntegrationId)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Streamlit(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasTitle(title).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment(comment).
+			HasQueryWarehouse(warehouse.ID().Name()).
+			HasUrlIdNotEmpty(),
+
+		resourceassert.StreamlitResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasStageString(stage.ID().FullyQualifiedName()).
+			HasMainFileString(mainFile).
+			HasDirectoryLocationString(directoryLocation).
+			HasQueryWarehouseString(warehouse.ID().Name()).
+			HasTitleString(title).
+			HasCommentString(comment).
+			HasExternalAccessIntegrations(externalAccessIntegrationId.Name()),
+
+		resourceshowoutputassert.StreamlitShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasTitle(title).
+			HasOwner(testClient().Context.CurrentRole(t).Name()).
+			HasComment(comment).
+			HasQueryWarehouse(warehouse.ID().Name()).
+			HasUrlIdNotEmpty().
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.title", title)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.root_location", rootLocationWithCatalog)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.main_file", mainFile)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.query_warehouse", warehouse.ID().Name())),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.url_id")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.default_packages")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.user_packages.#")),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.import_urls.#")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_access_integrations.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_access_integrations.0", externalAccessIntegrationId.Name())),
+		assert.Check(resource.TestCheckResourceAttrSet(complete.ResourceReference(), "describe_output.0.external_access_secrets")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Streamlit),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
 			{
-				Destroy: true,
-				Config:  accconfig.FromModels(t, basic),
-				Check: assertThat(
-					t,
-					invokeactionassert.StreamlitDoesNotExist(t, id),
-				),
-			},
-			// Create - with optionals
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
 				Config: accconfig.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with all optionals
+			{
+				Config:            accconfig.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

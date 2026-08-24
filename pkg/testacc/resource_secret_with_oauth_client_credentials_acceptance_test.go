@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	tfjson "github.com/hashicorp/terraform-json"
 
@@ -204,24 +203,91 @@ func TestAcc_SecretWithOauthClientCredentials_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// Destroy - ensure secret is destroyed before the next step
+		},
+	})
+}
+
+func TestAcc_SecretWithOauthClientCredentials_CompleteUseCase(t *testing.T) {
+	integrationId := testClient().Ids.RandomAccountObjectIdentifier()
+	_, apiIntegrationCleanup := testClient().SecurityIntegration.CreateApiAuthenticationClientCredentialsWithRequest(
+		t,
+		sdk.NewCreateApiAuthenticationWithClientCredentialsFlowSecurityIntegrationRequest(integrationId, true, "test_client_id", "test_client_secret").
+			WithOauthAllowedScopes([]sdk.AllowedScope{{Scope: "scope1"}, {Scope: "scope2"}, {Scope: "scope3"}, {Scope: "scope4"}}),
+	)
+	t.Cleanup(apiIntegrationCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+	currentRole := testClient().Context.CurrentRole(t).Name()
+
+	complete := model.SecretWithClientCredentials("test", id.DatabaseName(), id.SchemaName(), id.Name(), integrationId.Name()).
+		WithOauthScopes([]string{"scope3", "scope4"}).
+		WithComment(comment)
+
+	assertComplete := []assert.TestCheckFuncProvider{
+		objectassert.Secret(t, id).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeOAuth2)).
+			HasOwner(currentRole).
+			HasComment(comment),
+
+		resourceassert.SecretWithClientCredentialsResource(t, complete.ResourceReference()).
+			HasNameString(id.Name()).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasSecretTypeString("OAUTH2").
+			HasApiAuthenticationString(integrationId.Name()).
+			HasOauthScopes("scope3", "scope4").
+			HasCommentString(comment),
+
+		resourceshowoutputassert.SecretShowOutput(t, complete.ResourceReference()).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasSecretType(string(sdk.SecretTypeOAuth2)).
+			HasOwner(currentRole).
+			HasComment(comment).
+			HasOwnerRoleType("ROLE"),
+
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.#", "1")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.name", id.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.database_name", id.DatabaseName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.schema_name", id.SchemaName())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.secret_type", string(sdk.SecretTypeOAuth2))),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.username", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment", comment)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_access_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_refresh_token_expiry_time", "")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.integration_name", integrationId.Name())),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.#", "2")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope3")),
+		assert.Check(resource.TestCheckTypeSetElemAttr(complete.ResourceReference(), "describe_output.0.oauth_scopes.*", "scope4")),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.SecretWithClientCredentials),
+		Steps: []resource.TestStep{
+			// Create - with all optionals
 			{
-				Destroy: true,
-				Config:  config.FromModels(t, basic),
-				Check: assertThat(
-					t,
-					invokeactionassert.SecretDoesNotExist(t, id),
-				),
-			},
-			// Create - with optionals
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
+			},
+			// Import - with all optionals
+			{
+				Config:            config.FromModels(t, complete),
+				ResourceName:      complete.ResourceReference(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				// api_authentication: ImportStateVerify is a raw string compare and does not honor DiffSuppressFunc (identifier quoting)
+				ImportStateVerifyIgnore: []string{"api_authentication"},
 			},
 		},
 	})
