@@ -172,4 +172,5 @@ var failoverGroupsDef = g.NewInterface(
 			g.NewMethodParameter("id", "AccountObjectIdentifier"),
 		},
 		"[]AccountObjectIdentifier", "error",
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)
