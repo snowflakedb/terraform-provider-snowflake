@@ -362,6 +362,12 @@ func TestAcc_SessionPolicy_Validations(t *testing.T) {
 	invalidSessionUiIdleTimeoutMins := model.SessionPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithSessionUiIdleTimeoutMins(0)
 
+	emptyAllowedSecondaryRoles := model.SessionPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithAllowedSecondaryRoles()
+
+	emptyBlockedSecondaryRoles := model.SessionPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithBlockedSecondaryRoles()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -378,6 +384,16 @@ func TestAcc_SessionPolicy_Validations(t *testing.T) {
 				Config:      config.FromModels(t, invalidSessionUiIdleTimeoutMins),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected session_ui_idle_timeout_mins to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, emptyAllowedSecondaryRoles),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Not enough list items`),
+			},
+			{
+				Config:      config.FromModels(t, emptyBlockedSecondaryRoles),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Not enough list items`),
 			},
 		},
 	})

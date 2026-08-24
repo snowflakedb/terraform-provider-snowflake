@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -19,63 +18,26 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func eaiAllowedAuthenticationSecretsSchema() map[string]*schema.Schema {
-	exactlyOneOf := []string{
-		"allowed_authentication_secrets.0.none",
-		"allowed_authentication_secrets.0.all",
-		"allowed_authentication_secrets.0.secrets",
-	}
-	return map[string]*schema.Schema{
-		"none": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			Description:  "When true, no secrets are allowed for authentication. Conflicts with `all` and `secrets`.",
-			ExactlyOneOf: exactlyOneOf,
-		},
-		"all": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			Description:  "When true, all secrets in the account are allowed for authentication. Conflicts with `none` and `secrets`.",
-			ExactlyOneOf: exactlyOneOf,
-		},
-		"secrets": {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: &schema.Schema{
-				Type:             schema.TypeString,
-				ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
-			},
-			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_authentication_secrets.0.secrets"),
-			Description:      "Specifies the fully qualified identifiers of secrets allowed for authentication. Conflicts with `none` and `all`.",
-			ExactlyOneOf:     exactlyOneOf,
-		},
-	}
+var eaiAuthSecretsBlockCfg = NoneAllRefsBlockConfig{
+	AttrPath:          "allowed_authentication_secrets",
+	WithNone:          true,
+	WithAll:           true,
+	RefsKey:           "secrets",
+	NoneDescription:   "When true, no secrets are allowed for authentication. Conflicts with `all` and `secrets`.",
+	AllDescription:    "When true, all secrets in the account are allowed for authentication. Conflicts with `none` and `secrets`.",
+	RefsDescription:   "Specifies the fully qualified identifiers of secrets allowed for authentication. Conflicts with `none` and `all`.",
+	RefsElemValidator: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
+	RefsDiffSuppress:  NormalizeAndCompareIdentifiersInSet("allowed_authentication_secrets.0.secrets"),
 }
 
-func eaiAllowedApiAuthIntegrationsSchema() map[string]*schema.Schema {
-	exactlyOneOf := []string{
-		"allowed_api_authentication_integrations.0.none",
-		"allowed_api_authentication_integrations.0.integrations",
-	}
-	return map[string]*schema.Schema{
-		"none": {
-			Type:         schema.TypeBool,
-			Optional:     true,
-			Description:  "When true, no API authentication integrations are allowed. Conflicts with `integrations`.",
-			ExactlyOneOf: exactlyOneOf,
-		},
-		"integrations": {
-			Type:     schema.TypeSet,
-			Optional: true,
-			Elem: &schema.Schema{
-				Type:             schema.TypeString,
-				ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-			},
-			DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_api_authentication_integrations.0.integrations"),
-			Description:      "Specifies the API authentication integrations allowed for authenticating to external locations. Conflicts with `none`.",
-			ExactlyOneOf:     exactlyOneOf,
-		},
-	}
+var eaiApiAuthIntegrationsBlockCfg = NoneAllRefsBlockConfig{
+	AttrPath:          "allowed_api_authentication_integrations",
+	WithNone:          true,
+	RefsKey:           "integrations",
+	NoneDescription:   "When true, no API authentication integrations are allowed. Conflicts with `integrations`.",
+	RefsDescription:   "Specifies the API authentication integrations allowed for authenticating to external locations. Conflicts with `none`.",
+	RefsElemValidator: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+	RefsDiffSuppress:  NormalizeAndCompareIdentifiersInSet("allowed_api_authentication_integrations.0.integrations"),
 }
 
 var externalAccessIntegrationSchema = map[string]*schema.Schema{
@@ -109,7 +71,7 @@ var externalAccessIntegrationSchema = map[string]*schema.Schema{
 		MaxItems:    1,
 		Description: "Specifies allowed authentication secrets for this integration. Exactly one of `none`, `all`, or `secrets` must be set inside the block.",
 		Elem: &schema.Resource{
-			Schema: eaiAllowedAuthenticationSecretsSchema(),
+			Schema: NoneAllRefsBlockInnerSchema(eaiAuthSecretsBlockCfg),
 		},
 	},
 	"allowed_api_authentication_integrations": {
@@ -118,7 +80,7 @@ var externalAccessIntegrationSchema = map[string]*schema.Schema{
 		MaxItems:    1,
 		Description: "Specifies allowed API authentication integrations for this integration. Exactly one of `none` or `integrations` must be set inside the block.",
 		Elem: &schema.Resource{
-			Schema: eaiAllowedApiAuthIntegrationsSchema(),
+			Schema: NoneAllRefsBlockInnerSchema(eaiApiAuthIntegrationsBlockCfg),
 		},
 	},
 	"comment": {
@@ -249,8 +211,8 @@ func ReadExternalAccessIntegrationFunc(withExternalChangesMarking bool) schema.R
 			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
 				d,
-				outputMapping{"allowed_authentication_secrets", "allowed_authentication_secrets", details.AllowedAuthenticationSecrets, eaiAuthSecretsResourceStateFromDescribeOutput(details.AllowedAuthenticationSecrets), normalizeStringList},
-				outputMapping{"allowed_api_authentication_integrations", "allowed_api_authentication_integrations", details.AllowedApiAuthenticationIntegrations, eaiApiAuthIntegrationsResourceStateFromDescribeOutput(details.AllowedApiAuthenticationIntegrations), normalizeStringList},
+				outputMapping{"allowed_authentication_secrets", "allowed_authentication_secrets", details.AllowedAuthenticationSecrets, eaiAuthSecretsBlockCfg.StateFromDescribeOutput(details.AllowedAuthenticationSecrets), normalizeStringList},
+				outputMapping{"allowed_api_authentication_integrations", "allowed_api_authentication_integrations", details.AllowedApiAuthenticationIntegrations, eaiApiAuthIntegrationsBlockCfg.StateFromDescribeOutput(details.AllowedApiAuthenticationIntegrations), normalizeStringList},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -270,35 +232,6 @@ func ReadExternalAccessIntegrationFunc(withExternalChangesMarking bool) schema.R
 
 		return diag.FromErr(errs)
 	}
-}
-
-func eaiAuthSecretsResourceStateFromDescribeOutput(secrets []string) []any {
-	if len(secrets) == 0 {
-		return []any{map[string]any{"none": true}}
-	}
-	if len(secrets) == 1 && strings.EqualFold(secrets[0], "ALL") {
-		return []any{map[string]any{"all": true}}
-	}
-	elems := make([]any, len(secrets))
-	for i, s := range secrets {
-		elems[i] = s
-	}
-	return []any{map[string]any{
-		"secrets": schema.NewSet(schema.HashString, elems),
-	}}
-}
-
-func eaiApiAuthIntegrationsResourceStateFromDescribeOutput(integrations []string) []any {
-	if len(integrations) == 0 {
-		return []any{map[string]any{"none": true}}
-	}
-	elems := make([]any, len(integrations))
-	for i, s := range integrations {
-		elems[i] = s
-	}
-	return []any{map[string]any{
-		"integrations": schema.NewSet(schema.HashString, elems),
-	}}
 }
 
 func UpdateExternalAccessIntegration(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -346,44 +279,29 @@ func UpdateExternalAccessIntegration(ctx context.Context, d *schema.ResourceData
 }
 
 func buildEAIAllowedApiAuthIntegrationsRequest(v any) (sdk.ExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest, error) {
-	list := v.([]any)
-	if len(list) == 0 {
-		return sdk.ExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest{}, fmt.Errorf("allowed_api_authentication_integrations block is empty")
-	}
-	block := list[0].(map[string]any)
-	req := sdk.NewExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest()
-	if none, _ := block["none"].(bool); none {
-		return *req.WithNone(true), nil
-	}
-	if intSet, ok := block["integrations"].(*schema.Set); ok && intSet.Len() > 0 {
-		ids, err := collections.MapErr(expandStringList(intSet.List()), sdk.ParseAccountObjectIdentifier)
-		if err != nil {
-			return sdk.ExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest{}, err
-		}
-		return *req.WithIntegrations(ids), nil
-	}
-	return sdk.ExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest{}, fmt.Errorf("allowed_api_authentication_integrations block has no recognized field set")
+	return NoneAllRefsRequest(
+		eaiApiAuthIntegrationsBlockCfg,
+		v,
+		sdk.NewExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest,
+		sdk.ParseAccountObjectIdentifier,
+		func(r *sdk.ExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest) { r.WithNone(true) },
+		nil,
+		func(r *sdk.ExternalAccessIntegrationAllowedApiAuthenticationIntegrationsRequest, ids []sdk.AccountObjectIdentifier) {
+			r.WithIntegrations(ids)
+		},
+	)
 }
 
 func buildEAIAllowedAuthSecretsRequest(v any) (sdk.ExternalAccessIntegrationAllowedAuthenticationSecretsRequest, error) {
-	list := v.([]any)
-	if len(list) == 0 {
-		return sdk.ExternalAccessIntegrationAllowedAuthenticationSecretsRequest{}, fmt.Errorf("allowed_authentication_secrets block is empty")
-	}
-	block := list[0].(map[string]any)
-	req := sdk.NewExternalAccessIntegrationAllowedAuthenticationSecretsRequest()
-	if all, _ := block["all"].(bool); all {
-		return *req.WithAll(true), nil
-	}
-	if none, _ := block["none"].(bool); none {
-		return *req.WithNone(true), nil
-	}
-	if secretSet, ok := block["secrets"].(*schema.Set); ok && secretSet.Len() > 0 {
-		ids, err := parseSchemaObjectIdentifierSet(secretSet)
-		if err != nil {
-			return sdk.ExternalAccessIntegrationAllowedAuthenticationSecretsRequest{}, err
-		}
-		return *req.WithSecrets(ids), nil
-	}
-	return sdk.ExternalAccessIntegrationAllowedAuthenticationSecretsRequest{}, fmt.Errorf("allowed_authentication_secrets block has no recognized field set")
+	return NoneAllRefsRequest(
+		eaiAuthSecretsBlockCfg,
+		v,
+		sdk.NewExternalAccessIntegrationAllowedAuthenticationSecretsRequest,
+		sdk.ParseSchemaObjectIdentifier,
+		func(r *sdk.ExternalAccessIntegrationAllowedAuthenticationSecretsRequest) { r.WithNone(true) },
+		func(r *sdk.ExternalAccessIntegrationAllowedAuthenticationSecretsRequest) { r.WithAll(true) },
+		func(r *sdk.ExternalAccessIntegrationAllowedAuthenticationSecretsRequest, ids []sdk.SchemaObjectIdentifier) {
+			r.WithSecrets(ids)
+		},
+	)
 }

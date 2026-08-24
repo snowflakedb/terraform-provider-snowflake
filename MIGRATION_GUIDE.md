@@ -24,6 +24,28 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.20.x ➞ v2.21.0
+
+### *(bug fix)* Empty lists in fields with a `none` option crashed the provider
+
+The following fields take a list of names, or `none = true` when nothing should be selected:
+
+- `snowflake_session_policy` - `allowed_secondary_roles` and `blocked_secondary_roles`
+- `snowflake_external_access_integration` - `allowed_authentication_secrets` and `allowed_api_authentication_integrations`
+
+Setting the list to `[]` was accepted by `terraform plan`, but crashed the provider during `terraform apply`.
+
+These lists now require at least one item, so an empty list is reported by `terraform plan` instead:
+
+```
+Error: Not enough list items
+
+Attribute <field>.0.<list> requires 1 item minimum, but config has only 0
+declared.
+```
+
+If you would like to specify an empty list, please use `none = true` instead.
+
 ## v2.19.x ➞ v2.20.0
 
 ### *(new feature)* New hybrid table resource

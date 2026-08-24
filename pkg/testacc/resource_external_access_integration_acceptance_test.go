@@ -492,6 +492,12 @@ func TestAcc_ExternalAccessIntegration_Validations(t *testing.T) {
 	invalidSecret := model.ExternalAccessIntegrationFromId(id, []sdk.SchemaObjectIdentifier{networkRuleId}, true).
 		WithAllowedAuthenticationSecretsSecrets([]string{"invalid_secret"})
 
+	emptySecrets := model.ExternalAccessIntegrationFromId(id, []sdk.SchemaObjectIdentifier{networkRuleId}, true).
+		WithAllowedAuthenticationSecretsSecrets([]string{})
+
+	emptyApiAuthenticationIntegrations := model.ExternalAccessIntegrationFromId(id, []sdk.SchemaObjectIdentifier{networkRuleId}, true).
+		WithAllowedApiAuthenticationIntegrationsIntegrations([]string{})
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -508,6 +514,16 @@ func TestAcc_ExternalAccessIntegration_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, invalidSecret),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Invalid identifier type`),
+			},
+			{
+				Config:      accconfig.FromModels(t, emptySecrets),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Not enough list items`),
+			},
+			{
+				Config:      accconfig.FromModels(t, emptyApiAuthenticationIntegrations),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Not enough list items`),
 			},
 		},
 	})
