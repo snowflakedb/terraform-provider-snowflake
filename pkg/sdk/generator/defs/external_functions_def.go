@@ -152,4 +152,4 @@ var externalFunctionsDef = g.NewInterface(
 		SQL("FUNCTION").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-)
+).WithEnabledGenerationParts(g.PartUnitTests)

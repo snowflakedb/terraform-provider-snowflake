@@ -6,348 +6,234 @@ import (
 	"testing"
 )
 
+var (
+	externalFunctionsTestIdSchemaObjectIdentifier              = randomSchemaObjectIdentifier()
+	externalFunctionsTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
+)
+
+const (
+	case_ExternalFunctions_validation_Create_name_ValidIdentifier                      testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ExternalFunctions_validation_Create_ApiIntegration_ValidateValueSet           testCaseName = "validation_Create_ApiIntegration_ValidateValueSet"
+	case_ExternalFunctions_validation_Create_RequestTranslator_ValidIdentifierIfSet    testCaseName = "validation_Create_RequestTranslator_ValidIdentifierIfSet"
+	case_ExternalFunctions_validation_Create_As_ValidateValueSet                       testCaseName = "validation_Create_As_ValidateValueSet"
+	case_ExternalFunctions_validation_Create_ResponseTranslator_ValidIdentifierIfSet   testCaseName = "validation_Create_ResponseTranslator_ValidIdentifierIfSet"
+	case_ExternalFunctions_sql_Create_basic                                            testCaseName = "sql_Create_basic"
+	case_ExternalFunctions_sql_Create_all                                              testCaseName = "sql_Create_all"
+	case_ExternalFunctions_validation_Alter_opts_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_ExternalFunctions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalFunctions_validation_Alter_name_ValidIdentifier                       testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_ExternalFunctions_validation_Alter_opts_Set_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_ExactlyOneValueSet_NoneSet"
+	case_ExternalFunctions_validation_Alter_opts_Set_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalFunctions_validation_Alter_opts_Unset_AtLeastOneValueSet              testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_ExternalFunctions_sql_Alter_Set                                               testCaseName = "sql_Alter_Set"
+	case_ExternalFunctions_sql_Alter_Unset                                             testCaseName = "sql_Alter_Unset"
+	case_ExternalFunctions_sql_Show_basic                                              testCaseName = "sql_Show_basic"
+	case_ExternalFunctions_sql_Show_all                                                testCaseName = "sql_Show_all"
+	case_ExternalFunctions_sql_Show_Like                                               testCaseName = "sql_Show_Like"
+	case_ExternalFunctions_sql_Show_In                                                 testCaseName = "sql_Show_In"
+	case_ExternalFunctions_validation_Describe_name_ValidIdentifier                    testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_ExternalFunctions_sql_Describe_basic                                          testCaseName = "sql_Describe_basic"
+)
+
+type ExternalFunctionsTestsContext struct {
+	Create   *sdkTestCtx[*CreateExternalFunctionOptions]
+	Alter    *sdkTestCtx[*AlterExternalFunctionOptions]
+	Show     *sdkTestCtx[*ShowExternalFunctionOptions]
+	Describe *sdkTestCtx[*DescribeExternalFunctionOptions]
+}
+
+var externalFunctionsTests = ExternalFunctionsTestsContext{
+	Create: newSdkTestCtx[*CreateExternalFunctionOptions](
+		"ExternalFunctions", "Create",
+	).
+		withDefaultOpts(func() *CreateExternalFunctionOptions {
+			return &CreateExternalFunctionOptions{
+				name: externalFunctionsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateExternalFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Create_ApiIntegration_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateExternalFunctionOptions", "ApiIntegration"),
+				DefaultModify: func(opts *CreateExternalFunctionOptions) {
+					opts.ApiIntegration = nil
+				},
+			},
+			validationCase[*CreateExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Create_RequestTranslator_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateExternalFunctionOptions) {
+					opts.RequestTranslator = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*CreateExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Create_As_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateExternalFunctionOptions", "As"),
+				DefaultModify: func(opts *CreateExternalFunctionOptions) {
+					opts.As = ""
+				},
+			},
+			validationCase[*CreateExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Create_ResponseTranslator_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateExternalFunctionOptions) {
+					opts.ResponseTranslator = new(emptySchemaObjectIdentifier)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateExternalFunctionOptions]{
+				Name:           case_ExternalFunctions_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateExternalFunctionOptions]{
+				Name: case_ExternalFunctions_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterExternalFunctionOptions](
+		"ExternalFunctions", "Alter",
+	).
+		withDefaultOpts(func() *AlterExternalFunctionOptions {
+			return &AlterExternalFunctionOptions{
+				name: externalFunctionsTestIdSchemaObjectIdentifierWithArguments,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterExternalFunctionOptions", "Set", "Unset"),
+				DefaultModify: func(opts *AlterExternalFunctionOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterExternalFunctionOptions", "Set", "Unset"),
+				DefaultModify: func(opts *AlterExternalFunctionOptions) {
+					opts.Set = &ExternalFunctionSet{}
+					opts.Unset = &ExternalFunctionUnset{}
+				},
+			},
+			validationCase[*AlterExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterExternalFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifierWithArguments
+				},
+			},
+			validationCase[*AlterExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Alter_opts_Set_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterExternalFunctionOptions.Set", "ApiIntegration", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "RequestTranslator", "ResponseTranslator"),
+				DefaultModify: func(opts *AlterExternalFunctionOptions) {
+					opts.Set = &ExternalFunctionSet{}
+					opts.Set.ApiIntegration = nil
+					opts.Set.Headers = nil
+					opts.Set.ContextHeaders = nil
+					opts.Set.MaxBatchRows = nil
+					opts.Set.Compression = nil
+					opts.Set.RequestTranslator = nil
+					opts.Set.ResponseTranslator = nil
+				},
+			},
+			validationCase[*AlterExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Alter_opts_Set_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterExternalFunctionOptions.Set", "ApiIntegration", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "RequestTranslator", "ResponseTranslator"),
+			},
+			validationCase[*AlterExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterExternalFunctionOptions.Unset", "Comment", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "Secure", "RequestTranslator", "ResponseTranslator"),
+				DefaultModify: func(opts *AlterExternalFunctionOptions) {
+					opts.Unset = &ExternalFunctionUnset{}
+					opts.Unset.Comment = nil
+					opts.Unset.Headers = nil
+					opts.Unset.ContextHeaders = nil
+					opts.Unset.MaxBatchRows = nil
+					opts.Unset.Compression = nil
+					opts.Unset.Secure = nil
+					opts.Unset.RequestTranslator = nil
+					opts.Unset.ResponseTranslator = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterExternalFunctionOptions]{
+				Name: case_ExternalFunctions_sql_Alter_Set,
+			},
+			sqlCase[*AlterExternalFunctionOptions]{
+				Name: case_ExternalFunctions_sql_Alter_Unset,
+			},
+		),
+	Show: newSdkTestCtx[*ShowExternalFunctionOptions](
+		"ExternalFunctions", "Show",
+	).
+		withDefaultOpts(func() *ShowExternalFunctionOptions {
+			return &ShowExternalFunctionOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowExternalFunctionOptions]{
+				Name:           case_ExternalFunctions_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowExternalFunctionOptions]{
+				Name: case_ExternalFunctions_sql_Show_all,
+			},
+			sqlCase[*ShowExternalFunctionOptions]{
+				Name: case_ExternalFunctions_sql_Show_Like,
+			},
+			sqlCase[*ShowExternalFunctionOptions]{
+				Name: case_ExternalFunctions_sql_Show_In,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeExternalFunctionOptions](
+		"ExternalFunctions", "Describe",
+	).
+		withDefaultOpts(func() *DescribeExternalFunctionOptions {
+			return &DescribeExternalFunctionOptions{
+				name: externalFunctionsTestIdSchemaObjectIdentifierWithArguments,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeExternalFunctionOptions]{
+				Name:        case_ExternalFunctions_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeExternalFunctionOptions) {
+					opts.name = emptySchemaObjectIdentifierWithArguments
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeExternalFunctionOptions]{
+				Name:           case_ExternalFunctions_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestExternalFunctions_Create(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateExternalFunctionOptions
-	defaultOpts := func() *CreateExternalFunctionOptions {
-		return &CreateExternalFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateExternalFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.ApiIntegration] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateExternalFunctionOptions", "ApiIntegration"))
-	})
-
-	t.Run("validation: valid identifier for [opts.RequestTranslator] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RequestTranslator = &emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.As] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateExternalFunctionOptions", "As"))
-	})
-
-	t.Run("validation: valid identifier for [opts.ResponseTranslator] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ResponseTranslator = &emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// basic removed manually
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Secure = Bool(true)
-		opts.Arguments = []ExternalFunctionArgument{
-			{
-				ArgName:     "id",
-				ArgDataType: DataTypeNumber,
-			},
-			{
-				ArgName:     "name",
-				ArgDataType: DataTypeVARCHAR,
-			},
-		}
-		opts.ResultDataType = DataTypeVARCHAR
-		opts.ReturnNullValues = new(ReturnNullValuesNotNull)
-		opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
-		opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-		opts.Comment = String("comment")
-		integration := NewAccountObjectIdentifier("api_integration")
-		opts.ApiIntegration = &integration
-		opts.Headers = []ExternalFunctionHeader{
-			{
-				Name:  "header1",
-				Value: "value1",
-			},
-			{
-				Name:  "header2",
-				Value: "value2",
-			},
-		}
-		opts.ContextHeaders = []ExternalFunctionContextHeader{
-			{
-				ContextFunction: "CURRENT_ACCOUNT",
-			},
-			{
-				ContextFunction: "CURRENT_USER",
-			},
-		}
-		opts.MaxBatchRows = Int(100)
-		opts.Compression = String("GZIP")
-		rt := randomSchemaObjectIdentifier()
-		opts.RequestTranslator = &rt
-		rs := randomSchemaObjectIdentifier()
-		opts.ResponseTranslator = &rs
-		opts.As = "https://xyz.execute-api.us-west-2.amazonaws.com/prod/remote_echo"
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SECURE EXTERNAL FUNCTION %s (id NUMBER, name VARCHAR) RETURNS VARCHAR NOT NULL CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' API_INTEGRATION = "api_integration" HEADERS = ('header1' = 'value1', 'header2' = 'value2') CONTEXT_HEADERS = (CURRENT_ACCOUNT, CURRENT_USER) MAX_BATCH_ROWS = 100 COMPRESSION = GZIP REQUEST_TRANSLATOR = %s RESPONSE_TRANSLATOR = %s AS 'https://xyz.execute-api.us-west-2.amazonaws.com/prod/remote_echo'`, id.FullyQualifiedName(), rt.FullyQualifiedName(), rs.FullyQualifiedName())
-	})
+	externalFunctionsTests.Create.RunValidationCases(t)
+	externalFunctionsTests.Create.RunSqlCases(t)
 }
 
 func TestExternalFunctions_Alter(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
-
-	// added manually
-	noArgsId := randomSchemaObjectIdentifierWithArguments()
-
-	// Minimal valid AlterExternalFunctionOptions
-	defaultOpts := func() *AlterExternalFunctionOptions {
-		return &AlterExternalFunctionOptions{
-			// adjusted manually
-			name:     id,
-			IfExists: Bool(true),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterExternalFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalFunctionOptions", "Set", "Unset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(ExternalFunctionSet)
-		opts.Unset = new(ExternalFunctionUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalFunctionOptions", "Set", "Unset"))
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifierWithArguments
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.ApiIntegration opts.Set.Headers opts.Set.ContextHeaders opts.Set.MaxBatchRows opts.Set.Compression opts.Set.RequestTranslator opts.Set.ResponseTranslator] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(ExternalFunctionSet)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalFunctionOptions.Set", "ApiIntegration", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "RequestTranslator", "ResponseTranslator"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.ApiIntegration opts.Set.Headers opts.Set.ContextHeaders opts.Set.MaxBatchRows opts.Set.Compression opts.Set.RequestTranslator opts.Set.ResponseTranslator] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalFunctionSet{
-			MaxBatchRows: Int(100),
-			Headers: []ExternalFunctionHeader{
-				{
-					Name:  "header1",
-					Value: "value1",
-				},
-				{
-					Name:  "header2",
-					Value: "value2",
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterExternalFunctionOptions.Set", "ApiIntegration", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "RequestTranslator", "ResponseTranslator"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.Headers opts.Unset.ContextHeaders opts.Unset.MaxBatchRows opts.Unset.Compression opts.Unset.Secure opts.Unset.RequestTranslator opts.Unset.ResponseTranslator] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ExternalFunctionUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterExternalFunctionOptions.Unset", "Comment", "Headers", "ContextHeaders", "MaxBatchRows", "Compression", "Secure", "RequestTranslator", "ResponseTranslator"))
-	})
-
-	// all variants added manually
-
-	t.Run("alter: set api integration", func(t *testing.T) {
-		opts := defaultOpts()
-		integration := NewAccountObjectIdentifier("api_integration")
-		opts.Set = &ExternalFunctionSet{
-			ApiIntegration: &integration,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET API_INTEGRATION = "api_integration"`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set headers", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalFunctionSet{
-			Headers: []ExternalFunctionHeader{
-				{
-					Name:  "header1",
-					Value: "value1",
-				},
-				{
-					Name:  "header2",
-					Value: "value2",
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET HEADERS = ('header1' = 'value1', 'header2' = 'value2')`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set max batch rows", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalFunctionSet{
-			MaxBatchRows: Int(100),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET MAX_BATCH_ROWS = 100`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set compression", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalFunctionSet{
-			Compression: String("GZIP"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET COMPRESSION = GZIP`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set context headers", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ExternalFunctionSet{
-			ContextHeaders: []ExternalFunctionContextHeader{
-				{
-					ContextFunction: "CURRENT_ACCOUNT",
-				},
-				{
-					ContextFunction: "CURRENT_USER",
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET CONTEXT_HEADERS = (CURRENT_ACCOUNT, CURRENT_USER)`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set request translator", func(t *testing.T) {
-		opts := defaultOpts()
-		rt := randomSchemaObjectIdentifier()
-		opts.Set = &ExternalFunctionSet{
-			RequestTranslator: &rt,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET REQUEST_TRANSLATOR = %s`, id.FullyQualifiedName(), rt.FullyQualifiedName())
-	})
-
-	t.Run("alter: set response translator", func(t *testing.T) {
-		opts := defaultOpts()
-		st := randomSchemaObjectIdentifier()
-		opts.Set = &ExternalFunctionSet{
-			ResponseTranslator: &st,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s SET RESPONSE_TRANSLATOR = %s`, id.FullyQualifiedName(), st.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ExternalFunctionUnset{
-			Comment:            Bool(true),
-			Headers:            Bool(true),
-			ContextHeaders:     Bool(true),
-			MaxBatchRows:       Bool(true),
-			Compression:        Bool(true),
-			Secure:             Bool(true),
-			RequestTranslator:  Bool(true),
-			ResponseTranslator: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s UNSET COMMENT, HEADERS, CONTEXT_HEADERS, MAX_BATCH_ROWS, COMPRESSION, SECURE, REQUEST_TRANSLATOR, RESPONSE_TRANSLATOR`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset with no arguments", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = noArgsId
-		opts.Unset = &ExternalFunctionUnset{
-			Comment:            Bool(true),
-			Headers:            Bool(true),
-			ContextHeaders:     Bool(true),
-			MaxBatchRows:       Bool(true),
-			Compression:        Bool(true),
-			Secure:             Bool(true),
-			RequestTranslator:  Bool(true),
-			ResponseTranslator: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FUNCTION IF EXISTS %s UNSET COMMENT, HEADERS, CONTEXT_HEADERS, MAX_BATCH_ROWS, COMPRESSION, SECURE, REQUEST_TRANSLATOR, RESPONSE_TRANSLATOR`, noArgsId.FullyQualifiedName())
-	})
+	externalFunctionsTests.Alter.RunValidationCases(t)
+	externalFunctionsTests.Alter.RunSqlCases(t)
 }
 
 func TestExternalFunctions_Show(t *testing.T) {
-	// Minimal valid ShowExternalFunctionOptions
-	defaultOpts := func() *ShowExternalFunctionOptions {
-		return &ShowExternalFunctionOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowExternalFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW EXTERNAL FUNCTIONS`)
-	})
-
-	// below variants added manually
-	t.Run("show with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW EXTERNAL FUNCTIONS LIKE 'pattern'`)
-	})
-
-	t.Run("show with in", func(t *testing.T) {
-		id := randomDatabaseObjectIdentifier()
-		opts := defaultOpts()
-		opts.In = &In{
-			Schema: id,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW EXTERNAL FUNCTIONS IN SCHEMA %s`, id.FullyQualifiedName())
-	})
+	externalFunctionsTests.Show.RunValidationCases(t)
+	externalFunctionsTests.Show.RunSqlCases(t)
 }
 
 func TestExternalFunctions_Describe(t *testing.T) {
-	// adjusted manually
-	id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
-
-	// added manually
-	noArgsId := randomSchemaObjectIdentifierWithArguments()
-
-	// Minimal valid DescribeExternalFunctionOptions
-	defaultOpts := func() *DescribeExternalFunctionOptions {
-		return &DescribeExternalFunctionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeExternalFunctionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifierWithArguments
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// replaced basic with this one manually
-	t.Run("no arguments", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = noArgsId
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE FUNCTION %s`, noArgsId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE FUNCTION %s`, id.FullyQualifiedName())
-	})
+	externalFunctionsTests.Describe.RunValidationCases(t)
+	externalFunctionsTests.Describe.RunSqlCases(t)
 }
