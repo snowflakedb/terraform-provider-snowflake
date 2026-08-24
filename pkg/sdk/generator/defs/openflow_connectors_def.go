@@ -136,4 +136,4 @@ var openflowConnectorsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name"),
 ).WithEnums(
 	OpenflowConnectorStatusEnumDef,
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
