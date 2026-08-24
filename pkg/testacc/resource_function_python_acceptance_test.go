@@ -9,6 +9,7 @@ import (
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -275,6 +276,80 @@ func TestAcc_FunctionPython_DecfloatUnsupported(t *testing.T) {
 				},
 				Config:      config.FromModels(t, functionModel),
 				ExpectError: regexp.MustCompile(`Snowflake type DECFLOAT\[DECFLOAT18]\(38,0\)\{nullable\} is not supported in function .* with handler some_function`),
+			},
+		},
+	})
+}
+
+// TestAcc_FunctionPython_Bcr2325ArtifactRepositoryPackages is the function-side counterpart of
+// TestAcc_ProcedurePython_Bcr2325ArtifactRepositoryPackages: BCR-2325 silently relocates PACKAGES to the
+// unparsed ARTIFACT_REPOSITORY_PACKAGES property, so the read reports an empty packages list instead of erroring.
+// Unlike procedures_ext.go, functions_ext.go has no validation requiring a snowpark package to be found, so there's
+// no ExpectError here (contrast with the procedure test).
+func TestAcc_FunctionPython_Bcr2325ArtifactRepositoryPackages(t *testing.T) {
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	funcName := "echoVarchar"
+	argName := "x"
+	dataType := testdatatypes.DataTypeVarchar_100
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
+	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)
+
+	functionModel := model.FunctionPythonBasicInline("w", id, testvars.PythonRuntime, dataType, funcName, definition).
+		WithArgument(argName, dataType).
+		WithPackages("snowflake-snowpark-python==1.14.0")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FunctionPython),
+		Steps: []resource.TestStep{
+			// Artifact repository attached -> create succeeds, and the live object's packages are silently
+			// relocated to the unparsed ARTIFACT_REPOSITORY_PACKAGES property (verified directly through the
+			// SDK below). State right after apply still shows the config value, since "packages" isn't
+			// Computed; the drift is only detected on the subsequent refresh (PostApplyPostRefresh below).
+			{
+				PreConfig: func() {
+					testClient().Schema.SetDefaultPythonArtifactRepository(t, schema.ID(), "snowflake.snowpark.pypi_shared_repository")
+				},
+				Config:             config.FromModels(t, functionModel),
+				ExpectNonEmptyPlan: true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectNonEmptyPlan(),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasPackages("snowflake-snowpark-python==1.14.0"),
+					objectassert.FunctionDetails(t, id).HasExactlyPackagesInAnyOrder(),
+				),
+			},
+			// Artifact repository detached again, tainted object dropped -> Terraform notices it's gone and creates it fresh, resolving PACKAGES as before.
+			{
+				PreConfig: func() {
+					testClient().Schema.UnsetDefaultPythonArtifactRepository(t, schema.ID())
+					testClient().Function.DropFunctionFunc(t, id)()
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(functionModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, functionModel),
+				Check: assertThat(
+					t,
+					resourceassert.FunctionPythonResource(t, functionModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasPackages("snowflake-snowpark-python==1.14.0"),
+					objectassert.FunctionDetails(t, id).HasExactlyPackagesInAnyOrder("snowflake-snowpark-python==1.14.0"),
+				),
 			},
 		},
 	})
