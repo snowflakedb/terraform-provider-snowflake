@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"golang.org/x/sync/singleflight"
@@ -30,29 +31,34 @@ import (
 // the data map — it is never held across loadFn, so a slow lookup for one key cannot serialize
 // lookups for other keys (which is exactly what Terraform's parallel resource reads rely on).
 //
+// Invalidate never cancels a load already in flight for its key: that load may be shared (via
+// singleflight) with callers unrelated to whatever mutation triggered the invalidation, and turning
+// their read into an error would be worse than letting it complete normally. Instead, each key has a
+// generation counter that Invalidate bumps. The generation is folded into the singleflight key, so a
+// concurrent Invalidate simply causes the in-flight load's result to go uncached (a subsequent
+// GetOrLoad reloads under the new generation) rather than forcing it to fail.
+//
 // Cache is generic over the cached value type so it can be reused for other lookups in the future.
 type Cache[T any] struct {
-	mu      sync.RWMutex
-	data    map[string]T
-	group   singleflight.Group
-	cancels map[string]context.CancelFunc
+	mu         sync.RWMutex
+	data       map[string]T
+	generation map[string]uint64
+	group      singleflight.Group
 }
 
 // NewCache returns an initialized, empty cache.
 func NewCache[T any]() *Cache[T] {
-	return &Cache[T]{data: make(map[string]T), cancels: make(map[string]context.CancelFunc)}
+	return &Cache[T]{data: make(map[string]T), generation: make(map[string]uint64)}
 }
 
-// GetOrLoad returns the cached value for key. On a cache miss it calls loadFn,
-// stores the result, and returns it. Concurrent misses on the same key are collapsed
-// into a single loadFn call whose result is shared by all callers. If loadFn returns an
+// GetOrLoad returns the cached value for key. On a cache miss it calls loadFn, stores the
+// result, and returns it. Concurrent misses on the same key and generation (see Invalidate) are
+// collapsed into a single loadFn call whose result is shared by all callers. If loadFn returns an
 // error the result is not cached and the error is propagated to the caller.
 //
-// ctx is the caller's Terraform-provided context (so resource Timeouts and plan cancellation
-// propagate into the Snowflake call on a cache miss). Because concurrent misses on the same key
-// are collapsed into a single loadFn call via singleflight, only the ctx of whichever caller
-// triggers the load actually governs it; a later caller joining an in-flight load is not able to
-// cancel it via its own ctx, only via Invalidate.
+// ctx is passed to loadFn unchanged: canceling it (e.g. a resource Timeout or plan cancellation)
+// cancels the load for every caller currently sharing it, exactly as it would for a direct call
+// to loadFn.
 func (c *Cache[T]) GetOrLoad(ctx context.Context, key string, loadFn func(ctx context.Context) (T, error)) (T, error) {
 	// Fast path: warm cache hit, read lock only. Skips singleflight entirely.
 	c.mu.RLock()
@@ -60,12 +66,15 @@ func (c *Cache[T]) GetOrLoad(ctx context.Context, key string, loadFn func(ctx co
 		c.mu.RUnlock()
 		return v, nil
 	}
+	gen := c.generation[key]
 	c.mu.RUnlock()
 
-	// Slow path: deduplicate concurrent misses per key. singleflight.Group.Do serializes
-	// only callers sharing the same key; different keys run concurrently. We do NOT hold
-	// c.mu across loadFn.
-	v, err, _ := c.group.Do(key, func() (any, error) {
+	// Folding the generation into the singleflight key means an Invalidate landing between
+	// here and the Do call below starts a fresh singleflight group for key, rather than
+	// joining (or having to cancel) whatever's already in flight for it.
+	sfKey := fmt.Sprintf("%d:%s", gen, key)
+
+	v, err, _ := c.group.Do(sfKey, func() (any, error) {
 		// Re-check under the read lock: another caller may have populated the entry
 		// after our fast-path miss but before this call began executing.
 		c.mu.RLock()
@@ -75,29 +84,18 @@ func (c *Cache[T]) GetOrLoad(ctx context.Context, key string, loadFn func(ctx co
 		}
 		c.mu.RUnlock()
 
-		loadCtx, cancel := context.WithCancel(ctx)
-		c.mu.Lock()
-		c.cancels[key] = cancel
-		c.mu.Unlock()
-		defer func() {
-			c.mu.Lock()
-			delete(c.cancels, key)
-			c.mu.Unlock()
-			cancel()
-		}()
-
-		loaded, loadErr := loadFn(loadCtx)
+		loaded, loadErr := loadFn(ctx)
 		if loadErr != nil {
 			return nil, loadErr
 		}
-		if loadCtx.Err() != nil {
-			// Invalidate ran while loadFn was in flight; the result may reflect
-			// pre-mutation state, so don't let it overwrite the invalidation.
-			return nil, loadCtx.Err()
-		}
 
 		c.mu.Lock()
-		c.data[key] = loaded
+		// Only cache if no Invalidate landed on key since gen was read above; otherwise this
+		// result may reflect pre-mutation state, so leave it uncached and let the next
+		// GetOrLoad start a fresh load under the new generation.
+		if c.generation[key] == gen {
+			c.data[key] = loaded
+		}
 		c.mu.Unlock()
 		return loaded, nil
 	})
@@ -110,15 +108,11 @@ func (c *Cache[T]) GetOrLoad(ctx context.Context, key string, loadFn func(ctx co
 	return v.(T), nil
 }
 
-// Invalidate removes the cached result for key, forcing the next GetOrLoad call
-// to re-fetch from the source.
+// Invalidate removes the cached result for key and bumps its generation, forcing the next
+// GetOrLoad call to start a fresh load rather than reusing one already in flight.
 func (c *Cache[T]) Invalidate(key string) {
 	c.mu.Lock()
 	delete(c.data, key)
-	cancel, ok := c.cancels[key]
+	c.generation[key]++
 	c.mu.Unlock()
-	if ok {
-		cancel()
-	}
-	c.group.Forget(key)
 }

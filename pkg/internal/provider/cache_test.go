@@ -260,7 +260,7 @@ func TestCache_CallerCtxPropagatesToLoadFn(t *testing.T) {
 }
 
 // TestCache_CancelingCallerCtxCancelsLoad proves that canceling the ctx passed to GetOrLoad
-// cancels the in-flight loadFn (via the ctx.WithCancel derivation), and that the resulting
+// cancels the in-flight loadFn, since ctx is passed to it unchanged, and that the resulting
 // error is surfaced to the caller rather than a stale/partial result being cached.
 func TestCache_CancelingCallerCtxCancelsLoad(t *testing.T) {
 	cache := NewCache[int]()
@@ -290,4 +290,75 @@ func TestCache_CancelingCallerCtxCancelsLoad(t *testing.T) {
 	result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) { return 42, nil })
 	require.NoError(t, err)
 	assert.Equal(t, 42, result)
+}
+
+// TestCache_InvalidateDuringInFlightLoadDoesNotErrorConcurrentCaller reproduces a race hit in
+// production: two resource instances share a cache key (e.g. two snowflake_grant_ownership
+// future grants on the same schema). One (simulated by the Invalidate call below) finishes its
+// own mutation and invalidates the key while the other is still mid-load for that same key. The
+// in-flight caller must still get its value back with no error — an unrelated sibling's mutation
+// is not this caller's failure to report.
+func TestCache_InvalidateDuringInFlightLoadDoesNotErrorConcurrentCaller(t *testing.T) {
+	cache := NewCache[int]()
+
+	started := make(chan struct{})
+	proceed := make(chan struct{})
+
+	var wg sync.WaitGroup
+	var result int
+	var err error
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		result, err = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
+			close(started)
+			<-proceed
+			return 42, nil
+		})
+	}()
+
+	<-started
+	cache.Invalidate("ROLE_A") // a sibling's mutation lands while the load above is in flight
+	close(proceed)
+
+	waitTimeout(t, &wg, 5*time.Second)
+
+	require.NoError(t, err, "an unrelated Invalidate must not surface as an error to a caller whose load was already in flight")
+	assert.Equal(t, 42, result)
+}
+
+// TestCache_InvalidateDuringInFlightLoadPreventsCachingStaleResult proves the other half of the
+// same fix: the in-flight load's result must not be cached once it raced an Invalidate for its
+// key, since it may reflect pre-mutation state. The next GetOrLoad must perform a fresh load
+// rather than serving that stale value back.
+func TestCache_InvalidateDuringInFlightLoadPreventsCachingStaleResult(t *testing.T) {
+	cache := NewCache[int]()
+
+	started := make(chan struct{})
+	proceed := make(chan struct{})
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_, _ = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
+			close(started)
+			<-proceed
+			return 1, nil // pre-mutation value
+		})
+	}()
+
+	<-started
+	cache.Invalidate("ROLE_A")
+	close(proceed)
+	waitTimeout(t, &wg, 5*time.Second)
+
+	calls := 0
+	result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
+		calls++
+		return 2, nil // post-mutation value
+	})
+	require.NoError(t, err)
+	assert.Equal(t, 1, calls, "the stale in-flight result must not have been cached, so this call must perform a fresh load")
+	assert.Equal(t, 2, result)
 }
