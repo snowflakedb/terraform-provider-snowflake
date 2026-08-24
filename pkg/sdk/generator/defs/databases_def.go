@@ -400,4 +400,4 @@ var databasesDef = g.NewInterface(
 	CatalogLinkedDatabaseNamespaceModeEnumDef,
 	CatalogLinkedDatabaseAllowedWriteOperationsEnumDef,
 	DatabaseCatalogCaseSensitivityEnumDef,
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
