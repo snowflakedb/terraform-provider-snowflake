@@ -6,161 +6,150 @@ import (
 	"testing"
 )
 
+var applicationRolesTestIdDatabaseObjectIdentifier = randomDatabaseObjectIdentifier()
+
+const (
+	case_ApplicationRoles_validation_Grant_name_ValidIdentifier                         testCaseName = "validation_Grant_name_ValidIdentifier"
+	case_ApplicationRoles_validation_Grant_opts_To_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Grant_opts_To_ExactlyOneValueSet_NoneSet"
+	case_ApplicationRoles_validation_Grant_opts_To_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Grant_opts_To_ExactlyOneValueSet_MoreThanOneSet"
+	case_ApplicationRoles_sql_Grant_basic                                               testCaseName = "sql_Grant_basic"
+	case_ApplicationRoles_validation_Revoke_name_ValidIdentifier                        testCaseName = "validation_Revoke_name_ValidIdentifier"
+	case_ApplicationRoles_validation_Revoke_opts_From_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Revoke_opts_From_ExactlyOneValueSet_NoneSet"
+	case_ApplicationRoles_validation_Revoke_opts_From_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Revoke_opts_From_ExactlyOneValueSet_MoreThanOneSet"
+	case_ApplicationRoles_sql_Revoke_basic                                              testCaseName = "sql_Revoke_basic"
+	case_ApplicationRoles_validation_Show_ApplicationName_ValidIdentifier               testCaseName = "validation_Show_ApplicationName_ValidIdentifier"
+	case_ApplicationRoles_sql_Show_basic                                                testCaseName = "sql_Show_basic"
+	case_ApplicationRoles_sql_Show_all                                                  testCaseName = "sql_Show_all"
+	case_ApplicationRoles_sql_Show_Limit                                                testCaseName = "sql_Show_Limit"
+)
+
+type ApplicationRolesTestsContext struct {
+	Grant  *sdkTestCtx[*GrantApplicationRoleOptions]
+	Revoke *sdkTestCtx[*RevokeApplicationRoleOptions]
+	Show   *sdkTestCtx[*ShowApplicationRoleOptions]
+}
+
+var applicationRolesTests = ApplicationRolesTestsContext{
+	Grant: newSdkTestCtx[*GrantApplicationRoleOptions](
+		"ApplicationRoles", "Grant",
+	).
+		withDefaultOpts(func() *GrantApplicationRoleOptions {
+			return &GrantApplicationRoleOptions{
+				name: applicationRolesTestIdDatabaseObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*GrantApplicationRoleOptions]{
+				Name:        case_ApplicationRoles_validation_Grant_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *GrantApplicationRoleOptions) {
+					opts.name = emptyDatabaseObjectIdentifier
+				},
+			},
+			validationCase[*GrantApplicationRoleOptions]{
+				Name:        case_ApplicationRoles_validation_Grant_opts_To_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("GrantApplicationRoleOptions.To", "RoleName", "ApplicationRoleName", "ApplicationName"),
+				DefaultModify: func(opts *GrantApplicationRoleOptions) {
+					opts.To.RoleName = nil
+					opts.To.ApplicationRoleName = nil
+					opts.To.ApplicationName = nil
+				},
+			},
+			validationCase[*GrantApplicationRoleOptions]{
+				Name:        case_ApplicationRoles_validation_Grant_opts_To_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("GrantApplicationRoleOptions.To", "RoleName", "ApplicationRoleName", "ApplicationName"),
+				DefaultModify: func(opts *GrantApplicationRoleOptions) {
+					opts.To.RoleName = new(randomAccountObjectIdentifier())
+					opts.To.ApplicationRoleName = new(randomDatabaseObjectIdentifier())
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GrantApplicationRoleOptions]{
+				Name:           case_ApplicationRoles_sql_Grant_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Revoke: newSdkTestCtx[*RevokeApplicationRoleOptions](
+		"ApplicationRoles", "Revoke",
+	).
+		withDefaultOpts(func() *RevokeApplicationRoleOptions {
+			return &RevokeApplicationRoleOptions{
+				name: applicationRolesTestIdDatabaseObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RevokeApplicationRoleOptions]{
+				Name:        case_ApplicationRoles_validation_Revoke_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *RevokeApplicationRoleOptions) {
+					opts.name = emptyDatabaseObjectIdentifier
+				},
+			},
+			validationCase[*RevokeApplicationRoleOptions]{
+				Name:        case_ApplicationRoles_validation_Revoke_opts_From_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("RevokeApplicationRoleOptions.From", "RoleName", "ApplicationRoleName", "ApplicationName"),
+				DefaultModify: func(opts *RevokeApplicationRoleOptions) {
+					opts.From.RoleName = nil
+					opts.From.ApplicationRoleName = nil
+					opts.From.ApplicationName = nil
+				},
+			},
+			validationCase[*RevokeApplicationRoleOptions]{
+				Name:        case_ApplicationRoles_validation_Revoke_opts_From_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("RevokeApplicationRoleOptions.From", "RoleName", "ApplicationRoleName", "ApplicationName"),
+				DefaultModify: func(opts *RevokeApplicationRoleOptions) {
+					opts.From.RoleName = new(randomAccountObjectIdentifier())
+					opts.From.ApplicationRoleName = new(randomDatabaseObjectIdentifier())
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RevokeApplicationRoleOptions]{
+				Name:           case_ApplicationRoles_sql_Revoke_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Show: newSdkTestCtx[*ShowApplicationRoleOptions](
+		"ApplicationRoles", "Show",
+	).
+		withDefaultOpts(func() *ShowApplicationRoleOptions {
+			return &ShowApplicationRoleOptions{}
+		}).
+		withValidationCases(
+			validationCase[*ShowApplicationRoleOptions]{
+				Name:        case_ApplicationRoles_validation_Show_ApplicationName_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ShowApplicationRoleOptions) {
+					opts.ApplicationName = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ShowApplicationRoleOptions]{
+				Name:           case_ApplicationRoles_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowApplicationRoleOptions]{
+				Name: case_ApplicationRoles_sql_Show_all,
+			},
+			sqlCase[*ShowApplicationRoleOptions]{
+				Name: case_ApplicationRoles_sql_Show_Limit,
+			},
+		),
+}
+
 func TestApplicationRoles_Grant(t *testing.T) {
-	id := randomDatabaseObjectIdentifier()
-	// Minimal valid GrantApplicationRoleOptions
-	defaultOpts := func() *GrantApplicationRoleOptions {
-		return &GrantApplicationRoleOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GrantApplicationRoleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyDatabaseObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.To.RoleName opts.To.ApplicationRoleName opts.To.ApplicationName] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("GrantApplicationRoleOptions.To", "RoleName", "ApplicationRoleName", "ApplicationName"))
-	})
-
-	// Manually added all variants instead of basic/all options
-	t.Run("grant to role", func(t *testing.T) {
-		roleId := randomAccountObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.To = KindOfRole{
-			RoleName: &roleId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `GRANT APPLICATION ROLE %s TO ROLE %s`, id.FullyQualifiedName(), roleId.FullyQualifiedName())
-	})
-
-	t.Run("grant to application role", func(t *testing.T) {
-		appRoleId := randomDatabaseObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.To = KindOfRole{
-			ApplicationRoleName: &appRoleId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `GRANT APPLICATION ROLE %s TO APPLICATION ROLE %s`, id.FullyQualifiedName(), appRoleId.FullyQualifiedName())
-	})
-
-	t.Run("grant to application", func(t *testing.T) {
-		appId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.To = KindOfRole{
-			ApplicationName: &appId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `GRANT APPLICATION ROLE %s TO APPLICATION %s`, id.FullyQualifiedName(), appId.FullyQualifiedName())
-	})
+	applicationRolesTests.Grant.RunValidationCases(t)
+	applicationRolesTests.Grant.RunSqlCases(t)
 }
 
 func TestApplicationRoles_Revoke(t *testing.T) {
-	id := randomDatabaseObjectIdentifier()
-	// Minimal valid RevokeApplicationRoleOptions
-	defaultOpts := func() *RevokeApplicationRoleOptions {
-		return &RevokeApplicationRoleOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*RevokeApplicationRoleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyDatabaseObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.From.RoleName opts.From.ApplicationRoleName opts.From.ApplicationName] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeApplicationRoleOptions.From", "RoleName", "ApplicationRoleName", "ApplicationName"))
-	})
-
-	t.Run("validation: exactly one field from [opts.From.RoleName opts.From.ApplicationRoleName opts.From.ApplicationName] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.From = KindOfRole{
-			RoleName:            Pointer(randomAccountObjectIdentifier()),
-			ApplicationRoleName: Pointer(randomDatabaseObjectIdentifier()),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("RevokeApplicationRoleOptions.From", "RoleName", "ApplicationRoleName", "ApplicationName"))
-	})
-
-	// Manually added all options instead of basic/all options
-	t.Run("revoke from role", func(t *testing.T) {
-		roleId := randomAccountObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.From = KindOfRole{
-			RoleName: &roleId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `REVOKE APPLICATION ROLE %s FROM ROLE %s`, id.FullyQualifiedName(), roleId.FullyQualifiedName())
-	})
-
-	t.Run("revoke from application role", func(t *testing.T) {
-		appRoleId := randomDatabaseObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.From = KindOfRole{
-			ApplicationRoleName: &appRoleId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `REVOKE APPLICATION ROLE %s FROM APPLICATION ROLE %s`, id.FullyQualifiedName(), appRoleId.FullyQualifiedName())
-	})
-
-	t.Run("revoke from application", func(t *testing.T) {
-		appId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.From = KindOfRole{
-			ApplicationName: &appId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `REVOKE APPLICATION ROLE %s FROM APPLICATION %s`, id.FullyQualifiedName(), appId.FullyQualifiedName())
-	})
+	applicationRolesTests.Revoke.RunValidationCases(t)
+	applicationRolesTests.Revoke.RunSqlCases(t)
 }
 
 func TestApplicationRoles_Show(t *testing.T) {
-	// Manually added
-	appId := randomAccountObjectIdentifier()
-
-	// Minimal valid ShowApplicationRoleOptions
-	defaultOpts := func() *ShowApplicationRoleOptions {
-		return &ShowApplicationRoleOptions{
-			// Adjusted manually
-			ApplicationName: appId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowApplicationRoleOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.ApplicationName]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ApplicationName = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW APPLICATION ROLES IN APPLICATION %s`, appId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{
-			Rows: Int(123),
-			From: String("some limit"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW APPLICATION ROLES IN APPLICATION %s LIMIT 123 FROM 'some limit'`, appId.FullyQualifiedName())
-	})
+	applicationRolesTests.Show.RunValidationCases(t)
+	applicationRolesTests.Show.RunSqlCases(t)
 }

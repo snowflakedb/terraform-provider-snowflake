@@ -68,4 +68,4 @@ var applicationRolesDef = g.NewInterface(
 	"",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*RevokeApplicationRoleRequest")},
 	"error",
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
