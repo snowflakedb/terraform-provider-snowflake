@@ -54,6 +54,11 @@ func (c *ConnectionClient) CreateReplication(t *testing.T, id sdk.AccountObjectI
 	return connection, c.DropFunc(t, id)
 }
 
+func (c *ConnectionClient) CreateAsReplicaOf(t *testing.T, id sdk.AccountObjectIdentifier, replicaOf sdk.ExternalObjectIdentifier) error {
+	t.Helper()
+	return c.client().Create(context.Background(), sdk.NewCreateConnectionRequest(id).WithAsReplicaOf(replicaOf))
+}
+
 func (c *ConnectionClient) Alter(t *testing.T, req *sdk.AlterConnectionRequest) {
 	t.Helper()
 	ctx := context.Background()

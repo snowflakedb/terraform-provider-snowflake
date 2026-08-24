@@ -13,6 +13,13 @@ func (g *GrantPrivilegesToDatabaseRoleModel) WithPrivileges(privileges ...string
 	return g
 }
 
+func (g *GrantPrivilegesToDatabaseRoleModel) WithOnFutureSchemasInDatabase(id sdk.AccountObjectIdentifier) *GrantPrivilegesToDatabaseRoleModel {
+	g.WithOnSchemaValue(config.ObjectVariable(map[string]config.Variable{
+		"future_schemas_in_database": config.StringVariable(id.FullyQualifiedName()),
+	}))
+	return g
+}
+
 func (g *GrantPrivilegesToDatabaseRoleModel) WithAccountObjectPrivileges(privileges ...sdk.AccountObjectPrivilege) *GrantPrivilegesToDatabaseRoleModel {
 	return g.WithPrivileges(collections.Map(privileges, func(p sdk.AccountObjectPrivilege) string { return string(p) })...)
 }
@@ -31,15 +38,9 @@ func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaName(schemaFQN string) 
 	}))
 }
 
-func (g *GrantPrivilegesToDatabaseRoleModel) WithOnAllSchemasInDatabase(databaseFQN string) *GrantPrivilegesToDatabaseRoleModel {
+func (g *GrantPrivilegesToDatabaseRoleModel) WithOnAllSchemasInDatabase(id sdk.AccountObjectIdentifier) *GrantPrivilegesToDatabaseRoleModel {
 	return g.WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"all_schemas_in_database": tfconfig.StringVariable(databaseFQN),
-	}))
-}
-
-func (g *GrantPrivilegesToDatabaseRoleModel) WithOnFutureSchemasInDatabase(databaseFQN string) *GrantPrivilegesToDatabaseRoleModel {
-	return g.WithOnSchemaValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"future_schemas_in_database": tfconfig.StringVariable(databaseFQN),
+		"all_schemas_in_database": tfconfig.StringVariable(id.FullyQualifiedName()),
 	}))
 }
 
@@ -50,38 +51,38 @@ func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectObject(objectType
 	}))
 }
 
-func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectAllInDatabase(objectTypePlural sdk.PluralObjectType, databaseFQN string) *GrantPrivilegesToDatabaseRoleModel {
+func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectAllInDatabase(objectTypePlural sdk.PluralObjectType, id sdk.AccountObjectIdentifier) *GrantPrivilegesToDatabaseRoleModel {
 	return g.WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"all": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"object_type_plural": tfconfig.StringVariable(string(objectTypePlural)),
-			"in_database":        tfconfig.StringVariable(databaseFQN),
+			"in_database":        tfconfig.StringVariable(id.FullyQualifiedName()),
 		})),
 	}))
 }
 
-func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectAllInSchema(objectTypePlural sdk.PluralObjectType, schemaFQN string) *GrantPrivilegesToDatabaseRoleModel {
+func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectAllInSchema(objectTypePlural sdk.PluralObjectType, id sdk.DatabaseObjectIdentifier) *GrantPrivilegesToDatabaseRoleModel {
 	return g.WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"all": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"object_type_plural": tfconfig.StringVariable(string(objectTypePlural)),
-			"in_schema":          tfconfig.StringVariable(schemaFQN),
+			"in_schema":          tfconfig.StringVariable(id.FullyQualifiedName()),
 		})),
 	}))
 }
 
-func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectFutureInDatabase(objectTypePlural sdk.PluralObjectType, databaseFQN string) *GrantPrivilegesToDatabaseRoleModel {
+func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectFutureInDatabase(objectTypePlural sdk.PluralObjectType, id sdk.AccountObjectIdentifier) *GrantPrivilegesToDatabaseRoleModel {
 	return g.WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"future": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"object_type_plural": tfconfig.StringVariable(string(objectTypePlural)),
-			"in_database":        tfconfig.StringVariable(databaseFQN),
+			"in_database":        tfconfig.StringVariable(id.FullyQualifiedName()),
 		})),
 	}))
 }
 
-func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectFutureInSchema(objectTypePlural sdk.PluralObjectType, schemaFQN string) *GrantPrivilegesToDatabaseRoleModel {
+func (g *GrantPrivilegesToDatabaseRoleModel) WithOnSchemaObjectFutureInSchema(objectTypePlural sdk.PluralObjectType, id sdk.DatabaseObjectIdentifier) *GrantPrivilegesToDatabaseRoleModel {
 	return g.WithOnSchemaObjectValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 		"future": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"object_type_plural": tfconfig.StringVariable(string(objectTypePlural)),
-			"in_schema":          tfconfig.StringVariable(schemaFQN),
+			"in_schema":          tfconfig.StringVariable(id.FullyQualifiedName()),
 		})),
 	}))
 }

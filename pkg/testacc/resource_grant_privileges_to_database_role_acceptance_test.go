@@ -177,7 +177,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnAllSchemasInDatabase(t
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaPrivileges(sdk.SchemaPrivilegeCreateTable, sdk.SchemaPrivilegeModify).
-		WithOnAllSchemasInDatabase(testClient().Ids.DatabaseId().FullyQualifiedName()).
+		WithOnAllSchemasInDatabase(testClient().Ids.DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -217,7 +217,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnFutureSchemasInDatabas
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaPrivileges(sdk.SchemaPrivilegeCreateTable, sdk.SchemaPrivilegeModify).
-		WithOnFutureSchemasInDatabase(testClient().Ids.DatabaseId().FullyQualifiedName()).
+		WithOnFutureSchemasInDatabase(testClient().Ids.DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -326,7 +326,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnAll_InD
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeInsert, sdk.SchemaObjectPrivilegeUpdate).
-		WithOnSchemaObjectAllInDatabase(sdk.PluralObjectTypeTables, testClient().Ids.DatabaseId().FullyQualifiedName()).
+		WithOnSchemaObjectAllInDatabase(sdk.PluralObjectTypeTables, testClient().Ids.DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -368,7 +368,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_CompleteUseCase_OnSchemaObject_OnAllP
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeMonitor).
-		WithOnSchemaObjectAllInDatabase(sdk.PluralObjectTypePipes, testClient().Ids.DatabaseId().FullyQualifiedName()).
+		WithOnSchemaObjectAllInDatabase(sdk.PluralObjectTypePipes, testClient().Ids.DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -409,7 +409,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnFuture_
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeInsert, sdk.SchemaObjectPrivilegeUpdate).
-		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeTables, testClient().Ids.DatabaseId().FullyQualifiedName()).
+		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeTables, testClient().Ids.DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -451,7 +451,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnFuture_Streamlits_In
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeUsage).
-		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeStreamlits, testClient().Ids.DatabaseId().FullyQualifiedName()).
+		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeStreamlits, testClient().Ids.DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -487,7 +487,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnSchemaObject_OnAll_Streamlits_InDat
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeUsage).
-		WithOnSchemaObjectAllInDatabase(sdk.PluralObjectTypeStreamlits, testClient().Ids.DatabaseId().FullyQualifiedName()).
+		WithOnSchemaObjectAllInDatabase(sdk.PluralObjectTypeStreamlits, testClient().Ids.DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -1431,7 +1431,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_CreateNotebooks(t *testing.T) {
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaPrivileges(sdk.SchemaPrivilegeCreateNotebook).
-		WithOnAllSchemasInDatabase(databaseRole.ID().DatabaseName()).
+		WithOnAllSchemasInDatabase(databaseRole.ID().DatabaseId()).
 		WithWithGrantOption(false)
 
 	resourceName := "snowflake_grant_privileges_to_database_role.test"
@@ -1595,7 +1595,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureModels_issue3050(t *testing.T
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRoleId.FullyQualifiedName()).
 		WithDatabaseRoleNameValue(accconfig.UnquotedWrapperVariable(fmt.Sprintf("%s.fully_qualified_name", databaseRoleModel.ResourceReference()))).
 		WithPrivileges("USAGE").
-		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeModels, databaseRoleId.DatabaseName())
+		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeModels, databaseRoleId.DatabaseId())
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1626,7 +1626,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_OnFutureModelMonitors_InDatabase_v2_1
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRoleId.FullyQualifiedName()).
 		WithDatabaseRoleNameValue(accconfig.UnquotedWrapperVariable(fmt.Sprintf("%s.fully_qualified_name", databaseRoleModel.ResourceReference()))).
 		WithPrivileges("USAGE").
-		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeModelMonitors, databaseRoleId.DatabaseName())
+		WithOnSchemaObjectFutureInDatabase(sdk.PluralObjectTypeModelMonitors, databaseRoleId.DatabaseId())
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{

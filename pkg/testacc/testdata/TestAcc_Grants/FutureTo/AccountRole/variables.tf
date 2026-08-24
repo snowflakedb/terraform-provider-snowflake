@@ -1,3 +1,0 @@
-variable "database" {
-  type = string
-}

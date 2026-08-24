@@ -43,6 +43,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.CatalogIntegrations().Schema,
 	},
 	{
+		name:   "Connections",
+		schema: datasources.Connections().Schema,
+	},
+	{
 		name:   "CortexAgents",
 		schema: datasources.CortexAgents().Schema,
 	},
