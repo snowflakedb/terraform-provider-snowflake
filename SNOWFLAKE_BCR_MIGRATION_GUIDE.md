@@ -13,6 +13,25 @@ The `snowflake_execute` resource won't be listed here, as it is users' responsib
 
 ## [Unbundled changes](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/unbundled-behavior-changes)
 
+### Default package source changes for Snowpark Python break `snowflake_procedure_python`
+
+Starting **June 26, 2026**, when a Python procedure has no `ARTIFACT_REPOSITORY` (object level) or `DEFAULT_PYTHON_ARTIFACT_REPOSITORY` (schema/database/account level) configured, Snowflake implicitly resolves Snowpark and other packages from a built-in shared PyPI repository (`snowflake.snowpark.pypi_shared_repository`) instead of Anaconda. This applies to `runtime_version = "3.14"` and above in existing accounts, and to all Python runtime versions in newly created accounts.
+
+Once an artifact repository is attached to a procedure this way, `DESCRIBE PROCEDURE` moves the whole package list out of the `packages` property into a new `artifact_repository_packages` property. The [`snowflake_procedure_python`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/procedure_python) resource does not parse that property, so any `terraform plan`/`apply` that reads the procedure back - including the `CREATE` step itself - fails with:
+
+```
+Error: could not parse package from Snowflake, expected at least snowpark package, got []
+```
+
+See [#5116](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5116). Packages are resolved once, at `CREATE` time, so unsetting `DEFAULT_PYTHON_ARTIFACT_REPOSITORY` afterwards does not fix an already-broken procedure - it has to be dropped and recreated. `snowflake_procedure_java` and `snowflake_procedure_scala` are not affected by this change; it only concerns the default resolution of Snowpark Python packages.
+
+Until the provider adds support for artifact repositories, avoid this by:
+- Not setting `ARTIFACT_REPOSITORY`/`DEFAULT_PYTHON_ARTIFACT_REPOSITORY` on schemas/databases/accounts that contain Terraform-managed `snowflake_procedure_python` resources.
+- If `DEFAULT_PYTHON_ARTIFACT_REPOSITORY` is already set at a higher level and cannot be unset, pinning it explicitly to `'snowflake.snowpark.anaconda_shared_repository'` for the object levels the procedures live in, to keep the pre-BCR Anaconda resolution and `packages` shape.
+- For existing accounts, staying on a `runtime_version` below `3.14` avoids the new default entirely.
+
+Reference: [BCR-2325](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-2325)
+
 ### Argument output changes for SHOW FUNCTIONS and SHOW PROCEDURES commands
 
 > [!IMPORTANT]

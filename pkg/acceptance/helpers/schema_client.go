@@ -147,3 +147,25 @@ func (c *SchemaClient) AlterDefaultStreamlitNotebookWarehouse(t *testing.T, id s
 	_, err := c.context.client.ExecForTests(ctx, query)
 	require.NoError(t, err)
 }
+
+// SetDefaultPythonArtifactRepository sets DEFAULT_PYTHON_ARTIFACT_REPOSITORY on the schema. Not modeled in the SDK yet
+// (see BCR-2325: https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-2325), so it's set with raw SQL.
+func (c *SchemaClient) SetDefaultPythonArtifactRepository(t *testing.T, id sdk.DatabaseObjectIdentifier, repository string) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`ALTER SCHEMA %s SET DEFAULT_PYTHON_ARTIFACT_REPOSITORY = '%s'`, id.FullyQualifiedName(), repository)
+
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}
+
+func (c *SchemaClient) UnsetDefaultPythonArtifactRepository(t *testing.T, id sdk.DatabaseObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`ALTER SCHEMA %s UNSET DEFAULT_PYTHON_ARTIFACT_REPOSITORY`, id.FullyQualifiedName())
+
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}

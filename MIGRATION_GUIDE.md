@@ -292,6 +292,14 @@ Importing such a resource failed for the same reason (`Cannot import non-existen
 
 In this release, the grantee database role name is normalized to a fully qualified identifier regardless of whether the bundle is enabled: when the database prefix is missing, it is reconstructed from the database of the queried database role (a database role can only be granted to another database role in the same database). The `snowflake_grant_database_role` resource is no longer recreated on every plan and can be imported again.
 
+### *(known issue)* `snowflake_procedure_python` fails to read state after BCR-2325 (default package source change for Snowpark Python)
+
+Starting June 26, 2026, Snowflake can implicitly attach an artifact repository to a Python procedure and resolve its packages from a shared PyPI repository instead of Anaconda.
+When this happens, `snowflake_procedure_python` fails on `terraform plan`/`apply` with `could not parse package from Snowflake, expected at least snowpark package`,
+because the provider does not yet parse the new `artifact_repository_packages` property returned by `DESCRIBE PROCEDURE`.
+
+See [Default package source changes for Snowpark Python break `snowflake_procedure_python`](./SNOWFLAKE_BCR_MIGRATION_GUIDE.md#default-package-source-changes-for-snowpark-python-break-snowflake_procedure_python) in the BCR Migration Guide for the trigger conditions and workarounds.
+
 ### *(bug fix)* `snowflake_warehouse`: perpetual `min_cluster_count` / `max_cluster_count` `0 → 1` drift on Standard edition
 
 On Standard edition (when multi-cluster warehouses are not enabled), `SHOW WAREHOUSES` omits the `min_cluster_count` and `max_cluster_count` columns. Starting in v2.18.0, those omitted columns were scanned as unset and then treated as an external change, so every plan reported an in-place update even when the configuration already set both values to `1` (the Snowflake minimum and the provider's validation minimum):

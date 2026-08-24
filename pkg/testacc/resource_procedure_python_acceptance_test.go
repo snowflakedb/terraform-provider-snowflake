@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -254,6 +255,69 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(procedureModelUpdateWithoutRecreation.ResourceReference(), "packages.#", "1")),
 					resourceshowoutputassert.ProcedureShowOutput(t, procedureModelUpdateWithoutRecreation.ResourceReference()).
 						HasIsSecure(false),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_ProcedurePython_Bcr2325ArtifactRepositoryPackages proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/5116.
+//
+// BCR-2325 (https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-2325) changes the default package
+// source for Snowpark Python. Once a Python artifact repository is attached to a procedure (here, indirectly via the
+// schema-level DEFAULT_PYTHON_ARTIFACT_REPOSITORY default), Snowflake relocates the entire PACKAGES list to a new
+// ARTIFACT_REPOSITORY_PACKAGES property in DESCRIBE PROCEDURE output. The provider does not parse that property, so
+// reading the procedure back after create fails. Packages are resolved once at CREATE time, so unsetting the schema
+// default afterwards does not fix the already-created object - it has to be dropped and recreated (like an
+// out-of-band removal) for the procedure to work again.
+func TestAcc_ProcedurePython_Bcr2325ArtifactRepositoryPackages(t *testing.T) {
+	schema, schemaCleanup := testClient().Schema.CreateSchema(t)
+	t.Cleanup(schemaCleanup)
+
+	funcName := "echoVarchar"
+	argName := "x"
+	dataType := testdatatypes.DataTypeVarchar_100
+	snowparkVersion := "1.14.0"
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
+	definition := testClient().Procedure.SamplePythonDefinition(t, funcName, argName)
+
+	procedureModel := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
+		WithArgument(argName, dataType)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ProcedurePython),
+		Steps: []resource.TestStep{
+			// Artifact repository attached -> read fails because ARTIFACT_REPOSITORY_PACKAGES is not parsed.
+			{
+				PreConfig: func() {
+					testClient().Schema.SetDefaultPythonArtifactRepository(t, schema.ID(), "snowflake.snowpark.pypi_shared_repository")
+				},
+				Config:      config.FromModels(t, procedureModel),
+				ExpectError: regexp.MustCompile("could not parse package from Snowflake, expected at least snowpark package"),
+			},
+			// Artifact repository detached again, tainted object dropped -> Terraform notices it's gone and creates it fresh, resolving PACKAGES as before.
+			{
+				PreConfig: func() {
+					testClient().Schema.UnsetDefaultPythonArtifactRepository(t, schema.ID())
+					testClient().Procedure.DropProcedureFunc(t, id)()
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(procedureModel.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, procedureModel),
+				Check: assertThat(
+					t,
+					resourceassert.ProcedurePythonResource(t, procedureModel.ResourceReference()).
+						HasNameString(id.Name()).
+						HasProcedureLanguageString("PYTHON"),
+					objectassert.ProcedureDetails(t, id).HasSnowparkVersion(snowparkVersion),
 				),
 			},
 		},
