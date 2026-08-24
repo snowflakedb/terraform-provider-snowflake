@@ -117,3 +117,7 @@ func (opts *CreateFromListingDatabaseOptions) additionalValidations() error {
 func (s *CreateDatabaseRequest) ID() AccountObjectIdentifier {
 	return s.name
 }
+
+func (s *CreateCatalogLinkedDatabaseRequest) ID() AccountObjectIdentifier {
+	return s.name
+}

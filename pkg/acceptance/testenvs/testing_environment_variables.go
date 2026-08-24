@@ -59,6 +59,11 @@ const (
 	OpenCatalogPrimaryOAuthClientSecret   env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CLIENT_SECRET"
 	OpenCatalogSecondaryOAuthClientId     env = envPrefix + "OPEN_CATALOG_SECONDARY_OAUTH_CLIENT_ID"
 	OpenCatalogSecondaryOAuthClientSecret env = envPrefix + "OPEN_CATALOG_SECONDARY_OAUTH_CLIENT_SECRET"
+
+	// Names (as stored in Snowflake) of a preconfigured external Iceberg REST catalog integration
+	// and external volume for the catalog-linked database tests.
+	CatalogLinkedDatabaseCatalogIntegration env = envPrefix + "CATALOG_LINKED_DATABASE_CATALOG_INTEGRATION"
+	CatalogLinkedDatabaseExternalVolume     env = envPrefix + "CATALOG_LINKED_DATABASE_EXTERNAL_VOLUME"
 )
 
 func GetOrSkipTest(t *testing.T, envName Env) string {
