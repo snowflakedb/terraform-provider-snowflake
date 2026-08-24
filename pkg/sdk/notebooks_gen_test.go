@@ -6,283 +6,323 @@ import (
 	"testing"
 )
 
+var notebooksTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Notebooks_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Notebooks_validation_Create_QueryWarehouse_ValidIdentifierIfSet    testCaseName = "validation_Create_QueryWarehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Create_Warehouse_ValidIdentifierIfSet         testCaseName = "validation_Create_Warehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Notebooks_validation_Create_ComputePool_ValidIdentifierIfSet       testCaseName = "validation_Create_ComputePool_ValidIdentifierIfSet"
+	case_Notebooks_sql_Create_basic                                         testCaseName = "sql_Create_basic"
+	case_Notebooks_sql_Create_all                                           testCaseName = "sql_Create_all"
+	case_Notebooks_validation_Alter_name_ValidIdentifier                    testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Notebooks_validation_Alter_RenameTo_ValidIdentifierIfSet           testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Notebooks_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_Set_Warehouse_ValidIdentifierIfSet      testCaseName = "validation_Alter_Set_Warehouse_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_Set_ComputePool_ValidIdentifierIfSet    testCaseName = "validation_Alter_Set_ComputePool_ValidIdentifierIfSet"
+	case_Notebooks_validation_Alter_opts_Set_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Notebooks_validation_Alter_opts_Unset_AtLeastOneValueSet           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Notebooks_sql_Alter_Set                                            testCaseName = "sql_Alter_Set"
+	case_Notebooks_sql_Alter_Unset                                          testCaseName = "sql_Alter_Unset"
+	case_Notebooks_sql_Alter_SetTags                                        testCaseName = "sql_Alter_SetTags"
+	case_Notebooks_sql_Alter_UnsetTags                                      testCaseName = "sql_Alter_UnsetTags"
+	case_Notebooks_sql_Alter_RenameTo                                       testCaseName = "sql_Alter_RenameTo"
+	case_Notebooks_validation_Drop_name_ValidIdentifier                     testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Notebooks_sql_Drop_basic                                           testCaseName = "sql_Drop_basic"
+	case_Notebooks_sql_Drop_all                                             testCaseName = "sql_Drop_all"
+	case_Notebooks_validation_Describe_name_ValidIdentifier                 testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Notebooks_sql_Describe_basic                                       testCaseName = "sql_Describe_basic"
+	case_Notebooks_sql_Show_basic                                           testCaseName = "sql_Show_basic"
+	case_Notebooks_sql_Show_all                                             testCaseName = "sql_Show_all"
+	case_Notebooks_sql_Show_Like                                            testCaseName = "sql_Show_Like"
+	case_Notebooks_sql_Show_In                                              testCaseName = "sql_Show_In"
+	case_Notebooks_sql_Show_Limit                                           testCaseName = "sql_Show_Limit"
+	case_Notebooks_sql_Show_StartsWith                                      testCaseName = "sql_Show_StartsWith"
+)
+
+type NotebooksTestsContext struct {
+	Create   *sdkTestCtx[*CreateNotebookOptions]
+	Alter    *sdkTestCtx[*AlterNotebookOptions]
+	Drop     *sdkTestCtx[*DropNotebookOptions]
+	Describe *sdkTestCtx[*DescribeNotebookOptions]
+	Show     *sdkTestCtx[*ShowNotebookOptions]
+}
+
+var notebooksTests = NotebooksTestsContext{
+	Create: newSdkTestCtx[*CreateNotebookOptions](
+		"Notebooks", "Create",
+	).
+		withDefaultOpts(func() *CreateNotebookOptions {
+			return &CreateNotebookOptions{
+				name: notebooksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateNotebookOptions]{
+				Name:        case_Notebooks_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateNotebookOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateNotebookOptions]{
+				Name:        case_Notebooks_validation_Create_QueryWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateNotebookOptions) {
+					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateNotebookOptions]{
+				Name:        case_Notebooks_validation_Create_Warehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateNotebookOptions) {
+					opts.Warehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateNotebookOptions]{
+				Name:        case_Notebooks_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateNotebookOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateNotebookOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateNotebookOptions]{
+				Name:        case_Notebooks_validation_Create_ComputePool_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateNotebookOptions) {
+					opts.ComputePool = new(emptyAccountObjectIdentifier)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateNotebookOptions]{
+				Name:           case_Notebooks_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateNotebookOptions]{
+				Name: case_Notebooks_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterNotebookOptions](
+		"Notebooks", "Alter",
+	).
+		withDefaultOpts(func() *AlterNotebookOptions {
+			return &AlterNotebookOptions{
+				name: notebooksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"),
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.RenameTo = nil
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"),
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Set = &NotebookSet{}
+					opts.Unset = &NotebookUnset{}
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Set = &NotebookSet{}
+					opts.Set.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_Set_Warehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Set = &NotebookSet{}
+					opts.Set.Warehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_Set_ComputePool_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Set = &NotebookSet{}
+					opts.Set.ComputePool = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"),
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Set = &NotebookSet{}
+					opts.Set.Comment = nil
+					opts.Set.QueryWarehouse = nil
+					opts.Set.IdleAutoShutdownTimeSeconds = nil
+					opts.Set.Secrets = nil
+					opts.Set.MainFile = nil
+					opts.Set.Warehouse = nil
+					opts.Set.RuntimeName = nil
+					opts.Set.ComputePool = nil
+					opts.Set.ExternalAccessIntegrations = nil
+					opts.Set.RuntimeEnvironmentVersion = nil
+				},
+			},
+			validationCase[*AlterNotebookOptions]{
+				Name:        case_Notebooks_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNotebookOptions.Unset", "Comment", "QueryWarehouse", "Secrets", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"),
+				DefaultModify: func(opts *AlterNotebookOptions) {
+					opts.Unset = &NotebookUnset{}
+					opts.Unset.Comment = nil
+					opts.Unset.QueryWarehouse = nil
+					opts.Unset.Secrets = nil
+					opts.Unset.Warehouse = nil
+					opts.Unset.RuntimeName = nil
+					opts.Unset.ComputePool = nil
+					opts.Unset.ExternalAccessIntegrations = nil
+					opts.Unset.RuntimeEnvironmentVersion = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterNotebookOptions]{
+				Name: case_Notebooks_sql_Alter_Set,
+			},
+			sqlCase[*AlterNotebookOptions]{
+				Name: case_Notebooks_sql_Alter_Unset,
+			},
+			sqlCase[*AlterNotebookOptions]{
+				Name: case_Notebooks_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterNotebookOptions]{
+				Name: case_Notebooks_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterNotebookOptions]{
+				Name: case_Notebooks_sql_Alter_RenameTo,
+			},
+		),
+	Drop: newSdkTestCtx[*DropNotebookOptions](
+		"Notebooks", "Drop",
+	).
+		withDefaultOpts(func() *DropNotebookOptions {
+			return &DropNotebookOptions{
+				name: notebooksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropNotebookOptions]{
+				Name:        case_Notebooks_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropNotebookOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropNotebookOptions]{
+				Name:           case_Notebooks_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropNotebookOptions]{
+				Name: case_Notebooks_sql_Drop_all,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeNotebookOptions](
+		"Notebooks", "Describe",
+	).
+		withDefaultOpts(func() *DescribeNotebookOptions {
+			return &DescribeNotebookOptions{
+				name: notebooksTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeNotebookOptions]{
+				Name:        case_Notebooks_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeNotebookOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeNotebookOptions]{
+				Name:           case_Notebooks_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Show: newSdkTestCtx[*ShowNotebookOptions](
+		"Notebooks", "Show",
+	).
+		withDefaultOpts(func() *ShowNotebookOptions {
+			return &ShowNotebookOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowNotebookOptions]{
+				Name:           case_Notebooks_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowNotebookOptions]{
+				Name: case_Notebooks_sql_Show_all,
+			},
+			sqlCase[*ShowNotebookOptions]{
+				Name: case_Notebooks_sql_Show_Like,
+			},
+			sqlCase[*ShowNotebookOptions]{
+				Name: case_Notebooks_sql_Show_In,
+			},
+			sqlCase[*ShowNotebookOptions]{
+				Name: case_Notebooks_sql_Show_Limit,
+			},
+			sqlCase[*ShowNotebookOptions]{
+				Name: case_Notebooks_sql_Show_StartsWith,
+			},
+		),
+}
+
 func TestNotebooks_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-
-	// added manually
-	stageId := randomSchemaObjectIdentifier()
-
-	// added manually
-	var stageLocation Location = &StageLocation{
-		stage: stageId,
-		path:  "dir/subdir",
-	}
-
-	// Minimal valid CreateNotebookOptions
-	defaultOpts := func() *CreateNotebookOptions {
-		return &CreateNotebookOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateNotebookOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.QueryWarehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.QueryWarehouse = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.Warehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Warehouse = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateNotebookOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("validation: valid identifier for [opts.ComputePool] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ComputePool = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE NOTEBOOK %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-
-		opts.IfNotExists = Bool(true)
-		opts.From = &stageLocation
-		opts.MainFile = String("main_file")
-		opts.Comment = String("comment")
-		opts.QueryWarehouse = &AccountObjectIdentifier{"sample_qwh"}
-		opts.IdleAutoShutdownTimeSeconds = Int(3600)
-		opts.Warehouse = &AccountObjectIdentifier{"sample_wh"}
-		opts.RuntimeName = String("sample")
-		opts.ComputePool = &AccountObjectIdentifier{"sample_cp"}
-		opts.ExternalAccessIntegrations = []AccountObjectIdentifier{}
-		opts.RuntimeEnvironmentVersion = String("WH-RUNTIME-2.0")
-		opts.DefaultVersion = String("FIRST")
-
-		assertOptsValidAndSQLEquals(t, opts, `CREATE NOTEBOOK IF NOT EXISTS %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' MAIN_FILE = 'main_file' COMMENT = 'comment' QUERY_WAREHOUSE = "sample_qwh" IDLE_AUTO_SHUTDOWN_TIME_SECONDS = 3600 WAREHOUSE = "sample_wh" RUNTIME_NAME = 'sample' COMPUTE_POOL = "sample_cp" RUNTIME_ENVIRONMENT_VERSION = 'WH-RUNTIME-2.0' DEFAULT_VERSION = FIRST`, id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
+	notebooksTests.Create.RunValidationCases(t)
+	notebooksTests.Create.RunSqlCases(t)
 }
 
 func TestNotebooks_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterNotebookOptions
-	defaultOpts := func() *AlterNotebookOptions {
-		return &AlterNotebookOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterNotebookOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RenameTo = &emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.RenameTo] should be present - default options", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.RenameTo] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotebookSet{}
-		opts.Unset = &NotebookUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotebookOptions", "Set", "Unset", "SetTags", "UnsetTags", "RenameTo"))
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.QueryWarehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotebookSet{
-			QueryWarehouse: &emptyAccountObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.Warehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotebookSet{
-			Warehouse: &emptyAccountObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.ComputePool] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotebookSet{
-			ComputePool: &emptyAccountObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// name adjusted manually
-	t.Run("validation: at least one of the fields [opts.Set.Comment opts.Set.QueryWarehouse opts.Set.IdleAutoShutdownTimeSeconds opts.Set.Secrets opts.Set.MainFile opts.Set.Warehouse opts.Set.RuntimeName opts.Set.ComputePool opts.Set.ExternalAccessIntegrations opts.Set.RuntimeEnvironmentVersion] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotebookSet{}
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNotebookOptions.Set", "Comment", "QueryWarehouse", "IdleAutoShutdownTimeSeconds", "Secrets", "MainFile", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.QueryWarehouse opts.Unset.Secrets opts.Unset.Warehouse opts.Unset.RuntimeName opts.Unset.ComputePool opts.Unset.ExternalAccessIntegrations opts.Unset.RuntimeEnvironmentVersion] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &NotebookUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNotebookOptions.Unset", "Comment", "QueryWarehouse", "Secrets", "Warehouse", "RuntimeName", "ComputePool", "ExternalAccessIntegrations", "RuntimeEnvironmentVersion"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotebookSet{
-			Comment: String("comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTEBOOK %s SET COMMENT = 'comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotebookSet{
-			Comment:                     String("comment"),
-			QueryWarehouse:              &AccountObjectIdentifier{"sample_qwh"},
-			IdleAutoShutdownTimeSeconds: Int(3600),
-			Secrets: &SecretsList{[]SecretReference{{"var_name", true, SchemaObjectIdentifier{
-				databaseName: "db_name",
-				schemaName:   "sc_name",
-				name:         "n_name",
-				arguments:    []DataType{},
-			}}}},
-			MainFile:                   String("main_file"),
-			Warehouse:                  &AccountObjectIdentifier{"sample_wh"},
-			RuntimeName:                String("runtime_name"),
-			ComputePool:                &AccountObjectIdentifier{"sample_cp"},
-			ExternalAccessIntegrations: []AccountObjectIdentifier{{"test"}},
-			RuntimeEnvironmentVersion:  String("WH-RUNTIME-2.0"),
-		}
-
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTEBOOK %s SET COMMENT = 'comment' QUERY_WAREHOUSE = \"sample_qwh\" IDLE_AUTO_SHUTDOWN_TIME_SECONDS = 3600 SECRETS = ('var_name' = \"db_name\".\"sc_name\".\"n_name\") MAIN_FILE = 'main_file' WAREHOUSE = \"sample_wh\" RUNTIME_NAME = 'runtime_name' COMPUTE_POOL = \"sample_cp\" EXTERNAL_ACCESS_INTEGRATIONS = (\"test\") RUNTIME_ENVIRONMENT_VERSION = 'WH-RUNTIME-2.0'", id.FullyQualifiedName())
-	})
+	notebooksTests.Alter.RunValidationCases(t)
+	notebooksTests.Alter.RunSqlCases(t)
 }
 
 func TestNotebooks_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropNotebookOptions
-	defaultOpts := func() *DropNotebookOptions {
-		return &DropNotebookOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropNotebookOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP NOTEBOOK %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP NOTEBOOK IF EXISTS %s", id.FullyQualifiedName())
-	})
+	notebooksTests.Drop.RunValidationCases(t)
+	notebooksTests.Drop.RunSqlCases(t)
 }
 
 func TestNotebooks_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeNotebookOptions
-	defaultOpts := func() *DescribeNotebookOptions {
-		return &DescribeNotebookOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeNotebookOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE NOTEBOOK %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	notebooksTests.Describe.RunValidationCases(t)
+	notebooksTests.Describe.RunSqlCases(t)
 }
 
 func TestNotebooks_Show(t *testing.T) {
-	// Minimal valid ShowNotebookOptions
-	defaultOpts := func() *ShowNotebookOptions {
-		return &ShowNotebookOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowNotebookOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW NOTEBOOKS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("notebook-name"),
-		}
-		opts.In = &In{
-			Database: NewAccountObjectIdentifier("database-name"),
-		}
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-		}
-		opts.StartsWith = String("prefix")
-		assertOptsValidAndSQLEquals(t, opts, "SHOW NOTEBOOKS LIKE 'notebook-name' IN DATABASE \"database-name\" LIMIT 10 STARTS WITH 'prefix'")
-	})
+	notebooksTests.Show.RunValidationCases(t)
+	notebooksTests.Show.RunSqlCases(t)
 }
