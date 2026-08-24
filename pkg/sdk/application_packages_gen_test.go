@@ -6,278 +6,229 @@ import (
 	"testing"
 )
 
-func TestApplicationPackages_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateApplicationPackageOptions
-	defaultOpts := func() *CreateApplicationPackageOptions {
-		return &CreateApplicationPackageOptions{
-			name: id,
-		}
-	}
+var applicationPackagesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateApplicationPackageOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
+const (
+	case_ApplicationPackages_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ApplicationPackages_sql_Create_basic                                        testCaseName = "sql_Create_basic"
+	case_ApplicationPackages_sql_Create_all                                          testCaseName = "sql_Create_all"
+	case_ApplicationPackages_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_ApplicationPackages_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_ApplicationPackages_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_ApplicationPackages_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_ApplicationPackages_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
+	case_ApplicationPackages_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_ApplicationPackages_sql_Alter_ModifyReleaseDirective                        testCaseName = "sql_Alter_ModifyReleaseDirective"
+	case_ApplicationPackages_sql_Alter_SetDefaultReleaseDirective                    testCaseName = "sql_Alter_SetDefaultReleaseDirective"
+	case_ApplicationPackages_sql_Alter_SetReleaseDirective                           testCaseName = "sql_Alter_SetReleaseDirective"
+	case_ApplicationPackages_sql_Alter_UnsetReleaseDirective                         testCaseName = "sql_Alter_UnsetReleaseDirective"
+	case_ApplicationPackages_sql_Alter_AddVersion                                    testCaseName = "sql_Alter_AddVersion"
+	case_ApplicationPackages_sql_Alter_DropVersion                                   testCaseName = "sql_Alter_DropVersion"
+	case_ApplicationPackages_sql_Alter_AddPatchForVersion                            testCaseName = "sql_Alter_AddPatchForVersion"
+	case_ApplicationPackages_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
+	case_ApplicationPackages_sql_Alter_UnsetTags                                     testCaseName = "sql_Alter_UnsetTags"
+	case_ApplicationPackages_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_ApplicationPackages_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
+	case_ApplicationPackages_sql_Drop_all                                            testCaseName = "sql_Drop_all"
+	case_ApplicationPackages_sql_Show_basic                                          testCaseName = "sql_Show_basic"
+	case_ApplicationPackages_sql_Show_all                                            testCaseName = "sql_Show_all"
+	case_ApplicationPackages_sql_Show_Like                                           testCaseName = "sql_Show_Like"
+	case_ApplicationPackages_sql_Show_StartsWith                                     testCaseName = "sql_Show_StartsWith"
+	case_ApplicationPackages_sql_Show_Limit                                          testCaseName = "sql_Show_Limit"
+)
 
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
+type ApplicationPackagesTestsContext struct {
+	Create *sdkTestCtx[*CreateApplicationPackageOptions]
+	Alter  *sdkTestCtx[*AlterApplicationPackageOptions]
+	Drop   *sdkTestCtx[*DropApplicationPackageOptions]
+	Show   *sdkTestCtx[*ShowApplicationPackageOptions]
+}
 
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE APPLICATION PACKAGE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.DataRetentionTimeInDays = Int(1)
-		opts.MaxDataExtensionTimeInDays = Int(1)
-		opts.DefaultDdlCollation = String("en_US")
-		opts.Comment = String("comment")
-		opts.Distribution = Pointer(DistributionInternal)
-		t1 := randomSchemaObjectIdentifier()
-		opts.Tag = []TagAssociation{
-			{
-				Name:  t1,
-				Value: "v1",
+var applicationPackagesTests = ApplicationPackagesTestsContext{
+	Create: newSdkTestCtx[*CreateApplicationPackageOptions](
+		"ApplicationPackages", "Create",
+	).
+		withDefaultOpts(func() *CreateApplicationPackageOptions {
+			return &CreateApplicationPackageOptions{
+				name: applicationPackagesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateApplicationPackageOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE APPLICATION PACKAGE IF NOT EXISTS %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' COMMENT = 'comment' DISTRIBUTION = INTERNAL TAG (%s = 'v1')", id.FullyQualifiedName(), t1.FullyQualifiedName())
-	})
+		).
+		withSqlCases(
+			sqlCase[*CreateApplicationPackageOptions]{
+				Name:           case_ApplicationPackages_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterApplicationPackageOptions](
+		"ApplicationPackages", "Alter",
+	).
+		withDefaultOpts(func() *AlterApplicationPackageOptions {
+			return &AlterApplicationPackageOptions{
+				name: applicationPackagesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterApplicationPackageOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterApplicationPackageOptions", "Set", "Unset", "ModifyReleaseDirective", "SetDefaultReleaseDirective", "SetReleaseDirective", "UnsetReleaseDirective", "AddVersion", "DropVersion", "AddPatchForVersion", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApplicationPackageOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.ModifyReleaseDirective = nil
+					opts.SetDefaultReleaseDirective = nil
+					opts.SetReleaseDirective = nil
+					opts.UnsetReleaseDirective = nil
+					opts.AddVersion = nil
+					opts.DropVersion = nil
+					opts.AddPatchForVersion = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterApplicationPackageOptions", "Set", "Unset", "ModifyReleaseDirective", "SetDefaultReleaseDirective", "SetReleaseDirective", "UnsetReleaseDirective", "AddVersion", "DropVersion", "AddPatchForVersion", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterApplicationPackageOptions) {
+					opts.Set = &ApplicationPackageSet{}
+					opts.Unset = &ApplicationPackageUnset{}
+				},
+			},
+			validationCase[*AlterApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterApplicationPackageOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "DefaultDdlCollation", "Comment", "Distribution"),
+				DefaultModify: func(opts *AlterApplicationPackageOptions) {
+					opts.Unset = &ApplicationPackageUnset{}
+					opts.Unset.DataRetentionTimeInDays = nil
+					opts.Unset.MaxDataExtensionTimeInDays = nil
+					opts.Unset.DefaultDdlCollation = nil
+					opts.Unset.Comment = nil
+					opts.Unset.Distribution = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_Set,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_Unset,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_ModifyReleaseDirective,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_SetDefaultReleaseDirective,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_SetReleaseDirective,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_UnsetReleaseDirective,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_AddVersion,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_DropVersion,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_AddPatchForVersion,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropApplicationPackageOptions](
+		"ApplicationPackages", "Drop",
+	).
+		withDefaultOpts(func() *DropApplicationPackageOptions {
+			return &DropApplicationPackageOptions{
+				name: applicationPackagesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropApplicationPackageOptions]{
+				Name:        case_ApplicationPackages_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropApplicationPackageOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropApplicationPackageOptions]{
+				Name:           case_ApplicationPackages_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowApplicationPackageOptions](
+		"ApplicationPackages", "Show",
+	).
+		withDefaultOpts(func() *ShowApplicationPackageOptions {
+			return &ShowApplicationPackageOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowApplicationPackageOptions]{
+				Name:           case_ApplicationPackages_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Show_all,
+			},
+			sqlCase[*ShowApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Show_Like,
+			},
+			sqlCase[*ShowApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowApplicationPackageOptions]{
+				Name: case_ApplicationPackages_sql_Show_Limit,
+			},
+		),
+}
+
+func TestApplicationPackages_Create(t *testing.T) {
+	applicationPackagesTests.Create.RunValidationCases(t)
+	applicationPackagesTests.Create.RunSqlCases(t)
 }
 
 func TestApplicationPackages_Alter(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterApplicationPackageOptions
-	defaultOpts := func() *AlterApplicationPackageOptions {
-		return &AlterApplicationPackageOptions{
-			// Added manually
-			IfExists: Bool(true),
-			name:     id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterApplicationPackageOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.ModifyReleaseDirective opts.SetDefaultReleaseDirective opts.SetReleaseDirective opts.UnsetReleaseDirective opts.AddVersion opts.DropVersion opts.AddPatchForVersion opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApplicationPackageOptions", "Set", "Unset", "ModifyReleaseDirective", "SetDefaultReleaseDirective", "SetReleaseDirective", "UnsetReleaseDirective", "AddVersion", "DropVersion", "AddPatchForVersion", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.ModifyReleaseDirective opts.SetDefaultReleaseDirective opts.SetReleaseDirective opts.UnsetReleaseDirective opts.AddVersion opts.DropVersion opts.AddPatchForVersion opts.SetTags opts.UnsetTags] should be present - multiple present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetDefaultReleaseDirective = &SetDefaultReleaseDirective{
-			Version: "v1",
-			Patch:   1,
-		}
-		opts.UnsetReleaseDirective = &UnsetReleaseDirective{
-			ReleaseDirective: "DEFAULT",
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterApplicationPackageOptions", "Set", "Unset", "ModifyReleaseDirective", "SetDefaultReleaseDirective", "SetReleaseDirective", "UnsetReleaseDirective", "AddVersion", "DropVersion", "AddPatchForVersion", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.DataRetentionTimeInDays opts.Unset.MaxDataExtensionTimeInDays opts.Unset.DefaultDdlCollation opts.Unset.Comment opts.Unset.Distribution] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApplicationPackageUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterApplicationPackageOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "DefaultDdlCollation", "Comment", "Distribution"))
-	})
-
-	// Added all variants manually
-	t.Run("alter: set options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ApplicationPackageSet{
-			DataRetentionTimeInDays:    Int(1),
-			MaxDataExtensionTimeInDays: Int(1),
-			DefaultDdlCollation:        String("en_US"),
-			Comment:                    String("comment"),
-			Distribution:               Pointer(DistributionInternal),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' COMMENT = 'comment' DISTRIBUTION = INTERNAL`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ApplicationPackageUnset{
-			DataRetentionTimeInDays:    Bool(true),
-			MaxDataExtensionTimeInDays: Bool(true),
-			DefaultDdlCollation:        Bool(true),
-			Comment:                    Bool(true),
-			Distribution:               Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, DEFAULT_DDL_COLLATION, COMMENT, DISTRIBUTION`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s SET TAG "tag1" = 'value1'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: modify release directive", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ModifyReleaseDirective = &ModifyReleaseDirective{
-			ReleaseDirective: "DEFAULT",
-			Version:          "V1",
-			Patch:            1,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s MODIFY RELEASE DIRECTIVE DEFAULT VERSION = V1 PATCH = 1`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set default release directive", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetDefaultReleaseDirective = &SetDefaultReleaseDirective{
-			Version: "V1",
-			Patch:   1,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s SET DEFAULT RELEASE DIRECTIVE VERSION = V1 PATCH = 1`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set release directive", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetReleaseDirective = &SetReleaseDirective{
-			ReleaseDirective: "DEFAULT",
-			Accounts: []string{
-				"org1.acc1",
-				"org2.acc2",
-			},
-			Version: "V1",
-			Patch:   1,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s SET RELEASE DIRECTIVE DEFAULT ACCOUNTS = (org1.acc1, org2.acc2) VERSION = V1 PATCH = 1`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set release directive with no accounts", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetReleaseDirective = &SetReleaseDirective{
-			ReleaseDirective: "DEFAULT",
-			Version:          "V1",
-			Patch:            1,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s SET RELEASE DIRECTIVE DEFAULT ACCOUNTS = () VERSION = V1 PATCH = 1`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset release directive", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetReleaseDirective = &UnsetReleaseDirective{
-			ReleaseDirective: "DEFAULT",
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s UNSET RELEASE DIRECTIVE DEFAULT`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: add version", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AddVersion = &AddVersion{
-			VersionIdentifier: String("v1_1"),
-			Using:             "@hello_snowflake_code.core.hello_snowflake_stage",
-			Label:             String("test"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s ADD VERSION v1_1 USING '@hello_snowflake_code.core.hello_snowflake_stage' LABEL = 'test'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: drop version", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropVersion = &DropVersion{
-			VersionIdentifier: "v1_1",
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s DROP VERSION v1_1`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: add patch for version", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AddPatchForVersion = &AddPatchForVersion{
-			VersionIdentifier: String("v1_1"),
-			Using:             "@hello_snowflake_code.core.hello_snowflake_stage",
-			Label:             String("test"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER APPLICATION PACKAGE IF EXISTS %s ADD PATCH FOR VERSION v1_1 USING '@hello_snowflake_code.core.hello_snowflake_stage' LABEL = 'test'`, id.FullyQualifiedName())
-	})
+	applicationPackagesTests.Alter.RunValidationCases(t)
+	applicationPackagesTests.Alter.RunSqlCases(t)
 }
 
 func TestApplicationPackages_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropApplicationPackageOptions
-	defaultOpts := func() *DropApplicationPackageOptions {
-		return &DropApplicationPackageOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropApplicationPackageOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP APPLICATION PACKAGE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP APPLICATION PACKAGE IF EXISTS %s`, id.FullyQualifiedName())
-	})
+	applicationPackagesTests.Drop.RunValidationCases(t)
+	applicationPackagesTests.Drop.RunSqlCases(t)
 }
 
 func TestApplicationPackages_Show(t *testing.T) {
-	// Minimal valid ShowApplicationPackageOptions
-	defaultOpts := func() *ShowApplicationPackageOptions {
-		return &ShowApplicationPackageOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowApplicationPackageOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW APPLICATION PACKAGES`)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		opts.StartsWith = String("A")
-		opts.Limit = &LimitFrom{
-			Rows: Int(1),
-			From: String("B"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW APPLICATION PACKAGES LIKE 'pattern' STARTS WITH 'A' LIMIT 1 FROM 'B'`)
-	})
+	applicationPackagesTests.Show.RunValidationCases(t)
+	applicationPackagesTests.Show.RunSqlCases(t)
 }
