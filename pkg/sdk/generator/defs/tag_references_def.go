@@ -91,4 +91,4 @@ var tagReferencesDef = g.NewInterface(
 		).WithValidation(g.ValidateValueSet, "parameters"),
 	tagReferenceParametersDef,
 	tagReferenceFunctionArgumentsDef,
-).WithEnums(TagReferenceObjectDomainDef, TagReferenceApplyMethodDef)
+).WithEnums(TagReferenceObjectDomainDef, TagReferenceApplyMethodDef).WithEnabledGenerationParts(g.PartUnitTests)

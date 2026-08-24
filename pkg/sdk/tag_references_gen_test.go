@@ -11,70 +11,69 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TagReferenceApplyMethod]{"TagReferenceApplyMethod", AllTagReferenceApplyMethods, ToTagReferenceApplyMethod})
 }
 
+const (
+	case_TagReferences_validation_GetForEntity_parameters_ValidateValueSet                        testCaseName = "validation_GetForEntity_parameters_ValidateValueSet"
+	case_TagReferences_validation_GetForEntity_parameters_arguments_ValidateValueSet              testCaseName = "validation_GetForEntity_parameters_arguments_ValidateValueSet"
+	case_TagReferences_validation_GetForEntity_parameters_arguments_ObjectName_ValidateValueSet   testCaseName = "validation_GetForEntity_parameters_arguments_ObjectName_ValidateValueSet"
+	case_TagReferences_validation_GetForEntity_parameters_arguments_ObjectDomain_ValidateValueSet testCaseName = "validation_GetForEntity_parameters_arguments_ObjectDomain_ValidateValueSet"
+	case_TagReferences_sql_GetForEntity_basic                                                     testCaseName = "sql_GetForEntity_basic"
+)
+
+type TagReferencesTestsContext struct {
+	GetForEntity *sdkTestCtx[*GetForEntityTagReferenceOptions]
+}
+
+var tagReferencesTests = TagReferencesTestsContext{
+	GetForEntity: newSdkTestCtx[*GetForEntityTagReferenceOptions](
+		"TagReferences", "GetForEntity",
+	).
+		withDefaultOpts(func() *GetForEntityTagReferenceOptions {
+			return &GetForEntityTagReferenceOptions{}
+		}).
+		withValidationCases(
+			validationCase[*GetForEntityTagReferenceOptions]{
+				Name:        case_TagReferences_validation_GetForEntity_parameters_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityTagReferenceOptions", "parameters"),
+				DefaultModify: func(opts *GetForEntityTagReferenceOptions) {
+					opts.parameters = nil
+				},
+			},
+			validationCase[*GetForEntityTagReferenceOptions]{
+				Name:        case_TagReferences_validation_GetForEntity_parameters_arguments_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityTagReferenceOptions.parameters", "arguments"),
+				DefaultModify: func(opts *GetForEntityTagReferenceOptions) {
+					opts.parameters = &TagReferenceParameters{}
+					opts.parameters.arguments = nil
+				},
+			},
+			validationCase[*GetForEntityTagReferenceOptions]{
+				Name:        case_TagReferences_validation_GetForEntity_parameters_arguments_ObjectName_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityTagReferenceOptions.parameters.arguments", "ObjectName"),
+				DefaultModify: func(opts *GetForEntityTagReferenceOptions) {
+					opts.parameters = &TagReferenceParameters{}
+					opts.parameters.arguments = &TagReferenceFunctionArguments{}
+					opts.parameters.arguments.ObjectName = ""
+				},
+			},
+			validationCase[*GetForEntityTagReferenceOptions]{
+				Name:        case_TagReferences_validation_GetForEntity_parameters_arguments_ObjectDomain_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityTagReferenceOptions.parameters.arguments", "ObjectDomain"),
+				DefaultModify: func(opts *GetForEntityTagReferenceOptions) {
+					opts.parameters = &TagReferenceParameters{}
+					opts.parameters.arguments = &TagReferenceFunctionArguments{}
+					opts.parameters.arguments.ObjectDomain = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetForEntityTagReferenceOptions]{
+				Name:           case_TagReferences_sql_GetForEntity_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestTagReferences_GetForEntity(t *testing.T) {
-	// id and defaultOpts removed manually
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GetForEntityTagReferenceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: [opts.parameters] should be set", func(t *testing.T) {
-		opts := &GetForEntityTagReferenceOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityTagReferenceOptions", "parameters"))
-	})
-
-	t.Run("validation: [opts.parameters.arguments] should be set", func(t *testing.T) {
-		opts := &GetForEntityTagReferenceOptions{
-			parameters: &TagReferenceParameters{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityTagReferenceOptions.parameters", "arguments"))
-	})
-
-	t.Run("validation: [opts.parameters.arguments.ObjectName] should be set", func(t *testing.T) {
-		opts := &GetForEntityTagReferenceOptions{
-			parameters: &TagReferenceParameters{
-				arguments: &TagReferenceFunctionArguments{
-					ObjectDomain: TagReferenceObjectDomainTable,
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityTagReferenceOptions.parameters.arguments", "ObjectName"))
-	})
-
-	t.Run("validation: [opts.parameters.arguments.ObjectDomain] should be set", func(t *testing.T) {
-		opts := &GetForEntityTagReferenceOptions{
-			parameters: &TagReferenceParameters{
-				arguments: &TagReferenceFunctionArguments{
-					ObjectName: "some_name",
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityTagReferenceOptions.parameters.arguments", "ObjectDomain"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		id := randomSchemaObjectIdentifier()
-		opts := &GetForEntityTagReferenceOptions{
-			parameters: &TagReferenceParameters{
-				arguments: &TagReferenceFunctionArguments{
-					ObjectName:   id.FullyQualifiedName(),
-					ObjectDomain: TagReferenceObjectDomainTable,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES ('%s', 'TABLE'))`, temporaryReplace(id))
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := &GetForEntityTagReferenceOptions{
-			parameters: &TagReferenceParameters{
-				arguments: &TagReferenceFunctionArguments{
-					ObjectName:   NewAccountObjectIdentifier("my_warehouse").FullyQualifiedName(),
-					ObjectDomain: TagReferenceObjectDomainWarehouse,
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.TAG_REFERENCES ('\"my_warehouse\"', 'WAREHOUSE'))`)
-	})
+	tagReferencesTests.GetForEntity.RunValidationCases(t)
+	tagReferencesTests.GetForEntity.RunSqlCases(t)
 }
