@@ -2,10 +2,115 @@ package sdk
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func init() {
+	id := cortexAgentsTestIdSchemaObjectIdentifier
+	schemaId := id.SchemaId()
+	spec := `models:
+	orchestration: claude-4-sonnet`
+	profile := `{"display_name": "My Business Assistant", "avatar": "business-icon.png", "color": "blue"}`
+	expectedProfile := strings.ReplaceAll(profile, `"`, `\"`)
+
+	cortexAgentsTests.Create.
+		withDefaultOpts(func() *CreateCortexAgentOptions {
+			return &CreateCortexAgentOptions{
+				name:              id,
+				FromSpecification: spec,
+			}
+		}).
+		withExpectedSqlf(
+			case_CortexAgents_sql_Create_basic,
+			"CREATE AGENT %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec,
+		).
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Create_all,
+			func(opts *CreateCortexAgentOptions) {
+				opts.OrReplace = Bool(true)
+				opts.Comment = String("some comment")
+				opts.Profile = String(profile)
+			},
+			"CREATE OR REPLACE AGENT %s COMMENT = 'some comment' PROFILE = '%s' FROM SPECIFICATION $$%s$$",
+			id.FullyQualifiedName(), expectedProfile, spec,
+		)
+
+	cortexAgentsTests.Alter.
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Alter_Set,
+			func(opts *AlterCortexAgentOptions) {
+				opts.IfExists = Bool(true)
+				opts.Set = &CortexAgentSet{
+					Comment: &StringAllowEmpty{Value: "some comment"},
+					Profile: String(profile),
+				}
+			},
+			"ALTER AGENT IF EXISTS %s SET COMMENT = 'some comment', PROFILE = '%s'", id.FullyQualifiedName(), expectedProfile,
+		).
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Alter_ModifyLiveVersionSet,
+			func(opts *AlterCortexAgentOptions) {
+				opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{
+					Specification: spec,
+				}
+			},
+			"ALTER AGENT %s MODIFY LIVE VERSION SET SPECIFICATION = $$%s$$", id.FullyQualifiedName(), spec,
+		)
+
+	cortexAgentsTests.Drop.
+		withExpectedSqlf(
+			case_CortexAgents_sql_Drop_basic,
+			"DROP AGENT %s", id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Drop_all,
+			func(opts *DropCortexAgentOptions) { opts.IfExists = Bool(true) },
+			"DROP AGENT IF EXISTS %s", id.FullyQualifiedName(),
+		)
+
+	cortexAgentsTests.Show.
+		withExpectedSql(case_CortexAgents_sql_Show_basic, "SHOW AGENTS").
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Show_all,
+			func(opts *ShowCortexAgentOptions) {
+				opts.Like = &Like{Pattern: String("like-pattern")}
+				opts.In = &ExtendedIn{In: In{Schema: schemaId}}
+				opts.StartsWith = String("starts-with-pattern")
+				opts.Limit = &LimitFrom{Rows: Int(10), From: String("limit-from")}
+			},
+			"SHOW AGENTS LIKE 'like-pattern' IN SCHEMA %s STARTS WITH 'starts-with-pattern' LIMIT 10 FROM 'limit-from'",
+			schemaId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Show_Like,
+			func(opts *ShowCortexAgentOptions) { opts.Like = &Like{Pattern: String("like-pattern")} },
+			"SHOW AGENTS LIKE 'like-pattern'",
+		).
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Show_In,
+			func(opts *ShowCortexAgentOptions) { opts.In = &ExtendedIn{In: In{Schema: schemaId}} },
+			"SHOW AGENTS IN SCHEMA %s", schemaId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Show_StartsWith,
+			func(opts *ShowCortexAgentOptions) { opts.StartsWith = String("starts-with-pattern") },
+			"SHOW AGENTS STARTS WITH 'starts-with-pattern'",
+		).
+		withModifyAndExpectedSqlf(
+			case_CortexAgents_sql_Show_Limit,
+			func(opts *ShowCortexAgentOptions) { opts.Limit = &LimitFrom{Rows: Int(10), From: String("limit-from")} },
+			"SHOW AGENTS LIMIT 10 FROM 'limit-from'",
+		)
+
+	cortexAgentsTests.Describe.
+		withExpectedSqlf(
+			case_CortexAgents_sql_Describe_basic,
+			"DESCRIBE AGENT %s", id.FullyQualifiedName(),
+		)
+}
 
 func TestUnmarshalCortexAgentProfile(t *testing.T) {
 	validCases := []struct {

@@ -3,240 +3,245 @@
 package sdk
 
 import (
-	"strings"
 	"testing"
 )
 
+var cortexAgentsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_CortexAgents_validation_Create_name_ValidIdentifier                                   testCaseName = "validation_Create_name_ValidIdentifier"
+	case_CortexAgents_validation_Create_opts_ConflictingFields                                 testCaseName = "validation_Create_opts_ConflictingFields"
+	case_CortexAgents_validation_Create_FromSpecification_NoDoubleDollarQuotes                 testCaseName = "validation_Create_FromSpecification_NoDoubleDollarQuotes"
+	case_CortexAgents_sql_Create_basic                                                         testCaseName = "sql_Create_basic"
+	case_CortexAgents_sql_Create_all                                                           testCaseName = "sql_Create_all"
+	case_CortexAgents_validation_Alter_name_ValidIdentifier                                    testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_CortexAgents_validation_Alter_opts_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_CortexAgents_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_CortexAgents_validation_Alter_opts_Set_AtLeastOneValueSet                             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_CortexAgents_validation_Alter_ModifyLiveVersionSet_Specification_NoDoubleDollarQuotes testCaseName = "validation_Alter_ModifyLiveVersionSet_Specification_NoDoubleDollarQuotes"
+	case_CortexAgents_sql_Alter_Set                                                            testCaseName = "sql_Alter_Set"
+	case_CortexAgents_sql_Alter_ModifyLiveVersionSet                                           testCaseName = "sql_Alter_ModifyLiveVersionSet"
+	case_CortexAgents_validation_Drop_name_ValidIdentifier                                     testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_CortexAgents_sql_Drop_basic                                                           testCaseName = "sql_Drop_basic"
+	case_CortexAgents_sql_Drop_all                                                             testCaseName = "sql_Drop_all"
+	case_CortexAgents_sql_Show_basic                                                           testCaseName = "sql_Show_basic"
+	case_CortexAgents_sql_Show_all                                                             testCaseName = "sql_Show_all"
+	case_CortexAgents_sql_Show_Like                                                            testCaseName = "sql_Show_Like"
+	case_CortexAgents_sql_Show_In                                                              testCaseName = "sql_Show_In"
+	case_CortexAgents_sql_Show_StartsWith                                                      testCaseName = "sql_Show_StartsWith"
+	case_CortexAgents_sql_Show_Limit                                                           testCaseName = "sql_Show_Limit"
+	case_CortexAgents_validation_Describe_name_ValidIdentifier                                 testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_CortexAgents_sql_Describe_basic                                                       testCaseName = "sql_Describe_basic"
+)
+
+type CortexAgentsTestsContext struct {
+	Create   *sdkTestCtx[*CreateCortexAgentOptions]
+	Alter    *sdkTestCtx[*AlterCortexAgentOptions]
+	Drop     *sdkTestCtx[*DropCortexAgentOptions]
+	Show     *sdkTestCtx[*ShowCortexAgentOptions]
+	Describe *sdkTestCtx[*DescribeCortexAgentOptions]
+}
+
+var cortexAgentsTests = CortexAgentsTestsContext{
+	Create: newSdkTestCtx[*CreateCortexAgentOptions](
+		"CortexAgents", "Create",
+	).
+		withDefaultOpts(func() *CreateCortexAgentOptions {
+			return &CreateCortexAgentOptions{
+				name: cortexAgentsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateCortexAgentOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateCortexAgentOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateCortexAgentOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Create_FromSpecification_NoDoubleDollarQuotes,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateCortexAgentOptions", "FromSpecification"),
+				DefaultModify: func(opts *CreateCortexAgentOptions) {
+					opts.FromSpecification = "$$"
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateCortexAgentOptions]{
+				Name:           case_CortexAgents_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterCortexAgentOptions](
+		"CortexAgents", "Alter",
+	).
+		withDefaultOpts(func() *AlterCortexAgentOptions {
+			return &AlterCortexAgentOptions{
+				name: cortexAgentsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterCortexAgentOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterCortexAgentOptions", "Set", "ModifyLiveVersionSet"),
+				DefaultModify: func(opts *AlterCortexAgentOptions) {
+					opts.Set = nil
+					opts.ModifyLiveVersionSet = nil
+				},
+			},
+			validationCase[*AlterCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterCortexAgentOptions", "Set", "ModifyLiveVersionSet"),
+				DefaultModify: func(opts *AlterCortexAgentOptions) {
+					opts.Set = &CortexAgentSet{}
+					opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{}
+				},
+			},
+			validationCase[*AlterCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterCortexAgentOptions.Set", "Comment", "Profile"),
+				DefaultModify: func(opts *AlterCortexAgentOptions) {
+					opts.Set = &CortexAgentSet{}
+					opts.Set.Comment = nil
+					opts.Set.Profile = nil
+				},
+			},
+			validationCase[*AlterCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Alter_ModifyLiveVersionSet_Specification_NoDoubleDollarQuotes,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("AlterCortexAgentOptions.ModifyLiveVersionSet", "Specification"),
+				DefaultModify: func(opts *AlterCortexAgentOptions) {
+					opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{}
+					opts.ModifyLiveVersionSet.Specification = "$$"
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Alter_Set,
+			},
+			sqlCase[*AlterCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Alter_ModifyLiveVersionSet,
+			},
+		),
+	Drop: newSdkTestCtx[*DropCortexAgentOptions](
+		"CortexAgents", "Drop",
+	).
+		withDefaultOpts(func() *DropCortexAgentOptions {
+			return &DropCortexAgentOptions{
+				name: cortexAgentsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropCortexAgentOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropCortexAgentOptions]{
+				Name:           case_CortexAgents_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowCortexAgentOptions](
+		"CortexAgents", "Show",
+	).
+		withDefaultOpts(func() *ShowCortexAgentOptions {
+			return &ShowCortexAgentOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowCortexAgentOptions]{
+				Name:           case_CortexAgents_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Show_all,
+			},
+			sqlCase[*ShowCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Show_Like,
+			},
+			sqlCase[*ShowCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Show_In,
+			},
+			sqlCase[*ShowCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowCortexAgentOptions]{
+				Name: case_CortexAgents_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeCortexAgentOptions](
+		"CortexAgents", "Describe",
+	).
+		withDefaultOpts(func() *DescribeCortexAgentOptions {
+			return &DescribeCortexAgentOptions{
+				name: cortexAgentsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeCortexAgentOptions]{
+				Name:        case_CortexAgents_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeCortexAgentOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeCortexAgentOptions]{
+				Name:           case_CortexAgents_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestCortexAgents_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	spec := `models:
-	orchestration: claude-4-sonnet`
-	// Minimal valid CreateCortexAgentOptions
-	defaultOpts := func() *CreateCortexAgentOptions {
-		return &CreateCortexAgentOptions{
-			name:              id,
-			FromSpecification: spec,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateCortexAgentOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateCortexAgentOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.FromSpecification]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = "spec$$injected"
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateCortexAgentOptions", "FromSpecification"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE AGENT %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Comment = String("some comment")
-		profile := `{"display_name": "My Business Assistant", "avatar": "business-icon.png", "color": "blue"}`
-		expectedProfile := strings.ReplaceAll(profile, `"`, `\"`)
-		opts.Profile = String(profile)
-		assertOptsValidAndSQLEquals(
-			t,
-			opts,
-			"CREATE OR REPLACE AGENT %s COMMENT = 'some comment' PROFILE = '%s' FROM SPECIFICATION $$%s$$",
-			id.FullyQualifiedName(),
-			expectedProfile,
-			spec,
-		)
-	})
+	cortexAgentsTests.Create.RunValidationCases(t)
+	cortexAgentsTests.Create.RunSqlCases(t)
 }
 
 func TestCortexAgents_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterCortexAgentOptions
-	defaultOpts := func() *AlterCortexAgentOptions {
-		return &AlterCortexAgentOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterCortexAgentOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.ModifyLiveVersionSet] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCortexAgentOptions", "Set", "ModifyLiveVersionSet"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.ModifyLiveVersionSet] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &CortexAgentSet{
-			Comment: &StringAllowEmpty{Value: "some comment"},
-		}
-		opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{
-			Specification: `models:
-	orchestration: claude-4-sonnet`,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCortexAgentOptions", "Set", "ModifyLiveVersionSet"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Comment opts.Set.Profile] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &CortexAgentSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCortexAgentOptions.Set", "Comment", "Profile"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.ModifyLiveVersionSet.Specification]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{
-			Specification: "spec$$injected",
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("AlterCortexAgentOptions.ModifyLiveVersionSet", "Specification"))
-	})
-
-	// all variants added manually
-	t.Run("alter set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		profile := `{"display_name": "My Business Assistant", "avatar": "business-icon.png", "color": "blue"}`
-		expectedProfile := strings.ReplaceAll(profile, `"`, `\"`)
-		opts.Set = &CortexAgentSet{
-			Comment: &StringAllowEmpty{Value: "some comment"},
-			Profile: String(profile),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AGENT IF EXISTS %s SET COMMENT = 'some comment', PROFILE = '%s'", id.FullyQualifiedName(), expectedProfile)
-	})
-
-	t.Run("alter modify live version set", func(t *testing.T) {
-		opts := defaultOpts()
-		spec := `models:
-	orchestration: claude-4-sonnet`
-		opts.ModifyLiveVersionSet = &CortexAgentModifyLiveVersionSet{
-			Specification: spec,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AGENT %s MODIFY LIVE VERSION SET SPECIFICATION = $$%s$$", id.FullyQualifiedName(), spec)
-	})
+	cortexAgentsTests.Alter.RunValidationCases(t)
+	cortexAgentsTests.Alter.RunSqlCases(t)
 }
 
 func TestCortexAgents_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropCortexAgentOptions
-	defaultOpts := func() *DropCortexAgentOptions {
-		return &DropCortexAgentOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropCortexAgentOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP AGENT %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP AGENT IF EXISTS %s", id.FullyQualifiedName())
-	})
+	cortexAgentsTests.Drop.RunValidationCases(t)
+	cortexAgentsTests.Drop.RunSqlCases(t)
 }
 
 func TestCortexAgents_Show(t *testing.T) {
-	// added manually
-	id := randomSchemaObjectIdentifier()
-
-	// Minimal valid ShowCortexAgentOptions
-	defaultOpts := func() *ShowCortexAgentOptions {
-		return &ShowCortexAgentOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowCortexAgentOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW AGENTS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("like-pattern"),
-		}
-		opts.In = &ExtendedIn{
-			In: In{
-				Schema: id.SchemaId(),
-			},
-		}
-		opts.StartsWith = String("starts-with-pattern")
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-			From: String("limit-from"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW AGENTS LIKE 'like-pattern' IN SCHEMA %s STARTS WITH 'starts-with-pattern' LIMIT 10 FROM 'limit-from'", id.SchemaId().FullyQualifiedName())
-	})
+	cortexAgentsTests.Show.RunValidationCases(t)
+	cortexAgentsTests.Show.RunSqlCases(t)
 }
 
 func TestCortexAgents_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeCortexAgentOptions
-	defaultOpts := func() *DescribeCortexAgentOptions {
-		return &DescribeCortexAgentOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeCortexAgentOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE AGENT %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	cortexAgentsTests.Describe.RunValidationCases(t)
+	cortexAgentsTests.Describe.RunSqlCases(t)
 }

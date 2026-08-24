@@ -101,4 +101,5 @@ var cortexAgentsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	WithShowObjectType("Agent")
+	WithShowObjectType("Agent").
+	WithEnabledGenerationParts(g.PartUnitTests)
