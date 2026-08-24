@@ -6,351 +6,273 @@ import (
 	"testing"
 )
 
+var networkPoliciesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_NetworkPolicies_validation_Create_name_ValidIdentifier                         testCaseName = "validation_Create_name_ValidIdentifier"
+	case_NetworkPolicies_sql_Create_basic                                               testCaseName = "sql_Create_basic"
+	case_NetworkPolicies_sql_Create_all                                                 testCaseName = "sql_Create_all"
+	case_NetworkPolicies_validation_Alter_name_ValidIdentifier                          testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet               testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_NetworkPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet                 testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_NetworkPolicies_validation_Alter_opts_Set_AtLeastOneValueSet                   testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_NetworkPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                 testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Alter_opts_Add_ExactlyOneValueSet_NoneSet"
+	case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Alter_opts_Add_ExactlyOneValueSet_MoreThanOneSet"
+	case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet"
+	case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet"
+	case_NetworkPolicies_sql_Alter_Set                                                  testCaseName = "sql_Alter_Set"
+	case_NetworkPolicies_sql_Alter_Unset                                                testCaseName = "sql_Alter_Unset"
+	case_NetworkPolicies_sql_Alter_RenameTo                                             testCaseName = "sql_Alter_RenameTo"
+	case_NetworkPolicies_sql_Alter_Add                                                  testCaseName = "sql_Alter_Add"
+	case_NetworkPolicies_sql_Alter_Remove                                               testCaseName = "sql_Alter_Remove"
+	case_NetworkPolicies_validation_Drop_name_ValidIdentifier                           testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_NetworkPolicies_sql_Drop_basic                                                 testCaseName = "sql_Drop_basic"
+	case_NetworkPolicies_sql_Drop_all                                                   testCaseName = "sql_Drop_all"
+	case_NetworkPolicies_sql_Show_basic                                                 testCaseName = "sql_Show_basic"
+	case_NetworkPolicies_sql_Show_all                                                   testCaseName = "sql_Show_all"
+	case_NetworkPolicies_sql_Show_Like                                                  testCaseName = "sql_Show_Like"
+	case_NetworkPolicies_validation_Describe_name_ValidIdentifier                       testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_NetworkPolicies_sql_Describe_basic                                             testCaseName = "sql_Describe_basic"
+)
+
+type NetworkPoliciesTestsContext struct {
+	Create   *sdkTestCtx[*CreateNetworkPolicyOptions]
+	Alter    *sdkTestCtx[*AlterNetworkPolicyOptions]
+	Drop     *sdkTestCtx[*DropNetworkPolicyOptions]
+	Show     *sdkTestCtx[*ShowNetworkPolicyOptions]
+	Describe *sdkTestCtx[*DescribeNetworkPolicyOptions]
+}
+
+var networkPoliciesTests = NetworkPoliciesTestsContext{
+	Create: newSdkTestCtx[*CreateNetworkPolicyOptions](
+		"NetworkPolicies", "Create",
+	).
+		withDefaultOpts(func() *CreateNetworkPolicyOptions {
+			return &CreateNetworkPolicyOptions{
+				name: networkPoliciesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateNetworkPolicyOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateNetworkPolicyOptions]{
+				Name:           case_NetworkPolicies_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterNetworkPolicyOptions](
+		"NetworkPolicies", "Alter",
+	).
+		withDefaultOpts(func() *AlterNetworkPolicyOptions {
+			return &AlterNetworkPolicyOptions{
+				name: networkPoliciesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions", "Set", "Unset", "RenameTo", "Add", "Remove"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.RenameTo = nil
+					opts.Add = nil
+					opts.Remove = nil
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions", "Set", "Unset", "RenameTo", "Add", "Remove"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Set = &NetworkPolicySet{}
+					opts.Unset = &NetworkPolicyUnset{}
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.RenameTo = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNetworkPolicyOptions.Set", "AllowedIpList", "BlockedIpList", "Comment", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Set = &NetworkPolicySet{}
+					opts.Set.AllowedIpList = nil
+					opts.Set.BlockedIpList = nil
+					opts.Set.Comment = nil
+					opts.Set.AllowedNetworkRuleList = nil
+					opts.Set.BlockedNetworkRuleList = nil
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNetworkPolicyOptions.Unset", "AllowedIpList", "BlockedIpList", "Comment", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Unset = &NetworkPolicyUnset{}
+					opts.Unset.AllowedIpList = nil
+					opts.Unset.BlockedIpList = nil
+					opts.Unset.Comment = nil
+					opts.Unset.AllowedNetworkRuleList = nil
+					opts.Unset.BlockedNetworkRuleList = nil
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions.Add", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Add = &AddNetworkRule{}
+					opts.Add.AllowedNetworkRuleList = nil
+					opts.Add.BlockedNetworkRuleList = nil
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_Add_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions.Add", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions.Remove", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
+				DefaultModify: func(opts *AlterNetworkPolicyOptions) {
+					opts.Remove = &RemoveNetworkRule{}
+					opts.Remove.AllowedNetworkRuleList = nil
+					opts.Remove.BlockedNetworkRuleList = nil
+				},
+			},
+			validationCase[*AlterNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterNetworkPolicyOptions.Remove", "AllowedNetworkRuleList", "BlockedNetworkRuleList"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Alter_Set,
+			},
+			sqlCase[*AlterNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Alter_Unset,
+			},
+			sqlCase[*AlterNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Alter_Add,
+			},
+			sqlCase[*AlterNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Alter_Remove,
+			},
+		),
+	Drop: newSdkTestCtx[*DropNetworkPolicyOptions](
+		"NetworkPolicies", "Drop",
+	).
+		withDefaultOpts(func() *DropNetworkPolicyOptions {
+			return &DropNetworkPolicyOptions{
+				name: networkPoliciesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropNetworkPolicyOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropNetworkPolicyOptions]{
+				Name:           case_NetworkPolicies_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowNetworkPolicyOptions](
+		"NetworkPolicies", "Show",
+	).
+		withDefaultOpts(func() *ShowNetworkPolicyOptions {
+			return &ShowNetworkPolicyOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowNetworkPolicyOptions]{
+				Name:           case_NetworkPolicies_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Show_all,
+			},
+			sqlCase[*ShowNetworkPolicyOptions]{
+				Name: case_NetworkPolicies_sql_Show_Like,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeNetworkPolicyOptions](
+		"NetworkPolicies", "Describe",
+	).
+		withDefaultOpts(func() *DescribeNetworkPolicyOptions {
+			return &DescribeNetworkPolicyOptions{
+				name: networkPoliciesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeNetworkPolicyOptions]{
+				Name:        case_NetworkPolicies_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeNetworkPolicyOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeNetworkPolicyOptions]{
+				Name:           case_NetworkPolicies_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestNetworkPolicies_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-
-	// added manually
-	allowedNetworkRule := randomSchemaObjectIdentifier()
-	blockedNetworkRule := randomSchemaObjectIdentifier()
-	// Minimal valid CreateNetworkPolicyOptions
-	defaultOpts := func() *CreateNetworkPolicyOptions {
-		return &CreateNetworkPolicyOptions{
-			// adjusted manually
-			OrReplace:              Bool(true),
-			name:                   id,
-			AllowedIpList:          []IP{{IP: "123.0.0.1"}, {IP: "321.0.0.1"}},
-			BlockedIpList:          []IP{{IP: "123.0.0.1"}, {IP: "321.0.0.1"}},
-			AllowedNetworkRuleList: []SchemaObjectIdentifier{allowedNetworkRule},
-			BlockedNetworkRuleList: []SchemaObjectIdentifier{blockedNetworkRule},
-			Comment:                String("some_comment"),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateNetworkPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// basic removed manually
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE NETWORK POLICY %s ALLOWED_NETWORK_RULE_LIST = (%s) BLOCKED_NETWORK_RULE_LIST = (%s) ALLOWED_IP_LIST = ('123.0.0.1', '321.0.0.1') BLOCKED_IP_LIST = ('123.0.0.1', '321.0.0.1') COMMENT = 'some_comment'", opts.name.FullyQualifiedName(), allowedNetworkRule.FullyQualifiedName(), blockedNetworkRule.FullyQualifiedName())
-	})
+	networkPoliciesTests.Create.RunValidationCases(t)
+	networkPoliciesTests.Create.RunSqlCases(t)
 }
 
 func TestNetworkPolicies_Alter(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterNetworkPolicyOptions
-	defaultOpts := func() *AlterNetworkPolicyOptions {
-		return &AlterNetworkPolicyOptions{
-			// adjusted manually
-			name:     id,
-			IfExists: Bool(true),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterNetworkPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo opts.Add opts.Remove] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNetworkPolicyOptions", "Set", "Unset", "RenameTo", "Add", "Remove"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo opts.Add opts.Remove] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{}
-		opts.Unset = &NetworkPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNetworkPolicyOptions", "Set", "Unset", "RenameTo", "Add", "Remove"))
-	})
-
-	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RenameTo = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.AllowedIpList opts.Set.BlockedIpList opts.Set.Comment opts.Set.AllowedNetworkRuleList opts.Set.BlockedNetworkRuleList] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNetworkPolicyOptions.Set", "AllowedIpList", "BlockedIpList", "Comment", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.AllowedIpList opts.Unset.BlockedIpList opts.Unset.Comment opts.Unset.AllowedNetworkRuleList opts.Unset.BlockedNetworkRuleList] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &NetworkPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNetworkPolicyOptions.Unset", "AllowedIpList", "BlockedIpList", "Comment", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Add.AllowedNetworkRuleList opts.Add.BlockedNetworkRuleList] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Add = &AddNetworkRule{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNetworkPolicyOptions.Add", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Add.AllowedNetworkRuleList opts.Add.BlockedNetworkRuleList] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		allowedNetworkRule := randomSchemaObjectIdentifier()
-		blockedNetworkRule := randomSchemaObjectIdentifier()
-		opts.Add = &AddNetworkRule{
-			AllowedNetworkRuleList: []SchemaObjectIdentifier{allowedNetworkRule},
-			BlockedNetworkRuleList: []SchemaObjectIdentifier{blockedNetworkRule},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNetworkPolicyOptions.Add", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Remove.AllowedNetworkRuleList opts.Remove.BlockedNetworkRuleList] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Remove = &RemoveNetworkRule{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNetworkPolicyOptions.Remove", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Remove.AllowedNetworkRuleList opts.Remove.BlockedNetworkRuleList] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		allowedNetworkRule := randomSchemaObjectIdentifier()
-		blockedNetworkRule := randomSchemaObjectIdentifier()
-		opts.Remove = &RemoveNetworkRule{
-			AllowedNetworkRuleList: []SchemaObjectIdentifier{allowedNetworkRule},
-			BlockedNetworkRuleList: []SchemaObjectIdentifier{blockedNetworkRule},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNetworkPolicyOptions.Remove", "AllowedNetworkRuleList", "BlockedNetworkRuleList"))
-	})
-
-	// all variants added manually
-	t.Run("set allowed ip list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			AllowedIpList: &AllowedIPList{[]IP{{"123.0.0.1"}}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET ALLOWED_IP_LIST = ('123.0.0.1')", id.FullyQualifiedName())
-	})
-
-	t.Run("set empty ip list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			AllowedIpList: &AllowedIPList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET ALLOWED_IP_LIST = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("set blocked ip list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			BlockedIpList: &BlockedIPList{[]IP{{"123.0.0.1"}}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET BLOCKED_IP_LIST = ('123.0.0.1')", id.FullyQualifiedName())
-	})
-
-	t.Run("set empty blocked ip list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			BlockedIpList: &BlockedIPList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET BLOCKED_IP_LIST = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("set allowed network rule list", func(t *testing.T) {
-		allowedNetworkRule := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			AllowedNetworkRuleList: &AllowedNetworkRuleList{[]SchemaObjectIdentifier{allowedNetworkRule}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET ALLOWED_NETWORK_RULE_LIST = (%s)", id.FullyQualifiedName(), allowedNetworkRule.FullyQualifiedName())
-	})
-
-	t.Run("set empty allowed network rule list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			AllowedNetworkRuleList: &AllowedNetworkRuleList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET ALLOWED_NETWORK_RULE_LIST = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("set blocked network rule list", func(t *testing.T) {
-		blockedNetworkRule := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			BlockedNetworkRuleList: &BlockedNetworkRuleList{[]SchemaObjectIdentifier{blockedNetworkRule}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET BLOCKED_NETWORK_RULE_LIST = (%s)", id.FullyQualifiedName(), blockedNetworkRule.FullyQualifiedName())
-	})
-
-	t.Run("set empty blocked network rule list", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			BlockedNetworkRuleList: &BlockedNetworkRuleList{},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET BLOCKED_NETWORK_RULE_LIST = ()", id.FullyQualifiedName())
-	})
-
-	t.Run("unset single", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &NetworkPolicyUnset{
-			Comment: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s UNSET COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset multiple", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &NetworkPolicyUnset{
-			AllowedNetworkRuleList: Bool(true),
-			BlockedNetworkRuleList: Bool(true),
-			AllowedIpList:          Bool(true),
-			BlockedIpList:          Bool(true),
-			Comment:                Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s UNSET ALLOWED_NETWORK_RULE_LIST, BLOCKED_NETWORK_RULE_LIST, ALLOWED_IP_LIST, BLOCKED_IP_LIST, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("add allowed network rule", func(t *testing.T) {
-		allowedNetworkRule := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.Add = &AddNetworkRule{
-			AllowedNetworkRuleList: []SchemaObjectIdentifier{allowedNetworkRule},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s ADD ALLOWED_NETWORK_RULE_LIST = (%s)", id.FullyQualifiedName(), allowedNetworkRule.FullyQualifiedName())
-	})
-
-	t.Run("add blocked network rule", func(t *testing.T) {
-		blockedNetworkRule := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.Add = &AddNetworkRule{
-			BlockedNetworkRuleList: []SchemaObjectIdentifier{blockedNetworkRule},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s ADD BLOCKED_NETWORK_RULE_LIST = (%s)", id.FullyQualifiedName(), blockedNetworkRule.FullyQualifiedName())
-	})
-
-	t.Run("remove allowed network rule", func(t *testing.T) {
-		allowedNetworkRule := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.Remove = &RemoveNetworkRule{
-			AllowedNetworkRuleList: []SchemaObjectIdentifier{allowedNetworkRule},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s REMOVE ALLOWED_NETWORK_RULE_LIST = (%s)", id.FullyQualifiedName(), allowedNetworkRule.FullyQualifiedName())
-	})
-
-	t.Run("remove blocked network rule", func(t *testing.T) {
-		blockedNetworkRule := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.Remove = &RemoveNetworkRule{
-			BlockedNetworkRuleList: []SchemaObjectIdentifier{blockedNetworkRule},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s REMOVE BLOCKED_NETWORK_RULE_LIST = (%s)", id.FullyQualifiedName(), blockedNetworkRule.FullyQualifiedName())
-	})
-
-	t.Run("set comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NetworkPolicySet{
-			Comment: String("some_comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s SET COMMENT = 'some_comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("rename to", func(t *testing.T) {
-		opts := defaultOpts()
-		newName := randomAccountObjectIdentifier()
-		opts.RenameTo = &newName
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NETWORK POLICY IF EXISTS %s RENAME TO %s", id.FullyQualifiedName(), newName.FullyQualifiedName())
-	})
+	networkPoliciesTests.Alter.RunValidationCases(t)
+	networkPoliciesTests.Alter.RunSqlCases(t)
 }
 
 func TestNetworkPolicies_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropNetworkPolicyOptions
-	defaultOpts := func() *DropNetworkPolicyOptions {
-		return &DropNetworkPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropNetworkPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP NETWORK POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP NETWORK POLICY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	networkPoliciesTests.Drop.RunValidationCases(t)
+	networkPoliciesTests.Drop.RunSqlCases(t)
 }
 
 func TestNetworkPolicies_Show(t *testing.T) {
-	// Minimal valid ShowNetworkPolicyOptions
-	defaultOpts := func() *ShowNetworkPolicyOptions {
-		return &ShowNetworkPolicyOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowNetworkPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW NETWORK POLICIES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("some pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW NETWORK POLICIES LIKE 'some pattern'")
-	})
+	networkPoliciesTests.Show.RunValidationCases(t)
+	networkPoliciesTests.Show.RunSqlCases(t)
 }
 
 func TestNetworkPolicies_Describe(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribeNetworkPolicyOptions
-	defaultOpts := func() *DescribeNetworkPolicyOptions {
-		return &DescribeNetworkPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeNetworkPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE NETWORK POLICY %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	networkPoliciesTests.Describe.RunValidationCases(t)
+	networkPoliciesTests.Describe.RunSqlCases(t)
 }

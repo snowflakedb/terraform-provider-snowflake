@@ -130,5 +130,6 @@ var (
 				SQL("NETWORK POLICY").
 				Name().
 				WithValidation(g.ValidIdentifier, "name"),
-		)
+		).
+		WithEnabledGenerationParts(g.PartUnitTests)
 )
