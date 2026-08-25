@@ -6,534 +6,357 @@ import (
 	"testing"
 )
 
-// added manually
+var notificationIntegrationsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
 const (
-	gcpPubsubSubscriptionName   = "projects/project-1234/subscriptions/sub2"
-	gcpPubsubTopicName          = "projects/project-1234/topics/top2"
-	azureStorageQueuePrimaryUri = "azure://great-bucket/great-path/"
-	azureEventGridTopicEndpoint = "https://apim-hello-world.azure-api.net/dev"
-	awsSnsTopicArn              = "arn:aws:sns:us-east-2:123456789012:MyTopic"
-	webhookUrl                  = "https://hooks.slack.com/services/SNOWFLAKE_WEBHOOK_SECRET"
+	case_NotificationIntegrations_validation_Create_name_ValidIdentifier                                            testCaseName = "validation_Create_name_ValidIdentifier"
+	case_NotificationIntegrations_validation_Create_opts_ConflictingFields                                          testCaseName = "validation_Create_opts_ConflictingFields"
+	case_NotificationIntegrations_validation_Create_opts_ExactlyOneValueSet_NoneSet                                 testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
+	case_NotificationIntegrations_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_NotificationIntegrations_validation_Create_opts_AutomatedDataLoadsParams_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Create_opts_AutomatedDataLoadsParams_ExactlyOneValueSet_NoneSet"
+	case_NotificationIntegrations_validation_Create_opts_AutomatedDataLoadsParams_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Create_opts_AutomatedDataLoadsParams_ExactlyOneValueSet_MoreThanOneSet"
+	case_NotificationIntegrations_validation_Create_opts_PushNotificationParams_ExactlyOneValueSet_NoneSet          testCaseName = "validation_Create_opts_PushNotificationParams_ExactlyOneValueSet_NoneSet"
+	case_NotificationIntegrations_validation_Create_opts_PushNotificationParams_ExactlyOneValueSet_MoreThanOneSet   testCaseName = "validation_Create_opts_PushNotificationParams_ExactlyOneValueSet_MoreThanOneSet"
+	case_NotificationIntegrations_sql_Create_basic                                                                  testCaseName = "sql_Create_basic"
+	case_NotificationIntegrations_sql_Create_all                                                                    testCaseName = "sql_Create_all"
+	case_NotificationIntegrations_validation_Alter_name_ValidIdentifier                                             testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_NotificationIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_NotificationIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_NotificationIntegrations_validation_Alter_opts_Set_MoreThanOneValueSet_MoreThanOneSet                      testCaseName = "validation_Alter_opts_Set_MoreThanOneValueSet_MoreThanOneSet"
+	case_NotificationIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                                      testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_NotificationIntegrations_validation_Alter_opts_Set_SetPushParams_ExactlyOneValueSet_NoneSet                testCaseName = "validation_Alter_opts_Set_SetPushParams_ExactlyOneValueSet_NoneSet"
+	case_NotificationIntegrations_validation_Alter_opts_Set_SetPushParams_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Alter_opts_Set_SetPushParams_ExactlyOneValueSet_MoreThanOneSet"
+	case_NotificationIntegrations_validation_Alter_Set_SetEmailParams_AllowedRecipients_ValidateValueSet            testCaseName = "validation_Alter_Set_SetEmailParams_AllowedRecipients_ValidateValueSet"
+	case_NotificationIntegrations_validation_Alter_opts_UnsetEmailParams_AtLeastOneValueSet                         testCaseName = "validation_Alter_opts_UnsetEmailParams_AtLeastOneValueSet"
+	case_NotificationIntegrations_validation_Alter_opts_UnsetWebhookParams_AtLeastOneValueSet                       testCaseName = "validation_Alter_opts_UnsetWebhookParams_AtLeastOneValueSet"
+	case_NotificationIntegrations_sql_Alter_Set                                                                     testCaseName = "sql_Alter_Set"
+	case_NotificationIntegrations_sql_Alter_UnsetEmailParams                                                        testCaseName = "sql_Alter_UnsetEmailParams"
+	case_NotificationIntegrations_sql_Alter_UnsetWebhookParams                                                      testCaseName = "sql_Alter_UnsetWebhookParams"
+	case_NotificationIntegrations_sql_Alter_SetTags                                                                 testCaseName = "sql_Alter_SetTags"
+	case_NotificationIntegrations_sql_Alter_UnsetTags                                                               testCaseName = "sql_Alter_UnsetTags"
+	case_NotificationIntegrations_validation_Drop_name_ValidIdentifier                                              testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_NotificationIntegrations_sql_Drop_basic                                                                    testCaseName = "sql_Drop_basic"
+	case_NotificationIntegrations_sql_Drop_all                                                                      testCaseName = "sql_Drop_all"
+	case_NotificationIntegrations_sql_Show_basic                                                                    testCaseName = "sql_Show_basic"
+	case_NotificationIntegrations_sql_Show_all                                                                      testCaseName = "sql_Show_all"
+	case_NotificationIntegrations_sql_Show_Like                                                                     testCaseName = "sql_Show_Like"
+	case_NotificationIntegrations_validation_Describe_name_ValidIdentifier                                          testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_NotificationIntegrations_sql_Describe_basic                                                                testCaseName = "sql_Describe_basic"
 )
 
+type NotificationIntegrationsTestsContext struct {
+	Create   *sdkTestCtx[*CreateNotificationIntegrationOptions]
+	Alter    *sdkTestCtx[*AlterNotificationIntegrationOptions]
+	Drop     *sdkTestCtx[*DropNotificationIntegrationOptions]
+	Show     *sdkTestCtx[*ShowNotificationIntegrationOptions]
+	Describe *sdkTestCtx[*DescribeNotificationIntegrationOptions]
+}
+
+var notificationIntegrationsTests = NotificationIntegrationsTestsContext{
+	Create: newSdkTestCtx[*CreateNotificationIntegrationOptions](
+		"NotificationIntegrations", "Create",
+	).
+		withDefaultOpts(func() *CreateNotificationIntegrationOptions {
+			return &CreateNotificationIntegrationOptions{
+				name: notificationIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateNotificationIntegrationOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"),
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.AutomatedDataLoadsParams = nil
+					opts.PushNotificationParams = nil
+					opts.EmailParams = nil
+					opts.WebhookParams = nil
+				},
+			},
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"),
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.AutomatedDataLoadsParams = &AutomatedDataLoadsParams{}
+					opts.PushNotificationParams = &PushNotificationParams{}
+				},
+			},
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_opts_AutomatedDataLoadsParams_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams"),
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.AutomatedDataLoadsParams = &AutomatedDataLoadsParams{}
+					opts.AutomatedDataLoadsParams.GoogleAutoParams = nil
+					opts.AutomatedDataLoadsParams.AzureAutoParams = nil
+				},
+			},
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_opts_AutomatedDataLoadsParams_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams"),
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.AutomatedDataLoadsParams = &AutomatedDataLoadsParams{}
+					opts.AutomatedDataLoadsParams.GoogleAutoParams = &GoogleAutoParams{}
+					opts.AutomatedDataLoadsParams.AzureAutoParams = &AzureAutoParams{}
+				},
+			},
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_opts_PushNotificationParams_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateNotificationIntegrationOptions.PushNotificationParams", "AmazonPushParams", "GooglePushParams", "AzurePushParams"),
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.PushNotificationParams = &PushNotificationParams{}
+					opts.PushNotificationParams.AmazonPushParams = nil
+					opts.PushNotificationParams.GooglePushParams = nil
+					opts.PushNotificationParams.AzurePushParams = nil
+				},
+			},
+			validationCase[*CreateNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Create_opts_PushNotificationParams_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateNotificationIntegrationOptions.PushNotificationParams", "AmazonPushParams", "GooglePushParams", "AzurePushParams"),
+				DefaultModify: func(opts *CreateNotificationIntegrationOptions) {
+					opts.PushNotificationParams = &PushNotificationParams{}
+					opts.PushNotificationParams.AmazonPushParams = &AmazonPushParams{}
+					opts.PushNotificationParams.GooglePushParams = &GooglePushParams{}
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateNotificationIntegrationOptions]{
+				Name:           case_NotificationIntegrations_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterNotificationIntegrationOptions](
+		"NotificationIntegrations", "Alter",
+	).
+		withDefaultOpts(func() *AlterNotificationIntegrationOptions {
+			return &AlterNotificationIntegrationOptions{
+				name: notificationIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.Set = nil
+					opts.UnsetEmailParams = nil
+					opts.UnsetWebhookParams = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.Set = &NotificationIntegrationSet{}
+					opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{}
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_Set_MoreThanOneValueSet_MoreThanOneSet,
+				ExpectedErr: errMoreThanOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.Set = &NotificationIntegrationSet{}
+					opts.Set.SetPushParams = &SetPushParams{}
+					opts.Set.SetEmailParams = &SetEmailParams{}
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNotificationIntegrationOptions.Set", "Enabled", "SetPushParams", "SetEmailParams", "SetWebhookParams", "Comment"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.Set = &NotificationIntegrationSet{}
+					opts.Set.Enabled = nil
+					opts.Set.SetPushParams = nil
+					opts.Set.SetEmailParams = nil
+					opts.Set.SetWebhookParams = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_Set_SetPushParams_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterNotificationIntegrationOptions.Set.SetPushParams", "SetAmazonPush", "SetGooglePush", "SetAzurePush"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.Set = &NotificationIntegrationSet{}
+					opts.Set.SetPushParams = &SetPushParams{}
+					opts.Set.SetPushParams.SetAmazonPush = nil
+					opts.Set.SetPushParams.SetGooglePush = nil
+					opts.Set.SetPushParams.SetAzurePush = nil
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_Set_SetPushParams_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterNotificationIntegrationOptions.Set.SetPushParams", "SetAmazonPush", "SetGooglePush", "SetAzurePush"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.Set = &NotificationIntegrationSet{}
+					opts.Set.SetPushParams = &SetPushParams{}
+					opts.Set.SetPushParams.SetAmazonPush = &SetAmazonPush{}
+					opts.Set.SetPushParams.SetGooglePush = &SetGooglePush{}
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_Set_SetEmailParams_AllowedRecipients_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterNotificationIntegrationOptions.Set.SetEmailParams", "AllowedRecipients"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.Set = &NotificationIntegrationSet{}
+					opts.Set.SetEmailParams = &SetEmailParams{}
+					opts.Set.SetEmailParams.AllowedRecipients = nil
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_UnsetEmailParams_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNotificationIntegrationOptions.UnsetEmailParams", "AllowedRecipients", "Comment"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{}
+					opts.UnsetEmailParams.AllowedRecipients = nil
+					opts.UnsetEmailParams.Comment = nil
+				},
+			},
+			validationCase[*AlterNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Alter_opts_UnsetWebhookParams_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterNotificationIntegrationOptions.UnsetWebhookParams", "WebhookSecret", "WebhookBodyTemplate", "WebhookHeaders", "Comment"),
+				DefaultModify: func(opts *AlterNotificationIntegrationOptions) {
+					opts.UnsetWebhookParams = &NotificationIntegrationUnsetWebhookParams{}
+					opts.UnsetWebhookParams.WebhookSecret = nil
+					opts.UnsetWebhookParams.WebhookBodyTemplate = nil
+					opts.UnsetWebhookParams.WebhookHeaders = nil
+					opts.UnsetWebhookParams.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Alter_Set,
+			},
+			sqlCase[*AlterNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Alter_UnsetEmailParams,
+			},
+			sqlCase[*AlterNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Alter_UnsetWebhookParams,
+			},
+			sqlCase[*AlterNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropNotificationIntegrationOptions](
+		"NotificationIntegrations", "Drop",
+	).
+		withDefaultOpts(func() *DropNotificationIntegrationOptions {
+			return &DropNotificationIntegrationOptions{
+				name: notificationIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropNotificationIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropNotificationIntegrationOptions]{
+				Name:           case_NotificationIntegrations_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowNotificationIntegrationOptions](
+		"NotificationIntegrations", "Show",
+	).
+		withDefaultOpts(func() *ShowNotificationIntegrationOptions {
+			return &ShowNotificationIntegrationOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowNotificationIntegrationOptions]{
+				Name:           case_NotificationIntegrations_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Show_all,
+			},
+			sqlCase[*ShowNotificationIntegrationOptions]{
+				Name: case_NotificationIntegrations_sql_Show_Like,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeNotificationIntegrationOptions](
+		"NotificationIntegrations", "Describe",
+	).
+		withDefaultOpts(func() *DescribeNotificationIntegrationOptions {
+			return &DescribeNotificationIntegrationOptions{
+				name: notificationIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeNotificationIntegrationOptions]{
+				Name:        case_NotificationIntegrations_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeNotificationIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeNotificationIntegrationOptions]{
+				Name:           case_NotificationIntegrations_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestNotificationIntegrations_Create(t *testing.T) {
-	const (
-		apiAwsRoleArn = "arn:aws:iam::000000000001:/role/test"
-		azureTenantId = "00000000-0000-0000-0000-000000000000"
-	)
-
-	id := randomAccountObjectIdentifier()
-
-	// minimal option for each variant added manually
-	// Minimal valid CreateNotificationIntegrationOptions for Webhook
-	defaultOptsWebhook := func() *CreateNotificationIntegrationOptions {
-		return &CreateNotificationIntegrationOptions{
-			name:    id,
-			Enabled: true,
-			WebhookParams: &WebhookParams{
-				WebhookUrl: webhookUrl,
-			},
-		}
-	}
-
-	// Minimal valid CreateNotificationIntegrationOptions for AutomatedDataLoads
-	defaultOptsAutomatedDataLoads := func() *CreateNotificationIntegrationOptions {
-		return &CreateNotificationIntegrationOptions{
-			name:    id,
-			Enabled: true,
-			AutomatedDataLoadsParams: &AutomatedDataLoadsParams{
-				GoogleAutoParams: &GoogleAutoParams{
-					GcpPubsubSubscriptionName: gcpPubsubSubscriptionName,
-				},
-			},
-		}
-	}
-
-	// Minimal valid CreateNotificationIntegrationOptions for Push
-	defaultOptsPush := func() *CreateNotificationIntegrationOptions {
-		return &CreateNotificationIntegrationOptions{
-			name:    id,
-			Enabled: true,
-			PushNotificationParams: &PushNotificationParams{
-				AmazonPushParams: &AmazonPushParams{
-					AwsSnsTopicArn: awsSnsTopicArn,
-					AwsSnsRoleArn:  apiAwsRoleArn,
-				},
-			},
-		}
-	}
-
-	// Minimal valid CreateNotificationIntegrationOptions for Email
-	defaultOptsEmail := func() *CreateNotificationIntegrationOptions {
-		return &CreateNotificationIntegrationOptions{
-			name:        id,
-			Enabled:     true,
-			EmailParams: &EmailParams{},
-		}
-	}
-
-	defaultOpts := defaultOptsEmail
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateNotificationIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateNotificationIntegrationOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams opts.PushNotificationParams opts.EmailParams opts.WebhookParams] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.EmailParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"))
-	})
-
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams opts.PushNotificationParams opts.EmailParams opts.WebhookParams] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.PushNotificationParams = &PushNotificationParams{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions", "AutomatedDataLoadsParams", "PushNotificationParams", "EmailParams", "WebhookParams"))
-	})
-
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams.GoogleAutoParams opts.AutomatedDataLoadsParams.AzureAutoParams] should be present", func(t *testing.T) {
-		// default adjusted manually
-		opts := defaultOptsAutomatedDataLoads()
-		opts.AutomatedDataLoadsParams.GoogleAutoParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams"))
-	})
-
-	t.Run("validation: exactly one field from [opts.AutomatedDataLoadsParams.GoogleAutoParams opts.AutomatedDataLoadsParams.AzureAutoParams] should be present - more present", func(t *testing.T) {
-		opts := defaultOptsAutomatedDataLoads()
-		opts.AutomatedDataLoadsParams.AzureAutoParams = &AzureAutoParams{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.AutomatedDataLoadsParams", "GoogleAutoParams", "AzureAutoParams"))
-	})
-
-	t.Run("validation: exactly one field from [opts.PushNotificationParams.AmazonPushParams opts.PushNotificationParams.GooglePushParams opts.PushNotificationParams.AzurePushParams] should be present", func(t *testing.T) {
-		// default adjusted manually
-		opts := defaultOptsPush()
-		opts.PushNotificationParams.AmazonPushParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.PushNotificationParams", "AmazonPushParams", "GooglePushParams", "AzurePushParams"))
-	})
-
-	t.Run("validation: exactly one field from [opts.PushNotificationParams.AmazonPushParams opts.PushNotificationParams.GooglePushParams opts.PushNotificationParams.AzurePushParams] should be present - more present", func(t *testing.T) {
-		opts := defaultOptsPush()
-		opts.PushNotificationParams.AzurePushParams = &AzurePushParams{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateNotificationIntegrationOptions.PushNotificationParams", "AmazonPushParams", "GooglePushParams", "AzurePushParams"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE NOTIFICATION INTEGRATION %s ENABLED = true TYPE = EMAIL`, id.FullyQualifiedName())
-	})
-
-	// all variants added manually
-	t.Run("all options - auto google", func(t *testing.T) {
-		opts := defaultOptsAutomatedDataLoads()
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = QUEUE NOTIFICATION_PROVIDER = GCP_PUBSUB GCP_PUBSUB_SUBSCRIPTION_NAME = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), gcpPubsubSubscriptionName)
-	})
-
-	t.Run("all options - auto azure", func(t *testing.T) {
-		opts := defaultOptsAutomatedDataLoads()
-		opts.AutomatedDataLoadsParams.GoogleAutoParams = nil
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("some comment")
-		opts.AutomatedDataLoadsParams.AzureAutoParams = &AzureAutoParams{
-			AzureStorageQueuePrimaryUri: azureStorageQueuePrimaryUri,
-			AzureTenantId:               azureTenantId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = QUEUE NOTIFICATION_PROVIDER = AZURE_STORAGE_QUEUE AZURE_STORAGE_QUEUE_PRIMARY_URI = '%s' AZURE_TENANT_ID = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), azureStorageQueuePrimaryUri, azureTenantId)
-	})
-
-	t.Run("all options - push amazon", func(t *testing.T) {
-		opts := defaultOptsPush()
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true DIRECTION = OUTBOUND TYPE = QUEUE NOTIFICATION_PROVIDER = AWS_SNS AWS_SNS_TOPIC_ARN = '%s' AWS_SNS_ROLE_ARN = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), awsSnsTopicArn, apiAwsRoleArn)
-	})
-
-	t.Run("all options - push google", func(t *testing.T) {
-		opts := defaultOptsPush()
-		opts.PushNotificationParams.AmazonPushParams = nil
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("some comment")
-		opts.PushNotificationParams.GooglePushParams = &GooglePushParams{
-			GcpPubsubTopicName: gcpPubsubTopicName,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true DIRECTION = OUTBOUND TYPE = QUEUE NOTIFICATION_PROVIDER = GCP_PUBSUB GCP_PUBSUB_TOPIC_NAME = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), gcpPubsubTopicName)
-	})
-
-	t.Run("all options - push azure", func(t *testing.T) {
-		opts := defaultOptsPush()
-		opts.PushNotificationParams.AmazonPushParams = nil
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("some comment")
-		opts.PushNotificationParams.AzurePushParams = &AzurePushParams{
-			AzureEventGridTopicEndpoint: azureEventGridTopicEndpoint,
-			AzureTenantId:               azureTenantId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true DIRECTION = OUTBOUND TYPE = QUEUE NOTIFICATION_PROVIDER = AZURE_EVENT_GRID AZURE_EVENT_GRID_TOPIC_ENDPOINT = '%s' AZURE_TENANT_ID = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), azureEventGridTopicEndpoint, azureTenantId)
-	})
-
-	t.Run("all options - webhook minimal", func(t *testing.T) {
-		opts := defaultOptsWebhook()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION %s ENABLED = true TYPE = WEBHOOK WEBHOOK_URL = '%s'", id.FullyQualifiedName(), webhookUrl)
-	})
-
-	t.Run("all options - webhook with secret and headers", func(t *testing.T) {
-		secretId := NewSchemaObjectIdentifier("metrics_catalog", "metric_config", "slack_integration_webhook")
-		opts := defaultOptsWebhook()
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("slack webhook")
-		opts.WebhookParams.WebhookSecret = &secretId
-		opts.WebhookParams.WebhookBodyTemplate = String("SNOWFLAKE_WEBHOOK_MESSAGE")
-		opts.WebhookParams.WebhookHeaders = []WebhookHeader{
-			{Header: "Content-Type", Value: "application/json"},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = WEBHOOK WEBHOOK_URL = '%s' WEBHOOK_SECRET = %s WEBHOOK_BODY_TEMPLATE = 'SNOWFLAKE_WEBHOOK_MESSAGE' WEBHOOK_HEADERS = ('Content-Type' = 'application/json') COMMENT = 'slack webhook'`, id.FullyQualifiedName(), webhookUrl, secretId.FullyQualifiedName())
-	})
-
-	t.Run("all options - email", func(t *testing.T) {
-		email := "some.email@some.com"
-		otherEmail := "some.other.email@some.com"
-
-		opts := defaultOptsEmail()
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("some comment")
-		opts.EmailParams.AllowedRecipients = []NotificationIntegrationAllowedRecipient{
-			{Email: email},
-			{Email: otherEmail},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE NOTIFICATION INTEGRATION IF NOT EXISTS %s ENABLED = true TYPE = EMAIL ALLOWED_RECIPIENTS = ('%s', '%s') COMMENT = 'some comment'", id.FullyQualifiedName(), email, otherEmail)
-	})
+	notificationIntegrationsTests.Create.RunValidationCases(t)
+	notificationIntegrationsTests.Create.RunSqlCases(t)
 }
 
 func TestNotificationIntegrations_Alter(t *testing.T) {
-	const (
-		apiAwsRoleArn = "arn:aws:iam::000000000001:/role/test"
-		azureTenantId = "00000000-0000-0000-0000-000000000000"
-	)
-
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterNotificationIntegrationOptions
-	defaultOpts := func() *AlterNotificationIntegrationOptions {
-		return &AlterNotificationIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterNotificationIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.UnsetEmailParams opts.UnsetWebhookParams opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.UnsetEmailParams opts.UnsetWebhookParams opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			Enabled: Bool(true),
-		}
-		opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{
-			Comment: Bool(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions", "Set", "UnsetEmailParams", "UnsetWebhookParams", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: more than one field from [opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.SetWebhookParams] cannot be set at the same time", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			SetPushParams:  &SetPushParams{},
-			SetEmailParams: &SetEmailParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errMoreThanOneOf("AlterNotificationIntegrationOptions.Set", "SetPushParams", "SetEmailParams", "SetWebhookParams"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Enabled opts.Set.SetPushParams opts.Set.SetEmailParams opts.Set.SetWebhookParams opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNotificationIntegrationOptions.Set", "Enabled", "SetPushParams", "SetEmailParams", "SetWebhookParams", "Comment"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.SetPushParams.SetAmazonPush opts.Set.SetPushParams.SetGooglePush opts.Set.SetPushParams.SetAzurePush] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			SetPushParams: &SetPushParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions.Set.SetPushParams", "SetAmazonPush", "SetGooglePush", "SetAzurePush"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.SetPushParams.SetAmazonPush opts.Set.SetPushParams.SetGooglePush opts.Set.SetPushParams.SetAzurePush] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			SetPushParams: &SetPushParams{
-				SetAmazonPush: &SetAmazonPush{},
-				SetGooglePush: &SetGooglePush{},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterNotificationIntegrationOptions.Set.SetPushParams", "SetAmazonPush", "SetGooglePush", "SetAzurePush"))
-	})
-
-	t.Run("validation: [opts.Set.SetEmailParams.AllowedRecipients] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			SetEmailParams: &SetEmailParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("AlterNotificationIntegrationOptions.Set.SetEmailParams", "AllowedRecipients"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.UnsetEmailParams.AllowedRecipients opts.UnsetEmailParams.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterNotificationIntegrationOptions.UnsetEmailParams", "AllowedRecipients", "Comment"))
-	})
-
-	// all variants added manually
-	t.Run("set - auto", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			Enabled: Bool(true),
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("set - push amazon", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			Enabled: Bool(true),
-			SetPushParams: &SetPushParams{
-				SetAmazonPush: &SetAmazonPush{
-					AwsSnsTopicArn: awsSnsTopicArn,
-					AwsSnsRoleArn:  apiAwsRoleArn,
-				},
-			},
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true AWS_SNS_TOPIC_ARN = '%s' AWS_SNS_ROLE_ARN = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), awsSnsTopicArn, apiAwsRoleArn)
-	})
-
-	t.Run("set - push google", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			Enabled: Bool(true),
-			SetPushParams: &SetPushParams{
-				SetGooglePush: &SetGooglePush{
-					GcpPubsubSubscriptionName: gcpPubsubSubscriptionName,
-				},
-			},
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true GCP_PUBSUB_SUBSCRIPTION_NAME = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), gcpPubsubSubscriptionName)
-	})
-
-	t.Run("set - push azure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			Enabled: Bool(true),
-			SetPushParams: &SetPushParams{
-				SetAzurePush: &SetAzurePush{
-					AzureStorageQueuePrimaryUri: azureStorageQueuePrimaryUri,
-					AzureTenantId:               azureTenantId,
-				},
-			},
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true AZURE_STORAGE_QUEUE_PRIMARY_URI = '%s' AZURE_TENANT_ID = '%s' COMMENT = 'some comment'", id.FullyQualifiedName(), azureStorageQueuePrimaryUri, azureTenantId)
-	})
-
-	t.Run("set - email", func(t *testing.T) {
-		email := "some.email@some.com"
-		otherEmail := "some.other.email@some.com"
-
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			Enabled: Bool(true),
-			SetEmailParams: &SetEmailParams{
-				AllowedRecipients: []NotificationIntegrationAllowedRecipient{
-					{Email: email},
-					{Email: otherEmail},
-				},
-			},
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true ALLOWED_RECIPIENTS = ('%s', '%s') COMMENT = 'some comment'", id.FullyQualifiedName(), email, otherEmail)
-	})
-
-	t.Run("set - webhook", func(t *testing.T) {
-		secretId := NewSchemaObjectIdentifier("metrics_catalog", "metric_config", "slack_integration_webhook")
-		opts := defaultOpts()
-		opts.Set = &NotificationIntegrationSet{
-			Enabled: Bool(true),
-			SetWebhookParams: &SetWebhookParams{
-				WebhookUrl:          String(webhookUrl),
-				WebhookSecret:       &secretId,
-				WebhookBodyTemplate: String("SNOWFLAKE_WEBHOOK_MESSAGE"),
-				WebhookHeaders: []WebhookHeader{
-					{Header: "Content-Type", Value: "application/json"},
-				},
-			},
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER NOTIFICATION INTEGRATION %s SET ENABLED = true WEBHOOK_URL = '%s' WEBHOOK_SECRET = %s WEBHOOK_BODY_TEMPLATE = 'SNOWFLAKE_WEBHOOK_MESSAGE' WEBHOOK_HEADERS = ('Content-Type' = 'application/json') COMMENT = 'some comment'`, id.FullyQualifiedName(), webhookUrl, secretId.FullyQualifiedName())
-	})
-
-	t.Run("unset webhook", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetWebhookParams = &NotificationIntegrationUnsetWebhookParams{
-			WebhookSecret:       Bool(true),
-			WebhookBodyTemplate: Bool(true),
-			WebhookHeaders:      Bool(true),
-			Comment:             Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s UNSET WEBHOOK_SECRET, WEBHOOK_BODY_TEMPLATE, WEBHOOK_HEADERS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset single", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{
-			Comment: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s UNSET COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset multiple", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetEmailParams = &NotificationIntegrationUnsetEmailParams{
-			AllowedRecipients: Bool(true),
-			Comment:           Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER NOTIFICATION INTEGRATION %s UNSET ALLOWED_RECIPIENTS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER NOTIFICATION INTEGRATION %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER NOTIFICATION INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	notificationIntegrationsTests.Alter.RunValidationCases(t)
+	notificationIntegrationsTests.Alter.RunSqlCases(t)
 }
 
 func TestNotificationIntegrations_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropNotificationIntegrationOptions
-	defaultOpts := func() *DropNotificationIntegrationOptions {
-		return &DropNotificationIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropNotificationIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP NOTIFICATION INTEGRATION %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP NOTIFICATION INTEGRATION IF EXISTS %s", id.FullyQualifiedName())
-	})
+	notificationIntegrationsTests.Drop.RunValidationCases(t)
+	notificationIntegrationsTests.Drop.RunSqlCases(t)
 }
 
 func TestNotificationIntegrations_Show(t *testing.T) {
-	// added manually
-	id := randomAccountObjectIdentifier()
-
-	// Minimal valid ShowNotificationIntegrationOptions
-	defaultOpts := func() *ShowNotificationIntegrationOptions {
-		return &ShowNotificationIntegrationOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowNotificationIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW NOTIFICATION INTEGRATIONS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String(id.Name()),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW NOTIFICATION INTEGRATIONS LIKE '%s'", id.Name())
-	})
+	notificationIntegrationsTests.Show.RunValidationCases(t)
+	notificationIntegrationsTests.Show.RunSqlCases(t)
 }
 
 func TestNotificationIntegrations_Describe(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribeNotificationIntegrationOptions
-	defaultOpts := func() *DescribeNotificationIntegrationOptions {
-		return &DescribeNotificationIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeNotificationIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE NOTIFICATION INTEGRATION %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	notificationIntegrationsTests.Describe.RunValidationCases(t)
+	notificationIntegrationsTests.Describe.RunSqlCases(t)
 }

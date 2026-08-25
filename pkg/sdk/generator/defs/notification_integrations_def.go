@@ -225,4 +225,5 @@ var notificationIntegrationsDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	WithShowObjectType("Integration")
+	WithShowObjectType("Integration").
+	WithEnabledGenerationParts(g.PartUnitTests)
