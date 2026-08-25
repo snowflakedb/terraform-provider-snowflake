@@ -77,4 +77,4 @@ var imageRepositoriesDef = g.NewInterface(
 		OptionalIn(),
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).WithEnums(ImageRepositoryEncryptionTypeDef)
+).WithEnums(ImageRepositoryEncryptionTypeDef).WithEnabledGenerationParts(g.PartUnitTests)

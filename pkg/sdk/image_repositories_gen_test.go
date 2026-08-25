@@ -2,214 +2,194 @@
 
 package sdk
 
-// imports adjusted manually
 import (
 	"testing"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 )
 
-func TestImageRepositories_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateImageRepositoryOptions
-	defaultOpts := func() *CreateImageRepositoryOptions {
-		return &CreateImageRepositoryOptions{
-			name: id,
-		}
-	}
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ImageRepositoryEncryptionType]{"ImageRepositoryEncryptionType", AllImageRepositoryEncryptionTypes, ToImageRepositoryEncryptionType})
+}
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateImageRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
+var imageRepositoriesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
+const (
+	case_ImageRepositories_validation_Create_name_ValidIdentifier                       testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ImageRepositories_validation_Create_opts_ConflictingFields                     testCaseName = "validation_Create_opts_ConflictingFields"
+	case_ImageRepositories_validation_Create_Encryption_EncryptionType_ValidateValueSet testCaseName = "validation_Create_Encryption_EncryptionType_ValidateValueSet"
+	case_ImageRepositories_sql_Create_basic                                             testCaseName = "sql_Create_basic"
+	case_ImageRepositories_sql_Create_all                                               testCaseName = "sql_Create_all"
+	case_ImageRepositories_validation_Alter_name_ValidIdentifier                        testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_ImageRepositories_validation_Alter_opts_ExactlyOneValueSet_NoneSet             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_ImageRepositories_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_ImageRepositories_sql_Alter_Set                                                testCaseName = "sql_Alter_Set"
+	case_ImageRepositories_sql_Alter_SetTags                                            testCaseName = "sql_Alter_SetTags"
+	case_ImageRepositories_sql_Alter_UnsetTags                                          testCaseName = "sql_Alter_UnsetTags"
+	case_ImageRepositories_validation_Drop_name_ValidIdentifier                         testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_ImageRepositories_sql_Drop_basic                                               testCaseName = "sql_Drop_basic"
+	case_ImageRepositories_sql_Drop_all                                                 testCaseName = "sql_Drop_all"
+	case_ImageRepositories_sql_Show_basic                                               testCaseName = "sql_Show_basic"
+	case_ImageRepositories_sql_Show_all                                                 testCaseName = "sql_Show_all"
+	case_ImageRepositories_sql_Show_Like                                                testCaseName = "sql_Show_Like"
+	case_ImageRepositories_sql_Show_In                                                  testCaseName = "sql_Show_In"
+)
 
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateImageRepositoryOptions", "IfNotExists", "OrReplace"))
-	})
+type ImageRepositoriesTestsContext struct {
+	Create *sdkTestCtx[*CreateImageRepositoryOptions]
+	Alter  *sdkTestCtx[*AlterImageRepositoryOptions]
+	Drop   *sdkTestCtx[*DropImageRepositoryOptions]
+	Show   *sdkTestCtx[*ShowImageRepositoryOptions]
+}
 
-	t.Run("validation: [opts.Encryption.EncryptionType] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Encryption = &ImageRepositoryEncryption{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateImageRepositoryOptions.Encryption", "EncryptionType"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE IMAGE REPOSITORY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		comment := random.Comment()
-		tagId := NewAccountObjectIdentifier("tag1")
-		opts.IfNotExists = Bool(true)
-		opts.Encryption = &ImageRepositoryEncryption{
-			EncryptionType: ImageRepositoryEncryptionTypeSnowflakeFull,
-		}
-		opts.Comment = &comment
-		opts.Tag = []TagAssociation{
-			{
-				Name:  tagId,
-				Value: "value1",
+var imageRepositoriesTests = ImageRepositoriesTestsContext{
+	Create: newSdkTestCtx[*CreateImageRepositoryOptions](
+		"ImageRepositories", "Create",
+	).
+		withDefaultOpts(func() *CreateImageRepositoryOptions {
+			return &CreateImageRepositoryOptions{
+				name: imageRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateImageRepositoryOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE IMAGE REPOSITORY IF NOT EXISTS %s ENCRYPTION = (TYPE = 'SNOWFLAKE_FULL') COMMENT = '%s' TAG (%s = 'value1')", id.FullyQualifiedName(), comment, tagId.FullyQualifiedName())
-	})
+			validationCase[*CreateImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateImageRepositoryOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateImageRepositoryOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Create_Encryption_EncryptionType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateImageRepositoryOptions.Encryption", "EncryptionType"),
+				DefaultModify: func(opts *CreateImageRepositoryOptions) {
+					opts.Encryption = &ImageRepositoryEncryption{}
+					opts.Encryption.EncryptionType = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateImageRepositoryOptions]{
+				Name:           case_ImageRepositories_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterImageRepositoryOptions](
+		"ImageRepositories", "Alter",
+	).
+		withDefaultOpts(func() *AlterImageRepositoryOptions {
+			return &AlterImageRepositoryOptions{
+				name: imageRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterImageRepositoryOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterImageRepositoryOptions) {
+					opts.Set = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"),
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Alter_Set,
+			},
+			sqlCase[*AlterImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropImageRepositoryOptions](
+		"ImageRepositories", "Drop",
+	).
+		withDefaultOpts(func() *DropImageRepositoryOptions {
+			return &DropImageRepositoryOptions{
+				name: imageRepositoriesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropImageRepositoryOptions]{
+				Name:        case_ImageRepositories_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropImageRepositoryOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropImageRepositoryOptions]{
+				Name:           case_ImageRepositories_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowImageRepositoryOptions](
+		"ImageRepositories", "Show",
+	).
+		withDefaultOpts(func() *ShowImageRepositoryOptions {
+			return &ShowImageRepositoryOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowImageRepositoryOptions]{
+				Name:           case_ImageRepositories_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Show_all,
+			},
+			sqlCase[*ShowImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Show_Like,
+			},
+			sqlCase[*ShowImageRepositoryOptions]{
+				Name: case_ImageRepositories_sql_Show_In,
+			},
+		),
+}
+
+func TestImageRepositories_Create(t *testing.T) {
+	imageRepositoriesTests.Create.RunValidationCases(t)
+	imageRepositoriesTests.Create.RunSqlCases(t)
 }
 
 func TestImageRepositories_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterImageRepositoryOptions
-	defaultOpts := func() *AlterImageRepositoryOptions {
-		return &AlterImageRepositoryOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterImageRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ImageRepositorySet{}
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterImageRepositoryOptions", "Set", "SetTags", "UnsetTags"))
-	})
-
-	// all variants added manually
-	t.Run("set: all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ImageRepositorySet{
-			Comment: &StringAllowEmpty{
-				Value: "test",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER IMAGE REPOSITORY %s SET COMMENT = 'test'", id.FullyQualifiedName())
-	})
-
-	t.Run("set: empty comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ImageRepositorySet{
-			Comment: &StringAllowEmpty{
-				Value: "",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER IMAGE REPOSITORY %s SET COMMENT = ''", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER IMAGE REPOSITORY IF EXISTS %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER IMAGE REPOSITORY %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	imageRepositoriesTests.Alter.RunValidationCases(t)
+	imageRepositoriesTests.Alter.RunSqlCases(t)
 }
 
 func TestImageRepositories_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropImageRepositoryOptions
-	defaultOpts := func() *DropImageRepositoryOptions {
-		return &DropImageRepositoryOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropImageRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP IMAGE REPOSITORY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP IMAGE REPOSITORY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	imageRepositoriesTests.Drop.RunValidationCases(t)
+	imageRepositoriesTests.Drop.RunSqlCases(t)
 }
 
 func TestImageRepositories_Show(t *testing.T) {
-	// Minimal valid ShowImageRepositoryOptions
-	defaultOpts := func() *ShowImageRepositoryOptions {
-		return &ShowImageRepositoryOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowImageRepositoryOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW IMAGE REPOSITORIES")
-	})
-
-	// variants added manually
-	t.Run("like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW IMAGE REPOSITORIES LIKE 'pattern'")
-	})
-
-	t.Run("in", func(t *testing.T) {
-		schemaId := randomDatabaseObjectIdentifier()
-		opts := defaultOpts()
-		opts.In = &In{
-			Schema: schemaId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW IMAGE REPOSITORIES IN SCHEMA %s", schemaId.FullyQualifiedName())
-	})
+	imageRepositoriesTests.Show.RunValidationCases(t)
+	imageRepositoriesTests.Show.RunSqlCases(t)
 }
