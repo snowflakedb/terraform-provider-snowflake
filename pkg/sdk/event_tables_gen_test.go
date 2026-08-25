@@ -6,422 +6,296 @@ import (
 	"testing"
 )
 
-func TestEventTables_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateEventTableOptions
-	defaultOpts := func() *CreateEventTableOptions {
-		return &CreateEventTableOptions{
-			name: id,
-		}
-	}
+var eventTablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateEventTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
+const (
+	case_EventTables_validation_Create_name_ValidIdentifier                                          testCaseName = "validation_Create_name_ValidIdentifier"
+	case_EventTables_validation_Create_opts_ConflictingFields                                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_EventTables_sql_Create_basic                                                                testCaseName = "sql_Create_basic"
+	case_EventTables_sql_Create_all                                                                  testCaseName = "sql_Create_all"
+	case_EventTables_sql_Show_basic                                                                  testCaseName = "sql_Show_basic"
+	case_EventTables_sql_Show_all                                                                    testCaseName = "sql_Show_all"
+	case_EventTables_sql_Show_Like                                                                   testCaseName = "sql_Show_Like"
+	case_EventTables_sql_Show_In                                                                     testCaseName = "sql_Show_In"
+	case_EventTables_sql_Show_StartsWith                                                             testCaseName = "sql_Show_StartsWith"
+	case_EventTables_sql_Show_Limit                                                                  testCaseName = "sql_Show_Limit"
+	case_EventTables_validation_Describe_name_ValidIdentifier                                        testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_EventTables_sql_Describe_basic                                                              testCaseName = "sql_Describe_basic"
+	case_EventTables_validation_Drop_name_ValidIdentifier                                            testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_EventTables_sql_Drop_basic                                                                  testCaseName = "sql_Drop_basic"
+	case_EventTables_sql_Drop_all                                                                    testCaseName = "sql_Drop_all"
+	case_EventTables_validation_Alter_name_ValidIdentifier                                           testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_EventTables_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_EventTables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_EventTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier             testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_EventTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier            testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier"
+	case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier  testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier"
+	case_EventTables_sql_Alter_RenameTo                                                              testCaseName = "sql_Alter_RenameTo"
+	case_EventTables_sql_Alter_Set                                                                   testCaseName = "sql_Alter_Set"
+	case_EventTables_sql_Alter_Unset                                                                 testCaseName = "sql_Alter_Unset"
+	case_EventTables_sql_Alter_SetTags                                                               testCaseName = "sql_Alter_SetTags"
+	case_EventTables_sql_Alter_UnsetTags                                                             testCaseName = "sql_Alter_UnsetTags"
+	case_EventTables_sql_Alter_AddRowAccessPolicy                                                    testCaseName = "sql_Alter_AddRowAccessPolicy"
+	case_EventTables_sql_Alter_DropRowAccessPolicy                                                   testCaseName = "sql_Alter_DropRowAccessPolicy"
+	case_EventTables_sql_Alter_DropAndAddRowAccessPolicy                                             testCaseName = "sql_Alter_DropAndAddRowAccessPolicy"
+	case_EventTables_sql_Alter_DropAllRowAccessPolicies                                              testCaseName = "sql_Alter_DropAllRowAccessPolicies"
+	case_EventTables_sql_Alter_ClusteringAction                                                      testCaseName = "sql_Alter_ClusteringAction"
+	case_EventTables_sql_Alter_SearchOptimizationAction                                              testCaseName = "sql_Alter_SearchOptimizationAction"
+)
 
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
+type EventTablesTestsContext struct {
+	Create   *sdkTestCtx[*CreateEventTableOptions]
+	Show     *sdkTestCtx[*ShowEventTableOptions]
+	Describe *sdkTestCtx[*DescribeEventTableOptions]
+	Drop     *sdkTestCtx[*DropEventTableOptions]
+	Alter    *sdkTestCtx[*AlterEventTableOptions]
+}
 
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateEventTableOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EVENT TABLE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("with empty cluster by slice", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ClusterBy = []string{}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EVENT TABLE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.ClusterBy = []string{"a", "b"}
-		opts.DataRetentionTimeInDays = Int(1)
-		opts.MaxDataExtensionTimeInDays = Int(2)
-		opts.ChangeTracking = Bool(true)
-		opts.DefaultDdlCollation = String("en_US")
-		opts.CopyGrants = Bool(true)
-		opts.Comment = String("test")
-		pn := randomSchemaObjectIdentifier()
-		opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{
-			Name: pn,
-			On:   []string{"c1", "c2"},
-		}
-		tn := randomSchemaObjectIdentifier()
-		opts.Tag = []TagAssociation{
-			{
-				Name:  tn,
-				Value: "v1",
+var eventTablesTests = EventTablesTestsContext{
+	Create: newSdkTestCtx[*CreateEventTableOptions](
+		"EventTables", "Create",
+	).
+		withDefaultOpts(func() *CreateEventTableOptions {
+			return &CreateEventTableOptions{
+				name: eventTablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateEventTableOptions]{
+				Name:        case_EventTables_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateEventTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
 			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EVENT TABLE %s CLUSTER BY (a, b) DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 2 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en_US' COPY GRANTS COMMENT = 'test' ROW ACCESS POLICY %s ON (c1, c2) TAG (%s = 'v1')`, id.FullyQualifiedName(), pn.FullyQualifiedName(), tn.FullyQualifiedName())
-	})
+			validationCase[*CreateEventTableOptions]{
+				Name:        case_EventTables_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateEventTableOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateEventTableOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateEventTableOptions]{
+				Name:           case_EventTables_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateEventTableOptions]{
+				Name: case_EventTables_sql_Create_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowEventTableOptions](
+		"EventTables", "Show",
+	).
+		withDefaultOpts(func() *ShowEventTableOptions {
+			return &ShowEventTableOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowEventTableOptions]{
+				Name:           case_EventTables_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowEventTableOptions]{
+				Name: case_EventTables_sql_Show_all,
+			},
+			sqlCase[*ShowEventTableOptions]{
+				Name: case_EventTables_sql_Show_Like,
+			},
+			sqlCase[*ShowEventTableOptions]{
+				Name: case_EventTables_sql_Show_In,
+			},
+			sqlCase[*ShowEventTableOptions]{
+				Name: case_EventTables_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowEventTableOptions]{
+				Name: case_EventTables_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeEventTableOptions](
+		"EventTables", "Describe",
+	).
+		withDefaultOpts(func() *DescribeEventTableOptions {
+			return &DescribeEventTableOptions{
+				name: eventTablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeEventTableOptions]{
+				Name:        case_EventTables_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeEventTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeEventTableOptions]{
+				Name:           case_EventTables_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Drop: newSdkTestCtx[*DropEventTableOptions](
+		"EventTables", "Drop",
+	).
+		withDefaultOpts(func() *DropEventTableOptions {
+			return &DropEventTableOptions{
+				name: eventTablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropEventTableOptions]{
+				Name:        case_EventTables_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropEventTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropEventTableOptions]{
+				Name:           case_EventTables_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropEventTableOptions]{
+				Name: case_EventTables_sql_Drop_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterEventTableOptions](
+		"EventTables", "Alter",
+	).
+		withDefaultOpts(func() *AlterEventTableOptions {
+			return &AlterEventTableOptions{
+				name: eventTablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterEventTableOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"),
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.AddRowAccessPolicy = nil
+					opts.DropRowAccessPolicy = nil
+					opts.DropAndAddRowAccessPolicy = nil
+					opts.DropAllRowAccessPolicies = nil
+					opts.ClusteringAction = nil
+					opts.SearchOptimizationAction = nil
+				},
+			},
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterEventTableOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"),
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.Set = &EventTableSet{}
+				},
+			},
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.AddRowAccessPolicy = &EventTableAddRowAccessPolicy{}
+					opts.AddRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.DropRowAccessPolicy = &EventTableDropRowAccessPolicy{}
+					opts.DropRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterEventTableOptions]{
+				Name:        case_EventTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterEventTableOptions) {
+					opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_Set,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_Unset,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_AddRowAccessPolicy,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_DropRowAccessPolicy,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_DropAndAddRowAccessPolicy,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_DropAllRowAccessPolicies,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_ClusteringAction,
+			},
+			sqlCase[*AlterEventTableOptions]{
+				Name: case_EventTables_sql_Alter_SearchOptimizationAction,
+			},
+		),
+}
+
+func TestEventTables_Create(t *testing.T) {
+	eventTablesTests.Create.RunValidationCases(t)
+	eventTablesTests.Create.RunSqlCases(t)
 }
 
 func TestEventTables_Show(t *testing.T) {
-	// added manually
-	id := randomSchemaObjectIdentifier()
-
-	// Minimal valid ShowEventTableOptions
-	defaultOpts := func() *ShowEventTableOptions {
-		return &ShowEventTableOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowEventTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW EVENT TABLES`)
-	})
-
-	// all variants added manually
-	t.Run("show with in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &In{
-			Database: NewAccountObjectIdentifier("database"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW EVENT TABLES IN DATABASE "database"`)
-	})
-
-	t.Run("show with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String(id.Name()),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW EVENT TABLES LIKE '%s'`, id.Name())
-	})
-
-	t.Run("show with like and in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		opts.Like = &Like{
-			Pattern: String(id.Name()),
-		}
-		opts.In = &In{
-			Database: NewAccountObjectIdentifier("database"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE EVENT TABLES LIKE '%s' IN DATABASE "database"`, id.Name())
-	})
+	eventTablesTests.Show.RunValidationCases(t)
+	eventTablesTests.Show.RunSqlCases(t)
 }
 
 func TestEventTables_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeEventTableOptions
-	defaultOpts := func() *DescribeEventTableOptions {
-		return &DescribeEventTableOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeEventTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE EVENT TABLE %s`, id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	eventTablesTests.Describe.RunValidationCases(t)
+	eventTablesTests.Describe.RunSqlCases(t)
 }
 
 func TestEventTables_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropEventTableOptions
-	defaultOpts := func() *DropEventTableOptions {
-		return &DropEventTableOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropEventTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP TABLE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Restrict = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP TABLE IF EXISTS %s RESTRICT", id.FullyQualifiedName())
-	})
+	eventTablesTests.Drop.RunValidationCases(t)
+	eventTablesTests.Drop.RunSqlCases(t)
 }
 
 func TestEventTables_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterEventTableOptions
-	defaultOpts := func() *AlterEventTableOptions {
-		return &AlterEventTableOptions{
-			// adjusted manually
-			name:        id,
-			IfNotExists: Bool(true),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterEventTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.AddRowAccessPolicy opts.DropRowAccessPolicy opts.DropAndAddRowAccessPolicy opts.DropAllRowAccessPolicies opts.ClusteringAction opts.SearchOptimizationAction] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterEventTableOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset opts.SetTags opts.UnsetTags opts.AddRowAccessPolicy opts.DropRowAccessPolicy opts.DropAndAddRowAccessPolicy opts.DropAllRowAccessPolicies opts.ClusteringAction opts.SearchOptimizationAction] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &EventTableSet{}
-		opts.Unset = &EventTableUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterEventTableOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"))
-	})
-
-	t.Run("validation: valid identifier for [opts.AddRowAccessPolicy.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AddRowAccessPolicy = &EventTableAddRowAccessPolicy{
-			RowAccessPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.DropRowAccessPolicy.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropRowAccessPolicy = &EventTableDropRowAccessPolicy{
-			RowAccessPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{
-			Drop: EventTableDropRowAccessPolicy{
-				RowAccessPolicy: emptySchemaObjectIdentifier,
-			},
-			Add: EventTableAddRowAccessPolicy{
-				RowAccessPolicy: id,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{
-			Drop: EventTableDropRowAccessPolicy{
-				RowAccessPolicy: id,
-			},
-			Add: EventTableAddRowAccessPolicy{
-				RowAccessPolicy: emptySchemaObjectIdentifier,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// all variants added manually
-	t.Run("alter: rename to", func(t *testing.T) {
-		opts := defaultOpts()
-		target := randomSchemaObjectIdentifier()
-		opts.RenameTo = &target
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), target.FullyQualifiedName())
-	})
-
-	t.Run("alter: clustering action", func(t *testing.T) {
-		opts := defaultOpts()
-		cluster := []string{"a", "b"}
-		opts.ClusteringAction = &EventTableClusteringAction{
-			ClusterBy: cluster,
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s CLUSTER BY (a, b)`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.ClusteringAction = &EventTableClusteringAction{
-			SuspendRecluster: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s SUSPEND RECLUSTER`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.ClusteringAction = &EventTableClusteringAction{
-			ResumeRecluster: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s RESUME RECLUSTER`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.ClusteringAction = &EventTableClusteringAction{
-			DropClusteringKey: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s DROP CLUSTERING KEY`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: search optimization action", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SearchOptimizationAction = &EventTableSearchOptimizationAction{
-			Add: &SearchOptimization{
-				On: []string{"EQUALITY(*)", "SUBSTRING(*)"},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s ADD SEARCH OPTIMIZATION ON EQUALITY(*), SUBSTRING(*)`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.SearchOptimizationAction = &EventTableSearchOptimizationAction{
-			Drop: &SearchOptimization{
-				On: []string{"EQUALITY(*)", "SUBSTRING(*)"},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s DROP SEARCH OPTIMIZATION ON EQUALITY(*), SUBSTRING(*)`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &EventTableSet{
-			DataRetentionTimeInDays: Int(1),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 1`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.Set = &EventTableSet{
-			MaxDataExtensionTimeInDays: Int(1),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s SET MAX_DATA_EXTENSION_TIME_IN_DAYS = 1`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.Set = &EventTableSet{
-			ChangeTracking: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s SET CHANGE_TRACKING = true`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.Set = &EventTableSet{
-			Comment: String("comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s SET COMMENT = 'comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &EventTableUnset{
-			DataRetentionTimeInDays: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s UNSET DATA_RETENTION_TIME_IN_DAYS`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.Unset = &EventTableUnset{
-			MaxDataExtensionTimeInDays: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s UNSET MAX_DATA_EXTENSION_TIME_IN_DAYS`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.Unset = &EventTableUnset{
-			ChangeTracking: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s UNSET CHANGE_TRACKING`, id.FullyQualifiedName())
-
-		opts = defaultOpts()
-		opts.Unset = &EventTableUnset{
-			Comment: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s UNSET COMMENT`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s SET TAG "tag1" = 'value1'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: add row access policy", func(t *testing.T) {
-		rowAccessPolicyId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.AddRowAccessPolicy = &EventTableAddRowAccessPolicy{
-			RowAccessPolicy: rowAccessPolicyId,
-			On:              []string{"a", "b"},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE IF NOT EXISTS %s ADD ROW ACCESS POLICY %s ON (a, b)", id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
-	})
-
-	t.Run("alter: drop row access policy", func(t *testing.T) {
-		rowAccessPolicyId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.DropRowAccessPolicy = &EventTableDropRowAccessPolicy{
-			RowAccessPolicy: rowAccessPolicyId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE IF NOT EXISTS %s DROP ROW ACCESS POLICY %s", id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
-	})
-
-	t.Run("alter: drop and add row access policy", func(t *testing.T) {
-		rowAccessPolicy1Id := randomSchemaObjectIdentifier()
-		rowAccessPolicy2Id := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.DropAndAddRowAccessPolicy = &EventTableDropAndAddRowAccessPolicy{
-			Drop: EventTableDropRowAccessPolicy{
-				RowAccessPolicy: rowAccessPolicy1Id,
-			},
-			Add: EventTableAddRowAccessPolicy{
-				RowAccessPolicy: rowAccessPolicy2Id,
-				On:              []string{"a", "b"},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE IF NOT EXISTS %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON (a, b)", id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName(), rowAccessPolicy2Id.FullyQualifiedName())
-	})
-
-	t.Run("alter: drop all row access policies", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropAllRowAccessPolicies = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE IF NOT EXISTS %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
-	})
+	eventTablesTests.Alter.RunValidationCases(t)
+	eventTablesTests.Alter.RunSqlCases(t)
 }
