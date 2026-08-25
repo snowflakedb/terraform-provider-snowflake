@@ -10,57 +10,69 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[DataMetricFunctionRefEntityDomainOption]{"DataMetricFunctionRefEntityDomainOption", AllDataMetricFunctionRefEntityDomainOptions, ToDataMetricFunctionRefEntityDomainOption})
 }
 
+const (
+	case_DataMetricFunctionReferences_validation_GetForEntity_parameters_ValidateValueSet                           testCaseName = "validation_GetForEntity_parameters_ValidateValueSet"
+	case_DataMetricFunctionReferences_validation_GetForEntity_parameters_arguments_ValidateValueSet                 testCaseName = "validation_GetForEntity_parameters_arguments_ValidateValueSet"
+	case_DataMetricFunctionReferences_validation_GetForEntity_parameters_arguments_RefEntityDomain_ValidateValueSet testCaseName = "validation_GetForEntity_parameters_arguments_RefEntityDomain_ValidateValueSet"
+	case_DataMetricFunctionReferences_validation_GetForEntity_parameters_arguments_refEntityName_ValidateValueSet   testCaseName = "validation_GetForEntity_parameters_arguments_refEntityName_ValidateValueSet"
+	case_DataMetricFunctionReferences_sql_GetForEntity_basic                                                        testCaseName = "sql_GetForEntity_basic"
+)
+
+type DataMetricFunctionReferencesTestsContext struct {
+	GetForEntity *sdkTestCtx[*GetForEntityDataMetricFunctionReferenceOptions]
+}
+
+var dataMetricFunctionReferencesTests = DataMetricFunctionReferencesTestsContext{
+	GetForEntity: newSdkTestCtx[*GetForEntityDataMetricFunctionReferenceOptions](
+		"DataMetricFunctionReferences", "GetForEntity",
+	).
+		withDefaultOpts(func() *GetForEntityDataMetricFunctionReferenceOptions {
+			return &GetForEntityDataMetricFunctionReferenceOptions{}
+		}).
+		withValidationCases(
+			validationCase[*GetForEntityDataMetricFunctionReferenceOptions]{
+				Name:        case_DataMetricFunctionReferences_validation_GetForEntity_parameters_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityDataMetricFunctionReferenceOptions", "parameters"),
+				DefaultModify: func(opts *GetForEntityDataMetricFunctionReferenceOptions) {
+					opts.parameters = nil
+				},
+			},
+			validationCase[*GetForEntityDataMetricFunctionReferenceOptions]{
+				Name:        case_DataMetricFunctionReferences_validation_GetForEntity_parameters_arguments_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityDataMetricFunctionReferenceOptions.parameters", "arguments"),
+				DefaultModify: func(opts *GetForEntityDataMetricFunctionReferenceOptions) {
+					opts.parameters = &dataMetricFunctionReferenceParameters{}
+					opts.parameters.arguments = nil
+				},
+			},
+			validationCase[*GetForEntityDataMetricFunctionReferenceOptions]{
+				Name:        case_DataMetricFunctionReferences_validation_GetForEntity_parameters_arguments_RefEntityDomain_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityDataMetricFunctionReferenceOptions.parameters.arguments", "RefEntityDomain"),
+				DefaultModify: func(opts *GetForEntityDataMetricFunctionReferenceOptions) {
+					opts.parameters = &dataMetricFunctionReferenceParameters{}
+					opts.parameters.arguments = &dataMetricFunctionReferenceFunctionArguments{}
+					opts.parameters.arguments.RefEntityDomain = nil
+				},
+			},
+			validationCase[*GetForEntityDataMetricFunctionReferenceOptions]{
+				Name:        case_DataMetricFunctionReferences_validation_GetForEntity_parameters_arguments_refEntityName_ValidateValueSet,
+				ExpectedErr: errNotSet("GetForEntityDataMetricFunctionReferenceOptions.parameters.arguments", "refEntityName"),
+				DefaultModify: func(opts *GetForEntityDataMetricFunctionReferenceOptions) {
+					opts.parameters = &dataMetricFunctionReferenceParameters{}
+					opts.parameters.arguments = &dataMetricFunctionReferenceFunctionArguments{}
+					opts.parameters.arguments.refEntityName = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetForEntityDataMetricFunctionReferenceOptions]{
+				Name:           case_DataMetricFunctionReferences_sql_GetForEntity_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestDataMetricFunctionReferences_GetForEntity(t *testing.T) {
-	// id and defaultOpts removed manually
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GetForEntityDataMetricFunctionReferenceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: [opts.parameters] should be set", func(t *testing.T) {
-		opts := &GetForEntityDataMetricFunctionReferenceOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityDataMetricFunctionReferenceOptions", "parameters"))
-	})
-
-	t.Run("validation: [opts.parameters.arguments] should be set", func(t *testing.T) {
-		opts := &GetForEntityDataMetricFunctionReferenceOptions{
-			parameters: &dataMetricFunctionReferenceParameters{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityDataMetricFunctionReferenceOptions.parameters", "arguments"))
-	})
-
-	t.Run("validation: [opts.parameters.arguments.RefEntityDomain] should be set", func(t *testing.T) {
-		opts := &GetForEntityDataMetricFunctionReferenceOptions{
-			parameters: &dataMetricFunctionReferenceParameters{
-				arguments: &dataMetricFunctionReferenceFunctionArguments{
-					refEntityName: []ObjectIdentifier{NewSchemaObjectIdentifier("a", "b", "c")},
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityDataMetricFunctionReferenceOptions.parameters.arguments", "RefEntityDomain"))
-	})
-
-	t.Run("validation: [opts.parameters.arguments.refEntityName] should be set", func(t *testing.T) {
-		opts := &GetForEntityDataMetricFunctionReferenceOptions{
-			parameters: &dataMetricFunctionReferenceParameters{
-				arguments: &dataMetricFunctionReferenceFunctionArguments{
-					RefEntityDomain: Pointer(DataMetricFunctionRefEntityDomainOptionView),
-				},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("GetForEntityDataMetricFunctionReferenceOptions.parameters.arguments", "refEntityName"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := &GetForEntityDataMetricFunctionReferenceOptions{
-			parameters: &dataMetricFunctionReferenceParameters{
-				arguments: &dataMetricFunctionReferenceFunctionArguments{
-					refEntityName:   []ObjectIdentifier{NewSchemaObjectIdentifier("a", "b", "c")},
-					RefEntityDomain: Pointer(DataMetricFunctionRefEntityDomainOptionView),
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.DATA_METRIC_FUNCTION_REFERENCES (REF_ENTITY_NAME => '\"a\".\"b\".\"c\"', REF_ENTITY_DOMAIN => 'VIEW'))`)
-	})
+	dataMetricFunctionReferencesTests.GetForEntity.RunValidationCases(t)
+	dataMetricFunctionReferencesTests.GetForEntity.RunSqlCases(t)
 }

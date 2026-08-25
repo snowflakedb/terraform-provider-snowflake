@@ -59,4 +59,4 @@ var dataMetricFunctionReferencesDef = g.NewInterface(
 	dataMetricFunctionReferenceFunctionArgumentsDef,
 ).WithEnums(
 	DataMetricFunctionRefEntityDomainOptionEnumDef,
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
