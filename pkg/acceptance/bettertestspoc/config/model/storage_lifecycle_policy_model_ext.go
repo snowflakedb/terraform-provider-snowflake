@@ -25,7 +25,7 @@ func (s *StorageLifecyclePolicyModel) WithArgument(argument []sdk.TableColumnSig
 	for i, v := range argument {
 		maps[i] = tfconfig.MapVariable(map[string]tfconfig.Variable{
 			"name": tfconfig.StringVariable(v.Name),
-			"type": tfconfig.StringVariable(v.Type.ToSql()),
+			"type": tfconfig.StringVariable(v.Type.ToSqlWithoutUnknowns()),
 		})
 	}
 	s.Argument = tfconfig.SetVariable(maps...)

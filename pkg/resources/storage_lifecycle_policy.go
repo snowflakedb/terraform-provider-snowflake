@@ -139,7 +139,7 @@ func StorageLifecyclePolicy() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.StorageLifecyclePolicy, customdiff.All(
 			ForceNewIfChangedFromNonEmptyString("archive_tier"),
 			ComputedIfAnyAttributeChanged(storageLifecyclePolicySchema, ShowOutputAttributeName, "name", "schema", "database", "comment"),
-			ComputedIfAnyAttributeChanged(storageLifecyclePolicySchema, DescribeOutputAttributeName, "name", "schema", "database", "argument", "body", "archive_tier", "archive_for_days"),
+			ComputedIfAnyAttributeChanged(storageLifecyclePolicySchema, DescribeOutputAttributeName, "name", "schema", "database", "body", "archive_tier", "archive_for_days"),
 			ComputedIfAnyAttributeChanged(storageLifecyclePolicySchema, FullyQualifiedNameAttributeName, "name", "schema", "database"),
 		)),
 		Timeouts: defaultTimeouts,

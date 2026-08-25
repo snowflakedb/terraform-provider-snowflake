@@ -41,6 +41,7 @@ var (
 	DataTypeTimestampTZ, _     = datatypes.ParseDataType("TIMESTAMP_TZ")
 	DataTypeVarcharIceberg, _  = datatypes.ParseDataType("VARCHAR(134217728)")
 	DataTypeTimestampNTZ_6, _  = datatypes.ParseDataType("TIMESTAMP_NTZ(6)")
+	DataTypeTimestampNTZ_9, _  = datatypes.ParseDataType("TIMESTAMP_NTZ(9)")
 	DataTypeVectorFloat_768, _ = datatypes.ParseDataType("VECTOR(FLOAT, 768)")
 )
 

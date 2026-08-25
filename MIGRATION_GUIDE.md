@@ -46,6 +46,23 @@ declared.
 
 If you would like to specify an empty list, please use `none = true` instead.
 
+### *(bug fix)* `snowflake_storage_lifecycle_policy`: perpetual in-place update of `describe_output`
+
+`snowflake_storage_lifecycle_policy` could produce a non-empty plan on every run even when the configuration was unchanged. The planned change was an in-place update of the computed `describe_output` attribute:
+
+```
+  # snowflake_storage_lifecycle_policy.example will be updated in-place
+  ~ resource "snowflake_storage_lifecycle_policy" "example" {
+      ~ describe_output = [ ... ] -> (known after apply)
+    }
+```
+
+`terraform apply` succeeded but did not converge: the next plan showed the same diff.
+
+After upgrading, `terraform plan` should be empty for unchanged storage lifecycle policies. If you added `lifecycle { ignore_changes = [describe_output] }` as a workaround, you can remove it.
+
+No other configuration changes are required.
+
 ## v2.19.x ➞ v2.20.0
 
 ### *(new feature)* New hybrid table resource

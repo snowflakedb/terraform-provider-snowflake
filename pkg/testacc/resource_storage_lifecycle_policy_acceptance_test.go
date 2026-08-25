@@ -49,6 +49,24 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			Name: "ID",
 			Type: testdatatypes.DataTypeVectorFloat_768,
 		},
+		{
+			Name: "CREATED_AT",
+			Type: testdatatypes.DataTypeTimestampNTZ,
+		},
+	}
+	expectedNewArguments := []sdk.TableColumnSignature{
+		{
+			Name: "VAL",
+			Type: testdatatypes.DataTypeVarchar_200,
+		},
+		{
+			Name: "ID",
+			Type: testdatatypes.DataTypeVectorFloat_768,
+		},
+		{
+			Name: "CREATED_AT",
+			Type: testdatatypes.DataTypeTimestampNTZ_9,
+		},
 	}
 
 	expectedSignature := []sdk.TableColumnSignature{
@@ -65,6 +83,10 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 		{
 			Name: "ID",
 			Type: testdatatypes.DataTypeVectorFloat_768,
+		},
+		{
+			Name: "CREATED_AT",
+			Type: testdatatypes.DataTypeTimestampNTZ,
 		},
 	}
 	importedArguments := expectedSignature
@@ -191,7 +213,7 @@ func TestAcc_StorageLifecyclePolicy_BasicUseCase(t *testing.T) {
 			HasName(id.Name()).
 			HasSchema(id.SchemaName()).
 			HasDatabase(id.DatabaseName()).
-			HasArguments(newArguments).
+			HasArguments(expectedNewArguments).
 			HasBody(body).
 			HasArchiveTier("").
 			HasArchiveForDays(0).
