@@ -10,605 +10,438 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ViewDataMetricScheduleStatusOperationOption]{"ViewDataMetricScheduleStatusOperationOption", AllViewDataMetricScheduleStatusOperationOptions, ToViewDataMetricScheduleStatusOperationOption})
 }
 
-func TestViews_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
+var viewsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
-	// added manually
-	sql := "SELECT id FROM t"
+const (
+	case_Views_validation_Create_name_ValidIdentifier                                          testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Views_validation_Create_opts_ConflictingFields                                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Views_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier               testCaseName = "validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_Views_validation_Create_RowAccessPolicy_On_ValidateValueSet                           testCaseName = "validation_Create_RowAccessPolicy_On_ValidateValueSet"
+	case_Views_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier           testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
+	case_Views_sql_Create_basic                                                                testCaseName = "sql_Create_basic"
+	case_Views_sql_Create_all                                                                  testCaseName = "sql_Create_all"
+	case_Views_validation_Alter_name_ValidIdentifier                                           testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Views_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Views_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Views_validation_Alter_opts_ConflictingFields_IfExists_SetSecure                      testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_SetSecure"
+	case_Views_validation_Alter_opts_ConflictingFields_IfExists_UnsetSecure                    testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_UnsetSecure"
+	case_Views_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier             testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_Views_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet                         testCaseName = "validation_Alter_AddRowAccessPolicy_On_ValidateValueSet"
+	case_Views_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier            testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_Views_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier"
+	case_Views_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier  testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier"
+	case_Views_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet              testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet"
+	case_Views_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier         testCaseName = "validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier"
+	case_Views_sql_Alter_RenameTo                                                              testCaseName = "sql_Alter_RenameTo"
+	case_Views_sql_Alter_SetComment                                                            testCaseName = "sql_Alter_SetComment"
+	case_Views_sql_Alter_UnsetComment                                                          testCaseName = "sql_Alter_UnsetComment"
+	case_Views_sql_Alter_SetSecure                                                             testCaseName = "sql_Alter_SetSecure"
+	case_Views_sql_Alter_SetChangeTracking                                                     testCaseName = "sql_Alter_SetChangeTracking"
+	case_Views_sql_Alter_UnsetSecure                                                           testCaseName = "sql_Alter_UnsetSecure"
+	case_Views_sql_Alter_SetTags                                                               testCaseName = "sql_Alter_SetTags"
+	case_Views_sql_Alter_UnsetTags                                                             testCaseName = "sql_Alter_UnsetTags"
+	case_Views_sql_Alter_AddDataMetricFunction                                                 testCaseName = "sql_Alter_AddDataMetricFunction"
+	case_Views_sql_Alter_DropDataMetricFunction                                                testCaseName = "sql_Alter_DropDataMetricFunction"
+	case_Views_sql_Alter_ModifyDataMetricFunction                                              testCaseName = "sql_Alter_ModifyDataMetricFunction"
+	case_Views_sql_Alter_SetDataMetricSchedule                                                 testCaseName = "sql_Alter_SetDataMetricSchedule"
+	case_Views_sql_Alter_UnsetDataMetricSchedule                                               testCaseName = "sql_Alter_UnsetDataMetricSchedule"
+	case_Views_sql_Alter_AddRowAccessPolicy                                                    testCaseName = "sql_Alter_AddRowAccessPolicy"
+	case_Views_sql_Alter_DropRowAccessPolicy                                                   testCaseName = "sql_Alter_DropRowAccessPolicy"
+	case_Views_sql_Alter_DropAndAddRowAccessPolicy                                             testCaseName = "sql_Alter_DropAndAddRowAccessPolicy"
+	case_Views_sql_Alter_DropAllRowAccessPolicies                                              testCaseName = "sql_Alter_DropAllRowAccessPolicies"
+	case_Views_sql_Alter_SetAggregationPolicy                                                  testCaseName = "sql_Alter_SetAggregationPolicy"
+	case_Views_sql_Alter_UnsetAggregationPolicy                                                testCaseName = "sql_Alter_UnsetAggregationPolicy"
+	case_Views_sql_Alter_SetMaskingPolicyOnColumn                                              testCaseName = "sql_Alter_SetMaskingPolicyOnColumn"
+	case_Views_sql_Alter_UnsetMaskingPolicyOnColumn                                            testCaseName = "sql_Alter_UnsetMaskingPolicyOnColumn"
+	case_Views_sql_Alter_SetProjectionPolicyOnColumn                                           testCaseName = "sql_Alter_SetProjectionPolicyOnColumn"
+	case_Views_sql_Alter_UnsetProjectionPolicyOnColumn                                         testCaseName = "sql_Alter_UnsetProjectionPolicyOnColumn"
+	case_Views_sql_Alter_SetTagsOnColumn                                                       testCaseName = "sql_Alter_SetTagsOnColumn"
+	case_Views_sql_Alter_UnsetTagsOnColumn                                                     testCaseName = "sql_Alter_UnsetTagsOnColumn"
+	case_Views_validation_Drop_name_ValidIdentifier                                            testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Views_sql_Drop_basic                                                                  testCaseName = "sql_Drop_basic"
+	case_Views_sql_Drop_all                                                                    testCaseName = "sql_Drop_all"
+	case_Views_sql_Show_basic                                                                  testCaseName = "sql_Show_basic"
+	case_Views_sql_Show_all                                                                    testCaseName = "sql_Show_all"
+	case_Views_sql_Show_Like                                                                   testCaseName = "sql_Show_Like"
+	case_Views_sql_Show_In                                                                     testCaseName = "sql_Show_In"
+	case_Views_sql_Show_StartsWith                                                             testCaseName = "sql_Show_StartsWith"
+	case_Views_sql_Show_Limit                                                                  testCaseName = "sql_Show_Limit"
+	case_Views_validation_Describe_name_ValidIdentifier                                        testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Views_sql_Describe_basic                                                              testCaseName = "sql_Describe_basic"
+)
 
-	// Minimal valid CreateViewOptions
-	defaultOpts := func() *CreateViewOptions {
-		return &CreateViewOptions{
-			// adjusted manually
-			name: id,
-			sql:  sql,
-		}
-	}
+type ViewsTestsContext struct {
+	Create   *sdkTestCtx[*CreateViewOptions]
+	Alter    *sdkTestCtx[*AlterViewOptions]
+	Drop     *sdkTestCtx[*DropViewOptions]
+	Show     *sdkTestCtx[*ShowViewOptions]
+	Describe *sdkTestCtx[*DescribeViewOptions]
+}
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateViewOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("validation: valid identifier for [opts.RowAccessPolicy.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RowAccessPolicy = &ViewRowAccessPolicy{
-			RowAccessPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.AggregationPolicy.AggregationPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AggregationPolicy = &ViewAggregationPolicy{
-			AggregationPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// validations added manually
-	t.Run("validation: empty columns for row access policy", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RowAccessPolicy = &ViewRowAccessPolicy{
-			RowAccessPolicy: randomSchemaObjectIdentifier(),
-			On:              []Column{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateViewOptions.RowAccessPolicy", "On"))
-	})
-
-	t.Run("validation: valid identifier for [opts.MaskingPolicy.MaskingPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Columns = []ViewColumn{
-			{
-				Name: "foo",
-				MaskingPolicy: &ViewColumnMaskingPolicy{
-					MaskingPolicy: emptySchemaObjectIdentifier,
+var viewsTests = ViewsTestsContext{
+	Create: newSdkTestCtx[*CreateViewOptions](
+		"Views", "Create",
+	).
+		withDefaultOpts(func() *CreateViewOptions {
+			return &CreateViewOptions{
+				name: viewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
 				},
 			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateViewOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_RowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.RowAccessPolicy = &ViewRowAccessPolicy{}
+					opts.RowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_RowAccessPolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateViewOptions.RowAccessPolicy", "On"),
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.RowAccessPolicy = &ViewRowAccessPolicy{}
+					opts.RowAccessPolicy.On = nil
+				},
+			},
+			validationCase[*CreateViewOptions]{
+				Name:        case_Views_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateViewOptions) {
+					opts.AggregationPolicy = &ViewAggregationPolicy{}
+					opts.AggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateViewOptions]{
+				Name:           case_Views_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateViewOptions]{
+				Name: case_Views_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterViewOptions](
+		"Views", "Alter",
+	).
+		withDefaultOpts(func() *AlterViewOptions {
+			return &AlterViewOptions{
+				name: viewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterViewOptions", "RenameTo", "SetComment", "UnsetComment", "SetSecure", "SetChangeTracking", "UnsetSecure", "SetTags", "UnsetTags", "AddDataMetricFunction", "DropDataMetricFunction", "ModifyDataMetricFunction", "SetDataMetricSchedule", "UnsetDataMetricSchedule", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.RenameTo = nil
+					opts.SetComment = nil
+					opts.UnsetComment = nil
+					opts.SetSecure = nil
+					opts.SetChangeTracking = nil
+					opts.UnsetSecure = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+					opts.AddDataMetricFunction = nil
+					opts.DropDataMetricFunction = nil
+					opts.ModifyDataMetricFunction = nil
+					opts.SetDataMetricSchedule = nil
+					opts.UnsetDataMetricSchedule = nil
+					opts.AddRowAccessPolicy = nil
+					opts.DropRowAccessPolicy = nil
+					opts.DropAndAddRowAccessPolicy = nil
+					opts.DropAllRowAccessPolicies = nil
+					opts.SetAggregationPolicy = nil
+					opts.UnsetAggregationPolicy = nil
+					opts.SetMaskingPolicyOnColumn = nil
+					opts.UnsetMaskingPolicyOnColumn = nil
+					opts.SetProjectionPolicyOnColumn = nil
+					opts.UnsetProjectionPolicyOnColumn = nil
+					opts.SetTagsOnColumn = nil
+					opts.UnsetTagsOnColumn = nil
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterViewOptions", "RenameTo", "SetComment", "UnsetComment", "SetSecure", "SetChangeTracking", "UnsetSecure", "SetTags", "UnsetTags", "AddDataMetricFunction", "DropDataMetricFunction", "ModifyDataMetricFunction", "SetDataMetricSchedule", "UnsetDataMetricSchedule", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.SetComment = new("foo")
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_opts_ConflictingFields_IfExists_SetSecure,
+				ExpectedErr: errOneOf("AlterViewOptions", "IfExists", "SetSecure"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.IfExists = new(true)
+					opts.SetSecure = new(true)
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_opts_ConflictingFields_IfExists_UnsetSecure,
+				ExpectedErr: errOneOf("AlterViewOptions", "IfExists", "UnsetSecure"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.IfExists = new(true)
+					opts.UnsetSecure = new(true)
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{}
+					opts.AddRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterViewOptions.AddRowAccessPolicy", "On"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{}
+					opts.AddRowAccessPolicy.On = nil
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{}
+					opts.DropRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterViewOptions.DropAndAddRowAccessPolicy.Add", "On"),
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Add.On = nil
+				},
+			},
+			validationCase[*AlterViewOptions]{
+				Name:        case_Views_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterViewOptions) {
+					opts.SetAggregationPolicy = &ViewSetAggregationPolicy{}
+					opts.SetAggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetComment,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetComment,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetSecure,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetChangeTracking,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetSecure,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetTags,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_AddDataMetricFunction,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_DropDataMetricFunction,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_ModifyDataMetricFunction,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetDataMetricSchedule,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetDataMetricSchedule,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_AddRowAccessPolicy,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_DropRowAccessPolicy,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_DropAndAddRowAccessPolicy,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_DropAllRowAccessPolicies,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetAggregationPolicy,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetAggregationPolicy,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetMaskingPolicyOnColumn,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetMaskingPolicyOnColumn,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetProjectionPolicyOnColumn,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetProjectionPolicyOnColumn,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_SetTagsOnColumn,
+			},
+			sqlCase[*AlterViewOptions]{
+				Name: case_Views_sql_Alter_UnsetTagsOnColumn,
+			},
+		),
+	Drop: newSdkTestCtx[*DropViewOptions](
+		"Views", "Drop",
+	).
+		withDefaultOpts(func() *DropViewOptions {
+			return &DropViewOptions{
+				name: viewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropViewOptions]{
+				Name:        case_Views_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropViewOptions]{
+				Name:           case_Views_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropViewOptions]{
+				Name: case_Views_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowViewOptions](
+		"Views", "Show",
+	).
+		withDefaultOpts(func() *ShowViewOptions {
+			return &ShowViewOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowViewOptions]{
+				Name:           case_Views_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowViewOptions]{
+				Name: case_Views_sql_Show_all,
+			},
+			sqlCase[*ShowViewOptions]{
+				Name: case_Views_sql_Show_Like,
+			},
+			sqlCase[*ShowViewOptions]{
+				Name: case_Views_sql_Show_In,
+			},
+			sqlCase[*ShowViewOptions]{
+				Name: case_Views_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowViewOptions]{
+				Name: case_Views_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeViewOptions](
+		"Views", "Describe",
+	).
+		withDefaultOpts(func() *DescribeViewOptions {
+			return &DescribeViewOptions{
+				name: viewsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeViewOptions]{
+				Name:        case_Views_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeViewOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeViewOptions]{
+				Name:           case_Views_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
 
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE VIEW %s AS %s", id.FullyQualifiedName(), sql)
-	})
-
-	// adjusted manually
-	t.Run("all options", func(t *testing.T) {
-		rowAccessPolicyId := randomSchemaObjectIdentifier()
-		aggregationPolicyId := randomSchemaObjectIdentifier()
-		tag1Id := randomSchemaObjectIdentifier()
-		tag2Id := randomSchemaObjectIdentifier()
-		maskingPolicy1Id := randomSchemaObjectIdentifier()
-		maskingPolicy2Id := randomSchemaObjectIdentifier()
-
-		req := NewCreateViewRequest(id, sql).
-			WithOrReplace(true).
-			WithSecure(true).
-			WithTemporary(true).
-			WithRecursive(true).
-			WithColumns([]ViewColumnRequest{
-				*NewViewColumnRequest("column_without_comment"),
-				*NewViewColumnRequest("column_with_comment").WithComment("column 2 comment"),
-				*NewViewColumnRequest("column").WithMaskingPolicy(
-					*NewViewColumnMaskingPolicyRequest(maskingPolicy1Id).
-						WithUsing([]Column{{"a"}, {"b"}}),
-				).WithTag([]TagAssociation{{Name: tag1Id, Value: "v1"}}),
-				*NewViewColumnRequest("column 2").WithProjectionPolicy(
-					*NewViewColumnProjectionPolicyRequest(maskingPolicy2Id),
-				),
-			}).
-			WithCopyGrants(true).
-			WithComment("comment").
-			WithRowAccessPolicy(*NewViewRowAccessPolicyRequest(rowAccessPolicyId, []Column{{"c"}, {"d"}})).
-			WithAggregationPolicy(*NewViewAggregationPolicyRequest(aggregationPolicyId).WithEntityKey([]Column{{"column_with_comment"}})).
-			WithTag([]TagAssociation{{
-				Name:  tag2Id,
-				Value: "v2",
-			}})
-
-		assertOptsValidAndSQLEquals(t, req.toOpts(), `CREATE OR REPLACE SECURE TEMPORARY RECURSIVE VIEW %s `+
-			`("column_without_comment", "column_with_comment" COMMENT 'column 2 comment', "column" MASKING POLICY %s USING ("a", "b") TAG (%s = 'v1'), "column 2" PROJECTION POLICY %s) COPY GRANTS COMMENT = 'comment' ROW ACCESS POLICY %s ON ("c", "d") AGGREGATION POLICY %s ENTITY KEY ("column_with_comment") TAG (%s = 'v2') AS %s`, id.FullyQualifiedName(), maskingPolicy1Id.FullyQualifiedName(), tag1Id.FullyQualifiedName(), maskingPolicy2Id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName(), tag2Id.FullyQualifiedName(), sql)
-	})
+func TestViews_Create(t *testing.T) {
+	viewsTests.Create.RunValidationCases(t)
+	viewsTests.Create.RunSqlCases(t)
 }
 
 func TestViews_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterViewOptions
-	defaultOpts := func() *AlterViewOptions {
-		return &AlterViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetComment opts.UnsetComment opts.SetSecure opts.SetChangeTracking opts.UnsetSecure opts.SetTags opts.UnsetTags opts.AddDataMetricFunction opts.DropDataMetricFunction opts.ModifyDataMetricFunction opts.SetDataMetricSchedule opts.UnsetDataMetricSchedule opts.AddRowAccessPolicy opts.DropRowAccessPolicy opts.DropAndAddRowAccessPolicy opts.DropAllRowAccessPolicies opts.SetAggregationPolicy opts.UnsetAggregationPolicy opts.SetMaskingPolicyOnColumn opts.UnsetMaskingPolicyOnColumn opts.SetProjectionPolicyOnColumn opts.UnsetProjectionPolicyOnColumn opts.SetTagsOnColumn opts.UnsetTagsOnColumn] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterViewOptions", "RenameTo", "SetComment", "UnsetComment", "SetSecure", "SetChangeTracking", "UnsetSecure", "SetTags", "UnsetTags", "AddDataMetricFunction", "DropDataMetricFunction", "ModifyDataMetricFunction", "SetDataMetricSchedule", "UnsetDataMetricSchedule", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetComment opts.UnsetComment opts.SetSecure opts.SetChangeTracking opts.UnsetSecure opts.SetTags opts.UnsetTags opts.AddDataMetricFunction opts.DropDataMetricFunction opts.ModifyDataMetricFunction opts.SetDataMetricSchedule opts.UnsetDataMetricSchedule opts.AddRowAccessPolicy opts.DropRowAccessPolicy opts.DropAndAddRowAccessPolicy opts.DropAllRowAccessPolicies opts.SetAggregationPolicy opts.UnsetAggregationPolicy opts.SetMaskingPolicyOnColumn opts.UnsetMaskingPolicyOnColumn opts.SetProjectionPolicyOnColumn opts.UnsetProjectionPolicyOnColumn opts.SetTagsOnColumn opts.UnsetTagsOnColumn] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetChangeTracking = Bool(true)
-		opts.DropAllRowAccessPolicies = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterViewOptions", "RenameTo", "SetComment", "UnsetComment", "SetSecure", "SetChangeTracking", "UnsetSecure", "SetTags", "UnsetTags", "AddDataMetricFunction", "DropDataMetricFunction", "ModifyDataMetricFunction", "SetDataMetricSchedule", "UnsetDataMetricSchedule", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetMaskingPolicyOnColumn", "UnsetMaskingPolicyOnColumn", "SetProjectionPolicyOnColumn", "UnsetProjectionPolicyOnColumn", "SetTagsOnColumn", "UnsetTagsOnColumn"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.SetSecure]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.SetSecure = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterViewOptions", "IfExists", "SetSecure"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetSecure]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.UnsetSecure = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterViewOptions", "IfExists", "UnsetSecure"))
-	})
-
-	t.Run("validation: valid identifier for [opts.AddRowAccessPolicy.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{
-			RowAccessPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.DropRowAccessPolicy.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{
-			RowAccessPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-			Drop: ViewDropRowAccessPolicy{
-				RowAccessPolicy: emptySchemaObjectIdentifier,
-			},
-			Add: ViewAddRowAccessPolicy{
-				RowAccessPolicy: randomSchemaObjectIdentifier(),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-			Drop: ViewDropRowAccessPolicy{
-				RowAccessPolicy: randomSchemaObjectIdentifier(),
-			},
-			Add: ViewAddRowAccessPolicy{
-				RowAccessPolicy: emptySchemaObjectIdentifier,
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.SetAggregationPolicy.AggregationPolicy]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
-			AggregationPolicy: emptySchemaObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// validation added manually
-	t.Run("validation: empty columns for row access policy (add)", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{
-			RowAccessPolicy: randomSchemaObjectIdentifier(),
-			On:              []Column{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("AlterViewOptions.AddRowAccessPolicy", "On"))
-	})
-
-	// all variants added manually
-	t.Run("rename", func(t *testing.T) {
-		newId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("set comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetComment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s SET COMMENT = 'comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("unset comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetComment = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s UNSET COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("set secure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetSecure = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s SET SECURE", id.FullyQualifiedName())
-	})
-
-	t.Run("set change tracking: true", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetChangeTracking = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s SET CHANGE_TRACKING = true", id.FullyQualifiedName())
-	})
-
-	t.Run("set change tracking: false", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetChangeTracking = Bool(false)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s SET CHANGE_TRACKING = false", id.FullyQualifiedName())
-	})
-
-	t.Run("unset secure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetSecure = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s UNSET SECURE", id.FullyQualifiedName())
-	})
-
-	t.Run("add data metric function", func(t *testing.T) {
-		dmfId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.AddDataMetricFunction = &ViewAddDataMetricFunction{
-			DataMetricFunction: []ViewDataMetricFunction{{DataMetricFunction: dmfId, On: []Column{{"foo"}}}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s ADD DATA METRIC FUNCTION %s ON (\"foo\")", id.FullyQualifiedName(), dmfId.FullyQualifiedName())
-	})
-
-	t.Run("drop data metric function", func(t *testing.T) {
-		dmfId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.DropDataMetricFunction = &ViewDropDataMetricFunction{
-			DataMetricFunction: []ViewDataMetricFunction{{DataMetricFunction: dmfId, On: []Column{{"foo"}}}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s DROP DATA METRIC FUNCTION %s ON (\"foo\")", id.FullyQualifiedName(), dmfId.FullyQualifiedName())
-	})
-
-	t.Run("modify data metric function", func(t *testing.T) {
-		dmfId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.ModifyDataMetricFunction = &ViewModifyDataMetricFunctions{
-			DataMetricFunction: []ViewModifyDataMetricFunction{{DataMetricFunction: dmfId, On: []Column{{"foo"}}, ViewDataMetricScheduleStatusOperationOption: ViewDataMetricScheduleStatusOperationOptionSuspend}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s MODIFY DATA METRIC FUNCTION %s ON (\"foo\") SUSPEND", id.FullyQualifiedName(), dmfId.FullyQualifiedName())
-	})
-
-	t.Run("set data metric schedule", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetDataMetricSchedule = &ViewSetDataMetricSchedule{
-			DataMetricSchedule: "5 MINUTE",
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s SET DATA_METRIC_SCHEDULE = '5 MINUTE'", id.FullyQualifiedName())
-	})
-
-	t.Run("unset data metric schedule", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetDataMetricSchedule = &ViewUnsetDataMetricSchedule{}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s UNSET DATA_METRIC_SCHEDULE", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER VIEW %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER VIEW %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
-
-	t.Run("add row access policy", func(t *testing.T) {
-		rowAccessPolicyId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{
-			RowAccessPolicy: rowAccessPolicyId,
-			On:              []Column{{"a"}, {"b"}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s ADD ROW ACCESS POLICY %s ON (\"a\", \"b\")", id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
-	})
-
-	t.Run("drop row access policy", func(t *testing.T) {
-		rowAccessPolicyId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{
-			RowAccessPolicy: rowAccessPolicyId,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s DROP ROW ACCESS POLICY %s", id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
-	})
-
-	t.Run("drop and add row access policy", func(t *testing.T) {
-		rowAccessPolicy1Id := randomSchemaObjectIdentifier()
-		rowAccessPolicy2Id := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.DropAndAddRowAccessPolicy = &ViewDropAndAddRowAccessPolicy{
-			Drop: ViewDropRowAccessPolicy{
-				RowAccessPolicy: rowAccessPolicy1Id,
-			},
-			Add: ViewAddRowAccessPolicy{
-				RowAccessPolicy: rowAccessPolicy2Id,
-				On:              []Column{{"a"}, {"b"}},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON (\"a\", \"b\")", id.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName(), rowAccessPolicy2Id.FullyQualifiedName())
-	})
-
-	t.Run("drop all row access policies", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DropAllRowAccessPolicies = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s DROP ALL ROW ACCESS POLICIES", id.FullyQualifiedName())
-	})
-
-	t.Run("set aggregation policy", func(t *testing.T) {
-		aggregationPolicyId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
-			AggregationPolicy: aggregationPolicyId,
-			EntityKey:         []Column{{"a"}, {"b"}},
-			Force:             Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s SET AGGREGATION POLICY %s ENTITY KEY (\"a\", \"b\") FORCE", id.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName())
-	})
-
-	t.Run("unset aggregation policy", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetAggregationPolicy = &ViewUnsetAggregationPolicy{}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s UNSET AGGREGATION POLICY", id.FullyQualifiedName())
-	})
-
-	t.Run("set masking policy on column", func(t *testing.T) {
-		maskingPolicyId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.SetMaskingPolicyOnColumn = &ViewSetColumnMaskingPolicy{
-			Name:          "column",
-			MaskingPolicy: maskingPolicyId,
-			Using:         []Column{{"a"}, {"b"}},
-			Force:         Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s ALTER COLUMN \"column\" SET MASKING POLICY %s USING (\"a\", \"b\") FORCE", id.FullyQualifiedName(), maskingPolicyId.FullyQualifiedName())
-	})
-
-	t.Run("unset masking policy on column", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetMaskingPolicyOnColumn = &ViewUnsetColumnMaskingPolicy{
-			Name: "column",
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s ALTER COLUMN \"column\" UNSET MASKING POLICY", id.FullyQualifiedName())
-	})
-
-	t.Run("set projection policy on column", func(t *testing.T) {
-		projectionPolicyId := randomSchemaObjectIdentifier()
-
-		opts := defaultOpts()
-		opts.SetProjectionPolicyOnColumn = &ViewSetProjectionPolicy{
-			Name:             "column",
-			ProjectionPolicy: projectionPolicyId,
-			Force:            Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s ALTER COLUMN \"column\" SET PROJECTION POLICY %s FORCE", id.FullyQualifiedName(), projectionPolicyId.FullyQualifiedName())
-	})
-
-	t.Run("unset projection policy on column", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetProjectionPolicyOnColumn = &ViewUnsetProjectionPolicy{
-			Name: "column",
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER VIEW %s ALTER COLUMN \"column\" UNSET PROJECTION POLICY", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags on column", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTagsOnColumn = &ViewSetColumnTags{
-			Name: "column",
-			SetTags: []TagAssociation{
-				{
-					Name:  NewAccountObjectIdentifier("tag1"),
-					Value: "value1",
-				},
-				{
-					Name:  NewAccountObjectIdentifier("tag2"),
-					Value: "value2",
-				},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER VIEW %s ALTER COLUMN "column" SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags on column", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTagsOnColumn = &ViewUnsetColumnTags{
-			Name: "column",
-			UnsetTags: []ObjectIdentifier{
-				NewAccountObjectIdentifier("tag1"),
-				NewAccountObjectIdentifier("tag2"),
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER VIEW %s ALTER COLUMN "column" UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	viewsTests.Alter.RunValidationCases(t)
+	viewsTests.Alter.RunSqlCases(t)
 }
 
 func TestViews_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropViewOptions
-	defaultOpts := func() *DropViewOptions {
-		return &DropViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP VIEW %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP VIEW IF EXISTS %s", id.FullyQualifiedName())
-	})
+	viewsTests.Drop.RunValidationCases(t)
+	viewsTests.Drop.RunSqlCases(t)
 }
 
 func TestViews_Show(t *testing.T) {
-	// Minimal valid ShowViewOptions
-	defaultOpts := func() *ShowViewOptions {
-		return &ShowViewOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW VIEWS")
-	})
-
-	// variants added manually
-	t.Run("in database", func(t *testing.T) {
-		id := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.In = &ExtendedIn{
-			In: In{
-				Database: id,
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW VIEWS IN DATABASE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("in schema", func(t *testing.T) {
-		id := randomDatabaseObjectIdentifier()
-		opts := defaultOpts()
-		opts.In = &ExtendedIn{
-			In: In{
-				Schema: id,
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW VIEWS IN SCHEMA %s", id.FullyQualifiedName())
-	})
-
-	t.Run("in application", func(t *testing.T) {
-		id := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.In = &ExtendedIn{
-			Application: id,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW VIEWS IN APPLICATION %s", id.FullyQualifiedName())
-	})
-
-	t.Run("in application package", func(t *testing.T) {
-		id := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.In = &ExtendedIn{
-			ApplicationPackage: id,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW VIEWS IN APPLICATION PACKAGE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		opts.Like = &Like{
-			Pattern: String("myaccount"),
-		}
-		opts.In = &ExtendedIn{
-			In: In{
-				Account: Bool(true),
-			},
-		}
-		opts.StartsWith = String("abc")
-		opts.Limit = &LimitFrom{Rows: Int(10)}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW TERSE VIEWS LIKE 'myaccount' IN ACCOUNT STARTS WITH 'abc' LIMIT 10")
-	})
+	viewsTests.Show.RunValidationCases(t)
+	viewsTests.Show.RunSqlCases(t)
 }
 
 func TestViews_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeViewOptions
-	defaultOpts := func() *DescribeViewOptions {
-		return &DescribeViewOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeViewOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE VIEW %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	viewsTests.Describe.RunValidationCases(t)
+	viewsTests.Describe.RunSqlCases(t)
 }

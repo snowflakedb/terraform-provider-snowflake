@@ -306,4 +306,5 @@ var viewsDef = g.NewInterface(
 	).
 	WithEnums(
 		ViewDataMetricScheduleStatusOperationOptionEnumDef,
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)
