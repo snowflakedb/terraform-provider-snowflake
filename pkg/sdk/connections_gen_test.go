@@ -6,209 +6,205 @@ import (
 	"testing"
 )
 
+var connectionsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_Connections_validation_Create_name_ValidIdentifier                            testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Connections_validation_Create_AsReplicaOf_ValidIdentifierIfSet                testCaseName = "validation_Create_AsReplicaOf_ValidIdentifierIfSet"
+	case_Connections_sql_Create_basic                                                  testCaseName = "sql_Create_basic"
+	case_Connections_sql_Create_all                                                    testCaseName = "sql_Create_all"
+	case_Connections_validation_Alter_opts_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Connections_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Connections_validation_Alter_opts_EnableConnectionFailover_AtLeastOneValueSet testCaseName = "validation_Alter_opts_EnableConnectionFailover_AtLeastOneValueSet"
+	case_Connections_validation_Alter_opts_Set_AtLeastOneValueSet                      testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Connections_validation_Alter_opts_Unset_AtLeastOneValueSet                    testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Connections_sql_Alter_EnableConnectionFailover                                testCaseName = "sql_Alter_EnableConnectionFailover"
+	case_Connections_sql_Alter_DisableConnectionFailover                               testCaseName = "sql_Alter_DisableConnectionFailover"
+	case_Connections_sql_Alter_Primary                                                 testCaseName = "sql_Alter_Primary"
+	case_Connections_sql_Alter_Set                                                     testCaseName = "sql_Alter_Set"
+	case_Connections_sql_Alter_Unset                                                   testCaseName = "sql_Alter_Unset"
+	case_Connections_validation_Drop_name_ValidIdentifier                              testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Connections_sql_Drop_basic                                                    testCaseName = "sql_Drop_basic"
+	case_Connections_sql_Drop_all                                                      testCaseName = "sql_Drop_all"
+	case_Connections_sql_Show_basic                                                    testCaseName = "sql_Show_basic"
+	case_Connections_sql_Show_all                                                      testCaseName = "sql_Show_all"
+	case_Connections_sql_Show_Like                                                     testCaseName = "sql_Show_Like"
+)
+
+type ConnectionsTestsContext struct {
+	Create *sdkTestCtx[*CreateConnectionOptions]
+	Alter  *sdkTestCtx[*AlterConnectionOptions]
+	Drop   *sdkTestCtx[*DropConnectionOptions]
+	Show   *sdkTestCtx[*ShowConnectionOptions]
+}
+
+var connectionsTests = ConnectionsTestsContext{
+	Create: newSdkTestCtx[*CreateConnectionOptions](
+		"Connections", "Create",
+	).
+		withDefaultOpts(func() *CreateConnectionOptions {
+			return &CreateConnectionOptions{
+				name: connectionsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateConnectionOptions]{
+				Name:        case_Connections_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateConnectionOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateConnectionOptions]{
+				Name:        case_Connections_validation_Create_AsReplicaOf_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateConnectionOptions) {
+					opts.AsReplicaOf = new(emptyExternalObjectIdentifier)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateConnectionOptions]{
+				Name:           case_Connections_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateConnectionOptions]{
+				Name: case_Connections_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterConnectionOptions](
+		"Connections", "Alter",
+	).
+		withDefaultOpts(func() *AlterConnectionOptions {
+			return &AlterConnectionOptions{
+				name: connectionsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterConnectionOptions]{
+				Name:        case_Connections_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterConnectionOptions", "EnableConnectionFailover", "DisableConnectionFailover", "Primary", "Set", "Unset"),
+				DefaultModify: func(opts *AlterConnectionOptions) {
+					opts.EnableConnectionFailover = nil
+					opts.DisableConnectionFailover = nil
+					opts.Primary = nil
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterConnectionOptions]{
+				Name:        case_Connections_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterConnectionOptions", "EnableConnectionFailover", "DisableConnectionFailover", "Primary", "Set", "Unset"),
+				DefaultModify: func(opts *AlterConnectionOptions) {
+					opts.EnableConnectionFailover = &EnableConnectionFailover{}
+					opts.DisableConnectionFailover = &DisableConnectionFailover{}
+				},
+			},
+			validationCase[*AlterConnectionOptions]{
+				Name:        case_Connections_validation_Alter_opts_EnableConnectionFailover_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterConnectionOptions.EnableConnectionFailover", "ToAccounts"),
+				DefaultModify: func(opts *AlterConnectionOptions) {
+					opts.EnableConnectionFailover = &EnableConnectionFailover{}
+					opts.EnableConnectionFailover.ToAccounts = nil
+				},
+			},
+			validationCase[*AlterConnectionOptions]{
+				Name:        case_Connections_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterConnectionOptions.Set", "Comment"),
+				DefaultModify: func(opts *AlterConnectionOptions) {
+					opts.Set = &ConnectionSet{}
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterConnectionOptions]{
+				Name:        case_Connections_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterConnectionOptions.Unset", "Comment"),
+				DefaultModify: func(opts *AlterConnectionOptions) {
+					opts.Unset = &ConnectionUnset{}
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterConnectionOptions]{
+				Name: case_Connections_sql_Alter_EnableConnectionFailover,
+			},
+			sqlCase[*AlterConnectionOptions]{
+				Name: case_Connections_sql_Alter_DisableConnectionFailover,
+			},
+			sqlCase[*AlterConnectionOptions]{
+				Name: case_Connections_sql_Alter_Primary,
+			},
+			sqlCase[*AlterConnectionOptions]{
+				Name: case_Connections_sql_Alter_Set,
+			},
+			sqlCase[*AlterConnectionOptions]{
+				Name: case_Connections_sql_Alter_Unset,
+			},
+		),
+	Drop: newSdkTestCtx[*DropConnectionOptions](
+		"Connections", "Drop",
+	).
+		withDefaultOpts(func() *DropConnectionOptions {
+			return &DropConnectionOptions{
+				name: connectionsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropConnectionOptions]{
+				Name:        case_Connections_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropConnectionOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropConnectionOptions]{
+				Name:           case_Connections_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropConnectionOptions]{
+				Name: case_Connections_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowConnectionOptions](
+		"Connections", "Show",
+	).
+		withDefaultOpts(func() *ShowConnectionOptions {
+			return &ShowConnectionOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowConnectionOptions]{
+				Name:           case_Connections_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowConnectionOptions]{
+				Name: case_Connections_sql_Show_all,
+			},
+			sqlCase[*ShowConnectionOptions]{
+				Name: case_Connections_sql_Show_Like,
+			},
+		),
+}
+
 func TestConnections_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateConnectionOptions
-	defaultOpts := func() *CreateConnectionOptions {
-		return &CreateConnectionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateConnectionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.AsReplicaOf] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = id
-		opts.AsReplicaOf = &emptyExternalObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = id
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CONNECTION %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = id
-		opts.IfNotExists = Bool(true)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CONNECTION IF NOT EXISTS %s COMMENT = 'comment'", id.FullyQualifiedName())
-	})
-
-	// additional variants added manually
-	t.Run("as replica of", func(t *testing.T) {
-		externalId := randomExternalObjectIdentifier()
-		opts := defaultOpts()
-		opts.name = id
-		opts.AsReplicaOf = &externalId
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CONNECTION %s AS REPLICA OF %s", id.FullyQualifiedName(), externalId.FullyQualifiedName())
-	})
-
-	t.Run("as replica of - all options", func(t *testing.T) {
-		externalId := randomExternalObjectIdentifier()
-		opts := defaultOpts()
-		opts.name = id
-		opts.IfNotExists = Bool(true)
-		opts.AsReplicaOf = &externalId
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE CONNECTION IF NOT EXISTS %s AS REPLICA OF %s COMMENT = 'comment'", id.FullyQualifiedName(), externalId.FullyQualifiedName())
-	})
+	connectionsTests.Create.RunValidationCases(t)
+	connectionsTests.Create.RunSqlCases(t)
 }
 
 func TestConnections_Alter(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterConnectionOptions
-	defaultOpts := func() *AlterConnectionOptions {
-		return &AlterConnectionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterConnectionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: exactly one field from [opts.EnableConnectionFailover opts.DisableConnectionFailover opts.Primary opts.Set opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterConnectionOptions", "EnableConnectionFailover", "DisableConnectionFailover", "Primary", "Set", "Unset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.EnableConnectionFailover opts.DisableConnectionFailover opts.Primary opts.Set opts.Unset] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ConnectionSet{}
-		opts.Unset = &ConnectionUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterConnectionOptions", "EnableConnectionFailover", "DisableConnectionFailover", "Primary", "Set", "Unset"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.EnableConnectionFailover.ToAccounts] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.EnableConnectionFailover = &EnableConnectionFailover{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterConnectionOptions.EnableConnectionFailover", "ToAccounts"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ConnectionSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterConnectionOptions.Set", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ConnectionUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterConnectionOptions.Unset", "Comment"))
-	})
-
-	// all variants added manually
-	t.Run("alter enable failover to accounts", func(t *testing.T) {
-		accountIdentifier := randomAccountIdentifier()
-		secondAccountIdentifier := randomAccountIdentifier()
-		opts := defaultOpts()
-		opts.EnableConnectionFailover = &EnableConnectionFailover{
-			ToAccounts: []AccountIdentifier{accountIdentifier, secondAccountIdentifier},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER CONNECTION %s ENABLE FAILOVER TO ACCOUNTS %s, %s", id.FullyQualifiedName(), accountIdentifier.FullyQualifiedName(), secondAccountIdentifier.FullyQualifiedName())
-	})
-
-	t.Run("alter disable failover to all accounts", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DisableConnectionFailover = &DisableConnectionFailover{}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER CONNECTION %s DISABLE FAILOVER", id.FullyQualifiedName())
-	})
-
-	t.Run("alter disable failover to accounts", func(t *testing.T) {
-		accountIdentifier := randomAccountIdentifier()
-		opts := defaultOpts()
-		opts.DisableConnectionFailover = &DisableConnectionFailover{
-			ToAccounts: &ToAccounts{[]AccountIdentifier{accountIdentifier}},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER CONNECTION %s DISABLE FAILOVER TO ACCOUNTS %s", id.FullyQualifiedName(), accountIdentifier.FullyQualifiedName())
-	})
-
-	t.Run("primary", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Primary = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER CONNECTION %s PRIMARY", id.FullyQualifiedName())
-	})
-
-	t.Run("set comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ConnectionSet{Comment: String("test comment")}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER CONNECTION %s SET COMMENT = 'test comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("unset comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ConnectionUnset{Comment: Bool(true)}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER CONNECTION %s UNSET COMMENT", id.FullyQualifiedName())
-	})
+	connectionsTests.Alter.RunValidationCases(t)
+	connectionsTests.Alter.RunSqlCases(t)
 }
 
 func TestConnections_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropConnectionOptions
-	defaultOpts := func() *DropConnectionOptions {
-		return &DropConnectionOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropConnectionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP CONNECTION %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP CONNECTION IF EXISTS %s", id.FullyQualifiedName())
-	})
+	connectionsTests.Drop.RunValidationCases(t)
+	connectionsTests.Drop.RunSqlCases(t)
 }
 
 func TestConnections_Show(t *testing.T) {
-	// Minimal valid ShowConnectionOptions
-	defaultOpts := func() *ShowConnectionOptions {
-		return &ShowConnectionOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowConnectionOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW CONNECTIONS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			String("test_connection_name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW CONNECTIONS LIKE 'test_connection_name'")
-	})
+	connectionsTests.Show.RunValidationCases(t)
+	connectionsTests.Show.RunSqlCases(t)
 }
