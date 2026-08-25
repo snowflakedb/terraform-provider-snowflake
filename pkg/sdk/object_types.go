@@ -101,8 +101,10 @@ const (
 	ObjectTypeOpenflowDeployment     ObjectType = "OPENFLOW DEPLOYMENT"
 	ObjectTypeOpenflowRuntime        ObjectType = "OPENFLOW RUNTIME"
 	ObjectTypeOpenflowConnector      ObjectType = "OPENFLOW CONNECTOR"
-	ObjectTypeSnowflakeIntelligence  ObjectType = "SNOWFLAKE INTELLIGENCE"
-	ObjectTypeBackupPolicy           ObjectType = "BACKUP POLICY"
+	// ObjectTypeOpenflowConnectorDefinition is a read-only, Snowflake-managed object; it supports only SHOW.
+	ObjectTypeOpenflowConnectorDefinition ObjectType = "OPENFLOW CONNECTOR DEFINITION"
+	ObjectTypeSnowflakeIntelligence       ObjectType = "SNOWFLAKE INTELLIGENCE"
+	ObjectTypeBackupPolicy                ObjectType = "BACKUP POLICY"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
@@ -219,6 +221,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeOpenflowDeployment,
 	ObjectTypeOpenflowRuntime,
 	ObjectTypeOpenflowConnector,
+	ObjectTypeOpenflowConnectorDefinition,
 	ObjectTypeProgrammaticAccessToken,
 	ObjectTypeCatalogIntegration,
 	ObjectTypeBackupPolicy,
@@ -255,92 +258,93 @@ func ToPluralObjectType(s string) (PluralObjectType, error) {
 
 func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 	return map[ObjectType]PluralObjectType{
-		ObjectTypeAccount:                 PluralObjectTypeAccounts,
-		ObjectTypeManagedAccount:          PluralObjectTypeManagedAccounts,
-		ObjectTypeUser:                    PluralObjectTypeUsers,
-		ObjectTypeDatabaseRole:            PluralObjectTypeDatabaseRoles,
-		ObjectTypeDataset:                 PluralObjectTypeDatasets,
-		ObjectTypeDbtProject:              PluralObjectTypeDbtProjects,
-		ObjectTypeRole:                    PluralObjectTypeRoles,
-		ObjectTypeIntegration:             PluralObjectTypeIntegrations,
-		ObjectTypeNetworkPolicy:           PluralObjectTypeNetworkPolicies,
-		ObjectTypePasswordPolicy:          PluralObjectTypePasswordPolicies,
-		ObjectTypeSessionPolicy:           PluralObjectTypeSessionPolicies,
-		ObjectTypePrivacyPolicy:           PluralObjectTypePrivacyPolicies,
-		ObjectTypeReplicationGroup:        PluralObjectTypeReplicationGroups,
-		ObjectTypeFailoverGroup:           PluralObjectTypeFailoverGroups,
-		ObjectTypeConnection:              PluralObjectTypeConnections,
-		ObjectTypeParameter:               PluralObjectTypeParameters,
-		ObjectTypeWarehouse:               PluralObjectTypeWarehouses,
-		ObjectTypeResourceMonitor:         PluralObjectTypeResourceMonitors,
-		ObjectTypeDatabase:                PluralObjectTypeDatabases,
-		ObjectTypeSchema:                  PluralObjectTypeSchemas,
-		ObjectTypeShare:                   PluralObjectTypeShares,
-		ObjectTypeTable:                   PluralObjectTypeTables,
-		ObjectTypeDynamicTable:            PluralObjectTypeDynamicTables,
-		ObjectTypeInteractiveTable:        PluralObjectTypeInteractiveTables,
-		ObjectTypeCortexSearchService:     PluralObjectTypeCortexSearchServices,
-		ObjectTypeExternalTable:           PluralObjectTypeExternalTables,
-		ObjectTypeEventTable:              PluralObjectTypeEventTables,
-		ObjectTypeExperiment:              PluralObjectTypeExperiments,
-		ObjectTypeView:                    PluralObjectTypeViews,
-		ObjectTypeMaterializedView:        PluralObjectTypeMaterializedViews,
-		ObjectTypeSequence:                PluralObjectTypeSequences,
-		ObjectTypeSnapshot:                PluralObjectTypeSnapshots,
-		ObjectTypeSnapshotPolicy:          PluralObjectTypeSnapshotPolicies,
-		ObjectTypeSnapshotSet:             PluralObjectTypeSnapshotSets,
-		ObjectTypeSemanticView:            PluralObjectTypeSemanticViews,
-		ObjectTypeFunction:                PluralObjectTypeFunctions,
-		ObjectTypeExternalFunction:        PluralObjectTypeExternalFunctions,
-		ObjectTypeProcedure:               PluralObjectTypeProcedures,
-		ObjectTypeStream:                  PluralObjectTypeStreams,
-		ObjectTypeTask:                    PluralObjectTypeTasks,
-		ObjectTypeMaskingPolicy:           PluralObjectTypeMaskingPolicies,
-		ObjectTypeRowAccessPolicy:         PluralObjectTypeRowAccessPolicies,
-		ObjectTypeTag:                     PluralObjectTypeTags,
-		ObjectTypeSecret:                  PluralObjectTypeSecrets,
-		ObjectTypeStage:                   PluralObjectTypeStages,
-		ObjectTypeFileFormat:              PluralObjectTypeFileFormats,
-		ObjectTypePipe:                    PluralObjectTypePipes,
-		ObjectTypeAlert:                   PluralObjectTypeAlerts,
-		ObjectTypeBudget:                  PluralObjectTypeBudgets,
-		ObjectTypeClassification:          PluralObjectTypeClassifications,
-		ObjectTypeApplication:             PluralObjectTypeApplications,
-		ObjectTypeApplicationPackage:      PluralObjectTypeApplicationPackages,
-		ObjectTypeApplicationRole:         PluralObjectTypeApplicationRoles,
-		ObjectTypeStreamlit:               PluralObjectTypeStreamlits,
-		ObjectTypeOnlineFeatureTable:      PluralObjectTypeOnlineFeatureTables,
-		ObjectTypeIcebergTable:            PluralObjectTypeIcebergTables,
-		ObjectTypeJoinPolicy:              PluralObjectTypeJoinPolicies,
-		ObjectTypeExternalVolume:          PluralObjectTypeExternalVolumes,
-		ObjectTypeNetworkRule:             PluralObjectTypeNetworkRules,
-		ObjectTypeNotebook:                PluralObjectTypeNotebooks,
-		ObjectTypeNotebookProject:         PluralObjectTypeNotebookProjects,
-		ObjectTypePackagesPolicy:          PluralObjectTypePackagesPolicies,
-		ObjectTypeComputePool:             PluralObjectTypeComputePool,
-		ObjectTypePostgresInstance:        PluralObjectTypePostgresInstances,
-		ObjectTypeAggregationPolicy:       PluralObjectTypeAggregationPolicies,
-		ObjectTypeAuthenticationPolicy:    PluralObjectTypeAuthenticationPolicies,
-		ObjectTypeHybridTable:             PluralObjectTypeHybridTables,
-		ObjectTypeImageRepository:         PluralObjectTypeImageRepositories,
-		ObjectTypeProjectionPolicy:        PluralObjectTypeProjectionPolicies,
-		ObjectTypeDataMetricFunction:      PluralObjectTypeDataMetricFunctions,
-		ObjectTypeGitRepository:           PluralObjectTypeGitRepositories,
-		ObjectTypeModel:                   PluralObjectTypeModels,
-		ObjectTypeModelMonitor:            PluralObjectTypeModelMonitors,
-		ObjectTypeService:                 PluralObjectTypeServices,
-		ObjectTypeProgrammaticAccessToken: PluralObjectTypeProgrammaticAccessTokens,
-		ObjectTypeStorageIntegration:      PluralObjectTypeStorageIntegrations,
-		ObjectTypeAgent:                   PluralObjectTypeAgents,
-		ObjectTypeGateway:                 PluralObjectTypeGateways,
-		ObjectTypeMcpServer:               PluralObjectTypeMcpServers,
-		ObjectTypeStorageLifecyclePolicy:  PluralObjectTypeStorageLifecyclePolicies,
-		ObjectTypeWorkspace:               PluralObjectTypeWorkspaces,
-		ObjectTypeOpenflowDeployment:      PluralObjectTypeOpenflowDeployments,
-		ObjectTypeOpenflowRuntime:         PluralObjectTypeOpenflowRuntimes,
-		ObjectTypeOpenflowConnector:       PluralObjectTypeOpenflowConnectors,
-		ObjectTypeCatalogIntegration:      PluralObjectTypeCatalogIntegrations,
-		ObjectTypeBackupPolicy:            PluralObjectTypeBackupPolicies,
+		ObjectTypeAccount:                     PluralObjectTypeAccounts,
+		ObjectTypeManagedAccount:              PluralObjectTypeManagedAccounts,
+		ObjectTypeUser:                        PluralObjectTypeUsers,
+		ObjectTypeDatabaseRole:                PluralObjectTypeDatabaseRoles,
+		ObjectTypeDataset:                     PluralObjectTypeDatasets,
+		ObjectTypeDbtProject:                  PluralObjectTypeDbtProjects,
+		ObjectTypeRole:                        PluralObjectTypeRoles,
+		ObjectTypeIntegration:                 PluralObjectTypeIntegrations,
+		ObjectTypeNetworkPolicy:               PluralObjectTypeNetworkPolicies,
+		ObjectTypePasswordPolicy:              PluralObjectTypePasswordPolicies,
+		ObjectTypeSessionPolicy:               PluralObjectTypeSessionPolicies,
+		ObjectTypePrivacyPolicy:               PluralObjectTypePrivacyPolicies,
+		ObjectTypeReplicationGroup:            PluralObjectTypeReplicationGroups,
+		ObjectTypeFailoverGroup:               PluralObjectTypeFailoverGroups,
+		ObjectTypeConnection:                  PluralObjectTypeConnections,
+		ObjectTypeParameter:                   PluralObjectTypeParameters,
+		ObjectTypeWarehouse:                   PluralObjectTypeWarehouses,
+		ObjectTypeResourceMonitor:             PluralObjectTypeResourceMonitors,
+		ObjectTypeDatabase:                    PluralObjectTypeDatabases,
+		ObjectTypeSchema:                      PluralObjectTypeSchemas,
+		ObjectTypeShare:                       PluralObjectTypeShares,
+		ObjectTypeTable:                       PluralObjectTypeTables,
+		ObjectTypeDynamicTable:                PluralObjectTypeDynamicTables,
+		ObjectTypeInteractiveTable:            PluralObjectTypeInteractiveTables,
+		ObjectTypeCortexSearchService:         PluralObjectTypeCortexSearchServices,
+		ObjectTypeExternalTable:               PluralObjectTypeExternalTables,
+		ObjectTypeEventTable:                  PluralObjectTypeEventTables,
+		ObjectTypeExperiment:                  PluralObjectTypeExperiments,
+		ObjectTypeView:                        PluralObjectTypeViews,
+		ObjectTypeMaterializedView:            PluralObjectTypeMaterializedViews,
+		ObjectTypeSequence:                    PluralObjectTypeSequences,
+		ObjectTypeSnapshot:                    PluralObjectTypeSnapshots,
+		ObjectTypeSnapshotPolicy:              PluralObjectTypeSnapshotPolicies,
+		ObjectTypeSnapshotSet:                 PluralObjectTypeSnapshotSets,
+		ObjectTypeSemanticView:                PluralObjectTypeSemanticViews,
+		ObjectTypeFunction:                    PluralObjectTypeFunctions,
+		ObjectTypeExternalFunction:            PluralObjectTypeExternalFunctions,
+		ObjectTypeProcedure:                   PluralObjectTypeProcedures,
+		ObjectTypeStream:                      PluralObjectTypeStreams,
+		ObjectTypeTask:                        PluralObjectTypeTasks,
+		ObjectTypeMaskingPolicy:               PluralObjectTypeMaskingPolicies,
+		ObjectTypeRowAccessPolicy:             PluralObjectTypeRowAccessPolicies,
+		ObjectTypeTag:                         PluralObjectTypeTags,
+		ObjectTypeSecret:                      PluralObjectTypeSecrets,
+		ObjectTypeStage:                       PluralObjectTypeStages,
+		ObjectTypeFileFormat:                  PluralObjectTypeFileFormats,
+		ObjectTypePipe:                        PluralObjectTypePipes,
+		ObjectTypeAlert:                       PluralObjectTypeAlerts,
+		ObjectTypeBudget:                      PluralObjectTypeBudgets,
+		ObjectTypeClassification:              PluralObjectTypeClassifications,
+		ObjectTypeApplication:                 PluralObjectTypeApplications,
+		ObjectTypeApplicationPackage:          PluralObjectTypeApplicationPackages,
+		ObjectTypeApplicationRole:             PluralObjectTypeApplicationRoles,
+		ObjectTypeStreamlit:                   PluralObjectTypeStreamlits,
+		ObjectTypeOnlineFeatureTable:          PluralObjectTypeOnlineFeatureTables,
+		ObjectTypeIcebergTable:                PluralObjectTypeIcebergTables,
+		ObjectTypeJoinPolicy:                  PluralObjectTypeJoinPolicies,
+		ObjectTypeExternalVolume:              PluralObjectTypeExternalVolumes,
+		ObjectTypeNetworkRule:                 PluralObjectTypeNetworkRules,
+		ObjectTypeNotebook:                    PluralObjectTypeNotebooks,
+		ObjectTypeNotebookProject:             PluralObjectTypeNotebookProjects,
+		ObjectTypePackagesPolicy:              PluralObjectTypePackagesPolicies,
+		ObjectTypeComputePool:                 PluralObjectTypeComputePool,
+		ObjectTypePostgresInstance:            PluralObjectTypePostgresInstances,
+		ObjectTypeAggregationPolicy:           PluralObjectTypeAggregationPolicies,
+		ObjectTypeAuthenticationPolicy:        PluralObjectTypeAuthenticationPolicies,
+		ObjectTypeHybridTable:                 PluralObjectTypeHybridTables,
+		ObjectTypeImageRepository:             PluralObjectTypeImageRepositories,
+		ObjectTypeProjectionPolicy:            PluralObjectTypeProjectionPolicies,
+		ObjectTypeDataMetricFunction:          PluralObjectTypeDataMetricFunctions,
+		ObjectTypeGitRepository:               PluralObjectTypeGitRepositories,
+		ObjectTypeModel:                       PluralObjectTypeModels,
+		ObjectTypeModelMonitor:                PluralObjectTypeModelMonitors,
+		ObjectTypeService:                     PluralObjectTypeServices,
+		ObjectTypeProgrammaticAccessToken:     PluralObjectTypeProgrammaticAccessTokens,
+		ObjectTypeStorageIntegration:          PluralObjectTypeStorageIntegrations,
+		ObjectTypeAgent:                       PluralObjectTypeAgents,
+		ObjectTypeGateway:                     PluralObjectTypeGateways,
+		ObjectTypeMcpServer:                   PluralObjectTypeMcpServers,
+		ObjectTypeStorageLifecyclePolicy:      PluralObjectTypeStorageLifecyclePolicies,
+		ObjectTypeWorkspace:                   PluralObjectTypeWorkspaces,
+		ObjectTypeOpenflowDeployment:          PluralObjectTypeOpenflowDeployments,
+		ObjectTypeOpenflowRuntime:             PluralObjectTypeOpenflowRuntimes,
+		ObjectTypeOpenflowConnector:           PluralObjectTypeOpenflowConnectors,
+		ObjectTypeOpenflowConnectorDefinition: PluralObjectTypeOpenflowConnectorDefinitions,
+		ObjectTypeCatalogIntegration:          PluralObjectTypeCatalogIntegrations,
+		ObjectTypeBackupPolicy:                PluralObjectTypeBackupPolicies,
 	}
 }
 
@@ -389,93 +393,94 @@ func (o ObjectType) GetObjectIdentifier(fullyQualifiedName string) ObjectIdentif
 type PluralObjectType string
 
 const (
-	PluralObjectTypeAccounts                 PluralObjectType = "ACCOUNTS"
-	PluralObjectTypeManagedAccounts          PluralObjectType = "MANAGED ACCOUNTS"
-	PluralObjectTypeUsers                    PluralObjectType = "USERS"
-	PluralObjectTypeDatabaseRoles            PluralObjectType = "DATABASE ROLES"
-	PluralObjectTypeDatasets                 PluralObjectType = "DATASETS"
-	PluralObjectTypeDbtProjects              PluralObjectType = "DBT PROJECTS"
-	PluralObjectTypeRoles                    PluralObjectType = "ROLES"
-	PluralObjectTypeIntegrations             PluralObjectType = "INTEGRATIONS"
-	PluralObjectTypeNetworkPolicies          PluralObjectType = "NETWORK POLICIES"
-	PluralObjectTypePasswordPolicies         PluralObjectType = "PASSWORD POLICIES"
-	PluralObjectTypeSessionPolicies          PluralObjectType = "SESSION POLICIES"
-	PluralObjectTypePrivacyPolicies          PluralObjectType = "PRIVACY POLICIES"
-	PluralObjectTypeReplicationGroups        PluralObjectType = "REPLICATION GROUPS"
-	PluralObjectTypeFailoverGroups           PluralObjectType = "FAILOVER GROUPS"
-	PluralObjectTypeConnections              PluralObjectType = "CONNECTIONS"
-	PluralObjectTypeParameters               PluralObjectType = "PARAMETERS"
-	PluralObjectTypeWarehouses               PluralObjectType = "WAREHOUSES"
-	PluralObjectTypeResourceMonitors         PluralObjectType = "RESOURCE MONITORS"
-	PluralObjectTypeDatabases                PluralObjectType = "DATABASES"
-	PluralObjectTypeSchemas                  PluralObjectType = "SCHEMAS"
-	PluralObjectTypeShares                   PluralObjectType = "SHARES"
-	PluralObjectTypeTables                   PluralObjectType = "TABLES"
-	PluralObjectTypeDynamicTables            PluralObjectType = "DYNAMIC TABLES"
-	PluralObjectTypeInteractiveTables        PluralObjectType = "INTERACTIVE TABLES"
-	PluralObjectTypeCortexSearchServices     PluralObjectType = "CORTEX SEARCH SERVICES"
-	PluralObjectTypeExternalTables           PluralObjectType = "EXTERNAL TABLES"
-	PluralObjectTypeEventTables              PluralObjectType = "EVENT TABLES"
-	PluralObjectTypeExperiments              PluralObjectType = "EXPERIMENTS"
-	PluralObjectTypeViews                    PluralObjectType = "VIEWS"
-	PluralObjectTypeMaterializedViews        PluralObjectType = "MATERIALIZED VIEWS"
-	PluralObjectTypeSequences                PluralObjectType = "SEQUENCES"
-	PluralObjectTypeSnapshots                PluralObjectType = "SNAPSHOTS"
-	PluralObjectTypeSnapshotPolicies         PluralObjectType = "SNAPSHOT POLICIES"
-	PluralObjectTypeSnapshotSets             PluralObjectType = "SNAPSHOT SETS"
-	PluralObjectTypeSemanticViews            PluralObjectType = "SEMANTIC VIEWS"
-	PluralObjectTypeFunctions                PluralObjectType = "FUNCTIONS"
-	PluralObjectTypeExternalFunctions        PluralObjectType = "EXTERNAL FUNCTIONS"
-	PluralObjectTypeProcedures               PluralObjectType = "PROCEDURES"
-	PluralObjectTypeStreams                  PluralObjectType = "STREAMS"
-	PluralObjectTypeTasks                    PluralObjectType = "TASKS"
-	PluralObjectTypeMaskingPolicies          PluralObjectType = "MASKING POLICIES"
-	PluralObjectTypeRowAccessPolicies        PluralObjectType = "ROW ACCESS POLICIES"
-	PluralObjectTypeTags                     PluralObjectType = "TAGS"
-	PluralObjectTypeSecrets                  PluralObjectType = "SECRETS"
-	PluralObjectTypeStages                   PluralObjectType = "STAGES"
-	PluralObjectTypeFileFormats              PluralObjectType = "FILE FORMATS"
-	PluralObjectTypePipes                    PluralObjectType = "PIPES"
-	PluralObjectTypeAlerts                   PluralObjectType = "ALERTS"
-	PluralObjectTypeBudgets                  PluralObjectType = "SNOWFLAKE.CORE.BUDGET"
-	PluralObjectTypeClassifications          PluralObjectType = "SNOWFLAKE.ML.CLASSIFICATION"
-	PluralObjectTypeApplications             PluralObjectType = "APPLICATIONS"
-	PluralObjectTypeApplicationPackages      PluralObjectType = "APPLICATION PACKAGES"
-	PluralObjectTypeApplicationRoles         PluralObjectType = "APPLICATION ROLES"
-	PluralObjectTypeStreamlits               PluralObjectType = "STREAMLITS"
-	PluralObjectTypeOnlineFeatureTables      PluralObjectType = "ONLINE FEATURE TABLES"
-	PluralObjectTypeIcebergTables            PluralObjectType = "ICEBERG TABLES"
-	PluralObjectTypeJoinPolicies             PluralObjectType = "JOIN POLICIES"
-	PluralObjectTypeExternalVolumes          PluralObjectType = "EXTERNAL VOLUMES"
-	PluralObjectTypeNetworkRules             PluralObjectType = "NETWORK RULES"
-	PluralObjectTypeNotebooks                PluralObjectType = "NOTEBOOKS"
-	PluralObjectTypeNotebookProjects         PluralObjectType = "NOTEBOOK PROJECTS"
-	PluralObjectTypePackagesPolicies         PluralObjectType = "PACKAGES POLICIES"
-	PluralObjectTypeComputePool              PluralObjectType = "COMPUTE POOLS"
-	PluralObjectTypePostgresInstances        PluralObjectType = "POSTGRES INSTANCES"
-	PluralObjectTypeAggregationPolicies      PluralObjectType = "AGGREGATION POLICIES"
-	PluralObjectTypeAuthenticationPolicies   PluralObjectType = "AUTHENTICATION POLICIES"
-	PluralObjectTypeHybridTables             PluralObjectType = "HYBRID TABLES"
-	PluralObjectTypeImageRepositories        PluralObjectType = "IMAGE REPOSITORIES"
-	PluralObjectTypeProjectionPolicies       PluralObjectType = "PROJECTION POLICIES"
-	PluralObjectTypeDataMetricFunctions      PluralObjectType = "DATA METRIC FUNCTIONS"
-	PluralObjectTypeGitRepositories          PluralObjectType = "GIT REPOSITORIES"
-	PluralObjectTypeModels                   PluralObjectType = "MODELS"
-	PluralObjectTypeModelMonitors            PluralObjectType = "MODEL MONITORS"
-	PluralObjectTypeServices                 PluralObjectType = "SERVICES"
-	PluralObjectTypeProgrammaticAccessTokens PluralObjectType = "PROGRAMMATIC ACCESS TOKENS" //nolint:gosec
-	PluralObjectTypeStorageIntegrations      PluralObjectType = "STORAGE INTEGRATIONS"
-	PluralObjectTypeWorkspaces               PluralObjectType = "WORKSPACES"
-	PluralObjectTypeStorageLifecyclePolicies PluralObjectType = "STORAGE LIFECYCLE POLICIES"
-	PluralObjectTypeAgents                   PluralObjectType = "AGENTS"
-	PluralObjectTypeGateways                 PluralObjectType = "GATEWAYS"
-	PluralObjectTypeMcpServers               PluralObjectType = "MCP SERVERS"
-	PluralObjectTypeCatalogIntegrations      PluralObjectType = "CATALOG INTEGRATIONS"
-	PluralObjectTypeOpenflowDeployments      PluralObjectType = "OPENFLOW DEPLOYMENTS"
-	PluralObjectTypeOpenflowRuntimes         PluralObjectType = "OPENFLOW RUNTIMES"
-	PluralObjectTypeOpenflowConnectors       PluralObjectType = "OPENFLOW CONNECTORS"
-	PluralObjectTypeSnowflakeIntelligences   PluralObjectType = "SNOWFLAKE INTELLIGENCES"
-	PluralObjectTypeBackupPolicies           PluralObjectType = "BACKUP POLICIES"
+	PluralObjectTypeAccounts                     PluralObjectType = "ACCOUNTS"
+	PluralObjectTypeManagedAccounts              PluralObjectType = "MANAGED ACCOUNTS"
+	PluralObjectTypeUsers                        PluralObjectType = "USERS"
+	PluralObjectTypeDatabaseRoles                PluralObjectType = "DATABASE ROLES"
+	PluralObjectTypeDatasets                     PluralObjectType = "DATASETS"
+	PluralObjectTypeDbtProjects                  PluralObjectType = "DBT PROJECTS"
+	PluralObjectTypeRoles                        PluralObjectType = "ROLES"
+	PluralObjectTypeIntegrations                 PluralObjectType = "INTEGRATIONS"
+	PluralObjectTypeNetworkPolicies              PluralObjectType = "NETWORK POLICIES"
+	PluralObjectTypePasswordPolicies             PluralObjectType = "PASSWORD POLICIES"
+	PluralObjectTypeSessionPolicies              PluralObjectType = "SESSION POLICIES"
+	PluralObjectTypePrivacyPolicies              PluralObjectType = "PRIVACY POLICIES"
+	PluralObjectTypeReplicationGroups            PluralObjectType = "REPLICATION GROUPS"
+	PluralObjectTypeFailoverGroups               PluralObjectType = "FAILOVER GROUPS"
+	PluralObjectTypeConnections                  PluralObjectType = "CONNECTIONS"
+	PluralObjectTypeParameters                   PluralObjectType = "PARAMETERS"
+	PluralObjectTypeWarehouses                   PluralObjectType = "WAREHOUSES"
+	PluralObjectTypeResourceMonitors             PluralObjectType = "RESOURCE MONITORS"
+	PluralObjectTypeDatabases                    PluralObjectType = "DATABASES"
+	PluralObjectTypeSchemas                      PluralObjectType = "SCHEMAS"
+	PluralObjectTypeShares                       PluralObjectType = "SHARES"
+	PluralObjectTypeTables                       PluralObjectType = "TABLES"
+	PluralObjectTypeDynamicTables                PluralObjectType = "DYNAMIC TABLES"
+	PluralObjectTypeInteractiveTables            PluralObjectType = "INTERACTIVE TABLES"
+	PluralObjectTypeCortexSearchServices         PluralObjectType = "CORTEX SEARCH SERVICES"
+	PluralObjectTypeExternalTables               PluralObjectType = "EXTERNAL TABLES"
+	PluralObjectTypeEventTables                  PluralObjectType = "EVENT TABLES"
+	PluralObjectTypeExperiments                  PluralObjectType = "EXPERIMENTS"
+	PluralObjectTypeViews                        PluralObjectType = "VIEWS"
+	PluralObjectTypeMaterializedViews            PluralObjectType = "MATERIALIZED VIEWS"
+	PluralObjectTypeSequences                    PluralObjectType = "SEQUENCES"
+	PluralObjectTypeSnapshots                    PluralObjectType = "SNAPSHOTS"
+	PluralObjectTypeSnapshotPolicies             PluralObjectType = "SNAPSHOT POLICIES"
+	PluralObjectTypeSnapshotSets                 PluralObjectType = "SNAPSHOT SETS"
+	PluralObjectTypeSemanticViews                PluralObjectType = "SEMANTIC VIEWS"
+	PluralObjectTypeFunctions                    PluralObjectType = "FUNCTIONS"
+	PluralObjectTypeExternalFunctions            PluralObjectType = "EXTERNAL FUNCTIONS"
+	PluralObjectTypeProcedures                   PluralObjectType = "PROCEDURES"
+	PluralObjectTypeStreams                      PluralObjectType = "STREAMS"
+	PluralObjectTypeTasks                        PluralObjectType = "TASKS"
+	PluralObjectTypeMaskingPolicies              PluralObjectType = "MASKING POLICIES"
+	PluralObjectTypeRowAccessPolicies            PluralObjectType = "ROW ACCESS POLICIES"
+	PluralObjectTypeTags                         PluralObjectType = "TAGS"
+	PluralObjectTypeSecrets                      PluralObjectType = "SECRETS"
+	PluralObjectTypeStages                       PluralObjectType = "STAGES"
+	PluralObjectTypeFileFormats                  PluralObjectType = "FILE FORMATS"
+	PluralObjectTypePipes                        PluralObjectType = "PIPES"
+	PluralObjectTypeAlerts                       PluralObjectType = "ALERTS"
+	PluralObjectTypeBudgets                      PluralObjectType = "SNOWFLAKE.CORE.BUDGET"
+	PluralObjectTypeClassifications              PluralObjectType = "SNOWFLAKE.ML.CLASSIFICATION"
+	PluralObjectTypeApplications                 PluralObjectType = "APPLICATIONS"
+	PluralObjectTypeApplicationPackages          PluralObjectType = "APPLICATION PACKAGES"
+	PluralObjectTypeApplicationRoles             PluralObjectType = "APPLICATION ROLES"
+	PluralObjectTypeStreamlits                   PluralObjectType = "STREAMLITS"
+	PluralObjectTypeOnlineFeatureTables          PluralObjectType = "ONLINE FEATURE TABLES"
+	PluralObjectTypeIcebergTables                PluralObjectType = "ICEBERG TABLES"
+	PluralObjectTypeJoinPolicies                 PluralObjectType = "JOIN POLICIES"
+	PluralObjectTypeExternalVolumes              PluralObjectType = "EXTERNAL VOLUMES"
+	PluralObjectTypeNetworkRules                 PluralObjectType = "NETWORK RULES"
+	PluralObjectTypeNotebooks                    PluralObjectType = "NOTEBOOKS"
+	PluralObjectTypeNotebookProjects             PluralObjectType = "NOTEBOOK PROJECTS"
+	PluralObjectTypePackagesPolicies             PluralObjectType = "PACKAGES POLICIES"
+	PluralObjectTypeComputePool                  PluralObjectType = "COMPUTE POOLS"
+	PluralObjectTypePostgresInstances            PluralObjectType = "POSTGRES INSTANCES"
+	PluralObjectTypeAggregationPolicies          PluralObjectType = "AGGREGATION POLICIES"
+	PluralObjectTypeAuthenticationPolicies       PluralObjectType = "AUTHENTICATION POLICIES"
+	PluralObjectTypeHybridTables                 PluralObjectType = "HYBRID TABLES"
+	PluralObjectTypeImageRepositories            PluralObjectType = "IMAGE REPOSITORIES"
+	PluralObjectTypeProjectionPolicies           PluralObjectType = "PROJECTION POLICIES"
+	PluralObjectTypeDataMetricFunctions          PluralObjectType = "DATA METRIC FUNCTIONS"
+	PluralObjectTypeGitRepositories              PluralObjectType = "GIT REPOSITORIES"
+	PluralObjectTypeModels                       PluralObjectType = "MODELS"
+	PluralObjectTypeModelMonitors                PluralObjectType = "MODEL MONITORS"
+	PluralObjectTypeServices                     PluralObjectType = "SERVICES"
+	PluralObjectTypeProgrammaticAccessTokens     PluralObjectType = "PROGRAMMATIC ACCESS TOKENS" //nolint:gosec
+	PluralObjectTypeStorageIntegrations          PluralObjectType = "STORAGE INTEGRATIONS"
+	PluralObjectTypeWorkspaces                   PluralObjectType = "WORKSPACES"
+	PluralObjectTypeStorageLifecyclePolicies     PluralObjectType = "STORAGE LIFECYCLE POLICIES"
+	PluralObjectTypeAgents                       PluralObjectType = "AGENTS"
+	PluralObjectTypeGateways                     PluralObjectType = "GATEWAYS"
+	PluralObjectTypeMcpServers                   PluralObjectType = "MCP SERVERS"
+	PluralObjectTypeCatalogIntegrations          PluralObjectType = "CATALOG INTEGRATIONS"
+	PluralObjectTypeOpenflowDeployments          PluralObjectType = "OPENFLOW DEPLOYMENTS"
+	PluralObjectTypeOpenflowRuntimes             PluralObjectType = "OPENFLOW RUNTIMES"
+	PluralObjectTypeOpenflowConnectors           PluralObjectType = "OPENFLOW CONNECTORS"
+	PluralObjectTypeOpenflowConnectorDefinitions PluralObjectType = "OPENFLOW CONNECTOR DEFINITIONS"
+	PluralObjectTypeSnowflakeIntelligences       PluralObjectType = "SNOWFLAKE INTELLIGENCES"
+	PluralObjectTypeBackupPolicies               PluralObjectType = "BACKUP POLICIES"
 )
 
 func (p PluralObjectType) String() string {

@@ -15,28 +15,35 @@ func init() {
 var openflowDeploymentsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_OpenflowDeployments_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
-	case_OpenflowDeployments_sql_Create_basic                                        testCaseName = "sql_Create_basic"
-	case_OpenflowDeployments_sql_Create_all                                          testCaseName = "sql_Create_all"
-	case_OpenflowDeployments_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_OpenflowDeployments_validation_Alter_RenameTo_ValidIdentifierIfSet          testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_OpenflowDeployments_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_OpenflowDeployments_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_OpenflowDeployments_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_OpenflowDeployments_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_OpenflowDeployments_sql_Alter_Upgrade                                       testCaseName = "sql_Alter_Upgrade"
-	case_OpenflowDeployments_sql_Alter_Terminate                                     testCaseName = "sql_Alter_Terminate"
-	case_OpenflowDeployments_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
-	case_OpenflowDeployments_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
-	case_OpenflowDeployments_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
-	case_OpenflowDeployments_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_OpenflowDeployments_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
-	case_OpenflowDeployments_sql_Drop_all                                            testCaseName = "sql_Drop_all"
-	case_OpenflowDeployments_sql_Show_basic                                          testCaseName = "sql_Show_basic"
-	case_OpenflowDeployments_sql_Show_all                                            testCaseName = "sql_Show_all"
-	case_OpenflowDeployments_sql_Show_Like                                           testCaseName = "sql_Show_Like"
-	case_OpenflowDeployments_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_OpenflowDeployments_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+	case_OpenflowDeployments_validation_Create_name_ValidIdentifier                                 testCaseName = "validation_Create_name_ValidIdentifier"
+	case_OpenflowDeployments_validation_Create_opts_EventTable_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_EventTable_ExactlyOneValueSet_NoneSet"
+	case_OpenflowDeployments_validation_Create_opts_EventTable_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_EventTable_ExactlyOneValueSet_MoreThanOneSet"
+	case_OpenflowDeployments_sql_Create_basic                                                       testCaseName = "sql_Create_basic"
+	case_OpenflowDeployments_sql_Create_all                                                         testCaseName = "sql_Create_all"
+	case_OpenflowDeployments_validation_Alter_name_ValidIdentifier                                  testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_OpenflowDeployments_validation_Alter_RenameTo_ValidIdentifierIfSet                         testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_OpenflowDeployments_validation_Alter_opts_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_OpenflowDeployments_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_OpenflowDeployments_validation_Alter_opts_Set_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_OpenflowDeployments_validation_Alter_opts_Set_EventTable_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_EventTable_ExactlyOneValueSet_NoneSet"
+	case_OpenflowDeployments_validation_Alter_opts_Set_EventTable_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_EventTable_ExactlyOneValueSet_MoreThanOneSet"
+	case_OpenflowDeployments_validation_Alter_opts_Unset_AtLeastOneValueSet                         testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_OpenflowDeployments_sql_Alter_Upgrade                                                      testCaseName = "sql_Alter_Upgrade"
+	case_OpenflowDeployments_sql_Alter_Terminate                                                    testCaseName = "sql_Alter_Terminate"
+	case_OpenflowDeployments_sql_Alter_RenameTo                                                     testCaseName = "sql_Alter_RenameTo"
+	case_OpenflowDeployments_sql_Alter_Set                                                          testCaseName = "sql_Alter_Set"
+	case_OpenflowDeployments_sql_Alter_Unset                                                        testCaseName = "sql_Alter_Unset"
+	case_OpenflowDeployments_validation_Drop_name_ValidIdentifier                                   testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_OpenflowDeployments_sql_Drop_basic                                                         testCaseName = "sql_Drop_basic"
+	case_OpenflowDeployments_sql_Drop_all                                                           testCaseName = "sql_Drop_all"
+	case_OpenflowDeployments_sql_Show_basic                                                         testCaseName = "sql_Show_basic"
+	case_OpenflowDeployments_sql_Show_all                                                           testCaseName = "sql_Show_all"
+	case_OpenflowDeployments_sql_Show_Like                                                          testCaseName = "sql_Show_Like"
+	case_OpenflowDeployments_sql_Show_In                                                            testCaseName = "sql_Show_In"
+	case_OpenflowDeployments_sql_Show_StartsWith                                                    testCaseName = "sql_Show_StartsWith"
+	case_OpenflowDeployments_sql_Show_Limit                                                         testCaseName = "sql_Show_Limit"
+	case_OpenflowDeployments_validation_Describe_name_ValidIdentifier                               testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_OpenflowDeployments_sql_Describe_basic                                                     testCaseName = "sql_Describe_basic"
 )
 
 type OpenflowDeploymentsTestsContext struct {
@@ -62,6 +69,24 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 				ExpectedErr: ErrInvalidObjectIdentifier,
 				DefaultModify: func(opts *CreateOpenflowDeploymentOptions) {
 					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateOpenflowDeploymentOptions]{
+				Name:        case_OpenflowDeployments_validation_Create_opts_EventTable_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOpenflowDeploymentOptions.EventTable", "EventTable", "None"),
+				DefaultModify: func(opts *CreateOpenflowDeploymentOptions) {
+					opts.EventTable = &OpenflowDeploymentEventTable{}
+					opts.EventTable.EventTable = nil
+					opts.EventTable.None = nil
+				},
+			},
+			validationCase[*CreateOpenflowDeploymentOptions]{
+				Name:        case_OpenflowDeployments_validation_Create_opts_EventTable_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOpenflowDeploymentOptions.EventTable", "EventTable", "None"),
+				DefaultModify: func(opts *CreateOpenflowDeploymentOptions) {
+					opts.EventTable = &OpenflowDeploymentEventTable{}
+					opts.EventTable.EventTable = new(randomSchemaObjectIdentifier())
+					opts.EventTable.None = new(true)
 				},
 			},
 		).
@@ -124,6 +149,26 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 					opts.Set.Comment = nil
 					opts.Set.DisplayName = nil
 					opts.Set.EventTable = nil
+				},
+			},
+			validationCase[*AlterOpenflowDeploymentOptions]{
+				Name:        case_OpenflowDeployments_validation_Alter_opts_Set_EventTable_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterOpenflowDeploymentOptions.Set.EventTable", "EventTable", "None"),
+				DefaultModify: func(opts *AlterOpenflowDeploymentOptions) {
+					opts.Set = &OpenflowDeploymentSet{}
+					opts.Set.EventTable = &OpenflowDeploymentEventTable{}
+					opts.Set.EventTable.EventTable = nil
+					opts.Set.EventTable.None = nil
+				},
+			},
+			validationCase[*AlterOpenflowDeploymentOptions]{
+				Name:        case_OpenflowDeployments_validation_Alter_opts_Set_EventTable_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterOpenflowDeploymentOptions.Set.EventTable", "EventTable", "None"),
+				DefaultModify: func(opts *AlterOpenflowDeploymentOptions) {
+					opts.Set = &OpenflowDeploymentSet{}
+					opts.Set.EventTable = &OpenflowDeploymentEventTable{}
+					opts.Set.EventTable.EventTable = new(randomSchemaObjectIdentifier())
+					opts.Set.EventTable.None = new(true)
 				},
 			},
 			validationCase[*AlterOpenflowDeploymentOptions]{
@@ -197,6 +242,15 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 			},
 			sqlCase[*ShowOpenflowDeploymentOptions]{
 				Name: case_OpenflowDeployments_sql_Show_Like,
+			},
+			sqlCase[*ShowOpenflowDeploymentOptions]{
+				Name: case_OpenflowDeployments_sql_Show_In,
+			},
+			sqlCase[*ShowOpenflowDeploymentOptions]{
+				Name: case_OpenflowDeployments_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowOpenflowDeploymentOptions]{
+				Name: case_OpenflowDeployments_sql_Show_Limit,
 			},
 		),
 	Describe: newSdkTestCtx[*DescribeOpenflowDeploymentOptions](

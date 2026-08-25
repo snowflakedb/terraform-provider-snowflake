@@ -3,11 +3,13 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateOpenflowConnectorOptions]   = new(CreateOpenflowConnectorRequest)
-	_ optionsProvider[AlterOpenflowConnectorOptions]    = new(AlterOpenflowConnectorRequest)
-	_ optionsProvider[DropOpenflowConnectorOptions]     = new(DropOpenflowConnectorRequest)
-	_ optionsProvider[ShowOpenflowConnectorOptions]     = new(ShowOpenflowConnectorRequest)
-	_ optionsProvider[DescribeOpenflowConnectorOptions] = new(DescribeOpenflowConnectorRequest)
+	_ optionsProvider[CreateOpenflowConnectorOptions]       = new(CreateOpenflowConnectorRequest)
+	_ optionsProvider[AlterOpenflowConnectorOptions]        = new(AlterOpenflowConnectorRequest)
+	_ optionsProvider[DropOpenflowConnectorOptions]         = new(DropOpenflowConnectorRequest)
+	_ optionsProvider[ShowOpenflowConnectorOptions]         = new(ShowOpenflowConnectorRequest)
+	_ optionsProvider[DescribeOpenflowConnectorOptions]     = new(DescribeOpenflowConnectorRequest)
+	_ optionsProvider[ExecuteOpenflowConnectorOptions]      = new(ExecuteOpenflowConnectorRequest)
+	_ optionsProvider[ShowVersionsOpenflowConnectorOptions] = new(ShowVersionsOpenflowConnectorRequest)
 )
 
 type CreateOpenflowConnectorRequest struct {
@@ -21,19 +23,55 @@ type CreateOpenflowConnectorRequest struct {
 }
 
 type AlterOpenflowConnectorRequest struct {
-	name      SchemaObjectIdentifier // required
-	Start     *bool
-	Stop      *bool
-	Terminate *bool
-	Commit    *bool
-	Abort     *bool
-	Set       *OpenflowConnectorSetRequest
-	Unset     *OpenflowConnectorUnsetRequest
+	IfExists       *bool
+	name           SchemaObjectIdentifier // required
+	Start          *bool
+	Stop           *bool
+	Terminate      *bool
+	TerminateForce *bool
+	Abort          *bool
+	RenameTo       *SchemaObjectIdentifier
+	AddVersion     *OpenflowConnectorAddVersionRequest
+	AddLiveVersion *OpenflowConnectorAddLiveVersionRequest
+	Commit         *OpenflowConnectorCommitRequest
+	Push           *OpenflowConnectorPushRequest
+	Pull           *bool
+	Set            *OpenflowConnectorSetRequest
+	Unset          *OpenflowConnectorUnsetRequest
+}
+
+type OpenflowConnectorAddVersionRequest struct {
+	From *Location // required
+}
+
+type OpenflowConnectorAddLiveVersionRequest struct {
+	VersionAlias *string
+	Comment      *string
+}
+
+type OpenflowConnectorCommitRequest struct {
+	Comment *string
+}
+
+type OpenflowConnectorPushRequest struct {
+	To       *string
+	Username string // required
+	Password string // required
+	Name     string // required
+	Email    string // required
+	Comment  *string
 }
 
 type OpenflowConnectorSetRequest struct {
-	DisplayName *string
-	Comment     *string
+	DisplayName    *string
+	Comment        *string
+	DefaultVersion *OpenflowConnectorDefaultVersionRequest
+}
+
+type OpenflowConnectorDefaultVersionRequest struct {
+	First   *bool
+	Last    *bool
+	Version *string
 }
 
 type OpenflowConnectorUnsetRequest struct {
@@ -47,10 +85,23 @@ type DropOpenflowConnectorRequest struct {
 }
 
 type ShowOpenflowConnectorRequest struct {
-	Like *Like
-	In   *In
+	Like       *Like
+	In         *In
+	StartsWith *string
+	Limit      *LimitFrom
 }
 
 type DescribeOpenflowConnectorRequest struct {
 	name SchemaObjectIdentifier // required
+}
+
+type ExecuteOpenflowConnectorRequest struct {
+	name SchemaObjectIdentifier // required
+	From *Location
+	Step *string
+}
+
+type ShowVersionsOpenflowConnectorRequest struct {
+	name  SchemaObjectIdentifier // required
+	Limit *int
 }

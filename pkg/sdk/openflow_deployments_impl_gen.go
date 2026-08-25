@@ -77,18 +77,24 @@ func (r *CreateOpenflowDeploymentRequest) toOpts() *CreateOpenflowDeploymentOpti
 		name:                       r.name,
 		DeploymentType:             r.DeploymentType,
 		VpcType:                    r.VpcType,
-		CustomIngressHostname:      r.CustomIngressHostname,
 		UsePrivateLink:             r.UsePrivateLink,
 		UseUserAuthOverPrivatelink: r.UseUserAuthOverPrivatelink,
-		EventTable:                 r.EventTable,
+		CustomIngressHostname:      r.CustomIngressHostname,
 		DisplayName:                r.DisplayName,
 		Comment:                    r.Comment,
+	}
+	if r.EventTable != nil {
+		opts.EventTable = &OpenflowDeploymentEventTable{
+			EventTable: r.EventTable.EventTable,
+			None:       r.EventTable.None,
+		}
 	}
 	return opts
 }
 
 func (r *AlterOpenflowDeploymentRequest) toOpts() *AlterOpenflowDeploymentOptions {
 	opts := &AlterOpenflowDeploymentOptions{
+		IfExists:  r.IfExists,
 		name:      r.name,
 		Upgrade:   r.Upgrade,
 		Terminate: r.Terminate,
@@ -96,9 +102,14 @@ func (r *AlterOpenflowDeploymentRequest) toOpts() *AlterOpenflowDeploymentOption
 	}
 	if r.Set != nil {
 		opts.Set = &OpenflowDeploymentSet{
-			Comment:     r.Set.Comment,
 			DisplayName: r.Set.DisplayName,
-			EventTable:  r.Set.EventTable,
+			Comment:     r.Set.Comment,
+		}
+		if r.Set.EventTable != nil {
+			opts.Set.EventTable = &OpenflowDeploymentEventTable{
+				EventTable: r.Set.EventTable.EventTable,
+				None:       r.Set.EventTable.None,
+			}
 		}
 	}
 	if r.Unset != nil {
@@ -121,7 +132,10 @@ func (r *DropOpenflowDeploymentRequest) toOpts() *DropOpenflowDeploymentOptions 
 
 func (r *ShowOpenflowDeploymentRequest) toOpts() *ShowOpenflowDeploymentOptions {
 	opts := &ShowOpenflowDeploymentOptions{
-		Like: r.Like,
+		Like:       r.Like,
+		In:         r.In,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
 	}
 	return opts
 }
@@ -132,13 +146,15 @@ func (r openflowDeploymentRow) convert() (*OpenflowDeployment, error) {
 		UsePrivateLink:             r.UsePrivateLink,
 		UseUserAuthOverPrivateLink: r.UseUserAuthOverPrivateLink,
 		Owner:                      r.Owner,
+		CreatedOn:                  r.CreatedOn,
+		UpdatedOn:                  r.UpdatedOn,
 	}
 	mapStringWithMapping(&result.Type, r.DeploymentType, ToOpenflowDeploymentType)
 	mapStringWithMapping(&result.Status, r.Status, ToOpenflowDeploymentStatus)
 	mapNullStringWithMapping(&result.VpcType, r.VpcType, ToOpenflowVpcType)
 	mapNullString(&result.DisplayName, r.DisplayName)
 	mapNullString(&result.CustomIngressHostname, r.CustomIngressHostname)
-	mapNullString(&result.OpenflowKey, r.OpenflowKey)
+	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }
@@ -156,17 +172,13 @@ func (r openflowDeploymentDetailsRow) convert() (*OpenflowDeploymentDetails, err
 		UsePrivateLink:             r.UsePrivateLink,
 		UseUserAuthOverPrivateLink: r.UseUserAuthOverPrivateLink,
 		Owner:                      r.Owner,
-		CreatedOn:                  r.CreatedOn,
-		UpdatedOn:                  r.UpdatedOn,
 	}
 	mapStringWithMapping(&result.Type, r.DeploymentType, ToOpenflowDeploymentType)
 	mapStringWithMapping(&result.Status, r.Status, ToOpenflowDeploymentStatus)
 	mapNullStringWithMapping(&result.VpcType, r.VpcType, ToOpenflowVpcType)
 	mapNullString(&result.DisplayName, r.DisplayName)
 	mapNullString(&result.CustomIngressHostname, r.CustomIngressHostname)
-	mapNullString(&result.OpenflowKey, r.OpenflowKey)
+	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
-	mapNullString(&result.ErrorCode, r.ErrorCode)
-	mapNullString(&result.StatusMessage, r.StatusMessage)
 	return result, nil
 }

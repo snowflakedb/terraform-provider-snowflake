@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -77,10 +78,10 @@ func (r *CreateOpenflowRuntimeRequest) toOpts() *CreateOpenflowRuntimeOptions {
 		IfNotExists:   r.IfNotExists,
 		name:          r.name,
 		InDeployment:  r.InDeployment,
-		ExecuteAsRole: r.ExecuteAsRole,
 		NodeType:      r.NodeType,
 		MinNodes:      r.MinNodes,
 		MaxNodes:      r.MaxNodes,
+		ExecuteAsRole: r.ExecuteAsRole,
 		DisplayName:   r.DisplayName,
 		Comment:       r.Comment,
 	}
@@ -94,6 +95,7 @@ func (r *CreateOpenflowRuntimeRequest) toOpts() *CreateOpenflowRuntimeOptions {
 
 func (r *AlterOpenflowRuntimeRequest) toOpts() *AlterOpenflowRuntimeOptions {
 	opts := &AlterOpenflowRuntimeOptions{
+		IfExists:         r.IfExists,
 		name:             r.name,
 		Suspend:          r.Suspend,
 		Resume:           r.Resume,
@@ -102,15 +104,20 @@ func (r *AlterOpenflowRuntimeRequest) toOpts() *AlterOpenflowRuntimeOptions {
 		RestartRecovery:  r.RestartRecovery,
 		Terminate:        r.Terminate,
 		TerminateCascade: r.TerminateCascade,
-		Upgrade:          r.Upgrade,
 		RenameTo:         r.RenameTo,
+	}
+	if r.Upgrade != nil {
+		opts.Upgrade = &OpenflowRuntimeUpgrade{
+			Recovery: r.Upgrade.Recovery,
+			Force:    r.Upgrade.Force,
+		}
 	}
 	if r.Set != nil {
 		opts.Set = &OpenflowRuntimeSet{
+			DisplayName:   r.Set.DisplayName,
 			MinNodes:      r.Set.MinNodes,
 			MaxNodes:      r.Set.MaxNodes,
 			ExecuteAsRole: r.Set.ExecuteAsRole,
-			DisplayName:   r.Set.DisplayName,
 			Comment:       r.Set.Comment,
 		}
 		if r.Set.ExternalAccessIntegrations != nil {
@@ -127,6 +134,16 @@ func (r *AlterOpenflowRuntimeRequest) toOpts() *AlterOpenflowRuntimeOptions {
 			Comment:                    r.Unset.Comment,
 		}
 	}
+	if r.AddExternalAccessIntegrations != nil {
+		opts.AddExternalAccessIntegrations = &OpenflowRuntimeExternalAccessIntegrations{
+			ExternalAccessIntegrations: r.AddExternalAccessIntegrations.ExternalAccessIntegrations,
+		}
+	}
+	if r.RemoveExternalAccessIntegrations != nil {
+		opts.RemoveExternalAccessIntegrations = &OpenflowRuntimeExternalAccessIntegrations{
+			ExternalAccessIntegrations: r.RemoveExternalAccessIntegrations.ExternalAccessIntegrations,
+		}
+	}
 	return opts
 }
 
@@ -141,8 +158,10 @@ func (r *DropOpenflowRuntimeRequest) toOpts() *DropOpenflowRuntimeOptions {
 
 func (r *ShowOpenflowRuntimeRequest) toOpts() *ShowOpenflowRuntimeOptions {
 	opts := &ShowOpenflowRuntimeOptions{
-		Like: r.Like,
-		In:   r.In,
+		Like:       r.Like,
+		In:         r.In,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
 	}
 	return opts
 }
@@ -154,7 +173,8 @@ func (r openflowRuntimeRow) convert() (*OpenflowRuntime, error) {
 		MinNodes:           r.MinNodes,
 		MaxNodes:           r.MaxNodes,
 		InitiallySuspended: r.InitiallySuspended,
-		ExecuteAsRole:      r.ExecuteAsRole,
+		DatabaseName:       r.DatabaseName,
+		SchemaName:         r.SchemaName,
 		Owner:              r.Owner,
 		CreatedOn:          r.CreatedOn,
 		UpdatedOn:          r.UpdatedOn,
@@ -163,10 +183,14 @@ func (r openflowRuntimeRow) convert() (*OpenflowRuntime, error) {
 	mapStringWithMapping(&result.NodeType, r.NodeType, ToOpenflowRuntimeNodeType)
 	mapNullString(&result.DisplayName, r.DisplayName)
 	if r.ExternalAccessIntegrations.Valid {
-		if ids, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String); err == nil {
-			result.ExternalAccessIntegrations = ids
+		if v, err := ParseOpenflowRuntimeExternalAccessIntegrations(r.ExternalAccessIntegrations.String); err != nil {
+			return nil, fmt.Errorf("parsing account object identifier: %w", err)
+		} else {
+			result.ExternalAccessIntegrations = v
 		}
 	}
+	mapNullStringToNonNullableField(&result.ExecuteAsRole, r.ExecuteAsRole)
+	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }
@@ -185,22 +209,25 @@ func (r openflowRuntimeDetailsRow) convert() (*OpenflowRuntimeDetails, error) {
 		MinNodes:           r.MinNodes,
 		MaxNodes:           r.MaxNodes,
 		InitiallySuspended: r.InitiallySuspended,
-		ExecuteAsRole:      r.ExecuteAsRole,
 		Owner:              r.Owner,
-		CreatedOn:          r.CreatedOn,
-		UpdatedOn:          r.UpdatedOn,
 	}
 	mapStringWithMapping(&result.Status, r.Status, ToOpenflowRuntimeStatus)
 	mapStringWithMapping(&result.NodeType, r.NodeType, ToOpenflowRuntimeNodeType)
 	mapNullString(&result.DisplayName, r.DisplayName)
 	if r.ExternalAccessIntegrations.Valid {
-		if ids, err := ParseCommaSeparatedAccountObjectIdentifierArray(r.ExternalAccessIntegrations.String); err == nil {
-			result.ExternalAccessIntegrations = ids
+		if v, err := ParseOpenflowRuntimeExternalAccessIntegrations(r.ExternalAccessIntegrations.String); err != nil {
+			return nil, fmt.Errorf("parsing account object identifier: %w", err)
+		} else {
+			result.ExternalAccessIntegrations = v
 		}
 	}
+	mapNullStringToNonNullableField(&result.ExecuteAsRole, r.ExecuteAsRole)
+	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.ServerUrl, r.ServerUrl)
-	mapNullString(&result.ErrorCode, r.ErrorCode)
-	mapNullString(&result.StatusMessage, r.StatusMessage)
+	mapNullString(&result.NodeTypeTier, r.NodeTypeTier)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
 	return result, nil
 }

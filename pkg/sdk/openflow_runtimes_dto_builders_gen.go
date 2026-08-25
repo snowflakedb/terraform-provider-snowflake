@@ -5,18 +5,18 @@ package sdk
 func NewCreateOpenflowRuntimeRequest(
 	name SchemaObjectIdentifier,
 	inDeployment AccountObjectIdentifier,
-	executeAsRole AccountObjectIdentifier,
 	nodeType OpenflowRuntimeNodeType,
 	minNodes int,
 	maxNodes int,
+	executeAsRole AccountObjectIdentifier,
 ) *CreateOpenflowRuntimeRequest {
 	s := CreateOpenflowRuntimeRequest{}
 	s.name = name
 	s.InDeployment = inDeployment
-	s.ExecuteAsRole = executeAsRole
 	s.NodeType = nodeType
 	s.MinNodes = minNodes
 	s.MaxNodes = maxNodes
+	s.ExecuteAsRole = executeAsRole
 	return &s
 }
 
@@ -56,6 +56,11 @@ func NewAlterOpenflowRuntimeRequest(
 	return &s
 }
 
+func (s *AlterOpenflowRuntimeRequest) WithIfExists(ifExists bool) *AlterOpenflowRuntimeRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
 func (s *AlterOpenflowRuntimeRequest) WithSuspend(suspend bool) *AlterOpenflowRuntimeRequest {
 	s.Suspend = &suspend
 	return s
@@ -91,7 +96,7 @@ func (s *AlterOpenflowRuntimeRequest) WithTerminateCascade(terminateCascade bool
 	return s
 }
 
-func (s *AlterOpenflowRuntimeRequest) WithUpgrade(upgrade bool) *AlterOpenflowRuntimeRequest {
+func (s *AlterOpenflowRuntimeRequest) WithUpgrade(upgrade OpenflowRuntimeUpgradeRequest) *AlterOpenflowRuntimeRequest {
 	s.Upgrade = &upgrade
 	return s
 }
@@ -111,9 +116,39 @@ func (s *AlterOpenflowRuntimeRequest) WithUnset(unset OpenflowRuntimeUnsetReques
 	return s
 }
 
+func (s *AlterOpenflowRuntimeRequest) WithAddExternalAccessIntegrations(addExternalAccessIntegrations OpenflowRuntimeExternalAccessIntegrationsRequest) *AlterOpenflowRuntimeRequest {
+	s.AddExternalAccessIntegrations = &addExternalAccessIntegrations
+	return s
+}
+
+func (s *AlterOpenflowRuntimeRequest) WithRemoveExternalAccessIntegrations(removeExternalAccessIntegrations OpenflowRuntimeExternalAccessIntegrationsRequest) *AlterOpenflowRuntimeRequest {
+	s.RemoveExternalAccessIntegrations = &removeExternalAccessIntegrations
+	return s
+}
+
+func NewOpenflowRuntimeUpgradeRequest() *OpenflowRuntimeUpgradeRequest {
+	s := OpenflowRuntimeUpgradeRequest{}
+	return &s
+}
+
+func (s *OpenflowRuntimeUpgradeRequest) WithRecovery(recovery bool) *OpenflowRuntimeUpgradeRequest {
+	s.Recovery = &recovery
+	return s
+}
+
+func (s *OpenflowRuntimeUpgradeRequest) WithForce(force bool) *OpenflowRuntimeUpgradeRequest {
+	s.Force = &force
+	return s
+}
+
 func NewOpenflowRuntimeSetRequest() *OpenflowRuntimeSetRequest {
 	s := OpenflowRuntimeSetRequest{}
 	return &s
+}
+
+func (s *OpenflowRuntimeSetRequest) WithDisplayName(displayName string) *OpenflowRuntimeSetRequest {
+	s.DisplayName = &displayName
+	return s
 }
 
 func (s *OpenflowRuntimeSetRequest) WithMinNodes(minNodes int) *OpenflowRuntimeSetRequest {
@@ -126,18 +161,13 @@ func (s *OpenflowRuntimeSetRequest) WithMaxNodes(maxNodes int) *OpenflowRuntimeS
 	return s
 }
 
-func (s *OpenflowRuntimeSetRequest) WithExecuteAsRole(executeAsRole AccountObjectIdentifier) *OpenflowRuntimeSetRequest {
-	s.ExecuteAsRole = &executeAsRole
-	return s
-}
-
 func (s *OpenflowRuntimeSetRequest) WithExternalAccessIntegrations(externalAccessIntegrations OpenflowRuntimeExternalAccessIntegrationsRequest) *OpenflowRuntimeSetRequest {
 	s.ExternalAccessIntegrations = &externalAccessIntegrations
 	return s
 }
 
-func (s *OpenflowRuntimeSetRequest) WithDisplayName(displayName string) *OpenflowRuntimeSetRequest {
-	s.DisplayName = &displayName
+func (s *OpenflowRuntimeSetRequest) WithExecuteAsRole(executeAsRole AccountObjectIdentifier) *OpenflowRuntimeSetRequest {
+	s.ExecuteAsRole = &executeAsRole
 	return s
 }
 
@@ -201,6 +231,16 @@ func (s *ShowOpenflowRuntimeRequest) WithLike(like Like) *ShowOpenflowRuntimeReq
 
 func (s *ShowOpenflowRuntimeRequest) WithIn(in In) *ShowOpenflowRuntimeRequest {
 	s.In = &in
+	return s
+}
+
+func (s *ShowOpenflowRuntimeRequest) WithStartsWith(startsWith string) *ShowOpenflowRuntimeRequest {
+	s.StartsWith = &startsWith
+	return s
+}
+
+func (s *ShowOpenflowRuntimeRequest) WithLimit(limit LimitFrom) *ShowOpenflowRuntimeRequest {
+	s.Limit = &limit
 	return s
 }
 

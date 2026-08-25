@@ -14,10 +14,10 @@ type CreateOpenflowRuntimeRequest struct {
 	IfNotExists                *bool
 	name                       SchemaObjectIdentifier  // required
 	InDeployment               AccountObjectIdentifier // required
-	ExecuteAsRole              AccountObjectIdentifier // required
 	NodeType                   OpenflowRuntimeNodeType // required
 	MinNodes                   int                     // required
 	MaxNodes                   int                     // required
+	ExecuteAsRole              AccountObjectIdentifier // required
 	ExternalAccessIntegrations *OpenflowRuntimeExternalAccessIntegrationsRequest
 	DisplayName                *string
 	Comment                    *string
@@ -28,26 +28,34 @@ type OpenflowRuntimeExternalAccessIntegrationsRequest struct {
 }
 
 type AlterOpenflowRuntimeRequest struct {
-	name             SchemaObjectIdentifier // required
-	Suspend          *bool
-	Resume           *bool
-	ResumeRecovery   *bool
-	Restart          *bool
-	RestartRecovery  *bool
-	Terminate        *bool
-	TerminateCascade *bool
-	Upgrade          *bool
-	RenameTo         *SchemaObjectIdentifier
-	Set              *OpenflowRuntimeSetRequest
-	Unset            *OpenflowRuntimeUnsetRequest
+	IfExists                         *bool
+	name                             SchemaObjectIdentifier // required
+	Suspend                          *bool
+	Resume                           *bool
+	ResumeRecovery                   *bool
+	Restart                          *bool
+	RestartRecovery                  *bool
+	Terminate                        *bool
+	TerminateCascade                 *bool
+	Upgrade                          *OpenflowRuntimeUpgradeRequest
+	RenameTo                         *SchemaObjectIdentifier
+	Set                              *OpenflowRuntimeSetRequest
+	Unset                            *OpenflowRuntimeUnsetRequest
+	AddExternalAccessIntegrations    *OpenflowRuntimeExternalAccessIntegrationsRequest
+	RemoveExternalAccessIntegrations *OpenflowRuntimeExternalAccessIntegrationsRequest
+}
+
+type OpenflowRuntimeUpgradeRequest struct {
+	Recovery *bool
+	Force    *bool
 }
 
 type OpenflowRuntimeSetRequest struct {
+	DisplayName                *string
 	MinNodes                   *int
 	MaxNodes                   *int
-	ExecuteAsRole              *AccountObjectIdentifier
 	ExternalAccessIntegrations *OpenflowRuntimeExternalAccessIntegrationsRequest
-	DisplayName                *string
+	ExecuteAsRole              *AccountObjectIdentifier
 	Comment                    *string
 }
 
@@ -65,8 +73,10 @@ type DropOpenflowRuntimeRequest struct {
 }
 
 type ShowOpenflowRuntimeRequest struct {
-	Like *Like
-	In   *In
+	Like       *Like
+	In         *In
+	StartsWith *string
+	Limit      *LimitFrom
 }
 
 type DescribeOpenflowRuntimeRequest struct {

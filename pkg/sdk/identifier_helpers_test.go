@@ -283,3 +283,35 @@ func TestExternalObjectIdentifier_Injection(t *testing.T) {
 		})
 	}
 }
+
+func Test_quoteIdentifierPartIfNeeded(t *testing.T) {
+	tests := []struct {
+		name     string
+		part     string
+		expected string
+	}{
+		{name: "plain upper case", part: "OPENFLOW", expected: "OPENFLOW"},
+		{name: "upper case with digits", part: "CONNECTOR9", expected: "CONNECTOR9"},
+		{name: "upper case with underscores", part: "MY_CONNECTOR", expected: "MY_CONNECTOR"},
+		{name: "leading underscore", part: "_MY_CONNECTOR", expected: "_MY_CONNECTOR"},
+		{name: "dollar sign after the first character", part: "VERSION$1", expected: "VERSION$1"},
+
+		{name: "lower case", part: "farhan_test12_v4", expected: `"farhan_test12_v4"`},
+		{name: "mixed case", part: "MyConnector", expected: `"MyConnector"`},
+		{name: "hyphens", part: "farhan-connector-11", expected: `"farhan-connector-11"`},
+		{name: "spaces", part: "my connector", expected: `"my connector"`},
+		{name: "leading digit", part: "1CONNECTOR", expected: `"1CONNECTOR"`},
+		{name: "leading dollar sign", part: "$CONNECTOR", expected: `"$CONNECTOR"`},
+		{name: "dot, which would otherwise split the path", part: "A.B", expected: `"A.B"`},
+		{name: "empty", part: "", expected: `""`},
+
+		// A quote inside a quoted identifier is escaped by doubling it, or it closes the identifier early.
+		{name: "embedded double quote", part: `we"rd`, expected: `"we""rd"`},
+		{name: "single quote", part: "o'brien", expected: `"o'brien"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, quoteIdentifierPartIfNeeded(tt.part))
+		})
+	}
+}

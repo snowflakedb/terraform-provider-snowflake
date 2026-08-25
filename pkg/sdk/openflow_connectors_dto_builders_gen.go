@@ -45,6 +45,11 @@ func NewAlterOpenflowConnectorRequest(
 	return &s
 }
 
+func (s *AlterOpenflowConnectorRequest) WithIfExists(ifExists bool) *AlterOpenflowConnectorRequest {
+	s.IfExists = &ifExists
+	return s
+}
+
 func (s *AlterOpenflowConnectorRequest) WithStart(start bool) *AlterOpenflowConnectorRequest {
 	s.Start = &start
 	return s
@@ -60,13 +65,43 @@ func (s *AlterOpenflowConnectorRequest) WithTerminate(terminate bool) *AlterOpen
 	return s
 }
 
-func (s *AlterOpenflowConnectorRequest) WithCommit(commit bool) *AlterOpenflowConnectorRequest {
-	s.Commit = &commit
+func (s *AlterOpenflowConnectorRequest) WithTerminateForce(terminateForce bool) *AlterOpenflowConnectorRequest {
+	s.TerminateForce = &terminateForce
 	return s
 }
 
 func (s *AlterOpenflowConnectorRequest) WithAbort(abort bool) *AlterOpenflowConnectorRequest {
 	s.Abort = &abort
+	return s
+}
+
+func (s *AlterOpenflowConnectorRequest) WithRenameTo(renameTo SchemaObjectIdentifier) *AlterOpenflowConnectorRequest {
+	s.RenameTo = &renameTo
+	return s
+}
+
+func (s *AlterOpenflowConnectorRequest) WithAddVersion(addVersion OpenflowConnectorAddVersionRequest) *AlterOpenflowConnectorRequest {
+	s.AddVersion = &addVersion
+	return s
+}
+
+func (s *AlterOpenflowConnectorRequest) WithAddLiveVersion(addLiveVersion OpenflowConnectorAddLiveVersionRequest) *AlterOpenflowConnectorRequest {
+	s.AddLiveVersion = &addLiveVersion
+	return s
+}
+
+func (s *AlterOpenflowConnectorRequest) WithCommit(commit OpenflowConnectorCommitRequest) *AlterOpenflowConnectorRequest {
+	s.Commit = &commit
+	return s
+}
+
+func (s *AlterOpenflowConnectorRequest) WithPush(push OpenflowConnectorPushRequest) *AlterOpenflowConnectorRequest {
+	s.Push = &push
+	return s
+}
+
+func (s *AlterOpenflowConnectorRequest) WithPull(pull bool) *AlterOpenflowConnectorRequest {
+	s.Pull = &pull
 	return s
 }
 
@@ -77,6 +112,63 @@ func (s *AlterOpenflowConnectorRequest) WithSet(set OpenflowConnectorSetRequest)
 
 func (s *AlterOpenflowConnectorRequest) WithUnset(unset OpenflowConnectorUnsetRequest) *AlterOpenflowConnectorRequest {
 	s.Unset = &unset
+	return s
+}
+
+func NewOpenflowConnectorAddVersionRequest(
+	from *Location,
+) *OpenflowConnectorAddVersionRequest {
+	s := OpenflowConnectorAddVersionRequest{}
+	s.From = from
+	return &s
+}
+
+func NewOpenflowConnectorAddLiveVersionRequest() *OpenflowConnectorAddLiveVersionRequest {
+	s := OpenflowConnectorAddLiveVersionRequest{}
+	return &s
+}
+
+func (s *OpenflowConnectorAddLiveVersionRequest) WithVersionAlias(versionAlias string) *OpenflowConnectorAddLiveVersionRequest {
+	s.VersionAlias = &versionAlias
+	return s
+}
+
+func (s *OpenflowConnectorAddLiveVersionRequest) WithComment(comment string) *OpenflowConnectorAddLiveVersionRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewOpenflowConnectorCommitRequest() *OpenflowConnectorCommitRequest {
+	s := OpenflowConnectorCommitRequest{}
+	return &s
+}
+
+func (s *OpenflowConnectorCommitRequest) WithComment(comment string) *OpenflowConnectorCommitRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewOpenflowConnectorPushRequest(
+	username string,
+	password string,
+	name string,
+	email string,
+) *OpenflowConnectorPushRequest {
+	s := OpenflowConnectorPushRequest{}
+	s.Username = username
+	s.Password = password
+	s.Name = name
+	s.Email = email
+	return &s
+}
+
+func (s *OpenflowConnectorPushRequest) WithTo(to string) *OpenflowConnectorPushRequest {
+	s.To = &to
+	return s
+}
+
+func (s *OpenflowConnectorPushRequest) WithComment(comment string) *OpenflowConnectorPushRequest {
+	s.Comment = &comment
 	return s
 }
 
@@ -92,6 +184,31 @@ func (s *OpenflowConnectorSetRequest) WithDisplayName(displayName string) *Openf
 
 func (s *OpenflowConnectorSetRequest) WithComment(comment string) *OpenflowConnectorSetRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *OpenflowConnectorSetRequest) WithDefaultVersion(defaultVersion OpenflowConnectorDefaultVersionRequest) *OpenflowConnectorSetRequest {
+	s.DefaultVersion = &defaultVersion
+	return s
+}
+
+func NewOpenflowConnectorDefaultVersionRequest() *OpenflowConnectorDefaultVersionRequest {
+	s := OpenflowConnectorDefaultVersionRequest{}
+	return &s
+}
+
+func (s *OpenflowConnectorDefaultVersionRequest) WithFirst(first bool) *OpenflowConnectorDefaultVersionRequest {
+	s.First = &first
+	return s
+}
+
+func (s *OpenflowConnectorDefaultVersionRequest) WithLast(last bool) *OpenflowConnectorDefaultVersionRequest {
+	s.Last = &last
+	return s
+}
+
+func (s *OpenflowConnectorDefaultVersionRequest) WithVersion(version string) *OpenflowConnectorDefaultVersionRequest {
+	s.Version = &version
 	return s
 }
 
@@ -138,10 +255,51 @@ func (s *ShowOpenflowConnectorRequest) WithIn(in In) *ShowOpenflowConnectorReque
 	return s
 }
 
+func (s *ShowOpenflowConnectorRequest) WithStartsWith(startsWith string) *ShowOpenflowConnectorRequest {
+	s.StartsWith = &startsWith
+	return s
+}
+
+func (s *ShowOpenflowConnectorRequest) WithLimit(limit LimitFrom) *ShowOpenflowConnectorRequest {
+	s.Limit = &limit
+	return s
+}
+
 func NewDescribeOpenflowConnectorRequest(
 	name SchemaObjectIdentifier,
 ) *DescribeOpenflowConnectorRequest {
 	s := DescribeOpenflowConnectorRequest{}
 	s.name = name
 	return &s
+}
+
+func NewExecuteOpenflowConnectorRequest(
+	name SchemaObjectIdentifier,
+) *ExecuteOpenflowConnectorRequest {
+	s := ExecuteOpenflowConnectorRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *ExecuteOpenflowConnectorRequest) WithFrom(from Location) *ExecuteOpenflowConnectorRequest {
+	s.From = &from
+	return s
+}
+
+func (s *ExecuteOpenflowConnectorRequest) WithStep(step string) *ExecuteOpenflowConnectorRequest {
+	s.Step = &step
+	return s
+}
+
+func NewShowVersionsOpenflowConnectorRequest(
+	name SchemaObjectIdentifier,
+) *ShowVersionsOpenflowConnectorRequest {
+	s := ShowVersionsOpenflowConnectorRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *ShowVersionsOpenflowConnectorRequest) WithLimit(limit int) *ShowVersionsOpenflowConnectorRequest {
+	s.Limit = &limit
+	return s
 }

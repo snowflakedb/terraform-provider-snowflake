@@ -3,6 +3,7 @@ package sdk
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -522,4 +523,19 @@ func (i TableColumnIdentifier) FullyQualifiedNameEscaped() string {
 
 func (i TableColumnIdentifier) SchemaObjectId() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(i.databaseName, i.schemaName, i.tableName)
+}
+
+// unquotedIdentifierPattern matches identifiers Snowflake resolves as written. Anything else needs quoting
+// to resolve as intended, lower case included, since unquoted it would be folded to upper.
+var unquotedIdentifierPattern = regexp.MustCompile(`^[A-Z_][A-Z0-9_$]*$`)
+
+// quoteIdentifierPartIfNeeded quotes one part of an identifier only where it would otherwise not resolve.
+// FullyQualifiedName and FullyQualifiedNameEscaped quote every part instead, so neither fits a format that
+// tolerates quotes only where required - such as the snow:// URIs Snowflake reports in location_uri.
+func quoteIdentifierPartIfNeeded(part string) string {
+	if unquotedIdentifierPattern.MatchString(part) {
+		return part
+	}
+	// Doubles any embedded quote, Snowflake's escape inside a quoted identifier.
+	return DoubleQuotes.Modify(part)
 }

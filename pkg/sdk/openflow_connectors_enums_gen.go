@@ -10,19 +10,24 @@ import (
 type OpenflowConnectorStatus string
 
 const (
-	OpenflowConnectorStatusCreating     OpenflowConnectorStatus = "CREATING"
-	OpenflowConnectorStatusCreateFailed OpenflowConnectorStatus = "CREATE_FAILED"
-	OpenflowConnectorStatusStarting     OpenflowConnectorStatus = "STARTING"
-	OpenflowConnectorStatusStartFailed  OpenflowConnectorStatus = "START_FAILED"
-	OpenflowConnectorStatusRunning      OpenflowConnectorStatus = "RUNNING"
-	OpenflowConnectorStatusStopping     OpenflowConnectorStatus = "STOPPING"
-	OpenflowConnectorStatusStopFailed   OpenflowConnectorStatus = "STOP_FAILED"
-	OpenflowConnectorStatusStopped      OpenflowConnectorStatus = "STOPPED"
-	OpenflowConnectorStatusUpdating     OpenflowConnectorStatus = "UPDATING"
-	OpenflowConnectorStatusUpdateFailed OpenflowConnectorStatus = "UPDATE_FAILED"
-	OpenflowConnectorStatusDeleting     OpenflowConnectorStatus = "DELETING"
-	OpenflowConnectorStatusDeleteFailed OpenflowConnectorStatus = "DELETE_FAILED"
-	OpenflowConnectorStatusDeleted      OpenflowConnectorStatus = "DELETED"
+	OpenflowConnectorStatusCreating                   OpenflowConnectorStatus = "CREATING"
+	OpenflowConnectorStatusCreateFailed               OpenflowConnectorStatus = "CREATE_FAILED"
+	OpenflowConnectorStatusStarting                   OpenflowConnectorStatus = "STARTING"
+	OpenflowConnectorStatusStartFailed                OpenflowConnectorStatus = "START_FAILED"
+	OpenflowConnectorStatusRunning                    OpenflowConnectorStatus = "RUNNING"
+	OpenflowConnectorStatusStopping                   OpenflowConnectorStatus = "STOPPING"
+	OpenflowConnectorStatusStopFailed                 OpenflowConnectorStatus = "STOP_FAILED"
+	OpenflowConnectorStatusStopped                    OpenflowConnectorStatus = "STOPPED"
+	OpenflowConnectorStatusUpdating                   OpenflowConnectorStatus = "UPDATING"
+	OpenflowConnectorStatusUpdateFailed               OpenflowConnectorStatus = "UPDATE_FAILED"
+	OpenflowConnectorStatusDeleting                   OpenflowConnectorStatus = "DELETING"
+	OpenflowConnectorStatusDeleteFailed               OpenflowConnectorStatus = "DELETE_FAILED"
+	OpenflowConnectorStatusDeleted                    OpenflowConnectorStatus = "DELETED"
+	OpenflowConnectorStatusEnteringTroubleshooting    OpenflowConnectorStatus = "ENTERING_TROUBLESHOOTING"
+	OpenflowConnectorStatusEnterTroubleshootingFailed OpenflowConnectorStatus = "ENTER_TROUBLESHOOTING_FAILED"
+	OpenflowConnectorStatusTroubleshooting            OpenflowConnectorStatus = "TROUBLESHOOTING"
+	OpenflowConnectorStatusExitingTroubleshooting     OpenflowConnectorStatus = "EXITING_TROUBLESHOOTING"
+	OpenflowConnectorStatusExitTroubleshootingFailed  OpenflowConnectorStatus = "EXIT_TROUBLESHOOTING_FAILED"
 )
 
 var AllOpenflowConnectorStatuses = []OpenflowConnectorStatus{
@@ -39,6 +44,35 @@ var AllOpenflowConnectorStatuses = []OpenflowConnectorStatus{
 	OpenflowConnectorStatusDeleting,
 	OpenflowConnectorStatusDeleteFailed,
 	OpenflowConnectorStatusDeleted,
+	OpenflowConnectorStatusEnteringTroubleshooting,
+	OpenflowConnectorStatusEnterTroubleshootingFailed,
+	OpenflowConnectorStatusTroubleshooting,
+	OpenflowConnectorStatusExitingTroubleshooting,
+	OpenflowConnectorStatusExitTroubleshootingFailed,
+}
+
+var AllOpenflowConnectorStatusesString = []string{
+	string(OpenflowConnectorStatusCreating),
+	string(OpenflowConnectorStatusCreateFailed),
+	string(OpenflowConnectorStatusStarting),
+	string(OpenflowConnectorStatusStartFailed),
+	string(OpenflowConnectorStatusRunning),
+	string(OpenflowConnectorStatusStopping),
+	string(OpenflowConnectorStatusStopFailed),
+	string(OpenflowConnectorStatusStopped),
+	string(OpenflowConnectorStatusUpdating),
+	string(OpenflowConnectorStatusUpdateFailed),
+	string(OpenflowConnectorStatusDeleting),
+	"TERMINATING",
+	string(OpenflowConnectorStatusDeleteFailed),
+	"TERMINATE_FAILED",
+	string(OpenflowConnectorStatusDeleted),
+	"TERMINATED",
+	string(OpenflowConnectorStatusEnteringTroubleshooting),
+	string(OpenflowConnectorStatusEnterTroubleshootingFailed),
+	string(OpenflowConnectorStatusTroubleshooting),
+	string(OpenflowConnectorStatusExitingTroubleshooting),
+	string(OpenflowConnectorStatusExitTroubleshootingFailed),
 }
 
 func ToOpenflowConnectorStatus(s string) (OpenflowConnectorStatus, error) {
@@ -64,12 +98,22 @@ func ToOpenflowConnectorStatus(s string) (OpenflowConnectorStatus, error) {
 		return OpenflowConnectorStatusUpdating, nil
 	case string(OpenflowConnectorStatusUpdateFailed):
 		return OpenflowConnectorStatusUpdateFailed, nil
-	case string(OpenflowConnectorStatusDeleting):
+	case string(OpenflowConnectorStatusDeleting), "TERMINATING":
 		return OpenflowConnectorStatusDeleting, nil
-	case string(OpenflowConnectorStatusDeleteFailed):
+	case string(OpenflowConnectorStatusDeleteFailed), "TERMINATE_FAILED":
 		return OpenflowConnectorStatusDeleteFailed, nil
-	case string(OpenflowConnectorStatusDeleted):
+	case string(OpenflowConnectorStatusDeleted), "TERMINATED":
 		return OpenflowConnectorStatusDeleted, nil
+	case string(OpenflowConnectorStatusEnteringTroubleshooting):
+		return OpenflowConnectorStatusEnteringTroubleshooting, nil
+	case string(OpenflowConnectorStatusEnterTroubleshootingFailed):
+		return OpenflowConnectorStatusEnterTroubleshootingFailed, nil
+	case string(OpenflowConnectorStatusTroubleshooting):
+		return OpenflowConnectorStatusTroubleshooting, nil
+	case string(OpenflowConnectorStatusExitingTroubleshooting):
+		return OpenflowConnectorStatusExitingTroubleshooting, nil
+	case string(OpenflowConnectorStatusExitTroubleshootingFailed):
+		return OpenflowConnectorStatusExitTroubleshootingFailed, nil
 	default:
 		return "", fmt.Errorf("invalid openflow connector status: %s", s)
 	}

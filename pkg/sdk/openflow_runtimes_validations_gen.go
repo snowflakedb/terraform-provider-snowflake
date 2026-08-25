@@ -38,8 +38,8 @@ func (opts *AlterOpenflowRuntimeOptions) validate() error {
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.ResumeRecovery, opts.Restart, opts.RestartRecovery, opts.Terminate, opts.TerminateCascade, opts.Upgrade, opts.RenameTo, opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset"))
+	if !exactlyOneValueSet(opts.Suspend, opts.Resume, opts.ResumeRecovery, opts.Restart, opts.RestartRecovery, opts.Terminate, opts.TerminateCascade, opts.Upgrade, opts.RenameTo, opts.Set, opts.Unset, opts.AddExternalAccessIntegrations, opts.RemoveExternalAccessIntegrations) {
+		errs = append(errs, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset", "AddExternalAccessIntegrations", "RemoveExternalAccessIntegrations"))
 	}
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.ExecuteAsRole, opts.Set.ExternalAccessIntegrations, opts.Set.DisplayName, opts.Set.Comment) {

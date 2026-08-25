@@ -17,28 +17,35 @@ type OpenflowDeployments interface {
 	ShowByID(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error)
 	ShowByIDSafely(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeployment, error)
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*OpenflowDeploymentDetails, error)
+	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
 }
 
-// CreateOpenflowDeploymentOptions is based on TODO: add link when public docs are available.
+// CreateOpenflowDeploymentOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-deployment#create-openflow-deployment.
 type CreateOpenflowDeploymentOptions struct {
-	create                     bool                    `ddl:"static" sql:"CREATE"`
-	openflowDeployment         bool                    `ddl:"static" sql:"OPENFLOW DEPLOYMENT"`
-	IfNotExists                *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                       AccountObjectIdentifier `ddl:"identifier"`
-	DeploymentType             OpenflowDeploymentType  `ddl:"parameter,single_quotes" sql:"DEPLOYMENT_TYPE"`
-	VpcType                    *OpenflowVpcType        `ddl:"parameter,single_quotes" sql:"VPC_TYPE"`
-	CustomIngressHostname      *string                 `ddl:"parameter,single_quotes" sql:"CUSTOM_INGRESS_HOSTNAME"`
-	UsePrivateLink             *bool                   `ddl:"parameter" sql:"USE_PRIVATE_LINK"`
-	UseUserAuthOverPrivatelink *bool                   `ddl:"parameter" sql:"USE_USER_AUTH_OVER_PRIVATELINK"`
-	EventTable                 *string                 `ddl:"parameter,single_quotes" sql:"EVENT_TABLE"`
-	DisplayName                *string                 `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
-	Comment                    *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                     bool                          `ddl:"static" sql:"CREATE"`
+	openflowDeployment         bool                          `ddl:"static" sql:"OPENFLOW DEPLOYMENT"`
+	IfNotExists                *bool                         `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                       AccountObjectIdentifier       `ddl:"identifier"`
+	DeploymentType             OpenflowDeploymentType        `ddl:"parameter,single_quotes" sql:"DEPLOYMENT_TYPE"`
+	VpcType                    *OpenflowVpcType              `ddl:"parameter,single_quotes" sql:"VPC_TYPE"`
+	UsePrivateLink             *bool                         `ddl:"parameter" sql:"USE_PRIVATE_LINK"`
+	UseUserAuthOverPrivatelink *bool                         `ddl:"parameter" sql:"USE_USER_AUTH_OVER_PRIVATELINK"`
+	CustomIngressHostname      *string                       `ddl:"parameter,single_quotes" sql:"CUSTOM_INGRESS_HOSTNAME"`
+	DisplayName                *string                       `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
+	Comment                    *string                       `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	EventTable                 *OpenflowDeploymentEventTable `ddl:"parameter" sql:"EVENT_TABLE"`
 }
 
-// AlterOpenflowDeploymentOptions is based on TODO: add link when public docs are available.
+type OpenflowDeploymentEventTable struct {
+	EventTable *SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+	None       *bool                   `ddl:"keyword" sql:"NONE"`
+}
+
+// AlterOpenflowDeploymentOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-deployment#alter-openflow-deployment.
 type AlterOpenflowDeploymentOptions struct {
 	alter              bool                     `ddl:"static" sql:"ALTER"`
 	openflowDeployment bool                     `ddl:"static" sql:"OPENFLOW DEPLOYMENT"`
+	IfExists           *bool                    `ddl:"keyword" sql:"IF EXISTS"`
 	name               AccountObjectIdentifier  `ddl:"identifier"`
 	Upgrade            *bool                    `ddl:"keyword" sql:"UPGRADE"`
 	Terminate          *bool                    `ddl:"keyword" sql:"TERMINATE"`
@@ -48,9 +55,9 @@ type AlterOpenflowDeploymentOptions struct {
 }
 
 type OpenflowDeploymentSet struct {
-	Comment     *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	DisplayName *string `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
-	EventTable  *string `ddl:"parameter,single_quotes" sql:"EVENT_TABLE"`
+	DisplayName *string                       `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
+	Comment     *string                       `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	EventTable  *OpenflowDeploymentEventTable `ddl:"parameter" sql:"EVENT_TABLE"`
 }
 
 type OpenflowDeploymentUnset struct {
@@ -59,7 +66,7 @@ type OpenflowDeploymentUnset struct {
 	EventTable  *bool `ddl:"keyword" sql:"EVENT_TABLE"`
 }
 
-// DropOpenflowDeploymentOptions is based on TODO: add link when public docs are available.
+// DropOpenflowDeploymentOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-deployment#drop-openflow-deployment.
 type DropOpenflowDeploymentOptions struct {
 	drop               bool                    `ddl:"static" sql:"DROP"`
 	openflowDeployment bool                    `ddl:"static" sql:"OPENFLOW DEPLOYMENT"`
@@ -67,11 +74,14 @@ type DropOpenflowDeploymentOptions struct {
 	name               AccountObjectIdentifier `ddl:"identifier"`
 }
 
-// ShowOpenflowDeploymentOptions is based on TODO: add link when public docs are available.
+// ShowOpenflowDeploymentOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-deployment#show-openflow-deployments.
 type ShowOpenflowDeploymentOptions struct {
-	show                bool  `ddl:"static" sql:"SHOW"`
-	openflowDeployments bool  `ddl:"static" sql:"OPENFLOW DEPLOYMENTS"`
-	Like                *Like `ddl:"keyword" sql:"LIKE"`
+	show                bool       `ddl:"static" sql:"SHOW"`
+	openflowDeployments bool       `ddl:"static" sql:"OPENFLOW DEPLOYMENTS"`
+	Like                *Like      `ddl:"keyword" sql:"LIKE"`
+	In                  *In        `ddl:"keyword" sql:"IN"`
+	StartsWith          *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit               *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type openflowDeploymentRow struct {
@@ -83,9 +93,11 @@ type openflowDeploymentRow struct {
 	UsePrivateLink             bool           `db:"use_private_link"`
 	UseUserAuthOverPrivateLink bool           `db:"use_user_auth_over_private_link"`
 	CustomIngressHostname      sql.NullString `db:"custom_ingress_hostname"`
-	OpenflowKey                sql.NullString `db:"openflow_key"`
+	Key                        sql.NullString `db:"key"`
 	Owner                      string         `db:"owner"`
 	Comment                    sql.NullString `db:"comment"`
+	CreatedOn                  time.Time      `db:"created_on"`
+	UpdatedOn                  time.Time      `db:"updated_on"`
 }
 
 type OpenflowDeployment struct {
@@ -97,9 +109,11 @@ type OpenflowDeployment struct {
 	UsePrivateLink             bool
 	UseUserAuthOverPrivateLink bool
 	CustomIngressHostname      *string
-	OpenflowKey                *string
+	Key                        *string
 	Owner                      string
 	Comment                    *string
+	CreatedOn                  time.Time
+	UpdatedOn                  time.Time
 }
 
 func (v *OpenflowDeployment) ID() AccountObjectIdentifier {
@@ -110,7 +124,7 @@ func (v *OpenflowDeployment) ObjectType() ObjectType {
 	return ObjectTypeOpenflowDeployment
 }
 
-// DescribeOpenflowDeploymentOptions is based on TODO: add link when public docs are available.
+// DescribeOpenflowDeploymentOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-deployment#describe-openflow-deployment.
 type DescribeOpenflowDeploymentOptions struct {
 	describe           bool                    `ddl:"static" sql:"DESCRIBE"`
 	openflowDeployment bool                    `ddl:"static" sql:"OPENFLOW DEPLOYMENT"`
@@ -126,13 +140,9 @@ type openflowDeploymentDetailsRow struct {
 	UsePrivateLink             bool           `db:"use_private_link"`
 	UseUserAuthOverPrivateLink bool           `db:"use_user_auth_over_private_link"`
 	CustomIngressHostname      sql.NullString `db:"custom_ingress_hostname"`
-	OpenflowKey                sql.NullString `db:"openflow_key"`
+	Key                        sql.NullString `db:"key"`
 	Owner                      string         `db:"owner"`
 	Comment                    sql.NullString `db:"comment"`
-	CreatedOn                  time.Time      `db:"created_on"`
-	UpdatedOn                  time.Time      `db:"updated_on"`
-	ErrorCode                  sql.NullString `db:"error_code"`
-	StatusMessage              sql.NullString `db:"status_message"`
 }
 
 type OpenflowDeploymentDetails struct {
@@ -144,11 +154,7 @@ type OpenflowDeploymentDetails struct {
 	UsePrivateLink             bool
 	UseUserAuthOverPrivateLink bool
 	CustomIngressHostname      *string
-	OpenflowKey                *string
+	Key                        *string
 	Owner                      string
 	Comment                    *string
-	CreatedOn                  time.Time
-	UpdatedOn                  time.Time
-	ErrorCode                  *string
-	StatusMessage              *string
 }

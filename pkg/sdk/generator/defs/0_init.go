@@ -49,6 +49,7 @@ func init() {
 		networkRulesDef,
 		notebooksDef,
 		notificationIntegrationsDef,
+		openflowConnectorDefinitionsDef,
 		openflowConnectorsDef,
 		openflowDeploymentsDef,
 		openflowRuntimesDef,

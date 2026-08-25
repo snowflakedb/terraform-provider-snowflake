@@ -8,6 +8,8 @@ var (
 	_ validatable = new(DropOpenflowConnectorOptions)
 	_ validatable = new(ShowOpenflowConnectorOptions)
 	_ validatable = new(DescribeOpenflowConnectorOptions)
+	_ validatable = new(ExecuteOpenflowConnectorOptions)
+	_ validatable = new(ShowVersionsOpenflowConnectorOptions)
 )
 
 func (opts *CreateOpenflowConnectorOptions) validate() error {
@@ -35,12 +37,43 @@ func (opts *AlterOpenflowConnectorOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
-	if !exactlyOneValueSet(opts.Start, opts.Stop, opts.Terminate, opts.Commit, opts.Abort, opts.Set, opts.Unset) {
-		errs = append(errs, errExactlyOneOf("AlterOpenflowConnectorOptions", "Start", "Stop", "Terminate", "Commit", "Abort", "Set", "Unset"))
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	if !exactlyOneValueSet(opts.Start, opts.Stop, opts.Terminate, opts.TerminateForce, opts.Abort, opts.RenameTo, opts.AddVersion, opts.AddLiveVersion, opts.Commit, opts.Push, opts.Pull, opts.Set, opts.Unset) {
+		errs = append(errs, errExactlyOneOf("AlterOpenflowConnectorOptions", "Start", "Stop", "Terminate", "TerminateForce", "Abort", "RenameTo", "AddVersion", "AddLiveVersion", "Commit", "Push", "Pull", "Set", "Unset"))
+	}
+	if everyValueSet(opts.IfExists, opts.Commit) {
+		errs = append(errs, errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Commit"))
+	}
+	if everyValueSet(opts.IfExists, opts.Abort) {
+		errs = append(errs, errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Abort"))
+	}
+	if everyValueSet(opts.IfExists, opts.AddLiveVersion) {
+		errs = append(errs, errOneOf("AlterOpenflowConnectorOptions", "IfExists", "AddLiveVersion"))
+	}
+	if everyValueSet(opts.IfExists, opts.AddVersion) {
+		errs = append(errs, errOneOf("AlterOpenflowConnectorOptions", "IfExists", "AddVersion"))
+	}
+	if everyValueSet(opts.IfExists, opts.Push) {
+		errs = append(errs, errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Push"))
+	}
+	if everyValueSet(opts.IfExists, opts.Pull) {
+		errs = append(errs, errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Pull"))
+	}
+	if valueSet(opts.AddVersion) {
+		if !valueSet(opts.AddVersion.From) {
+			errs = append(errs, errNotSet("AlterOpenflowConnectorOptions.AddVersion", "From"))
+		}
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.DisplayName, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterOpenflowConnectorOptions.Set", "DisplayName", "Comment"))
+		if !anyValueSet(opts.Set.DisplayName, opts.Set.Comment, opts.Set.DefaultVersion) {
+			errs = append(errs, errAtLeastOneOf("AlterOpenflowConnectorOptions.Set", "DisplayName", "Comment", "DefaultVersion"))
+		}
+		if valueSet(opts.Set.DefaultVersion) {
+			if !exactlyOneValueSet(opts.Set.DefaultVersion.First, opts.Set.DefaultVersion.Last, opts.Set.DefaultVersion.Version) {
+				errs = append(errs, errExactlyOneOf("AlterOpenflowConnectorOptions.Set.DefaultVersion", "First", "Last", "Version"))
+			}
 		}
 	}
 	if valueSet(opts.Unset) {
@@ -71,6 +104,28 @@ func (opts *ShowOpenflowConnectorOptions) validate() error {
 }
 
 func (opts *DescribeOpenflowConnectorOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ExecuteOpenflowConnectorOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, ErrInvalidObjectIdentifier)
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ShowVersionsOpenflowConnectorOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}

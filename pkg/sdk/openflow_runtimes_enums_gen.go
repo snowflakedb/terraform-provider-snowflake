@@ -59,6 +59,10 @@ const (
 	OpenflowRuntimeStatusGeneratingDiagnosticBundle OpenflowRuntimeStatus = "GENERATING_DIAGNOSTIC_BUNDLE"
 	OpenflowRuntimeStatusCleaningUp                 OpenflowRuntimeStatus = "CLEANING_UP"
 	OpenflowRuntimeStatusInactive                   OpenflowRuntimeStatus = "INACTIVE"
+	OpenflowRuntimeStatusMigrating                  OpenflowRuntimeStatus = "MIGRATING"
+	OpenflowRuntimeStatusMigrationFailed            OpenflowRuntimeStatus = "MIGRATION_FAILED"
+	OpenflowRuntimeStatusRollingBack                OpenflowRuntimeStatus = "ROLLING_BACK"
+	OpenflowRuntimeStatusRollbackFailed             OpenflowRuntimeStatus = "ROLLBACK_FAILED"
 )
 
 var AllOpenflowRuntimeStatuses = []OpenflowRuntimeStatus{
@@ -83,6 +87,43 @@ var AllOpenflowRuntimeStatuses = []OpenflowRuntimeStatus{
 	OpenflowRuntimeStatusGeneratingDiagnosticBundle,
 	OpenflowRuntimeStatusCleaningUp,
 	OpenflowRuntimeStatusInactive,
+	OpenflowRuntimeStatusMigrating,
+	OpenflowRuntimeStatusMigrationFailed,
+	OpenflowRuntimeStatusRollingBack,
+	OpenflowRuntimeStatusRollbackFailed,
+}
+
+var AllOpenflowRuntimeStatusesString = []string{
+	string(OpenflowRuntimeStatusCreating),
+	string(OpenflowRuntimeStatusCreateFailed),
+	string(OpenflowRuntimeStatusUpdating),
+	string(OpenflowRuntimeStatusUpdateFailed),
+	string(OpenflowRuntimeStatusSuspending),
+	string(OpenflowRuntimeStatusSuspended),
+	string(OpenflowRuntimeStatusSuspendFailed),
+	string(OpenflowRuntimeStatusActivating),
+	"RESUMING",
+	string(OpenflowRuntimeStatusActive),
+	string(OpenflowRuntimeStatusActivateFailed),
+	"RESUME_FAILED",
+	string(OpenflowRuntimeStatusDeleting),
+	"TERMINATING",
+	string(OpenflowRuntimeStatusDeleted),
+	"TERMINATED",
+	string(OpenflowRuntimeStatusDeleteFailed),
+	"TERMINATE_FAILED",
+	string(OpenflowRuntimeStatusCancelRequested),
+	string(OpenflowRuntimeStatusRestarting),
+	string(OpenflowRuntimeStatusRestartFailed),
+	string(OpenflowRuntimeStatusUpgrading),
+	string(OpenflowRuntimeStatusUpgradeFailed),
+	string(OpenflowRuntimeStatusGeneratingDiagnosticBundle),
+	string(OpenflowRuntimeStatusCleaningUp),
+	string(OpenflowRuntimeStatusInactive),
+	string(OpenflowRuntimeStatusMigrating),
+	string(OpenflowRuntimeStatusMigrationFailed),
+	string(OpenflowRuntimeStatusRollingBack),
+	string(OpenflowRuntimeStatusRollbackFailed),
 }
 
 func ToOpenflowRuntimeStatus(s string) (OpenflowRuntimeStatus, error) {
@@ -102,17 +143,17 @@ func ToOpenflowRuntimeStatus(s string) (OpenflowRuntimeStatus, error) {
 		return OpenflowRuntimeStatusSuspended, nil
 	case string(OpenflowRuntimeStatusSuspendFailed):
 		return OpenflowRuntimeStatusSuspendFailed, nil
-	case string(OpenflowRuntimeStatusActivating):
+	case string(OpenflowRuntimeStatusActivating), "RESUMING":
 		return OpenflowRuntimeStatusActivating, nil
 	case string(OpenflowRuntimeStatusActive):
 		return OpenflowRuntimeStatusActive, nil
-	case string(OpenflowRuntimeStatusActivateFailed):
+	case string(OpenflowRuntimeStatusActivateFailed), "RESUME_FAILED":
 		return OpenflowRuntimeStatusActivateFailed, nil
-	case string(OpenflowRuntimeStatusDeleting):
+	case string(OpenflowRuntimeStatusDeleting), "TERMINATING":
 		return OpenflowRuntimeStatusDeleting, nil
-	case string(OpenflowRuntimeStatusDeleted):
+	case string(OpenflowRuntimeStatusDeleted), "TERMINATED":
 		return OpenflowRuntimeStatusDeleted, nil
-	case string(OpenflowRuntimeStatusDeleteFailed):
+	case string(OpenflowRuntimeStatusDeleteFailed), "TERMINATE_FAILED":
 		return OpenflowRuntimeStatusDeleteFailed, nil
 	case string(OpenflowRuntimeStatusCancelRequested):
 		return OpenflowRuntimeStatusCancelRequested, nil
@@ -130,6 +171,14 @@ func ToOpenflowRuntimeStatus(s string) (OpenflowRuntimeStatus, error) {
 		return OpenflowRuntimeStatusCleaningUp, nil
 	case string(OpenflowRuntimeStatusInactive):
 		return OpenflowRuntimeStatusInactive, nil
+	case string(OpenflowRuntimeStatusMigrating):
+		return OpenflowRuntimeStatusMigrating, nil
+	case string(OpenflowRuntimeStatusMigrationFailed):
+		return OpenflowRuntimeStatusMigrationFailed, nil
+	case string(OpenflowRuntimeStatusRollingBack):
+		return OpenflowRuntimeStatusRollingBack, nil
+	case string(OpenflowRuntimeStatusRollbackFailed):
+		return OpenflowRuntimeStatusRollbackFailed, nil
 	default:
 		return "", fmt.Errorf("invalid openflow runtime status: %s", s)
 	}

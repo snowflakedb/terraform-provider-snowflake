@@ -58,19 +58,24 @@ func ToOpenflowVpcType(s string) (OpenflowVpcType, error) {
 type OpenflowDeploymentStatus string
 
 const (
-	OpenflowDeploymentStatusCreating             OpenflowDeploymentStatus = "CREATING"
-	OpenflowDeploymentStatusActive               OpenflowDeploymentStatus = "ACTIVE"
-	OpenflowDeploymentStatusInactive             OpenflowDeploymentStatus = "INACTIVE"
-	OpenflowDeploymentStatusProvisioning         OpenflowDeploymentStatus = "PROVISIONING"
-	OpenflowDeploymentStatusNotReporting         OpenflowDeploymentStatus = "NOT_REPORTING"
-	OpenflowDeploymentStatusNotHealthy           OpenflowDeploymentStatus = "NOT_HEALTHY"
-	OpenflowDeploymentStatusUpgrading            OpenflowDeploymentStatus = "UPGRADING"
-	OpenflowDeploymentStatusUpgradeFailed        OpenflowDeploymentStatus = "UPGRADE_FAILED"
-	OpenflowDeploymentStatusDeactivationRequired OpenflowDeploymentStatus = "DEACTIVATION_REQUIRED"
-	OpenflowDeploymentStatusDeleting             OpenflowDeploymentStatus = "DELETING"
-	OpenflowDeploymentStatusDeleted              OpenflowDeploymentStatus = "DELETED"
-	OpenflowDeploymentStatusCreateFailed         OpenflowDeploymentStatus = "CREATE_FAILED"
-	OpenflowDeploymentStatusDeleteFailed         OpenflowDeploymentStatus = "DELETE_FAILED"
+	OpenflowDeploymentStatusCreating                   OpenflowDeploymentStatus = "CREATING"
+	OpenflowDeploymentStatusActive                     OpenflowDeploymentStatus = "ACTIVE"
+	OpenflowDeploymentStatusInactive                   OpenflowDeploymentStatus = "INACTIVE"
+	OpenflowDeploymentStatusProvisioning               OpenflowDeploymentStatus = "PROVISIONING"
+	OpenflowDeploymentStatusNotReporting               OpenflowDeploymentStatus = "NOT_REPORTING"
+	OpenflowDeploymentStatusNotHealthy                 OpenflowDeploymentStatus = "NOT_HEALTHY"
+	OpenflowDeploymentStatusUpgrading                  OpenflowDeploymentStatus = "UPGRADING"
+	OpenflowDeploymentStatusUpgradeFailed              OpenflowDeploymentStatus = "UPGRADE_FAILED"
+	OpenflowDeploymentStatusDeactivationRequired       OpenflowDeploymentStatus = "DEACTIVATION_REQUIRED"
+	OpenflowDeploymentStatusDeleting                   OpenflowDeploymentStatus = "DELETING"
+	OpenflowDeploymentStatusDeleted                    OpenflowDeploymentStatus = "DELETED"
+	OpenflowDeploymentStatusCreateFailed               OpenflowDeploymentStatus = "CREATE_FAILED"
+	OpenflowDeploymentStatusDeleteFailed               OpenflowDeploymentStatus = "DELETE_FAILED"
+	OpenflowDeploymentStatusMigrating                  OpenflowDeploymentStatus = "MIGRATING"
+	OpenflowDeploymentStatusMigrationFailed            OpenflowDeploymentStatus = "MIGRATION_FAILED"
+	OpenflowDeploymentStatusRollingBack                OpenflowDeploymentStatus = "ROLLING_BACK"
+	OpenflowDeploymentStatusRollbackFailed             OpenflowDeploymentStatus = "ROLLBACK_FAILED"
+	OpenflowDeploymentStatusGeneratingDiagnosticBundle OpenflowDeploymentStatus = "GENERATING_DIAGNOSTIC_BUNDLE"
 )
 
 var AllOpenflowDeploymentStatuses = []OpenflowDeploymentStatus{
@@ -87,6 +92,36 @@ var AllOpenflowDeploymentStatuses = []OpenflowDeploymentStatus{
 	OpenflowDeploymentStatusDeleted,
 	OpenflowDeploymentStatusCreateFailed,
 	OpenflowDeploymentStatusDeleteFailed,
+	OpenflowDeploymentStatusMigrating,
+	OpenflowDeploymentStatusMigrationFailed,
+	OpenflowDeploymentStatusRollingBack,
+	OpenflowDeploymentStatusRollbackFailed,
+	OpenflowDeploymentStatusGeneratingDiagnosticBundle,
+}
+
+var AllOpenflowDeploymentStatusesString = []string{
+	string(OpenflowDeploymentStatusCreating),
+	string(OpenflowDeploymentStatusActive),
+	string(OpenflowDeploymentStatusInactive),
+	string(OpenflowDeploymentStatusProvisioning),
+	string(OpenflowDeploymentStatusNotReporting),
+	string(OpenflowDeploymentStatusNotHealthy),
+	string(OpenflowDeploymentStatusUpgrading),
+	string(OpenflowDeploymentStatusUpgradeFailed),
+	string(OpenflowDeploymentStatusDeactivationRequired),
+	string(OpenflowDeploymentStatusDeleting),
+	"TERMINATING",
+	string(OpenflowDeploymentStatusDeleted),
+	"TERMINATED",
+	string(OpenflowDeploymentStatusCreateFailed),
+	"PROVISIONING_FAILED",
+	string(OpenflowDeploymentStatusDeleteFailed),
+	"TERMINATE_FAILED",
+	string(OpenflowDeploymentStatusMigrating),
+	string(OpenflowDeploymentStatusMigrationFailed),
+	string(OpenflowDeploymentStatusRollingBack),
+	string(OpenflowDeploymentStatusRollbackFailed),
+	string(OpenflowDeploymentStatusGeneratingDiagnosticBundle),
 }
 
 func ToOpenflowDeploymentStatus(s string) (OpenflowDeploymentStatus, error) {
@@ -110,14 +145,24 @@ func ToOpenflowDeploymentStatus(s string) (OpenflowDeploymentStatus, error) {
 		return OpenflowDeploymentStatusUpgradeFailed, nil
 	case string(OpenflowDeploymentStatusDeactivationRequired):
 		return OpenflowDeploymentStatusDeactivationRequired, nil
-	case string(OpenflowDeploymentStatusDeleting):
+	case string(OpenflowDeploymentStatusDeleting), "TERMINATING":
 		return OpenflowDeploymentStatusDeleting, nil
-	case string(OpenflowDeploymentStatusDeleted):
+	case string(OpenflowDeploymentStatusDeleted), "TERMINATED":
 		return OpenflowDeploymentStatusDeleted, nil
-	case string(OpenflowDeploymentStatusCreateFailed):
+	case string(OpenflowDeploymentStatusCreateFailed), "PROVISIONING_FAILED":
 		return OpenflowDeploymentStatusCreateFailed, nil
-	case string(OpenflowDeploymentStatusDeleteFailed):
+	case string(OpenflowDeploymentStatusDeleteFailed), "TERMINATE_FAILED":
 		return OpenflowDeploymentStatusDeleteFailed, nil
+	case string(OpenflowDeploymentStatusMigrating):
+		return OpenflowDeploymentStatusMigrating, nil
+	case string(OpenflowDeploymentStatusMigrationFailed):
+		return OpenflowDeploymentStatusMigrationFailed, nil
+	case string(OpenflowDeploymentStatusRollingBack):
+		return OpenflowDeploymentStatusRollingBack, nil
+	case string(OpenflowDeploymentStatusRollbackFailed):
+		return OpenflowDeploymentStatusRollbackFailed, nil
+	case string(OpenflowDeploymentStatusGeneratingDiagnosticBundle):
+		return OpenflowDeploymentStatusGeneratingDiagnosticBundle, nil
 	default:
 		return "", fmt.Errorf("invalid openflow deployment status: %s", s)
 	}

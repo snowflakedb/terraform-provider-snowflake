@@ -13,40 +13,66 @@ func init() {
 var openflowConnectorsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_OpenflowConnectors_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
-	case_OpenflowConnectors_validation_Create_InRuntime_ValidIdentifier             testCaseName = "validation_Create_InRuntime_ValidIdentifier"
-	case_OpenflowConnectors_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
-	case_OpenflowConnectors_sql_Create_basic                                        testCaseName = "sql_Create_basic"
-	case_OpenflowConnectors_sql_Create_all                                          testCaseName = "sql_Create_all"
-	case_OpenflowConnectors_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_OpenflowConnectors_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_OpenflowConnectors_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_OpenflowConnectors_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_OpenflowConnectors_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_OpenflowConnectors_sql_Alter_Start                                         testCaseName = "sql_Alter_Start"
-	case_OpenflowConnectors_sql_Alter_Stop                                          testCaseName = "sql_Alter_Stop"
-	case_OpenflowConnectors_sql_Alter_Terminate                                     testCaseName = "sql_Alter_Terminate"
-	case_OpenflowConnectors_sql_Alter_Commit                                        testCaseName = "sql_Alter_Commit"
-	case_OpenflowConnectors_sql_Alter_Abort                                         testCaseName = "sql_Alter_Abort"
-	case_OpenflowConnectors_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
-	case_OpenflowConnectors_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
-	case_OpenflowConnectors_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_OpenflowConnectors_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
-	case_OpenflowConnectors_sql_Drop_all                                            testCaseName = "sql_Drop_all"
-	case_OpenflowConnectors_sql_Show_basic                                          testCaseName = "sql_Show_basic"
-	case_OpenflowConnectors_sql_Show_all                                            testCaseName = "sql_Show_all"
-	case_OpenflowConnectors_sql_Show_Like                                           testCaseName = "sql_Show_Like"
-	case_OpenflowConnectors_sql_Show_In                                             testCaseName = "sql_Show_In"
-	case_OpenflowConnectors_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_OpenflowConnectors_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+	case_OpenflowConnectors_validation_Create_name_ValidIdentifier                                     testCaseName = "validation_Create_name_ValidIdentifier"
+	case_OpenflowConnectors_validation_Create_InRuntime_ValidIdentifier                                testCaseName = "validation_Create_InRuntime_ValidIdentifier"
+	case_OpenflowConnectors_validation_Create_opts_ConflictingFields                                   testCaseName = "validation_Create_opts_ConflictingFields"
+	case_OpenflowConnectors_sql_Create_basic                                                           testCaseName = "sql_Create_basic"
+	case_OpenflowConnectors_sql_Create_all                                                             testCaseName = "sql_Create_all"
+	case_OpenflowConnectors_validation_Alter_name_ValidIdentifier                                      testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_OpenflowConnectors_validation_Alter_RenameTo_ValidIdentifierIfSet                             testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_OpenflowConnectors_validation_Alter_opts_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_OpenflowConnectors_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Commit                    testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_Commit"
+	case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Abort                     testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_Abort"
+	case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_AddLiveVersion            testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_AddLiveVersion"
+	case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_AddVersion                testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_AddVersion"
+	case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Push                      testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_Push"
+	case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Pull                      testCaseName = "validation_Alter_opts_ConflictingFields_IfExists_Pull"
+	case_OpenflowConnectors_validation_Alter_AddVersion_From_ValidateValueSet                          testCaseName = "validation_Alter_AddVersion_From_ValidateValueSet"
+	case_OpenflowConnectors_validation_Alter_opts_Set_AtLeastOneValueSet                               testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_OpenflowConnectors_validation_Alter_opts_Set_DefaultVersion_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_DefaultVersion_ExactlyOneValueSet_NoneSet"
+	case_OpenflowConnectors_validation_Alter_opts_Set_DefaultVersion_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_DefaultVersion_ExactlyOneValueSet_MoreThanOneSet"
+	case_OpenflowConnectors_validation_Alter_opts_Unset_AtLeastOneValueSet                             testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_OpenflowConnectors_sql_Alter_Start                                                            testCaseName = "sql_Alter_Start"
+	case_OpenflowConnectors_sql_Alter_Stop                                                             testCaseName = "sql_Alter_Stop"
+	case_OpenflowConnectors_sql_Alter_Terminate                                                        testCaseName = "sql_Alter_Terminate"
+	case_OpenflowConnectors_sql_Alter_TerminateForce                                                   testCaseName = "sql_Alter_TerminateForce"
+	case_OpenflowConnectors_sql_Alter_Abort                                                            testCaseName = "sql_Alter_Abort"
+	case_OpenflowConnectors_sql_Alter_RenameTo                                                         testCaseName = "sql_Alter_RenameTo"
+	case_OpenflowConnectors_sql_Alter_AddVersion                                                       testCaseName = "sql_Alter_AddVersion"
+	case_OpenflowConnectors_sql_Alter_AddLiveVersion                                                   testCaseName = "sql_Alter_AddLiveVersion"
+	case_OpenflowConnectors_sql_Alter_Commit                                                           testCaseName = "sql_Alter_Commit"
+	case_OpenflowConnectors_sql_Alter_Push                                                             testCaseName = "sql_Alter_Push"
+	case_OpenflowConnectors_sql_Alter_Pull                                                             testCaseName = "sql_Alter_Pull"
+	case_OpenflowConnectors_sql_Alter_Set                                                              testCaseName = "sql_Alter_Set"
+	case_OpenflowConnectors_sql_Alter_Unset                                                            testCaseName = "sql_Alter_Unset"
+	case_OpenflowConnectors_validation_Drop_name_ValidIdentifier                                       testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_OpenflowConnectors_sql_Drop_basic                                                             testCaseName = "sql_Drop_basic"
+	case_OpenflowConnectors_sql_Drop_all                                                               testCaseName = "sql_Drop_all"
+	case_OpenflowConnectors_sql_Show_basic                                                             testCaseName = "sql_Show_basic"
+	case_OpenflowConnectors_sql_Show_all                                                               testCaseName = "sql_Show_all"
+	case_OpenflowConnectors_sql_Show_Like                                                              testCaseName = "sql_Show_Like"
+	case_OpenflowConnectors_sql_Show_In                                                                testCaseName = "sql_Show_In"
+	case_OpenflowConnectors_sql_Show_StartsWith                                                        testCaseName = "sql_Show_StartsWith"
+	case_OpenflowConnectors_sql_Show_Limit                                                             testCaseName = "sql_Show_Limit"
+	case_OpenflowConnectors_validation_Describe_name_ValidIdentifier                                   testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_OpenflowConnectors_sql_Describe_basic                                                         testCaseName = "sql_Describe_basic"
+	case_OpenflowConnectors_validation_Execute_name_ValidIdentifier                                    testCaseName = "validation_Execute_name_ValidIdentifier"
+	case_OpenflowConnectors_sql_Execute_basic                                                          testCaseName = "sql_Execute_basic"
+	case_OpenflowConnectors_validation_ShowVersions_name_ValidIdentifier                               testCaseName = "validation_ShowVersions_name_ValidIdentifier"
+	case_OpenflowConnectors_sql_ShowVersions_basic                                                     testCaseName = "sql_ShowVersions_basic"
+	case_OpenflowConnectors_sql_ShowVersions_all                                                       testCaseName = "sql_ShowVersions_all"
+	case_OpenflowConnectors_sql_ShowVersions_Limit                                                     testCaseName = "sql_ShowVersions_Limit"
 )
 
 type OpenflowConnectorsTestsContext struct {
-	Create   *sdkTestCtx[*CreateOpenflowConnectorOptions]
-	Alter    *sdkTestCtx[*AlterOpenflowConnectorOptions]
-	Drop     *sdkTestCtx[*DropOpenflowConnectorOptions]
-	Show     *sdkTestCtx[*ShowOpenflowConnectorOptions]
-	Describe *sdkTestCtx[*DescribeOpenflowConnectorOptions]
+	Create       *sdkTestCtx[*CreateOpenflowConnectorOptions]
+	Alter        *sdkTestCtx[*AlterOpenflowConnectorOptions]
+	Drop         *sdkTestCtx[*DropOpenflowConnectorOptions]
+	Show         *sdkTestCtx[*ShowOpenflowConnectorOptions]
+	Describe     *sdkTestCtx[*DescribeOpenflowConnectorOptions]
+	Execute      *sdkTestCtx[*ExecuteOpenflowConnectorOptions]
+	ShowVersions *sdkTestCtx[*ShowVersionsOpenflowConnectorOptions]
 }
 
 var openflowConnectorsTests = OpenflowConnectorsTestsContext{
@@ -104,33 +130,124 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 				},
 			},
 			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterOpenflowConnectorOptions", "Start", "Stop", "Terminate", "Commit", "Abort", "Set", "Unset"),
+				ExpectedErr: errExactlyOneOf("AlterOpenflowConnectorOptions", "Start", "Stop", "Terminate", "TerminateForce", "Abort", "RenameTo", "AddVersion", "AddLiveVersion", "Commit", "Push", "Pull", "Set", "Unset"),
 				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
 					opts.Start = nil
 					opts.Stop = nil
 					opts.Terminate = nil
-					opts.Commit = nil
+					opts.TerminateForce = nil
 					opts.Abort = nil
+					opts.RenameTo = nil
+					opts.AddVersion = nil
+					opts.AddLiveVersion = nil
+					opts.Commit = nil
+					opts.Push = nil
+					opts.Pull = nil
 					opts.Set = nil
 					opts.Unset = nil
 				},
 			},
 			validationCase[*AlterOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterOpenflowConnectorOptions", "Start", "Stop", "Terminate", "Commit", "Abort", "Set", "Unset"),
+				ExpectedErr: errExactlyOneOf("AlterOpenflowConnectorOptions", "Start", "Stop", "Terminate", "TerminateForce", "Abort", "RenameTo", "AddVersion", "AddLiveVersion", "Commit", "Push", "Pull", "Set", "Unset"),
 				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
 					opts.Start = new(true)
 					opts.Stop = new(true)
 				},
 			},
 			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Commit,
+				ExpectedErr: errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Commit"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.IfExists = new(true)
+					opts.Commit = &OpenflowConnectorCommit{}
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Abort,
+				ExpectedErr: errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Abort"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.IfExists = new(true)
+					opts.Abort = new(true)
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_AddLiveVersion,
+				ExpectedErr: errOneOf("AlterOpenflowConnectorOptions", "IfExists", "AddLiveVersion"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.IfExists = new(true)
+					opts.AddLiveVersion = &OpenflowConnectorAddLiveVersion{}
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_AddVersion,
+				ExpectedErr: errOneOf("AlterOpenflowConnectorOptions", "IfExists", "AddVersion"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.IfExists = new(true)
+					opts.AddVersion = &OpenflowConnectorAddVersion{}
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Push,
+				ExpectedErr: errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Push"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.IfExists = new(true)
+					opts.Push = &OpenflowConnectorPush{}
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_ConflictingFields_IfExists_Pull,
+				ExpectedErr: errOneOf("AlterOpenflowConnectorOptions", "IfExists", "Pull"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.IfExists = new(true)
+					opts.Pull = new(true)
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_AddVersion_From_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterOpenflowConnectorOptions.AddVersion", "From"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.AddVersion = &OpenflowConnectorAddVersion{}
+					opts.AddVersion.From = nil
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
 				Name:        case_OpenflowConnectors_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterOpenflowConnectorOptions.Set", "DisplayName", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterOpenflowConnectorOptions.Set", "DisplayName", "Comment", "DefaultVersion"),
 				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
 					opts.Set = &OpenflowConnectorSet{}
 					opts.Set.DisplayName = nil
 					opts.Set.Comment = nil
+					opts.Set.DefaultVersion = nil
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_Set_DefaultVersion_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterOpenflowConnectorOptions.Set.DefaultVersion", "First", "Last", "Version"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.Set = &OpenflowConnectorSet{}
+					opts.Set.DefaultVersion = &OpenflowConnectorDefaultVersion{}
+					opts.Set.DefaultVersion.First = nil
+					opts.Set.DefaultVersion.Last = nil
+					opts.Set.DefaultVersion.Version = nil
+				},
+			},
+			validationCase[*AlterOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Alter_opts_Set_DefaultVersion_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterOpenflowConnectorOptions.Set.DefaultVersion", "First", "Last", "Version"),
+				DefaultModify: func(opts *AlterOpenflowConnectorOptions) {
+					opts.Set = &OpenflowConnectorSet{}
+					opts.Set.DefaultVersion = &OpenflowConnectorDefaultVersion{}
+					opts.Set.DefaultVersion.First = new(true)
+					opts.Set.DefaultVersion.Last = new(true)
 				},
 			},
 			validationCase[*AlterOpenflowConnectorOptions]{
@@ -154,10 +271,28 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 				Name: case_OpenflowConnectors_sql_Alter_Terminate,
 			},
 			sqlCase[*AlterOpenflowConnectorOptions]{
-				Name: case_OpenflowConnectors_sql_Alter_Commit,
+				Name: case_OpenflowConnectors_sql_Alter_TerminateForce,
 			},
 			sqlCase[*AlterOpenflowConnectorOptions]{
 				Name: case_OpenflowConnectors_sql_Alter_Abort,
+			},
+			sqlCase[*AlterOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Alter_AddVersion,
+			},
+			sqlCase[*AlterOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Alter_AddLiveVersion,
+			},
+			sqlCase[*AlterOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Alter_Commit,
+			},
+			sqlCase[*AlterOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Alter_Push,
+			},
+			sqlCase[*AlterOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Alter_Pull,
 			},
 			sqlCase[*AlterOpenflowConnectorOptions]{
 				Name: case_OpenflowConnectors_sql_Alter_Set,
@@ -213,6 +348,12 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 			sqlCase[*ShowOpenflowConnectorOptions]{
 				Name: case_OpenflowConnectors_sql_Show_In,
 			},
+			sqlCase[*ShowOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_Show_Limit,
+			},
 		),
 	Describe: newSdkTestCtx[*DescribeOpenflowConnectorOptions](
 		"OpenflowConnectors", "Describe",
@@ -235,6 +376,58 @@ var openflowConnectorsTests = OpenflowConnectorsTestsContext{
 			sqlCase[*DescribeOpenflowConnectorOptions]{
 				Name:           case_OpenflowConnectors_sql_Describe_basic,
 				NoModifyNeeded: true,
+			},
+		),
+	Execute: newSdkTestCtx[*ExecuteOpenflowConnectorOptions](
+		"OpenflowConnectors", "Execute",
+	).
+		withDefaultOpts(func() *ExecuteOpenflowConnectorOptions {
+			return &ExecuteOpenflowConnectorOptions{
+				name: openflowConnectorsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ExecuteOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_Execute_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ExecuteOpenflowConnectorOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ExecuteOpenflowConnectorOptions]{
+				Name:           case_OpenflowConnectors_sql_Execute_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	ShowVersions: newSdkTestCtx[*ShowVersionsOpenflowConnectorOptions](
+		"OpenflowConnectors", "ShowVersions",
+	).
+		withDefaultOpts(func() *ShowVersionsOpenflowConnectorOptions {
+			return &ShowVersionsOpenflowConnectorOptions{
+				name: openflowConnectorsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ShowVersionsOpenflowConnectorOptions]{
+				Name:        case_OpenflowConnectors_validation_ShowVersions_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ShowVersionsOpenflowConnectorOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ShowVersionsOpenflowConnectorOptions]{
+				Name:           case_OpenflowConnectors_sql_ShowVersions_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowVersionsOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_ShowVersions_all,
+			},
+			sqlCase[*ShowVersionsOpenflowConnectorOptions]{
+				Name: case_OpenflowConnectors_sql_ShowVersions_Limit,
 			},
 		),
 }
@@ -262,4 +455,14 @@ func TestOpenflowConnectors_Show(t *testing.T) {
 func TestOpenflowConnectors_Describe(t *testing.T) {
 	openflowConnectorsTests.Describe.RunValidationCases(t)
 	openflowConnectorsTests.Describe.RunSqlCases(t)
+}
+
+func TestOpenflowConnectors_Execute(t *testing.T) {
+	openflowConnectorsTests.Execute.RunValidationCases(t)
+	openflowConnectorsTests.Execute.RunSqlCases(t)
+}
+
+func TestOpenflowConnectors_ShowVersions(t *testing.T) {
+	openflowConnectorsTests.ShowVersions.RunValidationCases(t)
+	openflowConnectorsTests.ShowVersions.RunSqlCases(t)
 }

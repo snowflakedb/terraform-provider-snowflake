@@ -12,6 +12,7 @@ var (
 	_ OpenflowConnectors                       = (*openflowConnectors)(nil)
 	_ convertibleRow[OpenflowConnector]        = new(openflowConnectorRow)
 	_ convertibleRow[OpenflowConnectorDetails] = new(openflowConnectorDetailsRow)
+	_ convertibleRow[OpenflowConnectorVersion] = new(openflowConnectorVersionRow)
 )
 
 type openflowConnectors struct {
@@ -72,6 +73,20 @@ func (v *openflowConnectors) Describe(ctx context.Context, id SchemaObjectIdenti
 	return conversionErrorWrapped(result.convert())
 }
 
+func (v *openflowConnectors) Execute(ctx context.Context, request *ExecuteOpenflowConnectorRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *openflowConnectors) ShowVersions(ctx context.Context, request *ShowVersionsOpenflowConnectorRequest) ([]OpenflowConnectorVersion, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[openflowConnectorVersionRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[openflowConnectorVersionRow, OpenflowConnectorVersion](dbRows)
+}
+
 func (r *CreateOpenflowConnectorRequest) toOpts() *CreateOpenflowConnectorOptions {
 	opts := &CreateOpenflowConnectorOptions{
 		IfNotExists:    r.IfNotExists,
@@ -87,17 +102,53 @@ func (r *CreateOpenflowConnectorRequest) toOpts() *CreateOpenflowConnectorOption
 
 func (r *AlterOpenflowConnectorRequest) toOpts() *AlterOpenflowConnectorOptions {
 	opts := &AlterOpenflowConnectorOptions{
-		name:      r.name,
-		Start:     r.Start,
-		Stop:      r.Stop,
-		Terminate: r.Terminate,
-		Commit:    r.Commit,
-		Abort:     r.Abort,
+		IfExists:       r.IfExists,
+		name:           r.name,
+		Start:          r.Start,
+		Stop:           r.Stop,
+		Terminate:      r.Terminate,
+		TerminateForce: r.TerminateForce,
+		Abort:          r.Abort,
+		RenameTo:       r.RenameTo,
+		Pull:           r.Pull,
+	}
+	if r.AddVersion != nil {
+		opts.AddVersion = &OpenflowConnectorAddVersion{
+			From: r.AddVersion.From,
+		}
+	}
+	if r.AddLiveVersion != nil {
+		opts.AddLiveVersion = &OpenflowConnectorAddLiveVersion{
+			VersionAlias: r.AddLiveVersion.VersionAlias,
+			Comment:      r.AddLiveVersion.Comment,
+		}
+	}
+	if r.Commit != nil {
+		opts.Commit = &OpenflowConnectorCommit{
+			Comment: r.Commit.Comment,
+		}
+	}
+	if r.Push != nil {
+		opts.Push = &OpenflowConnectorPush{
+			To:       r.Push.To,
+			Username: r.Push.Username,
+			Password: r.Push.Password,
+			Name:     r.Push.Name,
+			Email:    r.Push.Email,
+			Comment:  r.Push.Comment,
+		}
 	}
 	if r.Set != nil {
 		opts.Set = &OpenflowConnectorSet{
 			DisplayName: r.Set.DisplayName,
 			Comment:     r.Set.Comment,
+		}
+		if r.Set.DefaultVersion != nil {
+			opts.Set.DefaultVersion = &OpenflowConnectorDefaultVersion{
+				First:   r.Set.DefaultVersion.First,
+				Last:    r.Set.DefaultVersion.Last,
+				Version: r.Set.DefaultVersion.Version,
+			}
 		}
 	}
 	if r.Unset != nil {
@@ -119,8 +170,10 @@ func (r *DropOpenflowConnectorRequest) toOpts() *DropOpenflowConnectorOptions {
 
 func (r *ShowOpenflowConnectorRequest) toOpts() *ShowOpenflowConnectorOptions {
 	opts := &ShowOpenflowConnectorOptions{
-		Like: r.Like,
-		In:   r.In,
+		Like:       r.Like,
+		In:         r.In,
+		StartsWith: r.StartsWith,
+		Limit:      r.Limit,
 	}
 	return opts
 }
@@ -145,6 +198,7 @@ func (r openflowConnectorRow) convert() (*OpenflowConnector, error) {
 	mapNullString(&result.DefaultVersionSourceLocationUri, r.DefaultVersionSourceLocationUri)
 	mapNullString(&result.LiveVersionLocationUri, r.LiveVersionLocationUri)
 	mapNullString(&result.Comment, r.Comment)
+	mapNullString(&result.ConnectorUrl, r.ConnectorUrl)
 	return result, nil
 }
 
@@ -157,19 +211,14 @@ func (r *DescribeOpenflowConnectorRequest) toOpts() *DescribeOpenflowConnectorOp
 
 func (r openflowConnectorDetailsRow) convert() (*OpenflowConnectorDetails, error) {
 	result := &OpenflowConnectorDetails{
-		Name:         r.Name,
-		Runtime:      r.Runtime,
-		DatabaseName: r.DatabaseName,
-		SchemaName:   r.SchemaName,
-		Owner:        r.Owner,
-		CreatedOn:    r.CreatedOn,
-		UpdatedOn:    r.UpdatedOn,
+		Name:    r.Name,
+		Runtime: r.Runtime,
+		Owner:   r.Owner,
 	}
 	mapStringWithMapping(&result.Status, r.Status, ToOpenflowConnectorStatus)
 	mapNullString(&result.ConnectorDefinition, r.ConnectorDefinition)
-	mapNullString(&result.DefinitionVersionName, r.DefinitionVersionName)
-	mapNullString(&result.Provider, r.Provider)
 	mapNullString(&result.DisplayName, r.DisplayName)
+	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.DefaultVersion, r.DefaultVersion)
 	mapNullString(&result.DefaultVersionName, r.DefaultVersionName)
 	mapNullString(&result.DefaultVersionAlias, r.DefaultVersionAlias)
@@ -182,8 +231,43 @@ func (r openflowConnectorDetailsRow) convert() (*OpenflowConnectorDetails, error
 	mapNullString(&result.LastVersionSourceLocationUri, r.LastVersionSourceLocationUri)
 	mapNullString(&result.LastVersionGitCommitHash, r.LastVersionGitCommitHash)
 	mapNullString(&result.LiveVersionLocationUri, r.LiveVersionLocationUri)
+	mapNullString(&result.ConnectorUrl, r.ConnectorUrl)
+	if err := r.additionalConvert(result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (r *ExecuteOpenflowConnectorRequest) toOpts() *ExecuteOpenflowConnectorOptions {
+	opts := &ExecuteOpenflowConnectorOptions{
+		name: r.name,
+		From: r.From,
+		Step: r.Step,
+	}
+	return opts
+}
+
+func (r *ShowVersionsOpenflowConnectorRequest) toOpts() *ShowVersionsOpenflowConnectorOptions {
+	opts := &ShowVersionsOpenflowConnectorOptions{
+		name:  r.name,
+		Limit: r.Limit,
+	}
+	return opts
+}
+
+func (r openflowConnectorVersionRow) convert() (*OpenflowConnectorVersion, error) {
+	result := &OpenflowConnectorVersion{
+		CreatedOn:   r.CreatedOn,
+		IsDefault:   r.IsDefault,
+		IsFirst:     r.IsFirst,
+		IsLast:      r.IsLast,
+		IsLive:      r.IsLive,
+		LocationUri: r.LocationUri,
+	}
+	mapNullString(&result.Name, r.Name)
+	mapNullString(&result.Alias, r.Alias)
 	mapNullString(&result.Comment, r.Comment)
-	mapNullString(&result.ErrorCode, r.ErrorCode)
-	mapNullString(&result.StatusMessage, r.StatusMessage)
+	mapNullString(&result.SourceLocationUri, r.SourceLocationUri)
+	mapNullString(&result.GitCommitHash, r.GitCommitHash)
 	return result, nil
 }

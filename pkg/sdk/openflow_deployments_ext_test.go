@@ -1,8 +1,11 @@
 package sdk
 
+import "testing"
+
 func init() {
 	id := openflowDeploymentsTestIdAccountObjectIdentifier
 	renameTarget := randomAccountObjectIdentifier()
+	eventTableId := randomSchemaObjectIdentifier()
 
 	openflowDeploymentsTests.Create.
 		withDefaultOpts(func() *CreateOpenflowDeploymentOptions {
@@ -25,14 +28,14 @@ func init() {
 				opts.CustomIngressHostname = new("ingress.example.com")
 				opts.UsePrivateLink = new(true)
 				opts.UseUserAuthOverPrivatelink = new(false)
-				opts.EventTable = new("MY_DB.PUBLIC.EVENTS")
+				opts.EventTable = &OpenflowDeploymentEventTable{EventTable: &eventTableId}
 				opts.DisplayName = new("My Deployment")
 				opts.Comment = new("set-comment")
 			},
 			"CREATE OPENFLOW DEPLOYMENT IF NOT EXISTS %s DEPLOYMENT_TYPE = 'BYOC' VPC_TYPE = 'MANAGED'"+
-				" CUSTOM_INGRESS_HOSTNAME = 'ingress.example.com' USE_PRIVATE_LINK = true USE_USER_AUTH_OVER_PRIVATELINK = false"+
-				" EVENT_TABLE = 'MY_DB.PUBLIC.EVENTS' DISPLAY_NAME = 'My Deployment' COMMENT = 'set-comment'",
-			id.FullyQualifiedName(),
+				" USE_PRIVATE_LINK = true USE_USER_AUTH_OVER_PRIVATELINK = false CUSTOM_INGRESS_HOSTNAME = 'ingress.example.com'"+
+				` DISPLAY_NAME = 'My Deployment' COMMENT = 'set-comment' EVENT_TABLE = '\"%s\".\"%s\".\"%s\"'`,
+			id.FullyQualifiedName(), eventTableId.DatabaseName(), eventTableId.SchemaName(), eventTableId.Name(),
 		)
 
 	openflowDeploymentsTests.Alter.
@@ -60,11 +63,11 @@ func init() {
 				opts.Set = &OpenflowDeploymentSet{
 					Comment:     new("set-comment"),
 					DisplayName: new("My Deployment"),
-					EventTable:  new("MY_DB.PUBLIC.EVENTS"),
+					EventTable:  &OpenflowDeploymentEventTable{EventTable: &eventTableId},
 				}
 			},
-			"ALTER OPENFLOW DEPLOYMENT %s SET COMMENT = 'set-comment' DISPLAY_NAME = 'My Deployment' EVENT_TABLE = 'MY_DB.PUBLIC.EVENTS'",
-			id.FullyQualifiedName(),
+			`ALTER OPENFLOW DEPLOYMENT %s SET DISPLAY_NAME = 'My Deployment' COMMENT = 'set-comment' EVENT_TABLE = '\"%s\".\"%s\".\"%s\"'`,
+			id.FullyQualifiedName(), eventTableId.DatabaseName(), eventTableId.SchemaName(), eventTableId.Name(),
 		).
 		withModifyAndExpectedSqlf(
 			case_OpenflowDeployments_sql_Alter_Unset,
@@ -77,6 +80,42 @@ func init() {
 			},
 			"ALTER OPENFLOW DEPLOYMENT %s UNSET COMMENT, DISPLAY_NAME, EVENT_TABLE",
 			id.FullyQualifiedName(),
+		)
+
+	// EVENT_TABLE = NONE is a bare keyword, so it must not be quoted the way a table name is. It also is
+	// not the same as UNSET: NONE drops all events for the deployment, UNSET falls back to the account's
+	// default event table.
+	openflowDeploymentsTests.Create.
+		withAdditionalSqlCasef(
+			"sql_Create_eventTableNone",
+			func(opts *CreateOpenflowDeploymentOptions) {
+				opts.EventTable = &OpenflowDeploymentEventTable{None: new(true)}
+			},
+			"CREATE OPENFLOW DEPLOYMENT %s DEPLOYMENT_TYPE = 'SNOWFLAKE' EVENT_TABLE = NONE",
+			id.FullyQualifiedName(),
+		)
+
+	openflowDeploymentsTests.Alter.
+		withAdditionalSqlCasef(
+			"sql_Alter_setEventTableNone",
+			func(opts *AlterOpenflowDeploymentOptions) {
+				opts.Set = &OpenflowDeploymentSet{EventTable: &OpenflowDeploymentEventTable{None: new(true)}}
+			},
+			"ALTER OPENFLOW DEPLOYMENT %s SET EVENT_TABLE = NONE",
+			id.FullyQualifiedName(),
+		)
+
+	// IF EXISTS is only rendered by ALTER, and the generated Alter SQL cases never set it, so without this
+	// the clause is unasserted: retagging the field would not fail any test. Paired with an action that
+	// accepts it.
+	openflowDeploymentsTests.Alter.
+		withAdditionalSqlCasef(
+			"sql_Alter_ifExists",
+			func(opts *AlterOpenflowDeploymentOptions) {
+				opts.IfExists = new(true)
+				opts.Upgrade = new(true)
+			},
+			"ALTER OPENFLOW DEPLOYMENT IF EXISTS %s UPGRADE", id.FullyQualifiedName(),
 		)
 
 	openflowDeploymentsTests.Drop.
@@ -101,8 +140,11 @@ func init() {
 			case_OpenflowDeployments_sql_Show_all,
 			func(opts *ShowOpenflowDeploymentOptions) {
 				opts.Like = &Like{Pattern: new("pattern")}
+				opts.In = &In{Account: new(true)}
+				opts.StartsWith = new("PROD_")
+				opts.Limit = &LimitFrom{Rows: new(5), From: new("PROD_A")}
 			},
-			"SHOW OPENFLOW DEPLOYMENTS LIKE 'pattern'",
+			"SHOW OPENFLOW DEPLOYMENTS LIKE 'pattern' IN ACCOUNT STARTS WITH 'PROD_' LIMIT 5 FROM 'PROD_A'",
 		).
 		withModifyAndExpectedSqlf(
 			case_OpenflowDeployments_sql_Show_Like,
@@ -110,6 +152,27 @@ func init() {
 				opts.Like = &Like{Pattern: new("my-deployment%")}
 			},
 			"SHOW OPENFLOW DEPLOYMENTS LIKE 'my-deployment%%'",
+		).
+		withModifyAndExpectedSqlf(
+			case_OpenflowDeployments_sql_Show_In,
+			func(opts *ShowOpenflowDeploymentOptions) {
+				opts.In = &In{Account: new(true)}
+			},
+			"SHOW OPENFLOW DEPLOYMENTS IN ACCOUNT",
+		).
+		withModifyAndExpectedSqlf(
+			case_OpenflowDeployments_sql_Show_StartsWith,
+			func(opts *ShowOpenflowDeploymentOptions) {
+				opts.StartsWith = new("PROD_")
+			},
+			"SHOW OPENFLOW DEPLOYMENTS STARTS WITH 'PROD_'",
+		).
+		withModifyAndExpectedSqlf(
+			case_OpenflowDeployments_sql_Show_Limit,
+			func(opts *ShowOpenflowDeploymentOptions) {
+				opts.Limit = &LimitFrom{Rows: new(10)}
+			},
+			"SHOW OPENFLOW DEPLOYMENTS LIMIT 10",
 		)
 
 	openflowDeploymentsTests.Describe.
@@ -118,4 +181,30 @@ func init() {
 			"DESCRIBE OPENFLOW DEPLOYMENT %s",
 			id.FullyQualifiedName(),
 		)
+}
+
+// A non-opts test: ShowParameters is a hand-written interface method rather than a generated operation, so
+// the generator emits no cases for it. This branch adds ParametersIn.OpenflowDeployment, and without these
+// two cases that scope has no coverage at all: dropping it from ParametersIn.validate()'s anyValueSet guard
+// leaves the whole suite green while every ShowParameters call starts failing validation.
+//
+// The LIKE variant is the one the deployment resource actually issues, since EVENT_TABLE appears in neither
+// SHOW nor DESCRIBE output and SHOW PARAMETERS is the only way to read it back.
+func TestOpenflowDeployments_ShowParameters(t *testing.T) {
+	id := randomAccountObjectIdentifier()
+
+	t.Run("in openflow deployment", func(t *testing.T) {
+		opts := &ShowParametersOptions{
+			In: &ParametersIn{OpenflowDeployment: id},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW PARAMETERS IN OPENFLOW DEPLOYMENT %s", id.FullyQualifiedName())
+	})
+
+	t.Run("like event table in openflow deployment", func(t *testing.T) {
+		opts := &ShowParametersOptions{
+			Like: &Like{Pattern: String("EVENT_TABLE")},
+			In:   &ParametersIn{OpenflowDeployment: id},
+		}
+		assertOptsValidAndSQLEquals(t, opts, "SHOW PARAMETERS LIKE 'EVENT_TABLE' IN OPENFLOW DEPLOYMENT %s", id.FullyQualifiedName())
+	})
 }

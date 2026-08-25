@@ -2289,21 +2289,22 @@ func (opts *ShowParametersOptions) validate() error {
 }
 
 type ParametersIn struct {
-	Session   *bool                               `ddl:"keyword" sql:"SESSION"`
-	Account   *bool                               `ddl:"keyword" sql:"ACCOUNT"`
-	User      AccountObjectIdentifier             `ddl:"identifier" sql:"USER"`
-	Warehouse AccountObjectIdentifier             `ddl:"identifier" sql:"WAREHOUSE"`
-	Database  AccountObjectIdentifier             `ddl:"identifier" sql:"DATABASE"`
-	Schema    DatabaseObjectIdentifier            `ddl:"identifier" sql:"SCHEMA"`
-	Task      SchemaObjectIdentifier              `ddl:"identifier" sql:"TASK"`
-	Table     SchemaObjectIdentifier              `ddl:"identifier" sql:"TABLE"`
-	Function  SchemaObjectIdentifierWithArguments `ddl:"identifier" sql:"FUNCTION"`
-	Procedure SchemaObjectIdentifierWithArguments `ddl:"identifier" sql:"PROCEDURE"`
+	Session            *bool                               `ddl:"keyword" sql:"SESSION"`
+	Account            *bool                               `ddl:"keyword" sql:"ACCOUNT"`
+	User               AccountObjectIdentifier             `ddl:"identifier" sql:"USER"`
+	Warehouse          AccountObjectIdentifier             `ddl:"identifier" sql:"WAREHOUSE"`
+	Database           AccountObjectIdentifier             `ddl:"identifier" sql:"DATABASE"`
+	Schema             DatabaseObjectIdentifier            `ddl:"identifier" sql:"SCHEMA"`
+	Task               SchemaObjectIdentifier              `ddl:"identifier" sql:"TASK"`
+	Table              SchemaObjectIdentifier              `ddl:"identifier" sql:"TABLE"`
+	Function           SchemaObjectIdentifierWithArguments `ddl:"identifier" sql:"FUNCTION"`
+	Procedure          SchemaObjectIdentifierWithArguments `ddl:"identifier" sql:"PROCEDURE"`
+	OpenflowDeployment AccountObjectIdentifier             `ddl:"identifier" sql:"OPENFLOW DEPLOYMENT"`
 }
 
 func (v *ParametersIn) validate() error {
-	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure) {
-		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure"))
+	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure, v.OpenflowDeployment) {
+		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment"))
 	}
 	return nil
 }
@@ -2324,6 +2325,10 @@ const (
 	ParameterTypeTask             ParameterType = "TASK"
 	ParameterTypeFunction         ParameterType = "FUNCTION"
 	ParameterTypeProcedure        ParameterType = "PROCEDURE"
+	// ParameterTypeOpenflowDeployment is the level SHOW PARAMETERS reports for a parameter set directly on
+	// an Openflow deployment. A deployment that has never had one set reports ACCOUNT (or SYSTEM, or the
+	// empty Snowflake default) with the inherited value, so the level is the only way to tell the two apart.
+	ParameterTypeOpenflowDeployment ParameterType = "OPENFLOW_DEPLOYMENT"
 )
 
 var AllParameterTypes = []ParameterType{
@@ -2339,6 +2344,7 @@ var AllParameterTypes = []ParameterType{
 	ParameterTypeTask,
 	ParameterTypeFunction,
 	ParameterTypeProcedure,
+	ParameterTypeOpenflowDeployment,
 	ParameterTypeSnowflakeDefault,
 }
 

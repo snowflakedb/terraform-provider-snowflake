@@ -17,9 +17,11 @@ type OpenflowConnectors interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnector, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*OpenflowConnectorDetails, error)
+	Execute(ctx context.Context, request *ExecuteOpenflowConnectorRequest) error
+	ShowVersions(ctx context.Context, request *ShowVersionsOpenflowConnectorRequest) ([]OpenflowConnectorVersion, error)
 }
 
-// CreateOpenflowConnectorOptions is based on TODO: add link when public docs are available.
+// CreateOpenflowConnectorOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-connector#create-openflow-connector.
 type CreateOpenflowConnectorOptions struct {
 	create            bool                   `ddl:"static" sql:"CREATE"`
 	openflowConnector bool                   `ddl:"static" sql:"OPENFLOW CONNECTOR"`
@@ -32,23 +34,60 @@ type CreateOpenflowConnectorOptions struct {
 	Comment           *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
-// AlterOpenflowConnectorOptions is based on TODO: add link when public docs are available.
+// AlterOpenflowConnectorOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-connector#alter-openflow-connector.
 type AlterOpenflowConnectorOptions struct {
-	alter             bool                    `ddl:"static" sql:"ALTER"`
-	openflowConnector bool                    `ddl:"static" sql:"OPENFLOW CONNECTOR"`
-	name              SchemaObjectIdentifier  `ddl:"identifier"`
-	Start             *bool                   `ddl:"keyword" sql:"START"`
-	Stop              *bool                   `ddl:"keyword" sql:"STOP"`
-	Terminate         *bool                   `ddl:"keyword" sql:"TERMINATE"`
-	Commit            *bool                   `ddl:"keyword" sql:"COMMIT"`
-	Abort             *bool                   `ddl:"keyword" sql:"ABORT"`
-	Set               *OpenflowConnectorSet   `ddl:"keyword" sql:"SET"`
-	Unset             *OpenflowConnectorUnset `ddl:"list,no_parentheses" sql:"UNSET"`
+	alter             bool                             `ddl:"static" sql:"ALTER"`
+	openflowConnector bool                             `ddl:"static" sql:"OPENFLOW CONNECTOR"`
+	IfExists          *bool                            `ddl:"keyword" sql:"IF EXISTS"`
+	name              SchemaObjectIdentifier           `ddl:"identifier"`
+	Start             *bool                            `ddl:"keyword" sql:"START"`
+	Stop              *bool                            `ddl:"keyword" sql:"STOP"`
+	Terminate         *bool                            `ddl:"keyword" sql:"TERMINATE"`
+	TerminateForce    *bool                            `ddl:"keyword" sql:"TERMINATE FORCE"`
+	Abort             *bool                            `ddl:"keyword" sql:"ABORT"`
+	RenameTo          *SchemaObjectIdentifier          `ddl:"identifier" sql:"RENAME TO"`
+	AddVersion        *OpenflowConnectorAddVersion     `ddl:"keyword" sql:"ADD VERSION"`
+	AddLiveVersion    *OpenflowConnectorAddLiveVersion `ddl:"keyword" sql:"ADD LIVE VERSION"`
+	Commit            *OpenflowConnectorCommit         `ddl:"keyword" sql:"COMMIT"`
+	Push              *OpenflowConnectorPush           `ddl:"keyword" sql:"PUSH"`
+	Pull              *bool                            `ddl:"keyword" sql:"PULL"`
+	Set               *OpenflowConnectorSet            `ddl:"keyword" sql:"SET"`
+	Unset             *OpenflowConnectorUnset          `ddl:"list,no_parentheses" sql:"UNSET"`
+}
+
+type OpenflowConnectorAddVersion struct {
+	From *Location `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
+}
+
+type OpenflowConnectorAddLiveVersion struct {
+	VersionAlias *string `ddl:"keyword,no_quotes"`
+	fromLast     bool    `ddl:"static" sql:"FROM LAST"`
+	Comment      *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type OpenflowConnectorCommit struct {
+	Comment *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+}
+
+type OpenflowConnectorPush struct {
+	To       *string `ddl:"parameter,single_quotes,no_equals" sql:"TO"`
+	Username string  `ddl:"parameter,single_quotes" sql:"USERNAME"`
+	Password string  `ddl:"parameter,single_quotes" sql:"PASSWORD"`
+	Name     string  `ddl:"parameter,single_quotes" sql:"NAME"`
+	Email    string  `ddl:"parameter,single_quotes" sql:"EMAIL"`
+	Comment  *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type OpenflowConnectorSet struct {
-	DisplayName *string `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
-	Comment     *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	DisplayName    *string                          `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
+	Comment        *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	DefaultVersion *OpenflowConnectorDefaultVersion `ddl:"parameter" sql:"DEFAULT_VERSION"`
+}
+
+type OpenflowConnectorDefaultVersion struct {
+	First   *bool   `ddl:"keyword" sql:"FIRST"`
+	Last    *bool   `ddl:"keyword" sql:"LAST"`
+	Version *string `ddl:"keyword,single_quotes"`
 }
 
 type OpenflowConnectorUnset struct {
@@ -56,7 +95,7 @@ type OpenflowConnectorUnset struct {
 	Comment     *bool `ddl:"keyword" sql:"COMMENT"`
 }
 
-// DropOpenflowConnectorOptions is based on TODO: add link when public docs are available.
+// DropOpenflowConnectorOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-connector#drop-openflow-connector.
 type DropOpenflowConnectorOptions struct {
 	drop              bool                   `ddl:"static" sql:"DROP"`
 	openflowConnector bool                   `ddl:"static" sql:"OPENFLOW CONNECTOR"`
@@ -64,12 +103,14 @@ type DropOpenflowConnectorOptions struct {
 	name              SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-// ShowOpenflowConnectorOptions is based on TODO: add link when public docs are available.
+// ShowOpenflowConnectorOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-connector#show-openflow-connectors.
 type ShowOpenflowConnectorOptions struct {
-	show               bool  `ddl:"static" sql:"SHOW"`
-	openflowConnectors bool  `ddl:"static" sql:"OPENFLOW CONNECTORS"`
-	Like               *Like `ddl:"keyword" sql:"LIKE"`
-	In                 *In   `ddl:"keyword" sql:"IN"`
+	show               bool       `ddl:"static" sql:"SHOW"`
+	openflowConnectors bool       `ddl:"static" sql:"OPENFLOW CONNECTORS"`
+	Like               *Like      `ddl:"keyword" sql:"LIKE"`
+	In                 *In        `ddl:"keyword" sql:"IN"`
+	StartsWith         *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit              *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
 type openflowConnectorRow struct {
@@ -90,6 +131,7 @@ type openflowConnectorRow struct {
 	Comment                         sql.NullString `db:"comment"`
 	CreatedOn                       time.Time      `db:"created_on"`
 	UpdatedOn                       time.Time      `db:"updated_on"`
+	ConnectorUrl                    sql.NullString `db:"connector_url"`
 }
 
 type OpenflowConnector struct {
@@ -110,6 +152,7 @@ type OpenflowConnector struct {
 	Comment                         *string
 	CreatedOn                       time.Time
 	UpdatedOn                       time.Time
+	ConnectorUrl                    *string
 }
 
 func (v *OpenflowConnector) ID() SchemaObjectIdentifier {
@@ -120,7 +163,7 @@ func (v *OpenflowConnector) ObjectType() ObjectType {
 	return ObjectTypeOpenflowConnector
 }
 
-// DescribeOpenflowConnectorOptions is based on TODO: add link when public docs are available.
+// DescribeOpenflowConnectorOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-connector#describe-openflow-connector.
 type DescribeOpenflowConnectorOptions struct {
 	describe          bool                   `ddl:"static" sql:"DESCRIBE"`
 	openflowConnector bool                   `ddl:"static" sql:"OPENFLOW CONNECTOR"`
@@ -132,12 +175,9 @@ type openflowConnectorDetailsRow struct {
 	Status                          string         `db:"status"`
 	Runtime                         string         `db:"runtime"`
 	ConnectorDefinition             sql.NullString `db:"connector_definition"`
-	DefinitionVersionName           sql.NullString `db:"definition_version_name"`
-	Provider                        sql.NullString `db:"provider"`
 	DisplayName                     sql.NullString `db:"display_name"`
-	DatabaseName                    string         `db:"database_name"`
-	SchemaName                      string         `db:"schema_name"`
 	Owner                           string         `db:"owner"`
+	Comment                         sql.NullString `db:"comment"`
 	DefaultVersion                  sql.NullString `db:"default_version"`
 	DefaultVersionName              sql.NullString `db:"default_version_name"`
 	DefaultVersionAlias             sql.NullString `db:"default_version_alias"`
@@ -150,24 +190,18 @@ type openflowConnectorDetailsRow struct {
 	LastVersionSourceLocationUri    sql.NullString `db:"last_version_source_location_uri"`
 	LastVersionGitCommitHash        sql.NullString `db:"last_version_git_commit_hash"`
 	LiveVersionLocationUri          sql.NullString `db:"live_version_location_uri"`
-	Comment                         sql.NullString `db:"comment"`
-	CreatedOn                       time.Time      `db:"created_on"`
-	UpdatedOn                       time.Time      `db:"updated_on"`
-	ErrorCode                       sql.NullString `db:"error_code"`
-	StatusMessage                   sql.NullString `db:"status_message"`
+	ConnectorUrl                    sql.NullString `db:"connector_url"`
 }
 
 type OpenflowConnectorDetails struct {
+	Id                              SchemaObjectIdentifier
 	Name                            string
 	Status                          OpenflowConnectorStatus
 	Runtime                         string
 	ConnectorDefinition             *string
-	DefinitionVersionName           *string
-	Provider                        *string
 	DisplayName                     *string
-	DatabaseName                    string
-	SchemaName                      string
 	Owner                           string
+	Comment                         *string
 	DefaultVersion                  *string
 	DefaultVersionName              *string
 	DefaultVersionAlias             *string
@@ -180,9 +214,51 @@ type OpenflowConnectorDetails struct {
 	LastVersionSourceLocationUri    *string
 	LastVersionGitCommitHash        *string
 	LiveVersionLocationUri          *string
-	Comment                         *string
-	CreatedOn                       time.Time
-	UpdatedOn                       time.Time
-	ErrorCode                       *string
-	StatusMessage                   *string
+	ConnectorUrl                    *string
+}
+
+// ExecuteOpenflowConnectorOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-connector#execute-openflow-connector.
+type ExecuteOpenflowConnectorOptions struct {
+	execute               bool                   `ddl:"static" sql:"EXECUTE"`
+	openflowConnector     bool                   `ddl:"static" sql:"OPENFLOW CONNECTOR"`
+	name                  SchemaObjectIdentifier `ddl:"identifier"`
+	validateConfiguration bool                   `ddl:"static" sql:"VALIDATE CONFIGURATION"`
+	From                  *Location              `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
+	Step                  *string                `ddl:"parameter,single_quotes,no_equals" sql:"STEP"`
+}
+
+// ShowVersionsOpenflowConnectorOptions is based on https://docs.snowflake.com/en/LIMITEDACCESS/openflow-gen2/sql-reference/openflow-connector.
+type ShowVersionsOpenflowConnectorOptions struct {
+	showVersions        bool                   `ddl:"static" sql:"SHOW VERSIONS"`
+	inOpenflowConnector bool                   `ddl:"static" sql:"IN OPENFLOW CONNECTOR"`
+	name                SchemaObjectIdentifier `ddl:"identifier"`
+	Limit               *int                   `ddl:"parameter,no_equals" sql:"LIMIT"`
+}
+
+type openflowConnectorVersionRow struct {
+	Name              sql.NullString `db:"name"`
+	Alias             sql.NullString `db:"alias"`
+	Comment           sql.NullString `db:"comment"`
+	CreatedOn         time.Time      `db:"created_on"`
+	IsDefault         bool           `db:"is_default"`
+	IsFirst           bool           `db:"is_first"`
+	IsLast            bool           `db:"is_last"`
+	IsLive            bool           `db:"is_live"`
+	LocationUri       string         `db:"location_uri"`
+	SourceLocationUri sql.NullString `db:"source_location_uri"`
+	GitCommitHash     sql.NullString `db:"git_commit_hash"`
+}
+
+type OpenflowConnectorVersion struct {
+	Name              *string
+	Alias             *string
+	Comment           *string
+	CreatedOn         time.Time
+	IsDefault         bool
+	IsFirst           bool
+	IsLast            bool
+	IsLive            bool
+	LocationUri       string
+	SourceLocationUri *string
+	GitCommitHash     *string
 }

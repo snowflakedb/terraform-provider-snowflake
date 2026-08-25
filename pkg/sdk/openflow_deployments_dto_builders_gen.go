@@ -22,11 +22,6 @@ func (s *CreateOpenflowDeploymentRequest) WithVpcType(vpcType OpenflowVpcType) *
 	return s
 }
 
-func (s *CreateOpenflowDeploymentRequest) WithCustomIngressHostname(customIngressHostname string) *CreateOpenflowDeploymentRequest {
-	s.CustomIngressHostname = &customIngressHostname
-	return s
-}
-
 func (s *CreateOpenflowDeploymentRequest) WithUsePrivateLink(usePrivateLink bool) *CreateOpenflowDeploymentRequest {
 	s.UsePrivateLink = &usePrivateLink
 	return s
@@ -37,8 +32,8 @@ func (s *CreateOpenflowDeploymentRequest) WithUseUserAuthOverPrivatelink(useUser
 	return s
 }
 
-func (s *CreateOpenflowDeploymentRequest) WithEventTable(eventTable string) *CreateOpenflowDeploymentRequest {
-	s.EventTable = &eventTable
+func (s *CreateOpenflowDeploymentRequest) WithCustomIngressHostname(customIngressHostname string) *CreateOpenflowDeploymentRequest {
+	s.CustomIngressHostname = &customIngressHostname
 	return s
 }
 
@@ -52,12 +47,37 @@ func (s *CreateOpenflowDeploymentRequest) WithComment(comment string) *CreateOpe
 	return s
 }
 
+func (s *CreateOpenflowDeploymentRequest) WithEventTable(eventTable OpenflowDeploymentEventTableRequest) *CreateOpenflowDeploymentRequest {
+	s.EventTable = &eventTable
+	return s
+}
+
+func NewOpenflowDeploymentEventTableRequest() *OpenflowDeploymentEventTableRequest {
+	s := OpenflowDeploymentEventTableRequest{}
+	return &s
+}
+
+func (s *OpenflowDeploymentEventTableRequest) WithEventTable(eventTable SchemaObjectIdentifier) *OpenflowDeploymentEventTableRequest {
+	s.EventTable = &eventTable
+	return s
+}
+
+func (s *OpenflowDeploymentEventTableRequest) WithNone(none bool) *OpenflowDeploymentEventTableRequest {
+	s.None = &none
+	return s
+}
+
 func NewAlterOpenflowDeploymentRequest(
 	name AccountObjectIdentifier,
 ) *AlterOpenflowDeploymentRequest {
 	s := AlterOpenflowDeploymentRequest{}
 	s.name = name
 	return &s
+}
+
+func (s *AlterOpenflowDeploymentRequest) WithIfExists(ifExists bool) *AlterOpenflowDeploymentRequest {
+	s.IfExists = &ifExists
+	return s
 }
 
 func (s *AlterOpenflowDeploymentRequest) WithUpgrade(upgrade bool) *AlterOpenflowDeploymentRequest {
@@ -90,17 +110,17 @@ func NewOpenflowDeploymentSetRequest() *OpenflowDeploymentSetRequest {
 	return &s
 }
 
-func (s *OpenflowDeploymentSetRequest) WithComment(comment string) *OpenflowDeploymentSetRequest {
-	s.Comment = &comment
-	return s
-}
-
 func (s *OpenflowDeploymentSetRequest) WithDisplayName(displayName string) *OpenflowDeploymentSetRequest {
 	s.DisplayName = &displayName
 	return s
 }
 
-func (s *OpenflowDeploymentSetRequest) WithEventTable(eventTable string) *OpenflowDeploymentSetRequest {
+func (s *OpenflowDeploymentSetRequest) WithComment(comment string) *OpenflowDeploymentSetRequest {
+	s.Comment = &comment
+	return s
+}
+
+func (s *OpenflowDeploymentSetRequest) WithEventTable(eventTable OpenflowDeploymentEventTableRequest) *OpenflowDeploymentSetRequest {
 	s.EventTable = &eventTable
 	return s
 }
@@ -145,6 +165,21 @@ func NewShowOpenflowDeploymentRequest() *ShowOpenflowDeploymentRequest {
 
 func (s *ShowOpenflowDeploymentRequest) WithLike(like Like) *ShowOpenflowDeploymentRequest {
 	s.Like = &like
+	return s
+}
+
+func (s *ShowOpenflowDeploymentRequest) WithIn(in In) *ShowOpenflowDeploymentRequest {
+	s.In = &in
+	return s
+}
+
+func (s *ShowOpenflowDeploymentRequest) WithStartsWith(startsWith string) *ShowOpenflowDeploymentRequest {
+	s.StartsWith = &startsWith
+	return s
+}
+
+func (s *ShowOpenflowDeploymentRequest) WithLimit(limit LimitFrom) *ShowOpenflowDeploymentRequest {
+	s.Limit = &limit
 	return s
 }
 

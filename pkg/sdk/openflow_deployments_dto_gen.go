@@ -15,15 +15,21 @@ type CreateOpenflowDeploymentRequest struct {
 	name                       AccountObjectIdentifier // required
 	DeploymentType             OpenflowDeploymentType  // required
 	VpcType                    *OpenflowVpcType
-	CustomIngressHostname      *string
 	UsePrivateLink             *bool
 	UseUserAuthOverPrivatelink *bool
-	EventTable                 *string
+	CustomIngressHostname      *string
 	DisplayName                *string
 	Comment                    *string
+	EventTable                 *OpenflowDeploymentEventTableRequest
+}
+
+type OpenflowDeploymentEventTableRequest struct {
+	EventTable *SchemaObjectIdentifier
+	None       *bool
 }
 
 type AlterOpenflowDeploymentRequest struct {
+	IfExists  *bool
 	name      AccountObjectIdentifier // required
 	Upgrade   *bool
 	Terminate *bool
@@ -33,9 +39,9 @@ type AlterOpenflowDeploymentRequest struct {
 }
 
 type OpenflowDeploymentSetRequest struct {
-	Comment     *string
 	DisplayName *string
-	EventTable  *string
+	Comment     *string
+	EventTable  *OpenflowDeploymentEventTableRequest
 }
 
 type OpenflowDeploymentUnsetRequest struct {
@@ -50,7 +56,10 @@ type DropOpenflowDeploymentRequest struct {
 }
 
 type ShowOpenflowDeploymentRequest struct {
-	Like *Like
+	Like       *Like
+	In         *In
+	StartsWith *string
+	Limit      *LimitFrom
 }
 
 type DescribeOpenflowDeploymentRequest struct {

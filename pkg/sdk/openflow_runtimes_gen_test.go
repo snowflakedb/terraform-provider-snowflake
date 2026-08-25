@@ -36,6 +36,8 @@ const (
 	case_OpenflowRuntimes_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
 	case_OpenflowRuntimes_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
 	case_OpenflowRuntimes_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_OpenflowRuntimes_sql_Alter_AddExternalAccessIntegrations                 testCaseName = "sql_Alter_AddExternalAccessIntegrations"
+	case_OpenflowRuntimes_sql_Alter_RemoveExternalAccessIntegrations              testCaseName = "sql_Alter_RemoveExternalAccessIntegrations"
 	case_OpenflowRuntimes_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
 	case_OpenflowRuntimes_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
 	case_OpenflowRuntimes_sql_Drop_all                                            testCaseName = "sql_Drop_all"
@@ -43,6 +45,8 @@ const (
 	case_OpenflowRuntimes_sql_Show_all                                            testCaseName = "sql_Show_all"
 	case_OpenflowRuntimes_sql_Show_Like                                           testCaseName = "sql_Show_Like"
 	case_OpenflowRuntimes_sql_Show_In                                             testCaseName = "sql_Show_In"
+	case_OpenflowRuntimes_sql_Show_StartsWith                                     testCaseName = "sql_Show_StartsWith"
+	case_OpenflowRuntimes_sql_Show_Limit                                          testCaseName = "sql_Show_Limit"
 	case_OpenflowRuntimes_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
 	case_OpenflowRuntimes_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
 )
@@ -121,7 +125,7 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 			},
 			validationCase[*AlterOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset"),
+				ExpectedErr: errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset", "AddExternalAccessIntegrations", "RemoveExternalAccessIntegrations"),
 				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
 					opts.Suspend = nil
 					opts.Resume = nil
@@ -134,11 +138,13 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 					opts.RenameTo = nil
 					opts.Set = nil
 					opts.Unset = nil
+					opts.AddExternalAccessIntegrations = nil
+					opts.RemoveExternalAccessIntegrations = nil
 				},
 			},
 			validationCase[*AlterOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset"),
+				ExpectedErr: errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset", "AddExternalAccessIntegrations", "RemoveExternalAccessIntegrations"),
 				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
 					opts.Suspend = new(true)
 					opts.Resume = new(true)
@@ -203,6 +209,12 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 			sqlCase[*AlterOpenflowRuntimeOptions]{
 				Name: case_OpenflowRuntimes_sql_Alter_Unset,
 			},
+			sqlCase[*AlterOpenflowRuntimeOptions]{
+				Name: case_OpenflowRuntimes_sql_Alter_AddExternalAccessIntegrations,
+			},
+			sqlCase[*AlterOpenflowRuntimeOptions]{
+				Name: case_OpenflowRuntimes_sql_Alter_RemoveExternalAccessIntegrations,
+			},
 		),
 	Drop: newSdkTestCtx[*DropOpenflowRuntimeOptions](
 		"OpenflowRuntimes", "Drop",
@@ -250,6 +262,12 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 			},
 			sqlCase[*ShowOpenflowRuntimeOptions]{
 				Name: case_OpenflowRuntimes_sql_Show_In,
+			},
+			sqlCase[*ShowOpenflowRuntimeOptions]{
+				Name: case_OpenflowRuntimes_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowOpenflowRuntimeOptions]{
+				Name: case_OpenflowRuntimes_sql_Show_Limit,
 			},
 		),
 	Describe: newSdkTestCtx[*DescribeOpenflowRuntimeOptions](

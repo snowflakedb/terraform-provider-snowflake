@@ -18,6 +18,11 @@ func (opts *CreateOpenflowDeploymentOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, ErrInvalidObjectIdentifier)
 	}
+	if valueSet(opts.EventTable) {
+		if !exactlyOneValueSet(opts.EventTable.EventTable, opts.EventTable.None) {
+			errs = append(errs, errExactlyOneOf("CreateOpenflowDeploymentOptions.EventTable", "EventTable", "None"))
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -38,6 +43,11 @@ func (opts *AlterOpenflowDeploymentOptions) validate() error {
 	if valueSet(opts.Set) {
 		if !anyValueSet(opts.Set.Comment, opts.Set.DisplayName, opts.Set.EventTable) {
 			errs = append(errs, errAtLeastOneOf("AlterOpenflowDeploymentOptions.Set", "Comment", "DisplayName", "EventTable"))
+		}
+		if valueSet(opts.Set.EventTable) {
+			if !exactlyOneValueSet(opts.Set.EventTable.EventTable, opts.Set.EventTable.None) {
+				errs = append(errs, errExactlyOneOf("AlterOpenflowDeploymentOptions.Set.EventTable", "EventTable", "None"))
+			}
 		}
 	}
 	if valueSet(opts.Unset) {
