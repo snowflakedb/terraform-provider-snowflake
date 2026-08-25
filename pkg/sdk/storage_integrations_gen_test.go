@@ -2,455 +2,334 @@
 
 package sdk
 
-// imports adjusted manually
 import (
-	"fmt"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestStorageIntegrations_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateStorageIntegrationOptions
-	defaultOpts := func() *CreateStorageIntegrationOptions {
-		return &CreateStorageIntegrationOptions{
-			// adjusted manually
-			name: id,
-			S3StorageProviderParams: &S3StorageParams{
-				Protocol:          RegularS3Protocol,
-				StorageAwsRoleArn: "arn:aws:iam::001234567890:role/role",
+var storageIntegrationsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_StorageIntegrations_validation_Create_name_ValidIdentifier                     testCaseName = "validation_Create_name_ValidIdentifier"
+	case_StorageIntegrations_validation_Create_opts_ConflictingFields                   testCaseName = "validation_Create_opts_ConflictingFields"
+	case_StorageIntegrations_validation_Create_opts_ExactlyOneValueSet_NoneSet          testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
+	case_StorageIntegrations_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet   testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_StorageIntegrations_sql_Create_basic                                           testCaseName = "sql_Create_basic"
+	case_StorageIntegrations_sql_Create_all                                             testCaseName = "sql_Create_all"
+	case_StorageIntegrations_validation_Alter_name_ValidIdentifier                      testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_StorageIntegrations_validation_Alter_opts_ConflictingFields                    testCaseName = "validation_Alter_opts_ConflictingFields"
+	case_StorageIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_StorageIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_StorageIntegrations_validation_Alter_opts_Set_ConflictingFields                testCaseName = "validation_Alter_opts_Set_ConflictingFields"
+	case_StorageIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet               testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_StorageIntegrations_validation_Alter_opts_Set_S3Params_AtLeastOneValueSet      testCaseName = "validation_Alter_opts_Set_S3Params_AtLeastOneValueSet"
+	case_StorageIntegrations_validation_Alter_opts_Set_AzureParams_AtLeastOneValueSet   testCaseName = "validation_Alter_opts_Set_AzureParams_AtLeastOneValueSet"
+	case_StorageIntegrations_validation_Alter_opts_Unset_ConflictingFields              testCaseName = "validation_Alter_opts_Unset_ConflictingFields"
+	case_StorageIntegrations_validation_Alter_opts_Unset_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_StorageIntegrations_validation_Alter_opts_Unset_S3Params_AtLeastOneValueSet    testCaseName = "validation_Alter_opts_Unset_S3Params_AtLeastOneValueSet"
+	case_StorageIntegrations_validation_Alter_opts_Unset_AzureParams_AtLeastOneValueSet testCaseName = "validation_Alter_opts_Unset_AzureParams_AtLeastOneValueSet"
+	case_StorageIntegrations_sql_Alter_Set                                              testCaseName = "sql_Alter_Set"
+	case_StorageIntegrations_sql_Alter_Unset                                            testCaseName = "sql_Alter_Unset"
+	case_StorageIntegrations_sql_Alter_SetTags                                          testCaseName = "sql_Alter_SetTags"
+	case_StorageIntegrations_sql_Alter_UnsetTags                                        testCaseName = "sql_Alter_UnsetTags"
+	case_StorageIntegrations_validation_Drop_name_ValidIdentifier                       testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_StorageIntegrations_sql_Drop_basic                                             testCaseName = "sql_Drop_basic"
+	case_StorageIntegrations_sql_Drop_all                                               testCaseName = "sql_Drop_all"
+	case_StorageIntegrations_sql_Show_basic                                             testCaseName = "sql_Show_basic"
+	case_StorageIntegrations_sql_Show_all                                               testCaseName = "sql_Show_all"
+	case_StorageIntegrations_sql_Show_Like                                              testCaseName = "sql_Show_Like"
+	case_StorageIntegrations_validation_Describe_name_ValidIdentifier                   testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_StorageIntegrations_sql_Describe_basic                                         testCaseName = "sql_Describe_basic"
+)
+
+type StorageIntegrationsTestsContext struct {
+	Create   *sdkTestCtx[*CreateStorageIntegrationOptions]
+	Alter    *sdkTestCtx[*AlterStorageIntegrationOptions]
+	Drop     *sdkTestCtx[*DropStorageIntegrationOptions]
+	Show     *sdkTestCtx[*ShowStorageIntegrationOptions]
+	Describe *sdkTestCtx[*DescribeStorageIntegrationOptions]
+}
+
+var storageIntegrationsTests = StorageIntegrationsTestsContext{
+	Create: newSdkTestCtx[*CreateStorageIntegrationOptions](
+		"StorageIntegrations", "Create",
+	).
+		withDefaultOpts(func() *CreateStorageIntegrationOptions {
+			return &CreateStorageIntegrationOptions{
+				name: storageIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateStorageIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
 			},
-			Enabled:                 true,
-			StorageAllowedLocations: []StorageLocation{{Path: "allowed-loc-1"}, {Path: "allowed-loc-2"}},
-		}
-	}
+			validationCase[*CreateStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateStorageIntegrationOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateStorageIntegrationOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Create_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateStorageIntegrationOptions", "S3StorageProviderParams", "GCSStorageProviderParams", "AzureStorageProviderParams"),
+				DefaultModify: func(opts *CreateStorageIntegrationOptions) {
+					opts.S3StorageProviderParams = nil
+					opts.GCSStorageProviderParams = nil
+					opts.AzureStorageProviderParams = nil
+				},
+			},
+			validationCase[*CreateStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateStorageIntegrationOptions", "S3StorageProviderParams", "GCSStorageProviderParams", "AzureStorageProviderParams"),
+				DefaultModify: func(opts *CreateStorageIntegrationOptions) {
+					opts.S3StorageProviderParams = &S3StorageParams{}
+					opts.GCSStorageProviderParams = &GCSStorageParams{}
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateStorageIntegrationOptions]{
+				Name:           case_StorageIntegrations_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterStorageIntegrationOptions](
+		"StorageIntegrations", "Alter",
+	).
+		withDefaultOpts(func() *AlterStorageIntegrationOptions {
+			return &AlterStorageIntegrationOptions{
+				name: storageIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_ConflictingFields,
+				ExpectedErr: errOneOf("AlterStorageIntegrationOptions", "IfExists", "UnsetTags"),
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterStorageIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterStorageIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Set = &StorageIntegrationSet{}
+					opts.Unset = &StorageIntegrationUnset{}
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Set_ConflictingFields,
+				ExpectedErr: errOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Set = &StorageIntegrationSet{}
+					opts.Set.S3Params = &SetS3StorageParams{}
+					opts.Set.AzureParams = &SetAzureStorageParams{}
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams", "Enabled", "StorageAllowedLocations", "StorageBlockedLocations", "Comment"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Set = &StorageIntegrationSet{}
+					opts.Set.S3Params = nil
+					opts.Set.AzureParams = nil
+					opts.Set.Enabled = nil
+					opts.Set.StorageAllowedLocations = nil
+					opts.Set.StorageBlockedLocations = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Set_S3Params_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageIntegrationOptions.Set.S3Params", "StorageAwsRoleArn", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Set = &StorageIntegrationSet{}
+					opts.Set.S3Params = &SetS3StorageParams{}
+					opts.Set.S3Params.StorageAwsRoleArn = nil
+					opts.Set.S3Params.StorageAwsExternalId = nil
+					opts.Set.S3Params.StorageAwsObjectAcl = nil
+					opts.Set.S3Params.UsePrivatelinkEndpoint = nil
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Set_AzureParams_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageIntegrationOptions.Set.AzureParams", "AzureTenantId", "UsePrivatelinkEndpoint"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Set = &StorageIntegrationSet{}
+					opts.Set.AzureParams = &SetAzureStorageParams{}
+					opts.Set.AzureParams.AzureTenantId = nil
+					opts.Set.AzureParams.UsePrivatelinkEndpoint = nil
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Unset_ConflictingFields,
+				ExpectedErr: errOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Unset = &StorageIntegrationUnset{}
+					opts.Unset.S3Params = &UnsetS3StorageParams{}
+					opts.Unset.AzureParams = &UnsetAzureStorageParams{}
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams", "Enabled", "StorageBlockedLocations", "Comment"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Unset = &StorageIntegrationUnset{}
+					opts.Unset.S3Params = nil
+					opts.Unset.AzureParams = nil
+					opts.Unset.Enabled = nil
+					opts.Unset.StorageBlockedLocations = nil
+					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Unset_S3Params_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.S3Params", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Unset = &StorageIntegrationUnset{}
+					opts.Unset.S3Params = &UnsetS3StorageParams{}
+					opts.Unset.S3Params.StorageAwsExternalId = nil
+					opts.Unset.S3Params.StorageAwsObjectAcl = nil
+					opts.Unset.S3Params.UsePrivatelinkEndpoint = nil
+				},
+			},
+			validationCase[*AlterStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Alter_opts_Unset_AzureParams_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.AzureParams", "UsePrivatelinkEndpoint"),
+				DefaultModify: func(opts *AlterStorageIntegrationOptions) {
+					opts.Unset = &StorageIntegrationUnset{}
+					opts.Unset.AzureParams = &UnsetAzureStorageParams{}
+					opts.Unset.AzureParams.UsePrivatelinkEndpoint = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Alter_Set,
+			},
+			sqlCase[*AlterStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Alter_Unset,
+			},
+			sqlCase[*AlterStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropStorageIntegrationOptions](
+		"StorageIntegrations", "Drop",
+	).
+		withDefaultOpts(func() *DropStorageIntegrationOptions {
+			return &DropStorageIntegrationOptions{
+				name: storageIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropStorageIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropStorageIntegrationOptions]{
+				Name:           case_StorageIntegrations_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowStorageIntegrationOptions](
+		"StorageIntegrations", "Show",
+	).
+		withDefaultOpts(func() *ShowStorageIntegrationOptions {
+			return &ShowStorageIntegrationOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowStorageIntegrationOptions]{
+				Name:           case_StorageIntegrations_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Show_all,
+			},
+			sqlCase[*ShowStorageIntegrationOptions]{
+				Name: case_StorageIntegrations_sql_Show_Like,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeStorageIntegrationOptions](
+		"StorageIntegrations", "Describe",
+	).
+		withDefaultOpts(func() *DescribeStorageIntegrationOptions {
+			return &DescribeStorageIntegrationOptions{
+				name: storageIntegrationsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeStorageIntegrationOptions]{
+				Name:        case_StorageIntegrations_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeStorageIntegrationOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeStorageIntegrationOptions]{
+				Name:           case_StorageIntegrations_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateStorageIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateStorageIntegrationOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("validation: exactly one field from [opts.S3StorageProviderParams opts.GCSStorageProviderParams opts.AzureStorageProviderParams] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.S3StorageProviderParams = nil
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateStorageIntegrationOptions", "S3StorageProviderParams", "GCSStorageProviderParams", "AzureStorageProviderParams"))
-	})
-
-	t.Run("validation: exactly one field from [opts.S3StorageProviderParams opts.GCSStorageProviderParams opts.AzureStorageProviderParams] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.GCSStorageProviderParams = new(GCSStorageParams)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateStorageIntegrationOptions", "S3StorageProviderParams", "GCSStorageProviderParams", "AzureStorageProviderParams"))
-	})
-
-	// all variants added manually
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE INTEGRATION %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::001234567890:role/role' ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2')`, id.FullyQualifiedName())
-	})
-
-	t.Run("basic - s3 gov protocol", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.S3StorageProviderParams.Protocol = GovS3Protocol
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE INTEGRATION %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'S3GOV' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::001234567890:role/role' ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2')`, id.FullyQualifiedName())
-	})
-
-	t.Run("basic - s3 china protocol", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.S3StorageProviderParams.Protocol = ChinaS3Protocol
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE INTEGRATION %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'S3CHINA' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::001234567890:role/role' ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2')`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options - s3", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.S3StorageProviderParams = &S3StorageParams{
-			Protocol:               RegularS3Protocol,
-			StorageAwsRoleArn:      "arn:aws:iam::001234567890:role/role",
-			StorageAwsExternalId:   String("external-id-12345"),
-			StorageAwsObjectAcl:    String("bucket-owner-full-control"),
-			UsePrivatelinkEndpoint: Bool(true),
-		}
-		opts.StorageBlockedLocations = []StorageLocation{{Path: "blocked-loc-1"}, {Path: "blocked-loc-2"}}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE INTEGRATION IF NOT EXISTS %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'S3' STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::001234567890:role/role' STORAGE_AWS_EXTERNAL_ID = 'external-id-12345' STORAGE_AWS_OBJECT_ACL = 'bucket-owner-full-control' USE_PRIVATELINK_ENDPOINT = true ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2') STORAGE_BLOCKED_LOCATIONS = ('blocked-loc-1', 'blocked-loc-2') COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options - gcs", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.S3StorageProviderParams = nil
-		opts.GCSStorageProviderParams = new(GCSStorageParams)
-		opts.StorageBlockedLocations = []StorageLocation{{Path: "blocked-loc-1"}, {Path: "blocked-loc-2"}}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE STORAGE INTEGRATION %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'GCS' ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2') STORAGE_BLOCKED_LOCATIONS = ('blocked-loc-1', 'blocked-loc-2') COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options - azure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.S3StorageProviderParams = nil
-		opts.AzureStorageProviderParams = &AzureStorageParams{
-			AzureTenantId:          "azure-tenant-id",
-			UsePrivatelinkEndpoint: Bool(true),
-		}
-		opts.StorageBlockedLocations = []StorageLocation{{Path: "blocked-loc-1"}, {Path: "blocked-loc-2"}}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE STORAGE INTEGRATION %s TYPE = EXTERNAL_STAGE STORAGE_PROVIDER = 'AZURE' AZURE_TENANT_ID = 'azure-tenant-id' USE_PRIVATELINK_ENDPOINT = true ENABLED = true STORAGE_ALLOWED_LOCATIONS = ('allowed-loc-1', 'allowed-loc-2') STORAGE_BLOCKED_LOCATIONS = ('blocked-loc-1', 'blocked-loc-2') COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
+func TestStorageIntegrations_Create(t *testing.T) {
+	storageIntegrationsTests.Create.RunValidationCases(t)
+	storageIntegrationsTests.Create.RunSqlCases(t)
 }
 
 func TestStorageIntegrations_Alter(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterStorageIntegrationOptions
-	defaultOpts := func() *AlterStorageIntegrationOptions {
-		return &AlterStorageIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterStorageIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.UnsetTags]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("one"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStorageIntegrationOptions", "IfExists", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStorageIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.SetTags opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-		}
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("one"),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStorageIntegrationOptions", "Set", "Unset", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.Set.S3Params opts.Set.AzureParams]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageIntegrationSet{
-			S3Params:    &SetS3StorageParams{},
-			AzureParams: &SetAzureStorageParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.S3Params opts.Set.AzureParams opts.Set.Enabled opts.Set.StorageAllowedLocations opts.Set.StorageBlockedLocations opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageIntegrationSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Set", "S3Params", "AzureParams", "Enabled", "StorageAllowedLocations", "StorageBlockedLocations", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.S3Params.StorageAwsRoleArn opts.Set.S3Params.StorageAwsExternalId opts.Set.S3Params.StorageAwsObjectAcl opts.Set.S3Params.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageIntegrationSet{
-			S3Params: &SetS3StorageParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Set.S3Params", "StorageAwsRoleArn", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.AzureParams.AzureTenantId opts.Set.AzureParams.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageIntegrationSet{
-			AzureParams: &SetAzureStorageParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Set.AzureParams", "AzureTenantId", "UsePrivatelinkEndpoint"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.Unset.S3Params opts.Unset.AzureParams]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageIntegrationUnset{
-			S3Params:    &UnsetS3StorageParams{},
-			AzureParams: &UnsetAzureStorageParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.S3Params opts.Unset.AzureParams opts.Unset.Enabled opts.Unset.StorageBlockedLocations opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageIntegrationUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset", "S3Params", "AzureParams", "Enabled", "StorageBlockedLocations", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.S3Params.StorageAwsExternalId opts.Unset.S3Params.StorageAwsObjectAcl opts.Unset.S3Params.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageIntegrationUnset{
-			S3Params: &UnsetS3StorageParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.S3Params", "StorageAwsExternalId", "StorageAwsObjectAcl", "UsePrivatelinkEndpoint"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.AzureParams.UsePrivatelinkEndpoint] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageIntegrationUnset{
-			AzureParams: &UnsetAzureStorageParams{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageIntegrationOptions.Unset.AzureParams", "UsePrivatelinkEndpoint"))
-	})
-
-	// all variants added manually
-	t.Run("set - s3", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageIntegrationSet{
-			S3Params: &SetS3StorageParams{
-				StorageAwsRoleArn:      String("new-aws-role-arn"),
-				StorageAwsExternalId:   String("new-external-id"),
-				StorageAwsObjectAcl:    String("new-aws-object-acl"),
-				UsePrivatelinkEndpoint: Bool(true),
-			},
-			Enabled:                 Bool(false),
-			StorageAllowedLocations: []StorageLocation{{Path: "new-allowed-location"}},
-			StorageBlockedLocations: []StorageLocation{{Path: "new-blocked-location"}},
-			Comment:                 String("changed comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s SET STORAGE_AWS_ROLE_ARN = 'new-aws-role-arn' STORAGE_AWS_EXTERNAL_ID = 'new-external-id' STORAGE_AWS_OBJECT_ACL = 'new-aws-object-acl' USE_PRIVATELINK_ENDPOINT = true ENABLED = false STORAGE_ALLOWED_LOCATIONS = ('new-allowed-location') STORAGE_BLOCKED_LOCATIONS = ('new-blocked-location') COMMENT = 'changed comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("set - azure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageIntegrationSet{
-			AzureParams: &SetAzureStorageParams{
-				AzureTenantId:          String("new-azure-tenant-id"),
-				UsePrivatelinkEndpoint: Bool(true),
-			},
-			Enabled:                 Bool(false),
-			StorageAllowedLocations: []StorageLocation{{Path: "new-allowed-location"}},
-			StorageBlockedLocations: []StorageLocation{{Path: "new-blocked-location"}},
-			Comment:                 String("changed comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s SET AZURE_TENANT_ID = 'new-azure-tenant-id' USE_PRIVATELINK_ENDPOINT = true ENABLED = false STORAGE_ALLOWED_LOCATIONS = ('new-allowed-location') STORAGE_BLOCKED_LOCATIONS = ('new-blocked-location') COMMENT = 'changed comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("set - gcs", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageIntegrationSet{
-			Enabled:                 Bool(false),
-			StorageAllowedLocations: []StorageLocation{{Path: "new-allowed-location"}},
-			StorageBlockedLocations: []StorageLocation{{Path: "new-blocked-location"}},
-			Comment:                 String("changed comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s SET ENABLED = false STORAGE_ALLOWED_LOCATIONS = ('new-allowed-location') STORAGE_BLOCKED_LOCATIONS = ('new-blocked-location') COMMENT = 'changed comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("name"),
-				Value: "value",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("second-name"),
-				Value: "second-value",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STORAGE INTEGRATION IF EXISTS %s SET TAG "name" = 'value', "second-name" = 'second-value'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset s3", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageIntegrationUnset{
-			S3Params: &UnsetS3StorageParams{
-				StorageAwsExternalId:   Bool(true),
-				StorageAwsObjectAcl:    Bool(true),
-				UsePrivatelinkEndpoint: Bool(true),
-			},
-			Enabled:                 Bool(true),
-			StorageBlockedLocations: Bool(true),
-			Comment:                 Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET STORAGE_AWS_EXTERNAL_ID, STORAGE_AWS_OBJECT_ACL, USE_PRIVATELINK_ENDPOINT, ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset azure", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageIntegrationUnset{
-			AzureParams: &UnsetAzureStorageParams{
-				UsePrivatelinkEndpoint: Bool(true),
-			},
-			Enabled:                 Bool(true),
-			StorageBlockedLocations: Bool(true),
-			Comment:                 Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET USE_PRIVATELINK_ENDPOINT, ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset gcs", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageIntegrationUnset{
-			Enabled:                 Bool(true),
-			StorageBlockedLocations: Bool(true),
-			Comment:                 Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE INTEGRATION %s UNSET ENABLED, STORAGE_BLOCKED_LOCATIONS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("name"),
-			NewAccountObjectIdentifier("second-name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STORAGE INTEGRATION %s UNSET TAG "name", "second-name"`, id.FullyQualifiedName())
-	})
+	storageIntegrationsTests.Alter.RunValidationCases(t)
+	storageIntegrationsTests.Alter.RunSqlCases(t)
 }
 
 func TestStorageIntegrations_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropStorageIntegrationOptions
-	defaultOpts := func() *DropStorageIntegrationOptions {
-		return &DropStorageIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropStorageIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP STORAGE INTEGRATION %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP STORAGE INTEGRATION IF EXISTS %s", id.FullyQualifiedName())
-	})
+	storageIntegrationsTests.Drop.RunValidationCases(t)
+	storageIntegrationsTests.Drop.RunSqlCases(t)
 }
 
 func TestStorageIntegrations_Show(t *testing.T) {
-	// added manually
-	id := randomAccountObjectIdentifier()
-
-	// Minimal valid ShowStorageIntegrationOptions
-	defaultOpts := func() *ShowStorageIntegrationOptions {
-		return &ShowStorageIntegrationOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowStorageIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW STORAGE INTEGRATIONS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String(id.Name()),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW STORAGE INTEGRATIONS LIKE '%s'", id.Name())
-	})
+	storageIntegrationsTests.Show.RunValidationCases(t)
+	storageIntegrationsTests.Show.RunSqlCases(t)
 }
 
 func TestStorageIntegrations_Describe(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribeStorageIntegrationOptions
-	defaultOpts := func() *DescribeStorageIntegrationOptions {
-		return &DescribeStorageIntegrationOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeStorageIntegrationOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE STORAGE INTEGRATION %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
-}
-
-// test added manually
-func TestToS3Protocol(t *testing.T) {
-	testCases := []struct {
-		Name     string
-		Input    string
-		Expected S3Protocol
-		Error    string
-	}{
-		{Input: "S3", Expected: RegularS3Protocol},
-		{Input: "s3", Expected: RegularS3Protocol},
-		{Input: "S3gov", Expected: GovS3Protocol},
-		{Input: "S3GOV", Expected: GovS3Protocol},
-		{Input: "S3ChInA", Expected: ChinaS3Protocol},
-		{Input: "S3CHINA", Expected: ChinaS3Protocol},
-		{Name: "validation: incorrect s3 protocol", Input: "incorrect", Error: "invalid S3 protocol: incorrect"},
-		{Name: "validation: empty input", Input: "", Error: "invalid S3 protocol: "},
-	}
-
-	for _, testCase := range testCases {
-		name := testCase.Name
-		if name == "" {
-			name = fmt.Sprintf("%v s3 protocol", testCase.Input)
-		}
-		t.Run(name, func(t *testing.T) {
-			value, err := ToS3Protocol(testCase.Input)
-			if testCase.Error != "" {
-				assert.Empty(t, value)
-				assert.ErrorContains(t, err, testCase.Error)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, testCase.Expected, value)
-			}
-		})
-	}
+	storageIntegrationsTests.Describe.RunValidationCases(t)
+	storageIntegrationsTests.Describe.RunSqlCases(t)
 }
