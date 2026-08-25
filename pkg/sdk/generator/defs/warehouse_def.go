@@ -282,4 +282,4 @@ var warehousesDef = g.NewInterface(
 	warehouseResourceConstraintEnum,
 	maxQueryPerformanceLevelEnum,
 	warehouseStateEnum,
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
