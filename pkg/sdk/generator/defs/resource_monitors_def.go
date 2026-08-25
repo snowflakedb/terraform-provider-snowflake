@@ -124,4 +124,4 @@ var resourceMonitorsDef = g.NewInterface(
 	resourceMonitorLevelEnum,
 	triggerActionEnum,
 	frequencyEnum,
-)
+).WithEnabledGenerationParts(g.PartUnitTests)
