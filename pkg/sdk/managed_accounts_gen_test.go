@@ -6,108 +6,127 @@ import (
 	"testing"
 )
 
-func TestManagedAccounts_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateManagedAccountOptions
-	defaultOpts := func() *CreateManagedAccountOptions {
-		return &CreateManagedAccountOptions{
-			// adjusted manually
-			name: id,
-			CreateManagedAccountParams: CreateManagedAccountParams{
-				AdminName:     "admin",
-				AdminPassword: "password",
+var managedAccountsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_ManagedAccounts_validation_Create_name_ValidIdentifier                                      testCaseName = "validation_Create_name_ValidIdentifier"
+	case_ManagedAccounts_validation_Create_CreateManagedAccountParams_AdminName_ValidateValueSet     testCaseName = "validation_Create_CreateManagedAccountParams_AdminName_ValidateValueSet"
+	case_ManagedAccounts_validation_Create_CreateManagedAccountParams_AdminPassword_ValidateValueSet testCaseName = "validation_Create_CreateManagedAccountParams_AdminPassword_ValidateValueSet"
+	case_ManagedAccounts_sql_Create_basic                                                            testCaseName = "sql_Create_basic"
+	case_ManagedAccounts_sql_Create_all                                                              testCaseName = "sql_Create_all"
+	case_ManagedAccounts_validation_Drop_name_ValidIdentifier                                        testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_ManagedAccounts_sql_Drop_basic                                                              testCaseName = "sql_Drop_basic"
+	case_ManagedAccounts_sql_Drop_all                                                                testCaseName = "sql_Drop_all"
+	case_ManagedAccounts_sql_Show_basic                                                              testCaseName = "sql_Show_basic"
+	case_ManagedAccounts_sql_Show_all                                                                testCaseName = "sql_Show_all"
+	case_ManagedAccounts_sql_Show_Like                                                               testCaseName = "sql_Show_Like"
+)
+
+type ManagedAccountsTestsContext struct {
+	Create *sdkTestCtx[*CreateManagedAccountOptions]
+	Drop   *sdkTestCtx[*DropManagedAccountOptions]
+	Show   *sdkTestCtx[*ShowManagedAccountOptions]
+}
+
+var managedAccountsTests = ManagedAccountsTestsContext{
+	Create: newSdkTestCtx[*CreateManagedAccountOptions](
+		"ManagedAccounts", "Create",
+	).
+		withDefaultOpts(func() *CreateManagedAccountOptions {
+			return &CreateManagedAccountOptions{
+				name: managedAccountsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateManagedAccountOptions]{
+				Name:        case_ManagedAccounts_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateManagedAccountOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
 			},
-		}
-	}
+			validationCase[*CreateManagedAccountOptions]{
+				Name:        case_ManagedAccounts_validation_Create_CreateManagedAccountParams_AdminName_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateManagedAccountOptions.CreateManagedAccountParams", "AdminName"),
+				DefaultModify: func(opts *CreateManagedAccountOptions) {
+					opts.CreateManagedAccountParams.AdminName = ""
+				},
+			},
+			validationCase[*CreateManagedAccountOptions]{
+				Name:        case_ManagedAccounts_validation_Create_CreateManagedAccountParams_AdminPassword_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateManagedAccountOptions.CreateManagedAccountParams", "AdminPassword"),
+				DefaultModify: func(opts *CreateManagedAccountOptions) {
+					opts.CreateManagedAccountParams.AdminPassword = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateManagedAccountOptions]{
+				Name:           case_ManagedAccounts_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateManagedAccountOptions]{
+				Name: case_ManagedAccounts_sql_Create_all,
+			},
+		),
+	Drop: newSdkTestCtx[*DropManagedAccountOptions](
+		"ManagedAccounts", "Drop",
+	).
+		withDefaultOpts(func() *DropManagedAccountOptions {
+			return &DropManagedAccountOptions{
+				name: managedAccountsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropManagedAccountOptions]{
+				Name:        case_ManagedAccounts_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropManagedAccountOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropManagedAccountOptions]{
+				Name:           case_ManagedAccounts_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropManagedAccountOptions]{
+				Name: case_ManagedAccounts_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowManagedAccountOptions](
+		"ManagedAccounts", "Show",
+	).
+		withDefaultOpts(func() *ShowManagedAccountOptions {
+			return &ShowManagedAccountOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowManagedAccountOptions]{
+				Name:           case_ManagedAccounts_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowManagedAccountOptions]{
+				Name: case_ManagedAccounts_sql_Show_all,
+			},
+			sqlCase[*ShowManagedAccountOptions]{
+				Name: case_ManagedAccounts_sql_Show_Like,
+			},
+		),
+}
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateManagedAccountOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.CreateManagedAccountParams.AdminName] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.CreateManagedAccountParams.AdminName = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateManagedAccountOptions.CreateManagedAccountParams", "AdminName"))
-	})
-
-	t.Run("validation: [opts.CreateManagedAccountParams.AdminPassword] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.CreateManagedAccountParams.AdminPassword = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateManagedAccountOptions.CreateManagedAccountParams", "AdminPassword"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE MANAGED ACCOUNT %s ADMIN_NAME = 'admin', ADMIN_PASSWORD = 'password', TYPE = READER", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.CreateManagedAccountParams.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE MANAGED ACCOUNT %s ADMIN_NAME = 'admin', ADMIN_PASSWORD = 'password', TYPE = READER, COMMENT = 'comment'", id.FullyQualifiedName())
-	})
+func TestManagedAccounts_Create(t *testing.T) {
+	managedAccountsTests.Create.RunValidationCases(t)
+	managedAccountsTests.Create.RunSqlCases(t)
 }
 
 func TestManagedAccounts_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropManagedAccountOptions
-	defaultOpts := func() *DropManagedAccountOptions {
-		return &DropManagedAccountOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropManagedAccountOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP MANAGED ACCOUNT %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP MANAGED ACCOUNT IF EXISTS %s", id.FullyQualifiedName())
-	})
+	managedAccountsTests.Drop.RunValidationCases(t)
+	managedAccountsTests.Drop.RunSqlCases(t)
 }
 
 func TestManagedAccounts_Show(t *testing.T) {
-	// Minimal valid ShowManagedAccountOptions
-	defaultOpts := func() *ShowManagedAccountOptions {
-		return &ShowManagedAccountOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowManagedAccountOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW MANAGED ACCOUNTS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("myaccount"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW MANAGED ACCOUNTS LIKE 'myaccount'")
-	})
+	managedAccountsTests.Show.RunValidationCases(t)
+	managedAccountsTests.Show.RunSqlCases(t)
 }
