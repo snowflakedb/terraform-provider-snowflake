@@ -256,10 +256,10 @@ var hybridTablesDef = g.NewInterface(
 		Terse().
 		SQL("HYBRID TABLES").
 		OptionalLike().
-		OptionalTableIn().
+		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
-	g.ShowByIDTableInFiltering,
+	g.ShowByIDInFiltering,
 	g.ShowByIDLikeFiltering,
 ).DescribeOperationWithPairedStructs(
 	g.DescriptionMappingKindSlice,

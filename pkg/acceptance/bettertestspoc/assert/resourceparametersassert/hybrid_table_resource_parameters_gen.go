@@ -31,6 +31,21 @@ func ImportedHybridTableResourceParameters(t *testing.T, id string) *HybridTable
 	return &resourceParameterAssert
 }
 
+func HybridTablesDatasourceParameters(t *testing.T, name string) *HybridTableResourceParametersAssert {
+	t.Helper()
+
+	return HybridTablesDatasourceParametersOnIdx(t, name, 0)
+}
+
+func HybridTablesDatasourceParametersOnIdx(t *testing.T, name string, idx int) *HybridTableResourceParametersAssert {
+	t.Helper()
+
+	resourceParameterAssert := HybridTableResourceParametersAssert{
+		ResourceAssert: assert.NewDatasourceParametersAssert(name, "hybrid_tables", idx),
+	}
+	return &resourceParameterAssert
+}
+
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////

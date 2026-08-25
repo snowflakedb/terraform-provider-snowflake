@@ -702,7 +702,7 @@ func TestInt_HybridTables(t *testing.T) {
 			t.Cleanup(cleanup)
 
 			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
-				WithIn(sdk.TableIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(id.DatabaseName())}}).
+				WithIn(sdk.In{Database: sdk.NewAccountObjectIdentifier(id.DatabaseName())}).
 				WithLike(sdk.Like{Pattern: sdk.String(id.Name())}))
 			require.NoError(t, err)
 			require.Len(t, tables, 1)
@@ -728,7 +728,7 @@ func TestInt_HybridTables(t *testing.T) {
 
 			// Query IN SCHEMA should return only the table in the original schema
 			tables, err := client.HybridTables.Show(ctx, sdk.NewShowHybridTableRequest().
-				WithIn(sdk.TableIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id1.DatabaseName(), id1.SchemaName())}}).
+				WithIn(sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(id1.DatabaseName(), id1.SchemaName())}).
 				WithLike(sdk.Like{Pattern: sdk.String(id1.Name())}))
 			require.NoError(t, err)
 			require.Len(t, tables, 1)

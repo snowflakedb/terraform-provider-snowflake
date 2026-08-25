@@ -29,6 +29,7 @@ var SdkShowResultStructs = []any{
 	sdk.Grant{},
 	sdk.HybridTable{},
 	sdk.HybridTableConstraint{},
+	sdk.HybridTableIndex{},
 	sdk.IcebergTable{},
 	sdk.ImageRepository{},
 	sdk.Listing{},

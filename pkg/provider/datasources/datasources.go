@@ -29,6 +29,7 @@ const (
 	Functions                      datasource = "snowflake_functions"
 	GitRepositories                datasource = "snowflake_git_repositories"
 	Grants                         datasource = "snowflake_grants"
+	HybridTables                   datasource = "snowflake_hybrid_tables"
 	IcebergTables                  datasource = "snowflake_iceberg_tables"
 	ImageRepositories              datasource = "snowflake_image_repositories"
 	Listings                       datasource = "snowflake_listings"

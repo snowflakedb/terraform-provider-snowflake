@@ -31,6 +31,21 @@ func ImportedHybridTableShowOutput(t *testing.T, id string) *HybridTableShowOutp
 	return &hybridTableAssert
 }
 
+func HybridTablesDatasourceShowOutput(t *testing.T, name string) *HybridTableShowOutputAssert {
+	t.Helper()
+
+	return HybridTablesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func HybridTablesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *HybridTableShowOutputAssert {
+	t.Helper()
+
+	hybridTableAssert := HybridTableShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "hybrid_tables", idx),
+	}
+	return &hybridTableAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

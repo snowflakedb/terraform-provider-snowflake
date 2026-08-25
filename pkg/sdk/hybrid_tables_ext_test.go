@@ -605,7 +605,7 @@ func init() {
 			func(opts *ShowHybridTableOptions) {
 				opts.Terse = new(true)
 				opts.Like = &Like{Pattern: new("some_pattern")}
-				opts.In = &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("db", "schema")}}
+				opts.In = &In{Schema: NewDatabaseObjectIdentifier("db", "schema")}
 				opts.StartsWith = new("prefix")
 				opts.Limit = &LimitFrom{Rows: new(10)}
 			},
@@ -619,14 +619,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_HybridTables_sql_Show_In,
 			func(opts *ShowHybridTableOptions) {
-				opts.In = &TableIn{In: In{Database: NewAccountObjectIdentifier("test_db")}}
+				opts.In = &In{Database: NewAccountObjectIdentifier("test_db")}
 			},
 			`SHOW HYBRID TABLES IN DATABASE "test_db"`,
 		).
 		withAdditionalSqlCasef(
 			"sql_Show_inSchema",
 			func(opts *ShowHybridTableOptions) {
-				opts.In = &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("test_db", "test_schema")}}
+				opts.In = &In{Schema: NewDatabaseObjectIdentifier("test_db", "test_schema")}
 			},
 			`SHOW HYBRID TABLES IN SCHEMA "test_db"."test_schema"`,
 		).

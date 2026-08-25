@@ -18,6 +18,13 @@ func HybridTableShowKeysOutputRow(t *testing.T, name string, rowIndex int) *Hybr
 	}
 }
 
+func HybridTablesDatasourceShowKeysOutputRow(t *testing.T, name string, rowIndex int) *HybridTableShowKeysOutputRowAssert {
+	t.Helper()
+	return &HybridTableShowKeysOutputRowAssert{
+		ResourceAssert: assert.NewResourceShowOutputAssertAtRowWithPath(name, "hybrid_tables.0.show_keys_output", rowIndex),
+	}
+}
+
 func (h *HybridTableShowKeysOutputRowAssert) HasName(expected string) *HybridTableShowKeysOutputRowAssert {
 	h.StringValueSet("name", expected)
 	return h

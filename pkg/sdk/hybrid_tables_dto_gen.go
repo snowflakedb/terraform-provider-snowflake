@@ -162,7 +162,7 @@ type DropHybridTableRequest struct {
 type ShowHybridTableRequest struct {
 	Terse      *bool
 	Like       *Like
-	In         *TableIn
+	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
 }

@@ -26,6 +26,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.20.x ➞ v2.21.0
 
+### *(new feature)* New hybrid tables data source
+
+We have added a new preview data source for querying hybrid tables: [snowflake_hybrid_tables](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/hybrid_tables). It supports filtering with `like`, `in`, `starts_with`, and `limit`.
+
+This feature will be marked as stable in a future release. Breaking changes are expected, even without bumping the major version. To use it, add `snowflake_hybrid_tables_datasource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(bug fix)* Empty lists in fields with a `none` option crashed the provider
 
 The following fields take a list of names, or `none = true` when nothing should be selected:

@@ -22,6 +22,13 @@ func HybridTableDescribeOutputRow(t *testing.T, name string, rowIndex int) *Hybr
 	}
 }
 
+func HybridTablesDatasourceDescribeOutputRow(t *testing.T, name string, rowIndex int) *HybridTableDescribeOutputRowAssert {
+	t.Helper()
+	return &HybridTableDescribeOutputRowAssert{
+		ResourceAssert: assert.NewResourceShowOutputAssertAtRowWithPath(name, "hybrid_tables.0.describe_output", rowIndex),
+	}
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

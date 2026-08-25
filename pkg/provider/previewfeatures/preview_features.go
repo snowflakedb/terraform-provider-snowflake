@@ -79,6 +79,7 @@ const (
 	GitRepositoryResource                          feature = "snowflake_git_repository_resource"
 	GitRepositoriesDatasource                      feature = "snowflake_git_repositories_datasource"
 	HybridTableResource                            feature = "snowflake_hybrid_table_resource"
+	HybridTablesDatasource                         feature = "snowflake_hybrid_tables_datasource"
 	IcebergTableResource                           feature = "snowflake_iceberg_table_resource"
 	IcebergTableFromAwsGlueResource                feature = "snowflake_iceberg_table_from_aws_glue_resource"
 	IcebergTableFromDeltaFilesResource             feature = "snowflake_iceberg_table_from_delta_files_resource"
@@ -203,6 +204,7 @@ var allPreviewFeatures = []feature{
 	FunctionSqlResource,
 	FunctionsDatasource,
 	HybridTableResource,
+	HybridTablesDatasource,
 	IcebergTableResource,
 	IcebergTableFromAwsGlueResource,
 	IcebergTableFromDeltaFilesResource,

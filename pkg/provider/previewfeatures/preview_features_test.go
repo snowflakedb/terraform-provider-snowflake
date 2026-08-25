@@ -85,6 +85,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_git_repository_resource", want: GitRepositoryResource},
 		{input: "snowflake_git_repositories_datasource", want: GitRepositoriesDatasource},
 		{input: "snowflake_hybrid_table_resource", want: HybridTableResource},
+		{input: "snowflake_hybrid_tables_datasource", want: HybridTablesDatasource},
 		{input: "snowflake_iceberg_table_from_delta_files_resource", want: IcebergTableFromDeltaFilesResource},
 		{input: "snowflake_iceberg_table_from_files_resource", want: IcebergTableFromFilesResource},
 		{input: "snowflake_iceberg_table_from_aws_glue_resource", want: IcebergTableFromAwsGlueResource},
