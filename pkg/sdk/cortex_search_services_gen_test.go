@@ -6,353 +6,322 @@ import (
 	"testing"
 )
 
-func TestCortexSearchServices_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateCortexSearchServiceOptions
-	defaultOpts := func() *CreateCortexSearchServiceOptions {
-		// adjusted manually
-		return &CreateCortexSearchServiceOptions{
-			name:      id,
-			On:        "searchable_text",
-			TargetLag: "1 minutes",
-			Warehouse: AccountObjectIdentifier{
-				name: "warehouse_name",
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CortexSearchServiceRefreshMode]{"CortexSearchServiceRefreshMode", AllCortexSearchServiceRefreshModes, ToCortexSearchServiceRefreshMode})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CortexSearchServiceInitialize]{"CortexSearchServiceInitialize", AllCortexSearchServiceInitializes, ToCortexSearchServiceInitialize})
+}
+
+var cortexSearchServicesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_CortexSearchServices_validation_Create_name_ValidIdentifier                     testCaseName = "validation_Create_name_ValidIdentifier"
+	case_CortexSearchServices_validation_Create_On_ValidateValueSet                      testCaseName = "validation_Create_On_ValidateValueSet"
+	case_CortexSearchServices_validation_Create_TargetLag_ValidateValueSet               testCaseName = "validation_Create_TargetLag_ValidateValueSet"
+	case_CortexSearchServices_validation_Create_opts_ConflictingFields                   testCaseName = "validation_Create_opts_ConflictingFields"
+	case_CortexSearchServices_sql_Create_basic                                           testCaseName = "sql_Create_basic"
+	case_CortexSearchServices_sql_Create_all                                             testCaseName = "sql_Create_all"
+	case_CortexSearchServices_validation_Alter_name_ValidIdentifier                      testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_CortexSearchServices_validation_Alter_opts_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_CortexSearchServices_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_CortexSearchServices_validation_Alter_opts_Set_AtLeastOneValueSet               testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_CortexSearchServices_validation_Alter_opts_SetDefaults_AtLeastOneValueSet       testCaseName = "validation_Alter_opts_SetDefaults_AtLeastOneValueSet"
+	case_CortexSearchServices_validation_Alter_SetPrimaryKey_PrimaryKey_ValidateValueSet testCaseName = "validation_Alter_SetPrimaryKey_PrimaryKey_ValidateValueSet"
+	case_CortexSearchServices_validation_Alter_SetAttributes_Columns_ValidateValueSet    testCaseName = "validation_Alter_SetAttributes_Columns_ValidateValueSet"
+	case_CortexSearchServices_sql_Alter_Suspend                                          testCaseName = "sql_Alter_Suspend"
+	case_CortexSearchServices_sql_Alter_Resume                                           testCaseName = "sql_Alter_Resume"
+	case_CortexSearchServices_sql_Alter_Refresh                                          testCaseName = "sql_Alter_Refresh"
+	case_CortexSearchServices_sql_Alter_Set                                              testCaseName = "sql_Alter_Set"
+	case_CortexSearchServices_sql_Alter_SetDefaults                                      testCaseName = "sql_Alter_SetDefaults"
+	case_CortexSearchServices_sql_Alter_SetPrimaryKey                                    testCaseName = "sql_Alter_SetPrimaryKey"
+	case_CortexSearchServices_sql_Alter_SetAttributes                                    testCaseName = "sql_Alter_SetAttributes"
+	case_CortexSearchServices_sql_Alter_UnsetPrimaryKey                                  testCaseName = "sql_Alter_UnsetPrimaryKey"
+	case_CortexSearchServices_sql_Alter_UnsetAttributes                                  testCaseName = "sql_Alter_UnsetAttributes"
+	case_CortexSearchServices_sql_Alter_SetTags                                          testCaseName = "sql_Alter_SetTags"
+	case_CortexSearchServices_sql_Alter_UnsetTags                                        testCaseName = "sql_Alter_UnsetTags"
+	case_CortexSearchServices_sql_Show_basic                                             testCaseName = "sql_Show_basic"
+	case_CortexSearchServices_sql_Show_all                                               testCaseName = "sql_Show_all"
+	case_CortexSearchServices_sql_Show_Like                                              testCaseName = "sql_Show_Like"
+	case_CortexSearchServices_sql_Show_In                                                testCaseName = "sql_Show_In"
+	case_CortexSearchServices_sql_Show_StartsWith                                        testCaseName = "sql_Show_StartsWith"
+	case_CortexSearchServices_sql_Show_Limit                                             testCaseName = "sql_Show_Limit"
+	case_CortexSearchServices_validation_Describe_name_ValidIdentifier                   testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_CortexSearchServices_sql_Describe_basic                                         testCaseName = "sql_Describe_basic"
+	case_CortexSearchServices_validation_Drop_name_ValidIdentifier                       testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_CortexSearchServices_sql_Drop_basic                                             testCaseName = "sql_Drop_basic"
+	case_CortexSearchServices_sql_Drop_all                                               testCaseName = "sql_Drop_all"
+)
+
+type CortexSearchServicesTestsContext struct {
+	Create   *sdkTestCtx[*CreateCortexSearchServiceOptions]
+	Alter    *sdkTestCtx[*AlterCortexSearchServiceOptions]
+	Show     *sdkTestCtx[*ShowCortexSearchServiceOptions]
+	Describe *sdkTestCtx[*DescribeCortexSearchServiceOptions]
+	Drop     *sdkTestCtx[*DropCortexSearchServiceOptions]
+}
+
+var cortexSearchServicesTests = CortexSearchServicesTestsContext{
+	Create: newSdkTestCtx[*CreateCortexSearchServiceOptions](
+		"CortexSearchServices", "Create",
+	).
+		withDefaultOpts(func() *CreateCortexSearchServiceOptions {
+			return &CreateCortexSearchServiceOptions{
+				name: cortexSearchServicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateCortexSearchServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
 			},
-			QueryDefinition: "SELECT product_id, product_name, searchable_text FROM staging_table",
-		}
-	}
+			validationCase[*CreateCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Create_On_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateCortexSearchServiceOptions", "On"),
+				DefaultModify: func(opts *CreateCortexSearchServiceOptions) {
+					opts.On = ""
+				},
+			},
+			validationCase[*CreateCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Create_TargetLag_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateCortexSearchServiceOptions", "TargetLag"),
+				DefaultModify: func(opts *CreateCortexSearchServiceOptions) {
+					opts.TargetLag = ""
+				},
+			},
+			validationCase[*CreateCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateCortexSearchServiceOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateCortexSearchServiceOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateCortexSearchServiceOptions]{
+				Name:           case_CortexSearchServices_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterCortexSearchServiceOptions](
+		"CortexSearchServices", "Alter",
+	).
+		withDefaultOpts(func() *AlterCortexSearchServiceOptions {
+			return &AlterCortexSearchServiceOptions{
+				name: cortexSearchServicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterCortexSearchServiceOptions", "Suspend", "Resume", "Refresh", "Set", "SetDefaults", "SetPrimaryKey", "SetAttributes", "UnsetPrimaryKey", "UnsetAttributes", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.Suspend = nil
+					opts.Resume = nil
+					opts.Refresh = nil
+					opts.Set = nil
+					opts.SetDefaults = nil
+					opts.SetPrimaryKey = nil
+					opts.SetAttributes = nil
+					opts.UnsetPrimaryKey = nil
+					opts.UnsetAttributes = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterCortexSearchServiceOptions", "Suspend", "Resume", "Refresh", "Set", "SetDefaults", "SetPrimaryKey", "SetAttributes", "UnsetPrimaryKey", "UnsetAttributes", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.Suspend = new(true)
+					opts.Resume = new(true)
+				},
+			},
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterCortexSearchServiceOptions.Set", "TargetLag", "Warehouse", "FullIndexBuildIntervalDays", "RequestLogging", "AutoSuspend", "Comment"),
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.Set = &CortexSearchServiceSet{}
+					opts.Set.TargetLag = nil
+					opts.Set.Warehouse = nil
+					opts.Set.FullIndexBuildIntervalDays = nil
+					opts.Set.RequestLogging = nil
+					opts.Set.AutoSuspend = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_opts_SetDefaults_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterCortexSearchServiceOptions.SetDefaults", "AutoSuspend"),
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.SetDefaults = &CortexSearchServiceSetDefaults{}
+					opts.SetDefaults.AutoSuspend = nil
+				},
+			},
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_SetPrimaryKey_PrimaryKey_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterCortexSearchServiceOptions.SetPrimaryKey", "PrimaryKey"),
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.SetPrimaryKey = &CortexSearchServiceSetPrimaryKey{}
+					opts.SetPrimaryKey.PrimaryKey = nil
+				},
+			},
+			validationCase[*AlterCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Alter_SetAttributes_Columns_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterCortexSearchServiceOptions.SetAttributes", "Columns"),
+				DefaultModify: func(opts *AlterCortexSearchServiceOptions) {
+					opts.SetAttributes = &CortexSearchServiceSetAttributes{}
+					opts.SetAttributes.Columns = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_Suspend,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_Resume,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_Refresh,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_Set,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_SetDefaults,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_SetPrimaryKey,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_SetAttributes,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_UnsetPrimaryKey,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_UnsetAttributes,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Alter_UnsetTags,
+			},
+		),
+	Show: newSdkTestCtx[*ShowCortexSearchServiceOptions](
+		"CortexSearchServices", "Show",
+	).
+		withDefaultOpts(func() *ShowCortexSearchServiceOptions {
+			return &ShowCortexSearchServiceOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowCortexSearchServiceOptions]{
+				Name:           case_CortexSearchServices_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Show_all,
+			},
+			sqlCase[*ShowCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Show_Like,
+			},
+			sqlCase[*ShowCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Show_In,
+			},
+			sqlCase[*ShowCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeCortexSearchServiceOptions](
+		"CortexSearchServices", "Describe",
+	).
+		withDefaultOpts(func() *DescribeCortexSearchServiceOptions {
+			return &DescribeCortexSearchServiceOptions{
+				name: cortexSearchServicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeCortexSearchServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeCortexSearchServiceOptions]{
+				Name:           case_CortexSearchServices_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Drop: newSdkTestCtx[*DropCortexSearchServiceOptions](
+		"CortexSearchServices", "Drop",
+	).
+		withDefaultOpts(func() *DropCortexSearchServiceOptions {
+			return &DropCortexSearchServiceOptions{
+				name: cortexSearchServicesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropCortexSearchServiceOptions]{
+				Name:        case_CortexSearchServices_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropCortexSearchServiceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropCortexSearchServiceOptions]{
+				Name:           case_CortexSearchServices_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropCortexSearchServiceOptions]{
+				Name: case_CortexSearchServices_sql_Drop_all,
+			},
+		),
+}
 
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateCortexSearchServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.On] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateCortexSearchServiceOptions", "On"))
-	})
-
-	t.Run("validation: [opts.TargetLag] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.TargetLag = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateCortexSearchServiceOptions", "TargetLag"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateCortexSearchServiceOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
-	})
-
-	// added manually
-	t.Run("with embedding model", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.EmbeddingModel = String("snowflake-arctic-embed-m-v1.5")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' EMBEDDING_MODEL = 'snowflake-arctic-embed-m-v1.5' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
-	})
-
-	// added manually
-	t.Run("with primary key", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.PrimaryKey = []string{"id", "ts"}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE %s ON searchable_text PRIMARY KEY (id, ts) WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
-	})
-
-	// added manually
-	t.Run("with refresh mode and initialize", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RefreshMode = Pointer(CortexSearchServiceRefreshModeIncremental)
-		opts.Initialize = Pointer(CortexSearchServiceInitializeOnSchedule)
-		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE %s ON searchable_text WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' REFRESH_MODE = INCREMENTAL INITIALIZE = ON_SCHEDULE AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.Attributes = &Attributes{
-			Columns: []string{"product_id", "product_name"},
-		}
-		opts.EmbeddingModel = String("snowflake-arctic-embed-l-v2.0")
-		opts.PrimaryKey = []string{"product_id"}
-		opts.RefreshMode = Pointer(CortexSearchServiceRefreshModeFull)
-		opts.Initialize = Pointer(CortexSearchServiceInitializeOnCreate)
-		opts.FullIndexBuildIntervalDays = Int(30)
-		opts.RequestLogging = Bool(true)
-		opts.AutoSuspend = Int(3600)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE CORTEX SEARCH SERVICE IF NOT EXISTS %s ON searchable_text PRIMARY KEY (product_id) ATTRIBUTES product_id, product_name WAREHOUSE = "warehouse_name" TARGET_LAG = '1 minutes' EMBEDDING_MODEL = 'snowflake-arctic-embed-l-v2.0' REFRESH_MODE = FULL INITIALIZE = ON_CREATE FULL_INDEX_BUILD_INTERVAL_DAYS = 30 REQUEST_LOGGING = true AUTO_SUSPEND = 3600 COMMENT = 'comment' AS SELECT product_id, product_name, searchable_text FROM staging_table`, id.FullyQualifiedName())
-	})
+func TestCortexSearchServices_Create(t *testing.T) {
+	cortexSearchServicesTests.Create.RunValidationCases(t)
+	cortexSearchServicesTests.Create.RunSqlCases(t)
 }
 
 func TestCortexSearchServices_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterCortexSearchServiceOptions
-	defaultOpts := func() *AlterCortexSearchServiceOptions {
-		return &AlterCortexSearchServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterCortexSearchServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.*] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterCortexSearchServiceOptions", "Suspend", "Resume", "Refresh", "Set", "SetDefaults", "SetPrimaryKey", "SetAttributes", "UnsetPrimaryKey", "UnsetAttributes", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.*] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &CortexSearchServiceSet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCortexSearchServiceOptions.Set", "TargetLag", "Warehouse", "FullIndexBuildIntervalDays", "RequestLogging", "AutoSuspend", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.SetDefaults.*] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetDefaults = &CortexSearchServiceSetDefaults{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterCortexSearchServiceOptions.SetDefaults", "AutoSuspend"))
-	})
-
-	t.Run("validation: [opts.SetPrimaryKey.PrimaryKey] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetPrimaryKey = &CortexSearchServiceSetPrimaryKey{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("AlterCortexSearchServiceOptions.SetPrimaryKey", "PrimaryKey"))
-	})
-
-	t.Run("validation: [opts.SetAttributes.Columns] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetAttributes = &CortexSearchServiceSetAttributes{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("AlterCortexSearchServiceOptions.SetAttributes", "Columns"))
-	})
-
-	t.Run("suspend", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Suspend = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SUSPEND`, id.FullyQualifiedName())
-	})
-
-	t.Run("resume", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Resume = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s RESUME`, id.FullyQualifiedName())
-	})
-
-	t.Run("refresh", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Refresh = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s REFRESH`, id.FullyQualifiedName())
-	})
-
-	t.Run("set defaults", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetDefaults = &CortexSearchServiceSetDefaults{
-			AutoSuspend: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET AUTO_SUSPEND = NULL`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset primary key", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetPrimaryKey = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s UNSET PRIMARY KEY`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset attributes", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetAttributes = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s UNSET ATTRIBUTES`, id.FullyQualifiedName())
-	})
-
-	t.Run("set primary key", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetPrimaryKey = &CortexSearchServiceSetPrimaryKey{
-			PrimaryKey: []string{"id", "ts"},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET PRIMARY KEY = (id, ts)`, id.FullyQualifiedName())
-	})
-
-	t.Run("set attributes", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetAttributes = &CortexSearchServiceSetAttributes{
-			Columns: []string{"col1", "col2"},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET ATTRIBUTES (col1, col2)`, id.FullyQualifiedName())
-	})
-
-	t.Run("set basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &CortexSearchServiceSet{
-			TargetLag: String("1 minutes"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET TARGET_LAG = '1 minutes'`, id.FullyQualifiedName())
-	})
-
-	t.Run("set all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &CortexSearchServiceSet{
-			TargetLag: String("1 minutes"),
-			Warehouse: &AccountObjectIdentifier{
-				name: "warehouse_name",
-			},
-			FullIndexBuildIntervalDays: Int(30),
-			RequestLogging:             Bool(true),
-			AutoSuspend:                Int(3600),
-			Comment:                    String("comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER CORTEX SEARCH SERVICE %s SET TARGET_LAG = '1 minutes' WAREHOUSE = "warehouse_name" FULL_INDEX_BUILD_INTERVAL_DAYS = 30 REQUEST_LOGGING = true AUTO_SUSPEND = 3600 COMMENT = 'comment'`, id.FullyQualifiedName())
-	})
+	cortexSearchServicesTests.Alter.RunValidationCases(t)
+	cortexSearchServicesTests.Alter.RunSqlCases(t)
 }
 
 func TestCortexSearchServices_Show(t *testing.T) {
-	// added manually
-	id := randomSchemaObjectIdentifier()
-
-	// Minimal valid ShowCortexSearchServiceOptions
-	defaultOpts := func() *ShowCortexSearchServiceOptions {
-		return &ShowCortexSearchServiceOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowCortexSearchServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW CORTEX SEARCH SERVICES")
-	})
-
-	// all variants added manually
-	t.Run("show with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String(id.Name()),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW CORTEX SEARCH SERVICES LIKE '%s'`, id.Name())
-	})
-
-	t.Run("show with in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &In{
-			Database: NewAccountObjectIdentifier("database"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW CORTEX SEARCH SERVICES IN DATABASE "database"`)
-	})
-
-	t.Run("show with starts with", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.StartsWith = String("foo")
-		assertOptsValidAndSQLEquals(t, opts, `SHOW CORTEX SEARCH SERVICES STARTS WITH 'foo'`)
-	})
-
-	t.Run("show with limit", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{
-			Rows: Int(1),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW CORTEX SEARCH SERVICES LIMIT 1`)
-	})
-
-	t.Run("show with limit from", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{
-			Rows: Int(1),
-			From: String("foo"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW CORTEX SEARCH SERVICES LIMIT 1 FROM 'foo'`)
-	})
-
-	t.Run("show with all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		opts.In = &In{
-			Account: Bool(true),
-		}
-		opts.StartsWith = String("foo")
-		opts.Limit = &LimitFrom{
-			Rows: Int(1),
-			From: String("bar"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW CORTEX SEARCH SERVICES LIKE 'pattern' IN ACCOUNT STARTS WITH 'foo' LIMIT 1 FROM 'bar'`)
-	})
+	cortexSearchServicesTests.Show.RunValidationCases(t)
+	cortexSearchServicesTests.Show.RunSqlCases(t)
 }
 
 func TestCortexSearchServices_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeCortexSearchServiceOptions
-	defaultOpts := func() *DescribeCortexSearchServiceOptions {
-		return &DescribeCortexSearchServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeCortexSearchServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE CORTEX SEARCH SERVICE %s`, id.FullyQualifiedName())
-	})
-
-	// all options test removed
+	cortexSearchServicesTests.Describe.RunValidationCases(t)
+	cortexSearchServicesTests.Describe.RunSqlCases(t)
 }
 
 func TestCortexSearchServices_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropCortexSearchServiceOptions
-	defaultOpts := func() *DropCortexSearchServiceOptions {
-		return &DropCortexSearchServiceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropCortexSearchServiceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP CORTEX SEARCH SERVICE %s`, id.FullyQualifiedName())
-	})
-
-	// all options test removed
+	cortexSearchServicesTests.Drop.RunValidationCases(t)
+	cortexSearchServicesTests.Drop.RunSqlCases(t)
 }

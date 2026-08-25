@@ -169,4 +169,4 @@ var cortexSearchServicesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).WithEnums(CortexSearchServiceRefreshModeEnumDef, CortexSearchServiceInitializeEnumDef)
+).WithEnums(CortexSearchServiceRefreshModeEnumDef, CortexSearchServiceInitializeEnumDef).WithEnabledGenerationParts(g.PartUnitTests)
