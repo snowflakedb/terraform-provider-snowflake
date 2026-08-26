@@ -1261,6 +1261,17 @@ var AllIcebergTableParameters = []IcebergTableParameter{
 	IcebergTableParameterTargetFileSize,
 }
 
+// OpenflowDeploymentParameter is the set of parameters settable on an OPENFLOW DEPLOYMENT.
+type OpenflowDeploymentParameter string
+
+const (
+	OpenflowDeploymentParameterEventTable OpenflowDeploymentParameter = "EVENT_TABLE"
+)
+
+var AllOpenflowDeploymentParameters = []OpenflowDeploymentParameter{
+	OpenflowDeploymentParameterEventTable,
+}
+
 // LegacyAccountParameters is based on https://docs.snowflake.com/en/sql-reference/parameters.
 type LegacyAccountParameters struct {
 	// Account Parameters

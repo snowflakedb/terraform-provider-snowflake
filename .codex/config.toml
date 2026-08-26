@@ -1,0 +1,31 @@
+# Project-level MCP servers for Codex. Keep this list in sync with
+# `.mcp.json` (Claude Code) and `.cursor/mcp.json` (Cursor).
+# Auth is handled by the internal `sf` CLI; no tokens live here.
+
+[mcp_servers.confluence]
+command = "/opt/sf-cli/dist/sf"
+args = ["mcp", "run", "confluence"]
+
+[mcp_servers.github]
+command = "/opt/sf-cli/dist/sf"
+args = ["mcp", "run", "github"]
+
+[mcp_servers.glean]
+command = "/opt/sf-cli/dist/sf"
+args = ["mcp", "run", "glean"]
+
+[mcp_servers.graphite]
+command = "/opt/sf-cli/dist/sf"
+args = ["mcp", "run", "graphite"]
+
+[mcp_servers.jira]
+command = "/opt/sf-cli/dist/sf"
+args = ["mcp", "run", "jira"]
+
+[mcp_servers.jira_wo]
+command = "/opt/sf-cli/dist/sf"
+args = ["mcp", "run", "jira_wo"]
+
+[mcp_servers.snowhouse]
+command = "/opt/sf-cli/dist/sf"
+args = ["mcp", "run", "snowhouse"]

@@ -1,13 +1,13 @@
 package sdk
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // OpenflowConnectorVersionLocation is the Location of a connector version's configuration stage, which
-// Snowflake addresses with a snow:// URI rather than a stage path, so it cannot be a StageLocation.
-//
-// It takes the connector and version rather than a finished URI because the URI quotes only the identifier
-// parts that need it, and an unquoted `my_connector` addresses MY_CONNECTOR instead - a config that looks
-// right and resolves to nothing until apply.
+// Snowflake addresses with a snow:// URI rather than a stage path. It takes the connector and version
+// rather than a finished URI, since the URI quotes only the identifier parts that need it.
 type OpenflowConnectorVersionLocation struct {
 	connector SchemaObjectIdentifier
 	version   string
@@ -19,15 +19,16 @@ func NewOpenflowConnectorVersionLocation(connector SchemaObjectIdentifier, versi
 	return OpenflowConnectorVersionLocation{connector: connector, version: version}
 }
 
-// ToSql renders the URI as Snowflake reports it in location_uri. The version is not an identifier so it is
-// not quoted; the whole URI is emitted as a single-quoted literal, which escapes it.
+// ToSql renders the URI as Snowflake reports it in location_uri, as a single-quoted literal. The version is
+// lower-cased: SHOW VERSIONS names a version VERSION$1 while location_uri says version$1, and the segment is
+// matched case-sensitively.
 func (l OpenflowConnectorVersionLocation) ToSql() string {
 	return fmt.Sprintf(
 		"snow://openflow_connector/%s.%s.%s/versions/%s/",
 		quoteIdentifierPartIfNeeded(l.connector.DatabaseName()),
 		quoteIdentifierPartIfNeeded(l.connector.SchemaName()),
 		quoteIdentifierPartIfNeeded(l.connector.Name()),
-		l.version,
+		strings.ToLower(l.version),
 	)
 }
 

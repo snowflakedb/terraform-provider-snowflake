@@ -440,6 +440,13 @@ func TestOpenflowConnectorVersionLocation_ToSql(t *testing.T) {
 			version:   "live",
 			expected:  `snow://openflow_connector/"my_db"."my_schema"."my_connector"/versions/live/`,
 		},
+		{
+			// SHOW VERSIONS names it VERSION$1, but the URI segment is version$1 and matched case-sensitively.
+			name:      "version name as SHOW VERSIONS reports it",
+			connector: NewSchemaObjectIdentifier("OPENFLOW", "OPENFLOW", "MY_CONNECTOR"),
+			version:   "VERSION$1",
+			expected:  "snow://openflow_connector/OPENFLOW.OPENFLOW.MY_CONNECTOR/versions/version$1/",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
