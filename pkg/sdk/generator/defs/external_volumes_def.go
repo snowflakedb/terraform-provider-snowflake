@@ -210,4 +210,5 @@ var externalVolumesDef = g.NewInterface(
 		GCSEncryptionTypeEnumDef,
 		AzureEncryptionTypeEnumDef,
 		S3CompatEncryptionTypeEnumDef,
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)
