@@ -8,7 +8,7 @@ import (
 
 var DataMetricFunctionRefEntityDomainOptionEnumDef = g.NewEnum(
 	"DataMetricFunctionRefEntityDomainOption", "DataMetricFunctionRefEntityDomainOptions",
-	"VIEW",
+	"TABLE", "VIEW",
 )
 
 var dataMetricFunctionReferenceParametersDef = g.NewQueryStruct("dataMetricFunctionReferenceParameters").

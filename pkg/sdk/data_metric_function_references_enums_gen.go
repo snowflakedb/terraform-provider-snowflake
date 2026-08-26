@@ -10,16 +10,20 @@ import (
 type DataMetricFunctionRefEntityDomainOption string
 
 const (
-	DataMetricFunctionRefEntityDomainOptionView DataMetricFunctionRefEntityDomainOption = "VIEW"
+	DataMetricFunctionRefEntityDomainOptionTable DataMetricFunctionRefEntityDomainOption = "TABLE"
+	DataMetricFunctionRefEntityDomainOptionView  DataMetricFunctionRefEntityDomainOption = "VIEW"
 )
 
 var AllDataMetricFunctionRefEntityDomainOptions = []DataMetricFunctionRefEntityDomainOption{
+	DataMetricFunctionRefEntityDomainOptionTable,
 	DataMetricFunctionRefEntityDomainOptionView,
 }
 
 func ToDataMetricFunctionRefEntityDomainOption(s string) (DataMetricFunctionRefEntityDomainOption, error) {
 	s = strings.ToUpper(s)
 	switch s {
+	case string(DataMetricFunctionRefEntityDomainOptionTable):
+		return DataMetricFunctionRefEntityDomainOptionTable, nil
 	case string(DataMetricFunctionRefEntityDomainOptionView):
 		return DataMetricFunctionRefEntityDomainOptionView, nil
 	default:

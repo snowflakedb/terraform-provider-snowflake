@@ -205,6 +205,33 @@ func (s *AlterTableRequest) toOpts() *alterTableOptions {
 			On:                     s.AddStorageLifecyclePolicy.On,
 		}
 	}
+	toDataMetricFunctions := func(functions []TableDataMetricFunctionRequest) []TableDataMetricFunction {
+		result := make([]TableDataMetricFunction, len(functions))
+		for i, function := range functions {
+			expectations := make([]TableDataMetricExpectation, len(function.Expectations))
+			for j, expectation := range function.Expectations {
+				expectations[j] = TableDataMetricExpectation{Name: expectation.Name, Expression: expectation.Expression}
+			}
+			result[i] = TableDataMetricFunction{DataMetricFunction: function.DataMetricFunction, On: function.On, Expectations: expectations, ExecuteAsRole: function.ExecuteAsRole}
+		}
+		return result
+	}
+	var addDataMetricFunction *TableAddDataMetricFunctions
+	if s.AddDataMetricFunction != nil {
+		addDataMetricFunction = &TableAddDataMetricFunctions{Functions: toDataMetricFunctions(s.AddDataMetricFunction.Functions)}
+	}
+	var dropDataMetricFunction *TableDropDataMetricFunctions
+	if s.DropDataMetricFunction != nil {
+		dropDataMetricFunction = &TableDropDataMetricFunctions{Functions: toDataMetricFunctions(s.DropDataMetricFunction.Functions)}
+	}
+	var modifyDataMetricFunction *TableModifyDataMetricFunctions
+	if s.ModifyDataMetricFunction != nil {
+		functions := make([]TableModifyDataMetricFunction, len(s.ModifyDataMetricFunction.Functions))
+		for i, function := range s.ModifyDataMetricFunction.Functions {
+			functions[i] = TableModifyDataMetricFunction{DataMetricFunction: function.DataMetricFunction, On: function.On, Operation: function.Operation}
+		}
+		modifyDataMetricFunction = &TableModifyDataMetricFunctions{Functions: functions}
+	}
 
 	return &alterTableOptions{
 		IfExists:                   s.IfExists,
@@ -226,6 +253,11 @@ func (s *AlterTableRequest) toOpts() *alterTableOptions {
 		DropAllAccessRowPolicies:   s.DropAllAccessRowPolicies,
 		AddStorageLifecyclePolicy:  addStorageLifecyclePolicy,
 		DropStorageLifecyclePolicy: s.DropStorageLifecyclePolicy,
+		AddDataMetricFunction:      addDataMetricFunction,
+		DropDataMetricFunction:     dropDataMetricFunction,
+		ModifyDataMetricFunction:   modifyDataMetricFunction,
+		SetDataMetricSchedule:      s.SetDataMetricSchedule,
+		UnsetDataMetricSchedule:    s.UnsetDataMetricSchedule,
 	}
 }
 

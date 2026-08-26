@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -206,6 +207,23 @@ var tableSchema = map[string]*schema.Schema{
 		Default:     false,
 		Description: "Specifies whether to enable change tracking on the table. Default false.",
 	},
+	"data_metric_function": {
+		Type: schema.TypeSet, Optional: true, RequiredWith: []string{"data_metric_schedule"},
+		Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+			"function_name":   {Type: schema.TypeString, Required: true, DiffSuppressFunc: suppressIdentifierQuoting, ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier]()},
+			"on":              {Type: schema.TypeSet, Required: true, Elem: &schema.Schema{Type: schema.TypeString}},
+			"schedule_status": {Type: schema.TypeString, Required: true, ValidateDiagFunc: sdkValidation(sdk.ToAllowedDataMetricScheduleStatusOption)},
+			"execute_as_role": {Type: schema.TypeString, Optional: true, DiffSuppressFunc: suppressIdentifierQuoting, ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier]()},
+			"expectation": {Type: schema.TypeSet, Optional: true, Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+				"name": {Type: schema.TypeString, Required: true}, "expression": {Type: schema.TypeString, Required: true},
+			}}},
+		}},
+	},
+	"data_metric_schedule": {Type: schema.TypeList, Optional: true, MaxItems: 1, RequiredWith: []string{"data_metric_function"}, Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+		"minutes":            {Type: schema.TypeInt, Optional: true, ValidateDiagFunc: IntInSlice(sdk.AllViewDataMetricScheduleMinutes), ConflictsWith: []string{"data_metric_schedule.0.using_cron", "data_metric_schedule.0.trigger_on_changes"}},
+		"using_cron":         {Type: schema.TypeString, Optional: true, ConflictsWith: []string{"data_metric_schedule.0.minutes", "data_metric_schedule.0.trigger_on_changes"}},
+		"trigger_on_changes": {Type: schema.TypeBool, Optional: true, ConflictsWith: []string{"data_metric_schedule.0.minutes", "data_metric_schedule.0.using_cron"}},
+	}}},
 	"tag":                           tagReferenceSchema,
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 }
@@ -650,6 +668,15 @@ func CreateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 	}
 
 	d.SetId(helpers.EncodeSnowflakeID(id))
+	if raw, ok := d.GetOk("data_metric_function"); ok {
+		functions, err := tableDataMetricFunctions(raw.(*schema.Set).List())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithAddDataMetricFunction(*sdk.NewTableAddDataMetricFunctionsRequest(functions))); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	return ReadTable(ctx, d, meta)
 }
@@ -722,10 +749,97 @@ func ReadTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 			return diag.FromErr(err)
 		}
 	}
+	if err := handleTableDataMetricFunctions(ctx, client, id, d); err != nil {
+		return diag.FromErr(err)
+	}
 	return nil
 }
 
 // UpdateTable implements schema.UpdateFunc.
+func tableDataMetricFunctions(values []any) ([]sdk.TableDataMetricFunctionRequest, error) {
+	functions := make([]sdk.TableDataMetricFunctionRequest, 0, len(values))
+	for _, value := range values {
+		config := value.(map[string]any)
+		id, err := sdk.ParseSchemaObjectIdentifier(config["function_name"].(string))
+		if err != nil {
+			return nil, err
+		}
+		columns := expandStringList(config["on"].(*schema.Set).List())
+		on := make([]sdk.Column, len(columns))
+		for i, column := range columns {
+			on[i] = sdk.Column{Value: column}
+		}
+		function := sdk.NewTableDataMetricFunctionRequest(id, on)
+		if role, ok := config["execute_as_role"].(string); ok && role != "" {
+			function.WithExecuteAsRole(sdk.NewAccountObjectIdentifier(role))
+		}
+		if raw, ok := config["expectation"].(*schema.Set); ok {
+			expectations := make([]sdk.TableDataMetricExpectationRequest, 0, raw.Len())
+			for _, value := range raw.List() {
+				expectation := value.(map[string]any)
+				expectations = append(expectations, *sdk.NewTableDataMetricExpectationRequest(expectation["name"].(string), expectation["expression"].(string)))
+			}
+			function.WithExpectations(expectations)
+		}
+		functions = append(functions, *function)
+	}
+	return functions, nil
+}
+
+func handleTableDataMetricFunctions(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, d *schema.ResourceData) error {
+	references, err := client.DataMetricFunctionReferences.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionReferenceRequestCustom(id, sdk.DataMetricFunctionRefEntityDomainOptionTable))
+	if err != nil {
+		return err
+	}
+	if len(references) == 0 {
+		if err := d.Set("data_metric_function", nil); err != nil {
+			return err
+		}
+		return d.Set("data_metric_schedule", nil)
+	}
+	expectations, err := client.DataMetricFunctionExpectations.GetForEntity(ctx, sdk.NewGetForEntityDataMetricFunctionExpectationRequestCustom(id, sdk.DataMetricFunctionRefEntityDomainOptionTable))
+	if err != nil {
+		return err
+	}
+	functions := make([]map[string]any, 0, len(references))
+	for _, reference := range references {
+		columns := make([]string, len(reference.RefArguments))
+		for i, argument := range reference.RefArguments {
+			columns[i] = argument.Name
+		}
+		status, err := sdk.ToDataMetricScheduleStatusOption(reference.ScheduleStatus)
+		if err != nil {
+			return err
+		}
+		scheduleStatus := sdk.DataMetricScheduleStatusSuspended
+		if slices.Contains(sdk.AllDataMetricScheduleStatusStartedOptions, status) {
+			scheduleStatus = sdk.DataMetricScheduleStatusStarted
+		}
+		function := map[string]any{"function_name": sdk.NewSchemaObjectIdentifier(reference.MetricDatabaseName, reference.MetricSchemaName, reference.MetricName).FullyQualifiedName(), "on": columns, "schedule_status": string(scheduleStatus)}
+		expectationState := make([]map[string]any, 0)
+		for _, expectation := range expectations {
+			if expectation.RefId == reference.RefId {
+				expectationState = append(expectationState, map[string]any{"name": expectation.ExpectationName, "expression": expectation.ExpectationExpression})
+			}
+		}
+		if len(expectationState) > 0 {
+			function["expectation"] = expectationState
+		}
+		functions = append(functions, function)
+	}
+	if err := d.Set("data_metric_function", functions); err != nil {
+		return err
+	}
+	schedule := references[0].Schedule
+	if schedule == "TRIGGER_ON_CHANGES" {
+		return d.Set("data_metric_schedule", []map[string]any{{"trigger_on_changes": true}})
+	}
+	if minutes, err := strconv.Atoi(strings.TrimSuffix(schedule, " MINUTE")); err == nil {
+		return d.Set("data_metric_schedule", []map[string]any{{"minutes": minutes}})
+	}
+	return d.Set("data_metric_schedule", []map[string]any{{"using_cron": schedule}})
+}
+
 func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
@@ -984,6 +1098,48 @@ func UpdateTable(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
 			}
+		}
+	}
+
+	if d.HasChange("data_metric_function") {
+		oldRaw, newRaw := d.GetChange("data_metric_function")
+		oldFunctions, err := tableDataMetricFunctions(oldRaw.(*schema.Set).List())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		newFunctions, err := tableDataMetricFunctions(newRaw.(*schema.Set).List())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(oldFunctions) > 0 {
+			if err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithDropDataMetricFunction(*sdk.NewTableDropDataMetricFunctionsRequest(oldFunctions))); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+		if len(newFunctions) > 0 {
+			if err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithAddDataMetricFunction(*sdk.NewTableAddDataMetricFunctionsRequest(newFunctions))); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+	if d.HasChange("data_metric_schedule") {
+		if raw, ok := d.GetOk("data_metric_schedule"); ok {
+			config := raw.([]any)[0].(map[string]any)
+			schedule := ""
+			if minutes := config["minutes"].(int); minutes != 0 {
+				schedule = fmt.Sprintf("%d MINUTE", minutes)
+			} else if cron := config["using_cron"].(string); cron != "" {
+				schedule = fmt.Sprintf("USING CRON %s", cron)
+			} else if config["trigger_on_changes"].(bool) {
+				schedule = "TRIGGER_ON_CHANGES"
+			}
+			if schedule != "" {
+				if err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetDataMetricSchedule(schedule)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		} else if err := client.TablesLegacy.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetDataMetricSchedule(true)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 

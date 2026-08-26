@@ -225,6 +225,44 @@ type alterTableOptions struct {
 	DropAllAccessRowPolicies   *bool                                `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
 	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicy      `ddl:"keyword"`
 	DropStorageLifecyclePolicy *bool                                `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
+	AddDataMetricFunction      *TableAddDataMetricFunctions         `ddl:"keyword"`
+	DropDataMetricFunction     *TableDropDataMetricFunctions        `ddl:"keyword"`
+	ModifyDataMetricFunction   *TableModifyDataMetricFunctions      `ddl:"keyword"`
+	SetDataMetricSchedule      *string                              `ddl:"parameter,single_quotes" sql:"SET DATA_METRIC_SCHEDULE"`
+	UnsetDataMetricSchedule    *bool                                `ddl:"keyword" sql:"UNSET DATA_METRIC_SCHEDULE"`
+}
+
+type TableDataMetricFunction struct {
+	DataMetricFunction SchemaObjectIdentifier       `ddl:"identifier"`
+	On                 []Column                     `ddl:"keyword,parentheses" sql:"ON"`
+	Expectations       []TableDataMetricExpectation `ddl:"list,no_parentheses" sql:"EXPECTATION"`
+	ExecuteAsRole      *AccountObjectIdentifier     `ddl:"identifier" sql:"EXECUTE AS ROLE"`
+}
+
+type TableDataMetricExpectation struct {
+	Name       string `ddl:"keyword"`
+	Expression string `ddl:"parameter,no_equals,parentheses"`
+}
+
+type TableAddDataMetricFunctions struct {
+	dataMetricFunction bool                      `ddl:"static" sql:"ADD DATA METRIC FUNCTION"`
+	Functions          []TableDataMetricFunction `ddl:"list,no_parentheses"`
+}
+
+type TableDropDataMetricFunctions struct {
+	dataMetricFunction bool                      `ddl:"static" sql:"DROP DATA METRIC FUNCTION"`
+	Functions          []TableDataMetricFunction `ddl:"list,no_parentheses"`
+}
+
+type TableModifyDataMetricFunctions struct {
+	dataMetricFunction bool                            `ddl:"static" sql:"MODIFY DATA METRIC FUNCTION"`
+	Functions          []TableModifyDataMetricFunction `ddl:"list,no_parentheses"`
+}
+
+type TableModifyDataMetricFunction struct {
+	DataMetricFunction SchemaObjectIdentifier                      `ddl:"identifier"`
+	On                 []Column                                    `ddl:"keyword,parentheses" sql:"ON"`
+	Operation          ViewDataMetricScheduleStatusOperationOption `ddl:"keyword"`
 }
 
 type TableClusteringAction struct {

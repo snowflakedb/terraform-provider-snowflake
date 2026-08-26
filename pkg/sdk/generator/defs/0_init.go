@@ -28,6 +28,8 @@ func init() {
 		databaseRolesDef,
 		databasesDef,
 		dynamicTablesDef,
+		dataMetricFunctionsDef,
+		dataMetricFunctionExpectationsDef,
 		dataMetricFunctionReferencesDef,
 		eventTablesDef,
 		externalAccessIntegrationsDef,

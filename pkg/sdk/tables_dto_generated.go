@@ -664,6 +664,67 @@ func (s *AlterTableRequest) WithDropStorageLifecyclePolicy(dropStorageLifecycleP
 	return s
 }
 
+func (s *AlterTableRequest) WithAddDataMetricFunction(addDataMetricFunction TableAddDataMetricFunctionsRequest) *AlterTableRequest {
+	s.AddDataMetricFunction = &addDataMetricFunction
+	return s
+}
+
+func (s *AlterTableRequest) WithDropDataMetricFunction(dropDataMetricFunction TableDropDataMetricFunctionsRequest) *AlterTableRequest {
+	s.DropDataMetricFunction = &dropDataMetricFunction
+	return s
+}
+
+func (s *AlterTableRequest) WithModifyDataMetricFunction(modifyDataMetricFunction TableModifyDataMetricFunctionsRequest) *AlterTableRequest {
+	s.ModifyDataMetricFunction = &modifyDataMetricFunction
+	return s
+}
+
+func (s *AlterTableRequest) WithSetDataMetricSchedule(setDataMetricSchedule string) *AlterTableRequest {
+	s.SetDataMetricSchedule = &setDataMetricSchedule
+	return s
+}
+
+func (s *AlterTableRequest) WithUnsetDataMetricSchedule(unsetDataMetricSchedule bool) *AlterTableRequest {
+	s.UnsetDataMetricSchedule = &unsetDataMetricSchedule
+	return s
+}
+
+func NewTableDataMetricFunctionRequest(dataMetricFunction SchemaObjectIdentifier, on []Column) *TableDataMetricFunctionRequest {
+	s := TableDataMetricFunctionRequest{DataMetricFunction: dataMetricFunction, On: on}
+	return &s
+}
+
+func (s *TableDataMetricFunctionRequest) WithExpectations(expectations []TableDataMetricExpectationRequest) *TableDataMetricFunctionRequest {
+	s.Expectations = expectations
+	return s
+}
+
+func (s *TableDataMetricFunctionRequest) WithExecuteAsRole(executeAsRole AccountObjectIdentifier) *TableDataMetricFunctionRequest {
+	s.ExecuteAsRole = &executeAsRole
+	return s
+}
+
+func NewTableDataMetricExpectationRequest(name string, expression string) *TableDataMetricExpectationRequest {
+	s := TableDataMetricExpectationRequest{Name: name, Expression: expression}
+	return &s
+}
+
+func NewTableAddDataMetricFunctionsRequest(functions []TableDataMetricFunctionRequest) *TableAddDataMetricFunctionsRequest {
+	return &TableAddDataMetricFunctionsRequest{Functions: functions}
+}
+
+func NewTableDropDataMetricFunctionsRequest(functions []TableDataMetricFunctionRequest) *TableDropDataMetricFunctionsRequest {
+	return &TableDropDataMetricFunctionsRequest{Functions: functions}
+}
+
+func NewTableModifyDataMetricFunctionRequest(dataMetricFunction SchemaObjectIdentifier, on []Column, operation ViewDataMetricScheduleStatusOperationOption) *TableModifyDataMetricFunctionRequest {
+	return &TableModifyDataMetricFunctionRequest{DataMetricFunction: dataMetricFunction, On: on, Operation: operation}
+}
+
+func NewTableModifyDataMetricFunctionsRequest(functions []TableModifyDataMetricFunctionRequest) *TableModifyDataMetricFunctionsRequest {
+	return &TableModifyDataMetricFunctionsRequest{Functions: functions}
+}
+
 func NewDropTableRequest(
 	name SchemaObjectIdentifier,
 ) *DropTableRequest {

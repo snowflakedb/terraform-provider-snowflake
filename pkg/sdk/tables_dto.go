@@ -190,6 +190,41 @@ type AlterTableRequest struct {
 	DropAllAccessRowPolicies   *bool
 	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicyRequest
 	DropStorageLifecyclePolicy *bool
+	AddDataMetricFunction      *TableAddDataMetricFunctionsRequest
+	DropDataMetricFunction     *TableDropDataMetricFunctionsRequest
+	ModifyDataMetricFunction   *TableModifyDataMetricFunctionsRequest
+	SetDataMetricSchedule      *string
+	UnsetDataMetricSchedule    *bool
+}
+
+type TableDataMetricFunctionRequest struct {
+	DataMetricFunction SchemaObjectIdentifier // required
+	On                 []Column               // required
+	Expectations       []TableDataMetricExpectationRequest
+	ExecuteAsRole      *AccountObjectIdentifier
+}
+
+type TableDataMetricExpectationRequest struct {
+	Name       string // required
+	Expression string // required
+}
+
+type TableAddDataMetricFunctionsRequest struct {
+	Functions []TableDataMetricFunctionRequest // required
+}
+
+type TableDropDataMetricFunctionsRequest struct {
+	Functions []TableDataMetricFunctionRequest // required
+}
+
+type TableModifyDataMetricFunctionRequest struct {
+	DataMetricFunction SchemaObjectIdentifier                      // required
+	On                 []Column                                    // required
+	Operation          ViewDataMetricScheduleStatusOperationOption // required
+}
+
+type TableModifyDataMetricFunctionsRequest struct {
+	Functions []TableModifyDataMetricFunctionRequest // required
 }
 
 type DropTableRequest struct {

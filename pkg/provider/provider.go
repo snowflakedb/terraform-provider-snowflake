@@ -629,6 +629,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_current_organization_account":                                 resources.CurrentOrganizationAccount(),
 		"snowflake_database":                                                     resources.Database(),
 		"snowflake_database_role":                                                resources.DatabaseRole(),
+		"snowflake_data_metric_function":                                         resources.DataMetricFunction(),
 		"snowflake_dynamic_table":                                                resources.DynamicTable(),
 		"snowflake_email_notification_integration":                               resources.EmailNotificationIntegration(),
 		"snowflake_execute":                                                      resources.Execute(),
