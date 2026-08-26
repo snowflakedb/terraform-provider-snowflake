@@ -87,6 +87,18 @@ sweep: ## destroy the whole architecture; USE ONLY FOR DEVELOPMENT ACCOUNTS
 			else echo "Aborting..."; \
 		fi;
 
+sweep-after-tests: ## drop the objects created by the current test run and upload its test results
+	TEST_SF_TF_ENABLE_SWEEP=1 go test -timeout=20m -run "^TestSweepAll$$" ./pkg/sdk -v
+
+sweep-stale: ## destroy the objects left over by the previous test runs; USE ONLY FOR DEVELOPMENT ACCOUNTS
+	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
+	@echo "Are you sure? [y/n]" >&2
+	@read -r REPLY; \
+		if echo "$$REPLY" | grep -qG "^[yY]$$"; then \
+			TEST_SF_TF_ENABLE_SWEEP=1 go test -timeout=20m -run "^Test_Sweeper_NukeStaleObjects$$" ./pkg/sdk -v; \
+			else echo "Aborting..."; \
+		fi;
+
 test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") $(ADDITIONAL_TEST_FLAGS)
 
@@ -287,4 +299,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local check-compilation dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-no-tests-check generate-sdk-examples-check generate-snowflake-object-assertions-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check
+.PHONY: build-local check-compilation dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep sweep-after-tests sweep-stale terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-sdk-no-tests-check generate-sdk-examples-check generate-snowflake-object-assertions-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check

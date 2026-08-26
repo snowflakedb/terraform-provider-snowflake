@@ -67,7 +67,6 @@ func sweep(client *sdk.Client, suffix string) error {
 	sweepers := []func() error{
 		nukePostgresInstances(client, suffix),
 		nukeSecurityIntegrations(client, suffix),
-		getAccountPolicyAttachmentsSweeper(client),
 		nukeResourceMonitors(client, suffix),
 		nukeNetworkPolicies(client, suffix),
 		nukeUsers(client, suffix),
@@ -141,6 +140,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 			assert.NoError(t, err)
 
 			err = nukeDatabases(c, acceptanceTestDatabasesPrefix, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("unset account policy attachments", func(t *testing.T) {
+		for _, c := range allClients {
+			err := getAccountPolicyAttachmentsSweeper(c)()
 			assert.NoError(t, err)
 		}
 	})
