@@ -6,149 +6,163 @@ import (
 	"testing"
 )
 
+var mcpServersTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_McpServers_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
+	case_McpServers_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
+	case_McpServers_validation_Create_FromSpecification_NoDoubleDollarQuotes testCaseName = "validation_Create_FromSpecification_NoDoubleDollarQuotes"
+	case_McpServers_sql_Create_basic                                         testCaseName = "sql_Create_basic"
+	case_McpServers_sql_Create_all                                           testCaseName = "sql_Create_all"
+	case_McpServers_validation_Drop_name_ValidIdentifier                     testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_McpServers_sql_Drop_basic                                           testCaseName = "sql_Drop_basic"
+	case_McpServers_sql_Drop_all                                             testCaseName = "sql_Drop_all"
+	case_McpServers_sql_Show_basic                                           testCaseName = "sql_Show_basic"
+	case_McpServers_sql_Show_all                                             testCaseName = "sql_Show_all"
+	case_McpServers_sql_Show_Like                                            testCaseName = "sql_Show_Like"
+	case_McpServers_sql_Show_In                                              testCaseName = "sql_Show_In"
+	case_McpServers_validation_Describe_name_ValidIdentifier                 testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_McpServers_sql_Describe_basic                                       testCaseName = "sql_Describe_basic"
+)
+
+type McpServersTestsContext struct {
+	Create   *sdkTestCtx[*CreateMcpServerOptions]
+	Drop     *sdkTestCtx[*DropMcpServerOptions]
+	Show     *sdkTestCtx[*ShowMcpServerOptions]
+	Describe *sdkTestCtx[*DescribeMcpServerOptions]
+}
+
+var mcpServersTests = McpServersTestsContext{
+	Create: newSdkTestCtx[*CreateMcpServerOptions](
+		"McpServers", "Create",
+	).
+		withDefaultOpts(func() *CreateMcpServerOptions {
+			return &CreateMcpServerOptions{
+				name: mcpServersTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateMcpServerOptions]{
+				Name:        case_McpServers_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateMcpServerOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateMcpServerOptions]{
+				Name:        case_McpServers_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateMcpServerOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateMcpServerOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateMcpServerOptions]{
+				Name:        case_McpServers_validation_Create_FromSpecification_NoDoubleDollarQuotes,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateMcpServerOptions", "FromSpecification"),
+				DefaultModify: func(opts *CreateMcpServerOptions) {
+					opts.FromSpecification = "$$"
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateMcpServerOptions]{
+				Name:           case_McpServers_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateMcpServerOptions]{
+				Name: case_McpServers_sql_Create_all,
+			},
+		),
+	Drop: newSdkTestCtx[*DropMcpServerOptions](
+		"McpServers", "Drop",
+	).
+		withDefaultOpts(func() *DropMcpServerOptions {
+			return &DropMcpServerOptions{
+				name: mcpServersTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropMcpServerOptions]{
+				Name:        case_McpServers_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropMcpServerOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropMcpServerOptions]{
+				Name:           case_McpServers_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropMcpServerOptions]{
+				Name: case_McpServers_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowMcpServerOptions](
+		"McpServers", "Show",
+	).
+		withDefaultOpts(func() *ShowMcpServerOptions {
+			return &ShowMcpServerOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowMcpServerOptions]{
+				Name:           case_McpServers_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowMcpServerOptions]{
+				Name: case_McpServers_sql_Show_all,
+			},
+			sqlCase[*ShowMcpServerOptions]{
+				Name: case_McpServers_sql_Show_Like,
+			},
+			sqlCase[*ShowMcpServerOptions]{
+				Name: case_McpServers_sql_Show_In,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeMcpServerOptions](
+		"McpServers", "Describe",
+	).
+		withDefaultOpts(func() *DescribeMcpServerOptions {
+			return &DescribeMcpServerOptions{
+				name: mcpServersTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeMcpServerOptions]{
+				Name:        case_McpServers_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeMcpServerOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeMcpServerOptions]{
+				Name:           case_McpServers_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestMcpServers_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	spec := `tools:
-  - title: "SQL Execution Tool"
-    name: "sql_exec_tool"
-    type: "SYSTEM_EXECUTE_SQL"
-    description: "Unit test."
-`
-	// Minimal valid CreateMcpServerOptions
-	defaultOpts := func() *CreateMcpServerOptions {
-		return &CreateMcpServerOptions{
-			name:              id,
-			FromSpecification: spec,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateMcpServerOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateMcpServerOptions", "OrReplace", "IfNotExists"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.FromSpecification]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.FromSpecification = "spec$$with_double_dollar_quotes"
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateMcpServerOptions", "FromSpecification"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE MCP SERVER %s FROM SPECIFICATION $$%s$$", id.FullyQualifiedName(), spec)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts,
-			"CREATE OR REPLACE MCP SERVER %s COMMENT = 'some comment' FROM SPECIFICATION $$%s$$",
-			id.FullyQualifiedName(), spec)
-	})
+	mcpServersTests.Create.RunValidationCases(t)
+	mcpServersTests.Create.RunSqlCases(t)
 }
 
 func TestMcpServers_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropMcpServerOptions
-	defaultOpts := func() *DropMcpServerOptions {
-		return &DropMcpServerOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropMcpServerOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP MCP SERVER %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP MCP SERVER IF EXISTS %s", id.FullyQualifiedName())
-	})
+	mcpServersTests.Drop.RunValidationCases(t)
+	mcpServersTests.Drop.RunSqlCases(t)
 }
 
 func TestMcpServers_Show(t *testing.T) {
-	// added manually
-	id := randomSchemaObjectIdentifier()
-
-	// Minimal valid ShowMcpServerOptions
-	defaultOpts := func() *ShowMcpServerOptions {
-		return &ShowMcpServerOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowMcpServerOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW MCP SERVERS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("like-pattern"),
-		}
-		opts.In = &In{
-			Schema: id.SchemaId(),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW MCP SERVERS LIKE 'like-pattern' IN SCHEMA %s", id.SchemaId().FullyQualifiedName())
-	})
+	mcpServersTests.Show.RunValidationCases(t)
+	mcpServersTests.Show.RunSqlCases(t)
 }
 
 func TestMcpServers_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeMcpServerOptions
-	defaultOpts := func() *DescribeMcpServerOptions {
-		return &DescribeMcpServerOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeMcpServerOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE MCP SERVER %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	mcpServersTests.Describe.RunValidationCases(t)
+	mcpServersTests.Describe.RunSqlCases(t)
 }

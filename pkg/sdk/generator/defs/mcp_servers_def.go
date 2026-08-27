@@ -67,4 +67,5 @@ var mcpServersDef = g.NewInterface(
 			SQL("MCP SERVER").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)
