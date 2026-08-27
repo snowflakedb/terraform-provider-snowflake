@@ -6,236 +6,264 @@ import (
 	"testing"
 )
 
+var passwordPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_PasswordPolicies_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_PasswordPolicies_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_PasswordPolicies_sql_Create_basic                                        testCaseName = "sql_Create_basic"
+	case_PasswordPolicies_sql_Create_all                                          testCaseName = "sql_Create_all"
+	case_PasswordPolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_PasswordPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_PasswordPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_PasswordPolicies_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_PasswordPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_PasswordPolicies_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
+	case_PasswordPolicies_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_PasswordPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
+	case_PasswordPolicies_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_PasswordPolicies_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
+	case_PasswordPolicies_sql_Drop_all                                            testCaseName = "sql_Drop_all"
+	case_PasswordPolicies_sql_Show_basic                                          testCaseName = "sql_Show_basic"
+	case_PasswordPolicies_sql_Show_all                                            testCaseName = "sql_Show_all"
+	case_PasswordPolicies_sql_Show_Like                                           testCaseName = "sql_Show_Like"
+	case_PasswordPolicies_sql_Show_In                                             testCaseName = "sql_Show_In"
+	case_PasswordPolicies_sql_Show_On                                             testCaseName = "sql_Show_On"
+	case_PasswordPolicies_sql_Show_StartsWith                                     testCaseName = "sql_Show_StartsWith"
+	case_PasswordPolicies_sql_Show_Limit                                          testCaseName = "sql_Show_Limit"
+	case_PasswordPolicies_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_PasswordPolicies_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+)
+
+type PasswordPoliciesTestsContext struct {
+	Create   *sdkTestCtx[*CreatePasswordPolicyOptions]
+	Alter    *sdkTestCtx[*AlterPasswordPolicyOptions]
+	Drop     *sdkTestCtx[*DropPasswordPolicyOptions]
+	Show     *sdkTestCtx[*ShowPasswordPolicyOptions]
+	Describe *sdkTestCtx[*DescribePasswordPolicyOptions]
+}
+
+var passwordPoliciesTests = PasswordPoliciesTestsContext{
+	Create: newSdkTestCtx[*CreatePasswordPolicyOptions](
+		"PasswordPolicies", "Create",
+	).
+		withDefaultOpts(func() *CreatePasswordPolicyOptions {
+			return &CreatePasswordPolicyOptions{
+				name: passwordPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreatePasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreatePasswordPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreatePasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreatePasswordPolicyOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreatePasswordPolicyOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreatePasswordPolicyOptions]{
+				Name:           case_PasswordPolicies_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreatePasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterPasswordPolicyOptions](
+		"PasswordPolicies", "Alter",
+	).
+		withDefaultOpts(func() *AlterPasswordPolicyOptions {
+			return &AlterPasswordPolicyOptions{
+				name: passwordPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterPasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterPasswordPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterPasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "RenameTo"),
+				DefaultModify: func(opts *AlterPasswordPolicyOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.RenameTo = nil
+				},
+			},
+			validationCase[*AlterPasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "RenameTo"),
+				DefaultModify: func(opts *AlterPasswordPolicyOptions) {
+					opts.Set = &PasswordPolicySet{}
+					opts.Unset = &PasswordPolicyUnset{}
+				},
+			},
+			validationCase[*AlterPasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterPasswordPolicyOptions.Set", "PasswordMinLength", "PasswordMaxLength", "PasswordMinUpperCaseChars", "PasswordMinLowerCaseChars", "PasswordMinNumericChars", "PasswordMinSpecialChars", "PasswordMinAgeDays", "PasswordMaxAgeDays", "PasswordMaxRetries", "PasswordLockoutTimeMins", "PasswordHistory", "Comment"),
+				DefaultModify: func(opts *AlterPasswordPolicyOptions) {
+					opts.Set = &PasswordPolicySet{}
+					opts.Set.PasswordMinLength = nil
+					opts.Set.PasswordMaxLength = nil
+					opts.Set.PasswordMinUpperCaseChars = nil
+					opts.Set.PasswordMinLowerCaseChars = nil
+					opts.Set.PasswordMinNumericChars = nil
+					opts.Set.PasswordMinSpecialChars = nil
+					opts.Set.PasswordMinAgeDays = nil
+					opts.Set.PasswordMaxAgeDays = nil
+					opts.Set.PasswordMaxRetries = nil
+					opts.Set.PasswordLockoutTimeMins = nil
+					opts.Set.PasswordHistory = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterPasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterPasswordPolicyOptions.Unset", "PasswordMinLength", "PasswordMaxLength", "PasswordMinUpperCaseChars", "PasswordMinLowerCaseChars", "PasswordMinNumericChars", "PasswordMinSpecialChars", "PasswordMinAgeDays", "PasswordMaxAgeDays", "PasswordMaxRetries", "PasswordLockoutTimeMins", "PasswordHistory", "Comment"),
+				DefaultModify: func(opts *AlterPasswordPolicyOptions) {
+					opts.Unset = &PasswordPolicyUnset{}
+					opts.Unset.PasswordMinLength = nil
+					opts.Unset.PasswordMaxLength = nil
+					opts.Unset.PasswordMinUpperCaseChars = nil
+					opts.Unset.PasswordMinLowerCaseChars = nil
+					opts.Unset.PasswordMinNumericChars = nil
+					opts.Unset.PasswordMinSpecialChars = nil
+					opts.Unset.PasswordMinAgeDays = nil
+					opts.Unset.PasswordMaxAgeDays = nil
+					opts.Unset.PasswordMaxRetries = nil
+					opts.Unset.PasswordLockoutTimeMins = nil
+					opts.Unset.PasswordHistory = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Alter_Set,
+			},
+			sqlCase[*AlterPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Alter_Unset,
+			},
+			sqlCase[*AlterPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Alter_RenameTo,
+			},
+		),
+	Drop: newSdkTestCtx[*DropPasswordPolicyOptions](
+		"PasswordPolicies", "Drop",
+	).
+		withDefaultOpts(func() *DropPasswordPolicyOptions {
+			return &DropPasswordPolicyOptions{
+				name: passwordPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropPasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropPasswordPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropPasswordPolicyOptions]{
+				Name:           case_PasswordPolicies_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowPasswordPolicyOptions](
+		"PasswordPolicies", "Show",
+	).
+		withDefaultOpts(func() *ShowPasswordPolicyOptions {
+			return &ShowPasswordPolicyOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowPasswordPolicyOptions]{
+				Name:           case_PasswordPolicies_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Show_all,
+			},
+			sqlCase[*ShowPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Show_Like,
+			},
+			sqlCase[*ShowPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Show_In,
+			},
+			sqlCase[*ShowPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Show_On,
+			},
+			sqlCase[*ShowPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowPasswordPolicyOptions]{
+				Name: case_PasswordPolicies_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribePasswordPolicyOptions](
+		"PasswordPolicies", "Describe",
+	).
+		withDefaultOpts(func() *DescribePasswordPolicyOptions {
+			return &DescribePasswordPolicyOptions{
+				name: passwordPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribePasswordPolicyOptions]{
+				Name:        case_PasswordPolicies_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribePasswordPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribePasswordPolicyOptions]{
+				Name:           case_PasswordPolicies_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestPasswordPolicies_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreatePasswordPolicyOptions
-	defaultOpts := func() *CreatePasswordPolicyOptions {
-		return &CreatePasswordPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreatePasswordPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := &CreatePasswordPolicyOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreatePasswordPolicyOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE PASSWORD POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.PasswordMinLength = Int(10)
-		opts.PasswordMaxLength = Int(20)
-		opts.PasswordMinUpperCaseChars = Int(1)
-		opts.PasswordMinLowerCaseChars = Int(1)
-		opts.PasswordMinNumericChars = Int(1)
-		opts.PasswordMinSpecialChars = Int(1)
-		opts.PasswordMinAgeDays = Int(30)
-		opts.PasswordMaxAgeDays = Int(30)
-		opts.PasswordMaxRetries = Int(5)
-		opts.PasswordLockoutTimeMins = Int(30)
-		opts.PasswordHistory = Int(15)
-		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE PASSWORD POLICY %s PASSWORD_MIN_LENGTH = 10 PASSWORD_MAX_LENGTH = 20 PASSWORD_MIN_UPPER_CASE_CHARS = 1 PASSWORD_MIN_LOWER_CASE_CHARS = 1 PASSWORD_MIN_NUMERIC_CHARS = 1 PASSWORD_MIN_SPECIAL_CHARS = 1 PASSWORD_MIN_AGE_DAYS = 30 PASSWORD_MAX_AGE_DAYS = 30 PASSWORD_MAX_RETRIES = 5 PASSWORD_LOCKOUT_TIME_MINS = 30 PASSWORD_HISTORY = 15 COMMENT = 'test comment'`, id.FullyQualifiedName())
-	})
+	passwordPoliciesTests.Create.RunValidationCases(t)
+	passwordPoliciesTests.Create.RunSqlCases(t)
 }
 
 func TestPasswordPolicies_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterPasswordPolicyOptions
-	defaultOpts := func() *AlterPasswordPolicyOptions {
-		return &AlterPasswordPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterPasswordPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := &AlterPasswordPolicyOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPasswordPolicyOptions", "Set", "Unset", "RenameTo"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.PasswordMinLength opts.Set.PasswordMaxLength opts.Set.PasswordMinUpperCaseChars opts.Set.PasswordMinLowerCaseChars opts.Set.PasswordMinNumericChars opts.Set.PasswordMinSpecialChars opts.Set.PasswordMinAgeDays opts.Set.PasswordMaxAgeDays opts.Set.PasswordMaxRetries opts.Set.PasswordLockoutTimeMins opts.Set.PasswordHistory opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &PasswordPolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterPasswordPolicyOptions.Set", "PasswordMinLength", "PasswordMaxLength", "PasswordMinUpperCaseChars", "PasswordMinLowerCaseChars", "PasswordMinNumericChars", "PasswordMinSpecialChars", "PasswordMinAgeDays", "PasswordMaxAgeDays", "PasswordMaxRetries", "PasswordLockoutTimeMins", "PasswordHistory", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.PasswordMinLength opts.Unset.PasswordMaxLength opts.Unset.PasswordMinUpperCaseChars opts.Unset.PasswordMinLowerCaseChars opts.Unset.PasswordMinNumericChars opts.Unset.PasswordMinSpecialChars opts.Unset.PasswordMinAgeDays opts.Unset.PasswordMaxAgeDays opts.Unset.PasswordMaxRetries opts.Unset.PasswordLockoutTimeMins opts.Unset.PasswordHistory opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &PasswordPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterPasswordPolicyOptions.Unset", "PasswordMinLength", "PasswordMaxLength", "PasswordMinUpperCaseChars", "PasswordMinLowerCaseChars", "PasswordMinNumericChars", "PasswordMinSpecialChars", "PasswordMinAgeDays", "PasswordMaxAgeDays", "PasswordMaxRetries", "PasswordLockoutTimeMins", "PasswordHistory", "Comment"))
-	})
-
-	t.Run("rename", func(t *testing.T) {
-		newID := randomSchemaObjectIdentifierInSchema(id.SchemaId())
-		opts := defaultOpts()
-		opts.RenameTo = &newID
-		assertOptsValidAndSQLEquals(t, opts, "ALTER PASSWORD POLICY %s RENAME TO %s", id.FullyQualifiedName(), newID.FullyQualifiedName())
-	})
-
-	t.Run("set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &PasswordPolicySet{
-			PasswordMinLength:         Int(10),
-			PasswordMaxLength:         Int(20),
-			PasswordMinUpperCaseChars: Int(1),
-			PasswordMinLowerCaseChars: Int(1),
-			PasswordMinNumericChars:   Int(1),
-			PasswordMinSpecialChars:   Int(1),
-			PasswordMinAgeDays:        Int(30),
-			PasswordMaxAgeDays:        Int(30),
-			PasswordMaxRetries:        Int(5),
-			PasswordLockoutTimeMins:   Int(30),
-			PasswordHistory:           Int(15),
-			Comment:                   String("test comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER PASSWORD POLICY %s SET PASSWORD_MIN_LENGTH = 10, PASSWORD_MAX_LENGTH = 20, PASSWORD_MIN_UPPER_CASE_CHARS = 1, PASSWORD_MIN_LOWER_CASE_CHARS = 1, PASSWORD_MIN_NUMERIC_CHARS = 1, PASSWORD_MIN_SPECIAL_CHARS = 1, PASSWORD_MIN_AGE_DAYS = 30, PASSWORD_MAX_AGE_DAYS = 30, PASSWORD_MAX_RETRIES = 5, PASSWORD_LOCKOUT_TIME_MINS = 30, PASSWORD_HISTORY = 15, COMMENT = 'test comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &PasswordPolicyUnset{
-			PasswordMinLength:         Bool(true),
-			PasswordMaxLength:         Bool(true),
-			PasswordMinUpperCaseChars: Bool(true),
-			PasswordMinLowerCaseChars: Bool(true),
-			PasswordMinNumericChars:   Bool(true),
-			PasswordMinSpecialChars:   Bool(true),
-			PasswordMinAgeDays:        Bool(true),
-			PasswordMaxAgeDays:        Bool(true),
-			PasswordMaxRetries:        Bool(true),
-			PasswordLockoutTimeMins:   Bool(true),
-			PasswordHistory:           Bool(true),
-			Comment:                   Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER PASSWORD POLICY %s UNSET PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_UPPER_CASE_CHARS, PASSWORD_MIN_LOWER_CASE_CHARS, PASSWORD_MIN_NUMERIC_CHARS, PASSWORD_MIN_SPECIAL_CHARS, PASSWORD_MIN_AGE_DAYS, PASSWORD_MAX_AGE_DAYS, PASSWORD_MAX_RETRIES, PASSWORD_LOCKOUT_TIME_MINS, PASSWORD_HISTORY, COMMENT", id.FullyQualifiedName())
-	})
+	passwordPoliciesTests.Alter.RunValidationCases(t)
+	passwordPoliciesTests.Alter.RunSqlCases(t)
 }
 
 func TestPasswordPolicies_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropPasswordPolicyOptions
-	defaultOpts := func() *DropPasswordPolicyOptions {
-		return &DropPasswordPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropPasswordPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := &DropPasswordPolicyOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP PASSWORD POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP PASSWORD POLICY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	passwordPoliciesTests.Drop.RunValidationCases(t)
+	passwordPoliciesTests.Drop.RunSqlCases(t)
 }
 
 func TestPasswordPolicies_Show(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid ShowPasswordPolicyOptions
-	defaultOpts := func() *ShowPasswordPolicyOptions {
-		return &ShowPasswordPolicyOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowPasswordPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String(id.Name())}
-		opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES LIKE '%s' IN SCHEMA %s", id.Name(), id.SchemaId().FullyQualifiedName())
-	})
-
-	t.Run("with like and in account", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String(id.Name())}
-		opts.In = &ExtendedIn{In: In{Account: Bool(true)}}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES LIKE '%s' IN ACCOUNT", id.Name())
-	})
-
-	t.Run("with like and in database", func(t *testing.T) {
-		databaseIdentifier := NewAccountObjectIdentifier(id.DatabaseName())
-		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String(id.Name())}
-		opts.In = &ExtendedIn{In: In{Database: databaseIdentifier}}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES LIKE '%s' IN DATABASE %s", id.Name(), databaseIdentifier.FullyQualifiedName())
-	})
-
-	t.Run("with limit", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{Rows: Int(10)}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW PASSWORD POLICIES LIMIT 10")
-	})
+	passwordPoliciesTests.Show.RunValidationCases(t)
+	passwordPoliciesTests.Show.RunSqlCases(t)
 }
 
 func TestPasswordPolicies_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribePasswordPolicyOptions
-	defaultOpts := func() *DescribePasswordPolicyOptions {
-		return &DescribePasswordPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribePasswordPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := &DescribePasswordPolicyOptions{}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE PASSWORD POLICY %s", id.FullyQualifiedName())
-	})
+	passwordPoliciesTests.Describe.RunValidationCases(t)
+	passwordPoliciesTests.Describe.RunSqlCases(t)
 }

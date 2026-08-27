@@ -145,4 +145,5 @@ var passwordPoliciesDef = g.NewInterface(
 			Number("PasswordLockoutTimeMins").
 			Number("PasswordHistory"),
 	).
-	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "*PasswordPolicyDetails", "error")
+	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "*PasswordPolicyDetails", "error").
+	WithEnabledGenerationParts(g.PartUnitTests)
