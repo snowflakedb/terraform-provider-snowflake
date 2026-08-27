@@ -34,6 +34,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.AccountRole().Schema,
 	},
 	{
+		name:   "AccountPasswordPolicyAttachment",
+		schema: resources.AccountPasswordPolicyAttachment().Schema,
+	},
+	{
 		name:   "AccountAuthenticationPolicyAttachment",
 		schema: resources.AccountAuthenticationPolicyAttachment().Schema,
 	},
@@ -144,6 +148,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "Execute",
 		schema: resources.Execute().Schema,
+	},
+	{
+		name:   "EmailNotificationIntegration",
+		schema: resources.EmailNotificationIntegration().Schema,
 	},
 	{
 		name:   "ExternalAzureStage",
@@ -280,6 +288,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "NetworkPolicy",
 		schema: resources.NetworkPolicy().Schema,
+	},
+	{
+		name:   "NetworkPolicyAttachment",
+		schema: resources.NetworkPolicyAttachment().Schema,
 	},
 	{
 		name:   "Notebook",
@@ -472,6 +484,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "UserSessionPolicyAttachment",
 		schema: resources.UserSessionPolicyAttachment().Schema,
+	},
+	{
+		name:   "UserPasswordPolicyAttachment",
+		schema: resources.UserPasswordPolicyAttachment().Schema,
 	},
 	{
 		name:   "TableStorageLifecyclePolicyAttachment",

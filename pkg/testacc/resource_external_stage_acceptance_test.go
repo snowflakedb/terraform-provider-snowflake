@@ -3,9 +3,10 @@
 package testacc
 
 import (
-	"fmt"
 	"testing"
 
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -13,6 +14,10 @@ import (
 
 func TestAcc_ExternalStage(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	stageModel := model.StageWithId("test", id).
+		WithUrl("s3://com.example.bucket/prefix").
+		WithComment("Terraform acceptance test")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -22,7 +27,7 @@ func TestAcc_ExternalStage(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Stage),
 		Steps: []resource.TestStep{
 			{
-				Config: externalStageConfig(id.Name(), TestDatabaseName, TestSchemaName),
+				Config: accconfig.FromModels(t, stageModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_stage.test", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_stage.test", "fully_qualified_name", id.FullyQualifiedName()),
@@ -33,16 +38,4 @@ func TestAcc_ExternalStage(t *testing.T) {
 			},
 		},
 	})
-}
-
-func externalStageConfig(n, databaseName, schemaName string) string {
-	return fmt.Sprintf(`
-resource "snowflake_stage" "test" {
-	name = "%v"
-	url = "s3://com.example.bucket/prefix"
-	database = "%s"
-	schema = "%s"
-	comment = "Terraform acceptance test"
-}
-`, n, databaseName, schemaName)
 }

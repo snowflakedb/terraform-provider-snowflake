@@ -3,16 +3,21 @@
 package testacc
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 func TestAcc_AccountPasswordPolicyAttachment_BasicUseCase(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	testClient().EnsureValidNonProdAccountIsUsed(t)
+
+	passwordPolicy, passwordPolicyCleanup := testClient().PasswordPolicy.CreatePasswordPolicy(t)
+	t.Cleanup(passwordPolicyCleanup)
+
+	attachmentModel := model.AccountPasswordPolicyAttachment("att", passwordPolicy.ID().FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -22,7 +27,7 @@ func TestAcc_AccountPasswordPolicyAttachment_BasicUseCase(t *testing.T) {
 		CheckDestroy: CheckAccountPasswordPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
 			{
-				Config: accountPasswordPolicyAttachmentConfig(id),
+				Config: accconfig.FromModels(t, attachmentModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("snowflake_account_password_policy_attachment.att", "id"),
 				),
@@ -42,19 +47,4 @@ func TestAcc_AccountPasswordPolicyAttachment_BasicUseCase(t *testing.T) {
 			},
 		},
 	})
-}
-
-func accountPasswordPolicyAttachmentConfig(id sdk.SchemaObjectIdentifier) string {
-	s := `
-resource "snowflake_password_policy" "pa" {
-	database   = "%s"
-	schema     = "%s"
-	name       = "%v"
-}
-
-resource "snowflake_account_password_policy_attachment" "att" {
-	password_policy = snowflake_password_policy.pa.fully_qualified_name
-}
-`
-	return fmt.Sprintf(s, id.DatabaseName(), id.SchemaName(), id.Name())
 }
