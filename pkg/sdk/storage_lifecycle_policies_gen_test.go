@@ -10,278 +10,264 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StorageLifecyclePolicyArchiveTier]{"StorageLifecyclePolicyArchiveTier", AllStorageLifecyclePolicyArchiveTiers, ToStorageLifecyclePolicyArchiveTier})
 }
 
+var storageLifecyclePoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_StorageLifecyclePolicies_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_StorageLifecyclePolicies_validation_Create_args_ValidateValueSet                 testCaseName = "validation_Create_args_ValidateValueSet"
+	case_StorageLifecyclePolicies_validation_Create_body_ValidateValueSet                 testCaseName = "validation_Create_body_ValidateValueSet"
+	case_StorageLifecyclePolicies_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_StorageLifecyclePolicies_sql_Create_basic                                        testCaseName = "sql_Create_basic"
+	case_StorageLifecyclePolicies_sql_Create_all                                          testCaseName = "sql_Create_all"
+	case_StorageLifecyclePolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_StorageLifecyclePolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_StorageLifecyclePolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_StorageLifecyclePolicies_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_StorageLifecyclePolicies_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_StorageLifecyclePolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
+	case_StorageLifecyclePolicies_sql_Alter_SetBody                                       testCaseName = "sql_Alter_SetBody"
+	case_StorageLifecyclePolicies_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
+	case_StorageLifecyclePolicies_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
+	case_StorageLifecyclePolicies_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_StorageLifecyclePolicies_sql_Alter_UnsetTags                                     testCaseName = "sql_Alter_UnsetTags"
+	case_StorageLifecyclePolicies_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_StorageLifecyclePolicies_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
+	case_StorageLifecyclePolicies_sql_Drop_all                                            testCaseName = "sql_Drop_all"
+	case_StorageLifecyclePolicies_sql_Show_basic                                          testCaseName = "sql_Show_basic"
+	case_StorageLifecyclePolicies_sql_Show_all                                            testCaseName = "sql_Show_all"
+	case_StorageLifecyclePolicies_sql_Show_Like                                           testCaseName = "sql_Show_Like"
+	case_StorageLifecyclePolicies_sql_Show_In                                             testCaseName = "sql_Show_In"
+	case_StorageLifecyclePolicies_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_StorageLifecyclePolicies_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+)
+
+type StorageLifecyclePoliciesTestsContext struct {
+	Create   *sdkTestCtx[*CreateStorageLifecyclePolicyOptions]
+	Alter    *sdkTestCtx[*AlterStorageLifecyclePolicyOptions]
+	Drop     *sdkTestCtx[*DropStorageLifecyclePolicyOptions]
+	Show     *sdkTestCtx[*ShowStorageLifecyclePolicyOptions]
+	Describe *sdkTestCtx[*DescribeStorageLifecyclePolicyOptions]
+}
+
+var storageLifecyclePoliciesTests = StorageLifecyclePoliciesTestsContext{
+	Create: newSdkTestCtx[*CreateStorageLifecyclePolicyOptions](
+		"StorageLifecyclePolicies", "Create",
+	).
+		withDefaultOpts(func() *CreateStorageLifecyclePolicyOptions {
+			return &CreateStorageLifecyclePolicyOptions{
+				name: storageLifecyclePoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateStorageLifecyclePolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Create_args_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateStorageLifecyclePolicyOptions", "args"),
+				DefaultModify: func(opts *CreateStorageLifecyclePolicyOptions) {
+					opts.args = nil
+				},
+			},
+			validationCase[*CreateStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Create_body_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateStorageLifecyclePolicyOptions", "body"),
+				DefaultModify: func(opts *CreateStorageLifecyclePolicyOptions) {
+					opts.body = ""
+				},
+			},
+			validationCase[*CreateStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateStorageLifecyclePolicyOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateStorageLifecyclePolicyOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateStorageLifecyclePolicyOptions]{
+				Name:           case_StorageLifecyclePolicies_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterStorageLifecyclePolicyOptions](
+		"StorageLifecyclePolicies", "Alter",
+	).
+		withDefaultOpts(func() *AlterStorageLifecyclePolicyOptions {
+			return &AlterStorageLifecyclePolicyOptions{
+				name: storageLifecyclePoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterStorageLifecyclePolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterStorageLifecyclePolicyOptions", "RenameTo", "SetBody", "Set", "SetTags", "Unset", "UnsetTags"),
+				DefaultModify: func(opts *AlterStorageLifecyclePolicyOptions) {
+					opts.RenameTo = nil
+					opts.SetBody = nil
+					opts.Set = nil
+					opts.SetTags = nil
+					opts.Unset = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterStorageLifecyclePolicyOptions", "RenameTo", "SetBody", "Set", "SetTags", "Unset", "UnsetTags"),
+				DefaultModify: func(opts *AlterStorageLifecyclePolicyOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.SetBody = new("foo")
+				},
+			},
+			validationCase[*AlterStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageLifecyclePolicyOptions.Set", "ArchiveTier", "ArchiveForDays", "Comment"),
+				DefaultModify: func(opts *AlterStorageLifecyclePolicyOptions) {
+					opts.Set = &StorageLifecyclePolicySet{}
+					opts.Set.ArchiveTier = nil
+					opts.Set.ArchiveForDays = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStorageLifecyclePolicyOptions.Unset", "ArchiveForDays", "Comment"),
+				DefaultModify: func(opts *AlterStorageLifecyclePolicyOptions) {
+					opts.Unset = &StorageLifecyclePolicyUnset{}
+					opts.Unset.ArchiveForDays = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Alter_SetBody,
+			},
+			sqlCase[*AlterStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Alter_Set,
+			},
+			sqlCase[*AlterStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Alter_Unset,
+			},
+			sqlCase[*AlterStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropStorageLifecyclePolicyOptions](
+		"StorageLifecyclePolicies", "Drop",
+	).
+		withDefaultOpts(func() *DropStorageLifecyclePolicyOptions {
+			return &DropStorageLifecyclePolicyOptions{
+				name: storageLifecyclePoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropStorageLifecyclePolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropStorageLifecyclePolicyOptions]{
+				Name:           case_StorageLifecyclePolicies_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowStorageLifecyclePolicyOptions](
+		"StorageLifecyclePolicies", "Show",
+	).
+		withDefaultOpts(func() *ShowStorageLifecyclePolicyOptions {
+			return &ShowStorageLifecyclePolicyOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowStorageLifecyclePolicyOptions]{
+				Name:           case_StorageLifecyclePolicies_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Show_all,
+			},
+			sqlCase[*ShowStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Show_Like,
+			},
+			sqlCase[*ShowStorageLifecyclePolicyOptions]{
+				Name: case_StorageLifecyclePolicies_sql_Show_In,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeStorageLifecyclePolicyOptions](
+		"StorageLifecyclePolicies", "Describe",
+	).
+		withDefaultOpts(func() *DescribeStorageLifecyclePolicyOptions {
+			return &DescribeStorageLifecyclePolicyOptions{
+				name: storageLifecyclePoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeStorageLifecyclePolicyOptions]{
+				Name:        case_StorageLifecyclePolicies_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeStorageLifecyclePolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeStorageLifecyclePolicyOptions]{
+				Name:           case_StorageLifecyclePolicies_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestStorageLifecyclePolicies_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateStorageLifecyclePolicyOptions
-	defaultOpts := func() *CreateStorageLifecyclePolicyOptions {
-		return &CreateStorageLifecyclePolicyOptions{
-			// adjusted manually
-			name: id,
-			args: []CreateStorageLifecyclePolicyArgs{{
-				Name:     "n",
-				DataType: dataTypeVarchar,
-			}},
-			body: "true",
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateStorageLifecyclePolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: [opts.args] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.args = []CreateStorageLifecyclePolicyArgs{}
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateStorageLifecyclePolicyOptions", "args"))
-	})
-
-	t.Run("validation: [opts.body] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.body = ""
-		assertOptsInvalidJoinedErrors(t, opts, errNotSet("CreateStorageLifecyclePolicyOptions", "body"))
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = new(true)
-		opts.IfNotExists = new(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateStorageLifecyclePolicyOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE LIFECYCLE POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
-	})
-
-	t.Run("two parameters", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.args = []CreateStorageLifecyclePolicyArgs{{
-			Name:     "n1",
-			DataType: dataTypeVarchar,
-		}, {
-			Name:     "n2",
-			DataType: dataTypeVarchar,
-		}}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STORAGE LIFECYCLE POLICY %s AS ("n1" VARCHAR(16777216), "n2" VARCHAR(16777216)) RETURNS BOOLEAN -> true`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = new(true)
-		opts.ArchiveTier = new(StorageLifecyclePolicyArchiveTierCold)
-		opts.ArchiveForDays = new(365)
-		opts.Comment = new("some comment")
-		opts.Tag = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE STORAGE LIFECYCLE POLICY %s AS ("n" VARCHAR(16777216)) RETURNS BOOLEAN -> true ARCHIVE_TIER = COLD ARCHIVE_FOR_DAYS = 365 COMMENT = 'some comment' TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName())
-	})
+	storageLifecyclePoliciesTests.Create.RunValidationCases(t)
+	storageLifecyclePoliciesTests.Create.RunSqlCases(t)
 }
 
 func TestStorageLifecyclePolicies_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterStorageLifecyclePolicyOptions
-	defaultOpts := func() *AlterStorageLifecyclePolicyOptions {
-		return &AlterStorageLifecyclePolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterStorageLifecyclePolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetBody opts.Set opts.SetTags opts.Unset opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStorageLifecyclePolicyOptions", "RenameTo", "SetBody", "Set", "SetTags", "Unset", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetBody opts.Set opts.SetTags opts.Unset opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageLifecyclePolicySet{
-			Comment: new("some comment"),
-		}
-		opts.Unset = &StorageLifecyclePolicyUnset{
-			Comment: new(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStorageLifecyclePolicyOptions", "RenameTo", "SetBody", "Set", "SetTags", "Unset", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.ArchiveTier opts.Set.ArchiveForDays opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageLifecyclePolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageLifecyclePolicyOptions.Set", "ArchiveTier", "ArchiveForDays", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.ArchiveForDays opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageLifecyclePolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStorageLifecyclePolicyOptions.Unset", "ArchiveForDays", "Comment"))
-	})
-
-	// all variants added manually
-	t.Run("rename", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomSchemaObjectIdentifier()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE LIFECYCLE POLICY %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("set body", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetBody = new("true")
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE LIFECYCLE POLICY %s SET BODY -> true", id.FullyQualifiedName())
-	})
-
-	t.Run("set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StorageLifecyclePolicySet{
-			ArchiveTier:    new(StorageLifecyclePolicyArchiveTierCool),
-			ArchiveForDays: new(120),
-			Comment:        new("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE LIFECYCLE POLICY %s SET ARCHIVE_TIER = COOL ARCHIVE_FOR_DAYS = 120 COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STORAGE LIFECYCLE POLICY %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StorageLifecyclePolicyUnset{
-			ArchiveForDays: new(true),
-			Comment:        new(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER STORAGE LIFECYCLE POLICY %s UNSET ARCHIVE_FOR_DAYS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STORAGE LIFECYCLE POLICY %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	storageLifecyclePoliciesTests.Alter.RunValidationCases(t)
+	storageLifecyclePoliciesTests.Alter.RunSqlCases(t)
 }
 
 func TestStorageLifecyclePolicies_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropStorageLifecyclePolicyOptions
-	defaultOpts := func() *DropStorageLifecyclePolicyOptions {
-		return &DropStorageLifecyclePolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropStorageLifecyclePolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP STORAGE LIFECYCLE POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = new(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP STORAGE LIFECYCLE POLICY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	storageLifecyclePoliciesTests.Drop.RunValidationCases(t)
+	storageLifecyclePoliciesTests.Drop.RunSqlCases(t)
 }
 
 func TestStorageLifecyclePolicies_Show(t *testing.T) {
-	// Minimal valid ShowStorageLifecyclePolicyOptions
-	defaultOpts := func() *ShowStorageLifecyclePolicyOptions {
-		return &ShowStorageLifecyclePolicyOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowStorageLifecyclePolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW STORAGE LIFECYCLE POLICIES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("like-pattern"),
-		}
-		opts.In = &In{
-			Account: new(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW STORAGE LIFECYCLE POLICIES LIKE 'like-pattern' IN ACCOUNT")
-	})
+	storageLifecyclePoliciesTests.Show.RunValidationCases(t)
+	storageLifecyclePoliciesTests.Show.RunSqlCases(t)
 }
 
 func TestStorageLifecyclePolicies_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeStorageLifecyclePolicyOptions
-	defaultOpts := func() *DescribeStorageLifecyclePolicyOptions {
-		return &DescribeStorageLifecyclePolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeStorageLifecyclePolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE STORAGE LIFECYCLE POLICY %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	storageLifecyclePoliciesTests.Describe.RunValidationCases(t)
+	storageLifecyclePoliciesTests.Describe.RunSqlCases(t)
 }
