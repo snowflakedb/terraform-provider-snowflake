@@ -39,7 +39,6 @@ const (
 	case_OpenflowDeployments_sql_Show_basic                                                         testCaseName = "sql_Show_basic"
 	case_OpenflowDeployments_sql_Show_all                                                           testCaseName = "sql_Show_all"
 	case_OpenflowDeployments_sql_Show_Like                                                          testCaseName = "sql_Show_Like"
-	case_OpenflowDeployments_sql_Show_In                                                            testCaseName = "sql_Show_In"
 	case_OpenflowDeployments_sql_Show_StartsWith                                                    testCaseName = "sql_Show_StartsWith"
 	case_OpenflowDeployments_sql_Show_Limit                                                         testCaseName = "sql_Show_Limit"
 	case_OpenflowDeployments_validation_Describe_name_ValidIdentifier                               testCaseName = "validation_Describe_name_ValidIdentifier"
@@ -242,9 +241,6 @@ var openflowDeploymentsTests = OpenflowDeploymentsTestsContext{
 			},
 			sqlCase[*ShowOpenflowDeploymentOptions]{
 				Name: case_OpenflowDeployments_sql_Show_Like,
-			},
-			sqlCase[*ShowOpenflowDeploymentOptions]{
-				Name: case_OpenflowDeployments_sql_Show_In,
 			},
 			sqlCase[*ShowOpenflowDeploymentOptions]{
 				Name: case_OpenflowDeployments_sql_Show_StartsWith,

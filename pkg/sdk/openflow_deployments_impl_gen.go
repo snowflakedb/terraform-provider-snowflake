@@ -114,8 +114,8 @@ func (r *AlterOpenflowDeploymentRequest) toOpts() *AlterOpenflowDeploymentOption
 	}
 	if r.Unset != nil {
 		opts.Unset = &OpenflowDeploymentUnset{
-			Comment:     r.Unset.Comment,
 			DisplayName: r.Unset.DisplayName,
+			Comment:     r.Unset.Comment,
 			EventTable:  r.Unset.EventTable,
 		}
 	}
@@ -133,7 +133,6 @@ func (r *DropOpenflowDeploymentRequest) toOpts() *DropOpenflowDeploymentOptions 
 func (r *ShowOpenflowDeploymentRequest) toOpts() *ShowOpenflowDeploymentOptions {
 	opts := &ShowOpenflowDeploymentOptions{
 		Like:       r.Like,
-		In:         r.In,
 		StartsWith: r.StartsWith,
 		Limit:      r.Limit,
 	}

@@ -130,13 +130,13 @@ func NewOpenflowDeploymentUnsetRequest() *OpenflowDeploymentUnsetRequest {
 	return &s
 }
 
-func (s *OpenflowDeploymentUnsetRequest) WithComment(comment bool) *OpenflowDeploymentUnsetRequest {
-	s.Comment = &comment
+func (s *OpenflowDeploymentUnsetRequest) WithDisplayName(displayName bool) *OpenflowDeploymentUnsetRequest {
+	s.DisplayName = &displayName
 	return s
 }
 
-func (s *OpenflowDeploymentUnsetRequest) WithDisplayName(displayName bool) *OpenflowDeploymentUnsetRequest {
-	s.DisplayName = &displayName
+func (s *OpenflowDeploymentUnsetRequest) WithComment(comment bool) *OpenflowDeploymentUnsetRequest {
+	s.Comment = &comment
 	return s
 }
 
@@ -165,11 +165,6 @@ func NewShowOpenflowDeploymentRequest() *ShowOpenflowDeploymentRequest {
 
 func (s *ShowOpenflowDeploymentRequest) WithLike(like Like) *ShowOpenflowDeploymentRequest {
 	s.Like = &like
-	return s
-}
-
-func (s *ShowOpenflowDeploymentRequest) WithIn(in In) *ShowOpenflowDeploymentRequest {
-	s.In = &in
 	return s
 }
 

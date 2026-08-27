@@ -91,8 +91,8 @@ var openflowDeploymentsDef = g.NewInterface(
 		OptionalQueryStructField(
 			"Unset",
 			g.NewQueryStruct("OpenflowDeploymentUnset").
-				OptionalSQL("COMMENT").
 				OptionalSQL("DISPLAY_NAME").
+				OptionalSQL("COMMENT").
 				OptionalSQL("EVENT_TABLE").
 				WithValidation(g.AtLeastOneValueSet, "Comment", "DisplayName", "EventTable"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
@@ -128,7 +128,6 @@ var openflowDeploymentsDef = g.NewInterface(
 		Show().
 		SQL("OPENFLOW DEPLOYMENTS").
 		OptionalLike().
-		OptionalIn().
 		OptionalStartsWith().
 		OptionalLimitFrom(),
 	g.ShowByIDLikeFiltering,

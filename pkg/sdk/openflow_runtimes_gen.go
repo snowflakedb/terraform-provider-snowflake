@@ -132,7 +132,7 @@ type OpenflowRuntime struct {
 	InitiallySuspended         bool
 	DatabaseName               string
 	SchemaName                 string
-	ExecuteAsRole              string
+	ExecuteAsRole              *string
 	Key                        *string
 	Owner                      string
 	Comment                    *string
@@ -184,7 +184,7 @@ type OpenflowRuntimeDetails struct {
 	DisplayName                *string
 	ExternalAccessIntegrations []AccountObjectIdentifier
 	InitiallySuspended         bool
-	ExecuteAsRole              string
+	ExecuteAsRole              *string
 	Key                        *string
 	Owner                      string
 	Comment                    *string

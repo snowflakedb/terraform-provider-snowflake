@@ -137,7 +137,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Bool("initially_suspended").
 		Text("database_name").
 		Text("schema_name").
-		Field("execute_as_role", "sql.NullString", "string").
+		OptionalText("execute_as_role").
 		OptionalText("key").
 		Text("owner").
 		OptionalText("comment").
@@ -168,7 +168,7 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier", g.WithCustomParser("ParseOpenflowRuntimeExternalAccessIntegrations")).
 		Bool("initially_suspended").
-		Field("execute_as_role", "sql.NullString", "string").
+		OptionalText("execute_as_role").
 		OptionalText("key").
 		Text("owner").
 		OptionalText("comment").

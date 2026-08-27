@@ -189,7 +189,7 @@ func (r openflowRuntimeRow) convert() (*OpenflowRuntime, error) {
 			result.ExternalAccessIntegrations = v
 		}
 	}
-	mapNullStringToNonNullableField(&result.ExecuteAsRole, r.ExecuteAsRole)
+	mapNullString(&result.ExecuteAsRole, r.ExecuteAsRole)
 	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
 	return result, nil
@@ -221,7 +221,7 @@ func (r openflowRuntimeDetailsRow) convert() (*OpenflowRuntimeDetails, error) {
 			result.ExternalAccessIntegrations = v
 		}
 	}
-	mapNullStringToNonNullableField(&result.ExecuteAsRole, r.ExecuteAsRole)
+	mapNullString(&result.ExecuteAsRole, r.ExecuteAsRole)
 	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.ServerUrl, r.ServerUrl)

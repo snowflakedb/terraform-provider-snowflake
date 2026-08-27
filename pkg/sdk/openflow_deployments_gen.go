@@ -61,8 +61,8 @@ type OpenflowDeploymentSet struct {
 }
 
 type OpenflowDeploymentUnset struct {
-	Comment     *bool `ddl:"keyword" sql:"COMMENT"`
 	DisplayName *bool `ddl:"keyword" sql:"DISPLAY_NAME"`
+	Comment     *bool `ddl:"keyword" sql:"COMMENT"`
 	EventTable  *bool `ddl:"keyword" sql:"EVENT_TABLE"`
 }
 
@@ -79,7 +79,6 @@ type ShowOpenflowDeploymentOptions struct {
 	show                bool       `ddl:"static" sql:"SHOW"`
 	openflowDeployments bool       `ddl:"static" sql:"OPENFLOW DEPLOYMENTS"`
 	Like                *Like      `ddl:"keyword" sql:"LIKE"`
-	In                  *In        `ddl:"keyword" sql:"IN"`
 	StartsWith          *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
 	Limit               *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }

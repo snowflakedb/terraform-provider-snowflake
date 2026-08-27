@@ -61,8 +61,8 @@ func init() {
 			case_OpenflowDeployments_sql_Alter_Set,
 			func(opts *AlterOpenflowDeploymentOptions) {
 				opts.Set = &OpenflowDeploymentSet{
-					Comment:     new("set-comment"),
 					DisplayName: new("My Deployment"),
+					Comment:     new("set-comment"),
 					EventTable:  &OpenflowDeploymentEventTable{EventTable: &eventTableId},
 				}
 			},
@@ -73,12 +73,12 @@ func init() {
 			case_OpenflowDeployments_sql_Alter_Unset,
 			func(opts *AlterOpenflowDeploymentOptions) {
 				opts.Unset = &OpenflowDeploymentUnset{
-					Comment:     new(true),
 					DisplayName: new(true),
+					Comment:     new(true),
 					EventTable:  new(true),
 				}
 			},
-			"ALTER OPENFLOW DEPLOYMENT %s UNSET COMMENT, DISPLAY_NAME, EVENT_TABLE",
+			"ALTER OPENFLOW DEPLOYMENT %s UNSET DISPLAY_NAME, COMMENT, EVENT_TABLE",
 			id.FullyQualifiedName(),
 		)
 
@@ -140,11 +140,10 @@ func init() {
 			case_OpenflowDeployments_sql_Show_all,
 			func(opts *ShowOpenflowDeploymentOptions) {
 				opts.Like = &Like{Pattern: new("pattern")}
-				opts.In = &In{Account: new(true)}
 				opts.StartsWith = new("PROD_")
 				opts.Limit = &LimitFrom{Rows: new(5), From: new("PROD_A")}
 			},
-			"SHOW OPENFLOW DEPLOYMENTS LIKE 'pattern' IN ACCOUNT STARTS WITH 'PROD_' LIMIT 5 FROM 'PROD_A'",
+			"SHOW OPENFLOW DEPLOYMENTS LIKE 'pattern' STARTS WITH 'PROD_' LIMIT 5 FROM 'PROD_A'",
 		).
 		withModifyAndExpectedSqlf(
 			case_OpenflowDeployments_sql_Show_Like,
@@ -152,13 +151,6 @@ func init() {
 				opts.Like = &Like{Pattern: new("my-deployment%")}
 			},
 			"SHOW OPENFLOW DEPLOYMENTS LIKE 'my-deployment%%'",
-		).
-		withModifyAndExpectedSqlf(
-			case_OpenflowDeployments_sql_Show_In,
-			func(opts *ShowOpenflowDeploymentOptions) {
-				opts.In = &In{Account: new(true)}
-			},
-			"SHOW OPENFLOW DEPLOYMENTS IN ACCOUNT",
 		).
 		withModifyAndExpectedSqlf(
 			case_OpenflowDeployments_sql_Show_StartsWith,

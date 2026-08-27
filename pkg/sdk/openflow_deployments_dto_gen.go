@@ -45,8 +45,8 @@ type OpenflowDeploymentSetRequest struct {
 }
 
 type OpenflowDeploymentUnsetRequest struct {
-	Comment     *bool
 	DisplayName *bool
+	Comment     *bool
 	EventTable  *bool
 }
 
@@ -57,7 +57,6 @@ type DropOpenflowDeploymentRequest struct {
 
 type ShowOpenflowDeploymentRequest struct {
 	Like       *Like
-	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
 }

@@ -160,16 +160,9 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_OpenflowConnectors_sql_Alter_Push,
 			func(opts *AlterOpenflowConnectorOptions) {
-				opts.Push = &OpenflowConnectorPush{
-					To:       String("git://example.com/repo/branches/main"),
-					Username: "git_user",
-					Password: "git_token",
-					Name:     "Author Name",
-					Email:    "author@example.com",
-				}
+				opts.Push = &OpenflowConnectorPush{Username: "u", Password: "p", Name: "n", Email: "e@x.com"}
 			},
-			"ALTER OPENFLOW CONNECTOR %s PUSH TO 'git://example.com/repo/branches/main'"+
-				" USERNAME = 'git_user' PASSWORD = 'git_token' NAME = 'Author Name' EMAIL = 'author@example.com'",
+			"ALTER OPENFLOW CONNECTOR %s PUSH USERNAME = 'u' PASSWORD = 'p' NAME = 'n' EMAIL = 'e@x.com'",
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -178,9 +171,8 @@ func init() {
 			"ALTER OPENFLOW CONNECTOR %s PULL", id.FullyQualifiedName(),
 		)
 
-	// The COMMENT on each of these is why they are structs rather than bare keywords, so without a case
-	// asserting it the struct shape is unjustified by any test. OpenflowConnectorVersionLocation likewise
-	// had no assertion anywhere until the snow:// case below.
+	// COMMIT and ADD LIVE VERSION are structs rather than bare keywords because of their COMMENT, so
+	// without these cases the struct shape is unasserted.
 	openflowConnectorsTests.Alter.
 		withAdditionalSqlCasef(
 			"sql_Alter_commitWithComment",
@@ -198,18 +190,6 @@ func init() {
 				}
 			},
 			"ALTER OPENFLOW CONNECTOR %s ADD LIVE VERSION v2 FROM LAST COMMENT = 'editing config'",
-			id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_pushWithComment",
-			func(opts *AlterOpenflowConnectorOptions) {
-				opts.Push = &OpenflowConnectorPush{
-					Username: "u", Password: "p", Name: "n", Email: "e@x.com",
-					Comment: String("sync back"),
-				}
-			},
-			"ALTER OPENFLOW CONNECTOR %s PUSH USERNAME = 'u' PASSWORD = 'p' NAME = 'n' EMAIL = 'e@x.com'"+
-				" COMMENT = 'sync back'",
 			id.FullyQualifiedName(),
 		).
 		// Why ADD VERSION takes a *Location: StageLocation only renders @<fqn>[/path], and a connector
@@ -259,14 +239,6 @@ func init() {
 				opts.AddLiveVersion = &OpenflowConnectorAddLiveVersion{}
 			},
 			"ALTER OPENFLOW CONNECTOR %s ADD LIVE VERSION FROM LAST", id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_pushRequiredOnly",
-			func(opts *AlterOpenflowConnectorOptions) {
-				opts.Push = &OpenflowConnectorPush{Username: "u", Password: "p", Name: "n", Email: "e@x.com"}
-			},
-			"ALTER OPENFLOW CONNECTOR %s PUSH USERNAME = 'u' PASSWORD = 'p' NAME = 'n' EMAIL = 'e@x.com'",
-			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_pushAllFields",

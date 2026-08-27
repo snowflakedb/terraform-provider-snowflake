@@ -2323,22 +2323,19 @@ func (v *ParametersIn) validate() error {
 type ParameterType string
 
 const (
-	ParameterTypeSystem           ParameterType = "SYSTEM"
-	ParameterTypeSnowflakeDefault ParameterType = ""
-	ParameterTypeAccount          ParameterType = "ACCOUNT"
-	ParameterTypeUser             ParameterType = "USER"
-	ParameterTypeSession          ParameterType = "SESSION"
-	ParameterTypeObject           ParameterType = "OBJECT"
-	ParameterTypeWarehouse        ParameterType = "WAREHOUSE"
-	ParameterTypeDatabase         ParameterType = "DATABASE"
-	ParameterTypeSchema           ParameterType = "SCHEMA"
-	ParameterTypeTable            ParameterType = "TABLE"
-	ParameterTypeTask             ParameterType = "TASK"
-	ParameterTypeFunction         ParameterType = "FUNCTION"
-	ParameterTypeProcedure        ParameterType = "PROCEDURE"
-	// ParameterTypeOpenflowDeployment is the level SHOW PARAMETERS reports for a parameter set directly on
-	// an Openflow deployment. A deployment that has never had one set reports ACCOUNT (or SYSTEM, or the
-	// empty Snowflake default) with the inherited value, so the level is the only way to tell the two apart.
+	ParameterTypeSystem             ParameterType = "SYSTEM"
+	ParameterTypeSnowflakeDefault   ParameterType = ""
+	ParameterTypeAccount            ParameterType = "ACCOUNT"
+	ParameterTypeUser               ParameterType = "USER"
+	ParameterTypeSession            ParameterType = "SESSION"
+	ParameterTypeObject             ParameterType = "OBJECT"
+	ParameterTypeWarehouse          ParameterType = "WAREHOUSE"
+	ParameterTypeDatabase           ParameterType = "DATABASE"
+	ParameterTypeSchema             ParameterType = "SCHEMA"
+	ParameterTypeTable              ParameterType = "TABLE"
+	ParameterTypeTask               ParameterType = "TASK"
+	ParameterTypeFunction           ParameterType = "FUNCTION"
+	ParameterTypeProcedure          ParameterType = "PROCEDURE"
 	ParameterTypeOpenflowDeployment ParameterType = "OPENFLOW_DEPLOYMENT"
 )
 
