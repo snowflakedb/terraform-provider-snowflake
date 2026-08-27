@@ -6,222 +6,245 @@ import (
 	"testing"
 )
 
+var sequencesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Sequences_validation_Create_name_ValidIdentifier                            testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Sequences_validation_Create_opts_ConflictingFields                          testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Sequences_sql_Create_basic                                                  testCaseName = "sql_Create_basic"
+	case_Sequences_sql_Create_all                                                    testCaseName = "sql_Create_all"
+	case_Sequences_validation_Alter_name_ValidIdentifier                             testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Sequences_validation_Alter_RenameTo_ValidIdentifierIfSet                    testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Sequences_validation_Alter_opts_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Sequences_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Sequences_sql_Alter_RenameTo                                                testCaseName = "sql_Alter_RenameTo"
+	case_Sequences_sql_Alter_SetIncrement                                            testCaseName = "sql_Alter_SetIncrement"
+	case_Sequences_sql_Alter_Set                                                     testCaseName = "sql_Alter_Set"
+	case_Sequences_sql_Alter_UnsetComment                                            testCaseName = "sql_Alter_UnsetComment"
+	case_Sequences_sql_Show_basic                                                    testCaseName = "sql_Show_basic"
+	case_Sequences_sql_Show_all                                                      testCaseName = "sql_Show_all"
+	case_Sequences_sql_Show_Like                                                     testCaseName = "sql_Show_Like"
+	case_Sequences_sql_Show_In                                                       testCaseName = "sql_Show_In"
+	case_Sequences_validation_Describe_name_ValidIdentifier                          testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Sequences_sql_Describe_basic                                                testCaseName = "sql_Describe_basic"
+	case_Sequences_validation_Drop_name_ValidIdentifier                              testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Sequences_validation_Drop_opts_Constraint_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Drop_opts_Constraint_ExactlyOneValueSet_NoneSet"
+	case_Sequences_validation_Drop_opts_Constraint_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Drop_opts_Constraint_ExactlyOneValueSet_MoreThanOneSet"
+	case_Sequences_sql_Drop_basic                                                    testCaseName = "sql_Drop_basic"
+	case_Sequences_sql_Drop_all                                                      testCaseName = "sql_Drop_all"
+)
+
+type SequencesTestsContext struct {
+	Create   *sdkTestCtx[*CreateSequenceOptions]
+	Alter    *sdkTestCtx[*AlterSequenceOptions]
+	Show     *sdkTestCtx[*ShowSequenceOptions]
+	Describe *sdkTestCtx[*DescribeSequenceOptions]
+	Drop     *sdkTestCtx[*DropSequenceOptions]
+}
+
+var sequencesTests = SequencesTestsContext{
+	Create: newSdkTestCtx[*CreateSequenceOptions](
+		"Sequences", "Create",
+	).
+		withDefaultOpts(func() *CreateSequenceOptions {
+			return &CreateSequenceOptions{
+				name: sequencesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateSequenceOptions]{
+				Name:        case_Sequences_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateSequenceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateSequenceOptions]{
+				Name:        case_Sequences_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateSequenceOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateSequenceOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateSequenceOptions]{
+				Name:           case_Sequences_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateSequenceOptions]{
+				Name: case_Sequences_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterSequenceOptions](
+		"Sequences", "Alter",
+	).
+		withDefaultOpts(func() *AlterSequenceOptions {
+			return &AlterSequenceOptions{
+				name: sequencesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterSequenceOptions]{
+				Name:        case_Sequences_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterSequenceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterSequenceOptions]{
+				Name:        case_Sequences_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterSequenceOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterSequenceOptions]{
+				Name:        case_Sequences_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"),
+				DefaultModify: func(opts *AlterSequenceOptions) {
+					opts.RenameTo = nil
+					opts.SetIncrement = nil
+					opts.Set = nil
+					opts.UnsetComment = nil
+				},
+			},
+			validationCase[*AlterSequenceOptions]{
+				Name:        case_Sequences_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"),
+				DefaultModify: func(opts *AlterSequenceOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.SetIncrement = new(1)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterSequenceOptions]{
+				Name: case_Sequences_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterSequenceOptions]{
+				Name: case_Sequences_sql_Alter_SetIncrement,
+			},
+			sqlCase[*AlterSequenceOptions]{
+				Name: case_Sequences_sql_Alter_Set,
+			},
+			sqlCase[*AlterSequenceOptions]{
+				Name: case_Sequences_sql_Alter_UnsetComment,
+			},
+		),
+	Show: newSdkTestCtx[*ShowSequenceOptions](
+		"Sequences", "Show",
+	).
+		withDefaultOpts(func() *ShowSequenceOptions {
+			return &ShowSequenceOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowSequenceOptions]{
+				Name:           case_Sequences_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowSequenceOptions]{
+				Name: case_Sequences_sql_Show_all,
+			},
+			sqlCase[*ShowSequenceOptions]{
+				Name: case_Sequences_sql_Show_Like,
+			},
+			sqlCase[*ShowSequenceOptions]{
+				Name: case_Sequences_sql_Show_In,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeSequenceOptions](
+		"Sequences", "Describe",
+	).
+		withDefaultOpts(func() *DescribeSequenceOptions {
+			return &DescribeSequenceOptions{
+				name: sequencesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeSequenceOptions]{
+				Name:        case_Sequences_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeSequenceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeSequenceOptions]{
+				Name:           case_Sequences_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Drop: newSdkTestCtx[*DropSequenceOptions](
+		"Sequences", "Drop",
+	).
+		withDefaultOpts(func() *DropSequenceOptions {
+			return &DropSequenceOptions{
+				name: sequencesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropSequenceOptions]{
+				Name:        case_Sequences_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropSequenceOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*DropSequenceOptions]{
+				Name:        case_Sequences_validation_Drop_opts_Constraint_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"),
+				DefaultModify: func(opts *DropSequenceOptions) {
+					opts.Constraint = &SequenceConstraint{}
+					opts.Constraint.Cascade = nil
+					opts.Constraint.Restrict = nil
+				},
+			},
+			validationCase[*DropSequenceOptions]{
+				Name:        case_Sequences_validation_Drop_opts_Constraint_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"),
+				DefaultModify: func(opts *DropSequenceOptions) {
+					opts.Constraint = &SequenceConstraint{}
+					opts.Constraint.Cascade = new(true)
+					opts.Constraint.Restrict = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropSequenceOptions]{
+				Name:           case_Sequences_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropSequenceOptions]{
+				Name: case_Sequences_sql_Drop_all,
+			},
+		),
+}
+
 func TestSequences_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateSequenceOptions
-	defaultOpts := func() *CreateSequenceOptions {
-		return &CreateSequenceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateSequenceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateSequenceOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `CREATE SEQUENCE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.Start = Int(1)
-		opts.Increment = Int(1)
-		opts.ValuesBehavior = new(ValuesBehaviorOrder)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE SEQUENCE %s START = 1 INCREMENT = 1 ORDER COMMENT = 'comment'`, id.FullyQualifiedName())
-	})
+	sequencesTests.Create.RunValidationCases(t)
+	sequencesTests.Create.RunSqlCases(t)
 }
 
 func TestSequences_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterSequenceOptions
-	defaultOpts := func() *AlterSequenceOptions {
-		return &AlterSequenceOptions{
-			name:     id,
-			IfExists: Bool(true),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterSequenceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RenameTo = &emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetIncrement opts.Set opts.UnsetComment] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.SetIncrement opts.Set opts.UnsetComment] should be present - multiple", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetIncrement = Int(1)
-		opts.UnsetComment = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterSequenceOptions", "RenameTo", "SetIncrement", "Set", "UnsetComment"))
-	})
-
-	t.Run("alter: rename to", func(t *testing.T) {
-		opts := defaultOpts()
-		target := randomSchemaObjectIdentifierInSchema(id.SchemaId())
-		opts.RenameTo = &target
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), opts.RenameTo.FullyQualifiedName())
-	})
-
-	t.Run("alter: set options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &SequenceSet{
-			Comment:        String("comment"),
-			ValuesBehavior: new(ValuesBehaviorOrder),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s SET ORDER COMMENT = 'comment'`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset comment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetComment = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s UNSET COMMENT`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set increment", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetIncrement = Int(1)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER SEQUENCE IF EXISTS %s SET INCREMENT = 1`, id.FullyQualifiedName())
-	})
+	sequencesTests.Alter.RunValidationCases(t)
+	sequencesTests.Alter.RunSqlCases(t)
 }
 
 func TestSequences_Show(t *testing.T) {
-	// Minimal valid ShowSequenceOptions
-	defaultOpts := func() *ShowSequenceOptions {
-		return &ShowSequenceOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowSequenceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("show with empty options", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SEQUENCES`)
-	})
-
-	t.Run("show with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SEQUENCES LIKE 'pattern'`)
-	})
-
-	t.Run("show with in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &In{
-			Account: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW SEQUENCES IN ACCOUNT`)
-	})
+	sequencesTests.Show.RunValidationCases(t)
+	sequencesTests.Show.RunSqlCases(t)
 }
 
 func TestSequences_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeSequenceOptions
-	defaultOpts := func() *DescribeSequenceOptions {
-		return &DescribeSequenceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeSequenceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE SEQUENCE %s`, id.FullyQualifiedName())
-	})
+	sequencesTests.Describe.RunValidationCases(t)
+	sequencesTests.Describe.RunSqlCases(t)
 }
 
 func TestSequences_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropSequenceOptions
-	defaultOpts := func() *DropSequenceOptions {
-		return &DropSequenceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropSequenceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Constraint.Cascade opts.Constraint.Restrict] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Constraint = &SequenceConstraint{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Constraint.Cascade opts.Constraint.Restrict] should be present - multiple", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Constraint = &SequenceConstraint{
-			Cascade:  Bool(true),
-			Restrict: Bool(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("DropSequenceOptions.Constraint", "Cascade", "Restrict"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP SEQUENCE %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Constraint = &SequenceConstraint{
-			Cascade: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `DROP SEQUENCE IF EXISTS %s CASCADE`, id.FullyQualifiedName())
-	})
+	sequencesTests.Drop.RunValidationCases(t)
+	sequencesTests.Drop.RunSqlCases(t)
 }
