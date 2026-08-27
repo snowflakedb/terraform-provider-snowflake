@@ -28,16 +28,20 @@ func TestSweepAll(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableSweep)
 	testenvs.AssertEnvSet(t, string(testenvs.TestObjectsSuffix))
 
+	gcpClient := gcpTestClient(t)
+
 	t.Run("sweep after tests", func(t *testing.T) {
 		sweepAfterTests := func(client *sdk.Client) {
-			assert.NoError(t, SweepAfterIntegrationTests(client, integrationtests.ObjectsSuffix))
-			assert.NoError(t, SweepAfterAcceptanceTests(client, acceptancetests.ObjectsSuffix))
+			// Snowflake Postgres is not available for GCP.
+			includePostgres := client != gcpClient
+			assert.NoError(t, SweepAfterIntegrationTests(client, integrationtests.ObjectsSuffix, includePostgres))
+			assert.NoError(t, SweepAfterAcceptanceTests(client, acceptancetests.ObjectsSuffix, includePostgres))
 		}
 
 		sweepAfterTests(defaultTestClient(t))
 		sweepAfterTests(secondaryTestClient(t))
 		sweepAfterTests(azureTestClient(t))
-		sweepAfterTests(gcpTestClient(t))
+		sweepAfterTests(gcpClient)
 
 		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
 			sweepAfterTests(snowflakeDefaultsTestClient(t))
@@ -47,12 +51,12 @@ func TestSweepAll(t *testing.T) {
 	t.Run("Send test results", SendTestResults)
 }
 
-func SweepAfterIntegrationTests(client *sdk.Client, suffix string) error {
-	return sweep(client, suffix)
+func SweepAfterIntegrationTests(client *sdk.Client, suffix string, includePostgres bool) error {
+	return sweep(client, suffix, includePostgres)
 }
 
-func SweepAfterAcceptanceTests(client *sdk.Client, suffix string) error {
-	return sweep(client, suffix)
+func SweepAfterAcceptanceTests(client *sdk.Client, suffix string, includePostgres bool) error {
+	return sweep(client, suffix, includePostgres)
 }
 
 // TODO [SNOW-867247]: sweep all missing account-level objects (like replication groups, connections, compute pools, external volumes, ...)
@@ -60,12 +64,11 @@ func SweepAfterAcceptanceTests(client *sdk.Client, suffix string) error {
 // TODO [SNOW-867247]: rework the sweepers (funcs -> objects)
 // TODO [SNOW-867247]: consider generalization (almost all the sweepers follow the same pattern: show, drop if matches); partially done with nukeAccountObjects
 // TODO [SNOW-867247]: consider showing only objects with the given suffix (in almost every sweeper)
-func sweep(client *sdk.Client, suffix string) error {
+func sweep(client *sdk.Client, suffix string, includePostgres bool) error {
 	if suffix == "" {
 		return fmt.Errorf("suffix is required to run sweepers")
 	}
 	sweepers := []func() error{
-		nukePostgresInstances(client, suffix),
 		nukeSecurityIntegrations(client, suffix),
 		nukeResourceMonitors(client, suffix),
 		nukeNetworkPolicies(client, suffix),
@@ -87,6 +90,9 @@ func sweep(client *sdk.Client, suffix string) error {
 		nukeWarehouses(client, "", suffix),
 		nukeRoles(client, suffix),
 	}
+	if includePostgres {
+		sweepers = append(sweepers, nukePostgresInstances(client, suffix))
+	}
 	// All the sweepers are run, even if some of them fail; otherwise a single failure would leave the objects handled by the subsequent sweepers behind.
 	var errs []error
 	for _, sweeper := range sweepers {
@@ -98,13 +104,14 @@ func sweep(client *sdk.Client, suffix string) error {
 func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.EnableSweep)
 
+	gcpClient := gcpTestClient(t)
 	allClients := []*sdk.Client{
 		defaultTestClient(t),
 		secondaryTestClient(t),
 		thirdTestClient(t),
 		fourthTestClient(t),
 		azureTestClient(t),
-		gcpTestClient(t),
+		gcpClient,
 	}
 
 	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
@@ -153,6 +160,10 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 
 	t.Run("sweep postgres instances", func(t *testing.T) {
 		for _, c := range allClients {
+			// Snowflake Postgres is not available for GCP.
+			if c == gcpClient {
+				continue
+			}
 			err := nukePostgresInstances(c, "")()
 			assert.NoError(t, err)
 		}
