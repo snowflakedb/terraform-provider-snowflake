@@ -26,6 +26,55 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.20.x ➞ v2.21.0
 
+### *(breaking change)* Renamed constraint column fields in `snowflake_iceberg_table`
+
+Note: this resource is in preview allowing us to make breaking changes without bumping the major version (following [our docs](https://docs.snowflake.com/en/user-guide/terraform#preview-features)).
+
+Collections of primitive values in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) now use plural names, aligning with [`snowflake_hybrid_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/hybrid_table):
+
+- `primary_key_constraint.column` ➞ `columns`
+- `unique_constraint.column` ➞ `columns`
+- `foreign_key_constraint.column` ➞ `columns`
+- `foreign_key_constraint.ref_column` ➞ `ref_columns`
+
+The top-level `column` block (column definitions) is unchanged.
+
+The old configuration looks like this:
+```terraform
+  primary_key_constraint {
+    column = ["ID"]
+  }
+
+  unique_constraint {
+    column = ["NAME"]
+  }
+
+  foreign_key_constraint {
+    column     = ["REF_ID"]
+    table_name = "DATABASE.SCHEMA.OTHER_TABLE"
+    ref_column = ["ID"]
+  }
+```
+
+The new configuration looks like this:
+```terraform
+  primary_key_constraint {
+    columns = ["ID"]
+  }
+
+  unique_constraint {
+    columns = ["NAME"]
+  }
+
+  foreign_key_constraint {
+    columns     = ["REF_ID"]
+    table_name  = "DATABASE.SCHEMA.OTHER_TABLE"
+    ref_columns = ["ID"]
+  }
+```
+
+Please rename these fields in your configuration files. After updating the configuration, `terraform plan` should be empty.
+
 ### *(new feature)* New hybrid tables data source
 
 We have added a new preview data source for querying hybrid tables: [snowflake_hybrid_tables](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/hybrid_tables). It supports filtering with `like`, `in`, `starts_with`, and `limit`.

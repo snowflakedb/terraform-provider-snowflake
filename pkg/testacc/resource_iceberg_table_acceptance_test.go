@@ -14,10 +14,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -912,6 +914,96 @@ func TestAcc_IcebergTable_Validations(t *testing.T) {
 						WithClusterBy("ID"),
 				),
 				ExpectError: regexp.MustCompile(`"cluster_by": conflicts with partition_by`),
+			},
+		},
+	})
+}
+
+func TestAcc_IcebergTable_migrateFromVersion_2_20_0(t *testing.T) {
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup)
+
+	db, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, testClient().Database.TestParametersSet(testClient().Ids.RandomAccountObjectIdentifier()).WithExternalVolume(externalVolumeId))
+	t.Cleanup(dbCleanup)
+	schemaId := sdk.NewDatabaseObjectIdentifier(db.ID().Name(), "PUBLIC")
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
+
+	fkRefTable, fkRefTableCleanup := testClient().Table.CreateWithPredefinedColumnsForIcebergTable(t)
+	t.Cleanup(fkRefTableCleanup)
+
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarcharIceberg},
+		{Name: "REF_ID", Type: testdatatypes.DataTypeNumber_38_0},
+	}
+
+	primaryKeyConstraint := sdk.TableOutOfLineUniquePKRequest{
+		PrimaryKey: new(true),
+		Columns:    []sdk.Column{{Value: "ID"}},
+	}
+	uniqueConstraint := sdk.TableOutOfLineUniquePKRequest{
+		Unique:  new(true),
+		Columns: []sdk.Column{{Value: "NAME"}},
+	}
+	foreignKeyConstraint := sdk.TableOutOfLineFKRequest{
+		Columns:    []sdk.Column{{Value: "REF_ID"}},
+		References: fkRefTable.ID(),
+		RefColumns: []sdk.Column{{Value: "ID"}},
+	}
+
+	modelOld := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithPrimaryKeyConstraintsV2_20_0(primaryKeyConstraint).
+		WithUniqueConstraintsV2_20_0(uniqueConstraint).
+		WithForeignKeyConstraintsV2_20_0(foreignKeyConstraint)
+
+	modelNew := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithPrimaryKeyConstraints(primaryKeyConstraint).
+		WithUniqueConstraints(uniqueConstraint).
+		WithForeignKeyConstraints(foreignKeyConstraint)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.IcebergTableResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.IcebergTable),
+		Steps: []resource.TestStep{
+			// Create with v2.20.0 using the old singular `column` / `ref_column` attributes.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.20.0"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelOld.ResourceReference(), plancheck.ResourceActionCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, modelOld),
+			},
+			// Upgrading without renaming the attributes results in error
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, providerModel, modelOld),
+				ExpectError:              regexp.MustCompile(`(?s)Error: Missing required argument.*Error: Unsupported argument|Error: Unsupported argument.*Error: Missing required argument`),
+				PlanOnly:                 true,
+			},
+			// After renaming the attributes, expect an empty plan.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: accconfig.FromModels(t, modelNew),
 			},
 		},
 	})

@@ -88,7 +88,7 @@ resource "snowflake_iceberg_table" "complete" {
 
   primary_key_constraint {
     name               = "PK"
-    column             = ["ID"]
+    columns            = ["ID"]
     enforced           = "false"
     deferrable         = "true"
     initially_deferred = "true"
@@ -100,7 +100,7 @@ resource "snowflake_iceberg_table" "complete" {
 
   unique_constraint {
     name               = "NAME_UQ"
-    column             = ["NAME"]
+    columns            = ["NAME"]
     enforced           = "false"
     deferrable         = "true"
     initially_deferred = "true"
@@ -112,9 +112,9 @@ resource "snowflake_iceberg_table" "complete" {
 
   foreign_key_constraint {
     name               = "FK"
-    column             = ["REF_ID"]
+    columns            = ["REF_ID"]
     table_name         = "OTHER_DATABASE.OTHER_SCHEMA.OTHER_TABLE"
-    ref_column         = ["ID"]
+    ref_columns        = ["ID"]
     match              = "SIMPLE"
     on_update          = "CASCADE"
     on_delete          = "SET NULL"

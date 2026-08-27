@@ -79,8 +79,17 @@ func (i *IcebergTableModel) WithColumns(columns ...IcebergTableColumnRequest) *I
 // uniquePKConstraintVariable builds the fields shared by primary_key_constraint and
 // unique_constraint entries, reusing the SDK's TableOutOfLineUniquePKRequest for the field set.
 func uniquePKConstraintVariable(c sdk.TableOutOfLineUniquePKRequest) tfconfig.Variable {
+	return uniquePKConstraintVariableWithColumnAttribute(c, "columns")
+}
+
+// uniquePKConstraintVariableV2_20_0 is the pre-v2.21.0 variant that uses the singular `column` attribute.
+func uniquePKConstraintVariableV2_20_0(c sdk.TableOutOfLineUniquePKRequest) tfconfig.Variable {
+	return uniquePKConstraintVariableWithColumnAttribute(c, "column")
+}
+
+func uniquePKConstraintVariableWithColumnAttribute(c sdk.TableOutOfLineUniquePKRequest, columnAttribute string) tfconfig.Variable {
 	m := map[string]tfconfig.Variable{
-		"column": columnsVariable(c.Columns),
+		columnAttribute: columnsVariable(c.Columns),
 	}
 	setStringIfNotNil(m, "name", c.Name)
 	setStringIfNotNil(m, "comment", c.Comment)
@@ -100,6 +109,12 @@ func (i *IcebergTableModel) WithPrimaryKeyConstraints(constraints ...sdk.TableOu
 	return i.WithPrimaryKeyConstraintValue(tfconfig.ListVariable(vars...))
 }
 
+// WithPrimaryKeyConstraintsV2_20_0 is the pre-v2.21.0 variant that uses the singular `column` attribute.
+func (i *IcebergTableModel) WithPrimaryKeyConstraintsV2_20_0(constraints ...sdk.TableOutOfLineUniquePKRequest) *IcebergTableModel {
+	vars := collections.Map(constraints, uniquePKConstraintVariableV2_20_0)
+	return i.WithPrimaryKeyConstraintValue(tfconfig.ListVariable(vars...))
+}
+
 // WithUniqueConstraints sets the `unique_constraint` attribute (table-level UNIQUE constraints),
 // reusing the SDK's TableOutOfLineUniquePKRequest for the field set.
 func (i *IcebergTableModel) WithUniqueConstraints(constraints ...sdk.TableOutOfLineUniquePKRequest) *IcebergTableModel {
@@ -107,18 +122,33 @@ func (i *IcebergTableModel) WithUniqueConstraints(constraints ...sdk.TableOutOfL
 	return i.WithUniqueConstraintValue(tfconfig.ListVariable(vars...))
 }
 
+// WithUniqueConstraintsV2_20_0 is the pre-v2.21.0 variant that uses the singular `column` attribute.
+func (i *IcebergTableModel) WithUniqueConstraintsV2_20_0(constraints ...sdk.TableOutOfLineUniquePKRequest) *IcebergTableModel {
+	vars := collections.Map(constraints, uniquePKConstraintVariableV2_20_0)
+	return i.WithUniqueConstraintValue(tfconfig.ListVariable(vars...))
+}
+
 // WithForeignKeyConstraints sets the `foreign_key_constraint` attribute, reusing the SDK's
 // TableOutOfLineFKRequest for the field set.
 func (i *IcebergTableModel) WithForeignKeyConstraints(constraints ...sdk.TableOutOfLineFKRequest) *IcebergTableModel {
+	return i.withForeignKeyConstraints(constraints, "columns", "ref_columns")
+}
+
+// WithForeignKeyConstraintsV2_20_0 is the pre-v2.21.0 variant that uses the singular `column` and `ref_column` attributes.
+func (i *IcebergTableModel) WithForeignKeyConstraintsV2_20_0(constraints ...sdk.TableOutOfLineFKRequest) *IcebergTableModel {
+	return i.withForeignKeyConstraints(constraints, "column", "ref_column")
+}
+
+func (i *IcebergTableModel) withForeignKeyConstraints(constraints []sdk.TableOutOfLineFKRequest, columnAttribute, refColumnAttribute string) *IcebergTableModel {
 	vars := make([]tfconfig.Variable, len(constraints))
 	for idx, c := range constraints {
 		m := map[string]tfconfig.Variable{
-			"column":     columnsVariable(c.Columns),
-			"table_name": tfconfig.StringVariable(c.References.FullyQualifiedName()),
+			columnAttribute: columnsVariable(c.Columns),
+			"table_name":    tfconfig.StringVariable(c.References.FullyQualifiedName()),
 		}
 		setStringIfNotNil(m, "name", c.Name)
 		if len(c.RefColumns) > 0 {
-			m["ref_column"] = columnsVariable(c.RefColumns)
+			m[refColumnAttribute] = columnsVariable(c.RefColumns)
 		}
 		if c.Match != nil {
 			m["match"] = tfconfig.StringVariable(string(*c.Match))

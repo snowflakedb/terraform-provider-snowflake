@@ -47,7 +47,7 @@ func outOfLineUniqueOrPKConstraintSchemaFields() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "Name of the constraint.",
 		},
-		"column": {
+		"columns": {
 			Type:        schema.TypeList,
 			Required:    true,
 			ForceNew:    true,
@@ -110,7 +110,7 @@ func foreignKeyConstraintSchema() *schema.Schema {
 					ForceNew:    true,
 					Description: "Name of the constraint.",
 				},
-				"column": {
+				"columns": {
 					Type:        schema.TypeList,
 					Required:    true,
 					ForceNew:    true,
@@ -126,7 +126,7 @@ func foreignKeyConstraintSchema() *schema.Schema {
 					ValidateDiagFunc: IsValidIdentifier[sdk.SchemaObjectIdentifier](),
 					Description:      "The table that the foreign key references.",
 				},
-				"ref_column": {
+				"ref_columns": {
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
@@ -265,7 +265,7 @@ func parseOutOfLineUniquePKCommon(d *schema.ResourceData, prefix string) (sdk.Ta
 	); err != nil {
 		return sdk.TableOutOfLineUniquePKRequest{}, err
 	}
-	if columnRaw := d.Get(prefix + "column").([]any); len(columnRaw) > 0 {
+	if columnRaw := d.Get(prefix + "columns").([]any); len(columnRaw) > 0 {
 		uniquePK.Columns = collections.Map(expandStringList(columnRaw), func(c string) sdk.Column { return sdk.Column{Value: c} })
 	}
 	return uniquePK, nil
@@ -315,10 +315,10 @@ func parseOutOfLineForeignKey(d *schema.ResourceData, prefix string) (sdk.TableO
 		return sdk.TableOutOfLineFKRequest{}, err
 	}
 
-	if columnRaw := d.Get(prefix + "column").([]any); len(columnRaw) > 0 {
+	if columnRaw := d.Get(prefix + "columns").([]any); len(columnRaw) > 0 {
 		fk.Columns = collections.Map(expandStringList(columnRaw), func(c string) sdk.Column { return sdk.Column{Value: c} })
 	}
-	if refColumnRaw := d.Get(prefix + "ref_column").([]any); len(refColumnRaw) > 0 {
+	if refColumnRaw := d.Get(prefix + "ref_columns").([]any); len(refColumnRaw) > 0 {
 		fk.RefColumns = collections.Map(expandStringList(refColumnRaw), func(c string) sdk.Column { return sdk.Column{Value: c} })
 	}
 

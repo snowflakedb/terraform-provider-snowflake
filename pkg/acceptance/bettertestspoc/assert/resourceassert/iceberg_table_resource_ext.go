@@ -171,9 +171,9 @@ func (i *IcebergTableResourceAssert) hasConstraintEnforcementFields(prefix strin
 func (i *IcebergTableResourceAssert) hasUniquePKConstraintFields(prefix string, c sdk.TableOutOfLineUniquePKRequest) *IcebergTableResourceAssert {
 	i.OptionalStringValueSet(prefix+"name", c.Name)
 	i.OptionalStringValueSet(prefix+"comment", c.Comment)
-	i.CollectionLength(prefix+"column", len(c.Columns))
+	i.CollectionLength(prefix+"columns", len(c.Columns))
 	for colIndex, column := range c.Columns {
-		i.ValueSet(fmt.Sprintf("%scolumn.%d", prefix, colIndex), column.Value)
+		i.ValueSet(fmt.Sprintf("%scolumns.%d", prefix, colIndex), column.Value)
 	}
 	i.hasConstraintEnforcementFields(prefix, ConstraintEnforcementFields{
 		Enforced:           c.Enforced,
@@ -221,13 +221,13 @@ func (i *IcebergTableResourceAssert) HasForeignKeyConstraints(constraints ...sdk
 		i.OptionalStringValueSet(prefix+"name", c.Name)
 		i.ValueSet(prefix+"table_name", c.References.FullyQualifiedName())
 		i.OptionalStringValueSet(prefix+"comment", c.Comment)
-		i.CollectionLength(prefix+"column", len(c.Columns))
+		i.CollectionLength(prefix+"columns", len(c.Columns))
 		for colIndex, column := range c.Columns {
-			i.ValueSet(fmt.Sprintf("%scolumn.%d", prefix, colIndex), column.Value)
+			i.ValueSet(fmt.Sprintf("%scolumns.%d", prefix, colIndex), column.Value)
 		}
-		i.CollectionLength(prefix+"ref_column", len(c.RefColumns))
+		i.CollectionLength(prefix+"ref_columns", len(c.RefColumns))
 		for colIndex, column := range c.RefColumns {
-			i.ValueSet(fmt.Sprintf("%sref_column.%d", prefix, colIndex), column.Value)
+			i.ValueSet(fmt.Sprintf("%sref_columns.%d", prefix, colIndex), column.Value)
 		}
 		if c.Match != nil {
 			i.ValueSet(prefix+"match", string(*c.Match))

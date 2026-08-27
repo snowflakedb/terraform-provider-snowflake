@@ -110,7 +110,7 @@ resource "snowflake_iceberg_table" "complete" {
 
   primary_key_constraint {
     name               = "PK"
-    column             = ["ID"]
+    columns            = ["ID"]
     enforced           = "false"
     deferrable         = "true"
     initially_deferred = "true"
@@ -122,7 +122,7 @@ resource "snowflake_iceberg_table" "complete" {
 
   unique_constraint {
     name               = "NAME_UQ"
-    column             = ["NAME"]
+    columns            = ["NAME"]
     enforced           = "false"
     deferrable         = "true"
     initially_deferred = "true"
@@ -134,9 +134,9 @@ resource "snowflake_iceberg_table" "complete" {
 
   foreign_key_constraint {
     name               = "FK"
-    column             = ["REF_ID"]
+    columns            = ["REF_ID"]
     table_name         = "OTHER_DATABASE.OTHER_SCHEMA.OTHER_TABLE"
-    ref_column         = ["ID"]
+    ref_columns        = ["ID"]
     match              = "SIMPLE"
     on_update          = "CASCADE"
     on_delete          = "SET NULL"
@@ -338,7 +338,7 @@ Optional:
 
 Required:
 
-- `column` (List of String) The local column(s) the foreign key is defined on.
+- `columns` (List of String) The local column(s) the foreign key is defined on.
 - `table_name` (String) The table that the foreign key references.
 
 Optional:
@@ -352,7 +352,7 @@ Optional:
 - `name` (String) Name of the constraint.
 - `on_delete` (String) Specifies the action to perform when the referenced primary/unique key is deleted. Valid values are: [CASCADE SET NULL SET DEFAULT RESTRICT NO ACTION].
 - `on_update` (String) Specifies the action to perform when the referenced primary/unique key is updated. Valid values are: [CASCADE SET NULL SET DEFAULT RESTRICT NO ACTION].
-- `ref_column` (List of String) The column(s) in the referenced table that the foreign key references.
+- `ref_columns` (List of String) The column(s) in the referenced table that the foreign key references.
 - `rely` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Whether a constraint in NOVALIDATE mode is taken into account (`true`) or not (`false`) during query rewrite. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `validate` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Whether to validate existing data on the table when the constraint is created (`true`) or skip validation (`false`). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
@@ -394,7 +394,7 @@ Required:
 
 Required:
 
-- `column` (List of String) The column(s) the constraint applies to.
+- `columns` (List of String) The column(s) the constraint applies to.
 
 Optional:
 
@@ -433,7 +433,7 @@ Optional:
 
 Required:
 
-- `column` (List of String) The column(s) the constraint applies to.
+- `columns` (List of String) The column(s) the constraint applies to.
 
 Optional:
 
