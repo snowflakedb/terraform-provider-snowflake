@@ -6,259 +6,267 @@ import (
 	"testing"
 )
 
+var streamlitsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Streamlits_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Streamlits_validation_Create_QueryWarehouse_ValidIdentifierIfSet    testCaseName = "validation_Create_QueryWarehouse_ValidIdentifierIfSet"
+	case_Streamlits_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Streamlits_sql_Create_basic                                         testCaseName = "sql_Create_basic"
+	case_Streamlits_sql_Create_all                                           testCaseName = "sql_Create_all"
+	case_Streamlits_validation_Alter_name_ValidIdentifier                    testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Streamlits_validation_Alter_RenameTo_ValidIdentifierIfSet           testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Streamlits_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet"
+	case_Streamlits_validation_Alter_opts_Set_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Streamlits_validation_Alter_opts_Unset_AtLeastOneValueSet           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Streamlits_sql_Alter_RenameTo                                       testCaseName = "sql_Alter_RenameTo"
+	case_Streamlits_sql_Alter_Set                                            testCaseName = "sql_Alter_Set"
+	case_Streamlits_sql_Alter_Unset                                          testCaseName = "sql_Alter_Unset"
+	case_Streamlits_validation_Drop_name_ValidIdentifier                     testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Streamlits_sql_Drop_basic                                           testCaseName = "sql_Drop_basic"
+	case_Streamlits_sql_Drop_all                                             testCaseName = "sql_Drop_all"
+	case_Streamlits_sql_Show_basic                                           testCaseName = "sql_Show_basic"
+	case_Streamlits_sql_Show_all                                             testCaseName = "sql_Show_all"
+	case_Streamlits_sql_Show_Like                                            testCaseName = "sql_Show_Like"
+	case_Streamlits_sql_Show_In                                              testCaseName = "sql_Show_In"
+	case_Streamlits_sql_Show_Limit                                           testCaseName = "sql_Show_Limit"
+	case_Streamlits_validation_Describe_name_ValidIdentifier                 testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Streamlits_sql_Describe_basic                                       testCaseName = "sql_Describe_basic"
+)
+
+type StreamlitsTestsContext struct {
+	Create   *sdkTestCtx[*CreateStreamlitOptions]
+	Alter    *sdkTestCtx[*AlterStreamlitOptions]
+	Drop     *sdkTestCtx[*DropStreamlitOptions]
+	Show     *sdkTestCtx[*ShowStreamlitOptions]
+	Describe *sdkTestCtx[*DescribeStreamlitOptions]
+}
+
+var streamlitsTests = StreamlitsTestsContext{
+	Create: newSdkTestCtx[*CreateStreamlitOptions](
+		"Streamlits", "Create",
+	).
+		withDefaultOpts(func() *CreateStreamlitOptions {
+			return &CreateStreamlitOptions{
+				name: streamlitsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateStreamlitOptions]{
+				Name:        case_Streamlits_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateStreamlitOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateStreamlitOptions]{
+				Name:        case_Streamlits_validation_Create_QueryWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateStreamlitOptions) {
+					opts.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateStreamlitOptions]{
+				Name:        case_Streamlits_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateStreamlitOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateStreamlitOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateStreamlitOptions]{
+				Name:           case_Streamlits_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateStreamlitOptions]{
+				Name: case_Streamlits_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterStreamlitOptions](
+		"Streamlits", "Alter",
+	).
+		withDefaultOpts(func() *AlterStreamlitOptions {
+			return &AlterStreamlitOptions{
+				name: streamlitsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterStreamlitOptions", "RenameTo", "Set", "Unset"),
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterStreamlitOptions", "RenameTo", "Set", "Unset"),
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.Set = &StreamlitSet{}
+				},
+			},
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_Set_QueryWarehouse_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.Set = &StreamlitSet{}
+					opts.Set.QueryWarehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStreamlitOptions.Set", "RootLocation", "MainFile", "QueryWarehouse", "ExternalAccessIntegrations", "Comment", "Title"),
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.Set = &StreamlitSet{}
+					opts.Set.RootLocation = nil
+					opts.Set.MainFile = nil
+					opts.Set.QueryWarehouse = nil
+					opts.Set.ExternalAccessIntegrations = nil
+					opts.Set.Comment = nil
+					opts.Set.Title = nil
+				},
+			},
+			validationCase[*AlterStreamlitOptions]{
+				Name:        case_Streamlits_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterStreamlitOptions.Unset", "QueryWarehouse", "Title", "Comment", "ExternalAccessIntegrations"),
+				DefaultModify: func(opts *AlterStreamlitOptions) {
+					opts.Unset = &StreamlitUnset{}
+					opts.Unset.QueryWarehouse = nil
+					opts.Unset.Title = nil
+					opts.Unset.Comment = nil
+					opts.Unset.ExternalAccessIntegrations = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterStreamlitOptions]{
+				Name: case_Streamlits_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterStreamlitOptions]{
+				Name: case_Streamlits_sql_Alter_Set,
+			},
+			sqlCase[*AlterStreamlitOptions]{
+				Name: case_Streamlits_sql_Alter_Unset,
+			},
+		),
+	Drop: newSdkTestCtx[*DropStreamlitOptions](
+		"Streamlits", "Drop",
+	).
+		withDefaultOpts(func() *DropStreamlitOptions {
+			return &DropStreamlitOptions{
+				name: streamlitsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropStreamlitOptions]{
+				Name:        case_Streamlits_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropStreamlitOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropStreamlitOptions]{
+				Name:           case_Streamlits_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropStreamlitOptions]{
+				Name: case_Streamlits_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowStreamlitOptions](
+		"Streamlits", "Show",
+	).
+		withDefaultOpts(func() *ShowStreamlitOptions {
+			return &ShowStreamlitOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowStreamlitOptions]{
+				Name:           case_Streamlits_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowStreamlitOptions]{
+				Name: case_Streamlits_sql_Show_all,
+			},
+			sqlCase[*ShowStreamlitOptions]{
+				Name: case_Streamlits_sql_Show_Like,
+			},
+			sqlCase[*ShowStreamlitOptions]{
+				Name: case_Streamlits_sql_Show_In,
+			},
+			sqlCase[*ShowStreamlitOptions]{
+				Name: case_Streamlits_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeStreamlitOptions](
+		"Streamlits", "Describe",
+	).
+		withDefaultOpts(func() *DescribeStreamlitOptions {
+			return &DescribeStreamlitOptions{
+				name: streamlitsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeStreamlitOptions]{
+				Name:        case_Streamlits_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeStreamlitOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeStreamlitOptions]{
+				Name:           case_Streamlits_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestStreamlits_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateStreamlitOptions
-	defaultOpts := func() *CreateStreamlitOptions {
-		return &CreateStreamlitOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateStreamlitOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.QueryWarehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.QueryWarehouse = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateStreamlitOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RootLocation = "@test"
-		opts.MainFile = "manifest.yml"
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STREAMLIT %s ROOT_LOCATION = '@test' MAIN_FILE = 'manifest.yml'`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		warehouse := NewAccountObjectIdentifier("test_warehouse")
-		opts.IfNotExists = Bool(true)
-		opts.RootLocation = "@test"
-		opts.MainFile = "manifest.yml"
-		opts.QueryWarehouse = &warehouse
-		opts.Comment = String("test")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE STREAMLIT IF NOT EXISTS %s ROOT_LOCATION = '@test' MAIN_FILE = 'manifest.yml' QUERY_WAREHOUSE = %s COMMENT = 'test'`, id.FullyQualifiedName(), warehouse.FullyQualifiedName())
-	})
+	streamlitsTests.Create.RunValidationCases(t)
+	streamlitsTests.Create.RunSqlCases(t)
 }
 
 func TestStreamlits_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterStreamlitOptions
-	defaultOpts := func() *AlterStreamlitOptions {
-		return &AlterStreamlitOptions{
-			// adjusted manually
-			IfExists: Bool(true),
-			name:     id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterStreamlitOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RenameTo = &emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStreamlitOptions", "RenameTo", "Set", "Unset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(StreamlitSet)
-		opts.Unset = new(StreamlitUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterStreamlitOptions", "RenameTo", "Set", "Unset"))
-	})
-
-	t.Run("validation: valid identifier for [opts.Set.QueryWarehouse] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &StreamlitSet{
-			QueryWarehouse: &emptyAccountObjectIdentifier,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.RootLocation opts.Set.MainFile opts.Set.QueryWarehouse opts.Set.ExternalAccessIntegrations opts.Set.Comment opts.Set.Title] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(StreamlitSet)
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStreamlitOptions.Set", "RootLocation", "MainFile", "QueryWarehouse", "ExternalAccessIntegrations", "Comment", "Title"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.QueryWarehouse opts.Unset.Title opts.Unset.Comment opts.Unset.ExternalAccessIntegrations] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = new(StreamlitUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterStreamlitOptions.Unset", "QueryWarehouse", "Title", "Comment", "ExternalAccessIntegrations"))
-	})
-
-	// all variants added manually
-	t.Run("alter: set options", func(t *testing.T) {
-		warehouse := NewAccountObjectIdentifier("test_warehouse")
-		integration := NewAccountObjectIdentifier("integration")
-
-		opts := defaultOpts()
-		opts.Set = &StreamlitSet{
-			RootLocation:               String("@test"),
-			MainFile:                   String("manifest.yml"),
-			QueryWarehouse:             &warehouse,
-			ExternalAccessIntegrations: []AccountObjectIdentifier{integration},
-			Comment:                    String("test"),
-			Title:                      String("foo"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAMLIT IF EXISTS %s SET ROOT_LOCATION = '@test' MAIN_FILE = 'manifest.yml' QUERY_WAREHOUSE = %s EXTERNAL_ACCESS_INTEGRATIONS = ("integration") COMMENT = 'test' TITLE = 'foo'`, id.FullyQualifiedName(), warehouse.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &StreamlitUnset{
-			QueryWarehouse:             Pointer(true),
-			Comment:                    Pointer(true),
-			Title:                      Pointer(true),
-			ExternalAccessIntegrations: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAMLIT IF EXISTS %s UNSET QUERY_WAREHOUSE, COMMENT, TITLE, EXTERNAL_ACCESS_INTEGRATIONS`, id.FullyQualifiedName())
-	})
-
-	t.Run("alter: rename", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomSchemaObjectIdentifier()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, `ALTER STREAMLIT IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
+	streamlitsTests.Alter.RunValidationCases(t)
+	streamlitsTests.Alter.RunSqlCases(t)
 }
 
 func TestStreamlits_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropStreamlitOptions
-	defaultOpts := func() *DropStreamlitOptions {
-		return &DropStreamlitOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropStreamlitOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP STREAMLIT %s`, id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP STREAMLIT IF EXISTS %s`, id.FullyQualifiedName())
-	})
+	streamlitsTests.Drop.RunValidationCases(t)
+	streamlitsTests.Drop.RunSqlCases(t)
 }
 
 func TestStreamlits_Show(t *testing.T) {
-	// Minimal valid ShowStreamlitOptions
-	defaultOpts := func() *ShowStreamlitOptions {
-		return &ShowStreamlitOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowStreamlitOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW STREAMLITS")
-	})
-
-	// all variants added manually
-	t.Run("show terse", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Terse = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE STREAMLITS`)
-	})
-
-	t.Run("show with like", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW STREAMLITS LIKE 'pattern'`)
-	})
-
-	t.Run("show with in", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.In = &In{
-			Account: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW STREAMLITS IN ACCOUNT`)
-	})
-
-	t.Run("show with limit", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{
-			Rows: Int(123),
-			From: String("from pattern"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW STREAMLITS LIMIT 123 FROM 'from pattern'`)
-	})
+	streamlitsTests.Show.RunValidationCases(t)
+	streamlitsTests.Show.RunSqlCases(t)
 }
 
 func TestStreamlits_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeStreamlitOptions
-	defaultOpts := func() *DescribeStreamlitOptions {
-		return &DescribeStreamlitOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeStreamlitOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE STREAMLIT %s`, id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	streamlitsTests.Describe.RunValidationCases(t)
+	streamlitsTests.Describe.RunSqlCases(t)
 }

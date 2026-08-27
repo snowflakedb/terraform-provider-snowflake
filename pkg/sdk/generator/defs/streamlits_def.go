@@ -116,4 +116,5 @@ var streamlitsDef = g.NewInterface(
 		SQL("STREAMLIT").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-)
+).
+	WithEnabledGenerationParts(g.PartUnitTests)
