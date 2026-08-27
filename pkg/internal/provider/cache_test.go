@@ -292,13 +292,15 @@ func TestCache_CancelingCallerCtxCancelsLoad(t *testing.T) {
 	assert.Equal(t, 42, result)
 }
 
-// TestCache_InvalidateDuringInFlightLoadDoesNotErrorConcurrentCaller reproduces a race hit in
-// production: two resource instances share a cache key (e.g. two snowflake_grant_ownership
+// TestCache_InvalidateDuringInFlightLoadDoesNotErrorAndLeavesResultUncached reproduces a race hit
+// in production: two resource instances share a cache key (e.g. two snowflake_grant_ownership
 // future grants on the same schema). One (simulated by the Invalidate call below) finishes its
 // own mutation and invalidates the key while the other is still mid-load for that same key. The
 // in-flight caller must still get its value back with no error — an unrelated sibling's mutation
-// is not this caller's failure to report.
-func TestCache_InvalidateDuringInFlightLoadDoesNotErrorConcurrentCaller(t *testing.T) {
+// is not this caller's failure to report. The in-flight load's result must also not be cached,
+// since it may reflect pre-mutation state: the next GetOrLoad must perform a fresh load rather
+// than serving that stale value back.
+func TestCache_InvalidateDuringInFlightLoadDoesNotErrorAndLeavesResultUncached(t *testing.T) {
 	cache := NewCache[int]()
 
 	started := make(chan struct{})
@@ -307,15 +309,13 @@ func TestCache_InvalidateDuringInFlightLoadDoesNotErrorConcurrentCaller(t *testi
 	var wg sync.WaitGroup
 	var result int
 	var err error
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		result, err = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
 			close(started)
 			<-proceed
-			return 42, nil
+			return 1, nil // pre-mutation value
 		})
-	}()
+	})
 
 	<-started
 	cache.Invalidate("ROLE_A") // a sibling's mutation lands while the load above is in flight
@@ -324,41 +324,68 @@ func TestCache_InvalidateDuringInFlightLoadDoesNotErrorConcurrentCaller(t *testi
 	waitTimeout(t, &wg, 5*time.Second)
 
 	require.NoError(t, err, "an unrelated Invalidate must not surface as an error to a caller whose load was already in flight")
-	assert.Equal(t, 42, result)
-}
-
-// TestCache_InvalidateDuringInFlightLoadPreventsCachingStaleResult proves the other half of the
-// same fix: the in-flight load's result must not be cached once it raced an Invalidate for its
-// key, since it may reflect pre-mutation state. The next GetOrLoad must perform a fresh load
-// rather than serving that stale value back.
-func TestCache_InvalidateDuringInFlightLoadPreventsCachingStaleResult(t *testing.T) {
-	cache := NewCache[int]()
-
-	started := make(chan struct{})
-	proceed := make(chan struct{})
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		_, _ = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
-			close(started)
-			<-proceed
-			return 1, nil // pre-mutation value
-		})
-	}()
-
-	<-started
-	cache.Invalidate("ROLE_A")
-	close(proceed)
-	waitTimeout(t, &wg, 5*time.Second)
+	assert.Equal(t, 1, result)
 
 	calls := 0
-	result, err := cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
+	result, err = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
 		calls++
 		return 2, nil // post-mutation value
 	})
 	require.NoError(t, err)
 	assert.Equal(t, 1, calls, "the stale in-flight result must not have been cached, so this call must perform a fresh load")
 	assert.Equal(t, 2, result)
+}
+
+// TestCache_GetOrLoadAfterInvalidateStartsFreshLoadWithoutJoiningOldFlight proves that a
+// GetOrLoad issued after Invalidate does not join the load already in flight from before the
+// Invalidate: it must start its own loadFn call immediately rather than waiting for the old,
+// pre-invalidation load to finish (which, since generations differ, would never even deliver it
+// that load's result).
+func TestCache_GetOrLoadAfterInvalidateStartsFreshLoadWithoutJoiningOldFlight(t *testing.T) {
+	cache := NewCache[int]()
+
+	started1 := make(chan struct{})
+	proceed1 := make(chan struct{})
+	started2 := make(chan struct{})
+
+	var wg sync.WaitGroup
+	var result1, result2 int
+	var err1, err2 error
+
+	wg.Go(func() {
+		result1, err1 = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
+			close(started1)
+			<-proceed1
+			return 1, nil // pre-mutation value
+		})
+	})
+
+	<-started1
+	cache.Invalidate("ROLE_A")
+
+	calls := 0
+	wg.Go(func() {
+		result2, err2 = cache.GetOrLoad(context.Background(), "ROLE_A", func(context.Context) (int, error) {
+			calls++
+			close(started2)
+			return 2, nil // post-mutation value
+		})
+	})
+
+	// If the second GetOrLoad joined the first (pre-Invalidate) singleflight call instead of
+	// starting a fresh one under the new generation, its loadFn would never run and started2
+	// would never close while proceed1 is still blocking the first load.
+	select {
+	case <-started2:
+	case <-time.After(5 * time.Second):
+		t.Fatal("timed out waiting for the post-Invalidate GetOrLoad to start its own load; it may have joined the pre-Invalidate in-flight call instead")
+	}
+	close(proceed1)
+	waitTimeout(t, &wg, 5*time.Second)
+
+	require.NoError(t, err1)
+	assert.Equal(t, 1, result1)
+	require.NoError(t, err2)
+	assert.Equal(t, 2, result2)
+	assert.Equal(t, 1, calls)
 }
