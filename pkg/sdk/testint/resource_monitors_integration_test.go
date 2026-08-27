@@ -230,7 +230,7 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 					*sdk.NewResourceMonitorSetRequest().
 						WithNotifyUsers(
 							*sdk.NewNotifyUsersRequest().
-								WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK"))}),
+								WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("TEST_CI_SERVICE_USER"))}),
 						),
 				),
 		)
@@ -239,7 +239,7 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 		resourceMonitor, err = client.ResourceMonitors.ShowByID(ctx, resourceMonitor.ID())
 		require.NoError(t, err)
 		assert.Len(t, resourceMonitor.NotifyUsers, 1)
-		assert.Equal(t, "JAN_CIESLAK", resourceMonitor.NotifyUsers[0])
+		assert.Equal(t, "TEST_CI_SERVICE_USER", resourceMonitor.NotifyUsers[0])
 
 		err = client.ResourceMonitors.Alter(
 			ctx, sdk.NewAlterResourceMonitorRequest(resourceMonitor.ID()).
@@ -308,7 +308,7 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 						WithCreditQuota(creditQuota).
 						WithNotifyUsers(
 							*sdk.NewNotifyUsersRequest().
-								WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("JAN_CIESLAK"))}),
+								WithUsers([]sdk.NotifiedUserRequest{*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("TEST_CI_SERVICE_USER"))}),
 						),
 				).
 				WithTriggers([]sdk.TriggerDefinitionRequest{
@@ -321,7 +321,7 @@ func TestInt_ResourceMonitorAlter(t *testing.T) {
 			t,
 			objectassert.ResourceMonitor(t, resourceMonitor.ID()).
 				HasCreditQuota(float64(creditQuota)).
-				HasNotifyUsers("JAN_CIESLAK").
+				HasNotifyUsers("TEST_CI_SERVICE_USER").
 				HasNotifyAt(30),
 		)
 	})

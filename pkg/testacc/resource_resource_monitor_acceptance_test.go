@@ -184,7 +184,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 		WithSuspendImmediateTrigger(150)
 
 	configModelUpdated := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"), configvariable.StringVariable("ARTUR_SAWICKI"))).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"))).
 		WithCreditQuota(20).
 		WithFrequency(string(sdk.FrequencyMonthly)).
 		WithStartTimestamp(time.Now().Add(time.Hour * 24 * 40).Format("2006-01-02 15:01")).
@@ -278,7 +278,7 @@ func TestAcc_ResourceMonitor_Updates(t *testing.T) {
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasCreditQuotaString("20").
-						HasNotifyUsers("ARTUR_SAWICKI", "TEST_CI_SERVICE_USER").
+						HasNotifyUsers("TEST_CI_SERVICE_USER").
 						HasFrequencyString(string(sdk.FrequencyMonthly)).
 						HasStartTimestampString(time.Now().Add(time.Hour*24*40).Format("2006-01-02 15:01")).
 						HasEndTimestampString(time.Now().Add(time.Hour*24*70).Format("2006-01-02 15:01")).
@@ -354,7 +354,7 @@ func TestAcc_ResourceMonitor_ExternalChanges(t *testing.T) {
 		WithSuspendImmediateTrigger(150)
 
 	configModelUpdated := model.ResourceMonitor("test", id.Name()).
-		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"), configvariable.StringVariable("ARTUR_SAWICKI"))).
+		WithNotifyUsersValue(configvariable.SetVariable(configvariable.StringVariable("TEST_CI_SERVICE_USER"))).
 		WithCreditQuota(20).
 		WithFrequency(string(sdk.FrequencyMonthly)).
 		WithStartTimestamp(startTimestamp).
@@ -387,7 +387,6 @@ func TestAcc_ResourceMonitor_ExternalChanges(t *testing.T) {
 										*sdk.NewNotifyUsersRequest().
 											WithUsers([]sdk.NotifiedUserRequest{
 												*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("TEST_CI_SERVICE_USER")),
-												*sdk.NewNotifiedUserRequest(sdk.NewAccountObjectIdentifier("ARTUR_SAWICKI")),
 											}),
 									).
 									WithCreditQuota(20).
