@@ -243,4 +243,5 @@ var accountsDef = g.NewInterface(
 		[]*g.MethodParameter{},
 		"error",
 	).
-	WithEnums(accountEditionDef)
+	WithEnums(accountEditionDef).
+	WithEnabledGenerationParts(g.PartUnitTests)
