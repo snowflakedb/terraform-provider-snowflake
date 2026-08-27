@@ -54,6 +54,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiAuthenticationIntegrationWithJwtBearer().Schema,
 	},
 	{
+		name:   "Alert",
+		schema: resources.Alert().Schema,
+	},
+	{
 		name:   "ApiIntegrationAmazonApiGateway",
 		schema: resources.ApiIntegrationAmazonApiGateway().Schema,
 	},
@@ -116,6 +120,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "CortexAgent",
 		schema: resources.CortexAgent().Schema,
+	},
+	{
+		name:   "CortexSearchService",
+		schema: resources.CortexSearchService().Schema,
 	},
 	{
 		name:   "CurrentAccount",
