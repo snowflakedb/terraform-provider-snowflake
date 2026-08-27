@@ -54,11 +54,11 @@ declared.
 
 If you would like to specify an empty list, please use `none = true` instead.
 
-### *(bug fix)* Concurrent `Invalidate` could turn an unrelated in-flight read into an error
+### *(bug fix)* Concurrent `Invalidate` could turn an unrelated in-flight read into an error (experimental `SHOW` caching only)
 
-Several resources (e.g. `snowflake_grant_ownership`, `snowflake_grant_privileges_to_account_role`) share a per-plan cache for expensive `SHOW`-based reads, keyed so that multiple resource instances resolving to the same `SHOW` statement collapse into a single lookup. When one resource instance mutated the underlying object and invalidated that cache key while another instance's read for the same key was still in flight, the invalidation canceled the shared in-flight read for every caller, not just the one that triggered it. Unrelated resource instances could then fail their `Read` with a spurious `context canceled` error during a plan/apply with enough parallelism.
+This only affects configurations that opt into the `GRANT_ACCOUNT_ROLE_SHOW_CACHING`, `ACCOUNT_ROLE_SHOW_CACHING`, or `GRANTS_SHOW_CACHING` experimental features via `enabled_experimental_features`. With one of these enabled, several resources (e.g. `snowflake_grant_ownership`, `snowflake_grant_privileges_to_account_role`) share a per-plan cache for the relevant `SHOW`-based reads, keyed so that multiple resource instances resolving to the same `SHOW` statement collapse into a single lookup. When one resource instance mutated the underlying object and invalidated that cache key while another instance's read for the same key was still in flight, the invalidation canceled the shared in-flight read for every caller, not just the one that triggered it. Unrelated resource instances could then fail their `Read` with a spurious `context canceled` error during a plan/apply with enough parallelism.
 
-Invalidation no longer cancels an in-flight read. A read that races an invalidation for its key simply isn't cached, so the next read for that key performs a fresh lookup instead of reusing stale data.
+Invalidation no longer cancels an in-flight read. A read that races an invalidation for its key now completes normally and returns whatever it was already fetching (which may still reflect pre-mutation state), instead of erroring out. That result is just not written back into the cache, so it does not linger: the next read for that key performs its own fresh lookup rather than reusing it.
 
 ### *(bug fix)* `snowflake_storage_lifecycle_policy`: perpetual in-place update of `describe_output`
 
