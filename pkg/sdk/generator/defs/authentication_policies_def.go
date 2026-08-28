@@ -227,4 +227,5 @@ var authenticationPoliciesDef = g.NewInterface(
 		MfaPolicyAllowedMethodsOptionEnumDef,
 		EnforceMfaOnExternalAuthenticationOptionEnumDef,
 		AuthenticationPolicyTargetScopeEnumDef,
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)

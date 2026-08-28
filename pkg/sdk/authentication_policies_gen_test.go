@@ -18,432 +18,371 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkPolicyEvaluationOption]{"NetworkPolicyEvaluationOption", AllNetworkPolicyEvaluationOptions, ToNetworkPolicyEvaluationOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaPolicyAllowedMethodsOption]{"MfaPolicyAllowedMethodsOption", AllMfaPolicyAllowedMethodsOptions, ToMfaPolicyAllowedMethodsOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[EnforceMfaOnExternalAuthenticationOption]{"EnforceMfaOnExternalAuthenticationOption", AllEnforceMfaOnExternalAuthenticationOptions, ToEnforceMfaOnExternalAuthenticationOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationPolicyTargetScope]{"AuthenticationPolicyTargetScope", AllAuthenticationPolicyTargetScopes, ToAuthenticationPolicyTargetScope})
+}
+
+var authenticationPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_AuthenticationPolicies_validation_Create_name_ValidIdentifier                                           testCaseName = "validation_Create_name_ValidIdentifier"
+	case_AuthenticationPolicies_validation_Create_opts_ConflictingFields                                         testCaseName = "validation_Create_opts_ConflictingFields"
+	case_AuthenticationPolicies_validation_Create_opts_MfaPolicy_AtLeastOneValueSet                              testCaseName = "validation_Create_opts_MfaPolicy_AtLeastOneValueSet"
+	case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet"
+	case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet"
+	case_AuthenticationPolicies_validation_Create_opts_PatPolicy_AtLeastOneValueSet                              testCaseName = "validation_Create_opts_PatPolicy_AtLeastOneValueSet"
+	case_AuthenticationPolicies_validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet                 testCaseName = "validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet"
+	case_AuthenticationPolicies_sql_Create_basic                                                                 testCaseName = "sql_Create_basic"
+	case_AuthenticationPolicies_sql_Create_all                                                                   testCaseName = "sql_Create_all"
+	case_AuthenticationPolicies_validation_Alter_name_ValidIdentifier                                            testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_AuthenticationPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_AuthenticationPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_AuthenticationPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet                                   testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_AuthenticationPolicies_validation_Alter_opts_Set_AtLeastOneValueSet                                     testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_AuthenticationPolicies_validation_Alter_opts_Set_MfaPolicy_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_MfaPolicy_AtLeastOneValueSet"
+	case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_NoneSet"
+	case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet"
+	case_AuthenticationPolicies_validation_Alter_opts_Set_PatPolicy_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_PatPolicy_AtLeastOneValueSet"
+	case_AuthenticationPolicies_validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet              testCaseName = "validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet"
+	case_AuthenticationPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_AuthenticationPolicies_sql_Alter_Set                                                                    testCaseName = "sql_Alter_Set"
+	case_AuthenticationPolicies_sql_Alter_Unset                                                                  testCaseName = "sql_Alter_Unset"
+	case_AuthenticationPolicies_sql_Alter_RenameTo                                                               testCaseName = "sql_Alter_RenameTo"
+	case_AuthenticationPolicies_validation_Drop_name_ValidIdentifier                                             testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_AuthenticationPolicies_sql_Drop_basic                                                                   testCaseName = "sql_Drop_basic"
+	case_AuthenticationPolicies_sql_Drop_all                                                                     testCaseName = "sql_Drop_all"
+	case_AuthenticationPolicies_sql_Show_basic                                                                   testCaseName = "sql_Show_basic"
+	case_AuthenticationPolicies_sql_Show_all                                                                     testCaseName = "sql_Show_all"
+	case_AuthenticationPolicies_sql_Show_Like                                                                    testCaseName = "sql_Show_Like"
+	case_AuthenticationPolicies_sql_Show_In                                                                      testCaseName = "sql_Show_In"
+	case_AuthenticationPolicies_sql_Show_On                                                                      testCaseName = "sql_Show_On"
+	case_AuthenticationPolicies_sql_Show_StartsWith                                                              testCaseName = "sql_Show_StartsWith"
+	case_AuthenticationPolicies_sql_Show_Limit                                                                   testCaseName = "sql_Show_Limit"
+	case_AuthenticationPolicies_validation_Describe_name_ValidIdentifier                                         testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_AuthenticationPolicies_sql_Describe_basic                                                               testCaseName = "sql_Describe_basic"
+)
+
+type AuthenticationPoliciesTestsContext struct {
+	Create   *sdkTestCtx[*CreateAuthenticationPolicyOptions]
+	Alter    *sdkTestCtx[*AlterAuthenticationPolicyOptions]
+	Drop     *sdkTestCtx[*DropAuthenticationPolicyOptions]
+	Show     *sdkTestCtx[*ShowAuthenticationPolicyOptions]
+	Describe *sdkTestCtx[*DescribeAuthenticationPolicyOptions]
+}
+
+var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
+	Create: newSdkTestCtx[*CreateAuthenticationPolicyOptions](
+		"AuthenticationPolicies", "Create",
+	).
+		withDefaultOpts(func() *CreateAuthenticationPolicyOptions {
+			return &CreateAuthenticationPolicyOptions{
+				name: authenticationPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateAuthenticationPolicyOptions", "IfNotExists", "OrReplace"),
+				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
+					opts.IfNotExists = new(true)
+					opts.OrReplace = new(true)
+				},
+			},
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_opts_MfaPolicy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("CreateAuthenticationPolicyOptions.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"),
+				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
+					opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{}
+					opts.MfaPolicy.EnforceMfaOnExternalAuthentication = nil
+					opts.MfaPolicy.AllowedMethods = nil
+				},
+			},
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"),
+				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
+					opts.SecurityIntegrations = &SecurityIntegrationsOption{}
+					opts.SecurityIntegrations.All = nil
+					opts.SecurityIntegrations.SecurityIntegrations = nil
+				},
+			},
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"),
+			},
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_opts_PatPolicy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"),
+				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
+					opts.PatPolicy = &AuthenticationPolicyPatPolicy{}
+					opts.PatPolicy.DefaultExpiryInDays = nil
+					opts.PatPolicy.MaxExpiryInDays = nil
+					opts.PatPolicy.RequireRoleRestrictionForServiceUsers = nil
+					opts.PatPolicy.NetworkPolicyEvaluation = nil
+				},
+			},
+			validationCase[*CreateAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("CreateAuthenticationPolicyOptions.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"),
+				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
+					opts.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{}
+					opts.WorkloadIdentityPolicy.AllowedProviders = nil
+					opts.WorkloadIdentityPolicy.AllowedAwsAccounts = nil
+					opts.WorkloadIdentityPolicy.AllowedAzureIssuers = nil
+					opts.WorkloadIdentityPolicy.AllowedOidcIssuers = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateAuthenticationPolicyOptions]{
+				Name:           case_AuthenticationPolicies_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterAuthenticationPolicyOptions](
+		"AuthenticationPolicies", "Alter",
+	).
+		withDefaultOpts(func() *AlterAuthenticationPolicyOptions {
+			return &AlterAuthenticationPolicyOptions{
+				name: authenticationPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterAuthenticationPolicyOptions", "Set", "Unset", "RenameTo"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.RenameTo = nil
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterAuthenticationPolicyOptions", "Set", "Unset", "RenameTo"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = &AuthenticationPolicySet{}
+					opts.Unset = &AuthenticationPolicyUnset{}
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "ClientPolicy", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = &AuthenticationPolicySet{}
+					opts.Set.AuthenticationMethods = nil
+					opts.Set.MfaEnrollment = nil
+					opts.Set.ClientTypes = nil
+					opts.Set.ClientPolicy = nil
+					opts.Set.SecurityIntegrations = nil
+					opts.Set.Comment = nil
+					opts.Set.MfaPolicy = nil
+					opts.Set.PatPolicy = nil
+					opts.Set.WorkloadIdentityPolicy = nil
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_MfaPolicy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = &AuthenticationPolicySet{}
+					opts.Set.MfaPolicy = &AuthenticationPolicyMfaPolicy{}
+					opts.Set.MfaPolicy.EnforceMfaOnExternalAuthentication = nil
+					opts.Set.MfaPolicy.AllowedMethods = nil
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = &AuthenticationPolicySet{}
+					opts.Set.SecurityIntegrations = &SecurityIntegrationsOption{}
+					opts.Set.SecurityIntegrations.All = nil
+					opts.Set.SecurityIntegrations.SecurityIntegrations = nil
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"),
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_PatPolicy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = &AuthenticationPolicySet{}
+					opts.Set.PatPolicy = &AuthenticationPolicyPatPolicy{}
+					opts.Set.PatPolicy.DefaultExpiryInDays = nil
+					opts.Set.PatPolicy.MaxExpiryInDays = nil
+					opts.Set.PatPolicy.RequireRoleRestrictionForServiceUsers = nil
+					opts.Set.PatPolicy.NetworkPolicyEvaluation = nil
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Set = &AuthenticationPolicySet{}
+					opts.Set.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{}
+					opts.Set.WorkloadIdentityPolicy.AllowedProviders = nil
+					opts.Set.WorkloadIdentityPolicy.AllowedAwsAccounts = nil
+					opts.Set.WorkloadIdentityPolicy.AllowedAzureIssuers = nil
+					opts.Set.WorkloadIdentityPolicy.AllowedOidcIssuers = nil
+				},
+			},
+			validationCase[*AlterAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "ClientPolicy", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"),
+				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
+					opts.Unset = &AuthenticationPolicyUnset{}
+					opts.Unset.ClientTypes = nil
+					opts.Unset.ClientPolicy = nil
+					opts.Unset.AuthenticationMethods = nil
+					opts.Unset.Comment = nil
+					opts.Unset.SecurityIntegrations = nil
+					opts.Unset.MfaEnrollment = nil
+					opts.Unset.MfaPolicy = nil
+					opts.Unset.PatPolicy = nil
+					opts.Unset.WorkloadIdentityPolicy = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Alter_Set,
+			},
+			sqlCase[*AlterAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Alter_Unset,
+			},
+			sqlCase[*AlterAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Alter_RenameTo,
+			},
+		),
+	Drop: newSdkTestCtx[*DropAuthenticationPolicyOptions](
+		"AuthenticationPolicies", "Drop",
+	).
+		withDefaultOpts(func() *DropAuthenticationPolicyOptions {
+			return &DropAuthenticationPolicyOptions{
+				name: authenticationPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropAuthenticationPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropAuthenticationPolicyOptions]{
+				Name:           case_AuthenticationPolicies_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowAuthenticationPolicyOptions](
+		"AuthenticationPolicies", "Show",
+	).
+		withDefaultOpts(func() *ShowAuthenticationPolicyOptions {
+			return &ShowAuthenticationPolicyOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowAuthenticationPolicyOptions]{
+				Name:           case_AuthenticationPolicies_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Show_all,
+			},
+			sqlCase[*ShowAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Show_Like,
+			},
+			sqlCase[*ShowAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Show_In,
+			},
+			sqlCase[*ShowAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Show_On,
+			},
+			sqlCase[*ShowAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowAuthenticationPolicyOptions]{
+				Name: case_AuthenticationPolicies_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeAuthenticationPolicyOptions](
+		"AuthenticationPolicies", "Describe",
+	).
+		withDefaultOpts(func() *DescribeAuthenticationPolicyOptions {
+			return &DescribeAuthenticationPolicyOptions{
+				name: authenticationPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeAuthenticationPolicyOptions]{
+				Name:        case_AuthenticationPolicies_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeAuthenticationPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeAuthenticationPolicyOptions]{
+				Name:           case_AuthenticationPolicies_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
 }
 
 func TestAuthenticationPolicies_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateAuthenticationPolicyOptions
-	defaultOpts := func() *CreateAuthenticationPolicyOptions {
-		return &CreateAuthenticationPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateAuthenticationPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfNotExists opts.OrReplace]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.OrReplace = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateAuthenticationPolicyOptions", "IfNotExists", "OrReplace"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.MfaPolicy.EnforceMfaOnExternalAuthentication opts.MfaPolicy.AllowedMethods] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateAuthenticationPolicyOptions.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"))
-	})
-
-	t.Run("validation: exactly one field from [opts.SecurityIntegrations.All opts.SecurityIntegrations.SecurityIntegrations] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SecurityIntegrations = &SecurityIntegrationsOption{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"))
-	})
-
-	t.Run("validation: exactly one field from [opts.SecurityIntegrations.All opts.SecurityIntegrations.SecurityIntegrations] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SecurityIntegrations = &SecurityIntegrationsOption{
-			All:                  Pointer(true),
-			SecurityIntegrations: []AccountObjectIdentifier{NewAccountObjectIdentifier("security_integration")},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateAuthenticationPolicyOptions.SecurityIntegrations", "All", "SecurityIntegrations"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.PatPolicy.DefaultExpiryInDays opts.PatPolicy.MaxExpiryInDays opts.PatPolicy.RequireRoleRestrictionForServiceUsers opts.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.PatPolicy = &AuthenticationPolicyPatPolicy{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateAuthenticationPolicyOptions.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.WorkloadIdentityPolicy.AllowedProviders opts.WorkloadIdentityPolicy.AllowedAwsAccounts opts.WorkloadIdentityPolicy.AllowedAzureIssuers opts.WorkloadIdentityPolicy.AllowedOidcIssuers] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateAuthenticationPolicyOptions.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AuthenticationMethods = []AuthenticationMethods{
-			{Method: AuthenticationMethodsOptionAll},
-		}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE AUTHENTICATION POLICY %s AUTHENTICATION_METHODS = ('ALL') COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	// variant added manually
-	t.Run("with security integrations - ALL", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SecurityIntegrations = &SecurityIntegrationsOption{
-			All: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE AUTHENTICATION POLICY %s SECURITY_INTEGRATIONS = ('ALL')", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = Bool(true)
-		opts.AuthenticationMethods = []AuthenticationMethods{
-			{Method: AuthenticationMethodsOptionSaml},
-			{Method: AuthenticationMethodsOptionPassword},
-		}
-		opts.MfaEnrollment = Pointer(MfaEnrollmentOptionOptional)
-		opts.MfaPolicy = &AuthenticationPolicyMfaPolicy{
-			EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationOptionAll),
-			AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-				{Method: MfaPolicyAllowedMethodsOptionPasskey},
-			},
-		}
-		opts.PatPolicy = &AuthenticationPolicyPatPolicy{
-			DefaultExpiryInDays:                   Int(30),
-			MaxExpiryInDays:                       Int(90),
-			RequireRoleRestrictionForServiceUsers: Bool(true),
-			NetworkPolicyEvaluation:               Pointer(NetworkPolicyEvaluationOptionEnforcedRequired),
-		}
-		opts.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{
-			AllowedProviders:    []AuthenticationPolicyAllowedProviderListItem{{Provider: AllowedProviderOptionAll}},
-			AllowedAwsAccounts:  []StringListItemWrapper{{Value: "1234567890"}},
-			AllowedAzureIssuers: []StringListItemWrapper{{Value: "https://login.microsoftonline.com/1234567890/v2.0"}},
-			AllowedOidcIssuers:  []StringListItemWrapper{{Value: "https://oidc.example.com"}},
-		}
-		opts.ClientTypes = []ClientTypes{
-			{ClientType: ClientTypesOptionDrivers},
-			{ClientType: ClientTypesOptionSnowsql},
-		}
-		opts.ClientPolicy = []AuthenticationPolicyClientPolicyEntry{
-			{ClientType: ClientPolicyDriverTypeGoDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("1.14.1")}},
-			{ClientType: ClientPolicyDriverTypeJdbcDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("3.25.0")}},
-		}
-		opts.SecurityIntegrations = &SecurityIntegrationsOption{
-			SecurityIntegrations: []AccountObjectIdentifier{
-				NewAccountObjectIdentifier("security_integration"),
-			},
-		}
-		opts.Comment = String("some comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE AUTHENTICATION POLICY %s AUTHENTICATION_METHODS = ('SAML', 'PASSWORD')"+
-			" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY'))"+
-			" CLIENT_TYPES = ('DRIVERS', 'SNOWSQL') CLIENT_POLICY = (GO_DRIVER = (MINIMUM_VERSION = '1.14.1'), JDBC_DRIVER = (MINIMUM_VERSION = '3.25.0'))"+
-			" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
-			" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')"+
-			" ALLOWED_OIDC_ISSUERS = ('https://oidc.example.com')) COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
+	authenticationPoliciesTests.Create.RunValidationCases(t)
+	authenticationPoliciesTests.Create.RunSqlCases(t)
 }
 
 func TestAuthenticationPolicies_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterAuthenticationPolicyOptions
-	defaultOpts := func() *AlterAuthenticationPolicyOptions {
-		return &AlterAuthenticationPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterAuthenticationPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAuthenticationPolicyOptions", "Set", "Unset", "RenameTo"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = new(AuthenticationPolicySet)
-		opts.Unset = new(AuthenticationPolicyUnset)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAuthenticationPolicyOptions", "Set", "Unset", "RenameTo"))
-	})
-
-	t.Run("validation: valid identifier for [opts.RenameTo] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RenameTo = &emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.AuthenticationMethods opts.Set.MfaEnrollment opts.Set.ClientTypes opts.Set.ClientPolicy opts.Set.SecurityIntegrations opts.Set.Comment opts.Set.MfaPolicy opts.Set.PatPolicy opts.Set.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &AuthenticationPolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set", "AuthenticationMethods", "MfaEnrollment", "ClientTypes", "ClientPolicy", "SecurityIntegrations", "Comment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.MfaPolicy.EnforceMfaOnExternalAuthentication opts.Set.MfaPolicy.AllowedMethods] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &AuthenticationPolicySet{
-			MfaPolicy: &AuthenticationPolicyMfaPolicy{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.MfaPolicy", "EnforceMfaOnExternalAuthentication", "AllowedMethods"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.SecurityIntegrations.All opts.Set.SecurityIntegrations.SecurityIntegrations] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &AuthenticationPolicySet{
-			SecurityIntegrations: &SecurityIntegrationsOption{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"))
-	})
-
-	t.Run("validation: exactly one of the fields [opts.Set.SecurityIntegrations.All opts.Set.SecurityIntegrations.SecurityIntegrations] should be set - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &AuthenticationPolicySet{
-			SecurityIntegrations: &SecurityIntegrationsOption{
-				All:                  Pointer(true),
-				SecurityIntegrations: []AccountObjectIdentifier{NewAccountObjectIdentifier("security_integration")},
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations", "All", "SecurityIntegrations"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.PatPolicy.DefaultExpiryInDays opts.Set.PatPolicy.MaxExpiryInDays opts.Set.PatPolicy.RequireRoleRestrictionForServiceUsers opts.Set.PatPolicy.NetworkPolicyEvaluation] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &AuthenticationPolicySet{
-			PatPolicy: &AuthenticationPolicyPatPolicy{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.PatPolicy", "DefaultExpiryInDays", "MaxExpiryInDays", "RequireRoleRestrictionForServiceUsers", "NetworkPolicyEvaluation"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.WorkloadIdentityPolicy.AllowedProviders opts.Set.WorkloadIdentityPolicy.AllowedAwsAccounts opts.Set.WorkloadIdentityPolicy.AllowedAzureIssuers opts.Set.WorkloadIdentityPolicy.AllowedOidcIssuers] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &AuthenticationPolicySet{
-			WorkloadIdentityPolicy: &AuthenticationPolicyWorkloadIdentityPolicy{},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.ClientTypes opts.Unset.ClientPolicy opts.Unset.AuthenticationMethods opts.Unset.Comment opts.Unset.SecurityIntegrations opts.Unset.MfaEnrollment opts.Unset.MfaPolicy opts.Unset.PatPolicy opts.Unset.WorkloadIdentityPolicy] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &AuthenticationPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Unset", "ClientTypes", "ClientPolicy", "AuthenticationMethods", "Comment", "SecurityIntegrations", "MfaEnrollment", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"))
-	})
-
-	// all variants added manually
-	t.Run("alter: set basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &AuthenticationPolicySet{
-			AuthenticationMethods: []AuthenticationMethods{
-				{Method: AuthenticationMethodsOptionSaml},
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY %s SET AUTHENTICATION_METHODS = ('SAML')", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: set all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Set = &AuthenticationPolicySet{
-			AuthenticationMethods: []AuthenticationMethods{
-				{Method: AuthenticationMethodsOptionSaml},
-			},
-			MfaEnrollment: Pointer(MfaEnrollmentOptionOptional),
-			MfaPolicy: &AuthenticationPolicyMfaPolicy{
-				EnforceMfaOnExternalAuthentication: Pointer(EnforceMfaOnExternalAuthenticationOptionAll),
-				AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-					{Method: MfaPolicyAllowedMethodsOptionPasskey},
-				},
-			},
-			PatPolicy: &AuthenticationPolicyPatPolicy{
-				DefaultExpiryInDays:                   Int(30),
-				MaxExpiryInDays:                       Int(90),
-				RequireRoleRestrictionForServiceUsers: Bool(true),
-				NetworkPolicyEvaluation:               Pointer(NetworkPolicyEvaluationOptionEnforcedRequired),
-			},
-			WorkloadIdentityPolicy: &AuthenticationPolicyWorkloadIdentityPolicy{
-				AllowedProviders:    []AuthenticationPolicyAllowedProviderListItem{{Provider: AllowedProviderOptionAll}},
-				AllowedAwsAccounts:  []StringListItemWrapper{{Value: "1234567890"}},
-				AllowedAzureIssuers: []StringListItemWrapper{{Value: "https://login.microsoftonline.com/1234567890/v2.0"}},
-				AllowedOidcIssuers:  []StringListItemWrapper{{Value: "https://oidc.example.com"}},
-			},
-			ClientTypes: []ClientTypes{
-				{ClientType: ClientTypesOptionDrivers},
-				{ClientType: ClientTypesOptionSnowsql},
-			},
-			ClientPolicy: []AuthenticationPolicyClientPolicyEntry{
-				{ClientType: ClientPolicyDriverTypeGoDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("1.14.1")}},
-				{ClientType: ClientPolicyDriverTypeJdbcDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: String("3.25.0")}},
-			},
-			SecurityIntegrations: &SecurityIntegrationsOption{
-				SecurityIntegrations: []AccountObjectIdentifier{
-					NewAccountObjectIdentifier("security_integration"),
-				},
-			},
-			Comment: String("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s SET AUTHENTICATION_METHODS = ('SAML')"+
-			" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY')) CLIENT_TYPES = ('DRIVERS', 'SNOWSQL')"+
-			" CLIENT_POLICY = (GO_DRIVER = (MINIMUM_VERSION = '1.14.1'), JDBC_DRIVER = (MINIMUM_VERSION = '3.25.0'))"+
-			" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)"+
-			" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')"+
-			" ALLOWED_OIDC_ISSUERS = ('https://oidc.example.com')) COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &AuthenticationPolicyUnset{
-			ClientTypes: Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY %s UNSET CLIENT_TYPES", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: unset all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Unset = &AuthenticationPolicyUnset{
-			ClientTypes:            Bool(true),
-			ClientPolicy:           Bool(true),
-			AuthenticationMethods:  Bool(true),
-			SecurityIntegrations:   Bool(true),
-			MfaEnrollment:          Bool(true),
-			MfaPolicy:              Bool(true),
-			PatPolicy:              Bool(true),
-			WorkloadIdentityPolicy: Bool(true),
-			Comment:                Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY IF EXISTS %s UNSET CLIENT_TYPES, CLIENT_POLICY, AUTHENTICATION_METHODS, SECURITY_INTEGRATIONS, MFA_ENROLLMENT, MFA_POLICY, PAT_POLICY, WORKLOAD_IDENTITY_POLICY, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("alter: renameTo", func(t *testing.T) {
-		opts := defaultOpts()
-		target := randomSchemaObjectIdentifier()
-		opts.RenameTo = &target
-		assertOptsValidAndSQLEquals(t, opts, "ALTER AUTHENTICATION POLICY %s RENAME TO %s", id.FullyQualifiedName(), opts.RenameTo.FullyQualifiedName())
-	})
+	authenticationPoliciesTests.Alter.RunValidationCases(t)
+	authenticationPoliciesTests.Alter.RunSqlCases(t)
 }
 
 func TestAuthenticationPolicies_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropAuthenticationPolicyOptions
-	defaultOpts := func() *DropAuthenticationPolicyOptions {
-		return &DropAuthenticationPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropAuthenticationPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP AUTHENTICATION POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP AUTHENTICATION POLICY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	authenticationPoliciesTests.Drop.RunValidationCases(t)
+	authenticationPoliciesTests.Drop.RunSqlCases(t)
 }
 
 func TestAuthenticationPolicies_Show(t *testing.T) {
-	// added manually
-	id := randomSchemaObjectIdentifier()
-
-	// Minimal valid ShowAuthenticationPolicyOptions
-	defaultOpts := func() *ShowAuthenticationPolicyOptions {
-		return &ShowAuthenticationPolicyOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowAuthenticationPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW AUTHENTICATION POLICIES")
-	})
-
-	// variants added manually
-	t.Run("show on account", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = &On{
-			Account: Pointer(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW AUTHENTICATION POLICIES ON ACCOUNT")
-	})
-
-	t.Run("show on user", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.On = &On{
-			User: NewAccountObjectIdentifier("user_name"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW AUTHENTICATION POLICIES ON USER "user_name"`)
-	})
-
-	t.Run("complete", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("like-pattern"),
-		}
-		opts.StartsWith = String("starts-with-pattern")
-		opts.In = &ExtendedIn{
-			In: In{
-				Schema: id.SchemaId(),
-			},
-		}
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-			From: String("limit-from"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW AUTHENTICATION POLICIES LIKE 'like-pattern' IN SCHEMA %s STARTS WITH 'starts-with-pattern' LIMIT 10 FROM 'limit-from'", id.SchemaId().FullyQualifiedName())
-	})
+	authenticationPoliciesTests.Show.RunValidationCases(t)
+	authenticationPoliciesTests.Show.RunSqlCases(t)
 }
 
 func TestAuthenticationPolicies_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeAuthenticationPolicyOptions
-	defaultOpts := func() *DescribeAuthenticationPolicyOptions {
-		return &DescribeAuthenticationPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeAuthenticationPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE AUTHENTICATION POLICY %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	authenticationPoliciesTests.Describe.RunValidationCases(t)
+	authenticationPoliciesTests.Describe.RunSqlCases(t)
 }
