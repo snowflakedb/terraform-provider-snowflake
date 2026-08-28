@@ -147,4 +147,5 @@ var userProgrammaticAccessTokensDef = g.NewInterface(
 		"error",
 	).
 	WithEnums(ProgrammaticAccessTokenStatusDef).
-	WithShowObjectType("ProgrammaticAccessToken")
+	WithShowObjectType("ProgrammaticAccessToken").
+	WithEnabledGenerationParts(g.PartUnitTests)

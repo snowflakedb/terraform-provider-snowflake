@@ -10,267 +10,192 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ProgrammaticAccessTokenStatus]{"ProgrammaticAccessTokenStatus", AllProgrammaticAccessTokenStatuses, ToProgrammaticAccessTokenStatus})
 }
 
+var userProgrammaticAccessTokensTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_UserProgrammaticAccessTokens_validation_Add_name_ValidIdentifier                      testCaseName = "validation_Add_name_ValidIdentifier"
+	case_UserProgrammaticAccessTokens_validation_Add_RoleRestriction_ValidIdentifierIfSet      testCaseName = "validation_Add_RoleRestriction_ValidIdentifierIfSet"
+	case_UserProgrammaticAccessTokens_sql_Add_basic                                            testCaseName = "sql_Add_basic"
+	case_UserProgrammaticAccessTokens_validation_Modify_name_ValidIdentifier                   testCaseName = "validation_Modify_name_ValidIdentifier"
+	case_UserProgrammaticAccessTokens_validation_Modify_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Modify_opts_ExactlyOneValueSet_NoneSet"
+	case_UserProgrammaticAccessTokens_validation_Modify_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Modify_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_UserProgrammaticAccessTokens_sql_Modify_basic                                         testCaseName = "sql_Modify_basic"
+	case_UserProgrammaticAccessTokens_validation_Rotate_name_ValidIdentifier                   testCaseName = "validation_Rotate_name_ValidIdentifier"
+	case_UserProgrammaticAccessTokens_sql_Rotate_basic                                         testCaseName = "sql_Rotate_basic"
+	case_UserProgrammaticAccessTokens_validation_Remove_name_ValidIdentifier                   testCaseName = "validation_Remove_name_ValidIdentifier"
+	case_UserProgrammaticAccessTokens_sql_Remove_basic                                         testCaseName = "sql_Remove_basic"
+	case_UserProgrammaticAccessTokens_sql_Show_basic                                           testCaseName = "sql_Show_basic"
+	case_UserProgrammaticAccessTokens_sql_Show_all                                             testCaseName = "sql_Show_all"
+	case_UserProgrammaticAccessTokens_sql_Show_UserName                                        testCaseName = "sql_Show_UserName"
+)
+
+type UserProgrammaticAccessTokensTestsContext struct {
+	Add    *sdkTestCtx[*AddUserProgrammaticAccessTokenOptions]
+	Modify *sdkTestCtx[*ModifyUserProgrammaticAccessTokenOptions]
+	Rotate *sdkTestCtx[*RotateUserProgrammaticAccessTokenOptions]
+	Remove *sdkTestCtx[*RemoveUserProgrammaticAccessTokenOptions]
+	Show   *sdkTestCtx[*ShowUserProgrammaticAccessTokenOptions]
+}
+
+var userProgrammaticAccessTokensTests = UserProgrammaticAccessTokensTestsContext{
+	Add: newSdkTestCtx[*AddUserProgrammaticAccessTokenOptions](
+		"UserProgrammaticAccessTokens", "Add",
+	).
+		withDefaultOpts(func() *AddUserProgrammaticAccessTokenOptions {
+			return &AddUserProgrammaticAccessTokenOptions{
+				name: userProgrammaticAccessTokensTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AddUserProgrammaticAccessTokenOptions]{
+				Name:        case_UserProgrammaticAccessTokens_validation_Add_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AddUserProgrammaticAccessTokenOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AddUserProgrammaticAccessTokenOptions]{
+				Name:        case_UserProgrammaticAccessTokens_validation_Add_RoleRestriction_ValidIdentifierIfSet,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AddUserProgrammaticAccessTokenOptions) {
+					opts.RoleRestriction = new(emptyAccountObjectIdentifier)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AddUserProgrammaticAccessTokenOptions]{
+				Name:           case_UserProgrammaticAccessTokens_sql_Add_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Modify: newSdkTestCtx[*ModifyUserProgrammaticAccessTokenOptions](
+		"UserProgrammaticAccessTokens", "Modify",
+	).
+		withDefaultOpts(func() *ModifyUserProgrammaticAccessTokenOptions {
+			return &ModifyUserProgrammaticAccessTokenOptions{
+				name: userProgrammaticAccessTokensTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ModifyUserProgrammaticAccessTokenOptions]{
+				Name:        case_UserProgrammaticAccessTokens_validation_Modify_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ModifyUserProgrammaticAccessTokenOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*ModifyUserProgrammaticAccessTokenOptions]{
+				Name:        case_UserProgrammaticAccessTokens_validation_Modify_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("ModifyUserProgrammaticAccessTokenOptions", "Set", "Unset", "RenameTo"),
+				DefaultModify: func(opts *ModifyUserProgrammaticAccessTokenOptions) {
+					opts.Set = nil
+					opts.Unset = nil
+					opts.RenameTo = nil
+				},
+			},
+			validationCase[*ModifyUserProgrammaticAccessTokenOptions]{
+				Name:        case_UserProgrammaticAccessTokens_validation_Modify_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ModifyUserProgrammaticAccessTokenOptions", "Set", "Unset", "RenameTo"),
+				DefaultModify: func(opts *ModifyUserProgrammaticAccessTokenOptions) {
+					opts.Set = &ModifyProgrammaticAccessTokenSet{}
+					opts.Unset = &ModifyProgrammaticAccessTokenUnset{}
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ModifyUserProgrammaticAccessTokenOptions]{
+				Name:           case_UserProgrammaticAccessTokens_sql_Modify_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Rotate: newSdkTestCtx[*RotateUserProgrammaticAccessTokenOptions](
+		"UserProgrammaticAccessTokens", "Rotate",
+	).
+		withDefaultOpts(func() *RotateUserProgrammaticAccessTokenOptions {
+			return &RotateUserProgrammaticAccessTokenOptions{
+				name: userProgrammaticAccessTokensTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RotateUserProgrammaticAccessTokenOptions]{
+				Name:        case_UserProgrammaticAccessTokens_validation_Rotate_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *RotateUserProgrammaticAccessTokenOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RotateUserProgrammaticAccessTokenOptions]{
+				Name:           case_UserProgrammaticAccessTokens_sql_Rotate_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Remove: newSdkTestCtx[*RemoveUserProgrammaticAccessTokenOptions](
+		"UserProgrammaticAccessTokens", "Remove",
+	).
+		withDefaultOpts(func() *RemoveUserProgrammaticAccessTokenOptions {
+			return &RemoveUserProgrammaticAccessTokenOptions{
+				name: userProgrammaticAccessTokensTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RemoveUserProgrammaticAccessTokenOptions]{
+				Name:        case_UserProgrammaticAccessTokens_validation_Remove_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *RemoveUserProgrammaticAccessTokenOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RemoveUserProgrammaticAccessTokenOptions]{
+				Name:           case_UserProgrammaticAccessTokens_sql_Remove_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Show: newSdkTestCtx[*ShowUserProgrammaticAccessTokenOptions](
+		"UserProgrammaticAccessTokens", "Show",
+	).
+		withDefaultOpts(func() *ShowUserProgrammaticAccessTokenOptions {
+			return &ShowUserProgrammaticAccessTokenOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowUserProgrammaticAccessTokenOptions]{
+				Name:           case_UserProgrammaticAccessTokens_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowUserProgrammaticAccessTokenOptions]{
+				Name: case_UserProgrammaticAccessTokens_sql_Show_all,
+			},
+			sqlCase[*ShowUserProgrammaticAccessTokenOptions]{
+				Name: case_UserProgrammaticAccessTokens_sql_Show_UserName,
+			},
+		),
+}
+
 func TestUserProgrammaticAccessTokens_Add(t *testing.T) {
-	// adjusted manually
-	name := randomAccountObjectIdentifier()
-	roleId := randomAccountObjectIdentifier()
-	userId := randomAccountObjectIdentifier()
-	// Minimal valid AddUserProgrammaticAccessTokenOptions
-	defaultOpts := func() *AddUserProgrammaticAccessTokenOptions {
-		return &AddUserProgrammaticAccessTokenOptions{
-			// adjusted manually
-			name:     name,
-			UserName: userId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AddUserProgrammaticAccessTokenOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.UserName]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UserName = emptyAccountObjectIdentifier
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("AddUserProgrammaticAccessTokenOptions", "UserName"))
-	})
-
-	t.Run("validation: valid identifier for [opts.RoleRestriction] if set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RoleRestriction = &emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// validations added manually
-	t.Run("validation: invalid days to expiry", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.DaysToExpiry = Int(0)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AddUserProgrammaticAccessTokenOptions", "DaysToExpiry", IntErrGreaterOrEqual, 1))
-	})
-
-	t.Run("validation: invalid mins to bypass network policy requirement", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.MinsToBypassNetworkPolicyRequirement = Int(0)
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("AddUserProgrammaticAccessTokenOptions", "MinsToBypassNetworkPolicyRequirement", IntErrGreaterOrEqual, 1))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN %s`, userId.FullyQualifiedName(), name.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.RoleRestriction = &roleId
-		opts.DaysToExpiry = Int(30)
-		opts.MinsToBypassNetworkPolicyRequirement = Int(10)
-		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ADD PROGRAMMATIC ACCESS TOKEN %s ROLE_RESTRICTION = %s DAYS_TO_EXPIRY = 30 MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT = 10 COMMENT = 'test comment'`, userId.FullyQualifiedName(), name.FullyQualifiedName(), roleId.FullyQualifiedName())
-	})
+	userProgrammaticAccessTokensTests.Add.RunValidationCases(t)
+	userProgrammaticAccessTokensTests.Add.RunSqlCases(t)
 }
 
 func TestUserProgrammaticAccessTokens_Modify(t *testing.T) {
-	// adjusted manually
-	name := randomAccountObjectIdentifier()
-	userId := randomAccountObjectIdentifier()
-	// Minimal valid ModifyUserProgrammaticAccessTokenOptions
-	defaultOpts := func() *ModifyUserProgrammaticAccessTokenOptions {
-		return &ModifyUserProgrammaticAccessTokenOptions{
-			// adjusted manually
-			name:     name,
-			UserName: userId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ModifyUserProgrammaticAccessTokenOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.UserName]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UserName = emptyAccountObjectIdentifier
-		// error adjusted manually
-		assertOptsInvalidJoinedErrors(t, opts, errInvalidIdentifier("ModifyUserProgrammaticAccessTokenOptions", "UserName"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ModifyUserProgrammaticAccessTokenOptions", "Set", "Unset", "RenameTo"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set opts.Unset opts.RenameTo] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomAccountObjectIdentifier()
-		opts.RenameTo = &newId
-		opts.Set = new(ModifyProgrammaticAccessTokenSet)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ModifyUserProgrammaticAccessTokenOptions", "Set", "Unset", "RenameTo"))
-	})
-
-	// validation added manually
-	t.Run("validation: invalid mins to bypass network policy requirement", func(t *testing.T) {
-		opts := &ModifyUserProgrammaticAccessTokenOptions{
-			name: name,
-			Set: &ModifyProgrammaticAccessTokenSet{
-				MinsToBypassNetworkPolicyRequirement: Int(0),
-			},
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("ModifyUserProgrammaticAccessTokenOptions", "Set.MinsToBypassNetworkPolicyRequirement", IntErrGreaterOrEqual, 1))
-	})
-
-	// variants added manually
-	t.Run("with rename to", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomAccountObjectIdentifier()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s RENAME TO %s`, userId.FullyQualifiedName(), name.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("with set: all attributes", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ModifyProgrammaticAccessTokenSet{
-			Disabled:                             Bool(true),
-			MinsToBypassNetworkPolicyRequirement: Int(10),
-			Comment:                              String("new comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s SET DISABLED = true MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT = 10 COMMENT = 'new comment'`, userId.FullyQualifiedName(), name.FullyQualifiedName())
-	})
-
-	t.Run("with unset: all attributes", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &ModifyProgrammaticAccessTokenUnset{
-			Disabled:                             Bool(true),
-			MinsToBypassNetworkPolicyRequirement: Bool(true),
-			Comment:                              Bool(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s MODIFY PROGRAMMATIC ACCESS TOKEN %s UNSET DISABLED, MINS_TO_BYPASS_NETWORK_POLICY_REQUIREMENT, COMMENT`, userId.FullyQualifiedName(), name.FullyQualifiedName())
-	})
+	userProgrammaticAccessTokensTests.Modify.RunValidationCases(t)
+	userProgrammaticAccessTokensTests.Modify.RunSqlCases(t)
 }
 
 func TestUserProgrammaticAccessTokens_Rotate(t *testing.T) {
-	// adjusted manually
-	name := randomAccountObjectIdentifier()
-	userId := randomAccountObjectIdentifier()
-	// Minimal valid RotateUserProgrammaticAccessTokenOptions
-	defaultOpts := func() *RotateUserProgrammaticAccessTokenOptions {
-		return &RotateUserProgrammaticAccessTokenOptions{
-			// adjusted manually
-			name:     name,
-			UserName: userId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*RotateUserProgrammaticAccessTokenOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.UserName]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UserName = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	// validation added manually
-	t.Run("validation: invalid expire rotated token after hours", func(t *testing.T) {
-		opts := &RotateUserProgrammaticAccessTokenOptions{
-			name:                         name,
-			ExpireRotatedTokenAfterHours: Int(-1),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errIntValue("RotateUserProgrammaticAccessTokenOptions", "ExpireRotatedTokenAfterHours", IntErrGreaterOrEqual, 0))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ROTATE PROGRAMMATIC ACCESS TOKEN %s`, userId.FullyQualifiedName(), name.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExpireRotatedTokenAfterHours = Int(1)
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s ROTATE PROGRAMMATIC ACCESS TOKEN %s EXPIRE_ROTATED_TOKEN_AFTER_HOURS = 1`, userId.FullyQualifiedName(), name.FullyQualifiedName())
-	})
+	userProgrammaticAccessTokensTests.Rotate.RunValidationCases(t)
+	userProgrammaticAccessTokensTests.Rotate.RunSqlCases(t)
 }
 
 func TestUserProgrammaticAccessTokens_Remove(t *testing.T) {
-	// adjusted manually
-	name := randomAccountObjectIdentifier()
-	userId := randomAccountObjectIdentifier()
-	// Minimal valid RemoveUserProgrammaticAccessTokenOptions
-	defaultOpts := func() *RemoveUserProgrammaticAccessTokenOptions {
-		return &RemoveUserProgrammaticAccessTokenOptions{
-			// adjusted manually
-			name:     name,
-			UserName: userId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*RemoveUserProgrammaticAccessTokenOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.UserName]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UserName = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER %s REMOVE PROGRAMMATIC ACCESS TOKEN %s`, userId.FullyQualifiedName(), name.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	userProgrammaticAccessTokensTests.Remove.RunValidationCases(t)
+	userProgrammaticAccessTokensTests.Remove.RunSqlCases(t)
 }
 
 func TestUserProgrammaticAccessTokens_Show(t *testing.T) {
-	// added manually
-	id := randomAccountObjectIdentifier()
-
-	// Minimal valid ShowUserProgrammaticAccessTokenOptions
-	defaultOpts := func() *ShowUserProgrammaticAccessTokenOptions {
-		return &ShowUserProgrammaticAccessTokenOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowUserProgrammaticAccessTokenOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW USER PROGRAMMATIC ACCESS TOKENS`)
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UserName = &id
-		assertOptsValidAndSQLEquals(t, opts, `SHOW USER PROGRAMMATIC ACCESS TOKENS FOR USER %s`, id.FullyQualifiedName())
-	})
+	userProgrammaticAccessTokensTests.Show.RunValidationCases(t)
+	userProgrammaticAccessTokensTests.Show.RunSqlCases(t)
 }
