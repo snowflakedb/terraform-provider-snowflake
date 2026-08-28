@@ -120,6 +120,31 @@ After upgrading, `terraform plan` should be empty for unchanged storage lifecycl
 
 No other configuration changes are required.
 
+### *(bug fix)* Perpetual in-place update of view, materialized view, and dynamic table statements when identifiers contain spaces
+
+When a quoted object name contained a space (for example a database named `Example Database`), the provider misread the SQL `TEXT` returned by Snowflake. The identifier parser stopped at the first space even though the name was quoted, so `statement` (or `query` for dynamic tables) was stored incorrectly.
+
+Unchanged resources then produced a non-empty plan on every run:
+
+```
+  # snowflake_view.example will be updated in-place
+  ~ resource "snowflake_view" "example" {
+      ~ statement = "..." -> "SELECT 1 AS ID"
+    }
+```
+
+`terraform apply` succeeded but did not converge: the next plan showed the same diff.
+
+The same parser is used by:
+
+- [`snowflake_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/view) (`statement`)
+- [`snowflake_materialized_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/materialized_view) (`statement`)
+- [`snowflake_dynamic_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/dynamic_table) (`query`)
+
+After upgrading, `terraform plan` should be empty for unchanged resources. If you added `lifecycle { ignore_changes = [statement] }` or `lifecycle { ignore_changes = [query] }` as a workaround, you can remove it.
+
+No other configuration changes are required.
+
 ## v2.19.x ➞ v2.20.0
 
 ### *(new feature)* New hybrid table resource

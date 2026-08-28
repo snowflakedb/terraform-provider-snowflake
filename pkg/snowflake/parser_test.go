@@ -45,6 +45,11 @@ from bar;`
 	// Regression test for SNOW-3308280: panic when consumeToken reaches end of input (off-by-one in bounds check).
 	// The last column has a masking policy and no trailing options, so the parser hits end-of-input while probing optional tokens.
 	snow3308280 := `CREATE OR REPLACE VIEW "DB"."SCHEMA"."VIEW_NAME" (col1 MASKING POLICY "DB"."SCHEMA"."MASK_POLICY") AS SELECT col1 FROM DB.SCHEMA.SOURCE_TABLE`
+	// Regression test for #5178: consumeID used to stop at the first space, even inside quoted identifiers.
+	issue5178 := `CREATE OR REPLACE VIEW "Example Database"."EXAMPLE_SCHEMA"."EXAMPLE_VIEW" AS SELECT 1 AS ID`
+	doubledQuoteInName := `CREATE OR REPLACE VIEW "foo""bar"."EXAMPLE_SCHEMA"."EXAMPLE_VIEW" AS SELECT 1 AS ID`
+	doubledQuoteWithSpaces := `CREATE OR REPLACE VIEW "Example ""Database"."EXAMPLE_SCHEMA"."EXAMPLE_VIEW" AS SELECT 1 AS ID`
+	quotedColumnWithSpace := `CREATE OR REPLACE VIEW "DB"."SCHEMA"."VIEW" ("My Col") AS SELECT 1 AS ID`
 	testStatement := "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES"
 	type args struct {
 		input string
@@ -80,6 +85,10 @@ from bar;`
 		{"with column list ending with column name", args{columnsListEndingWithID}, testStatement, false},
 		{"all fields", args{allFields}, testStatement, false},
 		{"SNOW-3308280: masking policy on last column reaching end of input", args{snow3308280}, "SELECT col1 FROM DB.SCHEMA.SOURCE_TABLE", false},
+		{"issue5178 database name with space", args{issue5178}, "SELECT 1 AS ID", false},
+		{"doubled quote in identifier", args{doubledQuoteInName}, "SELECT 1 AS ID", false},
+		{"doubled quote with spaces in identifier", args{doubledQuoteWithSpaces}, "SELECT 1 AS ID", false},
+		{"quoted column name with space", args{quotedColumnWithSpace}, "SELECT 1 AS ID", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,6 +126,7 @@ from bar;`
 	commentEscape := `create materialized view foo comment='asdf\'s are fun' as select * from bar;`
 	clusterBy := "create materialized view foo cluster by (c1, c2) as select * from bar;"
 	identifier := `create materialized view "foo"."bar"."bam" comment='asdf\'s are fun' as select * from bar;`
+	identifierWithSpaces := `create materialized view "Example Database"."EXAMPLE_SCHEMA"."EXAMPLE_VIEW" as select * from bar;`
 
 	full := `CREATE SECURE MATERIALIZED VIEW "rgdxfmnfhh"."PUBLIC"."rgdxfmnfhh" COMMENT = 'Terraform test resource' CLUSTER BY (C1, C2) AS SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES`
 
@@ -141,6 +151,7 @@ from bar;`
 		{"commentEscape", args{commentEscape}, "select * from bar;", false},
 		{"clusterBy", args{clusterBy}, "select * from bar;", false},
 		{"identifier", args{identifier}, "select * from bar;", false},
+		{"identifier with spaces", args{identifierWithSpaces}, "select * from bar;", false},
 		{"full", args{full}, "SELECT ROLE_NAME, ROLE_OWNER FROM INFORMATION_SCHEMA.APPLICABLE_ROLES", false},
 	}
 	for _, tt := range tests {
@@ -186,6 +197,7 @@ from bar;`
 	commentEscape := `create dynamic table foo lag = 'DOWNSTREAM' refresh_mode = 'AUTO' initialize = 'ON_CREATE' warehouse = COMPUTE_WH comment = 'asdf\'s are fun' as select * from bar;`
 	orReplace := `create or replace dynamic table foo lag = 'DOWNSTREAM' refresh_mode = 'AUTO' initialize = 'ON_CREATE' warehouse = COMPUTE_WH comment = 'asdf' as select * from bar;`
 	identifier := `create or replace dynamic table "foo"."bar"."bam" lag = 'DOWNSTREAM' refresh_mode = 'AUTO' initialize = 'ON_CREATE' warehouse = COMPUTE_WH comment = 'asdf\'s are fun' as select * from bar;`
+	identifierWithSpaces := `create or replace dynamic table "Example Database"."EXAMPLE_SCHEMA"."EXAMPLE_TABLE" lag = 'DOWNSTREAM' refresh_mode = 'AUTO' initialize = 'ON_CREATE' warehouse = COMPUTE_WH comment = 'asdf\'s are fun' as select * from bar;`
 	// running SHOW DYNAMIC TABLE in Snowflake actually returns the query with
 	// the comment before other parameters, even though this is inconsistent
 	// with the order they are specified in CREATE DYNAMIC TABLE
@@ -209,6 +221,7 @@ from bar;`
 		{"commentEscape", args{commentEscape}, "select * from bar;", false},
 		{"orReplace", args{orReplace}, "select * from bar;", false},
 		{"identifier", args{identifier}, "select * from bar;", false},
+		{"identifier with spaces", args{identifierWithSpaces}, "select * from bar;", false},
 		{"commentBeforeOtherParams", args{commentBeforeOtherParams}, "select * from bar;", false},
 	}
 	for _, tt := range tests {
@@ -227,120 +240,106 @@ from bar;`
 }
 
 func TestViewSelectStatementExtractor_consumeToken(t *testing.T) {
-	type fields struct {
-		input []rune
-		pos   int
-	}
-	type args struct {
-		t string
-	}
 	tests := []struct {
-		name     string
-		fields   fields
-		args     args
-		posAfter int
+		name         string
+		input        string
+		token        string
+		wantConsumed string
 	}{
-		{"basic - found", fields{[]rune("foo"), 0}, args{"foo"}, 3},
-		{"basic - not found", fields{[]rune("foo"), 0}, args{"bar"}, 0},
-		{"basic - not found", fields{[]rune("fob"), 0}, args{"foo"}, 0},
+		{"basic - found", "foo", "foo", "foo"},
+		{"basic - not found", "foo", "bar", ""},
+		{"prefix - not found", "fob", "foo", ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &ViewSelectStatementExtractor{
-				input: tt.fields.input,
-				pos:   tt.fields.pos,
-			}
-			e.consumeToken(tt.args.t)
+			e := NewViewSelectStatementExtractor(tt.input)
+			e.consumeToken(tt.token)
+			require.Equal(t, tt.wantConsumed, consumed(e, 0))
+		})
+	}
+}
 
-			if e.pos != tt.posAfter {
-				t.Errorf("pos after = %v, want %v", e.pos, tt.posAfter)
-			}
+func TestViewSelectStatementExtractor_consumeID(t *testing.T) {
+	tests := []struct {
+		name         string
+		input        string
+		wantConsumed string
+	}{
+		{"unquoted", "FOO BAR", "FOO"},
+		{"quoted with space", `"Example Database" AS`, `"Example Database"`},
+		{"quoted fqn with spaces", `"Example Database"."EXAMPLE SCHEMA"."VIEW" AS`, `"Example Database"."EXAMPLE SCHEMA"."VIEW"`},
+		// SHOW TEXT uses SQL identifier quoting (""), not backslash escapes.
+		{"doubled quote", `"foo""bar" AS`, `"foo""bar"`},
+		{"doubled quote before space in name", `"foo"" bar" AS`, `"foo"" bar"`},
+		{"doubled quote after space in name", `"Example ""Database" AS`, `"Example ""Database"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := NewViewSelectStatementExtractor(tt.input)
+			e.consumeID()
+			require.Equal(t, tt.wantConsumed, consumed(e, 0))
 		})
 	}
 }
 
 func TestViewSelectStatementExtractor_consumeSpace(t *testing.T) {
-	type fields struct {
-		input []rune
-		pos   int
-	}
 	tests := []struct {
-		name     string
-		fields   fields
-		posAfter int
+		name         string
+		input        string
+		start        int
+		wantConsumed string
 	}{
-		{"simple", fields{[]rune("   foo"), 0}, 3},
-		{"empty", fields{[]rune(""), 0}, 0},
-		{"middle", fields{[]rune("foo \t\n bar"), 3}, 7},
+		{"simple", "   foo", 0, "   "},
+		{"empty", "", 0, ""},
+		{"middle", "foo \t\n bar", len("foo"), " \t\n "},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &ViewSelectStatementExtractor{
-				input: tt.fields.input,
-				pos:   tt.fields.pos,
-			}
+			e := NewViewSelectStatementExtractor(tt.input)
+			e.pos = tt.start
 			e.consumeSpace()
-
-			if e.pos != tt.posAfter {
-				t.Errorf("pos after = %v, want %v", e.pos, tt.posAfter)
-			}
+			require.Equal(t, tt.wantConsumed, consumed(e, tt.start))
 		})
 	}
 }
 
 func TestViewSelectStatementExtractor_consumeComment(t *testing.T) {
-	type fields struct {
-		input []rune
-		pos   int
-	}
 	tests := []struct {
-		name     string
-		fields   fields
-		posAfter int
+		name         string
+		input        string
+		wantConsumed string
 	}{
-		{"basic", fields{[]rune("comment='foo'"), 0}, 13},
-		{"escaped", fields{[]rune(`comment='fo\'o'`), 0}, 15},
+		{"basic", "comment='foo'", "comment='foo'"},
+		{"escaped", `comment='fo\'o'`, `comment='fo\'o'`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &ViewSelectStatementExtractor{
-				input: tt.fields.input,
-				pos:   tt.fields.pos,
-			}
+			e := NewViewSelectStatementExtractor(tt.input)
 			e.consumeComment()
-
-			if e.pos != tt.posAfter {
-				t.Errorf("pos after = %v, want %v", e.pos, tt.posAfter)
-			}
+			require.Equal(t, tt.wantConsumed, consumed(e, 0))
 		})
 	}
 }
 
 func TestViewSelectStatementExtractor_consumeClusterBy(t *testing.T) {
-	type fields struct {
-		input []rune
-		pos   int
-	}
 	tests := []struct {
-		name     string
-		fields   fields
-		posAfter int
+		name         string
+		input        string
+		wantConsumed string
 	}{
-		{"none", fields{[]rune("as foo"), 0}, 0},
-		{"single", fields{[]rune("(c1)"), 0}, 4},
-		{"double", fields{[]rune("(c1, c2)"), 0}, 8},
+		{"none", "as foo", ""},
+		{"single", "(c1)", "(c1)"},
+		{"double", "(c1, c2)", "(c1, c2)"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &ViewSelectStatementExtractor{
-				input: tt.fields.input,
-				pos:   tt.fields.pos,
-			}
+			e := NewViewSelectStatementExtractor(tt.input)
 			e.consumeClusterBy()
-
-			if e.pos != tt.posAfter {
-				t.Errorf("pos after = %v, want %v", e.pos, tt.posAfter)
-			}
+			require.Equal(t, tt.wantConsumed, consumed(e, 0))
 		})
 	}
+}
+
+func consumed(e *ViewSelectStatementExtractor, from int) string {
+	return string(e.input[from:e.pos])
 }

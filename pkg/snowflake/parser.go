@@ -176,7 +176,7 @@ func (e *ViewSelectStatementExtractor) ExtractMaterializedView() (string, error)
 	e.consumeSpace()
 	e.consumeToken("use warehouse")
 	e.consumeSpace()
-	e.consumeNonSpace() // warehouse name
+	e.consumeID() // warehouse name
 	e.consumeSpace()
 	e.consumeToken("create")
 	e.consumeSpace()
@@ -269,13 +269,18 @@ func (e *ViewSelectStatementExtractor) consumeSpace() {
 }
 
 func (e *ViewSelectStatementExtractor) consumeID() {
-	e.consumeNonSpace()
-}
-
-func (e *ViewSelectStatementExtractor) consumeNonSpace() {
 	found := 0
+	inQuotes := false
 	for {
-		if e.pos+found > len(e.input)-1 || unicode.IsSpace(e.input[e.pos+found]) {
+		if e.pos+found > len(e.input)-1 {
+			break
+		}
+		ch := e.input[e.pos+found]
+		if ch == '"' {
+			// "" inside a quoted identifier is a literal quote (close + reopen).
+			inQuotes = !inQuotes
+		}
+		if !inQuotes && unicode.IsSpace(ch) {
 			break
 		}
 		found++
@@ -341,7 +346,7 @@ func (e *ViewSelectStatementExtractor) consumeTokenParameter(param string) {
 	}
 
 	e.consumeSpace()
-	e.consumeNonSpace()
+	e.consumeID()
 }
 
 func (e *ViewSelectStatementExtractor) consumeClusterBy() {
