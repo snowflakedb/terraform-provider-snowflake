@@ -10,84 +10,102 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableConstraintType]{"TableConstraintType", AllTableConstraintTypes, ToTableConstraintType})
 }
 
+var tablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Tables_validation_DescribeSearchOptimization_name_ValidIdentifier testCaseName = "validation_DescribeSearchOptimization_name_ValidIdentifier"
+	case_Tables_sql_DescribeSearchOptimization_basic                       testCaseName = "sql_DescribeSearchOptimization_basic"
+	case_Tables_validation_SelectTableConstraints_Database_ValidIdentifier testCaseName = "validation_SelectTableConstraints_Database_ValidIdentifier"
+	case_Tables_sql_SelectTableConstraints_basic                           testCaseName = "sql_SelectTableConstraints_basic"
+	case_Tables_validation_SelectCheckConstraints_Database_ValidIdentifier testCaseName = "validation_SelectCheckConstraints_Database_ValidIdentifier"
+	case_Tables_sql_SelectCheckConstraints_basic                           testCaseName = "sql_SelectCheckConstraints_basic"
+)
+
+type TablesTestsContext struct {
+	DescribeSearchOptimization *sdkTestCtx[*DescribeSearchOptimizationTableOptions]
+	SelectTableConstraints     *sdkTestCtx[*SelectTableConstraintsTableOptions]
+	SelectCheckConstraints     *sdkTestCtx[*SelectCheckConstraintsTableOptions]
+}
+
+var tablesTests = TablesTestsContext{
+	DescribeSearchOptimization: newSdkTestCtx[*DescribeSearchOptimizationTableOptions](
+		"Tables", "DescribeSearchOptimization",
+	).
+		withDefaultOpts(func() *DescribeSearchOptimizationTableOptions {
+			return &DescribeSearchOptimizationTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeSearchOptimizationTableOptions]{
+				Name:        case_Tables_validation_DescribeSearchOptimization_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeSearchOptimizationTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeSearchOptimizationTableOptions]{
+				Name:           case_Tables_sql_DescribeSearchOptimization_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	SelectTableConstraints: newSdkTestCtx[*SelectTableConstraintsTableOptions](
+		"Tables", "SelectTableConstraints",
+	).
+		withDefaultOpts(func() *SelectTableConstraintsTableOptions {
+			return &SelectTableConstraintsTableOptions{}
+		}).
+		withValidationCases(
+			validationCase[*SelectTableConstraintsTableOptions]{
+				Name:        case_Tables_validation_SelectTableConstraints_Database_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *SelectTableConstraintsTableOptions) {
+					opts.Database = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SelectTableConstraintsTableOptions]{
+				Name:           case_Tables_sql_SelectTableConstraints_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	SelectCheckConstraints: newSdkTestCtx[*SelectCheckConstraintsTableOptions](
+		"Tables", "SelectCheckConstraints",
+	).
+		withDefaultOpts(func() *SelectCheckConstraintsTableOptions {
+			return &SelectCheckConstraintsTableOptions{}
+		}).
+		withValidationCases(
+			validationCase[*SelectCheckConstraintsTableOptions]{
+				Name:        case_Tables_validation_SelectCheckConstraints_Database_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *SelectCheckConstraintsTableOptions) {
+					opts.Database = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SelectCheckConstraintsTableOptions]{
+				Name:           case_Tables_sql_SelectCheckConstraints_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestTables_DescribeSearchOptimization(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeSearchOptimizationTableOptions
-	defaultOpts := func() *DescribeSearchOptimizationTableOptions {
-		return &DescribeSearchOptimizationTableOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeSearchOptimizationTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE SEARCH OPTIMIZATION ON %s", id.FullyQualifiedName())
-	})
+	tablesTests.DescribeSearchOptimization.RunValidationCases(t)
+	tablesTests.DescribeSearchOptimization.RunSqlCases(t)
 }
 
 func TestTables_SelectTableConstraints(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid SelectTableConstraintsTableOptions
-	defaultOpts := func() *SelectTableConstraintsTableOptions {
-		return &SelectTableConstraintsTableOptions{
-			Database:    NewAccountObjectIdentifier(id.DatabaseName()),
-			TableSchema: id.SchemaName(),
-			TableName:   id.Name(),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*SelectTableConstraintsTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.Database]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Database = NewAccountObjectIdentifier("")
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SELECT * FROM %s . INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'", opts.Database.FullyQualifiedName(), id.SchemaName(), id.Name())
-	})
+	tablesTests.SelectTableConstraints.RunValidationCases(t)
+	tablesTests.SelectTableConstraints.RunSqlCases(t)
 }
 
 func TestTables_SelectCheckConstraints(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid SelectCheckConstraintsTableOptions
-	defaultOpts := func() *SelectCheckConstraintsTableOptions {
-		return &SelectCheckConstraintsTableOptions{
-			Database:         NewAccountObjectIdentifier(id.DatabaseName()),
-			ConstraintSchema: id.SchemaName(),
-			ConstraintTable:  id.Name(),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*SelectCheckConstraintsTableOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.Database]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Database = NewAccountObjectIdentifier("")
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SELECT * FROM %s . INFORMATION_SCHEMA.CHECK_CONSTRAINTS WHERE CONSTRAINT_SCHEMA = '%s' AND CONSTRAINT_TABLE = '%s'", opts.Database.FullyQualifiedName(), id.SchemaName(), id.Name())
-	})
+	tablesTests.SelectCheckConstraints.RunValidationCases(t)
+	tablesTests.SelectCheckConstraints.RunSqlCases(t)
 }

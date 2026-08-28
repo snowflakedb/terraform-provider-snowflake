@@ -193,7 +193,8 @@ var tablesDef = g.NewInterface(
 		tableCheckConstraintDetails,
 		tableSelectCheckConstraints,
 	).
-	WithEnums(TableConstraintTypeDef)
+	WithEnums(TableConstraintTypeDef).
+	WithEnabledGenerationParts(g.PartUnitTests)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").
