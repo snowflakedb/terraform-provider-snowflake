@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -972,14 +973,17 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 
 	t.Run("create: basic", func(t *testing.T) {
 		assertThatObject(t, objectassert.DatabaseFromObject(t, sharedDatabase).
-			HasKind(sdk.DatabaseKindCatalogLinkedDatabase))
+			HasCreatedOnNotEmpty().
+			HasName(sharedDatabase.ID().Name()).
+			HasIsDefault(false).
+			HasOwner("ACCOUNTADMIN").
+			HasComment("").
+			HasTransient(false).
+			HasKind(sdk.DatabaseKindCatalogLinkedDatabase).
+			HasOwnerRoleType("ROLE"))
 
-		config := getConfig(t, sharedDatabase.ID())
-		assert.Equal(t, restCatalogId, config.CatalogIntegration)
-		require.NotNil(t, config.ExternalVolume)
-		assert.Equal(t, externalVolumeId, *config.ExternalVolume)
-		assert.Empty(t, config.AllowedNamespaces)
-		assert.Empty(t, config.BlockedNamespaces)
+		assertThatObject(t, objectparametersassert.DatabaseParameters(t, sharedDatabase.ID()).
+			HasExternalVolume(externalVolumeId.Name()))
 	})
 
 	t.Run("create: complete", func(t *testing.T) {
@@ -1016,27 +1020,46 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		assertThatObject(t, objectassert.DatabaseFromObject(t, database).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasIsDefault(false).
+			HasOwner("ACCOUNTADMIN").
+			HasComment(comment).
+			HasTransient(false).
 			HasKind(sdk.DatabaseKindCatalogLinkedDatabase).
-			HasComment(comment))
+			HasOwnerRoleType("ROLE"))
 
-		config := getConfig(t, database.ID())
-		assert.Equal(t, restCatalogId, config.CatalogIntegration)
-		require.NotNil(t, config.ExternalVolume)
-		assert.Equal(t, externalVolumeId, *config.ExternalVolume)
-		assert.ElementsMatch(t, []string{"ns1", "ns2"}, config.AllowedNamespaces)
-		assert.ElementsMatch(t, []string{"ns3"}, config.BlockedNamespaces)
-		require.NotNil(t, config.AllowedWriteOperations)
-		assert.Equal(t, sdk.CatalogLinkedDatabaseAllowedWriteOperationsAll, *config.AllowedWriteOperations)
-		require.NotNil(t, config.NamespaceMode)
-		assert.Equal(t, sdk.CatalogLinkedDatabaseNamespaceModeFlattenNestedNamespace, *config.NamespaceMode)
-		require.NotNil(t, config.NamespaceFlattenDelimiter)
-		assert.Equal(t, "_", *config.NamespaceFlattenDelimiter)
-		require.NotNil(t, config.SyncIntervalSeconds)
-		assert.Equal(t, 60, *config.SyncIntervalSeconds)
-		require.NotNil(t, config.CatalogCaseSensitivity)
-		assert.Equal(t, sdk.DatabaseCatalogCaseSensitivityCaseInsensitive, *config.CatalogCaseSensitivity)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasCatalogIntegration(restCatalogId).
+			HasNoCatalogName().
+			HasExternalVolume(externalVolumeId).
+			HasSyncIntervalSeconds(60).
+			HasNamespaceMode(sdk.CatalogLinkedDatabaseNamespaceModeFlattenNestedNamespace).
+			HasNamespaceFlattenDelimiter("_").
+			HasAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsAll).
+			HasCatalogCaseSensitivity(sdk.DatabaseCatalogCaseSensitivityCaseInsensitive).
+			HasIsSuspended(false).
+			HasAllowedNamespaces("ns1", "ns2").
+			HasBlockedNamespaces("ns3"))
 
 		assertTagSet(t, tagTest.ID(), database.ID(), sdk.ObjectTypeDatabase, "v1")
+	})
+
+	t.Run("get catalog linked database config", func(t *testing.T) {
+		// The values not set at creation are asserted with their documented defaults; they may need
+		// adjustment after a run against a live external catalog.
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, sharedDatabase.ID())).
+			HasCatalogIntegration(restCatalogId).
+			HasNoCatalogName().
+			HasExternalVolume(externalVolumeId).
+			HasSyncIntervalSeconds(30).
+			HasNamespaceMode(sdk.CatalogLinkedDatabaseNamespaceModeIgnoreNestedNamespace).
+			HasNoNamespaceFlattenDelimiter().
+			HasAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsAll).
+			HasCatalogCaseSensitivity(sdk.DatabaseCatalogCaseSensitivityCaseInsensitive).
+			HasIsSuspended(false).
+			HasNoAllowedNamespaces().
+			HasNoBlockedNamespaces())
 	})
 
 	t.Run("alter: allowed namespaces", func(t *testing.T) {
@@ -1044,34 +1067,40 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 			WithIfExists(true).
 			WithAddToAllowedNamespaces(*sdk.NewAddToAllowedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns1"}, {Value: "ns2"}})))
 		require.NoError(t, err)
-		assert.ElementsMatch(t, []string{"ns1", "ns2"}, getConfig(t, sharedDatabase.ID()).AllowedNamespaces)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, sharedDatabase.ID())).
+			HasAllowedNamespaces("ns1", "ns2"))
 
 		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(sharedDatabase.ID()).
 			WithRemoveFromAllowedNamespaces(*sdk.NewRemoveFromAllowedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns2"}})))
 		require.NoError(t, err)
-		assert.ElementsMatch(t, []string{"ns1"}, getConfig(t, sharedDatabase.ID()).AllowedNamespaces)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, sharedDatabase.ID())).
+			HasAllowedNamespaces("ns1"))
 
 		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(sharedDatabase.ID()).
 			WithUnsetAllowedNamespaces(true))
 		require.NoError(t, err)
-		assert.Empty(t, getConfig(t, sharedDatabase.ID()).AllowedNamespaces)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, sharedDatabase.ID())).
+			HasNoAllowedNamespaces())
 	})
 
 	t.Run("alter: blocked namespaces", func(t *testing.T) {
 		err := client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(sharedDatabase.ID()).
 			WithAddToBlockedNamespaces(*sdk.NewAddToBlockedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns3"}, {Value: "ns4"}})))
 		require.NoError(t, err)
-		assert.ElementsMatch(t, []string{"ns3", "ns4"}, getConfig(t, sharedDatabase.ID()).BlockedNamespaces)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, sharedDatabase.ID())).
+			HasBlockedNamespaces("ns3", "ns4"))
 
 		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(sharedDatabase.ID()).
 			WithRemoveFromBlockedNamespaces(*sdk.NewRemoveFromBlockedNamespacesRequest([]sdk.StringListItemWrapper{{Value: "ns4"}})))
 		require.NoError(t, err)
-		assert.ElementsMatch(t, []string{"ns3"}, getConfig(t, sharedDatabase.ID()).BlockedNamespaces)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, sharedDatabase.ID())).
+			HasBlockedNamespaces("ns3"))
 
 		err = client.Databases.AlterCatalogLinked(ctx, sdk.NewAlterCatalogLinkedDatabaseRequest(sharedDatabase.ID()).
 			WithUnsetBlockedNamespaces(true))
 		require.NoError(t, err)
-		assert.Empty(t, getConfig(t, sharedDatabase.ID()).BlockedNamespaces)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, sharedDatabase.ID())).
+			HasNoBlockedNamespaces())
 	})
 
 	t.Run("alter: set linked catalog parameters", func(t *testing.T) {
@@ -1083,11 +1112,9 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 				WithAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsNone)))
 		require.NoError(t, err)
 
-		config := getConfig(t, database.ID())
-		require.NotNil(t, config.SyncIntervalSeconds)
-		assert.Equal(t, 120, *config.SyncIntervalSeconds)
-		require.NotNil(t, config.AllowedWriteOperations)
-		assert.Equal(t, sdk.CatalogLinkedDatabaseAllowedWriteOperationsNone, *config.AllowedWriteOperations)
+		assertThatObject(t, objectassert.CatalogLinkedDatabaseConfigFromObject(t, getConfig(t, database.ID())).
+			HasSyncIntervalSeconds(120).
+			HasAllowedWriteOperations(sdk.CatalogLinkedDatabaseAllowedWriteOperationsNone))
 	})
 
 	t.Run("alter: rename and comment through the generic alter", func(t *testing.T) {
@@ -1114,7 +1141,8 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 
 		unset, err := client.Databases.ShowByID(ctx, newName)
 		require.NoError(t, err)
-		assert.Empty(t, unset.Comment)
+		assertThatObject(t, objectassert.DatabaseFromObject(t, unset).
+			HasComment(""))
 	})
 
 	t.Run("get catalog link status", func(t *testing.T) {
@@ -1126,5 +1154,12 @@ func TestInt_DatabasesCatalogLinked_WithAdditionalDependencies(t *testing.T) {
 				assert.NotEmpty(collect, status.ExecutionState)
 			}
 		}, 20*time.Second, 2*time.Second)
+
+		// The failure-related fields are state- and timing-dependent (the docs show failureDetails
+		// populated even for a RUNNING link), so only the execution state is asserted.
+		status, err := client.SystemFunctions.GetCatalogLinkStatus(ctx, sharedDatabase.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.CatalogLinkStatusFromObject(t, status).
+			HasExecutionStateNotEmpty())
 	})
 }
