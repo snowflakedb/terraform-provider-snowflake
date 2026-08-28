@@ -2,413 +2,340 @@
 
 package sdk
 
-import "testing"
+import (
+	"testing"
+)
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ListingRevision]{"ListingRevision", AllListingRevisions, ToListingRevision})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ListingState]{"ListingState", AllListingStates, ToListingState})
 }
 
-// added manually
-func sampleListingManifest() string {
-	return `
-title: "MyListing"
-subtitle: "Subtitle for MyListing"
-description: "Description for MyListing"
-listing_terms:
-   type: "STANDARD"
-targets:
-    accounts: ["Org1.Account1"]
-usage_examples:
-    - title: "this is a test sql"
-      description: "Simple example"
-      query: "select *"
-`
+var listingsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_Listings_validation_Create_name_ValidIdentifier                        testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Listings_validation_Create_opts_ExactlyOneValueSet_NoneSet             testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_validation_Create_As_NoDoubleDollarQuotesIfSet                testCaseName = "validation_Create_As_NoDoubleDollarQuotesIfSet"
+	case_Listings_validation_Create_opts_With_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Create_opts_With_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_Create_opts_With_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Create_opts_With_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_sql_Create_basic                                              testCaseName = "sql_Create_basic"
+	case_Listings_sql_Create_all                                                testCaseName = "sql_Create_all"
+	case_Listings_validation_Alter_name_ValidIdentifier                         testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Listings_validation_Alter_opts_ConflictingFields                       testCaseName = "validation_Alter_opts_ConflictingFields"
+	case_Listings_validation_Alter_opts_ExactlyOneValueSet_NoneSet              testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_validation_Alter_AlterListingAs_As_NoDoubleDollarQuotes       testCaseName = "validation_Alter_AlterListingAs_As_NoDoubleDollarQuotes"
+	case_Listings_sql_Alter_Publish                                             testCaseName = "sql_Alter_Publish"
+	case_Listings_sql_Alter_Unpublish                                           testCaseName = "sql_Alter_Unpublish"
+	case_Listings_sql_Alter_Review                                              testCaseName = "sql_Alter_Review"
+	case_Listings_sql_Alter_AlterListingAs                                      testCaseName = "sql_Alter_AlterListingAs"
+	case_Listings_sql_Alter_AddVersion                                          testCaseName = "sql_Alter_AddVersion"
+	case_Listings_sql_Alter_RenameTo                                            testCaseName = "sql_Alter_RenameTo"
+	case_Listings_sql_Alter_Set                                                 testCaseName = "sql_Alter_Set"
+	case_Listings_sql_Alter_Unset                                               testCaseName = "sql_Alter_Unset"
+	case_Listings_validation_Drop_name_ValidIdentifier                          testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Listings_sql_Drop_basic                                                testCaseName = "sql_Drop_basic"
+	case_Listings_sql_Drop_all                                                  testCaseName = "sql_Drop_all"
+	case_Listings_sql_Show_basic                                                testCaseName = "sql_Show_basic"
+	case_Listings_sql_Show_all                                                  testCaseName = "sql_Show_all"
+	case_Listings_sql_Show_Like                                                 testCaseName = "sql_Show_Like"
+	case_Listings_sql_Show_StartsWith                                           testCaseName = "sql_Show_StartsWith"
+	case_Listings_sql_Show_Limit                                                testCaseName = "sql_Show_Limit"
+	case_Listings_validation_Describe_name_ValidIdentifier                      testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Listings_sql_Describe_basic                                            testCaseName = "sql_Describe_basic"
+	case_Listings_validation_ShowVersions_name_ValidIdentifier                  testCaseName = "validation_ShowVersions_name_ValidIdentifier"
+	case_Listings_sql_ShowVersions_basic                                        testCaseName = "sql_ShowVersions_basic"
+	case_Listings_sql_ShowVersions_all                                          testCaseName = "sql_ShowVersions_all"
+	case_Listings_sql_ShowVersions_Limit                                        testCaseName = "sql_ShowVersions_Limit"
+)
+
+type ListingsTestsContext struct {
+	Create       *sdkTestCtx[*CreateListingOptions]
+	Alter        *sdkTestCtx[*AlterListingOptions]
+	Drop         *sdkTestCtx[*DropListingOptions]
+	Show         *sdkTestCtx[*ShowListingOptions]
+	Describe     *sdkTestCtx[*DescribeListingOptions]
+	ShowVersions *sdkTestCtx[*ShowVersionsListingOptions]
+}
+
+var listingsTests = ListingsTestsContext{
+	Create: newSdkTestCtx[*CreateListingOptions](
+		"Listings", "Create",
+	).
+		withDefaultOpts(func() *CreateListingOptions {
+			return &CreateListingOptions{
+				name: listingsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateListingOptions]{
+				Name:        case_Listings_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateListingOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateListingOptions]{
+				Name:        case_Listings_validation_Create_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateListingOptions", "As", "From"),
+				DefaultModify: func(opts *CreateListingOptions) {
+					opts.As = nil
+					opts.From = nil
+				},
+			},
+			validationCase[*CreateListingOptions]{
+				Name:        case_Listings_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateListingOptions", "As", "From"),
+			},
+			validationCase[*CreateListingOptions]{
+				Name:        case_Listings_validation_Create_As_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateListingOptions", "As"),
+				DefaultModify: func(opts *CreateListingOptions) {
+					opts.As = String("$$")
+				},
+			},
+			validationCase[*CreateListingOptions]{
+				Name:        case_Listings_validation_Create_opts_With_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"),
+				DefaultModify: func(opts *CreateListingOptions) {
+					opts.With = &ListingWith{}
+					opts.With.Share = nil
+					opts.With.ApplicationPackage = nil
+				},
+			},
+			validationCase[*CreateListingOptions]{
+				Name:        case_Listings_validation_Create_opts_With_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"),
+				DefaultModify: func(opts *CreateListingOptions) {
+					opts.With = &ListingWith{}
+					opts.With.Share = new(randomAccountObjectIdentifier())
+					opts.With.ApplicationPackage = new(randomAccountObjectIdentifier())
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateListingOptions]{
+				Name:           case_Listings_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateListingOptions]{
+				Name: case_Listings_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterListingOptions](
+		"Listings", "Alter",
+	).
+		withDefaultOpts(func() *AlterListingOptions {
+			return &AlterListingOptions{
+				name: listingsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterListingOptions]{
+				Name:        case_Listings_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterListingOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterListingOptions]{
+				Name:        case_Listings_validation_Alter_opts_ConflictingFields,
+				ExpectedErr: errOneOf("AlterListingOptions", "IfExists", "AddVersion"),
+				DefaultModify: func(opts *AlterListingOptions) {
+					opts.IfExists = new(true)
+					opts.AddVersion = &AddListingVersion{}
+				},
+			},
+			validationCase[*AlterListingOptions]{
+				Name:        case_Listings_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"),
+				DefaultModify: func(opts *AlterListingOptions) {
+					opts.Publish = nil
+					opts.Unpublish = nil
+					opts.Review = nil
+					opts.AlterListingAs = nil
+					opts.AddVersion = nil
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.Unset = nil
+				},
+			},
+			validationCase[*AlterListingOptions]{
+				Name:        case_Listings_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"),
+				DefaultModify: func(opts *AlterListingOptions) {
+					opts.Publish = new(true)
+					opts.Unpublish = new(true)
+				},
+			},
+			validationCase[*AlterListingOptions]{
+				Name:        case_Listings_validation_Alter_AlterListingAs_As_NoDoubleDollarQuotes,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("AlterListingOptions.AlterListingAs", "As"),
+				DefaultModify: func(opts *AlterListingOptions) {
+					opts.AlterListingAs = &AlterListingAs{}
+					opts.AlterListingAs.As = "$$"
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_Publish,
+			},
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_Unpublish,
+			},
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_Review,
+			},
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_AlterListingAs,
+			},
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_AddVersion,
+			},
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_Set,
+			},
+			sqlCase[*AlterListingOptions]{
+				Name: case_Listings_sql_Alter_Unset,
+			},
+		),
+	Drop: newSdkTestCtx[*DropListingOptions](
+		"Listings", "Drop",
+	).
+		withDefaultOpts(func() *DropListingOptions {
+			return &DropListingOptions{
+				name: listingsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropListingOptions]{
+				Name:        case_Listings_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropListingOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropListingOptions]{
+				Name:           case_Listings_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropListingOptions]{
+				Name: case_Listings_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowListingOptions](
+		"Listings", "Show",
+	).
+		withDefaultOpts(func() *ShowListingOptions {
+			return &ShowListingOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowListingOptions]{
+				Name:           case_Listings_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowListingOptions]{
+				Name: case_Listings_sql_Show_all,
+			},
+			sqlCase[*ShowListingOptions]{
+				Name: case_Listings_sql_Show_Like,
+			},
+			sqlCase[*ShowListingOptions]{
+				Name: case_Listings_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowListingOptions]{
+				Name: case_Listings_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeListingOptions](
+		"Listings", "Describe",
+	).
+		withDefaultOpts(func() *DescribeListingOptions {
+			return &DescribeListingOptions{
+				name: listingsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeListingOptions]{
+				Name:        case_Listings_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeListingOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeListingOptions]{
+				Name:           case_Listings_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	ShowVersions: newSdkTestCtx[*ShowVersionsListingOptions](
+		"Listings", "ShowVersions",
+	).
+		withDefaultOpts(func() *ShowVersionsListingOptions {
+			return &ShowVersionsListingOptions{
+				name: listingsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ShowVersionsListingOptions]{
+				Name:        case_Listings_validation_ShowVersions_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ShowVersionsListingOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ShowVersionsListingOptions]{
+				Name:           case_Listings_sql_ShowVersions_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowVersionsListingOptions]{
+				Name: case_Listings_sql_ShowVersions_all,
+			},
+			sqlCase[*ShowVersionsListingOptions]{
+				Name: case_Listings_sql_ShowVersions_Limit,
+			},
+		),
 }
 
 func TestListings_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreateListingOptions
-	defaultOpts := func() *CreateListingOptions {
-		return &CreateListingOptions{
-			name: id,
-		}
-	}
-
-	// added manually
-	stageId := randomSchemaObjectIdentifier()
-	manifest := sampleListingManifest()
-	var stageLocation Location = &StageLocation{
-		stage: stageId,
-		path:  "dir/subdir",
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateListingOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.As opts.From] should be present - none set", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions", "As", "From"))
-	})
-
-	t.Run("validation: exactly one field from [opts.As opts.From] should be present - two set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.As = &manifest
-		opts.From = &stageLocation
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions", "As", "From"))
-	})
-
-	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.With = &ListingWith{}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
-	})
-
-	t.Run("validation: exactly one field from [opts.With.Share opts.With.ApplicationPackage] should be present - more present", func(t *testing.T) {
-		shareId := randomAccountObjectIdentifier()
-		applicationPackageId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.With = &ListingWith{
-			Share:              &shareId,
-			ApplicationPackage: &applicationPackageId,
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.As]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.As = String("manifest$$ PUBLISH = TRUE REVIEW = FALSE /*")
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("CreateListingOptions", "As"))
-	})
-
-	// all variants added manually
-	t.Run("basic with As", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.As = &manifest
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING %s AS $$%s$$", opts.name.FullyQualifiedName(), manifest)
-	})
-
-	t.Run("basic with From", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.From = &stageLocation
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL LISTING %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir'`, opts.name.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("all As options with stage", func(t *testing.T) {
-		shareId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.With = &ListingWith{
-			Share: &shareId,
-		}
-		opts.As = &manifest
-		opts.Publish = Bool(true)
-		opts.Review = Bool(true)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), manifest)
-	})
-
-	t.Run("all As options with application package", func(t *testing.T) {
-		applicationPackageId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.With = &ListingWith{
-			ApplicationPackage: &applicationPackageId,
-		}
-		opts.As = &manifest
-		opts.Publish = Bool(true)
-		opts.Review = Bool(true)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), manifest)
-	})
-
-	t.Run("all From options with stage", func(t *testing.T) {
-		shareId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.With = &ListingWith{
-			Share: &shareId,
-		}
-		opts.From = &stageLocation
-		opts.Publish = Bool(true)
-		opts.Review = Bool(true)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL LISTING IF NOT EXISTS %s SHARE %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' PUBLISH = true REVIEW = true COMMENT = 'comment'`, opts.name.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("all From options with application package", func(t *testing.T) {
-		applicationPackageId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.IfNotExists = Bool(true)
-		opts.With = &ListingWith{
-			ApplicationPackage: &applicationPackageId,
-		}
-		opts.From = &stageLocation
-		opts.Publish = Bool(true)
-		opts.Review = Bool(true)
-		opts.Comment = String("comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' PUBLISH = true REVIEW = true COMMENT = 'comment'`, opts.name.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
+	listingsTests.Create.RunValidationCases(t)
+	listingsTests.Create.RunSqlCases(t)
 }
 
 func TestListings_Alter(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterListingOptions
-	defaultOpts := func() *AlterListingOptions {
-		return &AlterListingOptions{
-			name: id,
-		}
-	}
-
-	// added manually
-	manifest := sampleListingManifest()
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterListingOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.IfExists opts.AddVersion]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.AddVersion = &AddListingVersion{}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("AlterListingOptions", "IfExists", "AddVersion"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Publish opts.Unpublish opts.Review opts.AlterListingAs opts.AddVersion opts.RenameTo opts.Set opts.Unset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Publish opts.Unpublish opts.Review opts.AlterListingAs opts.AddVersion opts.RenameTo opts.Set opts.Unset] should be present - more set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Publish = Bool(true)
-		opts.Unpublish = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterListingOptions", "Publish", "Unpublish", "Review", "AlterListingAs", "AddVersion", "RenameTo", "Set", "Unset"))
-	})
-
-	// added manually
-	t.Run("validation: double dollar quotes not allowed in [opts.AlterListingAs.As]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.AlterListingAs = &AlterListingAs{
-			As: "manifest$$ PUBLISH = TRUE REVIEW = FALSE /*",
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errDoubleDollarQuotesNotAllowed("AlterListingOptions.AlterListingAs", "As"))
-	})
-
-	// all variants added manually
-	t.Run("publish", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Publish = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING IF EXISTS %s PUBLISH", opts.name.FullyQualifiedName())
-	})
-
-	t.Run("unpublish", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Unpublish = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING IF EXISTS %s UNPUBLISH", opts.name.FullyQualifiedName())
-	})
-
-	t.Run("review", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.Review = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING IF EXISTS %s REVIEW", opts.name.FullyQualifiedName())
-	})
-
-	t.Run("as: basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.AlterListingAs = &AlterListingAs{
-			As: manifest,
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING IF EXISTS %s AS $$%s$$", opts.name.FullyQualifiedName(), manifest)
-	})
-
-	t.Run("as: complete", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		opts.AlterListingAs = &AlterListingAs{
-			As:      manifest,
-			Publish: Bool(true),
-			Review:  Bool(true),
-			Comment: String("comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING IF EXISTS %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'", opts.name.FullyQualifiedName(), manifest)
-	})
-
-	t.Run("add version", func(t *testing.T) {
-		stageId := randomSchemaObjectIdentifier()
-		opts := defaultOpts()
-		opts.AddVersion = &AddListingVersion{
-			IfNotExists: Bool(true),
-			VersionName: "version-name",
-			From: StageLocation{
-				stage: stageId,
-				path:  "dir/subdir",
-			},
-			Comment: String("comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER LISTING %s ADD VERSION IF NOT EXISTS "version-name" FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' COMMENT = 'comment'`, opts.name.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
-	})
-
-	t.Run("rename to", func(t *testing.T) {
-		newId := randomAccountObjectIdentifier()
-		opts := defaultOpts()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s RENAME TO %s", opts.name.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &ListingSet{
-			Comment: String("comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER LISTING %s SET COMMENT = 'comment'", opts.name.FullyQualifiedName())
-	})
+	listingsTests.Alter.RunValidationCases(t)
+	listingsTests.Alter.RunSqlCases(t)
 }
 
 func TestListings_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropListingOptions
-	defaultOpts := func() *DropListingOptions {
-		return &DropListingOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropListingOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP LISTING %s", opts.name.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP LISTING IF EXISTS %s", opts.name.FullyQualifiedName())
-	})
+	listingsTests.Drop.RunValidationCases(t)
+	listingsTests.Drop.RunSqlCases(t)
 }
 
 func TestListings_Show(t *testing.T) {
-	// Minimal valid ShowListingOptions
-	defaultOpts := func() *ShowListingOptions {
-		return &ShowListingOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowListingOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW LISTINGS")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("pattern"),
-		}
-		opts.StartsWith = String("startsWith")
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-			From: String("from"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW LISTINGS LIKE 'pattern' STARTS WITH 'startsWith' LIMIT 10 FROM 'from'")
-	})
+	listingsTests.Show.RunValidationCases(t)
+	listingsTests.Show.RunSqlCases(t)
 }
 
 func TestListings_Describe(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribeListingOptions
-	defaultOpts := func() *DescribeListingOptions {
-		return &DescribeListingOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeListingOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE LISTING %s", opts.name.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Revision = Pointer(ListingRevisionDraft)
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE LISTING %s REVISION = DRAFT", opts.name.FullyQualifiedName())
-	})
+	listingsTests.Describe.RunValidationCases(t)
+	listingsTests.Describe.RunSqlCases(t)
 }
 
 func TestListings_ShowVersions(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid ShowVersionsListingOptions
-	defaultOpts := func() *ShowVersionsListingOptions {
-		return &ShowVersionsListingOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowVersionsListingOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = invalidAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Limit = &LimitFrom{
-			Rows: Int(5),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW VERSIONS IN LISTING %s LIMIT 5", id.FullyQualifiedName())
-	})
+	listingsTests.ShowVersions.RunValidationCases(t)
+	listingsTests.ShowVersions.RunSqlCases(t)
 }
