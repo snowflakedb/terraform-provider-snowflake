@@ -214,4 +214,4 @@ var postgresInstancesDef = g.NewInterface(
 	"AlterSafely alters the instance and polls until it reaches READY state.\nThe caller should set a deadline on ctx via context.WithTimeout.\nImplemented in postgres_instances_ext.go.",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*AlterPostgresInstanceRequest")},
 	"error",
-)
+).WithEnabledGenerationParts(g.PartUnitTests)

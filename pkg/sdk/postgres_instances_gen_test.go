@@ -13,279 +13,373 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PostgresInstanceComputeFamily]{"PostgresInstanceComputeFamily", AllPostgresInstanceComputeFamilies, ToPostgresInstanceComputeFamily})
 }
 
+var postgresInstancesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
+
+const (
+	case_PostgresInstances_validation_Create_name_ValidIdentifier                            testCaseName = "validation_Create_name_ValidIdentifier"
+	case_PostgresInstances_sql_Create_basic                                                  testCaseName = "sql_Create_basic"
+	case_PostgresInstances_sql_Create_all                                                    testCaseName = "sql_Create_all"
+	case_PostgresInstances_validation_Fork_name_ValidIdentifier                              testCaseName = "validation_Fork_name_ValidIdentifier"
+	case_PostgresInstances_validation_Fork_Fork_ValidIdentifier                              testCaseName = "validation_Fork_Fork_ValidIdentifier"
+	case_PostgresInstances_validation_Fork_opts_ConflictingFields                            testCaseName = "validation_Fork_opts_ConflictingFields"
+	case_PostgresInstances_validation_Fork_opts_At_ExactlyOneValueSet_NoneSet                testCaseName = "validation_Fork_opts_At_ExactlyOneValueSet_NoneSet"
+	case_PostgresInstances_validation_Fork_opts_At_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_Fork_opts_At_ExactlyOneValueSet_MoreThanOneSet"
+	case_PostgresInstances_validation_Fork_opts_Before_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Fork_opts_Before_ExactlyOneValueSet_NoneSet"
+	case_PostgresInstances_validation_Fork_opts_Before_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Fork_opts_Before_ExactlyOneValueSet_MoreThanOneSet"
+	case_PostgresInstances_sql_Fork_basic                                                    testCaseName = "sql_Fork_basic"
+	case_PostgresInstances_validation_Alter_name_ValidIdentifier                             testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_PostgresInstances_validation_Alter_opts_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_PostgresInstances_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_PostgresInstances_validation_Alter_opts_Set_AtLeastOneValueSet                      testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_Apply_ExactlyOneValueSet_NoneSet"
+	case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_Apply_ExactlyOneValueSet_MoreThanOneSet"
+	case_PostgresInstances_validation_Alter_opts_Unset_AtLeastOneValueSet                    testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_PostgresInstances_sql_Alter_RenameTo                                                testCaseName = "sql_Alter_RenameTo"
+	case_PostgresInstances_sql_Alter_Set                                                     testCaseName = "sql_Alter_Set"
+	case_PostgresInstances_sql_Alter_Unset                                                   testCaseName = "sql_Alter_Unset"
+	case_PostgresInstances_sql_Alter_Suspend                                                 testCaseName = "sql_Alter_Suspend"
+	case_PostgresInstances_sql_Alter_Resume                                                  testCaseName = "sql_Alter_Resume"
+	case_PostgresInstances_sql_Alter_ResetAccess                                             testCaseName = "sql_Alter_ResetAccess"
+	case_PostgresInstances_sql_Alter_SetTags                                                 testCaseName = "sql_Alter_SetTags"
+	case_PostgresInstances_sql_Alter_UnsetTags                                               testCaseName = "sql_Alter_UnsetTags"
+	case_PostgresInstances_validation_Drop_name_ValidIdentifier                              testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_PostgresInstances_sql_Drop_basic                                                    testCaseName = "sql_Drop_basic"
+	case_PostgresInstances_sql_Drop_all                                                      testCaseName = "sql_Drop_all"
+	case_PostgresInstances_sql_Show_basic                                                    testCaseName = "sql_Show_basic"
+	case_PostgresInstances_sql_Show_all                                                      testCaseName = "sql_Show_all"
+	case_PostgresInstances_sql_Show_Like                                                     testCaseName = "sql_Show_Like"
+	case_PostgresInstances_sql_Show_StartsWith                                               testCaseName = "sql_Show_StartsWith"
+	case_PostgresInstances_sql_Show_Limit                                                    testCaseName = "sql_Show_Limit"
+	case_PostgresInstances_validation_Describe_name_ValidIdentifier                          testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_PostgresInstances_sql_Describe_basic                                                testCaseName = "sql_Describe_basic"
+)
+
+type PostgresInstancesTestsContext struct {
+	Create   *sdkTestCtx[*CreatePostgresInstanceOptions]
+	Fork     *sdkTestCtx[*ForkPostgresInstanceOptions]
+	Alter    *sdkTestCtx[*AlterPostgresInstanceOptions]
+	Drop     *sdkTestCtx[*DropPostgresInstanceOptions]
+	Show     *sdkTestCtx[*ShowPostgresInstanceOptions]
+	Describe *sdkTestCtx[*DescribePostgresInstanceOptions]
+}
+
+var postgresInstancesTests = PostgresInstancesTestsContext{
+	Create: newSdkTestCtx[*CreatePostgresInstanceOptions](
+		"PostgresInstances", "Create",
+	).
+		withDefaultOpts(func() *CreatePostgresInstanceOptions {
+			return &CreatePostgresInstanceOptions{
+				name: postgresInstancesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreatePostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreatePostgresInstanceOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreatePostgresInstanceOptions]{
+				Name:           case_PostgresInstances_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreatePostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Create_all,
+			},
+		),
+	Fork: newSdkTestCtx[*ForkPostgresInstanceOptions](
+		"PostgresInstances", "Fork",
+	).
+		withDefaultOpts(func() *ForkPostgresInstanceOptions {
+			return &ForkPostgresInstanceOptions{
+				name: postgresInstancesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_Fork_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.Fork = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_opts_ConflictingFields,
+				ExpectedErr: errOneOf("ForkPostgresInstanceOptions", "At", "Before"),
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.At = &PostgresInstanceForkAt{}
+					opts.Before = &PostgresInstanceForkBefore{}
+				},
+			},
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_opts_At_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("ForkPostgresInstanceOptions.At", "Timestamp", "Offset"),
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.At = &PostgresInstanceForkAt{}
+					opts.At.Timestamp = nil
+					opts.At.Offset = nil
+				},
+			},
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_opts_At_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ForkPostgresInstanceOptions.At", "Timestamp", "Offset"),
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.At = &PostgresInstanceForkAt{}
+					opts.At.Timestamp = new("foo")
+					opts.At.Offset = new("foo")
+				},
+			},
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_opts_Before_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"),
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.Before = &PostgresInstanceForkBefore{}
+					opts.Before.Timestamp = nil
+					opts.Before.Offset = nil
+				},
+			},
+			validationCase[*ForkPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Fork_opts_Before_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"),
+				DefaultModify: func(opts *ForkPostgresInstanceOptions) {
+					opts.Before = &PostgresInstanceForkBefore{}
+					opts.Before.Timestamp = new("foo")
+					opts.Before.Offset = new("foo")
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ForkPostgresInstanceOptions]{
+				Name:           case_PostgresInstances_sql_Fork_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterPostgresInstanceOptions](
+		"PostgresInstances", "Alter",
+	).
+		withDefaultOpts(func() *AlterPostgresInstanceOptions {
+			return &AlterPostgresInstanceOptions{
+				name: postgresInstancesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterPostgresInstanceOptions", "RenameTo", "Set", "Unset", "Suspend", "Resume", "ResetAccess", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.Unset = nil
+					opts.Suspend = nil
+					opts.Resume = nil
+					opts.ResetAccess = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterPostgresInstanceOptions", "RenameTo", "Set", "Unset", "Suspend", "Resume", "ResetAccess", "SetTags", "UnsetTags"),
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.RenameTo = new(randomAccountObjectIdentifier())
+					opts.Set = &PostgresInstanceSet{}
+				},
+			},
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterPostgresInstanceOptions.Set", "NetworkPolicy", "AuthenticationAuthority", "Comment", "HighAvailability", "ComputeFamily", "StorageSizeGb", "StorageIntegration", "PostgresVersion", "MaintenanceWindowStart", "PostgresSettings"),
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.Set = &PostgresInstanceSet{}
+					opts.Set.NetworkPolicy = nil
+					opts.Set.AuthenticationAuthority = nil
+					opts.Set.Comment = nil
+					opts.Set.HighAvailability = nil
+					opts.Set.ComputeFamily = nil
+					opts.Set.StorageSizeGb = nil
+					opts.Set.StorageIntegration = nil
+					opts.Set.PostgresVersion = nil
+					opts.Set.MaintenanceWindowStart = nil
+					opts.Set.PostgresSettings = nil
+				},
+			},
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"),
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.Set = &PostgresInstanceSet{}
+					opts.Set.Apply = &PostgresInstanceApply{}
+					opts.Set.Apply.Immediately = nil
+					opts.Set.Apply.On = nil
+				},
+			},
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"),
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.Set = &PostgresInstanceSet{}
+					opts.Set.Apply = &PostgresInstanceApply{}
+					opts.Set.Apply.Immediately = new(true)
+					opts.Set.Apply.On = new("foo")
+				},
+			},
+			validationCase[*AlterPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterPostgresInstanceOptions.Unset", "Comment", "PostgresSettings", "NetworkPolicy", "MaintenanceWindowStart", "StorageIntegration"),
+				DefaultModify: func(opts *AlterPostgresInstanceOptions) {
+					opts.Unset = &PostgresInstanceUnset{}
+					opts.Unset.Comment = nil
+					opts.Unset.PostgresSettings = nil
+					opts.Unset.NetworkPolicy = nil
+					opts.Unset.MaintenanceWindowStart = nil
+					opts.Unset.StorageIntegration = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_Set,
+			},
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_Unset,
+			},
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_Suspend,
+			},
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_Resume,
+			},
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_ResetAccess,
+			},
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropPostgresInstanceOptions](
+		"PostgresInstances", "Drop",
+	).
+		withDefaultOpts(func() *DropPostgresInstanceOptions {
+			return &DropPostgresInstanceOptions{
+				name: postgresInstancesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropPostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropPostgresInstanceOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropPostgresInstanceOptions]{
+				Name:           case_PostgresInstances_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowPostgresInstanceOptions](
+		"PostgresInstances", "Show",
+	).
+		withDefaultOpts(func() *ShowPostgresInstanceOptions {
+			return &ShowPostgresInstanceOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowPostgresInstanceOptions]{
+				Name:           case_PostgresInstances_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Show_all,
+			},
+			sqlCase[*ShowPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Show_Like,
+			},
+			sqlCase[*ShowPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowPostgresInstanceOptions]{
+				Name: case_PostgresInstances_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribePostgresInstanceOptions](
+		"PostgresInstances", "Describe",
+	).
+		withDefaultOpts(func() *DescribePostgresInstanceOptions {
+			return &DescribePostgresInstanceOptions{
+				name: postgresInstancesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribePostgresInstanceOptions]{
+				Name:        case_PostgresInstances_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribePostgresInstanceOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribePostgresInstanceOptions]{
+				Name:           case_PostgresInstances_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestPostgresInstances_Create(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid CreatePostgresInstanceOptions
-	defaultOpts := func() *CreatePostgresInstanceOptions {
-		return &CreatePostgresInstanceOptions{
-			name:                    id,
-			ComputeFamily:           "STANDARD_M",
-			StorageSizeGb:           10,
-			AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreatePostgresInstanceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 AUTHENTICATION_AUTHORITY = POSTGRES", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		networkPolicyId := randomAccountObjectIdentifier()
-		storageIntegrationId := randomAccountObjectIdentifier()
-		opts.PostgresVersion = Int(15)
-		opts.NetworkPolicy = &networkPolicyId
-		opts.HighAvailability = Bool(true)
-		opts.StorageIntegration = &storageIntegrationId
-		opts.PostgresSettings = String(`{"max_connections":"100"}`)
-		opts.Comment = String("my comment")
-		assertOptsValidAndSQLEquals(t, opts,
-			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 15 NETWORK_POLICY = %s HIGH_AVAILABILITY = true STORAGE_INTEGRATION = %s POSTGRES_SETTINGS = '{\"max_connections\":\"100\"}' COMMENT = 'my comment'`,
-			id.FullyQualifiedName(), networkPolicyId.FullyQualifiedName(), storageIntegrationId.FullyQualifiedName())
-	})
+	postgresInstancesTests.Create.RunValidationCases(t)
+	postgresInstancesTests.Create.RunSqlCases(t)
 }
 
 func TestPostgresInstances_Fork(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	forkSourceId := randomAccountObjectIdentifier()
-	// Minimal valid ForkPostgresInstanceOptions
-	defaultOpts := func() *ForkPostgresInstanceOptions {
-		return &ForkPostgresInstanceOptions{
-			name: id,
-			Fork: forkSourceId,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ForkPostgresInstanceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: valid identifier for [opts.Fork]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Fork = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.At opts.Before]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.At = &PostgresInstanceForkAt{Timestamp: String("2023-01-01 00:00:00")}
-		opts.Before = &PostgresInstanceForkBefore{Timestamp: String("2023-01-01 00:00:00")}
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("ForkPostgresInstanceOptions", "At", "Before"))
-	})
-
-	t.Run("validation: exactly one field from [opts.At.Timestamp opts.At.Offset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.At = &PostgresInstanceForkAt{} // neither Timestamp nor Offset set
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ForkPostgresInstanceOptions.At", "Timestamp", "Offset"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Before.Timestamp opts.Before.Offset] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Before = &PostgresInstanceForkBefore{} // neither Timestamp nor Offset set
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("ForkPostgresInstanceOptions.Before", "Timestamp", "Offset"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE POSTGRES INSTANCE %s FORK %s", id.FullyQualifiedName(), forkSourceId.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.At = &PostgresInstanceForkAt{Timestamp: String("2023-01-01 00:00:00")}
-		opts.ComputeFamily = String("STANDARD_M")
-		opts.StorageSizeGb = Int(10)
-		opts.HighAvailability = Bool(true)
-		opts.Comment = String("my fork")
-		assertOptsValidAndSQLEquals(t, opts,
-			"CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => '2023-01-01 00:00:00') COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 HIGH_AVAILABILITY = true COMMENT = 'my fork'",
-			id.FullyQualifiedName(), forkSourceId.FullyQualifiedName())
-	})
+	postgresInstancesTests.Fork.RunValidationCases(t)
+	postgresInstancesTests.Fork.RunSqlCases(t)
 }
 
 func TestPostgresInstances_Alter(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid AlterPostgresInstanceOptions
-	defaultOpts := func() *AlterPostgresInstanceOptions {
-		return &AlterPostgresInstanceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterPostgresInstanceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.Unset opts.Suspend opts.Resume opts.ResetAccess opts.SetTags opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		// defaultOpts has none of the required fields set
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPostgresInstanceOptions", "RenameTo", "Set", "Unset", "Suspend", "Resume", "ResetAccess", "SetTags", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.NetworkPolicy opts.Set.AuthenticationAuthority opts.Set.Comment opts.Set.HighAvailability opts.Set.ComputeFamily opts.Set.StorageSizeGb opts.Set.StorageIntegration opts.Set.PostgresVersion opts.Set.MaintenanceWindowStart opts.Set.PostgresSettings] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &PostgresInstanceSet{} // Set is present but no fields are set
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterPostgresInstanceOptions.Set", "NetworkPolicy", "AuthenticationAuthority", "Comment", "HighAvailability", "ComputeFamily", "StorageSizeGb", "StorageIntegration", "PostgresVersion", "MaintenanceWindowStart", "PostgresSettings"))
-	})
-
-	t.Run("validation: exactly one field from [opts.Set.Apply.Immediately opts.Set.Apply.On] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &PostgresInstanceSet{
-			Comment: String("x"),
-			Apply:   &PostgresInstanceApply{}, // neither Immediately nor On set
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterPostgresInstanceOptions.Set.Apply", "Immediately", "On"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Comment opts.Unset.PostgresSettings opts.Unset.NetworkPolicy opts.Unset.MaintenanceWindowStart opts.Unset.StorageIntegration] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &PostgresInstanceUnset{} // Unset is present but no fields are set
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterPostgresInstanceOptions.Unset", "Comment", "PostgresSettings", "NetworkPolicy", "MaintenanceWindowStart", "StorageIntegration"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Suspend = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "ALTER POSTGRES INSTANCE %s SUSPEND", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomAccountObjectIdentifier()
-		networkPolicyId := randomAccountObjectIdentifier()
-		storageIntegrationId := randomAccountObjectIdentifier()
-		authAuthority := PostgresInstanceAuthenticationAuthorityPostgres
-		opts.IfExists = Bool(true)
-		opts.Set = &PostgresInstanceSet{
-			NetworkPolicy:           &networkPolicyId,
-			AuthenticationAuthority: &authAuthority,
-			Comment:                 String("my comment"),
-			HighAvailability:        Bool(true),
-			ComputeFamily:           String("STANDARD_M"),
-			StorageSizeGb:           Int(10),
-			StorageIntegration:      &storageIntegrationId,
-			PostgresVersion:         Int(15),
-			MaintenanceWindowStart:  Int(3),
-			PostgresSettings:        String(`{"max_connections":"100"}`),
-			Apply:                   &PostgresInstanceApply{Immediately: Bool(true)},
-		}
-		_ = newId
-		assertOptsValidAndSQLEquals(t, opts,
-			`ALTER POSTGRES INSTANCE IF EXISTS %s SET NETWORK_POLICY = %s AUTHENTICATION_AUTHORITY = POSTGRES COMMENT = 'my comment' HIGH_AVAILABILITY = true COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 STORAGE_INTEGRATION = %s POSTGRES_VERSION = 15 MAINTENANCE_WINDOW_START = 3 POSTGRES_SETTINGS = '{\"max_connections\":\"100\"}' APPLY IMMEDIATELY`,
-			id.FullyQualifiedName(), networkPolicyId.FullyQualifiedName(), storageIntegrationId.FullyQualifiedName())
-	})
+	postgresInstancesTests.Alter.RunValidationCases(t)
+	postgresInstancesTests.Alter.RunSqlCases(t)
 }
 
 func TestPostgresInstances_Drop(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DropPostgresInstanceOptions
-	defaultOpts := func() *DropPostgresInstanceOptions {
-		return &DropPostgresInstanceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropPostgresInstanceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP POSTGRES INSTANCE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP POSTGRES INSTANCE IF EXISTS %s", id.FullyQualifiedName())
-	})
+	postgresInstancesTests.Drop.RunValidationCases(t)
+	postgresInstancesTests.Drop.RunSqlCases(t)
 }
 
 func TestPostgresInstances_Show(t *testing.T) {
-	// Minimal valid ShowPostgresInstanceOptions
-	defaultOpts := func() *ShowPostgresInstanceOptions {
-		return &ShowPostgresInstanceOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowPostgresInstanceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW POSTGRES INSTANCES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{Pattern: String("my-pattern")}
-		opts.StartsWith = String("my-prefix")
-		opts.Limit = &LimitFrom{Rows: Int(10), From: String("my-from")}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW POSTGRES INSTANCES LIKE 'my-pattern' STARTS WITH 'my-prefix' LIMIT 10 FROM 'my-from'")
-	})
+	postgresInstancesTests.Show.RunValidationCases(t)
+	postgresInstancesTests.Show.RunSqlCases(t)
 }
 
 func TestPostgresInstances_Describe(t *testing.T) {
-	id := randomAccountObjectIdentifier()
-	// Minimal valid DescribePostgresInstanceOptions
-	defaultOpts := func() *DescribePostgresInstanceOptions {
-		return &DescribePostgresInstanceOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribePostgresInstanceOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptyAccountObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE POSTGRES INSTANCE %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE POSTGRES INSTANCE %s", id.FullyQualifiedName())
-	})
+	postgresInstancesTests.Describe.RunValidationCases(t)
+	postgresInstancesTests.Describe.RunSqlCases(t)
 }

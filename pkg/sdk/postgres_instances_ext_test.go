@@ -11,6 +11,226 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func init() {
+	id := postgresInstancesTestIdAccountObjectIdentifier
+	forkSourceId := randomAccountObjectIdentifier()
+	renameTarget := randomAccountObjectIdentifier()
+	networkPolicyId := randomAccountObjectIdentifier()
+	storageIntegrationId := randomAccountObjectIdentifier()
+	tagId := NewAccountObjectIdentifier("tag1")
+	tagId2 := NewAccountObjectIdentifier("tag2")
+	authAuthority := PostgresInstanceAuthenticationAuthorityPostgres
+
+	postgresInstancesTests.Create.
+		withDefaultOpts(func() *CreatePostgresInstanceOptions {
+			return &CreatePostgresInstanceOptions{
+				name:                    id,
+				ComputeFamily:           "STANDARD_M",
+				StorageSizeGb:           10,
+				AuthenticationAuthority: PostgresInstanceAuthenticationAuthorityPostgres,
+			}
+		}).
+		withExpectedSqlf(
+			case_PostgresInstances_sql_Create_basic,
+			"CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 AUTHENTICATION_AUTHORITY = POSTGRES",
+			id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Create_all,
+			func(opts *CreatePostgresInstanceOptions) {
+				opts.PostgresVersion = new(15)
+				opts.NetworkPolicy = &networkPolicyId
+				opts.HighAvailability = new(true)
+				opts.StorageIntegration = &storageIntegrationId
+				opts.PostgresSettings = new(`{"max_connections":"100"}`)
+				opts.Comment = new("my comment")
+			},
+			`CREATE POSTGRES INSTANCE %s COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 AUTHENTICATION_AUTHORITY = POSTGRES POSTGRES_VERSION = 15 NETWORK_POLICY = %s HIGH_AVAILABILITY = true STORAGE_INTEGRATION = %s POSTGRES_SETTINGS = '{\"max_connections\":\"100\"}' COMMENT = 'my comment'`,
+			id.FullyQualifiedName(), networkPolicyId.FullyQualifiedName(), storageIntegrationId.FullyQualifiedName(),
+		)
+
+	postgresInstancesTests.Fork.
+		withDefaultOpts(func() *ForkPostgresInstanceOptions {
+			return &ForkPostgresInstanceOptions{
+				name: id,
+				Fork: forkSourceId,
+			}
+		}).
+		withModify(
+			case_PostgresInstances_validation_Fork_opts_ConflictingFields,
+			func(opts *ForkPostgresInstanceOptions) {
+				opts.At = &PostgresInstanceForkAt{Timestamp: new("2023-01-01 00:00:00")}
+				opts.Before = &PostgresInstanceForkBefore{Timestamp: new("2023-01-01 00:00:00")}
+			},
+		).
+		withExpectedSqlf(
+			case_PostgresInstances_sql_Fork_basic,
+			"CREATE POSTGRES INSTANCE %s FORK %s",
+			id.FullyQualifiedName(), forkSourceId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Fork_all",
+			func(opts *ForkPostgresInstanceOptions) {
+				opts.At = &PostgresInstanceForkAt{Timestamp: new("2023-01-01 00:00:00")}
+				opts.ComputeFamily = new("STANDARD_M")
+				opts.StorageSizeGb = new(10)
+				opts.HighAvailability = new(true)
+				opts.Comment = new("my fork")
+			},
+			"CREATE POSTGRES INSTANCE %s FORK %s AT (TIMESTAMP => '2023-01-01 00:00:00') COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 HIGH_AVAILABILITY = true COMMENT = 'my fork'",
+			id.FullyQualifiedName(), forkSourceId.FullyQualifiedName(),
+		)
+
+	postgresInstancesTests.Alter.
+		withModify(
+			case_PostgresInstances_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.RenameTo = &renameTarget
+				opts.Set = &PostgresInstanceSet{Comment: new("my comment")}
+			},
+		).
+		withModify(
+			case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_NoneSet,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.Set = &PostgresInstanceSet{
+					Comment: new("x"),
+					Apply:   &PostgresInstanceApply{},
+				}
+			},
+		).
+		withModify(
+			case_PostgresInstances_validation_Alter_opts_Set_Apply_ExactlyOneValueSet_MoreThanOneSet,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.Set = &PostgresInstanceSet{
+					Comment: new("x"),
+					Apply:   &PostgresInstanceApply{Immediately: new(true), On: new("foo")},
+				}
+			},
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_RenameTo,
+			func(opts *AlterPostgresInstanceOptions) { opts.RenameTo = &renameTarget },
+			"ALTER POSTGRES INSTANCE %s RENAME TO %s", id.FullyQualifiedName(), renameTarget.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_Set,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.IfExists = new(true)
+				opts.Set = &PostgresInstanceSet{
+					NetworkPolicy:           &networkPolicyId,
+					AuthenticationAuthority: &authAuthority,
+					Comment:                 new("my comment"),
+					HighAvailability:        new(true),
+					ComputeFamily:           new("STANDARD_M"),
+					StorageSizeGb:           new(10),
+					StorageIntegration:      &storageIntegrationId,
+					PostgresVersion:         new(15),
+					MaintenanceWindowStart:  new(3),
+					PostgresSettings:        new(`{"max_connections":"100"}`),
+					Apply:                   &PostgresInstanceApply{Immediately: new(true)},
+				}
+			},
+			`ALTER POSTGRES INSTANCE IF EXISTS %s SET NETWORK_POLICY = %s AUTHENTICATION_AUTHORITY = POSTGRES COMMENT = 'my comment' HIGH_AVAILABILITY = true COMPUTE_FAMILY = 'STANDARD_M' STORAGE_SIZE_GB = 10 STORAGE_INTEGRATION = %s POSTGRES_VERSION = 15 MAINTENANCE_WINDOW_START = 3 POSTGRES_SETTINGS = '{\"max_connections\":\"100\"}' APPLY IMMEDIATELY`,
+			id.FullyQualifiedName(), networkPolicyId.FullyQualifiedName(), storageIntegrationId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_Unset,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.Unset = &PostgresInstanceUnset{
+					Comment:                new(true),
+					PostgresSettings:       new(true),
+					NetworkPolicy:          new(true),
+					MaintenanceWindowStart: new(true),
+					StorageIntegration:     new(true),
+				}
+			},
+			"ALTER POSTGRES INSTANCE %s UNSET COMMENT, POSTGRES_SETTINGS, NETWORK_POLICY, MAINTENANCE_WINDOW_START, STORAGE_INTEGRATION",
+			id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_Suspend,
+			func(opts *AlterPostgresInstanceOptions) { opts.Suspend = new(true) },
+			"ALTER POSTGRES INSTANCE %s SUSPEND", id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_Resume,
+			func(opts *AlterPostgresInstanceOptions) { opts.Resume = new(true) },
+			"ALTER POSTGRES INSTANCE %s RESUME", id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_ResetAccess,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.ResetAccess = &PostgresInstanceResetAccess{ForRole: PostgresInstanceResetAccessRoleSnowflakeAdmin}
+			},
+			"ALTER POSTGRES INSTANCE %s RESET ACCESS FOR 'snowflake_admin'", id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_SetTags,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.SetTags = []TagAssociation{
+					{Name: tagId, Value: "value-123"},
+					{Name: tagId2, Value: "value-123"},
+				}
+			},
+			"ALTER POSTGRES INSTANCE %s SET TAG %s = 'value-123', %s = 'value-123'",
+			id.FullyQualifiedName(), tagId.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Alter_UnsetTags,
+			func(opts *AlterPostgresInstanceOptions) {
+				opts.UnsetTags = []ObjectIdentifier{tagId, tagId2}
+			},
+			"ALTER POSTGRES INSTANCE %s UNSET TAG %s, %s",
+			id.FullyQualifiedName(), tagId.FullyQualifiedName(), tagId2.FullyQualifiedName(),
+		)
+
+	postgresInstancesTests.Drop.
+		withExpectedSqlf(
+			case_PostgresInstances_sql_Drop_basic,
+			"DROP POSTGRES INSTANCE %s", id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Drop_all,
+			func(opts *DropPostgresInstanceOptions) { opts.IfExists = new(true) },
+			"DROP POSTGRES INSTANCE IF EXISTS %s", id.FullyQualifiedName(),
+		)
+
+	postgresInstancesTests.Show.
+		withExpectedSql(case_PostgresInstances_sql_Show_basic, "SHOW POSTGRES INSTANCES").
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Show_all,
+			func(opts *ShowPostgresInstanceOptions) {
+				opts.Like = &Like{Pattern: new("my-pattern")}
+				opts.StartsWith = new("my-prefix")
+				opts.Limit = &LimitFrom{Rows: new(10), From: new("my-from")}
+			},
+			"SHOW POSTGRES INSTANCES LIKE 'my-pattern' STARTS WITH 'my-prefix' LIMIT 10 FROM 'my-from'",
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Show_Like,
+			func(opts *ShowPostgresInstanceOptions) { opts.Like = &Like{Pattern: new("my-pattern")} },
+			"SHOW POSTGRES INSTANCES LIKE 'my-pattern'",
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Show_StartsWith,
+			func(opts *ShowPostgresInstanceOptions) { opts.StartsWith = new("my-prefix") },
+			"SHOW POSTGRES INSTANCES STARTS WITH 'my-prefix'",
+		).
+		withModifyAndExpectedSqlf(
+			case_PostgresInstances_sql_Show_Limit,
+			func(opts *ShowPostgresInstanceOptions) {
+				opts.Limit = &LimitFrom{Rows: new(10), From: new("my-from")}
+			},
+			"SHOW POSTGRES INSTANCES LIMIT 10 FROM 'my-from'",
+		)
+
+	postgresInstancesTests.Describe.
+		withExpectedSqlf(
+			case_PostgresInstances_sql_Describe_basic,
+			"DESCRIBE POSTGRES INSTANCE %s", id.FullyQualifiedName(),
+		)
+}
+
 func TestPostgresInstances_ParseDetails(t *testing.T) {
 	t.Run("optional string fields: empty becomes nil, non-empty becomes pointer", func(t *testing.T) {
 		tests := []struct {
