@@ -6,341 +6,340 @@ import (
 	"testing"
 )
 
+var budgetsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_Budgets_validation_Create_name_ValidIdentifier                         testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Budgets_validation_Create_opts_ConflictingFields                       testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Budgets_sql_Create_basic                                               testCaseName = "sql_Create_basic"
+	case_Budgets_sql_Create_all                                                 testCaseName = "sql_Create_all"
+	case_Budgets_validation_Drop_name_ValidIdentifier                           testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Budgets_sql_Drop_basic                                                 testCaseName = "sql_Drop_basic"
+	case_Budgets_sql_Drop_all                                                   testCaseName = "sql_Drop_all"
+	case_Budgets_validation_SetSpendingLimit_name_ValidIdentifier               testCaseName = "validation_SetSpendingLimit_name_ValidIdentifier"
+	case_Budgets_sql_SetSpendingLimit_basic                                     testCaseName = "sql_SetSpendingLimit_basic"
+	case_Budgets_validation_GetSpendingLimit_name_ValidIdentifier               testCaseName = "validation_GetSpendingLimit_name_ValidIdentifier"
+	case_Budgets_sql_GetSpendingLimit_basic                                     testCaseName = "sql_GetSpendingLimit_basic"
+	case_Budgets_validation_SetEmailNotifications_name_ValidIdentifier          testCaseName = "validation_SetEmailNotifications_name_ValidIdentifier"
+	case_Budgets_sql_SetEmailNotifications_basic                                testCaseName = "sql_SetEmailNotifications_basic"
+	case_Budgets_validation_GetNotificationIntegrations_name_ValidIdentifier    testCaseName = "validation_GetNotificationIntegrations_name_ValidIdentifier"
+	case_Budgets_sql_GetNotificationIntegrations_basic                          testCaseName = "sql_GetNotificationIntegrations_basic"
+	case_Budgets_validation_GetNotificationEmail_name_ValidIdentifier           testCaseName = "validation_GetNotificationEmail_name_ValidIdentifier"
+	case_Budgets_sql_GetNotificationEmail_basic                                 testCaseName = "sql_GetNotificationEmail_basic"
+	case_Budgets_validation_GetNotificationIntegrationName_name_ValidIdentifier testCaseName = "validation_GetNotificationIntegrationName_name_ValidIdentifier"
+	case_Budgets_sql_GetNotificationIntegrationName_basic                       testCaseName = "sql_GetNotificationIntegrationName_basic"
+	case_Budgets_validation_SetCycleStartAction_name_ValidIdentifier            testCaseName = "validation_SetCycleStartAction_name_ValidIdentifier"
+	case_Budgets_sql_SetCycleStartAction_basic                                  testCaseName = "sql_SetCycleStartAction_basic"
+	case_Budgets_validation_GetCycleStartAction_name_ValidIdentifier            testCaseName = "validation_GetCycleStartAction_name_ValidIdentifier"
+	case_Budgets_sql_GetCycleStartAction_basic                                  testCaseName = "sql_GetCycleStartAction_basic"
+)
+
+type BudgetsTestsContext struct {
+	Create                         *sdkTestCtx[*CreateBudgetOptions]
+	Drop                           *sdkTestCtx[*DropBudgetOptions]
+	SetSpendingLimit               *sdkTestCtx[*SetSpendingLimitBudgetOptions]
+	GetSpendingLimit               *sdkTestCtx[*GetSpendingLimitBudgetOptions]
+	SetEmailNotifications          *sdkTestCtx[*SetEmailNotificationsBudgetOptions]
+	GetNotificationIntegrations    *sdkTestCtx[*GetNotificationIntegrationsBudgetOptions]
+	GetNotificationEmail           *sdkTestCtx[*GetNotificationEmailBudgetOptions]
+	GetNotificationIntegrationName *sdkTestCtx[*GetNotificationIntegrationNameBudgetOptions]
+	SetCycleStartAction            *sdkTestCtx[*SetCycleStartActionBudgetOptions]
+	GetCycleStartAction            *sdkTestCtx[*GetCycleStartActionBudgetOptions]
+}
+
+var budgetsTests = BudgetsTestsContext{
+	Create: newSdkTestCtx[*CreateBudgetOptions](
+		"Budgets", "Create",
+	).
+		withDefaultOpts(func() *CreateBudgetOptions {
+			return &CreateBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateBudgetOptions]{
+				Name:        case_Budgets_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateBudgetOptions]{
+				Name:        case_Budgets_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateBudgetOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateBudgetOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateBudgetOptions]{
+				Name:           case_Budgets_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateBudgetOptions]{
+				Name: case_Budgets_sql_Create_all,
+			},
+		),
+	Drop: newSdkTestCtx[*DropBudgetOptions](
+		"Budgets", "Drop",
+	).
+		withDefaultOpts(func() *DropBudgetOptions {
+			return &DropBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropBudgetOptions]{
+				Name:        case_Budgets_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropBudgetOptions]{
+				Name:           case_Budgets_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropBudgetOptions]{
+				Name: case_Budgets_sql_Drop_all,
+			},
+		),
+	SetSpendingLimit: newSdkTestCtx[*SetSpendingLimitBudgetOptions](
+		"Budgets", "SetSpendingLimit",
+	).
+		withDefaultOpts(func() *SetSpendingLimitBudgetOptions {
+			return &SetSpendingLimitBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*SetSpendingLimitBudgetOptions]{
+				Name:        case_Budgets_validation_SetSpendingLimit_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *SetSpendingLimitBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetSpendingLimitBudgetOptions]{
+				Name:           case_Budgets_sql_SetSpendingLimit_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	GetSpendingLimit: newSdkTestCtx[*GetSpendingLimitBudgetOptions](
+		"Budgets", "GetSpendingLimit",
+	).
+		withDefaultOpts(func() *GetSpendingLimitBudgetOptions {
+			return &GetSpendingLimitBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*GetSpendingLimitBudgetOptions]{
+				Name:        case_Budgets_validation_GetSpendingLimit_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *GetSpendingLimitBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetSpendingLimitBudgetOptions]{
+				Name:           case_Budgets_sql_GetSpendingLimit_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	SetEmailNotifications: newSdkTestCtx[*SetEmailNotificationsBudgetOptions](
+		"Budgets", "SetEmailNotifications",
+	).
+		withDefaultOpts(func() *SetEmailNotificationsBudgetOptions {
+			return &SetEmailNotificationsBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*SetEmailNotificationsBudgetOptions]{
+				Name:        case_Budgets_validation_SetEmailNotifications_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *SetEmailNotificationsBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetEmailNotificationsBudgetOptions]{
+				Name:           case_Budgets_sql_SetEmailNotifications_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	GetNotificationIntegrations: newSdkTestCtx[*GetNotificationIntegrationsBudgetOptions](
+		"Budgets", "GetNotificationIntegrations",
+	).
+		withDefaultOpts(func() *GetNotificationIntegrationsBudgetOptions {
+			return &GetNotificationIntegrationsBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*GetNotificationIntegrationsBudgetOptions]{
+				Name:        case_Budgets_validation_GetNotificationIntegrations_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *GetNotificationIntegrationsBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetNotificationIntegrationsBudgetOptions]{
+				Name:           case_Budgets_sql_GetNotificationIntegrations_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	GetNotificationEmail: newSdkTestCtx[*GetNotificationEmailBudgetOptions](
+		"Budgets", "GetNotificationEmail",
+	).
+		withDefaultOpts(func() *GetNotificationEmailBudgetOptions {
+			return &GetNotificationEmailBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*GetNotificationEmailBudgetOptions]{
+				Name:        case_Budgets_validation_GetNotificationEmail_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *GetNotificationEmailBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetNotificationEmailBudgetOptions]{
+				Name:           case_Budgets_sql_GetNotificationEmail_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	GetNotificationIntegrationName: newSdkTestCtx[*GetNotificationIntegrationNameBudgetOptions](
+		"Budgets", "GetNotificationIntegrationName",
+	).
+		withDefaultOpts(func() *GetNotificationIntegrationNameBudgetOptions {
+			return &GetNotificationIntegrationNameBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*GetNotificationIntegrationNameBudgetOptions]{
+				Name:        case_Budgets_validation_GetNotificationIntegrationName_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *GetNotificationIntegrationNameBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetNotificationIntegrationNameBudgetOptions]{
+				Name:           case_Budgets_sql_GetNotificationIntegrationName_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	SetCycleStartAction: newSdkTestCtx[*SetCycleStartActionBudgetOptions](
+		"Budgets", "SetCycleStartAction",
+	).
+		withDefaultOpts(func() *SetCycleStartActionBudgetOptions {
+			return &SetCycleStartActionBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*SetCycleStartActionBudgetOptions]{
+				Name:        case_Budgets_validation_SetCycleStartAction_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *SetCycleStartActionBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetCycleStartActionBudgetOptions]{
+				Name:           case_Budgets_sql_SetCycleStartAction_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	GetCycleStartAction: newSdkTestCtx[*GetCycleStartActionBudgetOptions](
+		"Budgets", "GetCycleStartAction",
+	).
+		withDefaultOpts(func() *GetCycleStartActionBudgetOptions {
+			return &GetCycleStartActionBudgetOptions{
+				name: budgetsTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*GetCycleStartActionBudgetOptions]{
+				Name:        case_Budgets_validation_GetCycleStartAction_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *GetCycleStartActionBudgetOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetCycleStartActionBudgetOptions]{
+				Name:           case_Budgets_sql_GetCycleStartAction_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestBudgets_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateBudgetOptions
-	defaultOpts := func() *CreateBudgetOptions {
-		return &CreateBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.OrReplace = Bool(true)
-		opts.IfNotExists = Bool(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateBudgetOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CREATE SNOWFLAKE.CORE.BUDGET %s ()", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.OrReplace = Bool(true)
-		opts.Comment = String("test comment")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE SNOWFLAKE.CORE.BUDGET %s () COMMENT = 'test comment'", id.FullyQualifiedName())
-	})
+	budgetsTests.Create.RunValidationCases(t)
+	budgetsTests.Create.RunSqlCases(t)
 }
 
 func TestBudgets_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropBudgetOptions
-	defaultOpts := func() *DropBudgetOptions {
-		return &DropBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "DROP SNOWFLAKE.CORE.BUDGET %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP SNOWFLAKE.CORE.BUDGET IF EXISTS %s", id.FullyQualifiedName())
-	})
+	budgetsTests.Drop.RunValidationCases(t)
+	budgetsTests.Drop.RunSqlCases(t)
 }
 
 func TestBudgets_SetSpendingLimit(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid SetSpendingLimitBudgetOptions
-	defaultOpts := func() *SetSpendingLimitBudgetOptions {
-		return &SetSpendingLimitBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*SetSpendingLimitBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.args = BudgetSetSpendingLimitArgs{SpendingLimit: 1000}
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_SPENDING_LIMIT (1000)", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	budgetsTests.SetSpendingLimit.RunValidationCases(t)
+	budgetsTests.SetSpendingLimit.RunSqlCases(t)
 }
 
 func TestBudgets_GetSpendingLimit(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid GetSpendingLimitBudgetOptions
-	defaultOpts := func() *GetSpendingLimitBudgetOptions {
-		return &GetSpendingLimitBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GetSpendingLimitBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_SPENDING_LIMIT ()", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	budgetsTests.GetSpendingLimit.RunValidationCases(t)
+	budgetsTests.GetSpendingLimit.RunSqlCases(t)
 }
 
 func TestBudgets_SetEmailNotifications(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	notificationIntegrationId := randomAccountObjectIdentifier()
-	// Minimal valid SetEmailNotificationsBudgetOptions
-	defaultOpts := func() *SetEmailNotificationsBudgetOptions {
-		return &SetEmailNotificationsBudgetOptions{
-			name: id,
-			args: BudgetSetEmailNotificationsArgs{
-				Emails: []BudgetEmail{{Email: "test@example.com"}},
-			},
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*SetEmailNotificationsBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('test@example.com')", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.args.NotificationIntegration = &notificationIntegrationId
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_EMAIL_NOTIFICATIONS ('\\\"%s\\\"', 'test@example.com')", id.FullyQualifiedName(), notificationIntegrationId.Name())
-	})
+	budgetsTests.SetEmailNotifications.RunValidationCases(t)
+	budgetsTests.SetEmailNotifications.RunSqlCases(t)
 }
 
 func TestBudgets_GetNotificationIntegrations(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid GetNotificationIntegrationsBudgetOptions
-	defaultOpts := func() *GetNotificationIntegrationsBudgetOptions {
-		return &GetNotificationIntegrationsBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GetNotificationIntegrationsBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_NOTIFICATION_INTEGRATIONS ()", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	budgetsTests.GetNotificationIntegrations.RunValidationCases(t)
+	budgetsTests.GetNotificationIntegrations.RunSqlCases(t)
 }
 
 func TestBudgets_GetNotificationEmail(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid GetNotificationEmailBudgetOptions
-	defaultOpts := func() *GetNotificationEmailBudgetOptions {
-		return &GetNotificationEmailBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GetNotificationEmailBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_NOTIFICATION_EMAIL ()", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	budgetsTests.GetNotificationEmail.RunValidationCases(t)
+	budgetsTests.GetNotificationEmail.RunSqlCases(t)
 }
 
 func TestBudgets_GetNotificationIntegrationName(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid GetNotificationIntegrationNameBudgetOptions
-	defaultOpts := func() *GetNotificationIntegrationNameBudgetOptions {
-		return &GetNotificationIntegrationNameBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GetNotificationIntegrationNameBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_NOTIFICATION_INTEGRATION_NAME ()", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	budgetsTests.GetNotificationIntegrationName.RunValidationCases(t)
+	budgetsTests.GetNotificationIntegrationName.RunSqlCases(t)
 }
 
 func TestBudgets_SetCycleStartAction(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	procedureId := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
-	// Minimal valid SetCycleStartActionBudgetOptions
-	defaultOpts := func() *SetCycleStartActionBudgetOptions {
-		return &SetCycleStartActionBudgetOptions{
-			name: id,
-			args: BudgetSetCycleStartActionArgs{
-				Procedure: procedureId,
-				Arguments: []string{"arg1"},
-			},
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*SetCycleStartActionBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("one arg", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1)", id.FullyQualifiedName(), procedureId.FullyQualifiedName())
-	})
-
-	t.Run("more args", func(t *testing.T) {
-		procedureId2 := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeVARCHAR)
-		opts := defaultOpts()
-		opts.args = BudgetSetCycleStartActionArgs{Procedure: procedureId2, Arguments: []string{"arg1", "arg2"}}
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1, arg2)", id.FullyQualifiedName(), procedureId2.FullyQualifiedName())
-	})
+	budgetsTests.SetCycleStartAction.RunValidationCases(t)
+	budgetsTests.SetCycleStartAction.RunSqlCases(t)
 }
 
 func TestBudgets_GetCycleStartAction(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid GetCycleStartActionBudgetOptions
-	defaultOpts := func() *GetCycleStartActionBudgetOptions {
-		return &GetCycleStartActionBudgetOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*GetCycleStartActionBudgetOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		// manually adjusted
-		assertOptsValidAndSQLEquals(t, opts, "CALL %s!GET_CYCLE_START_ACTION ()", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	budgetsTests.GetCycleStartAction.RunValidationCases(t)
+	budgetsTests.GetCycleStartAction.RunSqlCases(t)
 }
