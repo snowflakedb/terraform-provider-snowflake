@@ -181,11 +181,6 @@ func NewOpenflowRuntimeUnsetRequest() *OpenflowRuntimeUnsetRequest {
 	return &s
 }
 
-func (s *OpenflowRuntimeUnsetRequest) WithExecuteAsRole(executeAsRole bool) *OpenflowRuntimeUnsetRequest {
-	s.ExecuteAsRole = &executeAsRole
-	return s
-}
-
 func (s *OpenflowRuntimeUnsetRequest) WithExternalAccessIntegrations(externalAccessIntegrations bool) *OpenflowRuntimeUnsetRequest {
 	s.ExternalAccessIntegrations = &externalAccessIntegrations
 	return s

@@ -165,10 +165,9 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 			},
 			validationCase[*AlterOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterOpenflowRuntimeOptions.Unset", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterOpenflowRuntimeOptions.Unset", "ExternalAccessIntegrations", "DisplayName", "Comment"),
 				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
 					opts.Unset = &OpenflowRuntimeUnset{}
-					opts.Unset.ExecuteAsRole = nil
 					opts.Unset.ExternalAccessIntegrations = nil
 					opts.Unset.DisplayName = nil
 					opts.Unset.Comment = nil

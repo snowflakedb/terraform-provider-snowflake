@@ -120,7 +120,7 @@ var openflowConnectorsDef = g.NewInterface(
 		// rejected from that state.
 		OptionalSQL("TERMINATE FORCE").
 		OptionalSQL("ABORT").
-		// RENAME TO cannot move a connector between schemas (unlike ALTER OPENFLOW RUNTIME ... RENAME TO).
+		// RENAME TO cannot move a connector between schemas.
 		RenameTo().
 		OptionalQueryStructField("AddVersion", openflowConnectorAddVersionDef(), g.KeywordOptions().SQL("ADD VERSION")).
 		OptionalQueryStructField("AddLiveVersion", openflowConnectorAddLiveVersionDef(), g.KeywordOptions().SQL("ADD LIVE VERSION")).
@@ -186,8 +186,6 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalText("comment").
 		Time("created_on").
 		Time("updated_on").
-		// connector_url is not returned by every account, so it may be absent from the result set; the
-		// SDK's row scanning is unsafe-mode, which tolerates that.
 		OptionalText("connector_url"),
 	g.NewQueryStruct("ShowOpenflowConnectors").
 		Show().
@@ -224,8 +222,6 @@ var openflowConnectorsDef = g.NewInterface(
 		OptionalText("last_version_source_location_uri").
 		OptionalText("last_version_git_commit_hash").
 		OptionalText("live_version_location_uri").
-		// connector_url is not returned by every account, so it may be absent from the result set; the
-		// SDK's row scanning is unsafe-mode, which tolerates that.
 		OptionalText("connector_url"),
 	g.NewQueryStruct("DescribeOpenflowConnector").
 		Describe().

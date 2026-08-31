@@ -99,12 +99,13 @@ var openflowRuntimesDef = g.NewInterface(
 		).
 		OptionalQueryStructField(
 			"Unset",
+			// EXECUTE_AS_ROLE has no UNSET: a runtime always runs as some role, and the server rejects the
+			// attempt. It can only be moved with SET.
 			g.NewQueryStruct("OpenflowRuntimeUnset").
-				OptionalSQL("EXECUTE_AS_ROLE").
 				OptionalSQL("EXTERNAL_ACCESS_INTEGRATIONS").
 				OptionalSQL("DISPLAY_NAME").
 				OptionalSQL("COMMENT").
-				WithValidation(g.AtLeastOneValueSet, "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "ExternalAccessIntegrations", "DisplayName", "Comment"),
 			g.ListOptions().NoParentheses().SQL("UNSET"),
 		).
 		// ADD and REMOVE edit the external access integration list in place, where SET replaces it

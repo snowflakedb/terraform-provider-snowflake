@@ -128,7 +128,6 @@ func (r *AlterOpenflowRuntimeRequest) toOpts() *AlterOpenflowRuntimeOptions {
 	}
 	if r.Unset != nil {
 		opts.Unset = &OpenflowRuntimeUnset{
-			ExecuteAsRole:              r.Unset.ExecuteAsRole,
 			ExternalAccessIntegrations: r.Unset.ExternalAccessIntegrations,
 			DisplayName:                r.Unset.DisplayName,
 			Comment:                    r.Unset.Comment,

@@ -60,7 +60,6 @@ type OpenflowRuntimeSetRequest struct {
 }
 
 type OpenflowRuntimeUnsetRequest struct {
-	ExecuteAsRole              *bool
 	ExternalAccessIntegrations *bool
 	DisplayName                *bool
 	Comment                    *bool

@@ -75,7 +75,6 @@ type OpenflowRuntimeSet struct {
 }
 
 type OpenflowRuntimeUnset struct {
-	ExecuteAsRole              *bool `ddl:"keyword" sql:"EXECUTE_AS_ROLE"`
 	ExternalAccessIntegrations *bool `ddl:"keyword" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	DisplayName                *bool `ddl:"keyword" sql:"DISPLAY_NAME"`
 	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`

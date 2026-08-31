@@ -47,8 +47,8 @@ func (opts *AlterOpenflowRuntimeOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ExecuteAsRole, opts.Unset.ExternalAccessIntegrations, opts.Unset.DisplayName, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterOpenflowRuntimeOptions.Unset", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"))
+		if !anyValueSet(opts.Unset.ExternalAccessIntegrations, opts.Unset.DisplayName, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterOpenflowRuntimeOptions.Unset", "ExternalAccessIntegrations", "DisplayName", "Comment"))
 		}
 	}
 	return JoinErrors(errs...)

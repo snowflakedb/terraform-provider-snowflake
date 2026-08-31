@@ -119,13 +119,12 @@ func init() {
 			case_OpenflowRuntimes_sql_Alter_Unset,
 			func(opts *AlterOpenflowRuntimeOptions) {
 				opts.Unset = &OpenflowRuntimeUnset{
-					ExecuteAsRole:              new(true),
 					ExternalAccessIntegrations: new(true),
 					DisplayName:                new(true),
 					Comment:                    new(true),
 				}
 			},
-			"ALTER OPENFLOW RUNTIME %s UNSET EXECUTE_AS_ROLE, EXTERNAL_ACCESS_INTEGRATIONS, DISPLAY_NAME, COMMENT",
+			"ALTER OPENFLOW RUNTIME %s UNSET EXTERNAL_ACCESS_INTEGRATIONS, DISPLAY_NAME, COMMENT",
 			id.FullyQualifiedName(),
 		)
 
