@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -41,10 +40,10 @@ func FileFormatJson() *schema.Resource {
 	resourceSchema := fileFormatJsonSchema()
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingCreateWrapper(resources.FileFormatJson, CreateFileFormatJson)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingReadWrapper(resources.FileFormatJson, GetReadFileFormatJsonFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingUpdateWrapper(resources.FileFormatJson, UpdateFileFormatJson)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatJsonResource), TrackingDeleteWrapper(resources.FileFormatJson, fileFormatDeleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.FileFormatJson, CreateFileFormatJson),
+		ReadContext:   TrackingReadWrapper(resources.FileFormatJson, GetReadFileFormatJsonFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.FileFormatJson, UpdateFileFormatJson),
+		DeleteContext: TrackingDeleteWrapper(resources.FileFormatJson, fileFormatDeleteFunc),
 		Description:   "Resource used to manage JSON file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatJson, customdiff.All(

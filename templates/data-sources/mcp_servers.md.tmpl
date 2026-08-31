@@ -9,8 +9,6 @@ description: |-
 {{- end }}
 ---
 
--> **Note** This data source focuses on base query commands (SHOW LISTINGS and DESCRIBE LISTING). Other query commands like SHOW AVAILABLE LISTINGS, DESCRIBE AVAILABLE LISTING, SHOW LISTING OFFERS, SHOW OFFERS, SHOW PRICING PLANS, and SHOW VERSIONS IN LISTING are not included and will be added depending on demand.
-
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
@@ -24,4 +22,11 @@ description: |-
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
 {{ .SchemaMarkdown | trimspace }}
+{{- if .HasImport }}
 
+## Import
+
+Import is supported using the following syntax:
+
+{{ codefile "shell" (printf "examples/data-sources/%s/import.sh" .Name)}}
+{{- end }}

@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -41,10 +40,10 @@ func FileFormatAvro() *schema.Resource {
 	resourceSchema := fileFormatAvroSchema()
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingCreateWrapper(resources.FileFormatAvro, CreateFileFormatAvro)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingReadWrapper(resources.FileFormatAvro, GetReadFileFormatAvroFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingUpdateWrapper(resources.FileFormatAvro, UpdateFileFormatAvro)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatAvroResource), TrackingDeleteWrapper(resources.FileFormatAvro, fileFormatDeleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.FileFormatAvro, CreateFileFormatAvro),
+		ReadContext:   TrackingReadWrapper(resources.FileFormatAvro, GetReadFileFormatAvroFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.FileFormatAvro, UpdateFileFormatAvro),
+		DeleteContext: TrackingDeleteWrapper(resources.FileFormatAvro, fileFormatDeleteFunc),
 		Description:   "Resource used to manage AVRO file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatAvro, customdiff.All(

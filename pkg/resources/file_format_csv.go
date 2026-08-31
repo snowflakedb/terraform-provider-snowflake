@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -48,10 +47,10 @@ func FileFormatCsv() *schema.Resource {
 	resourceSchema := fileFormatCsvSchema()
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatCsvResource), TrackingCreateWrapper(resources.FileFormatCsv, CreateFileFormatCsv)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatCsvResource), TrackingReadWrapper(resources.FileFormatCsv, GetReadFileFormatCsvFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatCsvResource), TrackingUpdateWrapper(resources.FileFormatCsv, UpdateFileFormatCsv)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatCsvResource), TrackingDeleteWrapper(resources.FileFormatCsv, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.FileFormatCsv, CreateFileFormatCsv),
+		ReadContext:   TrackingReadWrapper(resources.FileFormatCsv, GetReadFileFormatCsvFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.FileFormatCsv, UpdateFileFormatCsv),
+		DeleteContext: TrackingDeleteWrapper(resources.FileFormatCsv, deleteFunc),
 		Description:   "Resource used to manage CSV file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatCsv, customdiff.All(

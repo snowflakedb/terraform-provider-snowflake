@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -41,10 +40,10 @@ func FileFormatOrc() *schema.Resource {
 	resourceSchema := fileFormatOrcSchema()
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingCreateWrapper(resources.FileFormatOrc, CreateFileFormatOrc)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingReadWrapper(resources.FileFormatOrc, GetReadFileFormatOrcFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingUpdateWrapper(resources.FileFormatOrc, UpdateFileFormatOrc)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatOrcResource), TrackingDeleteWrapper(resources.FileFormatOrc, fileFormatDeleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.FileFormatOrc, CreateFileFormatOrc),
+		ReadContext:   TrackingReadWrapper(resources.FileFormatOrc, GetReadFileFormatOrcFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.FileFormatOrc, UpdateFileFormatOrc),
+		DeleteContext: TrackingDeleteWrapper(resources.FileFormatOrc, fileFormatDeleteFunc),
 		Description:   "Resource used to manage ORC file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatOrc, customdiff.All(

@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -125,10 +124,10 @@ func StorageLifecyclePolicy() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.StorageLifecyclePolicyResource), TrackingCreateWrapper(resources.StorageLifecyclePolicy, CreateStorageLifecyclePolicy)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.StorageLifecyclePolicyResource), TrackingReadWrapper(resources.StorageLifecyclePolicy, ReadStorageLifecyclePolicy)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.StorageLifecyclePolicyResource), TrackingUpdateWrapper(resources.StorageLifecyclePolicy, UpdateStorageLifecyclePolicy)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.StorageLifecyclePolicyResource), TrackingDeleteWrapper(resources.StorageLifecyclePolicy, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.StorageLifecyclePolicy, CreateStorageLifecyclePolicy),
+		ReadContext:   TrackingReadWrapper(resources.StorageLifecyclePolicy, ReadStorageLifecyclePolicy),
+		UpdateContext: TrackingUpdateWrapper(resources.StorageLifecyclePolicy, UpdateStorageLifecyclePolicy),
+		DeleteContext: TrackingDeleteWrapper(resources.StorageLifecyclePolicy, deleteFunc),
 		Description:   "Resource used to manage storage lifecycle policy objects. For more information, check [storage lifecycle policy documentation](https://docs.snowflake.com/en/sql-reference/sql/create-storage-lifecycle-policy).",
 
 		Schema: storageLifecyclePolicySchema,

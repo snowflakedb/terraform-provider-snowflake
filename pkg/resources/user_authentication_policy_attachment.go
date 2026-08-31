@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -38,10 +36,10 @@ var userAuthenticationPolicyAttachmentSchema = map[string]*schema.Schema{
 func UserAuthenticationPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Specifies the authentication policy to use for a certain user.",
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingCreateWrapper(resources.UserAuthenticationPolicyAttachment, CreateUserAuthenticationPolicyAttachment)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingReadWrapper(resources.UserAuthenticationPolicyAttachment, ReadUserAuthenticationPolicyAttachment)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingUpdateWrapper(resources.UserAuthenticationPolicyAttachment, UpdateUserAuthenticationPolicyAttachment)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.UserAuthenticationPolicyAttachmentResource), TrackingDeleteWrapper(resources.UserAuthenticationPolicyAttachment, DeleteUserAuthenticationPolicyAttachment)),
+		CreateContext: TrackingCreateWrapper(resources.UserAuthenticationPolicyAttachment, CreateUserAuthenticationPolicyAttachment),
+		ReadContext:   TrackingReadWrapper(resources.UserAuthenticationPolicyAttachment, ReadUserAuthenticationPolicyAttachment),
+		UpdateContext: TrackingUpdateWrapper(resources.UserAuthenticationPolicyAttachment, UpdateUserAuthenticationPolicyAttachment),
+		DeleteContext: TrackingDeleteWrapper(resources.UserAuthenticationPolicyAttachment, DeleteUserAuthenticationPolicyAttachment),
 
 		Schema: userAuthenticationPolicyAttachmentSchema,
 		Importer: &schema.ResourceImporter{

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -47,10 +46,10 @@ func AccountAuthenticationPolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description: "Specifies the authentication policy to use for the current account. To set the authentication policy of a different account, use a provider alias.",
 
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.AccountAuthenticationPolicyAttachmentResource), TrackingCreateWrapper(resources.AccountAuthenticationPolicyAttachment, CreateAccountAuthenticationPolicyAttachment)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.AccountAuthenticationPolicyAttachmentResource), TrackingReadWrapper(resources.AccountAuthenticationPolicyAttachment, ReadAccountAuthenticationPolicyAttachment)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.AccountAuthenticationPolicyAttachmentResource), TrackingUpdateWrapper(resources.AccountAuthenticationPolicyAttachment, UpdateAccountAuthenticationPolicyAttachment)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AccountAuthenticationPolicyAttachmentResource), TrackingDeleteWrapper(resources.AccountAuthenticationPolicyAttachment, DeleteAccountAuthenticationPolicyAttachment)),
+		CreateContext: TrackingCreateWrapper(resources.AccountAuthenticationPolicyAttachment, CreateAccountAuthenticationPolicyAttachment),
+		ReadContext:   TrackingReadWrapper(resources.AccountAuthenticationPolicyAttachment, ReadAccountAuthenticationPolicyAttachment),
+		UpdateContext: TrackingUpdateWrapper(resources.AccountAuthenticationPolicyAttachment, UpdateAccountAuthenticationPolicyAttachment),
+		DeleteContext: TrackingDeleteWrapper(resources.AccountAuthenticationPolicyAttachment, DeleteAccountAuthenticationPolicyAttachment),
 
 		Schema: accountAuthenticationPolicyAttachmentSchema,
 		Importer: &schema.ResourceImporter{

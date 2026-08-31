@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -53,7 +52,7 @@ var storageLifecyclePoliciesSchema = map[string]*schema.Schema{
 
 func StorageLifecyclePolicies() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.StorageLifecyclePoliciesDatasource), TrackingReadWrapper(datasources.StorageLifecyclePolicies, ReadStorageLifecyclePolicies)),
+		ReadContext: TrackingReadWrapper(datasources.StorageLifecyclePolicies, ReadStorageLifecyclePolicies),
 		Schema:      storageLifecyclePoliciesSchema,
 		Description: "Data source used to get details of filtered storage lifecycle policies. Filtering is aligned with the current possibilities for [SHOW STORAGE LIFECYCLE POLICIES](https://docs.snowflake.com/en/sql-reference/sql/show-storage-lifecycle-policies) query." +
 			" The results of SHOW and DESCRIBE are encapsulated in one output collection `storage_lifecycle_policies`.",

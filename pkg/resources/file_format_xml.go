@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -48,10 +47,10 @@ func FileFormatXml() *schema.Resource {
 	resourceSchema := fileFormatXmlSchema()
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatXmlResource), TrackingCreateWrapper(resources.FileFormatXml, CreateFileFormatXml)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatXmlResource), TrackingReadWrapper(resources.FileFormatXml, GetReadFileFormatXmlFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatXmlResource), TrackingUpdateWrapper(resources.FileFormatXml, UpdateFileFormatXml)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatXmlResource), TrackingDeleteWrapper(resources.FileFormatXml, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.FileFormatXml, CreateFileFormatXml),
+		ReadContext:   TrackingReadWrapper(resources.FileFormatXml, GetReadFileFormatXmlFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.FileFormatXml, UpdateFileFormatXml),
+		DeleteContext: TrackingDeleteWrapper(resources.FileFormatXml, deleteFunc),
 		Description:   "Resource used to manage XML file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatXml, customdiff.All(

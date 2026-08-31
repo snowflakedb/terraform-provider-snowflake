@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 
@@ -54,7 +53,7 @@ var cortexAgentsSchema = map[string]*schema.Schema{
 
 func CortexAgents() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.CortexAgentsDatasource), TrackingReadWrapper(datasources.CortexAgents, ReadCortexAgents)),
+		ReadContext: TrackingReadWrapper(datasources.CortexAgents, ReadCortexAgents),
 		Schema:      cortexAgentsSchema,
 		Description: "Data source used to get details of filtered Cortex agents. Filtering is aligned with the current possibilities for [SHOW AGENTS](https://docs.snowflake.com/en/sql-reference/sql/show-agents) query." +
 			" The results of SHOW and DESCRIBE are encapsulated in one output collection `cortex_agents`.",

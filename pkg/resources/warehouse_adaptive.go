@@ -9,7 +9,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -99,10 +98,10 @@ func WarehouseAdaptive() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingCreateWrapper(resources.WarehouseAdaptive, CreateWarehouseAdaptive)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingReadWrapper(resources.WarehouseAdaptive, ReadWarehouseAdaptiveFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateWarehouseAdaptive)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.WarehouseAdaptiveResource), TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.WarehouseAdaptive, CreateWarehouseAdaptive),
+		ReadContext:   TrackingReadWrapper(resources.WarehouseAdaptive, ReadWarehouseAdaptiveFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.WarehouseAdaptive, UpdateWarehouseAdaptive),
+		DeleteContext: TrackingDeleteWrapper(resources.WarehouseAdaptive, deleteFunc),
 		Description:   "Resource used to manage adaptive warehouse objects. Adaptive Compute is a compute service focused on delivering strong performance with effortless operations. It replaces the fixed compute of the Standard Warehouse with a workload-aware one that adapts to your queries automatically. The system decides how to allocate resources for the best performance, eliminating the need for infrastructure tuning.",
 
 		Schema: warehouseAdaptiveSchema,

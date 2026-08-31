@@ -8,7 +8,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -108,10 +107,10 @@ func CortexAgent() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.CortexAgentResource), TrackingCreateWrapper(resources.CortexAgent, CreateCortexAgent)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.CortexAgentResource), TrackingReadWrapper(resources.CortexAgent, ReadCortexAgent)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.CortexAgentResource), TrackingUpdateWrapper(resources.CortexAgent, UpdateCortexAgent)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.CortexAgentResource), TrackingDeleteWrapper(resources.CortexAgent, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.CortexAgent, CreateCortexAgent),
+		ReadContext:   TrackingReadWrapper(resources.CortexAgent, ReadCortexAgent),
+		UpdateContext: TrackingUpdateWrapper(resources.CortexAgent, UpdateCortexAgent),
+		DeleteContext: TrackingDeleteWrapper(resources.CortexAgent, deleteFunc),
 		Description:   "Resource used to manage Cortex agent objects. For more information, check [Cortex agent documentation](https://docs.snowflake.com/en/sql-reference/sql/create-agent).",
 
 		Schema: cortexAgentSchema,

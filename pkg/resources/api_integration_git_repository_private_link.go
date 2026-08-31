@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -52,10 +51,10 @@ func ApiIntegrationGitRepositoryPrivateLink() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, CreateApiIntegrationGitRepositoryPrivateLink)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingReadWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, ReadApiIntegrationGitRepositoryPrivateLink)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, UpdateApiIntegrationGitRepositoryPrivateLink)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ApiIntegrationGitRepositoryPrivateLinkResource), TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, CreateApiIntegrationGitRepositoryPrivateLink),
+		ReadContext:   TrackingReadWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, ReadApiIntegrationGitRepositoryPrivateLink),
+		UpdateContext: TrackingUpdateWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, UpdateApiIntegrationGitRepositoryPrivateLink),
+		DeleteContext: TrackingDeleteWrapper(resources.ApiIntegrationGitRepositoryPrivateLink, deleteFunc),
 		Description:   "Resource used to manage API integration for git HTTPS API via a private link endpoint. For more information, check [api integration documentation](https://docs.snowflake.com/en/sql-reference/sql/create-api-integration).",
 
 		Schema: apiIntegrationGitRepositoryPrivateLinkSchema,

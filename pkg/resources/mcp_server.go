@@ -7,7 +7,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -80,9 +79,9 @@ func McpServer() *schema.Resource {
 	)
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.McpServerResource), TrackingCreateWrapper(resources.McpServer, CreateMcpServer)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.McpServerResource), TrackingReadWrapper(resources.McpServer, ReadMcpServer)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.McpServerResource), TrackingDeleteWrapper(resources.McpServer, deleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.McpServer, CreateMcpServer),
+		ReadContext:   TrackingReadWrapper(resources.McpServer, ReadMcpServer),
+		DeleteContext: TrackingDeleteWrapper(resources.McpServer, deleteFunc),
 		Description:   "Resource used to manage MCP server objects. For more information, check [MCP server documentation](https://docs.snowflake.com/en/sql-reference/sql/create-mcp-server).",
 
 		Schema: mcpServerSchema,

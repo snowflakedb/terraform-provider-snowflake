@@ -8,7 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,10 +53,10 @@ var tableStorageLifecyclePolicyAttachmentSchema = map[string]*schema.Schema{
 func TableStorageLifecyclePolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Specifies the storage lifecycle policy to attach to a table or a dynamic table.",
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.TableStorageLifecyclePolicyAttachmentResource), TrackingCreateWrapper(resources.TableStorageLifecyclePolicyAttachment, CreateTableStorageLifecyclePolicyAttachment)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.TableStorageLifecyclePolicyAttachmentResource), TrackingReadWrapper(resources.TableStorageLifecyclePolicyAttachment, ReadTableStorageLifecyclePolicyAttachment)),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.TableStorageLifecyclePolicyAttachmentResource), TrackingUpdateWrapper(resources.TableStorageLifecyclePolicyAttachment, UpdateTableStorageLifecyclePolicyAttachment)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.TableStorageLifecyclePolicyAttachmentResource), TrackingDeleteWrapper(resources.TableStorageLifecyclePolicyAttachment, DeleteTableStorageLifecyclePolicyAttachment)),
+		CreateContext: TrackingCreateWrapper(resources.TableStorageLifecyclePolicyAttachment, CreateTableStorageLifecyclePolicyAttachment),
+		ReadContext:   TrackingReadWrapper(resources.TableStorageLifecyclePolicyAttachment, ReadTableStorageLifecyclePolicyAttachment),
+		UpdateContext: TrackingUpdateWrapper(resources.TableStorageLifecyclePolicyAttachment, UpdateTableStorageLifecyclePolicyAttachment),
+		DeleteContext: TrackingDeleteWrapper(resources.TableStorageLifecyclePolicyAttachment, DeleteTableStorageLifecyclePolicyAttachment),
 
 		Schema: tableStorageLifecyclePolicyAttachmentSchema,
 		Importer: &schema.ResourceImporter{

@@ -75,6 +75,52 @@ The new configuration looks like this:
 
 Please rename these fields in your configuration files. After updating the configuration, `terraform plan` should be empty.
 
+### Multiple resources and data sources promoted to stable
+
+The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be
+used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration
+if present.
+
+**Resources:**
+
+- `snowflake_account_authentication_policy_attachment` (`snowflake_account_authentication_policy_attachment_resource`)
+- `snowflake_api_integration_amazon_api_gateway` (`snowflake_api_integration_amazon_api_gateway_resource`)
+- `snowflake_api_integration_azure_api_management` (`snowflake_api_integration_azure_api_management_resource`)
+- `snowflake_api_integration_external_mcp_dynamic_client` (`snowflake_api_integration_external_mcp_dynamic_client_resource`)
+- `snowflake_api_integration_external_mcp_oauth2` (`snowflake_api_integration_external_mcp_oauth2_resource`)
+- `snowflake_api_integration_git_repository_github_app` (`snowflake_api_integration_git_repository_github_app_resource`)
+- `snowflake_api_integration_git_repository_oauth2` (`snowflake_api_integration_git_repository_oauth2_resource`)
+- `snowflake_api_integration_git_repository_private_link` (`snowflake_api_integration_git_repository_private_link_resource`)
+- `snowflake_api_integration_git_repository_token` (`snowflake_api_integration_git_repository_token_resource`)
+- `snowflake_api_integration_google_cloud_api_gateway` (`snowflake_api_integration_google_cloud_api_gateway_resource`)
+- `snowflake_cortex_agent` (`snowflake_cortex_agent_resource`)
+- `snowflake_file_format_avro` (`snowflake_file_format_avro_resource`)
+- `snowflake_file_format_csv` (`snowflake_file_format_csv_resource`)
+- `snowflake_file_format_json` (`snowflake_file_format_json_resource`)
+- `snowflake_file_format_orc` (`snowflake_file_format_orc_resource`)
+- `snowflake_file_format_parquet` (`snowflake_file_format_parquet_resource`)
+- `snowflake_file_format_xml` (`snowflake_file_format_xml_resource`)
+- `snowflake_mcp_server` (`snowflake_mcp_server_resource`)
+- `snowflake_storage_lifecycle_policy` (`snowflake_storage_lifecycle_policy_resource`)
+- `snowflake_table_storage_lifecycle_policy_attachment` (`snowflake_table_storage_lifecycle_policy_attachment_resource`)
+- `snowflake_user_authentication_policy_attachment` (`snowflake_user_authentication_policy_attachment_resource`)
+- `snowflake_warehouse_adaptive` (`snowflake_warehouse_adaptive_resource`)
+
+**Data sources:**
+
+- `snowflake_api_integrations` (`snowflake_api_integrations_datasource`)
+- `snowflake_cortex_agents` (`snowflake_cortex_agents_datasource`)
+- `snowflake_file_formats` (`snowflake_file_formats_datasource`)
+- `snowflake_listings` (`snowflake_listings_datasource`)
+- `snowflake_mcp_servers` (`snowflake_mcp_servers_datasource`)
+- `snowflake_storage_lifecycle_policies` (`snowflake_storage_lifecycle_policies_datasource`)
+
+Provider will issue a warning if a stable feature is still present in the `preview_features_enabled` list. These values
+will be removed in the next major version.
+
+Read more about preview and stable features in
+our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
 ### *(new feature)* New hybrid tables data source
 
 We have added a new preview data source for querying hybrid tables: [snowflake_hybrid_tables](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/hybrid_tables). It supports filtering with `like`, `in`, `starts_with`, and `limit`.

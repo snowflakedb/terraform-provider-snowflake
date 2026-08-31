@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_listings Data Source - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Data source used to get details of filtered listings. Filtering is aligned with the current possibilities for SHOW LISTINGS query (like, starts_with, and limit are supported). The results of SHOW and DESCRIBE are encapsulated in one output collection.
 ---
-
-!> **Preview Feature** This data source is a preview feature and is subject to breaking changes, even without bumping the major version. To use this feature, add `snowflake_listings_datasource` to `preview_features_enabled` field in the provider configuration. Read more about preview features in our [documentation](../#preview-features).
 
 -> **Note** This data source focuses on base query commands (SHOW LISTINGS and DESCRIBE LISTING). Other query commands like SHOW AVAILABLE LISTINGS, DESCRIBE AVAILABLE LISTING, SHOW LISTING OFFERS, SHOW OFFERS, SHOW PRICING PLANS, and SHOW VERSIONS IN LISTING are not included and will be added depending on demand.
 

@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -41,10 +40,10 @@ func FileFormatParquet() *schema.Resource {
 	resourceSchema := fileFormatParquetSchema()
 
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingCreateWrapper(resources.FileFormatParquet, CreateFileFormatParquet)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingReadWrapper(resources.FileFormatParquet, GetReadFileFormatParquetFunc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingUpdateWrapper(resources.FileFormatParquet, UpdateFileFormatParquet)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.FileFormatParquetResource), TrackingDeleteWrapper(resources.FileFormatParquet, fileFormatDeleteFunc)),
+		CreateContext: TrackingCreateWrapper(resources.FileFormatParquet, CreateFileFormatParquet),
+		ReadContext:   TrackingReadWrapper(resources.FileFormatParquet, GetReadFileFormatParquetFunc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.FileFormatParquet, UpdateFileFormatParquet),
+		DeleteContext: TrackingDeleteWrapper(resources.FileFormatParquet, fileFormatDeleteFunc),
 		Description:   "Resource used to manage Parquet file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatParquet, customdiff.All(
