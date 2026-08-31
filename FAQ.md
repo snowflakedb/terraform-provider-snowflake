@@ -37,10 +37,10 @@ Our team is checking daily incoming GitHub issues. The resolution depends on the
 The releases usually happen once every two-three weeks, mostly on Wednesdays or Thursdays.
 
 ### How to migrate from version X to Y?
-As noted at the top of our [README](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#snowflake-terraform-provider),
-the project is still experimental and breaking change may occur. We try to minimize such changes, but with some of the changes required for version 1.0.0, it’s inevitable.
-Because of that, whenever we introduce any breaking change, we add it to the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md).
-It’s a document containing every breaking change (starting from around v0.73.0) with additional hints on how to migrate resources between the versions.
+The provider is generally available. Stable resources follow semantic versioning; [preview features](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#currently-preview-resources) may change between minor versions.
+Whenever we introduce a breaking change, we add it to the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md).
+That document lists breaking changes (starting from around v0.73.0) with hints on how to migrate configuration and state.
+Also check the [Snowflake BCR migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md) when enabling a Snowflake behavior-change bundle.
 
 ### How can I contribute?
 If you would like to contribute to the project, please follow our [contribution guidelines](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/CONTRIBUTING.md).
