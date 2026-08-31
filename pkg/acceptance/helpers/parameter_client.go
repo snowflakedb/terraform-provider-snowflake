@@ -99,6 +99,17 @@ func (c *ParameterClient) ShowHybridTableParameters(t *testing.T, id sdk.SchemaO
 	return params
 }
 
+func (c *ParameterClient) ShowOpenflowDeploymentParameters(t *testing.T, id sdk.AccountObjectIdentifier) []*sdk.Parameter {
+	t.Helper()
+	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{
+		In: &sdk.ParametersIn{
+			OpenflowDeployment: id,
+		},
+	})
+	require.NoError(t, err)
+	return params
+}
+
 func (c *ParameterClient) ShowTableParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
 	t.Helper()
 	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{

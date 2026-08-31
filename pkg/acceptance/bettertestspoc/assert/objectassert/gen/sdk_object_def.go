@@ -233,6 +233,49 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.OpenflowDeployment{},
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.OpenflowDeploymentDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.OpenflowRuntime{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.OpenflowRuntimeDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.OpenflowConnector{},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.OpenflowConnectorDetails{},
+		IsDataSourceOutput: true,
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
+		ObjectStruct: sdk.OpenflowConnectorDefinition{},
+		// Connector definitions are keyed by name *and* version, so the SDK suppresses ShowByID and
+		// there is no by-id provider to generate a constructor from. Only the FromObject form applies.
+		NoIdentifiableObject: true,
+		NoShowById:           true,
+	},
+	{
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.OpenflowConnectorVersion{},
+		// Versions are listed per connector by SHOW VERSIONS, so they have no identifier of their own and
+		// no ShowByID. Only the FromObject form applies.
+		NoIdentifiableObject: true,
+		NoShowById:           true,
+	},
+	{
+		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.SecurityIntegration{},
 	},
 	{

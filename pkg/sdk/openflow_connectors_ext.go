@@ -32,6 +32,24 @@ func (l OpenflowConnectorVersionLocation) ToSql() string {
 	)
 }
 
+// OpenflowConnectorFailureStatuses are terminal: a connector in one of these will never move on its own.
+var OpenflowConnectorFailureStatuses = []OpenflowConnectorStatus{
+	OpenflowConnectorStatusCreateFailed,
+	OpenflowConnectorStatusStartFailed,
+	OpenflowConnectorStatusStopFailed,
+	OpenflowConnectorStatusUpdateFailed,
+	OpenflowConnectorStatusDeleteFailed,
+}
+
+// OpenflowConnectorTransientStatuses are still in flight. Snowflake refuses COMMIT, TERMINATE and DROP
+// while a connector is in one of these.
+var OpenflowConnectorTransientStatuses = []OpenflowConnectorStatus{
+	OpenflowConnectorStatusCreating,
+	OpenflowConnectorStatusStarting,
+	OpenflowConnectorStatusStopping,
+	OpenflowConnectorStatusUpdating,
+}
+
 func (r *CreateOpenflowConnectorRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }

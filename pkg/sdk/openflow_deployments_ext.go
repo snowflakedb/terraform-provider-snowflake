@@ -2,6 +2,23 @@ package sdk
 
 import "context"
 
+// OpenflowDeploymentFailureStatuses are terminal: a deployment in one of these will never move on its own.
+var OpenflowDeploymentFailureStatuses = []OpenflowDeploymentStatus{
+	OpenflowDeploymentStatusCreateFailed,
+	OpenflowDeploymentStatusDeleteFailed,
+	OpenflowDeploymentStatusUpgradeFailed,
+	OpenflowDeploymentStatusMigrationFailed,
+	OpenflowDeploymentStatusRollbackFailed,
+}
+
+// OpenflowDeploymentTransientStatuses are still coming up. Only a settled deployment accepts ALTER SET,
+// TERMINATE or DROP. SPCS goes CREATING -> PROVISIONING -> ACTIVE, so PROVISIONING is transient too; BYOC
+// goes straight to INACTIVE.
+var OpenflowDeploymentTransientStatuses = []OpenflowDeploymentStatus{
+	OpenflowDeploymentStatusCreating,
+	OpenflowDeploymentStatusProvisioning,
+}
+
 func (r *CreateOpenflowDeploymentRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }

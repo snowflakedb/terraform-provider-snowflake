@@ -18,6 +18,33 @@ func ParseOpenflowRuntimeExternalAccessIntegrations(value string) ([]AccountObje
 	return ParseCommaSeparatedAccountObjectIdentifierArray(value)
 }
 
+// OpenflowRuntimeFailureStatuses are terminal: a runtime in one of these will never move on its own.
+var OpenflowRuntimeFailureStatuses = []OpenflowRuntimeStatus{
+	OpenflowRuntimeStatusCreateFailed,
+	OpenflowRuntimeStatusUpdateFailed,
+	OpenflowRuntimeStatusSuspendFailed,
+	OpenflowRuntimeStatusActivateFailed,
+	OpenflowRuntimeStatusDeleteFailed,
+	OpenflowRuntimeStatusRestartFailed,
+	OpenflowRuntimeStatusUpgradeFailed,
+	OpenflowRuntimeStatusMigrationFailed,
+	OpenflowRuntimeStatusRollbackFailed,
+}
+
+// OpenflowRuntimeTransientStatuses are still in flight. Snowflake refuses SUSPEND, TERMINATE and DROP
+// while a runtime is in one of these.
+var OpenflowRuntimeTransientStatuses = []OpenflowRuntimeStatus{
+	OpenflowRuntimeStatusCreating,
+	OpenflowRuntimeStatusUpdating,
+	OpenflowRuntimeStatusSuspending,
+	OpenflowRuntimeStatusActivating,
+	OpenflowRuntimeStatusRestarting,
+	OpenflowRuntimeStatusUpgrading,
+	OpenflowRuntimeStatusCleaningUp,
+	OpenflowRuntimeStatusCancelRequested,
+	OpenflowRuntimeStatusGeneratingDiagnosticBundle,
+}
+
 func (r *CreateOpenflowRuntimeRequest) GetName() SchemaObjectIdentifier {
 	return r.name
 }

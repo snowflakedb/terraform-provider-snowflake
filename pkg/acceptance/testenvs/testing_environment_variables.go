@@ -19,6 +19,8 @@ const (
 	TestNonProdModifiableAccountLocator env = "TEST_SF_TF_NON_PROD_MODIFIABLE_ACCOUNT_LOCATOR"
 	TestAccountCreate                   env = "TEST_SF_TF_TEST_ACCOUNT_CREATE"
 	TestFailoverGroups                  env = "TEST_SF_TF_TEST_FAILOVER_GROUPS"
+	// TestOpenflow gates tests needing an account with the Openflow object model enabled and configured.
+	TestOpenflow env = envPrefix + "TEST_OPENFLOW"
 
 	AwsExternalBucketUrl   env = "TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL"
 	AwsExternalKeyId       env = "TEST_SF_TF_AWS_EXTERNAL_KEY_ID"
@@ -53,6 +55,14 @@ const (
 	OauthWithClientCredentialsClientId     env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_ID"
 	OauthWithClientCredentialsClientSecret env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_CLIENT_SECRET"
 	OauthWithClientCredentialsIssuer       env = envPrefix + "OAUTH_WITH_CLIENT_CREDENTIALS_ISSUER"
+
+	// OpenflowDeployment names a pre-provisioned, ACTIVE SNOWFLAKE (SPCS) Openflow deployment for the
+	// runtime and connector tests to build on. Those objects can only be created inside a deployment that
+	// has reached ACTIVE, and provisioning one takes minutes - so the tests reuse an existing deployment
+	// rather than creating and tearing one down per run. The name is required and the run fails without
+	// it: an account can hold several ACTIVE deployments belonging to other people, and picking one
+	// automatically would create and destroy objects inside it.
+	OpenflowDeployment env = envPrefix + "OPENFLOW_DEPLOYMENT"
 
 	OpenCatalogAccountLocator             env = envPrefix + "OPEN_CATALOG_ACCOUNT_LOCATOR"
 	OpenCatalogPrimaryOAuthClientId       env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CLIENT_ID"

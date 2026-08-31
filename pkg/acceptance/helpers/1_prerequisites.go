@@ -85,6 +85,18 @@ func (c *TestClient) EnsureImageRepositoryExist(ctx context.Context) error {
 	return nil
 }
 
+func (c *TestClient) EnsureOpenflowPostgresCdcDefinitionExists(ctx context.Context) error {
+	log.Printf("[DEBUG] Making sure %s connector definition exists", PostgresCdcDefinitionName)
+	definitions, err := c.context.client.OpenflowConnectorDefinitions.Show(ctx, sdk.NewShowOpenflowConnectorDefinitionRequest().WithLike(sdk.Like{Pattern: sdk.String(PostgresCdcDefinitionName)}))
+	if err != nil {
+		return fmt.Errorf("checking %s connector definition resulted in error: %w", PostgresCdcDefinitionName, err)
+	}
+	if len(definitions) == 0 {
+		return fmt.Errorf("connector definition %s is not available on this account", PostgresCdcDefinitionName)
+	}
+	return nil
+}
+
 func hasGranteeName(grants []sdk.Grant, role sdk.AccountObjectIdentifier) bool {
 	for _, grant := range grants {
 		if grant.GranteeName == role {

@@ -62,6 +62,10 @@ type TestClient struct {
 	NetworkRule                  *NetworkRuleClient
 	Notebook                     *NotebookClient
 	NotificationIntegration      *NotificationIntegrationClient
+	OpenflowConnector            *OpenflowConnectorClient
+	OpenflowConnectorDefinition  *OpenflowConnectorDefinitionClient
+	OpenflowDeployment           *OpenflowDeploymentClient
+	OpenflowRuntime              *OpenflowRuntimeClient
 	OrganizationAccount          *OrganizationAccountClient
 	PackagesPolicy               *PackagesPolicyClient
 	Parameter                    *ParameterClient
@@ -170,6 +174,10 @@ func NewTestClient(
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
 		Notebook:                     NewNotebookClient(context, idsGenerator),
 		NotificationIntegration:      NewNotificationIntegrationClient(context, idsGenerator),
+		OpenflowConnector:            NewOpenflowConnectorClient(context, idsGenerator),
+		OpenflowConnectorDefinition:  NewOpenflowConnectorDefinitionClient(context, idsGenerator),
+		OpenflowDeployment:           NewOpenflowDeploymentClient(context, idsGenerator),
+		OpenflowRuntime:              NewOpenflowRuntimeClient(context, idsGenerator),
 		OrganizationAccount:          NewOrganizationAccountClient(context, idsGenerator),
 		PackagesPolicy:               NewPackagesPolicyClient(context, idsGenerator),
 		Parameter:                    NewParameterClient(context),

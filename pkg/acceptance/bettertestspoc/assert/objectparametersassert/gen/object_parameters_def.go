@@ -450,4 +450,16 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.ObjectParameterDefaultNotebookComputePoolGpu), ParameterType: "string", DefaultValue: "SYSTEM_COMPUTE_POOL_GPU", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 		},
 	},
+	{
+		Name:   "OpenflowDeployment",
+		IdType: "sdk.AccountObjectIdentifier",
+		Level:  sdk.ParameterTypeOpenflowDeployment,
+		Parameters: []SnowflakeParameter{
+			// EVENT_TABLE has no fixed default. An account that sets its own EVENT_TABLE hands that value
+			// down, so what a deployment reports before anything is set differs between accounts and only
+			// the level tells the two apart. Assert HasEventTable and HasEventTableLevel rather than the
+			// generated defaults assertions.
+			{ParameterName: string(sdk.OpenflowDeploymentParameterEventTable), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+		},
+	},
 }
