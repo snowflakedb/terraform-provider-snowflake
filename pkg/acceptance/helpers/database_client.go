@@ -87,6 +87,13 @@ func (c *DatabaseClient) CreateDatabaseWithRequest(t *testing.T, request *sdk.Cr
 	return database, c.DropDatabaseFunc(t, id)
 }
 
+func (c *DatabaseClient) CreateCatalogLinkedDatabase(t *testing.T, catalogIntegrationId sdk.AccountObjectIdentifier, externalVolumeId sdk.AccountObjectIdentifier) (*sdk.Database, func()) {
+	t.Helper()
+	return c.CreateCatalogLinkedDatabaseWithRequest(t, sdk.NewCreateCatalogLinkedDatabaseRequest(c.ids.RandomAccountObjectIdentifier()).
+		WithLinkedCatalog(*sdk.NewLinkedCatalogRequest().WithCatalog(catalogIntegrationId)).
+		WithExternalVolume(externalVolumeId))
+}
+
 func (c *DatabaseClient) CreateCatalogLinkedDatabaseWithRequest(t *testing.T, request *sdk.CreateCatalogLinkedDatabaseRequest) (*sdk.Database, func()) {
 	t.Helper()
 	ctx := context.Background()
