@@ -336,5 +336,4 @@ var catalogIntegrationsDef = g.NewInterface(
 		CatalogIntegrationRestAuthenticationTypeEnumDef,
 		CatalogIntegrationAccessDelegationModeEnumDef,
 		CatalogIntegrationCatalogApiTypeEnumDef,
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

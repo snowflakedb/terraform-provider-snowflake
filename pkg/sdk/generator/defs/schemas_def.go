@@ -206,5 +206,4 @@ var schemasDef = g.NewInterface(
 		"Use", "Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-schema",
 		[]*g.MethodParameter{g.NewMethodParameter("id", "DatabaseObjectIdentifier")},
 		"error",
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

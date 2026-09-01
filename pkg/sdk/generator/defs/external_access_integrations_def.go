@@ -138,5 +138,4 @@ var externalAccessIntegrationsDef = g.NewInterface(
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 	"*ExternalAccessIntegrationDetails", "error",
 ).
-	WithShowObjectType("Integration").
-	WithEnabledGenerationParts(g.PartUnitTests)
+	WithShowObjectType("Integration")

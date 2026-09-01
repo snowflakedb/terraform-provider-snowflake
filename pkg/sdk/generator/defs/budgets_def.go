@@ -104,5 +104,4 @@ var budgetsDef = g.NewInterface(
 	nil,
 	getCycleStartActionResult,
 	g.InstanceMethodKindSingleValue,
-).
-	WithEnabledGenerationParts(g.PartUnitTests)
+)

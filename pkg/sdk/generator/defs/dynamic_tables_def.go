@@ -151,5 +151,4 @@ var dynamicTablesDef = g.NewInterface(
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
 	).
-	WithEnums(DynamicTableRefreshModeEnumDef, DynamicTableInitializeEnumDef, DynamicTableSchedulingStateEnumDef).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	WithEnums(DynamicTableRefreshModeEnumDef, DynamicTableInitializeEnumDef, DynamicTableSchedulingStateEnumDef)

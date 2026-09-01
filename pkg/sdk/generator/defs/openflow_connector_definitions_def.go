@@ -40,4 +40,4 @@ var openflowConnectorDefinitionsDef = g.NewInterface(
 		OptionalStartsWith().
 		OptionalLimitFrom(),
 	g.ShowByIDSuppressed,
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

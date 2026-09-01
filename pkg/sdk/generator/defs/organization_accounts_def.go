@@ -134,5 +134,4 @@ var organizationAccountsDef = g.NewInterface(
 		OrganizationAccountEditionEnumDef,
 	).
 	WithShowObjectType("Account").
-	WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateAccountName).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateAccountName)

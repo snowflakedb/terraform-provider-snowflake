@@ -94,5 +94,4 @@ var connectionsDef = g.NewInterface(
 		SQL("CONNECTIONS").
 		OptionalLike(),
 ).
-	WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateNameAndLocator).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	WithShowByIDFindPredicateKind(g.ShowByIDFindPredicateNameAndLocator)

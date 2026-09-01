@@ -178,5 +178,4 @@ var tagsDef = g.NewInterface(
 	"UnsetOnCurrentAccount", "",
 	[]*g.MethodParameter{g.NewMethodParameter("unsetTags", "[]ObjectIdentifier")},
 	"error",
-).WithEnums(TagPropagationEnumDef).
-	WithEnabledGenerationParts(g.PartUnitTests)
+).WithEnums(TagPropagationEnumDef)

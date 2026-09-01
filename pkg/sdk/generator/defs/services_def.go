@@ -254,4 +254,4 @@ var servicesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifierIfSet, "QueryWarehouse"),
 ).WithEnums(
 	ServiceStatusEnumDef,
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

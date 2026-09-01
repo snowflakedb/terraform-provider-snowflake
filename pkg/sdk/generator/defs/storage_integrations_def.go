@@ -234,5 +234,4 @@ var storageIntegrationsDef = g.NewInterface(
 		"DescribeDetails returns combined describe output for all types of storage integrations.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 		"*StorageIntegrationAllDetails", "error",
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

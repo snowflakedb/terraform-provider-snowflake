@@ -101,5 +101,4 @@ var maskingPoliciesDef = g.NewInterface(
 			SQL("MASKING POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

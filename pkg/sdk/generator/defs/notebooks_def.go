@@ -157,4 +157,4 @@ var notebooksDef = g.NewInterface(
 		OptionalStartsWith(),
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

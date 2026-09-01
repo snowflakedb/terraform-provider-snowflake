@@ -185,4 +185,4 @@ var openflowRuntimesDef = g.NewInterface(
 ).WithEnums(
 	OpenflowRuntimeNodeTypeEnumDef,
 	OpenflowRuntimeStatusEnumDef,
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

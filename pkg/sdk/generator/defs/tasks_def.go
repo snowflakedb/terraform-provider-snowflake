@@ -248,5 +248,4 @@ var tasksDef = g.NewInterface(
 		"",
 		[]*g.MethodParameter{g.NewMethodParameter("ids", "[]SchemaObjectIdentifier")},
 		"error",
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

@@ -103,5 +103,4 @@ var sequencesDef = g.NewInterface(
 			g.KeywordOptions(),
 		).
 		WithValidation(g.ValidIdentifier, "name"),
-).
-	WithEnabledGenerationParts(g.PartUnitTests)
+)

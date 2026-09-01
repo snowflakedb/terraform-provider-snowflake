@@ -57,5 +57,4 @@ var managedAccountsDef = g.NewInterface(
 			Show().
 			SQL("MANAGED ACCOUNTS").
 			OptionalLike(),
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

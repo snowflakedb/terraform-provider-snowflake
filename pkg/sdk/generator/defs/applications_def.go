@@ -135,4 +135,4 @@ var applicationsDef = g.NewInterface(
 		SQL("APPLICATION").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

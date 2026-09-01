@@ -119,4 +119,4 @@ var alertsDef = g.NewInterface(
 		SQL("ALERT").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).WithEnums(alertActionDef, alertStateDef).WithEnabledGenerationParts(g.PartUnitTests)
+).WithEnums(alertActionDef, alertStateDef)

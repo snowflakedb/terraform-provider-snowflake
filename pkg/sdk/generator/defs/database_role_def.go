@@ -145,4 +145,4 @@ var databaseRolesDef = g.NewInterface(
 	"RevokeFromShareSafely", "",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*RevokeFromShareDatabaseRoleRequest")},
 	"error",
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

@@ -155,4 +155,4 @@ var eventTablesDef = g.NewInterface(
 		RenameTo().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "ClusteringAction", "SearchOptimizationAction"),
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

@@ -153,5 +153,4 @@ var computePoolsDef = g.NewInterface(
 ).
 	WithEnums(
 		ComputePoolStateEnumDef,
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

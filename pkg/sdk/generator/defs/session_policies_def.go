@@ -141,5 +141,4 @@ var sessionPoliciesDef = g.NewInterface(
 	).
 	WithEnums(
 		SessionPolicyTargetScopeEnumDef,
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

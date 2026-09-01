@@ -117,5 +117,4 @@ var networkRulesDef = g.NewInterface(
 	WithEnums(
 		NetworkRuleTypeEnumDef,
 		NetworkRuleModeEnumDef,
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

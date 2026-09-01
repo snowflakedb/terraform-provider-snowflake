@@ -457,5 +457,4 @@ var apiIntegrationsDef = g.NewInterface(
 		"DescribeAllDetails returns parsed describe output for any API integration type.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.AccountObjectIdentifier]())},
 		"*ApiIntegrationAllDetails", "error",
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

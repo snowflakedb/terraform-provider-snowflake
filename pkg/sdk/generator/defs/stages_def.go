@@ -478,5 +478,4 @@ var stagesDef = g.NewInterface(
 		"DescribeDetails returns parsed describe output for stages.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
 		"*StageDetails", "error",
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

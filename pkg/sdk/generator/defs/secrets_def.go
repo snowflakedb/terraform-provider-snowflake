@@ -188,4 +188,4 @@ var secretsDef = g.NewInterface(
 		SQL("SECRET").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

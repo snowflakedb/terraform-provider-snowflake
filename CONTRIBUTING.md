@@ -266,7 +266,7 @@ Take a look at an example [SDK implementation for Storage Lifecycle Policy](http
 
 Follow the [Developer Workflow](pkg/sdk/generator/README.md#developer-workflow) section of the SDK Generator README to create the definition file, register it, run generation, and verify idempotency. It covers file conventions, a step-by-step workflow, and the Request DTO builder pattern required when using the generated SDK.
 
-Implement unit tests.
+Implement unit tests. `make generate-sdk` always generates SDK unit test skeletons (`*_gen_test.go`) alongside the object's other files — write the companion `*_ext_test.go` to supply expected SQL and default options, per the [Unit test generation](pkg/sdk/generator/README.md#unit-test-generation) section of the SDK Generator README.
 
 #### 2. Add integration tests
 

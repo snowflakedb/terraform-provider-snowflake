@@ -382,4 +382,4 @@ var functionsDef = g.NewInterface(
 	"",
 	[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments]())},
 	"[]*Parameter", "error",
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

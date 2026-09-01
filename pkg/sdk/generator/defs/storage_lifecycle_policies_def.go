@@ -120,5 +120,4 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name"),
 	).
 	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "*StorageLifecyclePolicyDetails", "error").
-	WithEnums(StorageLifecyclePolicyArchiveTierEnumDef).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	WithEnums(StorageLifecyclePolicyArchiveTierEnumDef)

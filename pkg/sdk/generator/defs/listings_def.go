@@ -243,8 +243,7 @@ var listingsDef = g.NewInterface(
 	WithEnums(
 		ListingRevisionEnumDef,
 		ListingStateEnumDef,
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)
 
 	// TODO [SNOW-2236968]: Organization listing may have its interface, but most of the operations would be pass through functions to the Listings interface
 	// TODO [SNOW-2236968]: Show available listings

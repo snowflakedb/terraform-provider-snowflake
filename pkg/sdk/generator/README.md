@@ -1,4 +1,4 @@
-> ⚠️ **Disclaimer**: The SDK generator started as PoC but was widely used to speed up the development of the SQL abstraction over Snowflake. SDK in its current state fully depends on this generation and no manual changes are needed (besides unit tests). When adding the new SDK object, make sure the regeneration goes smoothly. Additionally, we are currently considering the move to REST API (check [this roadmap entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#snowflake-rest-apis)), which may ultimately lead to deprecation of this generator as SQL abstraction may not be needed anymore.
+> ⚠️ **Disclaimer**: The SDK generator started as PoC but was widely used to speed up the development of the SQL abstraction over Snowflake. SDK in its current state fully depends on this generation and no manual changes are needed. When adding the new SDK object, make sure the regeneration goes smoothly. Additionally, we are currently considering the move to REST API (check [this roadmap entry](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#snowflake-rest-apis)), which may ultimately lead to deprecation of this generator as SQL abstraction may not be needed anymore.
 
 ## SDK generator
 
@@ -14,13 +14,13 @@ Generated files (`*_gen.go`) are fully replaced on every run — **never edit th
 2. Register the definition in alphabetical order in [0_init.go](defs/0_init.go).
 3. Run generation scoped to your object — the singular name must match the second argument of `g.NewInterface(...)` exactly:
    ```shell
-   make generate-sdk-no-tests SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
+   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
    ```
 4. Verify compilation and idempotency — re-running generation must produce no diff:
    ```shell
    go build ./pkg/sdk/...
    go vet ./pkg/sdk/...
-   make generate-sdk-no-tests SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
+   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
    git diff --stat   # must be empty
    ```
 
@@ -52,11 +52,8 @@ Available generation parts (enabled by default):
 - dto
 - dto_builders
 - impl
-- unit_tests_scaffold (legacy TODO-scaffold for hand-edited unit tests; skipped for objects that have opted into `unit_tests`)
+- unit_tests (fully generated SDK unit tests, CI-diff-checked; see [Unit test generation](#unit-test-generation))
 - validations
-
-Optional generation parts (disabled by default; opt in per object via `WithEnabledGenerationParts`):
-- unit_tests (fully generated, CI-diff-checked; see [Unit test generation](#unit-test-generation))
 
 Generation parts can be registered as **optional** (disabled by default). Optional parts are only generated for objects that explicitly enable them via `WithEnabledGenerationParts(...)`. Use `WithOptionalGenerationPart(...)` on the generator to register such a part.
 
@@ -87,8 +84,8 @@ make generate-sdk SF_TF_GENERATOR_ARGS='--filter-generation-part-names=default,i
 make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-object-names=Sequences'
 ```
 ```shell
-# generate all files except the legacy hand-edited unit test scaffolds
-make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests_scaffold'
+# generate all files except unit tests (faster iteration while a def/ext file isn't ready yet)
+make generate-sdk SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
 ```
 ```shell
 # combine inclusion and exclusion filters
@@ -103,7 +100,8 @@ There are example files ready for generation, e.g. [database_role_def.go](exampl
 - [database_role_dto_builders_gen.go](example/database_roles_dto_builders_gen.go) - SDK Request DTOs constructors and builder methods
 - [database_role_validations_gen.go](example/database_roles_validations_gen.go) - options structs validations
 - [database_role_impl_gen.go](example/database_roles_impl_gen.go) - SDK interface implementation
-- [database_role_gen_test.go](example/database_roles_gen_test.go) - unit tests placeholders with guidance comments (at least for now)
+
+`unit_tests` is excluded by default for this example generator (baked into [example/generate.go](example/generate.go)): the generated file targets the `pkg/sdk` unit-test harness (`0_sdk_unit_tests_test.go`), which this package doesn't mirror.
 
 Additional example definitions covering specific generator features:
 - [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`
@@ -141,7 +139,7 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-object-names=Sequence
 ```
 ```shell
 # generate all example files except the given generation parts
-make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests_scaffold'
+make generate-sdk-examples SF_TF_GENERATOR_ARGS='--exclude-generation-part-names=unit_tests'
 ```
 ```shell
 # show usage
@@ -161,12 +159,12 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 
 ##### CI guard targets
 
-- `make generate-sdk-no-tests-check` — regenerates all parts except `unit_tests_scaffold` (the legacy hand-edited scaffolds) and verifies no diff. Includes `*_gen_test.go` files produced by the `unit_tests` optional part. Wired into `pre-push-check`.
+- `make generate-sdk-check` — regenerates all parts, including `unit_tests`, and verifies no diff. Wired into `pre-push-check`.
 - `make generate-sdk-examples-check` — regenerates examples and verifies no diff. Wired into `pre-push-check`.
 
 ##### Unit test generation
 
-SDK unit tests can be generated for an object by opting it in with `WithEnabledGenerationParts(g.PartUnitTests)` in its definition file. The generated `*_gen_test.go` contains:
+SDK unit tests are fully generated for every object (`unit_tests`, enabled by default like `dto`/`impl`/`validations`). The generated `*_gen_test.go` contains:
 - Package-level id vars and per-operation test contexts (`*TestsContext` struct + var)
 - Generated constants for every case name (compile-time safety: stale references in `*_ext_test.go` break the build)
 - Derived default modifications for mechanically-derivable cases (e.g. zeroing an identifier field, priming a container struct)

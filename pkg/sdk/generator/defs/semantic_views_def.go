@@ -99,8 +99,7 @@ var semanticViewsDef = g.NewInterface(
 		"DescribeSemanticViewDetails returns converted describe output for semantic views.",
 		[]*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())},
 		"*SemanticViewDetails", "error",
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)
 
 var primaryKey = g.NewQueryStruct("PrimaryKeys").
 	ListAssignment("PRIMARY KEY", "SemanticViewColumn", g.ParameterOptions().Parentheses().NoEquals().Required())

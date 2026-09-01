@@ -401,5 +401,4 @@ var usersDef = g.NewInterface(
 		wifTypeEnum,
 		secondaryRolesOptionEnum,
 		userTypeEnum,
-	).
-	WithEnabledGenerationParts(g.PartUnitTests)
+	)

@@ -154,4 +154,4 @@ var applicationPackagesDef = g.NewInterface(
 		OptionalLike().
 		OptionalStartsWith().
 		OptionalLimit(),
-).WithEnabledGenerationParts(g.PartUnitTests)
+)

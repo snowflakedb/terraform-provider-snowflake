@@ -71,10 +71,6 @@ var (
 	implementationTemplateContent string
 	ImplementationTemplate        *template.Template
 
-	//go:embed templates/unit_tests.tmpl
-	unitTestTemplateContent string
-	UnitTestsTemplate       *template.Template
-
 	//go:embed templates/unit_tests_ctx_header.tmpl
 	unitTestsCtxHeaderTemplateContent string
 	UnitTestsCtxHeaderTemplate        *template.Template
@@ -109,12 +105,6 @@ var (
 	//go:embed templates/sub_templates/implementation_functions.tmpl
 	implementationFunctionsTemplateContent string
 
-	//go:embed templates/sub_templates/validation_test.tmpl
-	validationTestTemplateContent string
-
-	//go:embed templates/sub_templates/validation_tests.tmpl
-	validationTestsTemplateContent string
-
 	//go:embed templates/sub_templates/validation_implementation.tmpl
 	validationImplementationTemplateContent string
 
@@ -142,8 +132,6 @@ func init() {
 	subTemplates, _ = subTemplates.New("convertGuards").Parse(convertGuardsTemplateContent)
 	subTemplates, _ = subTemplates.New("implementationMappings").Parse(implementationMappingsTemplateContent)
 	subTemplates, _ = subTemplates.New("implementationFunctions").Parse(implementationFunctionsTemplateContent)
-	subTemplates, _ = subTemplates.New("validationTest").Parse(validationTestTemplateContent)
-	subTemplates, _ = subTemplates.New("validationTests").Parse(validationTestsTemplateContent)
 	subTemplates, _ = subTemplates.New("validationImplementation").Parse(validationImplementationTemplateContent)
 	subTemplates, _ = subTemplates.New("unitTestsValidationCase").Parse(unitTestsValidationCaseTemplateContent)
 	subTemplates, _ = subTemplates.New("unitTestsSqlCase").Parse(unitTestsSqlCaseTemplateContent)
@@ -160,7 +148,6 @@ func init() {
 	DtoTemplate, _ = subTemplates.New("dtoTemplate").Parse(dtoDeclarationsTemplateContent)
 	DtoBuildersTemplate, _ = subTemplates.New("dtoBuildersTemplate").Parse(dtoBuildersTemplateContent)
 	ImplementationTemplate, _ = subTemplates.New("implementationTemplate").Parse(implementationTemplateContent)
-	UnitTestsTemplate, _ = subTemplates.New("unitTestsTemplate").Parse(unitTestTemplateContent)
 	UnitTestsCtxHeaderTemplate, _ = subTemplates.New("unitTestsCtxHeaderTemplate").Parse(unitTestsCtxHeaderTemplateContent)
 	UnitTestsCtxContextTemplate, _ = subTemplates.New("unitTestsCtxContextTemplate").Parse(unitTestsCtxContextTemplateContent)
 	UnitTestsCtxTestsTemplate, _ = subTemplates.New("unitTestsCtxTestsTemplate").Parse(unitTestsCtxTestsTemplateContent)

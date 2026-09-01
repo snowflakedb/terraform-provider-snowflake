@@ -122,4 +122,4 @@ var pipesDef = g.NewInterface(
 		SQL("PIPE").
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).WithEnabledGenerationParts(g.PartUnitTests)
+)
