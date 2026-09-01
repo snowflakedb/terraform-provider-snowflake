@@ -128,6 +128,26 @@ import {
 
 [Hashicorp documentation reference on import block](https://developer.hashicorp.com/terraform/language/import)
 
+If you are using Terraform v1.16 or later, [`import` blocks can live inside modules](https://github.com/hashicorp/terraform/releases/tag/v1.16.0), next to the resources they import. On earlier versions, `import` blocks are only allowed in the root module, so importing into a module requires a fully qualified address:
+
+```terraform
+# Terraform < 1.16: the import block must live in the root module
+import {
+  to       = module.grants.snowflake_grant_privileges_to_account_role.new_resource[each.key]
+  id       = each.value
+  for_each = local.migrations
+}
+```
+
+```terraform
+# Terraform v1.16+: the import block can live inside the module
+import {
+  to       = snowflake_grant_privileges_to_account_role.new_resource[each.key]
+  id       = each.value
+  for_each = local.migrations
+}
+```
+
 #### 3.2.2 Run terraform plan and apply
 
 After running `terraform plan` you'll see if resources can be imported without any change. If that's the case
