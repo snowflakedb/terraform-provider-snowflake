@@ -109,4 +109,5 @@ var backupPoliciesDef = g.NewInterface(
 			SQL("BACKUP POLICY").
 			Name().
 			WithValidation(g.ValidIdentifier, "name"),
-	)
+	).
+	WithEnabledGenerationParts(g.PartUnitTests)

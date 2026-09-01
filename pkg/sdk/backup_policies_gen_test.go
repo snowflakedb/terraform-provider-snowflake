@@ -6,276 +6,261 @@ import (
 	"testing"
 )
 
+var backupPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
+
+const (
+	case_BackupPolicies_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_BackupPolicies_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_BackupPolicies_validation_Create_opts_AtLeastOneValueSet               testCaseName = "validation_Create_opts_AtLeastOneValueSet"
+	case_BackupPolicies_sql_Create_basic                                        testCaseName = "sql_Create_basic"
+	case_BackupPolicies_sql_Create_all                                          testCaseName = "sql_Create_all"
+	case_BackupPolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_BackupPolicies_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_BackupPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_BackupPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
+	case_BackupPolicies_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
+	case_BackupPolicies_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
+	case_BackupPolicies_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_BackupPolicies_sql_Alter_UnsetTags                                     testCaseName = "sql_Alter_UnsetTags"
+	case_BackupPolicies_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_BackupPolicies_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
+	case_BackupPolicies_sql_Drop_all                                            testCaseName = "sql_Drop_all"
+	case_BackupPolicies_sql_Show_basic                                          testCaseName = "sql_Show_basic"
+	case_BackupPolicies_sql_Show_all                                            testCaseName = "sql_Show_all"
+	case_BackupPolicies_sql_Show_Like                                           testCaseName = "sql_Show_Like"
+	case_BackupPolicies_sql_Show_In                                             testCaseName = "sql_Show_In"
+	case_BackupPolicies_sql_Show_StartsWith                                     testCaseName = "sql_Show_StartsWith"
+	case_BackupPolicies_sql_Show_Limit                                          testCaseName = "sql_Show_Limit"
+	case_BackupPolicies_validation_Describe_name_ValidIdentifier                testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_BackupPolicies_sql_Describe_basic                                      testCaseName = "sql_Describe_basic"
+)
+
+type BackupPoliciesTestsContext struct {
+	Create   *sdkTestCtx[*CreateBackupPolicyOptions]
+	Alter    *sdkTestCtx[*AlterBackupPolicyOptions]
+	Drop     *sdkTestCtx[*DropBackupPolicyOptions]
+	Show     *sdkTestCtx[*ShowBackupPolicyOptions]
+	Describe *sdkTestCtx[*DescribeBackupPolicyOptions]
+}
+
+var backupPoliciesTests = BackupPoliciesTestsContext{
+	Create: newSdkTestCtx[*CreateBackupPolicyOptions](
+		"BackupPolicies", "Create",
+	).
+		withDefaultOpts(func() *CreateBackupPolicyOptions {
+			return &CreateBackupPolicyOptions{
+				name: backupPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Create_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *CreateBackupPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateBackupPolicyOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateBackupPolicyOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Create_opts_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("CreateBackupPolicyOptions", "Schedule", "ExpireAfterDays"),
+				DefaultModify: func(opts *CreateBackupPolicyOptions) {
+					opts.Schedule = nil
+					opts.ExpireAfterDays = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateBackupPolicyOptions]{
+				Name:           case_BackupPolicies_sql_Create_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Create_all,
+			},
+		),
+	Alter: newSdkTestCtx[*AlterBackupPolicyOptions](
+		"BackupPolicies", "Alter",
+	).
+		withDefaultOpts(func() *AlterBackupPolicyOptions {
+			return &AlterBackupPolicyOptions{
+				name: backupPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.RenameTo = nil
+					opts.Set = nil
+					opts.SetTags = nil
+					opts.Unset = nil
+					opts.UnsetTags = nil
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.RenameTo = new(randomSchemaObjectIdentifier())
+					opts.Set = &BackupPolicySet{}
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Set", "Schedule", "ExpireAfterDays", "Comment"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.Set = &BackupPolicySet{}
+					opts.Set.Schedule = nil
+					opts.Set.ExpireAfterDays = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "ExpireAfterDays", "Comment"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.Unset = &BackupPolicyUnset{}
+					opts.Unset.Schedule = nil
+					opts.Unset.ExpireAfterDays = nil
+					opts.Unset.Comment = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AlterBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Alter_RenameTo,
+			},
+			sqlCase[*AlterBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Alter_Set,
+			},
+			sqlCase[*AlterBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Alter_SetTags,
+			},
+			sqlCase[*AlterBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Alter_Unset,
+			},
+			sqlCase[*AlterBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Alter_UnsetTags,
+			},
+		),
+	Drop: newSdkTestCtx[*DropBackupPolicyOptions](
+		"BackupPolicies", "Drop",
+	).
+		withDefaultOpts(func() *DropBackupPolicyOptions {
+			return &DropBackupPolicyOptions{
+				name: backupPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DropBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Drop_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DropBackupPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DropBackupPolicyOptions]{
+				Name:           case_BackupPolicies_sql_Drop_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*DropBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Drop_all,
+			},
+		),
+	Show: newSdkTestCtx[*ShowBackupPolicyOptions](
+		"BackupPolicies", "Show",
+	).
+		withDefaultOpts(func() *ShowBackupPolicyOptions {
+			return &ShowBackupPolicyOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*ShowBackupPolicyOptions]{
+				Name:           case_BackupPolicies_sql_Show_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*ShowBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Show_all,
+			},
+			sqlCase[*ShowBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Show_Like,
+			},
+			sqlCase[*ShowBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Show_In,
+			},
+			sqlCase[*ShowBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Show_StartsWith,
+			},
+			sqlCase[*ShowBackupPolicyOptions]{
+				Name: case_BackupPolicies_sql_Show_Limit,
+			},
+		),
+	Describe: newSdkTestCtx[*DescribeBackupPolicyOptions](
+		"BackupPolicies", "Describe",
+	).
+		withDefaultOpts(func() *DescribeBackupPolicyOptions {
+			return &DescribeBackupPolicyOptions{
+				name: backupPoliciesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*DescribeBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Describe_name_ValidIdentifier,
+				ExpectedErr: ErrInvalidObjectIdentifier,
+				DefaultModify: func(opts *DescribeBackupPolicyOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*DescribeBackupPolicyOptions]{
+				Name:           case_BackupPolicies_sql_Describe_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
 func TestBackupPolicies_Create(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid CreateBackupPolicyOptions
-	defaultOpts := func() *CreateBackupPolicyOptions {
-		return &CreateBackupPolicyOptions{
-			// adjusted manually
-			name:            id,
-			ExpireAfterDays: new(7),
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*CreateBackupPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: conflicting fields for [opts.OrReplace opts.IfNotExists]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = new(true)
-		opts.IfNotExists = new(true)
-		assertOptsInvalidJoinedErrors(t, opts, errOneOf("CreateBackupPolicyOptions", "OrReplace", "IfNotExists"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Schedule opts.ExpireAfterDays] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExpireAfterDays = nil
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("CreateBackupPolicyOptions", "Schedule", "ExpireAfterDays"))
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "CREATE BACKUP POLICY %s EXPIRE_AFTER_DAYS = 7", id.FullyQualifiedName())
-	})
-
-	// variants added manually
-	t.Run("schedule only", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.ExpireAfterDays = nil
-		opts.Schedule = new("60 MINUTE")
-		assertOptsValidAndSQLEquals(t, opts, "CREATE BACKUP POLICY %s SCHEDULE = '60 MINUTE'", id.FullyQualifiedName())
-	})
-
-	t.Run("if not exists", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfNotExists = new(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE BACKUP POLICY IF NOT EXISTS %s EXPIRE_AFTER_DAYS = 7", id.FullyQualifiedName())
-	})
-
-	t.Run("with retention lock", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.WithRetentionLock = new(true)
-		assertOptsValidAndSQLEquals(t, opts, "CREATE BACKUP POLICY %s WITH RETENTION LOCK EXPIRE_AFTER_DAYS = 7", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.OrReplace = new(true)
-		opts.Tag = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		opts.WithRetentionLock = new(true)
-		opts.Schedule = new("USING CRON 0 2 * * * UTC")
-		opts.ExpireAfterDays = new(3653)
-		opts.Comment = new("some comment")
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE BACKUP POLICY %s TAG ("tag1" = 'value1', "tag2" = 'value2') WITH RETENTION LOCK SCHEDULE = 'USING CRON 0 2 * * * UTC' EXPIRE_AFTER_DAYS = 3653 COMMENT = 'some comment'`, id.FullyQualifiedName())
-	})
+	backupPoliciesTests.Create.RunValidationCases(t)
+	backupPoliciesTests.Create.RunSqlCases(t)
 }
 
 func TestBackupPolicies_Alter(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid AlterBackupPolicyOptions
-	defaultOpts := func() *AlterBackupPolicyOptions {
-		return &AlterBackupPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*AlterBackupPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.SetTags opts.Unset opts.UnsetTags] should be present", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"))
-	})
-
-	t.Run("validation: exactly one field from [opts.RenameTo opts.Set opts.SetTags opts.Unset opts.UnsetTags] should be present - more present", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &BackupPolicySet{
-			Comment: new("some comment"),
-		}
-		opts.Unset = &BackupPolicyUnset{
-			Comment: new(true),
-		}
-		assertOptsInvalidJoinedErrors(t, opts, errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Set.Schedule opts.Set.ExpireAfterDays opts.Set.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &BackupPolicySet{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterBackupPolicyOptions.Set", "Schedule", "ExpireAfterDays", "Comment"))
-	})
-
-	t.Run("validation: at least one of the fields [opts.Unset.Schedule opts.Unset.ExpireAfterDays opts.Unset.Comment] should be set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &BackupPolicyUnset{}
-		assertOptsInvalidJoinedErrors(t, opts, errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "ExpireAfterDays", "Comment"))
-	})
-
-	// all variants added manually
-	t.Run("rename", func(t *testing.T) {
-		opts := defaultOpts()
-		newId := randomSchemaObjectIdentifier()
-		opts.RenameTo = &newId
-		assertOptsValidAndSQLEquals(t, opts, "ALTER BACKUP POLICY %s RENAME TO %s", id.FullyQualifiedName(), newId.FullyQualifiedName())
-	})
-
-	t.Run("set", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Set = &BackupPolicySet{
-			Schedule:        new("2 HOUR"),
-			ExpireAfterDays: new(30),
-			Comment:         new("some comment"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER BACKUP POLICY %s SET SCHEDULE = '2 HOUR' EXPIRE_AFTER_DAYS = 30 COMMENT = 'some comment'", id.FullyQualifiedName())
-	})
-
-	t.Run("set tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.SetTags = []TagAssociation{
-			{
-				Name:  NewAccountObjectIdentifier("tag1"),
-				Value: "value1",
-			},
-			{
-				Name:  NewAccountObjectIdentifier("tag2"),
-				Value: "value2",
-			},
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER BACKUP POLICY %s SET TAG "tag1" = 'value1', "tag2" = 'value2'`, id.FullyQualifiedName())
-	})
-
-	t.Run("unset", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Unset = &BackupPolicyUnset{
-			Schedule:        new(true),
-			ExpireAfterDays: new(true),
-			Comment:         new(true),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER BACKUP POLICY %s UNSET SCHEDULE, EXPIRE_AFTER_DAYS, COMMENT", id.FullyQualifiedName())
-	})
-
-	t.Run("unset tags", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.UnsetTags = []ObjectIdentifier{
-			NewAccountObjectIdentifier("tag1"),
-			NewAccountObjectIdentifier("tag2"),
-		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER BACKUP POLICY %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
-	})
+	backupPoliciesTests.Alter.RunValidationCases(t)
+	backupPoliciesTests.Alter.RunSqlCases(t)
 }
 
 func TestBackupPolicies_Drop(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DropBackupPolicyOptions
-	defaultOpts := func() *DropBackupPolicyOptions {
-		return &DropBackupPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DropBackupPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DROP BACKUP POLICY %s", id.FullyQualifiedName())
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.IfExists = new(true)
-		assertOptsValidAndSQLEquals(t, opts, "DROP BACKUP POLICY IF EXISTS %s", id.FullyQualifiedName())
-	})
+	backupPoliciesTests.Drop.RunValidationCases(t)
+	backupPoliciesTests.Drop.RunSqlCases(t)
 }
 
 func TestBackupPolicies_Show(t *testing.T) {
-	// Minimal valid ShowBackupPolicyOptions
-	defaultOpts := func() *ShowBackupPolicyOptions {
-		return &ShowBackupPolicyOptions{}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*ShowBackupPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW BACKUP POLICIES")
-	})
-
-	t.Run("all options", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.Like = &Like{
-			Pattern: String("like-pattern"),
-		}
-		opts.In = &In{
-			Account: new(true),
-		}
-		opts.StartsWith = String("abc")
-		opts.Limit = &LimitFrom{
-			Rows: Int(10),
-		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW BACKUP POLICIES LIKE 'like-pattern' IN ACCOUNT STARTS WITH 'abc' LIMIT 10")
-	})
+	backupPoliciesTests.Show.RunValidationCases(t)
+	backupPoliciesTests.Show.RunSqlCases(t)
 }
 
 func TestBackupPolicies_Describe(t *testing.T) {
-	id := randomSchemaObjectIdentifier()
-	// Minimal valid DescribeBackupPolicyOptions
-	defaultOpts := func() *DescribeBackupPolicyOptions {
-		return &DescribeBackupPolicyOptions{
-			name: id,
-		}
-	}
-
-	t.Run("validation: nil options", func(t *testing.T) {
-		opts := (*DescribeBackupPolicyOptions)(nil)
-		assertOptsInvalidJoinedErrors(t, opts, ErrNilOptions)
-	})
-
-	t.Run("validation: valid identifier for [opts.name]", func(t *testing.T) {
-		opts := defaultOpts()
-		opts.name = emptySchemaObjectIdentifier
-		assertOptsInvalidJoinedErrors(t, opts, ErrInvalidObjectIdentifier)
-	})
-
-	t.Run("basic", func(t *testing.T) {
-		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "DESCRIBE BACKUP POLICY %s", id.FullyQualifiedName())
-	})
-
-	// all options removed manually
+	backupPoliciesTests.Describe.RunValidationCases(t)
+	backupPoliciesTests.Describe.RunSqlCases(t)
 }
