@@ -1087,3 +1087,27 @@ func TestParseFileFormat_invalidEnumValues(t *testing.T) {
 		require.ErrorContains(t, err, "NOT_A_COMPRESSION")
 	})
 }
+
+// TestParseFileFormatCsv_hyphenatedEncoding covers DESCRIBE FILE FORMAT values that Snowflake
+// stores as IANA-style aliases (utf-8, UTF-16LE) instead of the canonical enum names.
+func TestParseFileFormatCsv_hyphenatedEncoding(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
+
+	for _, tc := range []struct {
+		raw  string
+		want CsvEncoding
+	}{
+		{raw: "utf-8", want: CsvEncodingUtf8},
+		{raw: "UTF-16LE", want: CsvEncodingUtf16le},
+		{raw: "ISO-8859-1", want: CsvEncodingIso88591},
+	} {
+		t.Run(tc.raw, func(t *testing.T) {
+			csv, err := parseFileFormatCsv([]FileFormatProperty{
+				{Name: "TYPE", Value: "CSV"},
+				{Name: "ENCODING", Value: tc.raw},
+			}, id)
+			require.NoError(t, err)
+			require.Equal(t, tc.want, csv.Encoding)
+		})
+	}
+}

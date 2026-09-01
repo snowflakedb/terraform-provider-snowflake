@@ -237,7 +237,7 @@ func csvFileFormatSchema(prefix string) map[string]*schema.Schema {
 		"encoding": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Description:      fmt.Sprintf("Specifies the character set of the source data when loading data into a table. Valid values: %s.", possibleValuesListed(sdk.AllCsvEncodings)),
+			Description:      fmt.Sprintf("Specifies the character set of the source data when loading data into a table. Valid values: %s. Hyphenated aliases returned by Snowflake (e.g. UTF-8, UTF-16LE) are accepted and normalized to these values.", possibleValuesListed(sdk.AllCsvEncodings)),
 			ValidateDiagFunc: sdkValidation(sdk.ToCsvEncoding),
 			DiffSuppressFunc: NormalizeAndCompare(sdk.ToCsvEncoding),
 		},

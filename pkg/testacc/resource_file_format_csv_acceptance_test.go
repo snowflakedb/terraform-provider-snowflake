@@ -831,3 +831,39 @@ func TestAcc_FileFormatCsv_NullIfWithEmptyString(t *testing.T) {
 		},
 	})
 }
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/5085#issuecomment-5425394217:
+// importing a CSV file format whose DESCRIBE ENCODING is a hyphenated alias (utf-8) succeeds
+// and normalizes to the canonical UTF8 value.
+func TestAcc_FileFormatCsv_ImportHyphenatedEncoding(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := resourcehelpers.EncodeResourceIdentifier(id)
+
+	csvModel := model.FileFormatCsv("test", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithEncoding(string(sdk.CsvEncodingUtf8))
+	ref := csvModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FileFormatCsv),
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					t.Cleanup(testClient().FileFormat.CreateCsvWithRawSql(t, id, `TYPE = CSV ENCODING = 'utf-8'`))
+				},
+				Config:        config.FromModels(t, csvModel),
+				ResourceName:  ref,
+				ImportState:   true,
+				ImportStateId: id.FullyQualifiedName(),
+				ImportStateCheck: assertThatImport(
+					t,
+					csvImportedResourceAssert(t, resourceId).
+						HasEncoding(string(sdk.CsvEncodingUtf8)),
+				),
+			},
+		},
+	})
+}

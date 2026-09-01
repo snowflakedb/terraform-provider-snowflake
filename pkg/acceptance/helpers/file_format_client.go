@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -28,6 +29,16 @@ func (c *FileFormatClient) CreateCsv(t *testing.T) (*sdk.FileFormat, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifier()
 	return c.CreateCsvWithRequest(t, id, sdk.NewCreateCsvFileFormatRequest(id))
+}
+
+// CreateCsvWithRawSql creates a CSV file format with a raw option clause (for example
+// `TYPE = CSV ENCODING = 'utf-8'`), so tests can persist hyphenated aliases the SDK would
+// otherwise canonicalize before sending.
+func (c *FileFormatClient) CreateCsvWithRawSql(t *testing.T, id sdk.SchemaObjectIdentifier, options string) func() {
+	t.Helper()
+	_, err := c.context.client.ExecForTests(context.Background(), fmt.Sprintf(`CREATE FILE FORMAT %s %s`, id.FullyQualifiedName(), options))
+	require.NoError(t, err)
+	return c.DropFileFormatFunc(t, id)
 }
 
 func (c *FileFormatClient) CreateCsvWithRequest(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateCsvFileFormatRequest) (*sdk.FileFormat, func()) {

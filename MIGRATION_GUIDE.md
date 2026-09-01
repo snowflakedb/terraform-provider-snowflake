@@ -191,6 +191,16 @@ After upgrading, `terraform plan` should be empty for unchanged resources. If yo
 
 No other configuration changes are required.
 
+### *(bug fix)* Importing `snowflake_file_format_csv` no longer fails on hyphenated `ENCODING` aliases
+
+Importing `snowflake_file_format_csv` (and setting `encoding` on CSV stage file format options) failed with `invalid csv encoding: UTF-8` when `DESCRIBE FILE FORMAT` returned a hyphenated alias such as `utf-8` or `UTF-16LE` instead of the canonical `UTF8` / `UTF16LE`. Snowflake accepts IANA-style names, stores the original spelling, and echoes it from `DESCRIBE`, so this permanently blocked importing those objects and migrating them off the deprecated `snowflake_file_format` resource.
+
+`ToCsvEncoding` now maps those aliases to the canonical values (for example `utf-8` → `UTF8`, `UTF-16LE` → `UTF16LE`). Imported and read `encoding` fields, including `describe_output`, are always the canonical uppercase form. Configurations that already use `encoding = "UTF8"` do not need to change; hyphenated values in configuration are also accepted and normalized.
+
+No changes in configuration are required.
+
+Reference: [#5085](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5085)
+
 ## v2.19.x ➞ v2.20.0
 
 ### *(new feature)* New hybrid table resource

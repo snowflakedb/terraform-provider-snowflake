@@ -18,6 +18,10 @@ var (
 		"CsvCompression", "CsvCompressions",
 		"AUTO", "GZIP", "BZ2", "BROTLI", "ZSTD", "DEFLATE", "RAW_DEFLATE", "NONE",
 	)
+	// Snowflake accepts IANA-style names (utf-8, UTF-16LE, ISO-8859-1, ...) by stripping
+	// punctuation and uppercasing, then stores the original spelling. DESCRIBE FILE FORMAT
+	// therefore returns those aliases for legacy objects. Map them back to the canonical values.
+	// See https://github.com/snowflakedb/terraform-provider-snowflake/issues/5085.
 	CsvEncodingEnumDef = g.NewEnum(
 		"CsvEncoding", "CsvEncodings",
 		"BIG5", "EUCJP", "EUCKR", "GB18030", "IBM420", "IBM424",
@@ -26,7 +30,36 @@ var (
 		"KOI8R", "SHIFTJIS",
 		"UTF8", "UTF16", "UTF16BE", "UTF16LE", "UTF32", "UTF32BE", "UTF32LE",
 		"WINDOWS1250", "WINDOWS1251", "WINDOWS1252", "WINDOWS1253", "WINDOWS1254", "WINDOWS1255", "WINDOWS1256",
-	)
+	).WithAliases("UTF8", "UTF-8").
+		WithAliases("UTF16", "UTF-16").
+		WithAliases("UTF16BE", "UTF-16BE").
+		WithAliases("UTF16LE", "UTF-16LE").
+		WithAliases("UTF32", "UTF-32").
+		WithAliases("UTF32BE", "UTF-32BE").
+		WithAliases("UTF32LE", "UTF-32LE").
+		WithAliases("SHIFTJIS", "SHIFT-JIS", "SHIFT_JIS").
+		WithAliases("ISO2022JP", "ISO-2022-JP").
+		WithAliases("ISO2022CN", "ISO-2022-CN").
+		WithAliases("ISO2022KR", "ISO-2022-KR").
+		WithAliases("EUCJP", "EUC-JP").
+		WithAliases("EUCKR", "EUC-KR").
+		WithAliases("ISO88591", "ISO-8859-1").
+		WithAliases("ISO88592", "ISO-8859-2").
+		WithAliases("ISO88595", "ISO-8859-5").
+		WithAliases("ISO88596", "ISO-8859-6").
+		WithAliases("ISO88597", "ISO-8859-7").
+		WithAliases("ISO88598", "ISO-8859-8").
+		WithAliases("ISO88599", "ISO-8859-9").
+		WithAliases("ISO885915", "ISO-8859-15").
+		WithAliases("WINDOWS1250", "WINDOWS-1250").
+		WithAliases("WINDOWS1251", "WINDOWS-1251").
+		WithAliases("WINDOWS1252", "WINDOWS-1252").
+		WithAliases("WINDOWS1253", "WINDOWS-1253").
+		WithAliases("WINDOWS1254", "WINDOWS-1254").
+		WithAliases("WINDOWS1255", "WINDOWS-1255").
+		WithAliases("WINDOWS1256", "WINDOWS-1256").
+		WithAliases("KOI8R", "KOI8-R")
+
 	JsonCompressionEnumDef = g.NewEnum(
 		"JsonCompression", "JsonCompressions",
 		"AUTO", "GZIP", "BZ2", "BROTLI", "ZSTD", "DEFLATE", "RAW_DEFLATE", "NONE",

@@ -197,14 +197,80 @@ var AllCsvEncodings = []CsvEncoding{
 	CsvEncodingWindows1256,
 }
 
+var AllCsvEncodingsString = []string{
+	string(CsvEncodingBig5),
+	string(CsvEncodingEucjp),
+	"EUC-JP",
+	string(CsvEncodingEuckr),
+	"EUC-KR",
+	string(CsvEncodingGb18030),
+	string(CsvEncodingIbm420),
+	string(CsvEncodingIbm424),
+	string(CsvEncodingIso2022cn),
+	"ISO-2022-CN",
+	string(CsvEncodingIso2022jp),
+	"ISO-2022-JP",
+	string(CsvEncodingIso2022kr),
+	"ISO-2022-KR",
+	string(CsvEncodingIso88591),
+	"ISO-8859-1",
+	string(CsvEncodingIso88592),
+	"ISO-8859-2",
+	string(CsvEncodingIso88595),
+	"ISO-8859-5",
+	string(CsvEncodingIso88596),
+	"ISO-8859-6",
+	string(CsvEncodingIso88597),
+	"ISO-8859-7",
+	string(CsvEncodingIso88598),
+	"ISO-8859-8",
+	string(CsvEncodingIso88599),
+	"ISO-8859-9",
+	string(CsvEncodingIso885915),
+	"ISO-8859-15",
+	string(CsvEncodingKoi8r),
+	"KOI8-R",
+	string(CsvEncodingShiftjis),
+	"SHIFT-JIS",
+	"SHIFT_JIS",
+	string(CsvEncodingUtf8),
+	"UTF-8",
+	string(CsvEncodingUtf16),
+	"UTF-16",
+	string(CsvEncodingUtf16be),
+	"UTF-16BE",
+	string(CsvEncodingUtf16le),
+	"UTF-16LE",
+	string(CsvEncodingUtf32),
+	"UTF-32",
+	string(CsvEncodingUtf32be),
+	"UTF-32BE",
+	string(CsvEncodingUtf32le),
+	"UTF-32LE",
+	string(CsvEncodingWindows1250),
+	"WINDOWS-1250",
+	string(CsvEncodingWindows1251),
+	"WINDOWS-1251",
+	string(CsvEncodingWindows1252),
+	"WINDOWS-1252",
+	string(CsvEncodingWindows1253),
+	"WINDOWS-1253",
+	string(CsvEncodingWindows1254),
+	"WINDOWS-1254",
+	string(CsvEncodingWindows1255),
+	"WINDOWS-1255",
+	string(CsvEncodingWindows1256),
+	"WINDOWS-1256",
+}
+
 func ToCsvEncoding(s string) (CsvEncoding, error) {
 	s = strings.ToUpper(s)
 	switch s {
 	case string(CsvEncodingBig5):
 		return CsvEncodingBig5, nil
-	case string(CsvEncodingEucjp):
+	case string(CsvEncodingEucjp), "EUC-JP":
 		return CsvEncodingEucjp, nil
-	case string(CsvEncodingEuckr):
+	case string(CsvEncodingEuckr), "EUC-KR":
 		return CsvEncodingEuckr, nil
 	case string(CsvEncodingGb18030):
 		return CsvEncodingGb18030, nil
@@ -212,59 +278,59 @@ func ToCsvEncoding(s string) (CsvEncoding, error) {
 		return CsvEncodingIbm420, nil
 	case string(CsvEncodingIbm424):
 		return CsvEncodingIbm424, nil
-	case string(CsvEncodingIso2022cn):
+	case string(CsvEncodingIso2022cn), "ISO-2022-CN":
 		return CsvEncodingIso2022cn, nil
-	case string(CsvEncodingIso2022jp):
+	case string(CsvEncodingIso2022jp), "ISO-2022-JP":
 		return CsvEncodingIso2022jp, nil
-	case string(CsvEncodingIso2022kr):
+	case string(CsvEncodingIso2022kr), "ISO-2022-KR":
 		return CsvEncodingIso2022kr, nil
-	case string(CsvEncodingIso88591):
+	case string(CsvEncodingIso88591), "ISO-8859-1":
 		return CsvEncodingIso88591, nil
-	case string(CsvEncodingIso88592):
+	case string(CsvEncodingIso88592), "ISO-8859-2":
 		return CsvEncodingIso88592, nil
-	case string(CsvEncodingIso88595):
+	case string(CsvEncodingIso88595), "ISO-8859-5":
 		return CsvEncodingIso88595, nil
-	case string(CsvEncodingIso88596):
+	case string(CsvEncodingIso88596), "ISO-8859-6":
 		return CsvEncodingIso88596, nil
-	case string(CsvEncodingIso88597):
+	case string(CsvEncodingIso88597), "ISO-8859-7":
 		return CsvEncodingIso88597, nil
-	case string(CsvEncodingIso88598):
+	case string(CsvEncodingIso88598), "ISO-8859-8":
 		return CsvEncodingIso88598, nil
-	case string(CsvEncodingIso88599):
+	case string(CsvEncodingIso88599), "ISO-8859-9":
 		return CsvEncodingIso88599, nil
-	case string(CsvEncodingIso885915):
+	case string(CsvEncodingIso885915), "ISO-8859-15":
 		return CsvEncodingIso885915, nil
-	case string(CsvEncodingKoi8r):
+	case string(CsvEncodingKoi8r), "KOI8-R":
 		return CsvEncodingKoi8r, nil
-	case string(CsvEncodingShiftjis):
+	case string(CsvEncodingShiftjis), "SHIFT-JIS", "SHIFT_JIS":
 		return CsvEncodingShiftjis, nil
-	case string(CsvEncodingUtf8):
+	case string(CsvEncodingUtf8), "UTF-8":
 		return CsvEncodingUtf8, nil
-	case string(CsvEncodingUtf16):
+	case string(CsvEncodingUtf16), "UTF-16":
 		return CsvEncodingUtf16, nil
-	case string(CsvEncodingUtf16be):
+	case string(CsvEncodingUtf16be), "UTF-16BE":
 		return CsvEncodingUtf16be, nil
-	case string(CsvEncodingUtf16le):
+	case string(CsvEncodingUtf16le), "UTF-16LE":
 		return CsvEncodingUtf16le, nil
-	case string(CsvEncodingUtf32):
+	case string(CsvEncodingUtf32), "UTF-32":
 		return CsvEncodingUtf32, nil
-	case string(CsvEncodingUtf32be):
+	case string(CsvEncodingUtf32be), "UTF-32BE":
 		return CsvEncodingUtf32be, nil
-	case string(CsvEncodingUtf32le):
+	case string(CsvEncodingUtf32le), "UTF-32LE":
 		return CsvEncodingUtf32le, nil
-	case string(CsvEncodingWindows1250):
+	case string(CsvEncodingWindows1250), "WINDOWS-1250":
 		return CsvEncodingWindows1250, nil
-	case string(CsvEncodingWindows1251):
+	case string(CsvEncodingWindows1251), "WINDOWS-1251":
 		return CsvEncodingWindows1251, nil
-	case string(CsvEncodingWindows1252):
+	case string(CsvEncodingWindows1252), "WINDOWS-1252":
 		return CsvEncodingWindows1252, nil
-	case string(CsvEncodingWindows1253):
+	case string(CsvEncodingWindows1253), "WINDOWS-1253":
 		return CsvEncodingWindows1253, nil
-	case string(CsvEncodingWindows1254):
+	case string(CsvEncodingWindows1254), "WINDOWS-1254":
 		return CsvEncodingWindows1254, nil
-	case string(CsvEncodingWindows1255):
+	case string(CsvEncodingWindows1255), "WINDOWS-1255":
 		return CsvEncodingWindows1255, nil
-	case string(CsvEncodingWindows1256):
+	case string(CsvEncodingWindows1256), "WINDOWS-1256":
 		return CsvEncodingWindows1256, nil
 	default:
 		return "", fmt.Errorf("invalid csv encoding: %s", s)
