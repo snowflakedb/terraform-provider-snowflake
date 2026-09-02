@@ -264,6 +264,8 @@ func TestAcc_StorageIntegrationAzure_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_StorageIntegrationAzure_CompleteUseCase(t *testing.T) {
+	t.Skip("TODO(SNOW-3670350): Unskip once cloud resources are ready for GCP and Azure")
+
 	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
 	azureTenantId := testenvs.GetOrSkipTest(t, testenvs.AzureExternalTenantId)
 

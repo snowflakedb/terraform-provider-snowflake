@@ -19,6 +19,7 @@ type ContextFunctions interface {
 	CurrentRegion(ctx context.Context) (string, error)
 	CurrentSession(ctx context.Context) (string, error)
 	CurrentUser(ctx context.Context) (AccountObjectIdentifier, error)
+	CurrentHost(ctx context.Context) (string, error)
 	CurrentSessionDetails(ctx context.Context) (*CurrentSessionDetails, error)
 
 	// TODO(SNOW-1805152): Remove this and utilize gosnowflake.WithQueryIDChan instead whenever query id is needed
@@ -205,6 +206,21 @@ func (c *contextFunctions) CurrentUser(ctx context.Context) (AccountObjectIdenti
 		return NewAccountObjectIdentifier(""), err
 	}
 	return NewAccountObjectIdentifier(s.CurrentUser), nil
+}
+
+func (c *contextFunctions) CurrentHost(ctx context.Context) (string, error) {
+	s := &struct {
+		Host string `db:"HOST"`
+	}{}
+	err := c.client.queryOne(ctx, s, `
+SELECT VALUE:host::VARCHAR AS HOST
+FROM TABLE(FLATTEN(INPUT => PARSE_JSON(SYSTEM$ALLOWLIST())))
+WHERE VALUE:type::VARCHAR = 'SNOWFLAKE_DEPLOYMENT';
+`)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("https://%s", s.Host), nil
 }
 
 func (c *contextFunctions) CurrentSessionDetails(ctx context.Context) (*CurrentSessionDetails, error) {

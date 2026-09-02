@@ -25,6 +25,8 @@ import (
 
 // TODO(SNOW-2356128): Test use_privatelink_endpoint and notification integration
 func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
+	t.Skip("TODO(SNOW-3670350): Unskip once cloud resources are ready for GCP and Azure")
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
@@ -559,6 +561,8 @@ func TestAcc_ExternalAzureStage_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_ExternalAzureStage_CompleteUseCase(t *testing.T) {
+	t.Skip("TODO(SNOW-3670350): Unskip once cloud resources are ready for GCP and Azure")
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 

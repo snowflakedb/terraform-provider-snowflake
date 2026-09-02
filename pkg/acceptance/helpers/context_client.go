@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -129,7 +128,12 @@ func (c *ContextClient) IssuerURL(t *testing.T) string {
 // https://<locator>.snowflakecomputing.com (lowercase).
 func (c *ContextClient) AccountURL(t *testing.T) string {
 	t.Helper()
-	return fmt.Sprintf("https://%s.snowflakecomputing.com", strings.ToLower(c.CurrentAccount(t)))
+	ctx := context.Background()
+
+	host, err := c.client().CurrentHost(ctx)
+	require.NoError(t, err)
+
+	return host
 }
 
 func (c *ContextClient) LastQueryId(t *testing.T) string {

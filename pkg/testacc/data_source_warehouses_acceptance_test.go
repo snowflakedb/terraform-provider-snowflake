@@ -269,6 +269,8 @@ func TestAcc_Warehouses_CompleteUseCase_InteractiveWarehouse(t *testing.T) {
 	interactiveTable, interactiveTableCleanup := testClient().Table.CreateInteractiveTable(t)
 	t.Cleanup(interactiveTableCleanup)
 
+	statementTimeoutInSeconds := testClient().SnowflakeDefaults.InteractiveWarehouseStatementTimeoutInSeconds(t, 45)
+
 	interactiveWarehouseModel := model.WarehouseInteractiveWithId(id).
 		WithInitiallySuspended(true).
 		WithWarehouseSize(string(sdk.WarehouseSizeSmall)).
@@ -281,7 +283,7 @@ func TestAcc_Warehouses_CompleteUseCase_InteractiveWarehouse(t *testing.T) {
 		WithComment(comment).
 		WithMaxConcurrencyLevel(4).
 		WithStatementQueuedTimeoutInSeconds(30).
-		WithStatementTimeoutInSeconds(45).
+		WithStatementTimeoutInSeconds(statementTimeoutInSeconds).
 		WithTables(interactiveTable.ID().FullyQualifiedName())
 
 	warehousesModelWithoutOptionals := datasourcemodel.Warehouses("test").
@@ -356,7 +358,7 @@ func TestAcc_Warehouses_CompleteUseCase_InteractiveWarehouse(t *testing.T) {
 						HasMaxConcurrencyLevelLevel(sdk.ParameterTypeWarehouse).
 						HasStatementQueuedTimeoutInSeconds(30).
 						HasStatementQueuedTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
-						HasStatementTimeoutInSeconds(45).
+						HasStatementTimeoutInSeconds(statementTimeoutInSeconds).
 						HasStatementTimeoutInSecondsLevel(sdk.ParameterTypeWarehouse).
 						HasFallbackWarehouse(fallbackWarehouse.ID().Name()).
 						HasFallbackWarehouseLevel(sdk.ParameterTypeWarehouse),

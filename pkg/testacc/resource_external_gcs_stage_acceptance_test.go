@@ -25,6 +25,8 @@ import (
 
 // TODO(SNOW-2356128): Test notification integration
 func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
+	t.Skip("TODO(SNOW-3670350): Unskip once cloud resources are ready for GCP and Azure")
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	newId := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := random.Comment(), random.Comment()
@@ -449,6 +451,8 @@ func TestAcc_ExternalGcsStage_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_ExternalGcsStage_CompleteUseCase(t *testing.T) {
+	t.Skip("TODO(SNOW-3670350): Unskip once cloud resources are ready for GCP and Azure")
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
 
