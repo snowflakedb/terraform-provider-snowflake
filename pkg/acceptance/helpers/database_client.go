@@ -87,6 +87,32 @@ func (c *DatabaseClient) CreateDatabaseWithRequest(t *testing.T, request *sdk.Cr
 	return database, c.DropDatabaseFunc(t, id)
 }
 
+func (c *DatabaseClient) CreateCatalogLinkedDatabase(t *testing.T, catalogIntegrationId sdk.AccountObjectIdentifier, externalVolumeId sdk.AccountObjectIdentifier) (*sdk.Database, func()) {
+	t.Helper()
+	return c.CreateCatalogLinkedDatabaseWithRequest(t, sdk.NewCreateCatalogLinkedDatabaseRequest(c.ids.RandomAccountObjectIdentifier()).
+		WithLinkedCatalog(*sdk.NewLinkedCatalogRequest().WithCatalog(catalogIntegrationId)).
+		WithExternalVolume(externalVolumeId))
+}
+
+func (c *DatabaseClient) CreateCatalogLinkedDatabaseWithRequest(t *testing.T, request *sdk.CreateCatalogLinkedDatabaseRequest) (*sdk.Database, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	id := request.ID()
+	err := c.client().CreateCatalogLinked(ctx, request)
+	require.NoError(t, err)
+	cleanup := c.DropDatabaseFunc(t, id)
+
+	database, err := c.client().ShowByID(ctx, id)
+	if err != nil {
+		// Register the cleanup here so a failing ShowByID does not leak the database.
+		t.Cleanup(cleanup)
+	}
+	require.NoError(t, err)
+
+	return database, cleanup
+}
+
 func (c *DatabaseClient) DropDatabaseFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	return func() { require.NoError(t, c.DropDatabase(t, id)) }

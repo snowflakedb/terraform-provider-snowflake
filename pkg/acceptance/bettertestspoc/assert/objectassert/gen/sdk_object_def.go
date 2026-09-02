@@ -645,6 +645,19 @@ var allStructs = []SdkObjectDef{
 		IsDataSourceOutput: true,
 		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ExternalAccessIntegration", MethodName: "DescribeDetails"},
 	},
+	{
+		IdType:               "sdk.AccountObjectIdentifier",
+		ObjectStruct:         sdk.CatalogLinkedDatabaseConfig{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
+	},
+	{
+		IdType:               "sdk.AccountObjectIdentifier",
+		ObjectStruct:         sdk.CatalogLinkStatus{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
+		SkipFields:           []string{"FailureDetails"},
+	},
 }
 
 func GetSdkObjectDetails() []genhelpers.SdkObjectDetails {
