@@ -182,6 +182,55 @@ func (p typedEnumTestProvider[T]) RunTest(t *testing.T) {
 	t.Helper()
 }
 
+// Unit test harness stand-ins for pkg/sdk/0_sdk_unit_tests_test.go — that file is _test.go-only,
+// so its unexported sdkTestCtx/validationCase/sqlCase types aren't visible here. Run*Cases are
+// no-ops: this package only needs to prove generated *_gen_test.go type-checks, not that the
+// assertions are meaningful (no *_ext_test.go companions exist here to supply expected SQL/errors).
+type testCaseName string
+
+type validationCase[PT validatable] struct {
+	Name          testCaseName
+	ExpectedErr   error
+	DefaultModify func(PT)
+}
+
+type sqlCase[PT validatable] struct {
+	Name           testCaseName
+	NoModifyNeeded bool
+}
+
+type sdkTestCtx[PT validatable] struct{}
+
+func newSdkTestCtx[PT validatable](_, _ string) *sdkTestCtx[PT] {
+	return &sdkTestCtx[PT]{}
+}
+
+func (c *sdkTestCtx[PT]) withDefaultOpts(_ func() PT) *sdkTestCtx[PT] {
+	return c
+}
+
+func (c *sdkTestCtx[PT]) withValidationCases(_ ...validationCase[PT]) *sdkTestCtx[PT] {
+	return c
+}
+
+func (c *sdkTestCtx[PT]) withSqlCases(_ ...sqlCase[PT]) *sdkTestCtx[PT] {
+	return c
+}
+
+func (c *sdkTestCtx[PT]) RunValidationCases(t *testing.T) {
+	t.Helper()
+}
+
+func (c *sdkTestCtx[PT]) RunSqlCases(t *testing.T) {
+	t.Helper()
+}
+
+var (
+	emptyAccountObjectIdentifier  = AccountObjectIdentifier{}
+	emptySchemaObjectIdentifier   = SchemaObjectIdentifier{}
+	emptyDatabaseObjectIdentifier = DatabaseObjectIdentifier{}
+)
+
 func mapNullString(_ **string, _ sql.NullString)                                         {}
 func mapNullStringToNonNullableField(_ *string, _ sql.NullString)                        {}
 func mapNullStringWithMapping[T any](_ **T, _ sql.NullString, _ func(string) (T, error)) {}

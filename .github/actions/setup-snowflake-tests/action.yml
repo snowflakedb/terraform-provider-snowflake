@@ -1,0 +1,61 @@
+name: Setup Snowflake tests
+description: Shared setup for Snowflake-backed GitHub test workflows.
+
+outputs:
+  should-run:
+    description: Whether setup completed and tests should run.
+    value: ${{ steps.complete.outputs.should-run }}
+
+runs:
+  using: composite
+  steps:
+    - name: Print object suffix
+      shell: bash
+      run: |
+        echo "$TEST_SF_TF_TEST_OBJECT_SUFFIX"
+
+    - uses: actions/setup-go@v4
+      id: setup_go
+      with:
+        go-version-file: ./go.mod
+        cache: false
+
+    - name: Apply masking
+      if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+      shell: bash
+      run: |
+        while IFS= read -r line || [[ -n $line ]]; do
+          echo "::add-mask::$line"
+        done < <(printf '%s' "$SF_TF_GH_MASKING")
+
+    - name: Generate random secret
+      if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+      shell: bash
+      run: |
+        random=$(openssl rand -hex 15)
+        final_random="${TEST_SF_TF_RANDOM}${random}"
+        echo "::add-mask::${final_random}"
+        echo "TEST_SF_TF_GENERATED_RANDOM_VALUE=${final_random}" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+      shell: bash
+      run: make dev-setup
+
+    - name: Create and populate configuration files
+      if: ${{ !cancelled() && steps.setup_go.conclusion == 'success' }}
+      id: create_config
+      shell: bash
+      run: |
+        mkdir -p $HOME/.snowflake
+        cd $HOME/.snowflake
+        echo "$SNOWFLAKE_CONFIG_FILE" > ./config
+        echo "$SNOWFLAKE_CONFIG_FILE_LEGACY" > ./config_legacy
+        echo "$SNOWFLAKE_CONFIG_FILE_V097_COMPATIBLE_WITH_SERVICE_USER" > ./config_v097_compatible_with_service_user
+        chmod 0600 ./config ./config_legacy ./config_v097_compatible_with_service_user
+
+    - name: Mark setup complete
+      id: complete
+      if: ${{ !cancelled() && steps.create_config.conclusion == 'success' }}
+      shell: bash
+      run: echo "should-run=true" >> "$GITHUB_OUTPUT"

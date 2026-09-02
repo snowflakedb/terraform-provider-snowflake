@@ -101,7 +101,12 @@ There are example files ready for generation, e.g. [database_role_def.go](exampl
 - [database_role_validations_gen.go](example/database_roles_validations_gen.go) - options structs validations
 - [database_role_impl_gen.go](example/database_roles_impl_gen.go) - SDK interface implementation
 
-`unit_tests` is excluded by default for this example generator (baked into [example/generate.go](example/generate.go)): the generated file targets the `pkg/sdk` unit-test harness (`0_sdk_unit_tests_test.go`), which this package doesn't mirror.
+`unit_tests` is generated for this example generator too. The real `pkg/sdk` unit-test harness
+(`0_sdk_unit_tests_test.go`) lives in `_test.go` files invisible outside `pkg/sdk`, so
+[sdk_definitions.go](example/sdk_definitions.go) mirrors the small subset of it
+(`sdkTestCtx`/`validationCase`/`sqlCase`/`testCaseName`) that generated code actually references,
+as no-ops — this package only needs to prove the generated `*_gen_test.go` compiles, not that the
+assertions are meaningful, so no `*_ext_test.go` companions are needed here.
 
 Additional example definitions covering specific generator features:
 - [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`

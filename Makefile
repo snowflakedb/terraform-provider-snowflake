@@ -187,7 +187,7 @@ generate-sdk-examples: ## Generate all SDK generation examples
 	go generate ./pkg/sdk/generator/example/generate.go
 
 generate-sdk-examples-check: generate-sdk-examples ## Check that SDK example files are up-to-date
-	$(call GIT_DIFF_CHECK,pkg/sdk/generator/example/*_gen.go)
+	$(call GIT_DIFF_CHECK,pkg/sdk/generator/example/*_gen.go pkg/sdk/generator/example/*_gen_test.go)
 
 clean-generated-sdk-examples: ## Clean all generated SDK generation examples
 	rm -f ./pkg/sdk/generator/example/*_gen.go
