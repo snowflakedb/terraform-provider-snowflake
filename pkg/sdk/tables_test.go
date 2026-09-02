@@ -483,7 +483,7 @@ func TestTableCreate(t *testing.T) {
 			Tags:                       tableTags,
 			Comment:                    &tableComment,
 		}
-		assertOptsValidAndSQLEquals(
+		assertOptsValidAndSqlEqualsf(
 			t, opts,
 			`CREATE TABLE %s (%s %s CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING (FOO, BAR) TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY (COLUMN_1, COLUMN_2) REFERENCES %s (COLUMN_3, COLUMN_4) MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE (COLUMN_1) ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV COMPRESSION = AUTO) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
 			id.FullyQualifiedName(),
@@ -507,7 +507,7 @@ func TestTableCreate(t *testing.T) {
 		}
 		request := NewCreateTableRequest(id, columns).
 			WithStageCopyOptions(*NewLegacyTableCopyOptionsRequest().WithOnError(*NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFileX(5)))
-		assertOptsValidAndSQLEquals(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE_5)`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE_5)`, id.FullyQualifiedName())
 	})
 
 	t.Run("with skip file x %", func(t *testing.T) {
@@ -516,7 +516,7 @@ func TestTableCreate(t *testing.T) {
 		}
 		request := NewCreateTableRequest(id, columns).
 			WithStageCopyOptions(*NewLegacyTableCopyOptionsRequest().WithOnError(*NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFileXPercent(10)))
-		assertOptsValidAndSQLEquals(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = 'SKIP_FILE_10%%')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, request.toOpts(), `CREATE TABLE %s (FIRST_COLUMN VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = 'SKIP_FILE_10%%')`, id.FullyQualifiedName())
 	})
 }
 
@@ -582,7 +582,7 @@ func TestTableCreateAsSelect(t *testing.T) {
 			RowAccessPolicy: &rowAccessPolicy,
 			Query:           "SELECT * FROM ANOTHER_TABLE",
 		}
-		assertOptsValidAndSQLEquals(
+		assertOptsValidAndSqlEqualsf(
 			t, opts, "CREATE OR REPLACE TABLE %s (FIRST_COLUMN VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE",
 			id.FullyQualifiedName(),
 			maskingPolicy.Name.FullyQualifiedName(),
@@ -619,7 +619,7 @@ func TestTableCreateUsingTemplate(t *testing.T) {
 			CopyGrants: Bool(true),
 			Query:      []string{"sample_data"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TABLE %s COPY GRANTS USING TEMPLATE (sample_data)", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "CREATE OR REPLACE TABLE %s COPY GRANTS USING TEMPLATE (sample_data)", id.FullyQualifiedName())
 	})
 }
 
@@ -665,7 +665,7 @@ func TestTableCreateLike(t *testing.T) {
 			ClusterBy:   []string{"date", "id"},
 			CopyGrants:  Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TABLE %s LIKE %s CLUSTER BY (date, id) COPY GRANTS", id.FullyQualifiedName(), sourceTable.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "CREATE OR REPLACE TABLE %s LIKE %s CLUSTER BY (date, id) COPY GRANTS", id.FullyQualifiedName(), sourceTable.FullyQualifiedName())
 	})
 }
 
@@ -717,7 +717,7 @@ func TestTableCreateClone(t *testing.T) {
 			ClonePoint:  &clonePoint,
 			CopyGrants:  Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "CREATE OR REPLACE TABLE %s CLONE %s AT (OFFSET => 0) COPY GRANTS", id.FullyQualifiedName(), sourceTable.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "CREATE OR REPLACE TABLE %s CLONE %s AT (OFFSET => 0) COPY GRANTS", id.FullyQualifiedName(), sourceTable.FullyQualifiedName())
 	})
 }
 
@@ -934,7 +934,7 @@ func TestTableAlter(t *testing.T) {
 			name:    id,
 			NewName: &newID,
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s RENAME TO %s", id.FullyQualifiedName(), newID.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s RENAME TO %s", id.FullyQualifiedName(), newID.FullyQualifiedName())
 	})
 
 	t.Run("swap with", func(t *testing.T) {
@@ -943,7 +943,7 @@ func TestTableAlter(t *testing.T) {
 			name:     id,
 			SwapWith: &targetTableId,
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s SWAP WITH %s", id.FullyQualifiedName(), targetTableId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s SWAP WITH %s", id.FullyQualifiedName(), targetTableId.FullyQualifiedName())
 	})
 
 	t.Run("cluster by", func(t *testing.T) {
@@ -954,7 +954,7 @@ func TestTableAlter(t *testing.T) {
 				ClusterBy: clusterByColumns,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s CLUSTER BY (date, id)", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s CLUSTER BY (date, id)", id.FullyQualifiedName())
 	})
 
 	t.Run("recluster", func(t *testing.T) {
@@ -968,7 +968,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s RECLUSTER MAX_SIZE = 1024 WHERE name = 'John'", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s RECLUSTER MAX_SIZE = 1024 WHERE name = 'John'", id.FullyQualifiedName())
 	})
 
 	t.Run("suspend recluster", func(t *testing.T) {
@@ -980,7 +980,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s SUSPEND RECLUSTER", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s SUSPEND RECLUSTER", id.FullyQualifiedName())
 	})
 
 	t.Run("drop clustering key", func(t *testing.T) {
@@ -990,7 +990,7 @@ func TestTableAlter(t *testing.T) {
 				DropClusteringKey: Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s DROP CLUSTERING KEY", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s DROP CLUSTERING KEY", id.FullyQualifiedName())
 	})
 
 	t.Run("add new column", func(t *testing.T) {
@@ -1012,7 +1012,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ADD COLUMN IF NOT EXISTS NEXT_COLUMN VARCHAR COLLATE 'utf8' IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ADD COLUMN IF NOT EXISTS NEXT_COLUMN VARCHAR COLLATE 'utf8' IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
 	})
 
 	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
@@ -1025,7 +1025,7 @@ func TestTableAlter(t *testing.T) {
 					WithDefaultValue(NewColumnDefaultValueRequest().WithExpression(String("FALSE"))),
 			),
 		)
-		assertOptsValidAndSQLEquals(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEW_BOOLEAN_COLUMN BOOLEAN DEFAULT FALSE", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEW_BOOLEAN_COLUMN BOOLEAN DEFAULT FALSE", id.FullyQualifiedName())
 	})
 
 	t.Run("add new column with identity default through request", func(t *testing.T) {
@@ -1035,7 +1035,7 @@ func TestTableAlter(t *testing.T) {
 					WithDefaultValue(NewColumnDefaultValueRequest().WithIdentity(NewColumnIdentityRequest(10, 1))),
 			),
 		)
-		assertOptsValidAndSQLEquals(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEXT_COLUMN VARCHAR IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, req.toOpts(), "ALTER TABLE %s ADD COLUMN NEXT_COLUMN VARCHAR IDENTITY START 10 INCREMENT 1", id.FullyQualifiedName())
 	})
 
 	t.Run("rename column", func(t *testing.T) {
@@ -1050,7 +1050,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s RENAME COLUMN OLD_NAME TO NEW_NAME", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s RENAME COLUMN OLD_NAME TO NEW_NAME", id.FullyQualifiedName())
 	})
 
 	t.Run("alter column", func(t *testing.T) {
@@ -1103,7 +1103,7 @@ func TestTableAlter(t *testing.T) {
 				Alter: actions,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ALTER COLUMN COLUMN_1 DROP DEFAULT, COLUMN COLUMN_1 SET DEFAULT SEQUENCE_1.NEXTVAL, COLUMN COLUMN_1 UNSET COMMENT, COLUMN COLUMN_2 DROP DEFAULT, COLUMN COLUMN_2 SET DEFAULT SEQUENCE_2.NEXTVAL, COLUMN COLUMN_2 COMMENT 'comment', COLUMN COLUMN_2 SET DATA TYPE VARCHAR COLLATE 'utf8', COLUMN COLUMN_2 DROP NOT NULL", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ALTER COLUMN COLUMN_1 DROP DEFAULT, COLUMN COLUMN_1 SET DEFAULT SEQUENCE_1.NEXTVAL, COLUMN COLUMN_1 UNSET COMMENT, COLUMN COLUMN_2 DROP DEFAULT, COLUMN COLUMN_2 SET DEFAULT SEQUENCE_2.NEXTVAL, COLUMN COLUMN_2 COMMENT 'comment', COLUMN COLUMN_2 SET DATA TYPE VARCHAR COLLATE 'utf8', COLUMN COLUMN_2 DROP NOT NULL", id.FullyQualifiedName())
 	})
 
 	t.Run("alter: set masking policy", func(t *testing.T) {
@@ -1119,7 +1119,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ALTER COLUMN COLUMN_1 SET MASKING POLICY %s USING (FOO, BAR) FORCE", id.FullyQualifiedName(), maskingPolicyName.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ALTER COLUMN COLUMN_1 SET MASKING POLICY %s USING (FOO, BAR) FORCE", id.FullyQualifiedName(), maskingPolicyName.FullyQualifiedName())
 	})
 
 	t.Run("alter: unset masking policy", func(t *testing.T) {
@@ -1131,7 +1131,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ALTER COLUMN COLUMN_1 UNSET MASKING POLICY", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ALTER COLUMN COLUMN_1 UNSET MASKING POLICY", id.FullyQualifiedName())
 	})
 
 	t.Run("alter: set tags", func(t *testing.T) {
@@ -1156,7 +1156,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN COLUMN_1 SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s ALTER COLUMN COLUMN_1 SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 
 	t.Run("alter: unset tags", func(t *testing.T) {
@@ -1175,7 +1175,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ALTER COLUMN COLUMN_1 UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s ALTER COLUMN COLUMN_1 UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 
 	t.Run("alter: drop columns", func(t *testing.T) {
@@ -1189,7 +1189,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s DROP COLUMN IF EXISTS COLUMN_1, COLUMN_2", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s DROP COLUMN IF EXISTS COLUMN_1, COLUMN_2", id.FullyQualifiedName())
 	})
 
 	t.Run("validation: alter constraint: no option", func(t *testing.T) {
@@ -1252,7 +1252,7 @@ func TestTableAlter(t *testing.T) {
 				Add: &outOfLineConstraint,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ADD CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY (COLUMN_1, COLUMN_2) REFERENCES %s (COLUMN_3, COLUMN_4) MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT", id.FullyQualifiedName(), outOfLineConstraint.ForeignKey.TableName.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ADD CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY (COLUMN_1, COLUMN_2) REFERENCES %s (COLUMN_3, COLUMN_4) MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT", id.FullyQualifiedName(), outOfLineConstraint.ForeignKey.TableName.FullyQualifiedName())
 	})
 
 	t.Run("alter constraint: rename", func(t *testing.T) {
@@ -1265,7 +1265,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s RENAME CONSTRAINT OLD_NAME_CONSTRAINT TO NEW_NAME_CONSTRAINT", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s RENAME CONSTRAINT OLD_NAME_CONSTRAINT TO NEW_NAME_CONSTRAINT", id.FullyQualifiedName())
 	})
 
 	t.Run("alter constraint: alter", func(t *testing.T) {
@@ -1281,7 +1281,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ALTER CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) NOT ENFORCED VALIDATE RELY", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ALTER CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) NOT ENFORCED VALIDATE RELY", id.FullyQualifiedName())
 	})
 
 	t.Run("alter constraint: drop", func(t *testing.T) {
@@ -1295,7 +1295,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s DROP CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) CASCADE", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s DROP CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) CASCADE", id.FullyQualifiedName())
 	})
 
 	t.Run("external table: add", func(t *testing.T) {
@@ -1310,7 +1310,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ADD COLUMN IF NOT EXISTS COLUMN_1 BOOLEAN AS (SELECT 1)", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ADD COLUMN IF NOT EXISTS COLUMN_1 BOOLEAN AS (SELECT 1)", id.FullyQualifiedName())
 	})
 
 	t.Run("external table: rename", func(t *testing.T) {
@@ -1323,7 +1323,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s RENAME COLUMN OLD_NAME_COLUMN TO NEW_NAME_COLUMN", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s RENAME COLUMN OLD_NAME_COLUMN TO NEW_NAME_COLUMN", id.FullyQualifiedName())
 	})
 
 	t.Run("external table: drop", func(t *testing.T) {
@@ -1336,7 +1336,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s DROP COLUMN IF EXISTS COLUMN_3, COLUMN_4", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s DROP COLUMN IF EXISTS COLUMN_3, COLUMN_4", id.FullyQualifiedName())
 	})
 
 	t.Run("add search optimization", func(t *testing.T) {
@@ -1348,7 +1348,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s ADD SEARCH OPTIMIZATION ON SUBSTRING(*), GEO(*)", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s ADD SEARCH OPTIMIZATION ON SUBSTRING(*), GEO(*)", id.FullyQualifiedName())
 	})
 
 	t.Run("drop search optimization", func(t *testing.T) {
@@ -1360,7 +1360,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s DROP SEARCH OPTIMIZATION ON SUBSTRING(*), FOO", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s DROP SEARCH OPTIMIZATION ON SUBSTRING(*), FOO", id.FullyQualifiedName())
 	})
 
 	t.Run("drop search optimization", func(t *testing.T) {
@@ -1372,7 +1372,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER TABLE %s DROP SEARCH OPTIMIZATION ON SUBSTRING(*), FOO", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER TABLE %s DROP SEARCH OPTIMIZATION ON SUBSTRING(*), FOO", id.FullyQualifiedName())
 	})
 
 	t.Run("set: with complete options", func(t *testing.T) {
@@ -1394,7 +1394,7 @@ func TestTableAlter(t *testing.T) {
 				Comment:                    &comment,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`, id.FullyQualifiedName(), comment)
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`, id.FullyQualifiedName(), comment)
 	})
 
 	t.Run("set tags", func(t *testing.T) {
@@ -1413,7 +1413,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s SET TAG %s = 'v1', %s = 'v2'`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 
 	t.Run("unset tags", func(t *testing.T) {
@@ -1426,7 +1426,7 @@ func TestTableAlter(t *testing.T) {
 				tagId2,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s UNSET TAG %s, %s`, id.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 	})
 
 	t.Run("unset: complete options", func(t *testing.T) {
@@ -1441,7 +1441,7 @@ func TestTableAlter(t *testing.T) {
 				Comment:                    Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS CHANGE_TRACKING DEFAULT_DDL_COLLATION ENABLE_SCHEMA_EVOLUTION COMMENT`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS CHANGE_TRACKING DEFAULT_DDL_COLLATION ENABLE_SCHEMA_EVOLUTION COMMENT`, id.FullyQualifiedName())
 	})
 
 	t.Run("add row access policy", func(t *testing.T) {
@@ -1454,7 +1454,7 @@ func TestTableAlter(t *testing.T) {
 				On:              []string{"FIRST_COLUMN"},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("drop row access policy", func(t *testing.T) {
@@ -1466,7 +1466,7 @@ func TestTableAlter(t *testing.T) {
 				RowAccessPolicy: rowAccessPolicyId,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP ROW ACCESS POLICY %s`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s DROP ROW ACCESS POLICY %s`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("drop and add row access policy", func(t *testing.T) {
@@ -1485,7 +1485,7 @@ func TestTableAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`, id.FullyQualifiedName(), rowAccessPolicyId1.FullyQualifiedName(), rowAccessPolicyId2.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`, id.FullyQualifiedName(), rowAccessPolicyId1.FullyQualifiedName(), rowAccessPolicyId2.FullyQualifiedName())
 	})
 
 	t.Run("drop all row access policies", func(t *testing.T) {
@@ -1493,7 +1493,7 @@ func TestTableAlter(t *testing.T) {
 			name:                     id,
 			DropAllAccessRowPolicies: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s DROP ALL ROW ACCESS POLICIES`, id.FullyQualifiedName())
 	})
 
 	t.Run("add storage lifecycle policy", func(t *testing.T) {
@@ -1506,7 +1506,7 @@ func TestTableAlter(t *testing.T) {
 				On:                     []Column{{Value: "FIRST_COLUMN"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
 	})
 
 	t.Run("add storage lifecycle policy with multiple columns", func(t *testing.T) {
@@ -1519,7 +1519,7 @@ func TestTableAlter(t *testing.T) {
 				On:                     []Column{{Value: "FIRST_COLUMN"}, {Value: "SECOND_COLUMN"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN", "SECOND_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s ADD STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN", "SECOND_COLUMN")`, id.FullyQualifiedName(), storageLifecyclePolicyId.FullyQualifiedName())
 	})
 
 	t.Run("drop storage lifecycle policy", func(t *testing.T) {
@@ -1527,7 +1527,7 @@ func TestTableAlter(t *testing.T) {
 			name:                       id,
 			DropStorageLifecyclePolicy: new(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s DROP STORAGE LIFECYCLE POLICY`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s DROP STORAGE LIFECYCLE POLICY`, id.FullyQualifiedName())
 	})
 }
 
@@ -1553,13 +1553,13 @@ func TestTableDrop(t *testing.T) {
 
 	t.Run("empty options", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE %s`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DROP TABLE %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("with if exists", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.IfExists = Bool(true)
-		assertOptsValidAndSQLEquals(t, opts, `DROP TABLE IF EXISTS %s`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DROP TABLE IF EXISTS %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: both cascade and restrict present", func(t *testing.T) {
@@ -1590,7 +1590,7 @@ func TestTableShow(t *testing.T) {
 
 	t.Run("show", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TABLES`)
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW TABLES`)
 	})
 
 	t.Run("show with like", func(t *testing.T) {
@@ -1598,7 +1598,7 @@ func TestTableShow(t *testing.T) {
 		opts.Like = &Like{
 			Pattern: String(id.Name()),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TABLES LIKE '%s'`, id.Name())
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW TABLES LIKE '%s'`, id.Name())
 	})
 }
 
@@ -1623,7 +1623,7 @@ func TestTableDescribeColumns(t *testing.T) {
 
 	t.Run("describe", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE TABLE %s TYPE = COLUMNS`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DESCRIBE TABLE %s TYPE = COLUMNS`, id.FullyQualifiedName())
 	})
 }
 
@@ -1700,7 +1700,7 @@ func TestTableDescribeStage(t *testing.T) {
 
 	t.Run("describe", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE TABLE %s TYPE = STAGE`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DESCRIBE TABLE %s TYPE = STAGE`, id.FullyQualifiedName())
 	})
 }
 

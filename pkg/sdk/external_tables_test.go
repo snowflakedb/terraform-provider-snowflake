@@ -33,7 +33,7 @@ func TestExternalTablesCreate(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
 	})
 
 	t.Run("every optional field", func(t *testing.T) {
@@ -80,7 +80,7 @@ func TestExternalTablesCreate(t *testing.T) {
 			},
 			Comment: String("some_comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON) AWS_SNS_TOPIC = 'aws_sns_topic' COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON) AWS_SNS_TOPIC = 'aws_sns_topic' COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -116,7 +116,7 @@ func TestExternalTablesCreate(t *testing.T) {
 			Location:      "@s1/logs/",
 			RawFileFormat: &RawFileFormat{Format: "TYPE = JSON"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: neither raw file format is set, nor file format", func(t *testing.T) {
@@ -186,7 +186,7 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 			},
 			Comment: String("some_comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON) COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' LOCATION = @s1/logs/ PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON) COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -222,7 +222,7 @@ func TestExternalTablesCreateWithManualPartitioning(t *testing.T) {
 			Location:      "@s1/logs/",
 			RawFileFormat: &RawFileFormat{Format: "TYPE = JSON"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) LOCATION = @s1/logs/ PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) LOCATION = @s1/logs/ PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: neither raw file format is set, nor file format", func(t *testing.T) {
@@ -289,7 +289,7 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 			},
 			Comment: String("some_comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar)) INTEGRATION = '123' PARTITION BY (column) LOCATION = @s1/logs/ FILE_FORMAT = (FORMAT_NAME = 'JSON') TABLE_FORMAT = DELTA COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s (column varchar AS (value::column::varchar)) INTEGRATION = '123' PARTITION BY (column) LOCATION = @s1/logs/ FILE_FORMAT = (FORMAT_NAME = 'JSON') TABLE_FORMAT = DELTA COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -325,7 +325,7 @@ func TestExternalTablesCreateDeltaLake(t *testing.T) {
 			Location:      "@s1/logs/",
 			RawFileFormat: &RawFileFormat{Format: "TYPE = JSON"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON) TABLE_FORMAT = DELTA`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE EXTERNAL TABLE %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON) TABLE_FORMAT = DELTA`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: neither raw file format is set, nor file format", func(t *testing.T) {
@@ -385,7 +385,7 @@ func TestExternalTableUsingTemplateOpts(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s COPY GRANTS USING TEMPLATE (query statement) INTEGRATION = '123' PARTITION BY (column) LOCATION = @s1/logs/ FILE_FORMAT = (FORMAT_NAME = 'JSON') COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE EXTERNAL TABLE %s COPY GRANTS USING TEMPLATE (query statement) INTEGRATION = '123' PARTITION BY (column) LOCATION = @s1/logs/ FILE_FORMAT = (FORMAT_NAME = 'JSON') COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG ("tag1" = 'value1', "tag2" = 'value2')`, id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -410,7 +410,7 @@ func TestExternalTableUsingTemplateOpts(t *testing.T) {
 			},
 			RawFileFormat: &RawFileFormat{Format: "TYPE = JSON"},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE EXTERNAL TABLE %s USING TEMPLATE (query statement) LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE EXTERNAL TABLE %s USING TEMPLATE (query statement) LOCATION = @s1/logs/ FILE_FORMAT = (TYPE = JSON)`, id.FullyQualifiedName())
 	})
 
 	t.Run("validation: neither raw file format is set, nor file format", func(t *testing.T) {
@@ -434,7 +434,7 @@ func TestExternalTablesAlter(t *testing.T) {
 			name:     id,
 			Refresh:  &RefreshExternalTable{},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s REFRESH ''`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s REFRESH ''`, id.FullyQualifiedName())
 	})
 
 	t.Run("refresh with path", func(t *testing.T) {
@@ -445,7 +445,7 @@ func TestExternalTablesAlter(t *testing.T) {
 				Path: "some/path",
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s REFRESH 'some/path'`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s REFRESH 'some/path'`, id.FullyQualifiedName())
 	})
 
 	t.Run("add files", func(t *testing.T) {
@@ -456,7 +456,7 @@ func TestExternalTablesAlter(t *testing.T) {
 				{Name: "second/file.txt"},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE %s ADD FILES ('one/file.txt', 'second/file.txt')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE %s ADD FILES ('one/file.txt', 'second/file.txt')`, id.FullyQualifiedName())
 	})
 
 	t.Run("remove files", func(t *testing.T) {
@@ -467,7 +467,7 @@ func TestExternalTablesAlter(t *testing.T) {
 				{Name: "second/file.txt"},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE %s REMOVE FILES ('one/file.txt', 'second/file.txt')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE %s REMOVE FILES ('one/file.txt', 'second/file.txt')`, id.FullyQualifiedName())
 	})
 
 	t.Run("set auto refresh", func(t *testing.T) {
@@ -475,7 +475,7 @@ func TestExternalTablesAlter(t *testing.T) {
 			name:        id,
 			AutoRefresh: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE %s SET AUTO_REFRESH = true`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE %s SET AUTO_REFRESH = true`, id.FullyQualifiedName())
 	})
 
 	t.Run("set tag", func(t *testing.T) {
@@ -492,7 +492,7 @@ func TestExternalTablesAlter(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE %s SET TAG "tag1" = 'tag_value1', "tag2" = 'tag_value2'`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE %s SET TAG "tag1" = 'tag_value1', "tag2" = 'tag_value2'`, id.FullyQualifiedName())
 	})
 
 	t.Run("unset tag", func(t *testing.T) {
@@ -503,7 +503,7 @@ func TestExternalTablesAlter(t *testing.T) {
 				NewAccountObjectIdentifier("tag2"),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE %s UNSET TAG "tag1", "tag2"`, id.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -539,7 +539,7 @@ func TestExternalTablesAlterPartitions(t *testing.T) {
 			},
 			Location: "123",
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s ADD PARTITION (one = 'one_value', two = 'two_value') LOCATION '123'`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s ADD PARTITION (one = 'one_value', two = 'two_value') LOCATION '123'`, id.FullyQualifiedName())
 	})
 
 	t.Run("remove partition", func(t *testing.T) {
@@ -549,7 +549,7 @@ func TestExternalTablesAlterPartitions(t *testing.T) {
 			DropPartition: Bool(true),
 			Location:      "partition_location",
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s DROP PARTITION LOCATION 'partition_location'`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER EXTERNAL TABLE IF EXISTS %s DROP PARTITION LOCATION 'partition_location'`, id.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -577,7 +577,7 @@ func TestExternalTablesDrop(t *testing.T) {
 				Restrict: Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `DROP EXTERNAL TABLE IF EXISTS %s RESTRICT`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DROP EXTERNAL TABLE IF EXISTS %s RESTRICT`, id.FullyQualifiedName())
 	})
 
 	t.Run("cascade", func(t *testing.T) {
@@ -588,7 +588,7 @@ func TestExternalTablesDrop(t *testing.T) {
 				Cascade: Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `DROP EXTERNAL TABLE IF EXISTS %s CASCADE`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DROP EXTERNAL TABLE IF EXISTS %s CASCADE`, id.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -624,7 +624,7 @@ func TestExternalTablesShow(t *testing.T) {
 				From: String("some_string"),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE EXTERNAL TABLES LIKE 'some_pattern' IN ACCOUNT STARTS WITH 'some_external_table' LIMIT 123 FROM 'some_string'`)
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW TERSE EXTERNAL TABLES LIKE 'some_pattern' IN ACCOUNT STARTS WITH 'some_external_table' LIMIT 123 FROM 'some_string'`)
 	})
 
 	t.Run("in database", func(t *testing.T) {
@@ -634,7 +634,7 @@ func TestExternalTablesShow(t *testing.T) {
 				Database: NewAccountObjectIdentifier("database_name"),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE EXTERNAL TABLES IN DATABASE "database_name"`)
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW TERSE EXTERNAL TABLES IN DATABASE "database_name"`)
 	})
 
 	t.Run("in schema", func(t *testing.T) {
@@ -645,7 +645,7 @@ func TestExternalTablesShow(t *testing.T) {
 				Schema: id,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW TERSE EXTERNAL TABLES IN SCHEMA %s`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW TERSE EXTERNAL TABLES IN SCHEMA %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("invalid options", func(t *testing.T) {
@@ -672,13 +672,13 @@ func TestExternalTablesDescribe(t *testing.T) {
 		opts := &describeExternalTableColumnsOptions{
 			name: id,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE EXTERNAL TABLE %s TYPE = COLUMNS`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DESCRIBE EXTERNAL TABLE %s TYPE = COLUMNS`, id.FullyQualifiedName())
 	})
 
 	t.Run("type stage", func(t *testing.T) {
 		opts := &describeExternalTableStageOptions{
 			name: id,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE EXTERNAL TABLE %s TYPE = STAGE`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DESCRIBE EXTERNAL TABLE %s TYPE = STAGE`, id.FullyQualifiedName())
 	})
 }

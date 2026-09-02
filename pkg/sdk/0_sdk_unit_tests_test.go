@@ -261,9 +261,7 @@ func (c *sdkTestCtx[PT]) RunSqlCases(t *testing.T) {
 					tc.Name, c.extFile(), c.ctxPath(), c.constFor(tc.Name), c.optsTypeName(),
 				)
 			}
-			// "%s" rather than sql-as-format so a literal % in the SQL is not interpreted.
-			// TODO [SNOW-3882943]: with the current approach, the assertOptsValidAndSQLEquals should have a formatted but also explicit formats - address after all the tests are migrated
-			assertOptsValidAndSQLEquals(t, opts, "%s", sql)
+			assertOptsValidAndSqlEquals(t, opts, sql)
 		})
 	}
 }

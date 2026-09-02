@@ -12,7 +12,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			name: id,
 			Type: FileFormatTypeCsv,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = CSV`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE FILE FORMAT %s TYPE = CSV`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete CSV", func(t *testing.T) {
@@ -49,7 +49,7 @@ func TestFileFormatsCreate(t *testing.T) {
 				CSVEncoding:                   Pointer(CsvEncodingIso2022kr),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = CSV COMPRESSION = BZ2 RECORD_DELIMITER = '-' FIELD_DELIMITER = ':' FILE_EXTENSION = 'csv' SKIP_HEADER = 5 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH:mm:SS' TIMESTAMP_FORMAT = 'time' BINARY_FORMAT = UTF8 ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '§' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('nul', 'nulll') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = 'ISO2022KR'`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = CSV COMPRESSION = BZ2 RECORD_DELIMITER = '-' FIELD_DELIMITER = ':' FILE_EXTENSION = 'csv' SKIP_HEADER = 5 SKIP_BLANK_LINES = true DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH:mm:SS' TIMESTAMP_FORMAT = 'time' BINARY_FORMAT = UTF8 ESCAPE = '\\' ESCAPE_UNENCLOSED_FIELD = '§' TRIM_SPACE = true FIELD_OPTIONALLY_ENCLOSED_BY = '\"' NULL_IF = ('nul', 'nulll') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = true EMPTY_FIELD_AS_NULL = true SKIP_BYTE_ORDER_MARK = true ENCODING = 'ISO2022KR'`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete JSON", func(t *testing.T) {
@@ -80,7 +80,7 @@ func TestFileFormatsCreate(t *testing.T) {
 				JSONSkipByteOrderMark:        Bool(true),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = JSON COMPRESSION = BROTLI DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH:mm:SS' TIMESTAMP_FORMAT = 'aze' BINARY_FORMAT = HEX TRIM_SPACE = true NULL_IF = ('c1', 'c2') FILE_EXTENSION = 'json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = true`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = JSON COMPRESSION = BROTLI DATE_FORMAT = 'YYYY-MM-DD' TIME_FORMAT = 'HH:mm:SS' TIMESTAMP_FORMAT = 'aze' BINARY_FORMAT = HEX TRIM_SPACE = true NULL_IF = ('c1', 'c2') FILE_EXTENSION = 'json' ENABLE_OCTAL = true ALLOW_DUPLICATE = true STRIP_OUTER_ARRAY = true STRIP_NULL_VALUES = true REPLACE_INVALID_CHARACTERS = true SKIP_BYTE_ORDER_MARK = true`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete Avro", func(t *testing.T) {
@@ -98,7 +98,7 @@ func TestFileFormatsCreate(t *testing.T) {
 				AvroNullIf:                   &[]NullString{{"nul"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = AVRO COMPRESSION = DEFLATE TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nul')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = AVRO COMPRESSION = DEFLATE TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nul')`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete ORC", func(t *testing.T) {
@@ -115,7 +115,7 @@ func TestFileFormatsCreate(t *testing.T) {
 				ORCNullIf:                   &[]NullString{{"nul"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nul')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = ORC TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nul')`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete Parquet", func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestFileFormatsCreate(t *testing.T) {
 				ParquetNullIf:                   &[]NullString{{"nil"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = PARQUET COMPRESSION = LZO BINARY_AS_TEXT = true TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = PARQUET COMPRESSION = LZO BINARY_AS_TEXT = true TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
 	})
 
 	t.Run("complete XML", func(t *testing.T) {
@@ -155,7 +155,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			},
 			Comment: String("test file format"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = XML COMPRESSION = ZSTD IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'test file format'`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE OR REPLACE TEMPORARY FILE FORMAT IF NOT EXISTS %s TYPE = XML COMPRESSION = ZSTD IGNORE_UTF8_ERRORS = true PRESERVE_SPACE = true STRIP_OUTER_ELEMENT = true DISABLE_SNOWFLAKE_DATA = true DISABLE_AUTO_CONVERT = true SKIP_BYTE_ORDER_MARK = true COMMENT = 'test file format'`, id.FullyQualifiedName())
 	})
 
 	t.Run("previous test", func(t *testing.T) {
@@ -173,7 +173,7 @@ func TestFileFormatsCreate(t *testing.T) {
 			},
 			Comment: String("great comment"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `CREATE FILE FORMAT %s TYPE = CSV SKIP_BLANK_LINES = false TRIM_SPACE = false NULL_IF = ('NULL') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = false EMPTY_FIELD_AS_NULL = false SKIP_BYTE_ORDER_MARK = false COMMENT = 'great comment'`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `CREATE FILE FORMAT %s TYPE = CSV SKIP_BLANK_LINES = false TRIM_SPACE = false NULL_IF = ('NULL') ERROR_ON_COLUMN_COUNT_MISMATCH = true REPLACE_INVALID_CHARACTERS = false EMPTY_FIELD_AS_NULL = false SKIP_BYTE_ORDER_MARK = false COMMENT = 'great comment'`, id.FullyQualifiedName())
 	})
 }
 
@@ -189,7 +189,7 @@ func TestFileFormatsAlter(t *testing.T) {
 				NewName: newId,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), newId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER FILE FORMAT IF EXISTS %s RENAME TO %s`, id.FullyQualifiedName(), newId.FullyQualifiedName())
 	})
 
 	t.Run("set", func(t *testing.T) {
@@ -203,7 +203,7 @@ func TestFileFormatsAlter(t *testing.T) {
 				AvroNullIf:                   &[]NullString{{"nil"}},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = BROTLI TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMPRESSION = BROTLI TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
 	})
 
 	t.Run("set comment", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestFileFormatsAlter(t *testing.T) {
 				Comment:                      String("some comment"),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMMENT = 'some comment' COMPRESSION = BROTLI TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER FILE FORMAT IF EXISTS %s SET COMMENT = 'some comment' COMPRESSION = BROTLI TRIM_SPACE = true REPLACE_INVALID_CHARACTERS = true NULL_IF = ('nil')`, id.FullyQualifiedName())
 	})
 }
 
@@ -229,7 +229,7 @@ func TestFileFormatsDrop(t *testing.T) {
 		opts := &DropFileFormatOptionsLegacy{
 			name: id,
 		}
-		assertOptsValidAndSQLEquals(t, opts, `DROP FILE FORMAT %s`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DROP FILE FORMAT %s`, id.FullyQualifiedName())
 	})
 
 	t.Run("with IfExists", func(t *testing.T) {
@@ -237,14 +237,14 @@ func TestFileFormatsDrop(t *testing.T) {
 			name:     id,
 			IfExists: Bool(true),
 		}
-		assertOptsValidAndSQLEquals(t, opts, `DROP FILE FORMAT IF EXISTS %s`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DROP FILE FORMAT IF EXISTS %s`, id.FullyQualifiedName())
 	})
 }
 
 func TestFileFormatsShow(t *testing.T) {
 	t.Run("without show options", func(t *testing.T) {
 		opts := &ShowFileFormatsOptionsLegacy{}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW FILE FORMATS`)
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW FILE FORMATS`)
 	})
 
 	t.Run("with show options", func(t *testing.T) {
@@ -257,7 +257,7 @@ func TestFileFormatsShow(t *testing.T) {
 				Schema: id,
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW FILE FORMATS LIKE 'test' IN SCHEMA %s`, id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW FILE FORMATS LIKE 'test' IN SCHEMA %s`, id.FullyQualifiedName())
 	})
 }
 
@@ -272,7 +272,7 @@ func TestFileFormatsShowById(t *testing.T) {
 				Schema: id.SchemaId(),
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SHOW FILE FORMATS LIKE '%s' IN SCHEMA %s`, id.Name(), id.SchemaId().FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `SHOW FILE FORMATS LIKE '%s' IN SCHEMA %s`, id.Name(), id.SchemaId().FullyQualifiedName())
 	})
 }
 
@@ -282,5 +282,5 @@ func TestFileFormatsDescribe(t *testing.T) {
 	opts := &describeFileFormatOptionsLegacy{
 		name: id,
 	}
-	assertOptsValidAndSQLEquals(t, opts, `DESCRIBE FILE FORMAT %s`, id.FullyQualifiedName())
+	assertOptsValidAndSqlEqualsf(t, opts, `DESCRIBE FILE FORMAT %s`, id.FullyQualifiedName())
 }

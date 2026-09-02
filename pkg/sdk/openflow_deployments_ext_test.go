@@ -189,7 +189,7 @@ func TestOpenflowDeployments_ShowParameters(t *testing.T) {
 		opts := &ShowParametersOptions{
 			In: &ParametersIn{OpenflowDeployment: id},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW PARAMETERS IN OPENFLOW DEPLOYMENT %s", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW PARAMETERS IN OPENFLOW DEPLOYMENT %s", id.FullyQualifiedName())
 	})
 
 	t.Run("like event table in openflow deployment", func(t *testing.T) {
@@ -197,6 +197,6 @@ func TestOpenflowDeployments_ShowParameters(t *testing.T) {
 			Like: &Like{Pattern: String("EVENT_TABLE")},
 			In:   &ParametersIn{OpenflowDeployment: id},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW PARAMETERS LIKE 'EVENT_TABLE' IN OPENFLOW DEPLOYMENT %s", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW PARAMETERS LIKE 'EVENT_TABLE' IN OPENFLOW DEPLOYMENT %s", id.FullyQualifiedName())
 	})
 }

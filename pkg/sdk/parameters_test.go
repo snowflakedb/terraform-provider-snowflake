@@ -21,7 +21,7 @@ func TestSetObjectParameterOnObject(t *testing.T) {
 
 	t.Run("all options", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s SET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = TRUE", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER USER %s SET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR = TRUE", id.FullyQualifiedName())
 	})
 }
 
@@ -33,7 +33,7 @@ func TestUnsetObjectParameterOnObject(t *testing.T) {
 			objectIdentifier: id,
 			parameterKey:     "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER USER %s UNSET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER USER %s UNSET ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR", id.FullyQualifiedName())
 	})
 
 	t.Run("unset on database", func(t *testing.T) {
@@ -43,7 +43,7 @@ func TestUnsetObjectParameterOnObject(t *testing.T) {
 			objectIdentifier: id,
 			parameterKey:     "USER_TASK_TIMEOUT_MS",
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER DATABASE %s UNSET USER_TASK_TIMEOUT_MS", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER DATABASE %s UNSET USER_TASK_TIMEOUT_MS", id.FullyQualifiedName())
 	})
 
 	t.Run("unset on schema", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestUnsetObjectParameterOnObject(t *testing.T) {
 			objectIdentifier: id,
 			parameterKey:     "DATA_RETENTION_TIME_IN_DAYS",
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER SCHEMA %s UNSET DATA_RETENTION_TIME_IN_DAYS", id.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER SCHEMA %s UNSET DATA_RETENTION_TIME_IN_DAYS", id.FullyQualifiedName())
 	})
 }
 
@@ -68,7 +68,7 @@ func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
 		},
 	}
 	t.Run("Unset Account Network Policy", func(t *testing.T) {
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT UNSET NETWORK_POLICY")
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT UNSET NETWORK_POLICY")
 	})
 }
 
@@ -82,7 +82,7 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 		},
 	}
 	t.Run("Unset User Network Policy", func(t *testing.T) {
-		assertOptsValidAndSQLEquals(t, opts, `ALTER USER "TEST_USER" UNSET NETWORK_POLICY`)
+		assertOptsValidAndSqlEqualsf(t, opts, `ALTER USER "TEST_USER" UNSET NETWORK_POLICY`)
 	})
 }
 
@@ -98,7 +98,7 @@ func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
 		},
 	}
 	t.Run("Set Enforce Network Rules for Internal Stages", func(t *testing.T) {
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES = true")
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES = true")
 	})
 }
 
@@ -115,17 +115,17 @@ func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
 
 	t.Run("CLI: set to -1 (unlimited)", func(t *testing.T) {
 		opts := set(&LegacyAccountParameters{CortexCodeCliDailyEstCreditLimitPerUser: Pointer(-1)})
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER = -1")
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER = -1")
 	})
 
 	t.Run("Desktop: set to 0 (blocked)", func(t *testing.T) {
 		opts := set(&LegacyAccountParameters{CortexCodeDesktopDailyEstCreditLimitPerUser: Pointer(0)})
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER = 0")
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER = 0")
 	})
 
 	t.Run("Snowsight: set to a positive cap", func(t *testing.T) {
 		opts := set(&LegacyAccountParameters{CortexCodeSnowsightDailyEstCreditLimitPerUser: Pointer(10)})
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 10")
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 10")
 	})
 
 	t.Run("Unset CLI limit", func(t *testing.T) {
@@ -138,7 +138,7 @@ func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, "ALTER ACCOUNT UNSET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER")
+		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT UNSET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER")
 	})
 }
 

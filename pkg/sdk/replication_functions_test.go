@@ -23,7 +23,7 @@ func TestReplicationFunctions_ShowReplicationDatabases(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, "SHOW REPLICATION DATABASES")
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW REPLICATION DATABASES")
 	})
 
 	t.Run("with like", func(t *testing.T) {
@@ -31,12 +31,12 @@ func TestReplicationFunctions_ShowReplicationDatabases(t *testing.T) {
 		opts.Like = &Like{
 			Pattern: String("mydb"),
 		}
-		assertOptsValidAndSQLEquals(t, opts, "SHOW REPLICATION DATABASES LIKE 'mydb'")
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW REPLICATION DATABASES LIKE 'mydb'")
 	})
 
 	t.Run("with primary", func(t *testing.T) {
 		opts := defaultOpts()
 		opts.WithPrimary = &externalId
-		assertOptsValidAndSQLEquals(t, opts, "SHOW REPLICATION DATABASES WITH PRIMARY %s", externalId.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW REPLICATION DATABASES WITH PRIMARY %s", externalId.FullyQualifiedName())
 	})
 }

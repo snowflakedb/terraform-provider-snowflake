@@ -329,7 +329,7 @@ func TestTags_Set_withColumn(t *testing.T) {
 	})
 	request.adjust()
 	opts := request.toOpts()
-	assertOptsValidAndSQLEquals(t, opts, `ALTER TABLE %s MODIFY COLUMN "%s" SET TAG %s = 'value1'`, id.FullyQualifiedName(), objectId.columnName, tagId.FullyQualifiedName())
+	assertOptsValidAndSqlEqualsf(t, opts, `ALTER TABLE %s MODIFY COLUMN "%s" SET TAG %s = 'value1'`, id.FullyQualifiedName(), objectId.columnName, tagId.FullyQualifiedName())
 }
 
 func TestTags_Unset_withColumn(t *testing.T) {
@@ -342,5 +342,5 @@ func TestTags_Unset_withColumn(t *testing.T) {
 		WithIfExists(true)
 	request.adjust()
 	opts := request.toOpts()
-	assertOptsValidAndSQLEquals(t, opts, `ALTER %s IF EXISTS %s MODIFY COLUMN "%s" UNSET TAG %s, %s`, opts.objectType, id.FullyQualifiedName(), objectId.Name(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
+	assertOptsValidAndSqlEqualsf(t, opts, `ALTER %s IF EXISTS %s MODIFY COLUMN "%s" UNSET TAG %s, %s`, opts.objectType, id.FullyQualifiedName(), objectId.Name(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName())
 }

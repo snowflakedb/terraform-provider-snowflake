@@ -77,7 +77,11 @@ func assertOptsInvalidJoinedErrors(t *testing.T, _ validatable, _ ...error) {
 	t.Helper()
 }
 
-func assertOptsValidAndSQLEquals(t *testing.T, _ validatable, _ string, _ ...any) {
+func assertOptsValidAndSqlEquals(t *testing.T, _ validatable, _ string) {
+	t.Helper()
+}
+
+func assertOptsValidAndSqlEqualsf(t *testing.T, _ validatable, _ string, _ ...any) {
 	t.Helper()
 }
 

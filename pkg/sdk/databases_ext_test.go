@@ -545,6 +545,6 @@ func TestDatabasesDescribe(t *testing.T) {
 
 	t.Run("complete", func(t *testing.T) {
 		opts := defaultOpts()
-		assertOptsValidAndSQLEquals(t, opts, `DESCRIBE DATABASE %s`, opts.name.FullyQualifiedName())
+		assertOptsValidAndSqlEqualsf(t, opts, `DESCRIBE DATABASE %s`, opts.name.FullyQualifiedName())
 	})
 }

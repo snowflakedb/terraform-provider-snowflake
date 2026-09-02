@@ -49,7 +49,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '\"user_name\"', REF_ENTITY_DOMAIN => 'USER'))`)
+		assertOptsValidAndSqlEqualsf(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '\"user_name\"', REF_ENTITY_DOMAIN => 'USER'))`)
 	})
 
 	t.Run("table domain", func(t *testing.T) {
@@ -62,7 +62,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '%s', REF_ENTITY_DOMAIN => 'TABLE'))`, temporaryReplace(id))
+		assertOptsValidAndSqlEqualsf(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '%s', REF_ENTITY_DOMAIN => 'TABLE'))`, temporaryReplace(id))
 	})
 
 	t.Run("account domain", func(t *testing.T) {
@@ -74,7 +74,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '\"account_name\"', REF_ENTITY_DOMAIN => 'ACCOUNT'))`)
+		assertOptsValidAndSqlEqualsf(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '\"account_name\"', REF_ENTITY_DOMAIN => 'ACCOUNT'))`)
 	})
 
 	t.Run("integration domain", func(t *testing.T) {
@@ -86,7 +86,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '\"integration_name\"', REF_ENTITY_DOMAIN => 'INTEGRATION'))`)
+		assertOptsValidAndSqlEqualsf(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '\"integration_name\"', REF_ENTITY_DOMAIN => 'INTEGRATION'))`)
 	})
 
 	t.Run("tag domain", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '%s', REF_ENTITY_DOMAIN => 'TAG'))`, temporaryReplace(id))
+		assertOptsValidAndSqlEqualsf(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '%s', REF_ENTITY_DOMAIN => 'TAG'))`, temporaryReplace(id))
 	})
 
 	t.Run("view domain", func(t *testing.T) {
@@ -112,7 +112,7 @@ func TestPolicyReferencesGetForEntity(t *testing.T) {
 				},
 			},
 		}
-		assertOptsValidAndSQLEquals(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '%s', REF_ENTITY_DOMAIN => 'VIEW'))`, temporaryReplace(id))
+		assertOptsValidAndSqlEqualsf(t, opts, `SELECT * FROM TABLE (SNOWFLAKE.INFORMATION_SCHEMA.POLICY_REFERENCES (REF_ENTITY_NAME => '%s', REF_ENTITY_DOMAIN => 'VIEW'))`, temporaryReplace(id))
 	})
 }
 

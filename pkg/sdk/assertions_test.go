@@ -48,18 +48,30 @@ func assertOptsValid(t *testing.T, opts validatable) {
 	assert.NoError(t, err)
 }
 
-// assertSQLEquals could be reused in tests for other interfaces in sdk package.
-func assertSQLEquals(t *testing.T, opts any, format string, args ...any) {
+// assertSqlEquals could be reused in tests for other interfaces in sdk package.
+func assertSqlEquals(t *testing.T, opts any, expectedSql string) {
 	t.Helper()
 	actual, err := structToSQL(opts)
 	require.NoError(t, err)
-	assert.Equal(t, fmt.Sprintf(format, args...), actual)
+	assert.Equal(t, expectedSql, actual)
 }
 
-// assertOptsValidAndSQLEquals could be reused in tests for other interfaces in sdk package.
-// It's a shorthand for assertOptsValid and assertSQLEquals.
-func assertOptsValidAndSQLEquals(t *testing.T, opts validatable, format string, args ...any) {
+// assertSqlEqualsf is assertSqlEquals with fmt.Sprintf applied to the expected SQL.
+func assertSqlEqualsf(t *testing.T, opts any, format string, args ...any) {
+	t.Helper()
+	assertSqlEquals(t, opts, fmt.Sprintf(format, args...))
+}
+
+// assertOptsValidAndSqlEquals is a shorthand for assertOptsValid and assertSqlEquals.
+func assertOptsValidAndSqlEquals(t *testing.T, opts validatable, expectedSql string) {
 	t.Helper()
 	assertOptsValid(t, opts)
-	assertSQLEquals(t, opts, format, args...)
+	assertSqlEquals(t, opts, expectedSql)
+}
+
+// assertOptsValidAndSqlEqualsf is assertOptsValidAndSqlEquals with fmt.Sprintf applied to the expected SQL.
+func assertOptsValidAndSqlEqualsf(t *testing.T, opts validatable, format string, args ...any) {
+	t.Helper()
+	assertOptsValid(t, opts)
+	assertSqlEqualsf(t, opts, format, args...)
 }
